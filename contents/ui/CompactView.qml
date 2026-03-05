@@ -80,7 +80,7 @@ PlasmaCore.ToolTipArea {
             return Math.max(8, Math.floor(h * 0.45));
         if (simpleLayoutType === 2) // compressed
             // Scale with height, cap at 48px to keep badge readable but not too large
-            return Math.max(8, Math.min(Math.floor(h * 0.7), 48));
+            return Math.max(8, Math.min(Math.floor(h * 0.5), 48));
         return Math.max(8, Math.floor(h * 0.55)); // horizontal
     }
 
@@ -403,6 +403,7 @@ PlasmaCore.ToolTipArea {
                 }
                 Text {
                     anchors.fill: parent
+                    anchors.topMargin: 2
                     visible: compactRoot.simpleIconStyle !== "colorful"
                     text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
                     font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
@@ -443,6 +444,7 @@ PlasmaCore.ToolTipArea {
                 }
                 Text {
                     anchors.fill: parent
+                    anchors.topMargin: 2
                     visible: compactRoot.simpleIconStyle !== "colorful"
                     text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
                     font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
@@ -477,6 +479,8 @@ PlasmaCore.ToolTipArea {
                 }
                 Text {
                     anchors.fill: parent
+                    width: parent.width   // or set a fixed size
+                    height: parent.height
                     visible: compactRoot.simpleIconStyle !== "colorful"
                     text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
                     font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""

@@ -18,18 +18,29 @@ Item {
     property var weatherRoot
     property int expandedIndex: -1
 
+    // Set implicit height based on content
+    implicitHeight: (weatherRoot && weatherRoot.dailyData.length > 0) ? forecastColumn.height : (emptyLabel.implicitHeight + 40) // extra space for centering
+
+    // Font for weather icons (wind direction glyph)
+    FontLoader {
+        id: wiFont
+        source: Qt.resolvedUrl("../fonts/weathericons-regular-webfont.ttf")
+    }
+
     // Resolved at load time so the path is correct in all rendering contexts
     readonly property url iconsBaseDir: Qt.resolvedUrl("../icons/")
 
     // Widget icon theme — needed to build correct SVG icon paths
     readonly property string widgetIconTheme: Plasmoid.configuration.widgetIconTheme || "symbolic"
+    readonly property int iconSz: Plasmoid.configuration.widgetIconSize || 16
+    readonly property string iconTheme: widgetIconTheme
 
     // ── empty state ───────────────────────────────────────────────────────
     Label {
+        id: emptyLabel
         anchors.centerIn: parent
         visible: !weatherRoot || weatherRoot.dailyData.length === 0
         text: (weatherRoot && weatherRoot.loading) ? i18n("Loading forecast…") : i18n("No forecast data")
-        // #3: theme-aware
         color: Kirigami.Theme.textColor
         opacity: 0.4
         font: weatherRoot ? weatherRoot.wf(12, false) : Qt.font({})
@@ -42,6 +53,7 @@ Item {
         visible: weatherRoot && weatherRoot.dailyData.length > 0
 
         Column {
+            id: forecastColumn
             width: parent.width
             spacing: 0
 
@@ -58,7 +70,6 @@ Item {
                         id: dayRow
                         width: parent.width
                         height: 52
-                        // #3: hover tint uses textColor
                         color: (rowMouse.containsMouse || forecastRoot.expandedIndex === index) ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08) : "transparent"
                         Behavior on color {
                             ColorAnimation {
@@ -84,8 +95,8 @@ Item {
                             }
 
                             ColumnLayout {
-                                Layout.minimumWidth: 50   // Prevents it from becoming too small
-                                Layout.maximumWidth: 120  // Prevents it from growing too large (adjust as needed)
+                                Layout.minimumWidth: 50
+                                Layout.maximumWidth: 120
                                 spacing: 1
                                 Label {
                                     text: {
@@ -124,12 +135,12 @@ Item {
                                 height: 28
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
-                                Layout.rightMargin: 4   // small gap after icon, before text
+                                Layout.rightMargin: 4
                             }
 
                             Label {
                                 Layout.fillWidth: true
-                                Layout.maximumWidth: 140 // prevent it from taking too much space
+                                Layout.maximumWidth: 140
                                 text: weatherRoot.weatherCodeToText(weatherRoot.dailyData[index].code)
                                 color: Kirigami.Theme.textColor
                                 opacity: 0.48
@@ -141,32 +152,26 @@ Item {
                                 Layout.preferredWidth: 8
                             }
 
-                            // Min temp
-                            Label {
-                                text: weatherRoot.tempValue(weatherRoot.dailyData[index].minC)
-                                // #3
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.48
-                                font: weatherRoot.wf(12, false)
-                                Layout.preferredWidth: 46
-                                horizontalAlignment: Text.AlignRight
-                            }
-                            Label {
-                                text: "/"
-                                // #3
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.22
-                                font: weatherRoot.wf(12, false)
-                                Layout.leftMargin: 3
-                                Layout.rightMargin: 3
-                            }
-                            // Max temp
-                            Label {
-                                text: weatherRoot.tempValue(weatherRoot.dailyData[index].maxC)
-                                // #3
-                                color: Kirigami.Theme.textColor
-                                font: weatherRoot.wf(12, true)
-                                Layout.preferredWidth: 46
+                            RowLayout {
+                                spacing: 2
+                                Layout.alignment: Qt.AlignRight
+                                Label {
+                                    text: weatherRoot.tempValue(weatherRoot.dailyData[index].minC)
+                                    color: "#42a5f5"
+                                    opacity: 0.48
+                                    font: weatherRoot.wf(12, false)
+                                }
+                                Label {
+                                    text: "/"
+                                    color: Kirigami.Theme.textColor
+                                    opacity: 0.22
+                                    font: weatherRoot.wf(12, false)
+                                }
+                                Label {
+                                    text: weatherRoot.tempValue(weatherRoot.dailyData[index].maxC)
+                                    color: "#ff6e40"
+                                    font: weatherRoot.wf(12, true)
+                                }
                             }
                         }
 
@@ -192,10 +197,9 @@ Item {
                     // ── inline hourly panel ─────────────────────────────
                     Rectangle {
                         width: parent.width
-                        height: forecastRoot.expandedIndex === index ? 240 : 0 //fix issue 3
+                        height: forecastRoot.expandedIndex === index ? 240 : 0
                         visible: height > 0
                         clip: true
-                        // #3: panel background uses textColor tint
                         color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.04)
                         Behavior on height {
                             NumberAnimation {
@@ -208,7 +212,6 @@ Item {
                             anchors.centerIn: parent
                             visible: !weatherRoot || weatherRoot.hourlyData.length === 0
                             text: i18n("Loading hourly data…")
-                            // #3
                             color: Kirigami.Theme.textColor
                             opacity: 0.32
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
@@ -231,10 +234,9 @@ Item {
 
                                     delegate: Rectangle {
                                         required property var modelData
-                                        width: 76
+                                        width: 100
                                         height: 200
                                         radius: 8
-                                        // #3: chip bg uses textColor tint
                                         color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08)
                                         border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.12)
                                         border.width: 1
@@ -246,43 +248,62 @@ Item {
                                             }
                                             spacing: 4
 
-                                            // Hour
+                                            // Fix bug with time formatting – formatted according to system locale (12h/24h)
                                             Label {
                                                 Layout.alignment: Qt.AlignHCenter
-                                                text: modelData.hour || "--"
-                                                // #3
+                                                text: {
+                                                    if (!modelData.hour || modelData.hour === "--")
+                                                        return "--";
+                                                    var parts = modelData.hour.split(":");
+                                                    if (parts.length < 2)
+                                                        return modelData.hour;
+                                                    var h = parseInt(parts[0], 10);
+                                                    var m = parseInt(parts[1], 10);
+                                                    if (isNaN(h) || isNaN(m))
+                                                        return modelData.hour;
+                                                    var d = new Date();
+                                                    d.setHours(h, m, 0, 0);
+                                                    return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
+                                                }
                                                 color: Kirigami.Theme.textColor
                                                 opacity: 0.52
                                                 font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                                             }
 
-                                            // Condition icon
                                             Kirigami.Icon {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 source: W.weatherCodeToIcon(modelData.code || 0)
-                                                width: 28
-                                                height: 28
+                                                Layout.preferredWidth: 48
+                                                Layout.preferredHeight: 48
                                             }
 
-                                            // Temperature
                                             Label {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 text: weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--"
-                                                // #3: textColor for temperature
                                                 color: Kirigami.Theme.textColor
                                                 font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({
                                                     bold: true
                                                 })
                                             }
 
-                                            // Wind
-                                            Label {
+                                            // Wind speed + direction (using font glyph for direction)
+                                            RowLayout {
                                                 Layout.alignment: Qt.AlignHCenter
-                                                text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
-                                                // #3
-                                                color: Kirigami.Theme.textColor
-                                                opacity: 0.55
-                                                font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                spacing: 4
+                                                Label {
+                                                    text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
+                                                    color: Kirigami.Theme.textColor
+                                                    opacity: 0.55
+                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                }
+                                                Text {
+                                                    visible: weatherRoot && !isNaN(modelData.windDeg)
+                                                    text: W.windDirectionGlyph(modelData.windDeg)
+                                                    font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                                    font.pixelSize: 20  // adjust to match visual size
+                                                    color: Kirigami.Theme.textColor
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                }
                                             }
 
                                             // Precipitation probability
@@ -290,8 +311,6 @@ Item {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 spacing: 3
                                                 Kirigami.Icon {
-                                                    // Path: icons/<theme>/16/wi-umbrella.svg
-                                                    // Falls back to symbolic if theme has no SVG folder
                                                     source: {
                                                         var th = forecastRoot.widgetIconTheme;
                                                         if (th === "kde" || th === "wi-font")
@@ -300,8 +319,8 @@ Item {
                                                     }
                                                     isMask: true
                                                     color: "#5ea8ff"
-                                                    width: 14
-                                                    height: 14
+                                                    Layout.preferredWidth: 14
+                                                    Layout.preferredHeight: 14
                                                     Layout.alignment: Qt.AlignVCenter
                                                 }
                                                 Label {
@@ -323,11 +342,9 @@ Item {
                         }
                     }
 
-                    // Divider
                     Rectangle {
                         width: parent.width
                         height: 1
-                        // #3
                         color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08)
                     }
                 }

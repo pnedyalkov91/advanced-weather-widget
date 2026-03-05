@@ -22,7 +22,7 @@ function windDirectionGlyph(degrees) {
         return "\uF059"; // wi-wind fallback
         var glyphs = [
             "\uF060", // N
-            "\uF0D1", // NNE
+            "\uF05E", // NNE
             "\uF05E", // NE
             "\uF05E", // ENE
             "\uF061", // E

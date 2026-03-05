@@ -25,22 +25,8 @@ import "js/moonphase.js" as Moon
 PlasmoidItem {
     id: root
 
-    // Auto-scale popup / desktop widget height to fit all detail rows.
-    // Fixed overhead (header + hero + tabs + margins + footer) ≈ 266 px.
-    // Cards2 mode: 78 px rows; List mode: 38 px rows.  2-per-row for cards.
-    readonly property int _detailItemCount: {
-        var s = Plasmoid.configuration.widgetDetailsOrder || "feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase";
-        return s.split(";").filter(function (x) {
-            return x.trim().length > 0;
-        }).length;
-    }
-    readonly property bool _widgetIsList: (Plasmoid.configuration.widgetDetailsLayout || "cards2") === "list"
-    readonly property int _detailRows: _widgetIsList ? _detailItemCount : Math.ceil(_detailItemCount / 2)
-    readonly property int _detailRowH: _widgetIsList ? 38 : 78
-    readonly property int _detailsAreaH: _detailRows * _detailRowH + Math.max(0, _detailRows - 1) * 8 + 4
-
-    implicitWidth: 520
-    implicitHeight: 266 + _detailsAreaH
+    implicitWidth: 540
+    implicitHeight: 550
     switchWidth: 200
     switchHeight: 100
     preferredRepresentation: fullRepresentation
@@ -85,6 +71,11 @@ PlasmoidItem {
 
     fullRepresentation: FullView {
         weatherRoot: root
+    }
+
+    // And update it when the full representation is created:
+    onFullRepresentationItemChanged: {
+        fullViewItem = fullRepresentationItem;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -200,16 +191,32 @@ PlasmoidItem {
     // Value formatters — delegate pure math to weather.js, inject config here
     // ══════════════════════════════════════════════════════════════════════
 
+    // Returns the effective temperature unit, respecting "kde" locale mode.
+    function _tempUnit() {
+        if (Plasmoid.configuration.unitsMode === "kde")
+            return Qt.locale().measurementSystem === 1 ? "F" : "C";
+        return Plasmoid.configuration.temperatureUnit || "C";
+    }
     function tempValue(celsius) {
-        return W.formatTemp(celsius, Plasmoid.configuration.temperatureUnit || "C", Plasmoid.configuration.roundValues);
+        return W.formatTemp(celsius, _tempUnit(), Plasmoid.configuration.roundValues);
     }
 
+    function _windUnit() {
+        if (Plasmoid.configuration.unitsMode === "kde")
+            return Qt.locale().measurementSystem === 1 ? "mph" : "kmh";
+        return Plasmoid.configuration.windSpeedUnit || "kmh";
+    }
     function windValue(kmh) {
-        return W.formatWind(kmh, Plasmoid.configuration.windSpeedUnit || "kmh");
+        return W.formatWind(kmh, _windUnit());
     }
 
+    function _pressureUnit() {
+        if (Plasmoid.configuration.unitsMode === "kde")
+            return Qt.locale().measurementSystem === 1 ? "inHg" : "hPa";
+        return Plasmoid.configuration.pressureUnit || "hPa";
+    }
     function pressureValue(hpa) {
-        return W.formatPressure(hpa, Plasmoid.configuration.pressureUnit || "hPa");
+        return W.formatPressure(hpa, _pressureUnit());
     }
 
     // ══════════════════════════════════════════════════════════════════════

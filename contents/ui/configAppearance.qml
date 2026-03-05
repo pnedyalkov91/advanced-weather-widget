@@ -607,7 +607,7 @@ KCM.AbstractKCM {
     property bool cfg_panelShowCondition: false
     property bool cfg_panelShowLocation: true
 
-    // Simple mode sub‑options (new)
+    // Simple mode sub‑options
     property int cfg_panelSimpleLayoutType: 0
     property int cfg_panelSimpleWidgetOrder: 0
     property string cfg_panelSimpleIconStyle: "symbolic"
@@ -620,7 +620,7 @@ KCM.AbstractKCM {
     property bool cfg_showScrollbox: true
     property bool cfg_showUpdateText: true
     // Issue #7: widgetDetailsOrder replaces individual booleans
-    property string cfg_widgetDetailsOrder: "feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase"
+    property string cfg_widgetDetailsOrder: "feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes"
     property string cfg_widgetDetailsLayout: "cards2"  // "cards2" | "list"
     property int cfg_widgetIconSize: 16
     property string cfg_widgetIconTheme: "symbolic"   // "kde" | "wi-font" | "flat-color" | "symbolic" | "3d-oxygen"
@@ -633,6 +633,10 @@ KCM.AbstractKCM {
     property bool cfg_widgetShowSunrise: true
     property bool cfg_widgetShowDewPoint: true
     property bool cfg_widgetShowVisibility: true
+
+    // ✦ NEW: Cards height properties ✦
+    property bool cfg_widgetCardsHeightAuto: true
+    property int cfg_widgetCardsHeight: 44
 
     // ── Tooltip config aliases ────────────────────────────────────────────
     property string cfg_tooltipItemOrder: "temperature;wind;humidity;pressure;suntimes"
@@ -668,7 +672,7 @@ KCM.AbstractKCM {
     property string cfg_panelSymbolicVariant: "dark"  // "dark" | "light" for symbolic SVG theme
     property string cfg_panelCustomIcons: ""      // "id=iconName;id=iconName;..." for custom theme
 
-    // Manual size properties ✦
+    // Manual size properties for simple mode
     property string cfg_simpleIconSizeMode: "auto"
     property int cfg_simpleIconSizeManual: 32
     property string cfg_simpleFontSizeMode: "auto"
@@ -1051,9 +1055,9 @@ KCM.AbstractKCM {
         cfg_widgetShowHumidity = ids.indexOf("humidity") >= 0;
         cfg_widgetShowPressure = ids.indexOf("pressure") >= 0;
         cfg_widgetShowWind = ids.indexOf("wind") >= 0;
-        cfg_widgetShowSunrise = ids.indexOf("suntimes") >= 0;
         cfg_widgetShowDewPoint = ids.indexOf("dewpoint") >= 0;
         cfg_widgetShowVisibility = ids.indexOf("visibility") >= 0;
+        cfg_widgetShowSunrise = ids.indexOf("suntimes") >= 0;
     }
     function firstDetailsDisabledIndex() {
         for (var i = 0; i < detailsWorkingModel.count; ++i)
@@ -1878,7 +1882,6 @@ KCM.AbstractKCM {
                                 }
                             ]
                             Component.onCompleted: {
-                                // Migrate legacy kde / wi-font to symbolic
                                 var theme = root.cfg_widgetIconTheme;
                                 if (theme === "kde" || theme === "wi-font")
                                     theme = "symbolic";
@@ -1891,34 +1894,6 @@ KCM.AbstractKCM {
                                     currentIndex = 0;
                             }
                             onActivated: root.cfg_widgetIconTheme = model[currentIndex].value
-                        }
-                    }
-
-                    // ── Details layout: Cards or List ────────────────────
-                    RowLayout {
-                        Kirigami.FormData.label: i18n("Details layout:")
-                        ComboBox {
-                            id: widgetDetailsLayoutCombo
-                            Layout.preferredWidth: 200
-                            textRole: "text"
-                            model: [
-                                {
-                                    text: i18n("Cards (2 per row)"),
-                                    value: "cards2"
-                                },
-                                {
-                                    text: i18n("List (1 per row)"),
-                                    value: "list"
-                                }
-                            ]
-                            Component.onCompleted: {
-                                for (var i = 0; i < model.length; ++i)
-                                    if (model[i].value === root.cfg_widgetDetailsLayout) {
-                                        currentIndex = i;
-                                        break;
-                                    }
-                            }
-                            onActivated: root.cfg_widgetDetailsLayout = model[currentIndex].value
                         }
                     }
 
@@ -1980,13 +1955,17 @@ KCM.AbstractKCM {
                                     value: false
                                 }
                             ]
-                            Component.onCompleted: {
-                                currentIndex = root.cfg_widgetCardsHeightAuto ? 0 : 1;
+                            // Bind current index to config
+                            currentIndex: root.cfg_widgetCardsHeightAuto ? 0 : 1
+                            onActivated: {
+                                var newMode = model[currentIndex].value;
+                                if (root.cfg_widgetCardsHeightAuto !== newMode) {
+                                    root.cfg_widgetCardsHeightAuto = newMode;
+                                }
                             }
-                            onActivated: root.cfg_widgetCardsHeightAuto = (model[currentIndex].value)
                         }
                         SpinBox {
-                            visible: !root.cfg_widgetCardsHeightAuto
+                            enabled: !root.cfg_widgetCardsHeightAuto
                             from: 30
                             to: 120
                             value: root.cfg_widgetCardsHeight
@@ -2036,7 +2015,7 @@ KCM.AbstractKCM {
                                 }
                             }
                             Button {
-                                text: i18n("Configure\u2026")
+                                text: i18n("Configure…")
                                 icon.name: "configure"
                                 onClicked: {
                                     root.initDetailsModel();
@@ -2300,6 +2279,15 @@ KCM.AbstractKCM {
                                     currentIndex = i;
                                     break;
                                 }
+                            // Apply kde resolution immediately on load so the
+                            // individual unit combos reflect the actual locale.
+                            if (root.cfg_unitsMode === "kde") {
+                                var isImp = (Qt.locale().measurementSystem === 1);
+                                root.cfg_temperatureUnit = isImp ? "F" : "C";
+                                root.cfg_windSpeedUnit = isImp ? "mph" : "kmh";
+                                root.cfg_pressureUnit = isImp ? "inHg" : "hPa";
+                                root.cfg_precipitationUnit = isImp ? "in" : "mm";
+                            }
                         }
                         textRole: "text"
                         onActivated: {

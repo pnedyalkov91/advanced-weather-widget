@@ -19,7 +19,7 @@
 
     <!-- Units: Issue #8 — unitsMode controls the unit preset -->
     <!-- Values: "metric", "imperial", "kde", "custom" -->
-    <entry name="unitsMode" type="String"><default>metric</default></entry>
+    <entry name="unitsMode" type="String"><default>kde</default></entry>
     <entry name="temperatureUnit" type="String"><default>C</default></entry>
     <entry name="pressureUnit" type="String"><default>hPa</default></entry>
     <entry name="windSpeedUnit" type="String"><default>kmh</default></entry>
@@ -95,9 +95,9 @@
     <entry name="showUpdateText" type="Bool"><default>true</default></entry>
 
     <!-- Issue #7: configurable widget details view items (semicolon-separated) -->
-    <entry name="widgetDetailsOrder" type="String"><default>feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase</default></entry>
+    <entry name="widgetDetailsOrder" type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes</default></entry>
     <entry name="widgetDetailsLayout" type="String"><default>cards2</default></entry>
-    <entry name="widgetIconSize"       type="Int"   ><default>16</default></entry>
+    <entry name="widgetIconSize"       type="Int"   ><default>32</default></entry>
     <!-- Widget details icon theme -->
     <entry name="widgetIconTheme" type="String"><default>symbolic</default></entry>
     <!-- Widget popup size; 0 = use built-in default (540 × 500) -->
