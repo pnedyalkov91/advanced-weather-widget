@@ -22,7 +22,7 @@ function windDirectionGlyph(degrees) {
         return "\uF059"; // wi-wind fallback
         var glyphs = [
             "\uF060", // N
-            "\uF0D1", // NNE
+            "\uF05E", // NNE
             "\uF05E", // NE
             "\uF05E", // ENE
             "\uF061", // E
@@ -129,8 +129,8 @@ function weatherApiCodeToWmo(code) {
 function formatTemp(celsius, unit, round) {
     if (isNaN(celsius) || celsius === null || celsius === undefined) return "--";
     var value = (unit === "F") ? (celsius * 9 / 5 + 32) : celsius;
-    var str = round ? String(Math.round(value)) : Number(value).toFixed(1);
-    return str + (unit === "F" ? "\u00B0F" : "\u00B0C");
+    var numStr = round ? String(Math.round(value)) : Number(value).toFixed(1);
+    return numStr + "\u00B0"; // Unicode degree symbol
 }
 
 /**

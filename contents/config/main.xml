@@ -19,7 +19,7 @@
 
     <!-- Units: Issue #8 — unitsMode controls the unit preset -->
     <!-- Values: "metric", "imperial", "kde", "custom" -->
-    <entry name="unitsMode" type="String"><default>metric</default></entry>
+    <entry name="unitsMode" type="String"><default>kde</default></entry>
     <entry name="temperatureUnit" type="String"><default>C</default></entry>
     <entry name="pressureUnit" type="String"><default>hPa</default></entry>
     <entry name="windSpeedUnit" type="String"><default>kmh</default></entry>
@@ -50,11 +50,24 @@
     <entry name="scrollboxItems" type="String"><default>Humidity;Wind;Pressure;Dew Point;Visibility</default></entry>
     <entry name="animateTransitions" type="Bool"><default>true</default></entry>
 
-    <entry name="panelInfoMode" type="String"><default>single</default></entry>
+    <entry name="panelInfoMode"    type="String"><default>single</default></entry>
+    <entry name="tooltipEnabled"   type="Bool"  ><default>true</default></entry>
     <!-- multiline mode: number of visible rows and scroll animation toggle -->
     <entry name="panelMultiLines" type="Int"><default>2</default><min>1</min><max>8</max></entry>
-    <entry name="panelMultiAnimate" type="Bool"><default>true</default></entry>
+    <entry name="panelMultiAnimate"       type="Bool"  ><default>true</default></entry>
+    <entry name="panelMultilineIconStyle" type="String"><default>colorful</default></entry>
     <entry name="panelScrollSeconds" type="Int"><default>4</default><min>1</min><max>30</max></entry>
+
+    <!-- Simple mode (panel) options – new -->
+    <entry name="panelSimpleLayoutType" type="Int"><default>0</default></entry>
+    <entry name="panelSimpleWidgetOrder" type="Int"><default>0</default></entry>
+    <entry name="panelSimpleIconStyle" type="String"><default>symbolic</default></entry>
+        <!-- Simple mode manual sizing -->
+    <entry name="simpleIconSizeMode" type="String"><default>auto</default></entry>
+    <entry name="simpleIconSizeManual" type="Int"><default>32</default><min>16</min><max>72</max></entry>
+    <entry name="simpleFontSizeMode" type="String"><default>auto</default></entry>
+    <entry name="simpleFontSizeManual" type="Int"><default>14</default><min>8</min><max>48</max></entry>
+
     <entry name="panelShowTemperature" type="Bool"><default>true</default></entry>
     <entry name="panelShowWeatherIcon" type="Bool"><default>false</default></entry>
     <entry name="panelShowSunTimes" type="Bool"><default>false</default></entry>
@@ -82,12 +95,16 @@
     <entry name="showUpdateText" type="Bool"><default>true</default></entry>
 
     <!-- Issue #7: configurable widget details view items (semicolon-separated) -->
-    <entry name="widgetDetailsOrder" type="String"><default>feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase</default></entry>
+    <entry name="widgetDetailsOrder" type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes</default></entry>
+    <entry name="widgetDetailsLayout" type="String"><default>cards2</default></entry>
+    <entry name="widgetIconSize"       type="Int"   ><default>32</default></entry>
     <!-- Widget details icon theme -->
     <entry name="widgetIconTheme" type="String"><default>symbolic</default></entry>
     <!-- Widget popup size; 0 = use built-in default (540 × 500) -->
     <entry name="widgetWidth"  type="Int"><default>0</default></entry>
-    <entry name="widgetHeight" type="Int"><default>0</default></entry>
+    <entry name="widgetHeight"          type="Int" ><default>0</default></entry>
+    <entry name="widgetCardsHeightAuto" type="Bool"><default>true</default></entry>
+    <entry name="widgetCardsHeight"     type="Int" ><default>44</default><min>30</min><max>120</max></entry>
 
     <!-- Legacy Widget Details View toggles (kept for back-compat) -->
     <entry name="widgetShowFeelsLike" type="Bool"><default>true</default></entry>

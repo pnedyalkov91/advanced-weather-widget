@@ -93,7 +93,7 @@ Search for:
 **Advanced Weather Widget**
 
 Or visit:
-https://store.kde.org/
+https://store.kde.org/p/2349879
 
 ---
 

@@ -22,8 +22,13 @@ ColumnLayout {
     /** Reference to the PlasmoidItem root (set by CompactView) */
     property var weatherRoot
 
+    // Respect the global tooltipEnabled setting: collapse to nothing when off.
+    // (CompactView also sets active:false on the ToolTipArea, so the popup
+    //  never opens at all.  This guard is a belt-and-suspenders fallback.)
+    visible: Plasmoid.configuration.tooltipEnabled !== false
     spacing: 5
-    implicitWidth: Math.max(280, ttContentCol.implicitWidth + 24)
+    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false)
+                   ? Math.max(280, ttContentCol.implicitWidth + 24) : 0
 
     // ── Wi-font loaded inside tooltip popup ───────────────────────────────
     FontLoader {

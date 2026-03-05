@@ -728,7 +728,7 @@ KCM.SimpleKCM {
 
                     RowLayout {
                         Layout.fillWidth: true; spacing: 8
-                        ToolButton { icon.name: "go-previous"; onClicked: root.closeSearchPage() }
+                        ToolButton { icon.name: "go-previous"; text: i18n("Back"); onClicked: root.closeSearchPage() }
                         Label { text: i18n("Enter Location"); font.bold: true; font.pixelSize: 16 }
                         Item { Layout.fillWidth: true }
                     }
