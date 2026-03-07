@@ -1,5 +1,5 @@
 /**
- * main.qml — P4P Weather Widget root
+ * main.qml — Advanced Weather Widget root
  *
  * Responsibilities:
  *  - Declare all weather data properties (the "model")
@@ -148,7 +148,7 @@ PlasmoidItem {
         var lang = Qt.locale().name.split("_")[0];
         var acceptLang = (lang.length > 0) ? lang + ",en;q=0.8" : "en";
         req.open("GET", "https://nominatim.openstreetmap.org/reverse" + "?format=jsonv2&zoom=10&addressdetails=1" + "&accept-language=" + acceptLang + "&lat=" + lat + "&lon=" + lon);
-        req.setRequestHeader("User-Agent", "P4PWeatherWidget/1.0 (KDE Plasma plasmoid)");
+        req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
@@ -376,10 +376,30 @@ PlasmoidItem {
     // ══════════════════════════════════════════════════════════════════════
 
     function moonPhaseLabel() {
-        return i18n(Moon.moonPhaseNameKey());
+        // Each string is a literal so xgettext can extract all 8 translations.
+        // moonPhaseNameKey() returns the English key; we map it here.
+        var key = Moon.moonPhaseNameKey();
+        if (key === "New Moon")
+            return i18n("New Moon");
+        if (key === "Waxing Crescent")
+            return i18n("Waxing Crescent");
+        if (key === "First Quarter")
+            return i18n("First Quarter");
+        if (key === "Waxing Gibbous")
+            return i18n("Waxing Gibbous");
+        if (key === "Full Moon")
+            return i18n("Full Moon");
+        if (key === "Waning Gibbous")
+            return i18n("Waning Gibbous");
+        if (key === "Last Quarter")
+            return i18n("Last Quarter");
+        if (key === "Waning Crescent")
+            return i18n("Waning Crescent");
+        return key; // fallback: untranslated (should never be reached)
     }
+
     function moonPhaseGlyph() {
-        return Moon.moonPhaseGlyph();
+        return Moon.moonPhaseFontIcon();
     }
     function moonPhaseSvgUrl() {
         return Qt.resolvedUrl("../icons/wi-" + Moon.moonPhaseSvgStem() + ".svg");

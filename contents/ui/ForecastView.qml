@@ -109,7 +109,7 @@ Item {
                                         if (parts.length !== 3)
                                             return "";
                                         var d = new Date(parts[0], parts[1] - 1, parts[2]);
-                                        return Qt.formatDate(d, "dddd");
+                                        return Qt.locale().dayName(d.getDay(), Locale.LongFormat);
                                     }
                                     color: Kirigami.Theme.textColor
                                     font: weatherRoot.wf(12, true)
@@ -315,12 +315,12 @@ Item {
                                                         var th = forecastRoot.widgetIconTheme;
                                                         if (th === "kde" || th === "wi-font")
                                                             th = "symbolic";
-                                                        return forecastRoot.iconsBaseDir + th + "/16/wi-umbrella.svg";
+                                                        return forecastRoot.iconsBaseDir + th + "/32/wi-umbrella.svg";
                                                     }
                                                     isMask: true
                                                     color: "#5ea8ff"
-                                                    Layout.preferredWidth: 14
-                                                    Layout.preferredHeight: 14
+                                                    Layout.preferredWidth: 32
+                                                    Layout.preferredHeight: 32
                                                     Layout.alignment: Qt.AlignVCenter
                                                 }
                                                 Label {

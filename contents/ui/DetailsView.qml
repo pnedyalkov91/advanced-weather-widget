@@ -1,17 +1,5 @@
 /**
- * DetailsView.qml — Dynamic "Details" tab
- *
- * Applied fixes:
- *  #1 — SVG icons use Kirigami.Icon + isMask:true + Kirigami.Theme.textColor
- *       so they are white on dark themes, dark on light themes automatically.
- *  #2 — All text colours derived from Kirigami.Theme.textColor so the widget
- *       is fully readable on both dark and light KDE colour schemes.
- *  #3 — Suntimes card: Sunrise/Sunset rows are now clearly displayed.
- *  #4 — Two items per row (no wide cards). "Sun" label → "Sunrise/Sunset".
- *  #5 — Moon Phase: icon removed; only the phase name text is shown (e.g. "Waxing Gibbous").
- *  #6 — Icon sizes now respect the user's widget icon size setting from Appearance.
- *  #7 — All icons use the same base size (iconSize) for consistency.
- *  #8 — Wind direction arrow now uses the weather font and respects iconSize.
+ * DetailsView.qml — Dynamic "Details" tab content for the popup
  */
 import QtQuick
 import QtQuick.Layouts
@@ -77,7 +65,7 @@ Item {
                 pressure: "\uF079",
                 wind: "\uF050",
                 suntimes: "\uF051",
-                dewpoint: "\uF073",
+                dewpoint: "\uF078",
                 visibility: "\uF0B6",
                 moonphase: "\uF0D0",
                 condition: "\uF013"
@@ -90,7 +78,7 @@ Item {
                 pressure: "wi-barometer.svg",
                 wind: "wi-strong-wind.svg",
                 suntimes: "wi-sunrise.svg",
-                dewpoint: "wi-raindrops.svg",
+                dewpoint: "wi-raindrop.svg",
                 visibility: "wi-fog.svg",
                 moonphase: "wi-moon-full.svg",
                 condition: "wi-day-sunny.svg"
@@ -103,7 +91,7 @@ Item {
                 pressure: "weather-pressure",
                 wind: "weather-windy",
                 suntimes: "weather-sunrise",
-                dewpoint: "weather-humidity",
+                dewpoint: "weather-dew-point",
                 visibility: "weather-fog",
                 moonphase: "weather-clear-night",
                 condition: "weather-few-clouds"
@@ -377,191 +365,223 @@ Item {
                             } // RowLayout (standard)
 
                             // ═══════════════════════════════════════════════════
-                            // Suntimes: header row  +  ↑time | ↓time row
+                            // Suntimes: [icon  Sunrise/Sunset] / [↑ time  |  ↓ time]
                             // ═══════════════════════════════════════════════════
-                            ColumnLayout {
-                                anchors {
-                                    fill: parent
-                                    leftMargin: 10
-                                    rightMargin: 10
-                                    topMargin: 6
-                                    bottomMargin: 6
-                                }
-                                spacing: 4
+                            Item {
+                                anchors.fill: parent
                                 visible: card.modelData === "suntimes"
+                                Column {
+                                    anchors.centerIn: parent
+                                    width: parent.width - 20
+                                    spacing: 4  // reduced from 4 to bring rows closer
 
-                                RowLayout {
-                                    spacing: 5
-                                    Layout.fillWidth: true
-                                    Text {
-                                        visible: root.iconTheme === "wi-font" && wiFont.status === FontLoader.Ready
-                                        text: "\uF051"
-                                        font.family: wiFont.font.family
-                                        font.pixelSize: root.iconSize
-                                        color: root.accentGold
+                                    // Row 1: prefix icon + dim label
+                                    RowLayout {
+                                        width: parent.width
+                                        spacing: 5
+
+                                        Text {
+                                            visible: root.iconTheme === "wi-font" && wiFont.status === FontLoader.Ready
+                                            text: "\uF051"
+                                            font.family: wiFont.font.family
+                                            font.pixelSize: root.iconSize
+                                            color: root.accentGold
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Kirigami.Icon {
+                                            visible: root.iconTheme !== "wi-font"
+                                            source: root.iconTheme === "kde" ? "weather-sunrise" : root.svgIconUrl("wi-sunrise.svg")
+                                            isMask: root.iconTheme === "symbolic"
+                                            color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
+                                            implicitWidth: root.iconSize
+                                            implicitHeight: root.iconSize
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Label {
+                                            text: root.labelFor("suntimes")
+                                            color: Kirigami.Theme.textColor
+                                            opacity: 0.55
+                                            font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
                                     }
-                                    Kirigami.Icon {
-                                        visible: root.iconTheme !== "wi-font"
-                                        source: root.iconTheme === "kde" ? "weather-sunrise" : root.svgIconUrl("wi-sunrise.svg")
-                                        isMask: root.iconTheme === "symbolic"
-                                        color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
-                                        implicitWidth: root.iconSize
-                                        implicitHeight: root.iconSize
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
-                                    Label {
-                                        text: root.labelFor("suntimes")
-                                        color: Kirigami.Theme.textColor
-                                        opacity: 0.55
-                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
-                                        Layout.fillWidth: true
+
+                                    // Row 2: sunrise  |  sunset
+                                    RowLayout {
+                                        width: parent.width
+                                        spacing: 10   // small gap between items (adjust as desired)
+
+                                        // Sunrise icon (wi‑font)
+                                        Text {
+                                            visible: wiFont.status === FontLoader.Ready
+                                            text: "\uF051"
+                                            font.family: wiFont.font.family
+                                            font.pixelSize: Math.round(root.iconSize * 0.7)
+                                            color: root.accentGold
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 2   // tiny left margin from card edge
+                                        }
+                                        // Fallback sunrise icon (SVG) – scaled
+                                        Kirigami.Icon {
+                                            visible: wiFont.status !== FontLoader.Ready
+                                            source: root.iconTheme === "kde" ? "weather-sunrise" : root.svgIconUrl("wi-sunrise.svg")
+                                            isMask: root.iconTheme === "symbolic"
+                                            color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
+                                            implicitWidth: Math.round(root.iconSize * 0.7)   // ✅ match scaled size
+                                            implicitHeight: Math.round(root.iconSize * 0.7)
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 2
+                                        }
+
+                                        // Sunrise time
+                                        Label {
+                                            text: weatherRoot ? weatherRoot.formatTimeForDisplay(weatherRoot.sunriseTimeText) : "--"
+                                            color: root.accentGold
+                                            font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
+                                                bold: true
+                                            })
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+
+                                        // Separator between sunrise and sunset
+                                        Rectangle {
+                                            width: 1
+                                            height: root.iconSize
+                                            color: Kirigami.Theme.textColor
+                                            opacity: 0.25
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 10
+                                            Layout.rightMargin: 10
+                                        }
+
+                                        // Sunset icon (wi‑font)
+                                        Text {
+                                            visible: wiFont.status === FontLoader.Ready
+                                            text: "\uF052"
+                                            font.family: wiFont.font.family
+                                            font.pixelSize: Math.round(root.iconSize * 0.7)
+                                            color: root.accentOrange
+                                            Layout.alignment: Qt.AlignVCenter          // ✅ added
+                                        }
+                                        // Fallback sunset icon (SVG) – scaled
+                                        Kirigami.Icon {
+                                            visible: wiFont.status !== FontLoader.Ready
+                                            source: root.iconTheme === "kde" ? "weather-sunset" : root.svgIconUrl("wi-sunset.svg")
+                                            isMask: root.iconTheme === "symbolic"
+                                            color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
+                                            implicitWidth: Math.round(root.iconSize * 0.7)   // ✅ match scaled size
+                                            implicitHeight: Math.round(root.iconSize * 0.7)
+                                            Layout.alignment: Qt.AlignVCenter          // ✅ added
+                                        }
+
+                                        // Sunset time
+                                        Label {
+                                            text: weatherRoot ? weatherRoot.formatTimeForDisplay(weatherRoot.sunsetTimeText) : "--"
+                                            color: root.accentOrange
+                                            font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
+                                                bold: true
+                                            })
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        // Absorb leftover space so items stay packed left
+                                        Item {
+                                            Layout.fillWidth: true
+                                        }
                                     }
                                 }
-                                RowLayout {
-                                    spacing: 6
-                                    Layout.fillWidth: true
-                                    // Sunrise glyph
-                                    Text {
-                                        visible: wiFont.status === FontLoader.Ready
-                                        text: "\uF051"
-                                        font.family: wiFont.font.family
-                                        font.pixelSize: Math.round(root.iconSize * 0.6)
-                                        color: root.accentGold
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-                                    // Fallback SVG sunrise icon (if font not loaded)
-                                    Kirigami.Icon {
-                                        visible: wiFont.status !== FontLoader.Ready
-                                        source: root.iconTheme === "kde" ? "weather-sunrise" : root.svgIconUrl("wi-sunrise.svg")
-                                        isMask: root.iconTheme === "symbolic"
-                                        color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
-                                        implicitWidth: Math.round(root.iconSize * 0.6)
-                                        implicitHeight: Math.round(root.iconSize * 0.6)
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
-                                    Label {
-                                        text: weatherRoot ? weatherRoot.formatTimeForDisplay(weatherRoot.sunriseTimeText) : "--"
-                                        color: root.accentGold
-                                        font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
-                                            bold: true
-                                        })
-                                    }
-                                    Rectangle {
-                                        width: 1
-                                        height: root.iconSize
-                                        color: Kirigami.Theme.textColor
-                                        opacity: 0.2
-                                        Layout.alignment: Qt.AlignVCenter
-                                        Layout.leftMargin: 2
-                                        Layout.rightMargin: 2
-                                    }
-                                    // Sunset glyph
-                                    Text {
-                                        visible: wiFont.status === FontLoader.Ready
-                                        text: "\uF052"
-                                        font.family: wiFont.font.family
-                                        font.pixelSize: Math.round(root.iconSize * 0.6)
-                                        color: root.accentOrange
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-                                    // Fallback SVG sunset icon
-                                    Kirigami.Icon {
-                                        visible: wiFont.status !== FontLoader.Ready
-                                        source: root.iconTheme === "kde" ? "weather-sunset" : root.svgIconUrl("wi-sunset.svg")
-                                        isMask: root.iconTheme === "symbolic"
-                                        color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
-                                        implicitWidth: Math.round(root.iconSize * 0.6)
-                                        implicitHeight: Math.round(root.iconSize * 0.6)
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
-                                    Label {
-                                        text: weatherRoot ? weatherRoot.formatTimeForDisplay(weatherRoot.sunsetTimeText) : "--"
-                                        color: root.accentOrange
-                                        font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
-                                            bold: true
-                                        })
-                                    }
-                                    Item {
-                                        Layout.fillWidth: true
-                                    }
-                                }
-                            } // ColumnLayout (suntimes)
+                            } // Item (suntimes)
 
                             // ═══════════════════════════════════════════════════
-                            // Moon Phase: header row  +  glyph + phase name
+                            // Moon Phase: [icon  Moon Phase] / [glyph  phase name]
                             // ═══════════════════════════════════════════════════
-                            ColumnLayout {
-                                anchors {
-                                    fill: parent
-                                    leftMargin: 10
-                                    rightMargin: 10
-                                    topMargin: 6
-                                    bottomMargin: 6
-                                }
-                                spacing: 4
+                            Item {
+                                anchors.fill: parent
                                 visible: card.modelData === "moonphase"
+                                Column {
+                                    anchors.centerIn: parent
+                                    width: parent.width - 20          // consistent 10px padding on each side
+                                    spacing: 2                        // small gap between the two rows
 
-                                RowLayout {
-                                    spacing: 5
-                                    Layout.fillWidth: true
-                                    Text {
-                                        visible: root.iconTheme === "wi-font" && wiFont.status === FontLoader.Ready
-                                        text: "\uF0D0"
-                                        font.family: wiFont.font.family
-                                        font.pixelSize: root.iconSize
-                                        color: root.accentViolet
+                                    // Row 1: prefix icon + dim label
+                                    RowLayout {
+                                        width: parent.width
+                                        spacing: 5
+
+                                        Text {
+                                            visible: root.iconTheme === "wi-font" && wiFont.status === FontLoader.Ready
+                                            text: "\uF0D0"            // moon phase glyph (header)
+                                            font.family: wiFont.font.family
+                                            font.pixelSize: root.iconSize
+                                            color: root.accentViolet
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 7
+                                        }
+                                        Kirigami.Icon {
+                                            visible: root.iconTheme !== "wi-font"
+                                            source: root.iconTheme === "kde" ? "weather-clear-night" : root.svgIconUrl("wi-moon-alt-waxing-gibbous-2.svg")
+                                            isMask: root.iconTheme === "symbolic"
+                                            color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
+                                            implicitWidth: Math.round(root.iconSize * 0.7)
+                                            implicitHeight: Math.round(root.iconSize * 0.7)
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 7
+                                        }
+                                        Label {
+                                            text: root.labelFor("moonphase")
+                                            color: Kirigami.Theme.textColor
+                                            opacity: 0.55
+                                            font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 7
+                                        }
                                     }
-                                    Kirigami.Icon {
-                                        visible: root.iconTheme !== "wi-font"
-                                        source: root.iconTheme === "kde" ? "weather-clear-night" : root.svgIconUrl("wi-moon-full.svg")
-                                        isMask: root.iconTheme === "symbolic"
-                                        color: root.iconTheme === "symbolic" ? Kirigami.Theme.textColor : "transparent"
-                                        implicitWidth: Math.round(root.iconSize * 0.6)
-                                        implicitHeight: Math.round(root.iconSize * 0.6)
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
-                                    Label {
-                                        text: root.labelFor("moonphase")
-                                        color: Kirigami.Theme.textColor
-                                        opacity: 0.55
-                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
-                                        Layout.fillWidth: true
+
+                                    // Row 2: moon phase icon + phase name (like sunrise/sunset row)
+                                    RowLayout {
+                                        width: parent.width
+                                        spacing: 4
+
+                                        // Moon phase icon – smaller (70% of base icon size)
+                                        Text {
+                                            visible: wiFont.status === FontLoader.Ready
+                                            text: Moon.moonPhaseFontIcon()
+                                            font.family: wiFont.font.family
+                                            font.pixelSize: Math.round(root.iconSize * 0.7)
+                                            color: root.accentViolet
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 10  // left margin from card edge
+                                        }
+                                        // Fallback SVG icon (when font not ready)
+                                        Kirigami.Icon {
+                                            visible: wiFont.status !== FontLoader.Ready
+                                            source: weatherRoot ? weatherRoot.moonPhaseSvgUrl() : "weather-clear-night"
+                                            isMask: true
+                                            color: root.accentViolet
+                                            implicitWidth: Math.round(root.iconSize * 0.7)
+                                            implicitHeight: Math.round(root.iconSize * 0.7)
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 10
+                                        }
+
+                                        // Moon phase name label (takes remaining width)
+                                        Label {
+                                            text: weatherRoot ? weatherRoot.moonPhaseLabel() : "--"
+                                            color: root.accentViolet
+                                            font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
+                                                bold: true
+                                            })
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Layout.leftMargin: 10    // optional left margin
+                                        }
                                     }
                                 }
-
-                                // Moon phase glyph + name row
-                                RowLayout {
-                                    spacing: 6
-                                    Layout.fillWidth: true
-                                    Text {
-                                        visible: wiFont.status === FontLoader.Ready
-                                        text: Moon.moonPhaseGlyph()
-                                        font.family: wiFont.font.family
-                                        font.pixelSize: Math.round(root.iconSize * 0.6)
-                                        color: root.accentViolet
-                                        verticalAlignment: Text.AlignVCenter
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
-                                    Kirigami.Icon {
-                                        visible: wiFont.status !== FontLoader.Ready
-                                        source: weatherRoot ? weatherRoot.moonPhaseSvgUrl() : "weather-clear-night"
-                                        isMask: true
-                                        color: root.accentViolet
-                                        implicitWidth: Math.round(root.iconSize * 0.6)
-                                        implicitHeight: Math.round(root.iconSize * 0.6)
-                                        Layout.alignment: Qt.AlignVCenter
-                                    }
-                                    Label {
-                                        text: weatherRoot ? weatherRoot.moonPhaseLabel() : "--"
-                                        color: root.accentViolet
-                                        font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
-                                            bold: true
-                                        })
-                                        wrapMode: Text.WordWrap
-                                        Layout.fillWidth: true
-                                    }
-                                }
-                            } // ColumnLayout (moonphase)
+                            } // Item (moonphase)
 
                         } // Rectangle (card)
                     } // Repeater (items)

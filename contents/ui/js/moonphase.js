@@ -35,18 +35,34 @@ function moonPhaseGlyph(age) {
  */
 function moonPhaseSvgStem(age) {
     var a = (age !== undefined) ? age : getMoonAge();
-    if (a < 1.85)  return "moon-new";
-    if (a < 5.0)   return "moon-waxing-crescent-2";
-    if (a < 7.38)  return "moon-waxing-crescent-5";
-    if (a < 9.23)  return "moon-first-quarter";
-    if (a < 12.0)  return "moon-waxing-gibbous-3";
-    if (a < 14.77) return "moon-waxing-gibbous-6";
-    if (a < 16.62) return "moon-full";
-    if (a < 19.0)  return "moon-waning-gibbous-3";
-    if (a < 22.15) return "moon-waning-gibbous-6";
-    if (a < 24.0)  return "moon-third-quarter";
-    if (a < 26.5)  return "moon-waning-crescent-3";
-    return "moon-waning-crescent-6";
+    if (a < 1.85)  return "moon-alt-new";
+    if (a < 5.0)   return "moon-alt-waxing-crescent-2";
+    if (a < 7.38)  return "moon-alt-waxing-crescent-5";
+    if (a < 9.23)  return "moon-alt-first-quarter";
+    if (a < 12.0)  return "moon-alt-waxing-gibbous-3";
+    if (a < 14.77) return "moon-alt-waxing-gibbous-6";
+    if (a < 16.62) return "moon-alt-full";
+    if (a < 19.0)  return "moon-alt-waning-gibbous-3";
+    if (a < 22.15) return "moon-alt-waning-gibbous-6";
+    if (a < 24.0)  return "moon-alt-third-quarter";
+    if (a < 26.5)  return "moon-alt-waning-crescent-3";
+    return "moon-alt-waning-crescent-6";
+}
+
+function moonPhaseFontIcon(age) {
+    var a = (age !== undefined) ? age : getMoonAge();
+    if (a < 1.85)  return "\uF0EB";  // moon-alt-new
+    if (a < 5.0)   return "\uF0D2";  // moon-alt-waxing-crescent-2
+    if (a < 7.38)  return "\uF0D5";  // moon-alt-waxing-crescent-5
+    if (a < 9.23)  return "\uF0D6";  // moon-alt-first-quarter
+    if (a < 12.0)  return "\uF0DA";  // moon-alt-waxing-gibbous-3
+    if (a < 14.77) return "\uF0DC";  // moon-alt-waxing-gibbous-6
+    if (a < 16.62) return "\uF0DD";  // moon-alt-full
+    if (a < 19.0)  return "\uF0E1";  // moon-alt-waning-gibbous-3
+    if (a < 22.15) return "\uF0E3";  // moon-alt-waning-gibbous-6
+    if (a < 24.0)  return "\uF0E4";  // moon-alt-third-quarter
+    if (a < 26.5)  return "\uF0E6";  // moon-alt-waning-crescent-3
+    return "\uF0E9";                 // moon-alt-waning-crescent-6
 }
 
 /**
@@ -61,6 +77,6 @@ function moonPhaseNameKey(age) {
     if (a < 14.77) return "Waxing Gibbous";
     if (a < 16.62) return "Full Moon";
     if (a < 22.15) return "Waning Gibbous";
-    if (a < 24.0)  return "Third Quarter";
+    if (a < 24.0)  return "Last Quarter";
     return "Waning Crescent";
 }

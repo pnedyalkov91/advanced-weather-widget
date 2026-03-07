@@ -22,8 +22,15 @@
         "Role": "Author, design, development and Bulgarian translation"
       }
     ],
+        "Translators": [
+      {
+        "Name": "HolySoap",
+        "Website": "https://github.com/HolySoap",
+        "Task": "German"
+      }
+    ],
 
-    "Version": "1.1.0",
+    "Version": "1.1.1",
     "Website": "https://github.com/pnedyalkov91/advanced-weather-widget",
     "BugReportUrl": "https://github.com/pnedyalkov91/advanced-weather-widget/issues"
   },

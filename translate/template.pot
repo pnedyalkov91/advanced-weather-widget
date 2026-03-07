@@ -1,32 +1,171 @@
-# Advanced Weather Widget — Translatable strings
-# Copyright (C) 2026
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the Advanced Weather Widget package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: advanced-weather-widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget\n"
-"POT-Creation-Date: 2026-02-27 17:01-0000\n"
-"PO-Revision-Date: 2026-03-05 17:01-0000\n"
+"Project-Id-Version: Advanced Weather Widget\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+"POT-Creation-Date: 2026-03-06 14:13+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: \n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: contents/config/config.qml:6
-msgid "Location"
+#: contents/ui/configAppearance.qml:1669
+msgctxt "@info %1 size %2 family"
+msgid "%1pt %2"
 msgstr ""
 
-#: contents/config/config.qml:11
-msgid "General"
+#: contents/ui/configAppearance.qml:1499
+msgid "0 = auto (120 px per chip). Increase if values are truncated."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1499
+msgid "0 = auto. Increase if items are cut off."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1703 contents/ui/configAppearance.qml:1880
+#: contents/ui/configAppearance.qml:2093
+msgid "3D Oxygen (SVG)"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:87
+msgid "Adaptive (auto-fallback)"
+msgstr ""
+
+#: contents/ui/CompactView.qml:613
+msgid "Add a location"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:134
+msgid "Alternative provider. API key required below."
+msgstr ""
+
+#: contents/ui/configLocation.qml:683
+msgid "Altitude:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1453
+msgid "Animate row scrolling"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:762
+msgid "Apparent (feels-like) temperature"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:802 contents/ui/configAppearance.qml:876
+msgid "Apparent temperature"
 msgstr ""
 
 #: contents/config/config.qml:17
 msgid "Appearance"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2449 contents/ui/configAppearance.qml:2894
+#: contents/ui/configAppearance.qml:3177
+msgid "Apply Settings?"
+msgstr ""
+
+#: contents/ui/configLocation.qml:535
+msgid "Apply detected location"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:776 contents/ui/configAppearance.qml:816
+#: contents/ui/configAppearance.qml:897
+msgid "Atmospheric pressure"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1346 contents/ui/configAppearance.qml:1394
+#: contents/ui/configAppearance.qml:1950
+msgid "Auto"
+msgstr ""
+
+#: contents/ui/configLocation.qml:372
+msgid "Auto-detected via GeoClue2."
+msgstr ""
+
+#: contents/ui/configLocation.qml:373
+msgid "Auto-detection updated coordinates."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1636
+msgid "Automatic"
+msgstr ""
+
+#: contents/ui/configLocation.qml:571
+msgid "Automatically detect location"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2536 contents/ui/configAppearance.qml:3263
+msgid "Available"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2494 contents/ui/configAppearance.qml:2937
+#: contents/ui/configAppearance.qml:3222 contents/ui/configLocation.qml:731
+msgid "Back"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:471 contents/ui/configAppearance.qml:2766
+#: contents/ui/configAppearance.qml:3485
+msgid "Both  07:17 / 18:03"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:305 contents/ui/configAppearance.qml:423
+#: contents/ui/configAppearance.qml:520 contents/ui/configAppearance.qml:561
+msgid "Browse…"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1516
+msgid "Bullet  •"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2809 contents/ui/configAppearance.qml:3126
+#: contents/ui/configAppearance.qml:3529
+msgid "Button guide"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:353 contents/ui/configAppearance.qml:2478
+#: contents/ui/configAppearance.qml:2922 contents/ui/configAppearance.qml:3206
+msgid "Cancel"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1942
+msgid "Cards height:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2337
+msgid "Celsius (°C)"
+msgstr ""
+
+#: contents/ui/configLocation.qml:607
+msgid "Change Location"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1654
+msgctxt "@action:button"
+msgid "Choose Style…"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1596
+msgid "Choose a Panel Font"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2843 contents/ui/configAppearance.qml:3558
+msgid "Choose a custom icon for this item"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:783
+msgid "City / location name"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:183
+msgid "Clear"
 msgstr ""
 
 #: contents/ui/configAppearance.qml:97
@@ -37,6 +176,631 @@ msgstr ""
 msgid "Clear (night)"
 msgstr ""
 
+#: contents/ui/main.qml:236 contents/ui/test.qml:236
+msgid "Clear night"
+msgstr ""
+
+#: contents/ui/main.qml:236 contents/ui/test.qml:236
+msgid "Clear sky"
+msgstr ""
+
+#: contents/ui/configLocation.qml:604
+msgid "Click 'Change Location' to search and set your location manually."
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:177
+msgid "Click to configure a location"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1316
+msgid "Colorful"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1467
+msgid "Colorful (KDE color icons)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1262
+msgid "Compressed"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:732 contents/ui/configAppearance.qml:868
+#: contents/ui/DetailsView.qml:135
+msgid "Condition"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:207
+msgid "Condition Icons"
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:352
+msgid "Condition:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:384
+msgid "Configure icon — %1"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2679 contents/ui/configAppearance.qml:3403
+msgid "Configure icon…"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1823 contents/ui/configAppearance.qml:2018
+#: contents/ui/configAppearance.qml:2217
+msgid "Configure…"
+msgstr ""
+
+#: contents/ui/configLocation.qml:500
+msgid "Confirm your location"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:790 contents/ui/configAppearance.qml:851
+#: contents/ui/configAppearance.qml:911
+msgid "Current moon phase"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:740 contents/ui/configAppearance.qml:862
+msgid "Current temperature"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1707 contents/ui/configAppearance.qml:2097
+msgid "Custom"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2272
+msgid "Custom (set each unit manually)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:234
+msgid "Custom per-condition icons"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1536
+msgid "Custom…"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1524
+msgid "Dash  –"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:205
+msgid "Data Refresh"
+msgstr ""
+
+#: contents/ui/FullView.qml:300
+msgid "Details"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2948
+msgid "Details Items"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1983
+msgid "Details items:"
+msgstr ""
+
+#: contents/ui/FullView.qml:141
+msgid "Detect / change location…"
+msgstr ""
+
+#: contents/ui/configLocation.qml:580
+msgid "Detecting…"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:836 contents/ui/DetailsView.qml:132
+msgid "Dew Point"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:837
+msgid "Dew point temperature"
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:379
+msgid "Dew point:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2718 contents/ui/configAppearance.qml:3442
+msgid "Disable item"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2043
+msgid "Disabled"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2468 contents/ui/configAppearance.qml:2913
+#: contents/ui/configAppearance.qml:3196
+msgid "Discard"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2233
+msgid "Display"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:457 contents/ui/configAppearance.qml:1209
+msgid "Display mode:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2827 contents/ui/configAppearance.qml:3544
+msgid "Drag to reorder enabled items"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:3141
+msgid "Drag to reorder shown items"
+msgstr ""
+
+#: contents/ui/main.qml:250 contents/ui/test.qml:250
+msgid "Drizzle"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2718 contents/ui/configAppearance.qml:3442
+msgid "Enable item"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:3584
+msgid "Enable or disable this item"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2873
+msgid "Enable or disable this item on the panel"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2043 contents/ui/configAppearance.qml:2536
+#: contents/ui/configAppearance.qml:3263
+msgid "Enabled"
+msgstr ""
+
+#: contents/ui/configLocation.qml:732 contents/ui/configLocation.qml:741
+msgid "Enter Location"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:162
+msgid "Enter your OpenWeatherMap API key"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:163
+msgid "Enter your WeatherAPI.com key"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1584
+msgid "Expand widget to fill available panel width"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2341
+msgid "Fahrenheit (°F)"
+msgstr ""
+
+#: contents/ui/WeatherService.qml:136
+msgid "Failed: %1"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:761 contents/ui/configAppearance.qml:801
+#: contents/ui/configAppearance.qml:875 contents/ui/DetailsView.qml:127
+msgid "Feels Like"
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:348
+msgid "Feels like:"
+msgstr ""
+
+#: contents/ui/FullView.qml:212
+msgid "Feels like: %1"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1583
+msgid "Fill panel:"
+msgstr ""
+
+#: contents/ui/main.qml:387 contents/ui/test.qml:384
+msgid "First Quarter"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1699 contents/ui/configAppearance.qml:1876
+#: contents/ui/configAppearance.qml:2089
+msgid "Flat Color (SVG)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:122 contents/ui/main.qml:244
+#: contents/ui/test.qml:244
+msgid "Fog"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1691 contents/ui/configAppearance.qml:2081
+msgid "Font icons (default)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1386
+msgid "Font size:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1850
+msgid "Footer:"
+msgstr ""
+
+#: contents/ui/FullView.qml:300
+msgid "Forecast"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1843
+msgid "Forecast days:"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:135
+msgid "Free Norwegian Meteorological Institute service. No API key needed."
+msgstr ""
+
+#: contents/ui/configGeneral.qml:136
+msgid "Free and open-source. No API key needed. Recommended."
+msgstr ""
+
+#: contents/ui/main.qml:256 contents/ui/test.qml:256
+msgid "Freezing drizzle"
+msgstr ""
+
+#: contents/ui/main.qml:266 contents/ui/test.qml:266
+msgid "Freezing rain"
+msgstr ""
+
+#: contents/ui/main.qml:391 contents/ui/test.qml:386
+msgid "Full Moon"
+msgstr ""
+
+#: contents/config/config.qml:11
+msgid "General"
+msgstr ""
+
+#: contents/ui/configLocation.qml:491
+msgid "GeoClue2 error while retrieving location."
+msgstr ""
+
+#: contents/ui/configLocation.qml:383
+msgid "GeoClue2 location unavailable on this system."
+msgstr ""
+
+#: contents/ui/main.qml:252 contents/ui/test.qml:252
+msgid "Heavy drizzle"
+msgstr ""
+
+#: contents/ui/main.qml:262 contents/ui/test.qml:262
+msgid "Heavy rain"
+msgstr ""
+
+#: contents/ui/main.qml:280 contents/ui/test.qml:280
+msgid "Heavy showers"
+msgstr ""
+
+#: contents/ui/main.qml:272 contents/ui/test.qml:272
+msgid "Heavy snow"
+msgstr ""
+
+#: contents/ui/main.qml:290 contents/ui/test.qml:290
+msgid "Heavy thunderstorm with hail"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2978
+msgid "Hidden"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:3083
+msgid "Hide from details"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2706 contents/ui/configAppearance.qml:3430
+msgid "Hide prefix icon"
+msgstr ""
+
+#: contents/ui/FullView.qml:242
+msgid "High"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1254
+msgid "Horizontal"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1437
+msgid "How often the rows scroll to reveal the next item"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:768 contents/ui/configAppearance.qml:808
+#: contents/ui/configAppearance.qml:889 contents/ui/DetailsView.qml:128
+msgid "Humidity"
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:371
+msgid "Humidity:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1287
+msgid "Icon first"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1338 contents/ui/configAppearance.qml:1902
+msgid "Icon size:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:223
+msgid "Icon source:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1683 contents/ui/configAppearance.qml:1864
+#: contents/ui/configAppearance.qml:2072
+msgid "Icon theme:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:401
+msgid "Icon:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2065
+msgid "Icons"
+msgstr ""
+
+#: contents/ui/configLocation.qml:525
+msgid "If this looks correct, apply it. Otherwise, choose your location manually."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2264
+msgid "Imperial (°F, mph, inHg, in)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2424
+msgid ""
+"Individual dropdowns are editable only in Custom mode.\n"
+"Other presets set units automatically."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2326
+msgid "Individual units"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:225
+msgid "Interval:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1568
+msgid "Item spacing:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1486
+msgid "Item width:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1279
+msgid "Items Order:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:229
+msgid "KDE System Icons (automatic, follows weather code)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2460 contents/ui/configAppearance.qml:2905
+#: contents/ui/configAppearance.qml:3188
+msgid "Keep Changes"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2900
+msgid "Keep the changes you made to Details Items?"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2455
+msgid "Keep the changes you made to Panel Items?"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:3183
+msgid "Keep the changes you made to Tooltip Items?"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2376
+msgid "Knots (kn)"
+msgstr ""
+
+#: contents/ui/main.qml:395
+msgid "Last Quarter"
+msgstr ""
+
+#: contents/ui/configLocation.qml:649
+msgid "Latitude:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1246
+msgid "Layout type:"
+msgstr ""
+
+#: contents/ui/main.qml:248 contents/ui/test.qml:248
+msgid "Light drizzle"
+msgstr ""
+
+#: contents/ui/main.qml:254 contents/ui/test.qml:254
+msgid "Light freezing drizzle"
+msgstr ""
+
+#: contents/ui/main.qml:264 contents/ui/test.qml:264
+msgid "Light freezing rain"
+msgstr ""
+
+#: contents/ui/main.qml:258 contents/ui/test.qml:258
+msgid "Light rain"
+msgstr ""
+
+#: contents/ui/main.qml:276 contents/ui/test.qml:276
+msgid "Light showers"
+msgstr ""
+
+#: contents/ui/main.qml:268 contents/ui/test.qml:268
+msgid "Light snow"
+msgstr ""
+
+#: contents/ui/main.qml:282 contents/ui/test.qml:282
+msgid "Light snow showers"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1441
+msgid "Lines:"
+msgstr ""
+
+#: contents/ui/DetailsView.qml:204
+msgid "Loading details…"
+msgstr ""
+
+#: contents/ui/ForecastView.qml:43
+msgid "Loading forecast…"
+msgstr ""
+
+#: contents/ui/ForecastView.qml:214
+msgid "Loading hourly data…"
+msgstr ""
+
+#: contents/ui/configLocation.qml:786
+msgid "Loading locations…"
+msgstr ""
+
+#: contents/config/config.qml:6
+msgid "Location"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:782
+msgid "Location Name"
+msgstr ""
+
+#: contents/ui/configLocation.qml:582
+msgid "Location detection is depending on system configuration and permissions."
+msgstr ""
+
+#: contents/ui/configLocation.qml:619
+msgid "Location information"
+msgstr ""
+
+#: contents/ui/configLocation.qml:636
+msgid "Location name:"
+msgstr ""
+
+#: contents/ui/configLocation.qml:736
+msgid "Location:"
+msgstr ""
+
+#: contents/ui/configLocation.qml:666
+msgid "Longitude:"
+msgstr ""
+
+#: contents/ui/FullView.qml:263
+msgid "Low"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1459
+msgid "Main icon style:"
+msgstr ""
+
+#: contents/ui/main.qml:238 contents/ui/test.qml:238
+msgid "Mainly clear"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1350 contents/ui/configAppearance.qml:1398
+#: contents/ui/configAppearance.qml:1636 contents/ui/configAppearance.qml:1954
+msgid "Manual"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2260
+msgid "Metric (°C, km/h, hPa, mm)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1180
+msgid "Misc"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:789 contents/ui/configAppearance.qml:850
+#: contents/ui/configAppearance.qml:910 contents/ui/DetailsView.qml:134
+msgid "Moon Phase"
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:388
+msgid "Moon:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1217
+msgid "Multiple lines (tall panel)"
+msgstr ""
+
+#: contents/ui/main.qml:383 contents/ui/test.qml:382
+msgid "New Moon"
+msgstr ""
+
+#: contents/ui/DetailsView.qml:204
+msgid "No details data"
+msgstr ""
+
+#: contents/ui/ForecastView.qml:43
+msgid "No forecast data"
+msgstr ""
+
+#: contents/ui/FullView.qml:79
+msgid "No location set"
+msgstr ""
+
+#: contents/ui/configLocation.qml:789
+msgid "No weather stations found for '%1'"
+msgstr ""
+
+#: contents/ui/configLocation.qml:136
+msgid "None Selected"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1673
+msgid "Note: size may be reduced if the panel is not thick enough."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1447
+msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:345
+msgid "OK"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:31
+msgid "Open-Meteo (recommended, free)"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:33
+msgid "OpenWeatherMap (Key Required)"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:150
+msgid "OpenWeatherMap API Key:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:117 contents/ui/main.qml:242
+#: contents/ui/test.qml:242
+msgid "Overcast"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1168
+msgid "Panel"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2506
+msgid "Panel Items"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1204
+msgid "Panel display settings"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1616
+msgid "Panel font:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1590
+msgid "Panel items settings"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1788
+msgid "Panel items:"
+msgstr ""
+
+#: contents/ui/main.qml:240 contents/ui/main.qml:292 contents/ui/test.qml:240
+#: contents/ui/test.qml:292
+msgid "Partly cloudy"
+msgstr ""
+
 #: contents/ui/configAppearance.qml:107
 msgid "Partly cloudy (day)"
 msgstr ""
@@ -45,51 +809,57 @@ msgstr ""
 msgid "Partly cloudy (night)"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:117 contents/ui/main.qml:242
-msgid "Overcast"
+#: contents/ui/configAppearance.qml:1520
+msgid "Pipe  |"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:122 contents/ui/main.qml:244
-msgid "Fog"
+#: contents/ui/configAppearance.qml:2057
+msgid "Prefix style:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:775 contents/ui/configAppearance.qml:815
+#: contents/ui/configAppearance.qml:896 contents/ui/DetailsView.qml:129
+msgid "Pressure"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2393 contents/ui/TooltipContent.qml:375
+msgid "Pressure:"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:114
+msgid "Provider:"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:103
+msgid ""
+"Providers are tried in order until one succeeds:\n"
+"Open-Meteo  →  met.no  →  OpenWeatherMap  →  WeatherAPI.com\n"
+"Open-Meteo is always tried first — it is free and requires no API key."
 msgstr ""
 
 #: contents/ui/configAppearance.qml:127 contents/ui/main.qml:260
+#: contents/ui/test.qml:260
 msgid "Rain"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:132 contents/ui/main.qml:270
-msgid "Snow"
+#: contents/ui/configLocation.qml:585 contents/ui/FullView.qml:164
+msgid "Refresh"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:137
-msgid "Storm / Thunderstorm"
+#: contents/ui/configGeneral.qml:215
+msgid "Refresh weather automatically"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:207
-msgid "Condition Icons"
+#: contents/ui/configAppearance.qml:809 contents/ui/configAppearance.qml:890
+msgid "Relative humidity %"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:223
-msgid "Icon source:"
+#: contents/ui/configAppearance.qml:769
+msgid "Relative humidity percentage"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:229
-msgid "KDE System Icons (automatic, follows weather code)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:234
-msgid "Custom per-condition icons"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:248
-msgid ""
-"The condition icon will automatically reflect the current weather using your "
-"KDE system icon theme. No customisation is needed."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:305 contents/ui/configAppearance.qml:423
-#: contents/ui/configAppearance.qml:520 contents/ui/configAppearance.qml:561
-msgid "Browse…"
+#: contents/ui/configLocation.qml:381
+msgid "Requesting location from GeoClue2…"
 msgstr ""
 
 #: contents/ui/configAppearance.qml:315 contents/ui/configAppearance.qml:530
@@ -101,210 +871,80 @@ msgstr ""
 msgid "Reset All to Defaults"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:345
-msgid "OK"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:353 contents/ui/configAppearance.qml:2478
-#: contents/ui/configAppearance.qml:2922 contents/ui/configAppearance.qml:3206
-msgid "Cancel"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:384
-msgid "Configure icon — %1"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:401
-msgid "Icon:"
-msgstr ""
-
 #: contents/ui/configAppearance.qml:437
 msgid "Reset to default"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:457 contents/ui/configAppearance.qml:1209
-msgid "Display mode:"
+#: contents/ui/main.qml:246 contents/ui/test.qml:246
+msgid "Rime fog"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:467 contents/ui/configAppearance.qml:2762
-#: contents/ui/configAppearance.qml:3489
-msgid "Upcoming (next sunrise or sunset)"
+#: contents/ui/configAppearance.qml:2237
+msgid "Round values:"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:471 contents/ui/configAppearance.qml:2766
-#: contents/ui/configAppearance.qml:3485
-msgid "Both  07:17 / 18:03"
+#: contents/ui/configAppearance.qml:1451
+msgid "Scroll animation:"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:475 contents/ui/configAppearance.qml:2770
-#: contents/ui/configAppearance.qml:3493
-msgid "Sunrise only  07:17"
+#: contents/ui/configAppearance.qml:1431
+msgid "Scroll interval (sec):"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:479 contents/ui/configAppearance.qml:2774
-#: contents/ui/configAppearance.qml:3497
-msgid "Sunset only   18:03"
+#: contents/ui/configLocation.qml:788
+msgid "Search a weather station to set your location"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:501
-msgid "Sunrise icon:"
+#: contents/ui/configAppearance.qml:1509
+msgid "Separator:"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:542
-msgid "Sunset icon:"
+#: contents/ui/FullView.qml:89
+msgid "Set Location…"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:732 contents/ui/configAppearance.qml:868
-#: contents/ui/Untitled-1.qml:103 contents/ui/DetailsView.qml:135
-msgid "Condition"
+#: contents/ui/configLocation.qml:533
+msgid "Set manually"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:733
-msgid "Weather icon + condition text"
+#: contents/ui/configAppearance.qml:1777 contents/ui/configAppearance.qml:2166
+msgid "Set your own icons…"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:739 contents/ui/configAppearance.qml:861
-msgid "Temperature"
+#: contents/ui/configAppearance.qml:3571
+msgid "Show / hide the prefix icon"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:740 contents/ui/configAppearance.qml:862
-msgid "Current temperature"
+#: contents/ui/configAppearance.qml:2858
+msgid "Show / hide the prefix icon on the panel"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:746 contents/ui/configAppearance.qml:829
-#: contents/ui/configAppearance.qml:903 contents/ui/Untitled-1.qml:101
-#: contents/ui/DetailsView.qml:131
-msgid "Sunrise/Sunset"
+#: contents/ui/configAppearance.qml:3083
+msgid "Show in details"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:747
-msgid "Sunrise and sunset times"
+#: contents/ui/configAppearance.qml:3154
+msgid "Show or hide this detail item"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:753 contents/ui/configAppearance.qml:822
-#: contents/ui/configAppearance.qml:882 contents/ui/Untitled-1.qml:100
-#: contents/ui/DetailsView.qml:130
-msgid "Wind"
+#: contents/ui/configAppearance.qml:2706 contents/ui/configAppearance.qml:3430
+msgid "Show prefix icon"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:754
-msgid "Wind speed and direction"
+#: contents/ui/configAppearance.qml:1851
+msgid "Show update time and provider"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:761 contents/ui/configAppearance.qml:801
-#: contents/ui/configAppearance.qml:875 contents/ui/Untitled-1.qml:99
-#: contents/ui/DetailsView.qml:127
-msgid "Feels Like"
+#: contents/ui/configGeneral.qml:178
+msgid "Show/hide key"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:762
-msgid "Apparent (feels-like) temperature"
+#: contents/ui/main.qml:278 contents/ui/test.qml:278
+msgid "Showers"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:768 contents/ui/configAppearance.qml:808
-#: contents/ui/configAppearance.qml:889 contents/ui/Untitled-1.qml:99
-#: contents/ui/DetailsView.qml:128
-msgid "Humidity"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:769
-msgid "Relative humidity percentage"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:775 contents/ui/configAppearance.qml:815
-#: contents/ui/configAppearance.qml:896 contents/ui/Untitled-1.qml:100
-#: contents/ui/DetailsView.qml:129
-msgid "Pressure"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:776 contents/ui/configAppearance.qml:816
-#: contents/ui/configAppearance.qml:897
-msgid "Atmospheric pressure"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:782
-msgid "Location Name"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:783
-msgid "City / location name"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:789 contents/ui/configAppearance.qml:850
-#: contents/ui/configAppearance.qml:910 contents/ui/Untitled-1.qml:102
-#: contents/ui/DetailsView.qml:134
-msgid "Moon Phase"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:790 contents/ui/configAppearance.qml:851
-#: contents/ui/configAppearance.qml:911
-msgid "Current moon phase"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:802 contents/ui/configAppearance.qml:876
-msgid "Apparent temperature"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:809 contents/ui/configAppearance.qml:890
-msgid "Relative humidity %"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:823 contents/ui/configAppearance.qml:883
-msgid "Wind speed + direction"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:830 contents/ui/configAppearance.qml:904
-msgid "Sun rise & set times"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:836 contents/ui/Untitled-1.qml:101
-#: contents/ui/DetailsView.qml:132
-msgid "Dew Point"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:837
-msgid "Dew point temperature"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:843 contents/ui/Untitled-1.qml:102
-#: contents/ui/DetailsView.qml:133
-msgid "Visibility"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:844
-msgid "Visibility distance"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:869
-msgid "Weather condition text"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1168
-msgid "Panel"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1172
-msgid "Widget"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1176
-msgid "Tooltip"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1180
-msgid "Misc"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1204
-msgid "Panel display settings"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1213
-msgid "Single line (all items at once)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1217
-msgid "Multiple lines (tall panel)"
+#: contents/ui/configAppearance.qml:2978
+msgid "Shown"
 msgstr ""
 
 #: contents/ui/configAppearance.qml:1221
@@ -315,769 +955,71 @@ msgstr ""
 msgid "Simple display mode settings"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:1246
-msgid "Layout type:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1254
-msgid "Horizontal"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1258
-msgid "Vertical"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1262
-msgid "Compressed"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1279
-msgid "Items Order:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1287
-msgid "Icon first"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1291
-msgid "Temperature first"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1308
-msgid "Weather icon style:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1316
-msgid "Colorful"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1320
-msgid "Symbolic"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1338 contents/ui/configAppearance.qml:1902
-msgid "Icon size:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1346 contents/ui/configAppearance.qml:1394
-#: contents/ui/configAppearance.qml:1950
-msgid "Auto"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1350 contents/ui/configAppearance.qml:1398
-#: contents/ui/configAppearance.qml:1636 contents/ui/configAppearance.qml:1954
-msgid "Manual"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1386
-msgid "Font size:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1431
-msgid "Scroll interval (sec):"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1437
-msgid "How often the rows scroll to reveal the next item"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1441
-msgid "Lines:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1447
-msgid ""
-"Number of item rows visible at once. Resize the panel height in KDE settings "
-"to match."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1451
-msgid "Scroll animation:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1453
-msgid "Animate row scrolling"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1459
-msgid "Main icon style:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1467
-msgid "Colorful (KDE color icons)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1471
-msgid "Symbolic (follows theme colour)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1486
-msgid "Item width:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1495
-msgid "px"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1499
-msgid "0 = auto. Increase if items are cut off."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1499
-msgid "0 = auto (120 px per chip). Increase if values are truncated."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1509
-msgid "Separator:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1516
-msgid "Bullet  •"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1520
-msgid "Pipe  |"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1524
-msgid "Dash  –"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1528
-msgid "Space"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1532
-msgid "Small circle  ⚬"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1536
-msgid "Custom…"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1568
-msgid "Item spacing:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1583
-msgid "Fill panel:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1584
-msgid "Expand widget to fill available panel width"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1590
-msgid "Panel items settings"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1596
-msgid "Choose a Panel Font"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1616
-msgid "Panel font:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1636
-msgid "Automatic"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1643
-msgid ""
-"Text will follow the system font and expand to fill the available space."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1654
-msgctxt "@action:button"
-msgid "Choose Style…"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1669
-msgctxt "@info %1 size %2 family"
-msgid "%1pt %2"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1673
-msgid "Note: size may be reduced if the panel is not thick enough."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1683 contents/ui/configAppearance.qml:1864
-#: contents/ui/configAppearance.qml:2072
-msgid "Icon theme:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1691 contents/ui/configAppearance.qml:2081
-msgid "Font icons (default)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1695 contents/ui/configAppearance.qml:1872
-#: contents/ui/configAppearance.qml:2085
-msgid "Symbolic (SVG)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1699 contents/ui/configAppearance.qml:1876
-#: contents/ui/configAppearance.qml:2089
-msgid "Flat Color (SVG)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1703 contents/ui/configAppearance.qml:1880
-#: contents/ui/configAppearance.qml:2093
-msgid "3D Oxygen (SVG)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1707 contents/ui/configAppearance.qml:2097
-msgid "Custom"
+#: contents/ui/configAppearance.qml:1213
+msgid "Single line (all items at once)"
 msgstr ""
 
 #: contents/ui/configAppearance.qml:1722 contents/ui/configAppearance.qml:2111
 msgid "Size:"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:1769
-msgid ""
-"Uses KDE system icons by default. Click the button to customise each item's "
-"icon."
+#: contents/ui/configAppearance.qml:1532
+msgid "Small circle  ⚬"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:1777 contents/ui/configAppearance.qml:2166
-msgid "Set your own icons…"
+#: contents/ui/configAppearance.qml:132 contents/ui/main.qml:270
+#: contents/ui/test.qml:270
+msgid "Snow"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:1788
-msgid "Panel items:"
+#: contents/ui/main.qml:274 contents/ui/test.qml:274
+msgid "Snow grains"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:1823 contents/ui/configAppearance.qml:2018
-#: contents/ui/configAppearance.qml:2217
-msgid "Configure…"
+#: contents/ui/main.qml:284 contents/ui/test.qml:284
+msgid "Snow showers"
 msgstr ""
 
-#: contents/ui/configAppearance.qml:1839
-msgid "Widget settings"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1843
-msgid "Forecast days:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1850
-msgid "Footer:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1851
-msgid "Show update time and provider"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1858
-msgid "Widget items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1942
-msgid "Cards height:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:1983
-msgid "Details items:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2035
-msgid "Tooltip:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2043 contents/ui/configAppearance.qml:2536
-#: contents/ui/configAppearance.qml:3263
-msgid "Enabled"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2043
-msgid "Disabled"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2050
-msgid "Tooltip items settings"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2057
-msgid "Prefix style:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2065
-msgid "Icons"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2065
-msgid "Text labels (Temperature, Wind…)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2158
-msgid ""
-"Uses KDE system icons by default. Click the button to customise each item’s "
-"icon."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2177
-msgid "Tooltip items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2182
-msgid "Tooltip items:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2233
-msgid "Display"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2237
-msgid "Round values:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2245
-msgid "Values are rounded to whole numbers"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2245
-msgid "Values show decimal places"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2251
-msgid "Units"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2256
-msgid "Unit preset:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2260
-msgid "Metric (°C, km/h, hPa, mm)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2264
-msgid "Imperial (°F, mph, inHg, in)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2268
-msgid "Use KDE locale settings"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2272
-msgid "Custom (set each unit manually)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2326
-msgid "Individual units"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2331 contents/ui/TooltipContent.qml:344
-msgid "Temperature:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2337
-msgid "Celsius (°C)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2341
-msgid "Fahrenheit (°F)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2358
-msgid "Wind speed:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2376
-msgid "Knots (kn)"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2393 contents/ui/TooltipContent.qml:375
-msgid "Pressure:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2424
-msgid ""
-"Individual dropdowns are editable only in Custom mode.\n"
-"Other presets set units automatically."
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2449 contents/ui/configAppearance.qml:2894
-#: contents/ui/configAppearance.qml:3177
-msgid "Apply Settings?"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2455
-msgid "Keep the changes you made to Panel Items?"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2460 contents/ui/configAppearance.qml:2905
-#: contents/ui/configAppearance.qml:3188
-msgid "Keep Changes"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2468 contents/ui/configAppearance.qml:2913
-#: contents/ui/configAppearance.qml:3196
-msgid "Discard"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2494 contents/ui/configAppearance.qml:2937
-#: contents/ui/configAppearance.qml:3222 contents/ui/configLocation.qml:731
-msgid "Back"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2506
-msgid "Panel Items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2536 contents/ui/configAppearance.qml:3263
-msgid "Available"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2667 contents/ui/configAppearance.qml:3391
-msgid "Sun times options"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2679 contents/ui/configAppearance.qml:3403
-msgid "Configure icon…"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2706 contents/ui/configAppearance.qml:3430
-msgid "Hide prefix icon"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2706 contents/ui/configAppearance.qml:3430
-msgid "Show prefix icon"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2718 contents/ui/configAppearance.qml:3442
-msgid "Disable item"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2718 contents/ui/configAppearance.qml:3442
-msgid "Enable item"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2753 contents/ui/configAppearance.qml:3477
-msgid "Sun times mode:"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2809 contents/ui/configAppearance.qml:3126
-#: contents/ui/configAppearance.qml:3529
-msgid "Button guide"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2827 contents/ui/configAppearance.qml:3544
-msgid "Drag to reorder enabled items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2843 contents/ui/configAppearance.qml:3558
-msgid "Choose a custom icon for this item"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2858
-msgid "Show / hide the prefix icon on the panel"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2873
-msgid "Enable or disable this item on the panel"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2900
-msgid "Keep the changes you made to Details Items?"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2948
-msgid "Details Items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2978
-msgid "Shown"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:2978
-msgid "Hidden"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3083
-msgid "Hide from details"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3083
-msgid "Show in details"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3141
-msgid "Drag to reorder shown items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3154
-msgid "Show or hide this detail item"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3183
-msgid "Keep the changes you made to Tooltip Items?"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3233
-msgid "Tooltip Items"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3571
-msgid "Show / hide the prefix icon"
-msgstr ""
-
-#: contents/ui/configAppearance.qml:3584
-msgid "Enable or disable this item"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:31
-msgid "Open-Meteo (recommended, free)"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:32
-msgid "met.no (free)"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:33
-msgid "OpenWeatherMap (Key Required)"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:34
-msgid "WeatherAPI.com (Key Required)"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:61
-msgid "Weather Provider"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:87
-msgid "Adaptive (auto-fallback)"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:103
-msgid ""
-"Providers are tried in order until one succeeds:\n"
-"Open-Meteo  →  met.no  →  OpenWeatherMap  →  WeatherAPI.com\n"
-"Open-Meteo is always tried first — it is free and requires no API key."
-msgstr ""
-
-#: contents/ui/configGeneral.qml:114
-msgid "Provider:"
+#: contents/ui/configAppearance.qml:1528
+msgid "Space"
 msgstr ""
 
 #: contents/ui/configGeneral.qml:133
 msgid "Standard provider. API key required below."
 msgstr ""
 
-#: contents/ui/configGeneral.qml:134
-msgid "Alternative provider. API key required below."
+#: contents/ui/configAppearance.qml:137
+msgid "Storm / Thunderstorm"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:135
-msgid "Free Norwegian Meteorological Institute service. No API key needed."
+#: contents/ui/configAppearance.qml:830 contents/ui/configAppearance.qml:904
+msgid "Sun rise & set times"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:136
-msgid "Free and open-source. No API key needed. Recommended."
+#: contents/ui/configAppearance.qml:2753 contents/ui/configAppearance.qml:3477
+msgid "Sun times mode:"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:150
-msgid "OpenWeatherMap API Key:"
+#: contents/ui/configAppearance.qml:2667 contents/ui/configAppearance.qml:3391
+msgid "Sun times options"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:150
-msgid "WeatherAPI.com API Key:"
+#: contents/ui/configAppearance.qml:747
+msgid "Sunrise and sunset times"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:162
-msgid "Enter your OpenWeatherMap API key"
+#: contents/ui/configAppearance.qml:501
+msgid "Sunrise icon:"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:163
-msgid "Enter your WeatherAPI.com key"
+#: contents/ui/configAppearance.qml:475 contents/ui/configAppearance.qml:2770
+#: contents/ui/configAppearance.qml:3493
+msgid "Sunrise only  07:17"
 msgstr ""
 
-#: contents/ui/configGeneral.qml:178
-msgid "Show/hide key"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:183
-msgid "Clear"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:205
-msgid "Data Refresh"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:215
-msgid "Refresh weather automatically"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:225
-msgid "Interval:"
-msgstr ""
-
-#: contents/ui/configGeneral.qml:231
-msgid "minutes"
-msgstr ""
-
-#: contents/ui/configLocation.qml:136
-msgid "None Selected"
-msgstr ""
-
-#: contents/ui/configLocation.qml:372
-msgid "Auto-detected via GeoClue2."
-msgstr ""
-
-#: contents/ui/configLocation.qml:373
-msgid "Auto-detection updated coordinates."
-msgstr ""
-
-#: contents/ui/configLocation.qml:381
-msgid "Requesting location from GeoClue2…"
-msgstr ""
-
-#: contents/ui/configLocation.qml:383
-msgid "GeoClue2 location unavailable on this system."
-msgstr ""
-
-#: contents/ui/configLocation.qml:470
-msgid "Unable to get valid position from GeoClue2."
-msgstr ""
-
-#: contents/ui/configLocation.qml:491
-msgid "GeoClue2 error while retrieving location."
-msgstr ""
-
-#: contents/ui/configLocation.qml:500
-msgid "Confirm your location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:519
-msgid "We detected your location as: <b>%1</b>."
-msgstr ""
-
-#: contents/ui/configLocation.qml:520
-msgid "We detected your coordinates: <b>%1°, %2°</b>."
-msgstr ""
-
-#: contents/ui/configLocation.qml:525
-msgid ""
-"If this looks correct, apply it. Otherwise, choose your location manually."
-msgstr ""
-
-#: contents/ui/configLocation.qml:533
-msgid "Set manually"
-msgstr ""
-
-#: contents/ui/configLocation.qml:535
-msgid "Apply detected location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:571
-msgid "Automatically detect location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:580
-msgid "Detecting…"
-msgstr ""
-
-#: contents/ui/configLocation.qml:582
-msgid ""
-"Location detection is depending on system configuration and permissions."
-msgstr ""
-
-#: contents/ui/configLocation.qml:585 contents/ui/FullView.qml:164
-msgid "Refresh"
-msgstr ""
-
-#: contents/ui/configLocation.qml:594
-msgid "Use manual location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:604
-msgid "Click 'Change Location' to search and set your location manually."
-msgstr ""
-
-#: contents/ui/configLocation.qml:607
-msgid "Change Location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:619
-msgid "Location information"
-msgstr ""
-
-#: contents/ui/configLocation.qml:636
-msgid "Location name:"
-msgstr ""
-
-#: contents/ui/configLocation.qml:649
-msgid "Latitude:"
-msgstr ""
-
-#: contents/ui/configLocation.qml:666
-msgid "Longitude:"
-msgstr ""
-
-#: contents/ui/configLocation.qml:683
-msgid "Altitude:"
-msgstr ""
-
-#: contents/ui/configLocation.qml:696
-msgid "Timezone:"
-msgstr ""
-
-#: contents/ui/configLocation.qml:732 contents/ui/configLocation.qml:741
-msgid "Enter Location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:736
-msgid "Location:"
-msgstr ""
-
-#: contents/ui/configLocation.qml:786
-msgid "Loading locations…"
-msgstr ""
-
-#: contents/ui/configLocation.qml:788
-msgid "Search a weather station to set your location"
-msgstr ""
-
-#: contents/ui/configLocation.qml:789
-msgid "No weather stations found for '%1'"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:156
-msgid "Weather Widget"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:177
-msgid "Click to configure a location"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:348
-msgid "Feels like:"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:352
-msgid "Condition:"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:356
-msgid "Wind:"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:371
-msgid "Humidity:"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:379
-msgid "Dew point:"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:383
-msgid "Visibility:"
-msgstr ""
-
-#: contents/ui/TooltipContent.qml:388
-msgid "Moon:"
+#: contents/ui/configAppearance.qml:746 contents/ui/configAppearance.qml:829
+#: contents/ui/configAppearance.qml:903 contents/ui/DetailsView.qml:131
+msgid "Sunrise/Sunset"
 msgstr ""
 
 #: contents/ui/TooltipContent.qml:406 contents/ui/TooltipContent.qml:428
@@ -1085,25 +1027,116 @@ msgstr ""
 msgid "Sunrise:"
 msgstr ""
 
+#: contents/ui/configAppearance.qml:542
+msgid "Sunset icon:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:479 contents/ui/configAppearance.qml:2774
+#: contents/ui/configAppearance.qml:3497
+msgid "Sunset only   18:03"
+msgstr ""
+
 #: contents/ui/TooltipContent.qml:412 contents/ui/TooltipContent.qml:423
 #: contents/ui/TooltipContent.qml:436
 msgid "Sunset:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:204
-msgid "Loading details…"
+#: contents/ui/configAppearance.qml:1320
+msgid "Symbolic"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:204
-msgid "No details data"
+#: contents/ui/configAppearance.qml:1695 contents/ui/configAppearance.qml:1872
+#: contents/ui/configAppearance.qml:2085
+msgid "Symbolic (SVG)"
 msgstr ""
 
-#: contents/ui/CompactView.qml:613
-msgid "Add a location"
+#: contents/ui/configAppearance.qml:1471
+msgid "Symbolic (follows theme colour)"
 msgstr ""
 
-#: contents/ui/WeatherService.qml:136
-msgid "Failed: %1"
+#: contents/ui/configAppearance.qml:739 contents/ui/configAppearance.qml:861
+msgid "Temperature"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1291
+msgid "Temperature first"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2331 contents/ui/TooltipContent.qml:344
+msgid "Temperature:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2065
+msgid "Text labels (Temperature, Wind…)"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1643
+msgid "Text will follow the system font and expand to fill the available space."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:248
+msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
+msgstr ""
+
+#: contents/ui/test.qml:388
+msgid "Third Quarter"
+msgstr ""
+
+#: contents/ui/main.qml:286 contents/ui/test.qml:286
+msgid "Thunderstorm"
+msgstr ""
+
+#: contents/ui/main.qml:288 contents/ui/test.qml:288
+msgid "Thunderstorm with hail"
+msgstr ""
+
+#: contents/ui/configLocation.qml:696
+msgid "Timezone:"
+msgstr ""
+
+#: contents/ui/ForecastView.qml:104
+msgid "Today"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1176
+msgid "Tooltip"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:3233
+msgid "Tooltip Items"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2177
+msgid "Tooltip items"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2050
+msgid "Tooltip items settings"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2182
+msgid "Tooltip items:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2035
+msgid "Tooltip:"
+msgstr ""
+
+#: contents/ui/configLocation.qml:470
+msgid "Unable to get valid position from GeoClue2."
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2256
+msgid "Unit preset:"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:2251
+msgid "Units"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:467 contents/ui/configAppearance.qml:2762
+#: contents/ui/configAppearance.qml:3489
+msgid "Upcoming (next sunrise or sunset)"
 msgstr ""
 
 #: contents/ui/WeatherService.qml:204
@@ -1122,154 +1155,143 @@ msgstr ""
 msgid "Updated %1 (met.no)"
 msgstr ""
 
-#: contents/ui/ForecastView.qml:43
-msgid "Loading forecast…"
-msgstr ""
-
-#: contents/ui/ForecastView.qml:43
-msgid "No forecast data"
-msgstr ""
-
-#: contents/ui/ForecastView.qml:104
-msgid "Today"
-msgstr ""
-
-#: contents/ui/ForecastView.qml:214
-msgid "Loading hourly data…"
-msgstr ""
-
-#: contents/ui/FullView.qml:79
-msgid "No location set"
-msgstr ""
-
-#: contents/ui/FullView.qml:89
-msgid "Set Location…"
-msgstr ""
-
-#: contents/ui/FullView.qml:141
-msgid "Detect / change location…"
-msgstr ""
-
 #: contents/ui/FullView.qml:148
 msgid "Updating…"
 msgstr ""
 
-#: contents/ui/FullView.qml:212
-msgid "Feels like: %1"
+#: contents/ui/configAppearance.qml:2268
+msgid "Use KDE locale settings"
 msgstr ""
 
-#: contents/ui/FullView.qml:242
-msgid "High"
+#: contents/ui/configLocation.qml:594
+msgid "Use manual location"
 msgstr ""
 
-#: contents/ui/FullView.qml:263
-msgid "Low"
+#: contents/ui/configAppearance.qml:1769
+msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
 msgstr ""
 
-#: contents/ui/FullView.qml:300
-msgid "Details"
+#: contents/ui/configAppearance.qml:2158
+msgid "Uses KDE system icons by default. Click the button to customise each item’s icon."
 msgstr ""
 
-#: contents/ui/FullView.qml:300
-msgid "Forecast"
+#: contents/ui/configAppearance.qml:2245
+msgid "Values are rounded to whole numbers"
 msgstr ""
 
-#: contents/ui/main.qml:236
-msgid "Clear night"
+#: contents/ui/configAppearance.qml:2245
+msgid "Values show decimal places"
 msgstr ""
 
-#: contents/ui/main.qml:236
-msgid "Clear sky"
+#: contents/ui/configAppearance.qml:1258
+msgid "Vertical"
 msgstr ""
 
-#: contents/ui/main.qml:238
-msgid "Mainly clear"
+#: contents/ui/configAppearance.qml:843 contents/ui/DetailsView.qml:133
+msgid "Visibility"
 msgstr ""
 
-#: contents/ui/main.qml:240 contents/ui/main.qml:292
-msgid "Partly cloudy"
+#: contents/ui/configAppearance.qml:844
+msgid "Visibility distance"
 msgstr ""
 
-#: contents/ui/main.qml:246
-msgid "Rime fog"
+#: contents/ui/TooltipContent.qml:383
+msgid "Visibility:"
 msgstr ""
 
-#: contents/ui/main.qml:248
-msgid "Light drizzle"
+#: contents/ui/main.qml:397 contents/ui/test.qml:389
+msgid "Waning Crescent"
 msgstr ""
 
-#: contents/ui/main.qml:250
-msgid "Drizzle"
+#: contents/ui/main.qml:393 contents/ui/test.qml:387
+msgid "Waning Gibbous"
 msgstr ""
 
-#: contents/ui/main.qml:252
-msgid "Heavy drizzle"
+#: contents/ui/main.qml:385 contents/ui/test.qml:383
+msgid "Waxing Crescent"
 msgstr ""
 
-#: contents/ui/main.qml:254
-msgid "Light freezing drizzle"
+#: contents/ui/main.qml:389 contents/ui/test.qml:385
+msgid "Waxing Gibbous"
 msgstr ""
 
-#: contents/ui/main.qml:256
-msgid "Freezing drizzle"
+#: contents/ui/configLocation.qml:520
+msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr ""
 
-#: contents/ui/main.qml:258
-msgid "Light rain"
+#: contents/ui/configLocation.qml:519
+msgid "We detected your location as: <b>%1</b>."
 msgstr ""
 
-#: contents/ui/main.qml:262
-msgid "Heavy rain"
+#: contents/ui/configGeneral.qml:61
+msgid "Weather Provider"
 msgstr ""
 
-#: contents/ui/main.qml:264
-msgid "Light freezing rain"
+#: contents/ui/TooltipContent.qml:156
+msgid "Weather Widget"
 msgstr ""
 
-#: contents/ui/main.qml:266
-msgid "Freezing rain"
+#: contents/ui/configAppearance.qml:869
+msgid "Weather condition text"
 msgstr ""
 
-#: contents/ui/main.qml:268
-msgid "Light snow"
+#: contents/ui/configAppearance.qml:733
+msgid "Weather icon + condition text"
 msgstr ""
 
-#: contents/ui/main.qml:272
-msgid "Heavy snow"
+#: contents/ui/configAppearance.qml:1308
+msgid "Weather icon style:"
 msgstr ""
 
-#: contents/ui/main.qml:274
-msgid "Snow grains"
+#: contents/ui/configGeneral.qml:34
+msgid "WeatherAPI.com (Key Required)"
 msgstr ""
 
-#: contents/ui/main.qml:276
-msgid "Light showers"
+#: contents/ui/configGeneral.qml:150
+msgid "WeatherAPI.com API Key:"
 msgstr ""
 
-#: contents/ui/main.qml:278
-msgid "Showers"
+#: contents/ui/configAppearance.qml:1172
+msgid "Widget"
 msgstr ""
 
-#: contents/ui/main.qml:280
-msgid "Heavy showers"
+#: contents/ui/configAppearance.qml:1858
+msgid "Widget items"
 msgstr ""
 
-#: contents/ui/main.qml:282
-msgid "Light snow showers"
+#: contents/ui/configAppearance.qml:1839
+msgid "Widget settings"
 msgstr ""
 
-#: contents/ui/main.qml:284
-msgid "Snow showers"
+#: contents/ui/configAppearance.qml:753 contents/ui/configAppearance.qml:822
+#: contents/ui/configAppearance.qml:882 contents/ui/DetailsView.qml:130
+msgid "Wind"
 msgstr ""
 
-#: contents/ui/main.qml:286
-msgid "Thunderstorm"
+#: contents/ui/configAppearance.qml:823 contents/ui/configAppearance.qml:883
+msgid "Wind speed + direction"
 msgstr ""
 
-#: contents/ui/main.qml:288
-msgid "Thunderstorm with hail"
+#: contents/ui/configAppearance.qml:754
+msgid "Wind speed and direction"
 msgstr ""
 
-#: contents/ui/main.qml:290
-msgid "Heavy thunderstorm with hail"
+#: contents/ui/configAppearance.qml:2358
+msgid "Wind speed:"
+msgstr ""
+
+#: contents/ui/TooltipContent.qml:356
+msgid "Wind:"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:32
+msgid "met.no (free)"
+msgstr ""
+
+#: contents/ui/configGeneral.qml:231
+msgid "minutes"
+msgstr ""
+
+#: contents/ui/configAppearance.qml:1495
+msgid "px"
 msgstr ""
