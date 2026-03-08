@@ -1,4 +1,6 @@
 # These are supported funding model platforms
 
 liberapay: pnedyalkov
-custom: ["https://www.paypal.com/paypalme/pnedyalkov91"]
+custom:
+  - "https://paypal.me/pnedyalkov91"
+  - "https://revolut.me/petarnedyalkov91"
