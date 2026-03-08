@@ -108,3 +108,13 @@ systemctl --user restart plasma-plasmashell
 ## 🎨 Icons & Fonts
 This project uses weather icons and font resources from:
 https://github.com/erikflowers/weather-icons
+
+## ❤️ Support the project
+
+Advanced Weather Widget is developed in my free time.
+
+If you enjoy using it, consider supporting the project:
+
+- Liberapay: https://liberapay.com/pnedyalkov
+- PayPal: https://paypal.me/pnedyalkov91
+- Revolut: https://revolut.me/pnedyalkov

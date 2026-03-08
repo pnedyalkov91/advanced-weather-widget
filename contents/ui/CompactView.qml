@@ -1,14 +1,27 @@
 /**
  * CompactView.qml — Panel / compact representation
  *
- * Renders the thin panel bar: wi-font icon + value chips separated by a bullet.
+ * Renders the panel bar: wi-font icon + value chips separated by a bullet.
  * Also hosts the custom tooltip popup (TooltipContent).
  *
  * Display modes (Plasmoid.configuration.panelInfoMode):
- *   "single"    — all items in one row (original behaviour)
- *   "multiline" — large weather icon on the left, item rows scrolling on right;
- *                 fills the full panel height set by the user in KDE settings
+ *   "single"    — all items in one row
+ *   "multiline" — large weather icon left + scrolling item rows right
  *   "simple"    — icon + temperature only
+ *
+ * Simple mode layout types (Plasmoid.configuration.panelSimpleLayoutType):
+ *   0 = side-by-side  (icon | temp)
+ *   1 = stacked       (icon over temp, or temp over icon)
+ *   2 = compressed    (temp badge overlapping bottom-right of icon)
+ *
+ * Key sizing rules (mirrors weather-widget-plus/CompactItem.qml):
+ *   • vertical panel   → cells fill WIDTH,  fontSizeMode = Text.HorizontalFit
+ *   • horizontal panel → cells fill HEIGHT, fontSizeMode = Text.VerticalFit
+ *   • Layout.fillHeight is false for vertical panels (prevents widget
+ *     greedily consuming all vertical space in the panel)
+ *   • uniformCellHeights only applies when vertical + stacked (type 1)
+ *   • The GridLayout is centered in its parent at content size so no
+ *     dead space bleeds through around icon/temp cells
  */
 pragma ComponentBehavior: Bound
 
@@ -25,125 +38,126 @@ PlasmaCore.ToolTipArea {
     id: compactRoot
     active: Plasmoid.configuration.tooltipEnabled !== false
 
-    // ── Interface — bound from main.qml ──────────────────────────────────
-    /** Reference to the PlasmoidItem root */
+    // ── Public interface — bound from main.qml ────────────────────────────
     property var weatherRoot
 
-    // ── Layout ───────────────────────────────────────────────────────────
+    // ── Panel orientation ─────────────────────────────────────────────────
+    // True when the plasmoid lives in a vertical (left / right) panel.
+    readonly property bool vertical: Plasmoid.formFactor === PlasmaCore.Types.Vertical
+
+    // ── Shared sizing ─────────────────────────────────────────────────────
     readonly property int leftRightMargin: 4
     readonly property int itemSpacing: Plasmoid.configuration.panelItemSpacing !== undefined ? Plasmoid.configuration.panelItemSpacing : 5
 
-    // When panelUseSystemFont is true (Automatic) always use the theme default size.
     readonly property int panelFontPx: {
         if (!Plasmoid.configuration.panelUseSystemFont && Plasmoid.configuration.panelFontSize > 0)
             return Math.round(Plasmoid.configuration.panelFontSize * 4 / 3);
         return Kirigami.Theme.defaultFont.pixelSize;
     }
-
-    // Glyphs rendered 30 % larger than text
+    // Wi-font glyphs rendered slightly larger than normal text
     readonly property int glyphSize: Math.max(12, Math.round(panelFontPx * 1.3))
-
-    // svgIconPx — display size for SVG panel icons
     readonly property int svgIconPx: {
-        var theme = Plasmoid.configuration.panelIconTheme || "wi-font";
-        if (theme === "wi-font")
-            return glyphSize;
-        return Plasmoid.configuration.panelIconSize || 22;
+        var th = Plasmoid.configuration.panelIconTheme || "wi-font";
+        return th === "wi-font" ? glyphSize : (Plasmoid.configuration.panelIconSize || 22);
     }
 
     // ── Mode helpers ──────────────────────────────────────────────────────
     readonly property bool isMultiLine: Plasmoid.configuration.panelInfoMode === "multiline"
     readonly property bool isSimpleMode: Plasmoid.configuration.panelInfoMode === "simple"
 
-    // Simple mode sub-options
     readonly property int simpleLayoutType: Plasmoid.configuration.panelSimpleLayoutType || 0
     readonly property int simpleWidgetOrder: Plasmoid.configuration.panelSimpleWidgetOrder || 0
     readonly property string simpleIconStyle: Plasmoid.configuration.panelSimpleIconStyle || "symbolic"
 
-    // Dynamic sizes for simple mode – more aggressive scaling
-    readonly property int simpleIconSize: {
-        if (Plasmoid.configuration.simpleIconSizeMode === "manual")
-            return Plasmoid.configuration.simpleIconSizeManual;
-        var h = compactRoot.height > 8 ? compactRoot.height : 28;
-        if (simpleLayoutType === 1) // vertical
-            return Math.min(Math.round(h * 0.55), 100);
-        if (simpleLayoutType === 2) // compressed
-            return Math.min(Math.round(h * 1.2), 120);
-        return Math.min(Math.round(h * 1.2), 120);
-    }
+    // ── Vertical-panel size scale factors ────────────────────────────────
+    // Change these two values to resize icon and temperature in vertical panels.
+    // 1.0 = natural size (auto-fits panel thickness).  > 1.0 = larger, < 1.0 = smaller.
+    // Recommended range: 0.5 – 2.0
+    readonly property real vertIconScale: 0.5   // ← EDIT: icon / font-icon size in vertical panels
+    readonly property real vertTempScale: 1.0   // ← EDIT: temperature value size in vertical panels
 
-    readonly property int simpleFontSize: {
-        if (Plasmoid.configuration.simpleFontSizeMode === "manual")
-            return Plasmoid.configuration.simpleFontSizeManual;
-        var h = compactRoot.height > 8 ? compactRoot.height : 28;
-        if (simpleLayoutType === 1) // vertical
-            return Math.max(8, Math.floor(h * 0.45));
-        if (simpleLayoutType === 2) // compressed
-            // Scale with height, cap at 48px to keep badge readable but not too large
-            return Math.max(8, Math.min(Math.floor(h * 0.5), 48));
-        return Math.max(8, Math.floor(h * 0.55)); // horizontal
-    }
+    // Derived pixel sizes for vertical-panel simple mode.
+    // Using fontSizeMode: FixedSize + explicit px so the scale actually takes effect.
+    // (HorizontalFit ignores font.pixelSize — it always shrinks to fit cell width.)
+    //   vertIconPx = panel thickness × vertIconScale
+    //   vertTempPx = vertIconPx × 0.5 × vertTempScale
+    readonly property int vertIconPx: Math.max(Math.round(Kirigami.Units.gridUnit / 2), Math.round((width - 2 * leftRightMargin) * vertIconScale))
+    readonly property int vertTempPx: Math.max(Math.round(Kirigami.Units.gridUnit / 2), Math.round(vertIconPx * 0.5 * vertTempScale))
 
-    // Multiline mode: icon style
+    // ── Multiline options ─────────────────────────────────────────────────
     readonly property string mlIconStyle: Plasmoid.configuration.panelMultilineIconStyle || "colorful"
     readonly property int multiLines: Math.max(1, Plasmoid.configuration.panelMultiLines || 2)
     readonly property bool multiAnimate: Plasmoid.configuration.panelMultiAnimate !== false
-
-    // mlIconSize: large weather icon on the left of the multiline layout.
     readonly property int mlIconSize: Math.min(Math.max(multiLines * (panelFontPx + 8), 32) - 4, 64)
+
+    // ── Root implicit sizes ───────────────────────────────────────────────
+    // For vertical panels + stacked simple mode, reserve double the usual
+    // height so KDE allocates enough room for two stacked cells.
+    // side-by-side (type 0) on horizontal panel needs room for icon + temp
+    // Simple mode on a horizontal panel: track panel height so the widget
+    // stays exactly as wide as its content regardless of how tall the panel gets.
+    //   type 0 side-by-side → icon (≈h) + gap (10) + temp (≈h*0.5) + margins
+    //   type 1 stacked / type 2 compressed → one square ≈ h + margins
+    implicitWidth: isMultiLine ? mlIconSize + 6 + 110 + 2 * leftRightMargin : isSimpleMode ? (vertical ? Kirigami.Units.gridUnit * 2 : (simpleLayoutType === 0 ? Math.max(Kirigami.Units.gridUnit * 4, Math.round(compactRoot.height * 1.8) + 10 + 2 * leftRightMargin) : Math.max(Kirigami.Units.gridUnit * 2, compactRoot.height + 2 * leftRightMargin))) : compactRow.implicitWidth + 2 * leftRightMargin
 
     implicitHeight: isMultiLine ? Math.max(multiLines * (panelFontPx + 8), 32) : Kirigami.Units.gridUnit * 2
 
-    // Simple mode width calculation using the dynamic sizes
-    readonly property int _simpleW: {
-        var m = 2 * leftRightMargin;
-        if (simpleLayoutType === 2) // compressed
-            return simpleIconSize + Math.round(simpleFontSize * 1.5) + m; // more room for badge
-        if (simpleLayoutType === 1) // vertical
-            return simpleIconSize + m;
-        // horizontal
-        return simpleIconSize + Math.round(simpleFontSize * 1.5) + 8 + m; // more width for text
-    }
-
-    implicitWidth: isMultiLine ? mlIconSize + 6 + 110 + 2 * leftRightMargin : isSimpleMode ? _simpleW : compactRow.implicitWidth + 2 * leftRightMargin
-
-    // Layout properties - critical for proper panel integration
-    Layout.fillHeight: true
+    // ── Layout hints to the panel ─────────────────────────────────────────
+    // vertical panels: fillHeight=false keeps the widget from consuming all
+    // available panel height.  preferredHeight scales with panel thickness
+    // (= widget width) so the click area grows as the panel gets wider.
+    Layout.fillHeight: !vertical || isMultiLine
     Layout.fillWidth: Plasmoid.configuration.panelFillWidth
-    Layout.preferredWidth: Plasmoid.configuration.panelFillWidth ? -1 : isSimpleMode ? _simpleW : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
-    Layout.minimumWidth: 30 // Prevents forcing too much space
-    Layout.preferredHeight: -1 // Let the panel decide
+
+    Layout.preferredWidth: Plasmoid.configuration.panelFillWidth ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
+    Layout.preferredHeight: {
+        if (!vertical || isMultiLine)
+            return -1;
+        if (!isSimpleMode)
+            return implicitHeight;
+        // Slot height is driven by vertIconPx / vertTempPx so the allocated
+        // height grows/shrinks with the scale factors.
+        var iH = compactRoot.vertIconPx;
+        var tH = compactRoot.vertTempPx;
+        if (simpleLayoutType === 1)
+            return iH + tH + 6;  // stacked: icon + gap + temp
+        if (simpleLayoutType === 2)
+            return iH + 4;        // compressed: square + badge
+        return Math.max(iH, tH) + 4;                      // side-by-side: one row
+    }
+    // For simple mode on a horizontal panel the widget must be at least
+    // as wide as it is tall so the click area covers the full content
+    // (e.g. compressed square whose side = height - 2).
+    Layout.minimumWidth: 20
     Layout.minimumHeight: implicitHeight
 
-    // ── Wi-font (panel glyphs) ────────────────────────────────────────────
+    // ── Wi-font loader ────────────────────────────────────────────────────
     FontLoader {
         id: wiFontPanel
         source: Qt.resolvedUrl("../fonts/weathericons-regular-webfont.ttf")
     }
 
-    // ── Icon theme ────────────────────────────────────────────────────────
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
 
-    // ── Reactive panel items ──────────────────────────────────────────────
+    // ── Reactive panel items data ─────────────────────────────────────────
     property var panelItemsData: {
         if (!weatherRoot)
             return [];
-        var _ = weatherRoot.temperatureC + weatherRoot.windKmh + weatherRoot.windDirection + weatherRoot.humidityPercent + weatherRoot.pressureHpa + weatherRoot.weatherCode + weatherRoot.panelScrollIndex + weatherRoot.sunriseTimeText.length + weatherRoot.sunsetTimeText.length + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator + Plasmoid.configuration.panelSunTimesMode + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize;
+        // Touch every reactive property so this re-evaluates when data changes
+        var _deps = weatherRoot.temperatureC + weatherRoot.windKmh + weatherRoot.windDirection + weatherRoot.humidityPercent + weatherRoot.pressureHpa + weatherRoot.weatherCode + weatherRoot.panelScrollIndex + weatherRoot.sunriseTimeText.length + weatherRoot.sunsetTimeText.length + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator + Plasmoid.configuration.panelSunTimesMode + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize;
         return _buildItems();
     }
 
     property var multiLineItemsData: {
-        var all = panelItemsData;
-        var result = [];
+        var all = panelItemsData, r = [];
         for (var i = 0; i < all.length; ++i)
             if (!all[i].isSep)
-                result.push(all[i]);
-        return result;
+                r.push(all[i]);
+        return r;
     }
 
     readonly property real multiLineRowH: height > 0 ? Math.max(14, height / multiLines) : Math.max(14, panelFontPx + 8)
 
-    // ── Multiline scroll state ────────────────────────────────────────────
     property int mlScrollOffset: 0
 
     Timer {
@@ -156,11 +170,9 @@ PlasmaCore.ToolTipArea {
             compactRoot.mlScrollOffset = (compactRoot.mlScrollOffset + 1) % total;
         }
     }
-
     onIsMultiLineChanged: mlScrollOffset = 0
     onMultiLineItemsDataChanged: mlScrollOffset = 0
 
-    // ── Custom tooltip popup ──────────────────────────────────────────────
     mainItem: TooltipContent {
         weatherRoot: compactRoot.weatherRoot
     }
@@ -184,7 +196,6 @@ PlasmaCore.ToolTipArea {
                 required property var modelData
                 spacing: slRowItem.modelData.isSep ? 0 : 5
 
-                // wi-font glyph
                 Text {
                     visible: slRowItem.modelData.glyphVis && slRowItem.modelData.glyphType === "wi"
                     text: slRowItem.modelData.glyph
@@ -193,21 +204,18 @@ PlasmaCore.ToolTipArea {
                     color: Kirigami.Theme.textColor
                     Layout.alignment: Qt.AlignVCenter
                 }
-                // Kirigami icon (KDE system theme)
                 Kirigami.Icon {
                     visible: slRowItem.modelData.glyphVis && slRowItem.modelData.glyphType === "kde" && slRowItem.modelData.glyph.length > 0
                     source: slRowItem.modelData.glyph
                     implicitWidth: compactRoot.svgIconPx
                     implicitHeight: compactRoot.svgIconPx
                 }
-                // Kirigami icon (fallback type)
                 Kirigami.Icon {
                     visible: slRowItem.modelData.glyphVis && slRowItem.modelData.glyphType === "kirigami" && slRowItem.modelData.glyph.length > 0
                     source: slRowItem.modelData.glyph
                     implicitWidth: compactRoot.glyphSize
                     implicitHeight: compactRoot.glyphSize
                 }
-                // SVG icon with fallback
                 Item {
                     visible: slRowItem.modelData.glyphVis && slRowItem.modelData.glyphType === "svg" && slRowItem.modelData.glyph.length > 0
                     implicitWidth: compactRoot.svgIconPx
@@ -224,7 +232,6 @@ PlasmaCore.ToolTipArea {
                         color: Kirigami.Theme.textColor
                     }
                 }
-                // Value text
                 Label {
                     text: slRowItem.modelData.text
                     font: slRowItem.modelData.isSep ? Qt.font({
@@ -272,25 +279,21 @@ PlasmaCore.ToolTipArea {
         }
 
         Item {
-            id: rowsClip
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-
             Column {
                 id: scrollCol
                 width: parent.width
-
                 readonly property real rowH: compactRoot.height > 0 ? Math.max(12, compactRoot.height / compactRoot.multiLines) : Math.max(12, compactRoot.panelFontPx + 8)
                 readonly property int rowFontPx: {
-                    var useSystem = Plasmoid.configuration.panelUseSystemFont;
-                    var savedPt = Plasmoid.configuration.panelFontSize || 0;
-                    var maxFromRow = Math.max(8, Math.floor(rowH * 0.72));
-                    if (!useSystem && savedPt > 0)
-                        return Math.min(maxFromRow, Math.round(savedPt * 4 / 3));
+                    var sys = Plasmoid.configuration.panelUseSystemFont;
+                    var savedP = Plasmoid.configuration.panelFontSize || 0;
+                    var maxR = Math.max(8, Math.floor(rowH * 0.72));
+                    if (!sys && savedP > 0)
+                        return Math.min(maxR, Math.round(savedP * 4 / 3));
                     return Math.max(8, Math.floor(rowH * 0.65));
                 }
-
                 Behavior on y {
                     enabled: compactRoot.multiAnimate && compactRoot.mlScrollOffset !== 0
                     NumberAnimation {
@@ -367,231 +370,239 @@ PlasmaCore.ToolTipArea {
 
     // ══════════════════════════════════════════════════════════════════════
     // SIMPLE MODE — icon + temperature
+    //
+    // Architecture (directly mirrors weather-widget-plus/CompactItem.qml):
+    //
+    //   vertical panel   → cells fill WIDTH,  fontSizeMode = Text.HorizontalFit
+    //   horizontal panel → cells fill HEIGHT, fontSizeMode = Text.VerticalFit
+    //
+    // The GridLayout is sized to exactly its content and centered inside
+    // the widget — so no dead space appears between or around cells.
+    //
+    // uniformCellHeights is ONLY enabled for vertical + stacked (type 1),
+    // matching the reference behaviour exactly.
+    //
+    // Compressed (type 2) is built separately: a square Item (side =
+    // min(width, height)) contains both the icon and the badge so the badge
+    // always overlaps the bottom-right corner of the actual painted icon.
     // ══════════════════════════════════════════════════════════════════════
     Item {
-        id: simpleLayout
+        id: simpleRoot
         anchors.fill: parent
         visible: compactRoot.isSimpleMode
 
-        readonly property int iconSize: compactRoot.simpleIconSize
-        readonly property int fontSize: compactRoot.simpleFontSize
+        // fontSizeMode driven purely by panel orientation — not layout type
+        readonly property int autoFontSizeMode: compactRoot.vertical ? Text.HorizontalFit : Text.VerticalFit
 
-        // ── Horizontal ────────────────────────────────────────────────────
-        RowLayout {
+        // ── Layout types 0 (side-by-side) and 1 (stacked) ────────────────
+        // The GridLayout is anchored to the CENTER of its parent and sized
+        // to exactly its content.  This prevents any dead space from pooling
+        // around the cells when the panel is larger than the content.
+        //
+        //   vertical panel:
+        //     width  = full widget width (cells fill it with HorizontalFit)
+        //     height = auto (sum of row paintedHeights; GridLayout.implicitHeight)
+        //
+        //   horizontal panel:
+        //     height = full widget height (cells fill it with VerticalFit)
+        //     width  = auto (sum of column paintedWidths; GridLayout.implicitWidth)
+        GridLayout {
+            id: simpleGrid
+            visible: compactRoot.simpleLayoutType !== 2
+
+            // Centre in parent; size determined by axis.
             anchors.centerIn: parent
-            spacing: Math.max(2, Math.round(simpleLayout.fontSize * 0.1))
-            visible: compactRoot.simpleLayoutType === 0
+            width: compactRoot.vertical ? (parent.width - 2 * compactRoot.leftRightMargin) : implicitWidth
 
-            // Icon when order is temperature first (icon appears second)
+            // vertical + stacked (type 1): height = implicitHeight so the grid is exactly
+            // 2×paintedHeight + rowSpacing and sits centred — no dead space above/below cells.
+            // All other cases: fill the available widget height.
+            height: (compactRoot.vertical && compactRoot.simpleLayoutType === 1) ? implicitHeight : parent.height - 2
+
+            // type 1 → 2 rows × 1 col; type 0 → 1 row × 2 cols
+            rows: compactRoot.simpleLayoutType === 1 ? 2 : 1
+            columns: compactRoot.simpleLayoutType === 1 ? 1 : 2
+
+            // uniformCellHeights only for vertical + stacked — exactly as reference
+            uniformCellHeights: compactRoot.simpleLayoutType === 1 && compactRoot.vertical
+
+            // columnSpacing: always 4 px between icon and temp for vertical type 0 so
+            //   there is a visible gap at every panel size.
+            // rowSpacing: for vertical + stacked scale with panel width so the gap
+            //   shrinks proportionally as the panel gets narrower, never causes overlap.
+            columnSpacing: compactRoot.simpleLayoutType === 0 ? (compactRoot.vertical ? 4 : 10) : 0
+            rowSpacing: (compactRoot.vertical && compactRoot.simpleLayoutType === 1) ? Math.max(1, Math.min(4, Math.round(compactRoot.width * 0.08))) : 0
+
+            // ── Icon cell ─────────────────────────────────────────────────
             Item {
-                visible: compactRoot.simpleWidgetOrder === 0
-                Layout.preferredWidth: simpleLayout.iconSize
-                Layout.preferredHeight: simpleLayout.iconSize
-                Layout.minimumWidth: simpleLayout.iconSize
-                Layout.maximumWidth: simpleLayout.iconSize
-                Layout.minimumHeight: simpleLayout.iconSize
-                Layout.maximumHeight: simpleLayout.iconSize
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignVCenter
+                // Hide until the glyph has loaded to avoid mis-sized cells
+                visible: iconGlyph.text.length > 0 || compactRoot.simpleIconStyle === "colorful"
+                Layout.alignment: Qt.AlignCenter
+                // clip prevents the glyph from visually bleeding into the temp cell
+                // when the panel is very narrow and fontSizeMode hits minimumPixelSize
+                clip: true
 
+                // vertical panel: fill width; height clamped to paintedHeight
+                // horizontal panel: fill height; width clamped to paintedWidth
+                Layout.fillWidth: compactRoot.vertical
+                Layout.fillHeight: !compactRoot.vertical
+                Layout.minimumWidth: compactRoot.vertical ? 0 : iconGlyph.paintedWidth
+                Layout.maximumWidth: compactRoot.vertical ? Infinity : iconGlyph.paintedWidth
+                Layout.minimumHeight: compactRoot.vertical ? iconGlyph.paintedHeight : 0
+                Layout.maximumHeight: compactRoot.vertical ? iconGlyph.paintedHeight : Infinity
+
+                // Widget order: 0 = icon first, 1 = temp first
+                Layout.row: compactRoot.simpleLayoutType === 1 ? (compactRoot.simpleWidgetOrder === 0 ? 0 : 1) : 0
+                Layout.column: compactRoot.simpleLayoutType === 1 ? 0 : (compactRoot.simpleWidgetOrder === 0 ? 0 : 1)
+
+                Text {
+                    id: iconGlyph
+                    anchors.fill: parent
+                    visible: compactRoot.simpleIconStyle !== "colorful"
+                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
+                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
+                    // Vertical: FixedSize + vertIconPx so scale actually works.
+                    // HorizontalFit ignores font.pixelSize — it always shrinks to cell width.
+                    // Horizontal: keep HorizontalFit/VerticalFit (autoFontSizeMode).
+                    font.pixelSize: compactRoot.vertical ? compactRoot.vertIconPx : 999
+                    font.pointSize: 0        // must clear pointSize when pixelSize is set
+                    minimumPixelSize: Math.round(Kirigami.Units.gridUnit / 2)
+                    fontSizeMode: compactRoot.vertical ? Text.FixedSize : simpleRoot.autoFontSizeMode
+                    color: Kirigami.Theme.textColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.NoWrap
+                }
                 Kirigami.Icon {
                     anchors.fill: parent
                     visible: compactRoot.simpleIconStyle === "colorful"
                     source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
                     smooth: true
                 }
-                Text {
-                    anchors.fill: parent
-                    anchors.topMargin: 2
-                    visible: compactRoot.simpleIconStyle !== "colorful"
-                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
-                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
-                    font.pixelSize: Math.round(simpleLayout.iconSize * 0.6)
-                    color: Kirigami.Theme.textColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
             }
 
-            Label {
-                text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
-                font.pixelSize: simpleLayout.fontSize
-                font.bold: false
-                color: Kirigami.Theme.textColor
-                verticalAlignment: Text.AlignVCenter
-                Layout.alignment: Qt.AlignVCenter
-            }
-
-            // Icon when order is icon first (icon appears first)
+            // ── Temperature cell ──────────────────────────────────────────
             Item {
-                visible: compactRoot.simpleWidgetOrder === 1
-                Layout.preferredWidth: simpleLayout.iconSize
-                Layout.preferredHeight: simpleLayout.iconSize
-                Layout.minimumWidth: simpleLayout.iconSize
-                Layout.maximumWidth: simpleLayout.iconSize
-                Layout.minimumHeight: simpleLayout.iconSize
-                Layout.maximumHeight: simpleLayout.iconSize
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignVCenter
+                visible: tempText.text.length > 0
+                Layout.alignment: Qt.AlignCenter
+                clip: true
 
-                Kirigami.Icon {
-                    anchors.fill: parent
-                    visible: compactRoot.simpleIconStyle === "colorful"
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
-                    smooth: true
-                }
+                Layout.fillWidth: compactRoot.vertical
+                Layout.fillHeight: !compactRoot.vertical
+                Layout.minimumWidth: compactRoot.vertical ? 0 : tempText.paintedWidth
+                Layout.maximumWidth: compactRoot.vertical ? Infinity : tempText.paintedWidth
+                Layout.minimumHeight: compactRoot.vertical ? tempText.paintedHeight : 0
+                Layout.maximumHeight: compactRoot.vertical ? tempText.paintedHeight : Infinity
+
+                Layout.row: compactRoot.simpleLayoutType === 1 ? (compactRoot.simpleWidgetOrder === 0 ? 1 : 0) : 0
+                Layout.column: compactRoot.simpleLayoutType === 1 ? 0 : (compactRoot.simpleWidgetOrder === 0 ? 1 : 0)
+
                 Text {
+                    id: tempText
                     anchors.fill: parent
-                    anchors.topMargin: 2
-                    visible: compactRoot.simpleIconStyle !== "colorful"
-                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
-                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
-                    font.pixelSize: Math.round(simpleLayout.iconSize * 0.6)
-                    color: Kirigami.Theme.textColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
-        }
-
-        // ── Compressed — temperature badge overlaps bottom-right of icon ––
-        Item {
-            anchors.centerIn: parent
-            visible: compactRoot.simpleLayoutType === 2
-            width: simpleLayout.iconSize + Math.round(simpleLayout.fontSize * 0.8)
-            height: simpleLayout.iconSize
-
-            // Icon container
-            Item {
-                id: compressedIconContainer
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                width: simpleLayout.iconSize
-                height: simpleLayout.iconSize
-
-                Kirigami.Icon {
-                    anchors.fill: parent
-                    visible: compactRoot.simpleIconStyle === "colorful"
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
-                    smooth: true
-                }
-                Text {
-                    anchors.fill: parent
-                    width: parent.width   // or set a fixed size
-                    height: parent.height
-                    visible: compactRoot.simpleIconStyle !== "colorful"
-                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
-                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
-                    font.pixelSize: Math.round(simpleLayout.iconSize * 0.7)
-                    color: Kirigami.Theme.textColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
-
-            // Temperature badge
-            Rectangle {
-                anchors.right: compressedIconContainer.right
-                anchors.bottom: compressedIconContainer.bottom
-                anchors.rightMargin: -Math.round(simpleLayout.fontSize * 1)
-                anchors.bottomMargin: -Math.round(simpleLayout.fontSize * 0.15)
-                width: tempBadge.implicitWidth + 8
-                height: tempBadge.implicitHeight + 4
-                radius: height / 2
-                color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.8)
-                Label {
-                    id: tempBadge
-                    anchors.centerIn: parent
                     text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
-                    font.pixelSize: simpleLayout.fontSize
-                    font.bold: false
+                    font.family: Kirigami.Theme.defaultFont.family
+                    // Always 75 % of the icon's painted size so temp is visually
+                    // smaller than the weather glyph regardless of panel orientation.
+                    // fontSizeMode is FixedSize — the icon auto-fits and drives the
+                    // reference size; temp just follows proportionally.
+                    // Minimum is the KDE panel font size (panelFontPx reads from
+                    // Kirigami.Theme.defaultFont or the user's custom font size).
+                    // font.pixelSize is the UPPER CAP; autoFontSizeMode lets the
+                    // text shrink below that cap when the cell is too narrow (e.g.
+                    // vertical panel, type 0, each cell = half panel width).
+                    // font.pixelSize = upper cap (40% of icon height, at least panelFontPx).
+                    // minimumPixelSize must be a small absolute floor so HorizontalFit can
+                    // actually shrink the temp text when the cell is narrow — e.g. vertical
+                    // panel type 0 at 20px width gives each cell only ~10px.  Using
+                    // panelFontPx (~14px) as the floor prevented shrinking and caused overlap.
+                    // temperature relative to the icon.  The upper cap is still derived from
+                    // iconGlyph.paintedHeight so the two elements stay proportional.
+                    // Vertical: FixedSize + vertTempPx.
+                    // Horizontal: auto-fit with upper cap from icon painted height.
+                    font.pixelSize: compactRoot.vertical ? compactRoot.vertTempPx : Math.max(compactRoot.panelFontPx, Math.round(iconGlyph.paintedHeight * 0.5))
+                    font.pointSize: 0
+                    minimumPixelSize: Math.round(Kirigami.Units.gridUnit / 2)
+                    fontSizeMode: compactRoot.vertical ? Text.FixedSize : simpleRoot.autoFontSizeMode
                     color: Kirigami.Theme.textColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.NoWrap
                 }
             }
-        }
+        } // GridLayout (types 0 and 1)
 
-        // ── Vertical ──────────────────────────────────────────────────────
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: Math.max(1, Math.round(simpleLayout.fontSize * (-1.5)))
-            visible: compactRoot.simpleLayoutType === 1
+        // ── Compressed (type 2) ───────────────────────────────────────────
+        //
+        // A square Item (side = min(widget width, widget height)) is centered
+        // in the widget.  Both the weather icon AND the badge Rectangle live
+        // INSIDE that square, so the badge always anchors to the bottom-right
+        // corner of the actual painted icon regardless of panel orientation.
+        Item {
+            id: compressedWrapper
+            anchors.fill: parent
+            visible: compactRoot.simpleLayoutType === 2
 
-            // Top icon (when order icon first)
+            // Orientation-aware square sizing:
+            //   vertical panel   → side = panel THICKNESS (= widget width)
+            //   horizontal panel → side = panel HEIGHT (= widget height)
+            // This ensures the compressed icon grows when the panel is resized.
+            readonly property int squareSide: compactRoot.vertical ? Math.max(16, compactRoot.vertIconPx) : Math.max(16, compactRoot.height - 2)
             Item {
-                visible: compactRoot.simpleWidgetOrder === 0
-                Layout.preferredWidth: simpleLayout.iconSize
-                Layout.preferredHeight: simpleLayout.iconSize
-                Layout.minimumWidth: simpleLayout.iconSize
-                Layout.maximumWidth: simpleLayout.iconSize
-                Layout.minimumHeight: simpleLayout.iconSize
-                Layout.maximumHeight: simpleLayout.iconSize
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignHCenter
+                id: compressedSquare
+                width: compressedWrapper.squareSide
+                height: compressedWrapper.squareSide
+                anchors.centerIn: parent
 
+                // Weather icon — fills the square; Text.Fit respects both axes
+                Text {
+                    id: compressedIconGlyph
+                    anchors.fill: parent
+                    visible: compactRoot.simpleIconStyle !== "colorful"
+                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
+                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
+                    font.pixelSize: 999
+                    font.pointSize: 0
+                    minimumPixelSize: Math.round(Kirigami.Units.gridUnit / 2)
+                    fontSizeMode: Text.Fit    // fit both axes for a square cell
+                    color: Kirigami.Theme.textColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.NoWrap
+                }
                 Kirigami.Icon {
                     anchors.fill: parent
                     visible: compactRoot.simpleIconStyle === "colorful"
                     source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
                     smooth: true
                 }
-                Text {
-                    anchors.fill: parent
-                    visible: compactRoot.simpleIconStyle !== "colorful"
-                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
-                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
-                    font.pixelSize: Math.round(simpleLayout.iconSize * 0.9)
-                    color: Kirigami.Theme.textColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+
+                // Temperature badge — anchored inside the square's bottom-right
+                // so it always overlaps the icon corner regardless of panel size
+                Rectangle {
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    width: compressedBadge.implicitWidth + 8
+                    height: compressedBadge.implicitHeight + 4
+                    radius: height / 2
+                    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.85)
+
+                    Label {
+                        id: compressedBadge
+                        anchors.centerIn: parent
+                        text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
+                        // Badge font ≈ 28 % of the square side; min 8 px
+                        font.pixelSize: Math.max(8, Math.round(compressedWrapper.squareSide * 0.4))
+                        font.bold: false
+                        color: Kirigami.Theme.textColor
+                    }
                 }
             }
+        } // compressed
 
-            Label {
-                text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
-                font.pixelSize: simpleLayout.fontSize
-                font.bold: false
-                color: Kirigami.Theme.textColor
-                horizontalAlignment: Text.AlignHCenter
-                Layout.alignment: Qt.AlignHCenter
-            }
+    } // simpleRoot
 
-            // Bottom icon (when order temperature first)
-            Item {
-                visible: compactRoot.simpleWidgetOrder === 1
-                Layout.preferredWidth: simpleLayout.iconSize
-                Layout.preferredHeight: simpleLayout.iconSize
-                Layout.minimumWidth: simpleLayout.iconSize
-                Layout.maximumWidth: simpleLayout.iconSize
-                Layout.minimumHeight: simpleLayout.iconSize
-                Layout.maximumHeight: simpleLayout.iconSize
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignHCenter
-
-                Kirigami.Icon {
-                    anchors.fill: parent
-                    visible: compactRoot.simpleIconStyle === "colorful"
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
-                    smooth: true
-                }
-                Text {
-                    anchors.fill: parent
-                    visible: compactRoot.simpleIconStyle !== "colorful"
-                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconChar() : "?"
-                    font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
-                    font.pixelSize: Math.round(simpleLayout.iconSize * 0.9)
-                    color: Kirigami.Theme.textColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
-        }
-    } // Item (simple mode)
-
-    // ── Tap to expand ─────────────────────────────────────────────────────
+    // ── Tap to open / close the full view ─────────────────────────────────
     TapHandler {
         acceptedButtons: Qt.LeftButton
         grabPermissions: PointerHandler.CanTakeOverFromAnything
@@ -599,7 +610,7 @@ PlasmaCore.ToolTipArea {
             compactRoot.weatherRoot.expanded = !compactRoot.weatherRoot.expanded
     }
 
-    // ── Private: build panel items array ─────────────────────────────────
+    // ── Private helpers ───────────────────────────────────────────────────
     function _buildItems() {
         var r = weatherRoot;
         if (!r)
@@ -610,6 +621,7 @@ PlasmaCore.ToolTipArea {
                     glyph: "\uF041",
                     glyphVis: true,
                     glyphType: "wi",
+                    glyphKdeFallback: "",
                     text: i18n("Add a location"),
                     isSep: false
                 }
@@ -617,12 +629,42 @@ PlasmaCore.ToolTipArea {
 
         var iconMap = r.parsePanelItemIcons();
         var sep = Plasmoid.configuration.panelSeparator || " \u2022 ";
-        var order = (Plasmoid.configuration.panelItemOrder || "condition;temperature").split(";").filter(function (t) {
+        var tokens = (Plasmoid.configuration.panelItemOrder || "condition;temperature").split(";").filter(function (t) {
             return t.trim().length > 0;
         });
-        var tokens = order;
         var theme = Plasmoid.configuration.panelIconTheme || "wi-font";
         var result = [];
+
+        function pushSep() {
+            result.push({
+                glyph: "",
+                glyphVis: false,
+                glyphType: "wi",
+                glyphKdeFallback: "",
+                text: sep,
+                isSep: true
+            });
+        }
+        function pushItem(src, vis, type, fallback, txt) {
+            result.push({
+                glyph: src,
+                glyphVis: vis && src.length > 0,
+                glyphType: type,
+                glyphKdeFallback: fallback || "",
+                text: txt,
+                isSep: false
+            });
+        }
+        function pushSpaceSep() {
+            result.push({
+                glyph: "",
+                glyphVis: false,
+                glyphType: "wi",
+                glyphKdeFallback: "",
+                text: " ",
+                isSep: true
+            });
+        }
 
         tokens.forEach(function (tok) {
             tok = tok.trim();
@@ -631,142 +673,70 @@ PlasmaCore.ToolTipArea {
 
             if (tok === "suntimes") {
                 var sunMode = Plasmoid.configuration.panelSunTimesMode || "upcoming";
+
                 if (sunMode === "both" && theme === "wi-font") {
                     if (result.length > 0)
-                        result.push({
-                            glyph: "",
-                            glyphVis: false,
-                            glyphType: "wi",
-                            glyphKdeFallback: "",
-                            text: sep,
-                            isSep: true
-                        });
-                    result.push({
-                        glyph: "\uF051",
-                        glyphVis: show,
-                        glyphType: "wi",
-                        glyphKdeFallback: "",
-                        text: r.sunriseTimeText,
-                        isSep: false
-                    });
-                    result.push({
-                        glyph: "",
-                        glyphVis: false,
-                        glyphType: "wi",
-                        glyphKdeFallback: "",
-                        text: " ",
-                        isSep: true
-                    });
-                    result.push({
-                        glyph: "\uF052",
-                        glyphVis: show,
-                        glyphType: "wi",
-                        glyphKdeFallback: "",
-                        text: r.sunsetTimeText,
-                        isSep: false
-                    });
+                        pushSep();
+                    pushItem("\uF051", show, "wi", "", r.sunriseTimeText);
+                    pushSpaceSep();
+                    pushItem("\uF052", show, "wi", "", r.sunsetTimeText);
                     return;
                 }
-                if (sunMode === "both" && theme !== "wi-font") {
-                    var riseInfo2, setInfo2;
+
+                if (sunMode === "both") {
+                    var rInfo, sInfo;
                     if (theme === "kde") {
-                        riseInfo2 = {
+                        rInfo = {
                             type: "kde",
-                            source: "weather-sunrise",
-                            kdeFallback: ""
+                            source: "weather-sunrise"
                         };
-                        setInfo2 = {
+                        sInfo = {
                             type: "kde",
-                            source: "weather-sunset",
-                            kdeFallback: ""
+                            source: "weather-sunset"
                         };
                     } else if (theme === "custom") {
-                        var rawC2 = Plasmoid.configuration.panelCustomIcons || "", cmap2 = {};
-                        rawC2.split(";").forEach(function (p) {
+                        var cmap = {};
+                        (Plasmoid.configuration.panelCustomIcons || "").split(";").forEach(function (p) {
                             var kv = p.split("=");
                             if (kv.length === 2)
-                                cmap2[kv[0].trim()] = kv[1].trim();
+                                cmap[kv[0].trim()] = kv[1].trim();
                         });
-                        riseInfo2 = {
+                        rInfo = {
                             type: "kde",
-                            source: cmap2["suntimes-sunrise"] || "weather-sunrise",
-                            kdeFallback: ""
+                            source: cmap["suntimes-sunrise"] || "weather-sunrise"
                         };
-                        setInfo2 = {
+                        sInfo = {
                             type: "kde",
-                            source: cmap2["suntimes-sunset"] || "weather-sunset",
-                            kdeFallback: ""
+                            source: cmap["suntimes-sunset"] || "weather-sunset"
                         };
                     } else {
-                        var iconSz2 = Plasmoid.configuration.panelIconSize || 22;
-                        var rt2 = (theme === "symbolic" && Plasmoid.configuration.panelSymbolicVariant === "light") ? "symbolic-light" : theme;
-                        var base2 = Qt.resolvedUrl("../icons/" + rt2 + "/" + iconSz2 + "/wi-");
-                        riseInfo2 = {
+                        var sz = Plasmoid.configuration.panelIconSize || 22;
+                        var rt = (theme === "symbolic" && Plasmoid.configuration.panelSymbolicVariant === "light") ? "symbolic-light" : theme;
+                        var base = Qt.resolvedUrl("../icons/" + rt + "/" + sz + "/wi-");
+                        rInfo = {
                             type: "svg",
-                            source: base2 + "sunrise.svg",
-                            kdeFallback: ""
+                            source: base + "sunrise.svg"
                         };
-                        setInfo2 = {
+                        sInfo = {
                             type: "svg",
-                            source: base2 + "sunset.svg",
-                            kdeFallback: ""
+                            source: base + "sunset.svg"
                         };
                     }
                     if (result.length > 0)
-                        result.push({
-                            glyph: "",
-                            glyphVis: false,
-                            glyphType: "wi",
-                            glyphKdeFallback: "",
-                            text: sep,
-                            isSep: true
-                        });
-                    result.push({
-                        glyph: riseInfo2.source,
-                        glyphVis: show,
-                        glyphType: riseInfo2.type,
-                        glyphKdeFallback: "",
-                        text: r.sunriseTimeText,
-                        isSep: false
-                    });
-                    result.push({
-                        glyph: "",
-                        glyphVis: false,
-                        glyphType: "wi",
-                        glyphKdeFallback: "",
-                        text: " ",
-                        isSep: true
-                    });
-                    result.push({
-                        glyph: setInfo2.source,
-                        glyphVis: show,
-                        glyphType: setInfo2.type,
-                        glyphKdeFallback: "",
-                        text: r.sunsetTimeText,
-                        isSep: false
-                    });
+                        pushSep();
+                    pushItem(rInfo.source, show, rInfo.type, "", r.sunriseTimeText);
+                    pushSpaceSep();
+                    pushItem(sInfo.source, show, sInfo.type, "", r.sunsetTimeText);
                     return;
                 }
+
+                // upcoming / only-one variant
                 var stx = r.panelItemTextOnly(tok);
                 if (!stx || stx.length === 0)
                     return;
                 if (result.length > 0)
-                    result.push({
-                        glyph: "",
-                        glyphVis: false,
-                        glyphType: "wi",
-                        glyphKdeFallback: "",
-                        text: sep,
-                        isSep: true
-                    });
-                result.push({
-                    glyph: iconInfo.source,
-                    glyphVis: show && iconInfo.source.length > 0,
-                    glyphType: iconInfo.type,
-                    glyphKdeFallback: iconInfo.kdeFallback || "",
-                    text: stx,
-                    isSep: false
-                });
+                    pushSep();
+                pushItem(iconInfo.source, show, iconInfo.type, iconInfo.kdeFallback, stx);
                 return;
             }
 
@@ -774,23 +744,10 @@ PlasmaCore.ToolTipArea {
             if (!txt || txt.length === 0)
                 return;
             if (result.length > 0)
-                result.push({
-                    glyph: "",
-                    glyphVis: false,
-                    glyphType: "wi",
-                    glyphKdeFallback: "",
-                    text: sep,
-                    isSep: true
-                });
-            result.push({
-                glyph: iconInfo.source,
-                glyphVis: show && iconInfo.source.length > 0,
-                glyphType: iconInfo.type,
-                glyphKdeFallback: iconInfo.kdeFallback || "",
-                text: txt,
-                isSep: false
-            });
+                pushSep();
+            pushItem(iconInfo.source, show, iconInfo.type, iconInfo.kdeFallback, txt);
         });
+
         return result;
     }
 }
