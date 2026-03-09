@@ -513,7 +513,7 @@ PlasmoidItem {
     //   thermometer.svg  humidity.svg  barometer.svg  wind.svg
     //   sunrise.svg  sunset.svg  location.svg
     //   condition-<code>.svg  (e.g. condition-0.svg for clear sky)
-    //   moon-<phase>.svg  (e.g. moon-full.svg)
+    //   moon-<phase>.svg  (e.g. wi-moon-alt-full.svg)
     // ─────────────────────────────────────────────────────────────────────────
     function panelItemIconInfo(tok) {
         var theme = Plasmoid.configuration.panelIconTheme || "wi-font";

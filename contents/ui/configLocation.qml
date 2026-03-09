@@ -434,23 +434,22 @@ KCM.SimpleKCM {
         }
         elevReq.send()
 
-        // Also fetch timezone from Open-Meteo forecast meta if not already set
-        // (Nominatim returns no timezone; we need it for met.no accuracy)
-        if (!cfg_timezone || cfg_timezone.length === 0) {
-            var tzReq = new XMLHttpRequest()
-            tzReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude="
-                       + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon)
-                       + "&current=temperature_2m&timezone=auto")
-            tzReq.onreadystatechange = function() {
-                if (tzReq.readyState !== XMLHttpRequest.DONE) return
-                if (tzReq.status === 200) {
-                    var meta = JSON.parse(tzReq.responseText)
-                    if (meta.timezone && meta.timezone.length > 0)
-                        cfg_timezone = meta.timezone
-                }
+        // Always fetch timezone from Open-Meteo when a new location is selected.
+        // Do NOT guard with "if (!cfg_timezone)" — the old location's timezone
+        // would satisfy that check and the stale value would never be updated.
+        var tzReq = new XMLHttpRequest()
+        tzReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude="
+                   + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon)
+                   + "&current=temperature_2m&timezone=auto")
+        tzReq.onreadystatechange = function() {
+            if (tzReq.readyState !== XMLHttpRequest.DONE) return
+            if (tzReq.status === 200) {
+                var meta = JSON.parse(tzReq.responseText)
+                if (meta.timezone && meta.timezone.length > 0)
+                    cfg_timezone = meta.timezone
             }
-            tzReq.send()
         }
+        tzReq.send()
     }
 
     onCfg_autoDetectLocationChanged: {

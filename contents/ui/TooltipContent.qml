@@ -27,7 +27,13 @@ ColumnLayout {
     //  never opens at all.  This guard is a belt-and-suspenders fallback.)
     visible: Plasmoid.configuration.tooltipEnabled !== false
     spacing: 5
-    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false) ? Math.max(280, ttContentCol.implicitWidth + 24) : 0
+    // When truncating, cap tooltip width so the Label elide actually fires.
+    // When wrapping, still cap at a reasonable max so very long names wrap
+    // rather than making the tooltip absurdly wide.
+    readonly property int ttMaxWidth: 480
+    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false)
+        ? Math.min(ttMaxWidth, Math.max(280, ttContentCol.implicitWidth + 24))
+        : 0
 
     // ── Wi-font loaded inside tooltip popup ───────────────────────────────
     FontLoader {
@@ -205,12 +211,16 @@ ColumnLayout {
     // ── Header: location name ─────────────────────────────────────────────
     Label {
         Layout.fillWidth: true
+        Layout.maximumWidth: ttRoot.ttMaxWidth - 24
         text: weatherRoot && weatherRoot.hasSelectedTown ? Plasmoid.configuration.locationName : i18n("Weather Widget")
         font.bold: true
         font.pixelSize: ttRoot.ttFont.pixelSize + 2
         font.family: ttRoot.ttFont.family
         color: Kirigami.Theme.textColor
-        wrapMode: Text.NoWrap
+        wrapMode: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "wrap"
+            ? Text.WordWrap : Text.NoWrap
+        elide: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "truncate"
+            ? Text.ElideRight : Text.ElideNone
     }
 
     // ── Update timestamp ─────────────────────────────────────────────────

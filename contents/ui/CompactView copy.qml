@@ -330,13 +330,13 @@ PlasmaCore.ToolTipArea {
                         visible: !slVertItem.modelData.isSep
                         anchors.fill: parent
                         spacing: 4
-                        clip: false
+                        clip: true
 
                         Text {
                             visible: slVertItem.modelData.glyphVis && slVertItem.modelData.glyphType === "wi"
                             text: slVertItem.modelData.glyph
                             font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
-                            font.pixelSize: compactRoot.glyphSize
+                            font.pixelSize: Math.round(compactRoot.mlVertRowH * 0.85)
                             color: Kirigami.Theme.textColor
                             Layout.alignment: Qt.AlignVCenter
                         }
@@ -887,10 +887,7 @@ PlasmaCore.ToolTipArea {
                         anchors.centerIn: parent
                         text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
                         // Badge font ≈ 28 % of the square side; min 8 px
-                        // Respect Font Size setting; auto = 40% of square side
-                        font.pixelSize: compactRoot.simpleFontAuto
-                            ? Math.max(8, Math.round(compressedWrapper.squareSide * 0.4))
-                            : Math.max(8, compactRoot.simpleFontPx)
+                        font.pixelSize: Math.max(8, Math.round(compressedWrapper.squareSide * 0.4))
                         font.bold: false
                         color: Kirigami.Theme.textColor
                     }

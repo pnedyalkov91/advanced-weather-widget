@@ -30,7 +30,7 @@ function moonPhaseGlyph(age) {
 }
 
 /**
- * Returns the wi-* SVG icon name stem (e.g. "moon-full") for the given moon age.
+ * Returns the wi-* SVG icon name stem (e.g. "wi-moon-alt-full") for the given moon age.
  * Full URL: Qt.resolvedUrl("../icons/wi-" + Moon.moonPhaseSvgStem(age) + ".svg")
  */
 function moonPhaseSvgStem(age) {

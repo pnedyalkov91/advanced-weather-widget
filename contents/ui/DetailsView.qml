@@ -80,7 +80,7 @@ Item {
                 suntimes: "wi-sunrise.svg",
                 dewpoint: "wi-raindrop.svg",
                 visibility: "wi-fog.svg",
-                moonphase: "wi-moon-full.svg",
+                moonphase: "wi-wi-moon-alt-full.svg",
                 condition: "wi-day-sunny.svg"
             })[id] || "wi-na.svg";
     }

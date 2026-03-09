@@ -648,7 +648,6 @@ KCM.AbstractKCM {
     property bool cfg_tooltipEnabled: true
     property bool cfg_tooltipUseIcons: true
     property string cfg_tooltipSunTimesMode: "both" // "both" | "sunrise" | "sunset" | "upcoming"
-    property string cfg_tooltipLocationWrap: "truncate"  // "truncate" | "wrap"
 
     // ── Units config aliases (Issue #8) ──────────────────────────────────
     property string cfg_unitsMode: "metric"
@@ -2074,35 +2073,6 @@ KCM.AbstractKCM {
                         visible: root.cfg_tooltipEnabled
                         Kirigami.FormData.label: i18n("Tooltip items settings")
                         Kirigami.FormData.isSection: true
-                    }
-
-                    // ── Location name style ──────────────────────────
-                    RowLayout {
-                        visible: root.cfg_tooltipEnabled
-                        Kirigami.FormData.label: i18n("Location name:")
-                        ComboBox {
-                            id: ttLocationWrapCombo
-                            Layout.preferredWidth: 200
-                            textRole: "text"
-                            model: [
-                                {
-                                    text: i18n("Truncate (single line)"),
-                                    value: "truncate"
-                                },
-                                {
-                                    text: i18n("Wrap to next line"),
-                                    value: "wrap"
-                                }
-                            ]
-                            Component.onCompleted: {
-                                for (var i = 0; i < model.length; ++i)
-                                    if (model[i].value === root.cfg_tooltipLocationWrap) {
-                                        currentIndex = i;
-                                        break;
-                                    }
-                            }
-                            onActivated: root.cfg_tooltipLocationWrap = model[currentIndex].value
-                        }
                     }
 
                     // ── Icons / Text switch ───────────────────────────────

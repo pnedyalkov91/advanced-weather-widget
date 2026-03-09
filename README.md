@@ -106,8 +106,10 @@ systemctl --user restart plasma-plasmashell
 ```
 
 ## 🎨 Icons & Fonts
+
 This project uses weather icons and font resources from:
-https://github.com/erikflowers/weather-icons
+https://github.com/erikflowers/weather-icons 
+Licensed under SIL OFL 1.1 (http://scripts.sil.org/OFL)
 
 ## ❤️ Support the project
 
@@ -117,4 +119,4 @@ If you enjoy using it, consider supporting the project:
 
 - Liberapay: https://liberapay.com/pnedyalkov
 - PayPal: https://paypal.me/pnedyalkov91
-- Revolut: https://revolut.me/pnedyalkov
+- Revolut: https://revolut.me/petarnedyalkov91
