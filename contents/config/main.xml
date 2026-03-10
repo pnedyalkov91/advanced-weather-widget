@@ -38,6 +38,10 @@
     <entry name="tooltipSymbolicVariant" type="String"><default>dark</default></entry>
     <entry name="tooltipCustomIcons" type="String"><default></default></entry>
     <entry name="tooltipUseIcons" type="Bool"><default>true</default></entry>
+    <entry name="tooltipWidthMode"   type="String"><default>auto</default></entry>
+    <entry name="tooltipWidthManual"  type="Int"   ><default>320</default></entry>
+    <entry name="tooltipHeightMode"  type="String"><default>auto</default></entry>
+    <entry name="tooltipHeightManual" type="Int"   ><default>300</default></entry>
     <entry name="tooltipLocationWrap" type="String"><default>truncate</default></entry>
     <entry name="tooltipSunTimesMode" type="String"><default>both</default></entry>
     <entry name="panelWidth" type="Int"><default>0</default></entry>

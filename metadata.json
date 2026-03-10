@@ -5,11 +5,12 @@
     "Name": "Advanced Weather Widget",
     "Name[bg]": "Разширен уиджет за времето",
     "Name[de]":"Advanced Weather Widget",
+    "Name[pt_BR]":"Advanced Weather Widget",
 
-    "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6. Designed for seamless Plasma integration, performance, and flexibility.",
-    "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6. Проектиран за естествена интеграция, производителност и гъвкавост.",
-    "Description[de]": "Ein modernes, hochgradig anpassbares Wetter-Widget, das speziell für KDE Plasma 6 entwickelt wurde. Konzipiert für nahtlose Plasma-Integration, Performance und Flexibilität.",
-
+    "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6",
+    "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6",
+    "Description[de]": "Ein modernes, hochgradig anpassbares Wetter-Widget, das speziell für KDE Plasma 6 entwickelt wurde",
+    "Description[pt_BR]": "Um widget de clima moderno e altamente personalizável construído especificamente para o KDE Plasma 6",
 
     "Icon": "weather-clear",
     "Category": "Environment and Weather",
@@ -20,13 +21,6 @@
         "Name": "Petar Nedyalkov",
         "Email": "petar.nedyalkov91@gmail.com",
         "Role": "Author, design, development and Bulgarian translation"
-      }
-    ],
-        "Translators": [
-      {
-        "Name": "HolySoap",
-        "Website": "https://github.com/HolySoap",
-        "Task": "German"
       }
     ],
 

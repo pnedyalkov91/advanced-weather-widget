@@ -1,9 +1,5 @@
 /**
- * WeatherService.qml — Weather API service layer (OOP-style QtObject)
- *
- * Encapsulates all network requests for current weather and hourly forecasts.
- * Receives a reference to the root PlasmoidItem and writes data back to it.
- * Supports: Open-Meteo, OpenWeather, WeatherAPI.com, met.no, adaptive chain.
+ * WeatherService.qml — Weather API service layer
  *
  * Usage in main.qml:
  *   WeatherService { id: weatherService; weatherRoot: root }

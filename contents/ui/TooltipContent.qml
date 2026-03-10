@@ -6,6 +6,8 @@
  * Supports the same icon themes as the Panel: wi-font, symbolic, flat-color,
  * 3d-oxygen, kde, and custom (user-picked KDE icons per item).
  */
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -27,13 +29,18 @@ ColumnLayout {
     //  never opens at all.  This guard is a belt-and-suspenders fallback.)
     visible: Plasmoid.configuration.tooltipEnabled !== false
     spacing: 5
+
     // When truncating, cap tooltip width so the Label elide actually fires.
     // When wrapping, still cap at a reasonable max so very long names wrap
     // rather than making the tooltip absurdly wide.
-    readonly property int ttMaxWidth: 480
-    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false)
-        ? Math.min(ttMaxWidth, Math.max(280, ttContentCol.implicitWidth + 24))
-        : 0
+    // ── Size config helpers ───────────────────────────────────────────
+    readonly property bool ttWidthAuto: (Plasmoid.configuration.tooltipWidthMode || "auto") === "auto"
+    readonly property bool ttHeightAuto: (Plasmoid.configuration.tooltipHeightMode || "auto") === "auto"
+    readonly property int ttWidthManual: Plasmoid.configuration.tooltipWidthManual || 320
+    readonly property int ttHeightManual: Plasmoid.configuration.tooltipHeightManual || 300
+    // Auto width: fit content, min 280, max 480
+    readonly property int ttMaxWidth: ttWidthAuto ? 480 : Math.max(200, ttWidthManual)
+    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false) ? (ttWidthAuto ? Math.min(ttMaxWidth, Math.max(280, ttContentCol.implicitWidth + 24)) : ttWidthManual) : 0
 
     // ── Wi-font loaded inside tooltip popup ───────────────────────────────
     FontLoader {
@@ -47,11 +54,6 @@ ColumnLayout {
     readonly property bool ttUseIcons: Plasmoid.configuration.tooltipUseIcons !== false
     readonly property string ttSunTimesMode: Plasmoid.configuration.tooltipSunTimesMode || "both"
 
-    // FIX: Qt.resolvedUrl MUST be evaluated at component load time (here, as a property),
-    // NOT inside a JS function. When TooltipContent is used as a Plasma tooltip mainItem
-    // it runs in a detached window context where Qt.resolvedUrl("../...") inside a function
-    // resolves relative to the window root (wrong path → file not found → blank icons).
-    // A property-level Qt.resolvedUrl always resolves relative to this QML file (correct).
     readonly property url iconsBaseDir: Qt.resolvedUrl("../icons/")
 
     // Resolved icon font to use in tooltip rows
@@ -212,22 +214,20 @@ ColumnLayout {
     Label {
         Layout.fillWidth: true
         Layout.maximumWidth: ttRoot.ttMaxWidth - 24
-        text: weatherRoot && weatherRoot.hasSelectedTown ? Plasmoid.configuration.locationName : i18n("Weather Widget")
+        text: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown ? Plasmoid.configuration.locationName : i18n("Weather Widget")
         font.bold: true
         font.pixelSize: ttRoot.ttFont.pixelSize + 2
         font.family: ttRoot.ttFont.family
         color: Kirigami.Theme.textColor
-        wrapMode: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "wrap"
-            ? Text.WordWrap : Text.NoWrap
-        elide: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "truncate"
-            ? Text.ElideRight : Text.ElideNone
+        wrapMode: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "wrap" ? Text.WordWrap : Text.NoWrap
+        elide: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "truncate" ? Text.ElideRight : Text.ElideNone
     }
 
     // ── Update timestamp ─────────────────────────────────────────────────
     Label {
         Layout.fillWidth: true
-        visible: weatherRoot && weatherRoot.hasSelectedTown && weatherRoot.updateText.length > 0
-        text: weatherRoot ? weatherRoot.updateText : ""
+        visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && ttRoot.weatherRoot.updateText.length > 0
+        text: ttRoot.weatherRoot ? ttRoot.weatherRoot.updateText : ""
         font.pixelSize: Kirigami.Theme.smallFont.pixelSize
         color: Kirigami.Theme.disabledTextColor
     }
@@ -235,119 +235,139 @@ ColumnLayout {
     // ── No-location hint ─────────────────────────────────────────────────
     Label {
         Layout.fillWidth: true
-        visible: !weatherRoot || !weatherRoot.hasSelectedTown
+        visible: !ttRoot.weatherRoot || !ttRoot.weatherRoot.hasSelectedTown
         text: i18n("Click to configure a location")
         color: Kirigami.Theme.disabledTextColor
     }
 
     // ── Separator ────────────────────────────────────────────────────────
     Rectangle {
-        visible: weatherRoot && weatherRoot.hasSelectedTown
+        visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown
         Layout.fillWidth: true
         height: 1
-        color: Kirigami.Theme.separatorColor
+        color: Kirigami.Theme.neutralTextColor
         Layout.topMargin: 1
         Layout.bottomMargin: 2
     }
 
-    // ── Data rows — ICONS MODE: 3-per-row grid ────────────────────────────
-    GridLayout {
-        id: ttContentCol
+    // ── Scrollable data area — height capped when Manual ──────────────
+    ScrollView {
         Layout.fillWidth: true
-        columns: 3
-        columnSpacing: 10
-        rowSpacing: 6
-        visible: weatherRoot && weatherRoot.hasSelectedTown && ttUseIcons
+        // Auto: natural height. Manual: fixed height with scrollbar when needed.
+        implicitHeight: ttRoot.ttHeightAuto ? ttDataCol.implicitHeight : Math.min(ttRoot.ttHeightManual, ttDataCol.implicitHeight)
+        clip: true
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: ttRoot.ttHeightAuto ? ScrollBar.AlwaysOff : (ttDataCol.implicitHeight > ttRoot.ttHeightManual ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff)
 
-        Repeater {
-            model: {
-                if (!weatherRoot || !ttUseIcons)
-                    return [];
-                var _ = weatherRoot.temperatureC + weatherRoot.windKmh + weatherRoot.windDirection + weatherRoot.humidityPercent + weatherRoot.pressureHpa + weatherRoot.weatherCode + weatherRoot.sunriseTimeText.length + weatherRoot.sunsetTimeText.length + ttIconTheme + ttIconSize + ttSunTimesMode;
-                return _buildTooltipItems();
+        ColumnLayout {
+            id: ttDataCol
+            width: parent.width
+            spacing: 0
+
+            // ── Data rows — ICONS MODE: 3-per-row grid ────────────────────────────
+            GridLayout {
+                id: ttContentCol
+                Layout.fillWidth: true
+                columns: 3
+                columnSpacing: 10
+                rowSpacing: 6
+                visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && ttRoot.ttUseIcons
+
+                Repeater {
+                    id: ttIconRepeater
+                    model: {
+                        if (!ttRoot.weatherRoot || !ttRoot.ttUseIcons)
+                            return [];
+                        var _ = ttRoot.weatherRoot.temperatureC + ttRoot.weatherRoot.windKmh + ttRoot.weatherRoot.windDirection + ttRoot.weatherRoot.humidityPercent + ttRoot.weatherRoot.pressureHpa + ttRoot.weatherRoot.weatherCode + ttRoot.weatherRoot.sunriseTimeText.length + ttRoot.weatherRoot.sunsetTimeText.length + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode;
+                        return ttRoot._buildTooltipItems();
+                    }
+
+                    delegate: RowLayout {
+                        id: ttIconDelegate
+                        required property var modelData
+                        // Fill the grid cell so all 3 columns are equal width
+                        Layout.fillWidth: true
+                        spacing: 5
+
+                        // ── wi-font glyph ─────────────────────────────────────────
+                        Text {
+                            visible: ttIconDelegate.modelData.showIcon && ttIconDelegate.modelData.glyphType === "wi" && (ttIconDelegate.modelData.glyph || "").length > 0
+                            text: ttIconDelegate.modelData.glyph || ""
+                            font.family: wiFontTT.status === FontLoader.Ready ? wiFontTT.font.family : ""
+                            font.pixelSize: ttRoot.ttFont.pixelSize + 2
+                            color: Kirigami.Theme.textColor
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        // ── KDE icon ──────────────────────────────────────────────
+                        Kirigami.Icon {
+                            visible: ttIconDelegate.modelData.showIcon && ttIconDelegate.modelData.glyphType === "kde" && (ttIconDelegate.modelData.glyph || "").length > 0
+                            source: ttIconDelegate.modelData.glyph || ""
+                            implicitWidth: ttRoot.ttIconSize
+                            implicitHeight: ttRoot.ttIconSize
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        // ── SVG icon ──────────────────────────────────────────────
+                        Item {
+                            id: svgIconItem
+                            visible: svgIconItem_modelData.showIcon && svgIconItem_modelData.glyphType === "svg" && (svgIconItem_modelData.glyph || "").length > 0
+                            implicitWidth: ttRoot.ttIconSize
+                            implicitHeight: ttRoot.ttIconSize
+                            Layout.alignment: Qt.AlignVCenter
+                            property var svgIconItem_modelData: ttIconDelegate.modelData
+                            Kirigami.Icon {
+                                anchors.fill: parent
+                                source: svgIconItem.svgIconItem_modelData.glyphKdeFallback || ""
+                                visible: (svgIconItem.svgIconItem_modelData.glyphKdeFallback || "").length > 0
+                            }
+                            Kirigami.Icon {
+                                anchors.fill: parent
+                                source: svgIconItem.svgIconItem_modelData.glyph || ""
+                                isMask: ttRoot.ttIconTheme === "symbolic"
+                                color: Kirigami.Theme.textColor
+                            }
+                        }
+
+                        // ── Value text ────────────────────────────────────────────
+                        Label {
+                            Layout.fillWidth: true
+                            text: ttIconDelegate.modelData.text || ""
+                            color: Kirigami.Theme.textColor
+                            font: ttRoot.ttFont
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
             }
 
-            delegate: RowLayout {
-                required property var modelData
-                // Fill the grid cell so all 3 columns are equal width
+            // ── Data rows — TEXT MODE: one labelled row per item ──────────────────
+            ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 5
+                spacing: 3
+                visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && !ttRoot.ttUseIcons
 
-                // ── wi-font glyph ─────────────────────────────────────────
-                Text {
-                    visible: modelData.showIcon && modelData.glyphType === "wi" && (modelData.glyph || "").length > 0
-                    text: modelData.glyph || ""
-                    font.family: wiFontTT.status === FontLoader.Ready ? wiFontTT.font.family : ""
-                    font.pixelSize: ttRoot.ttFont.pixelSize + 2
-                    color: Kirigami.Theme.textColor
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                // ── KDE icon ──────────────────────────────────────────────
-                Kirigami.Icon {
-                    visible: modelData.showIcon && modelData.glyphType === "kde" && (modelData.glyph || "").length > 0
-                    source: modelData.glyph || ""
-                    implicitWidth: ttRoot.ttIconSize
-                    implicitHeight: ttRoot.ttIconSize
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
-                // ── SVG icon ──────────────────────────────────────────────
-                Item {
-                    visible: modelData.showIcon && modelData.glyphType === "svg" && (modelData.glyph || "").length > 0
-                    implicitWidth: ttRoot.ttIconSize
-                    implicitHeight: ttRoot.ttIconSize
-                    Layout.alignment: Qt.AlignVCenter
-                    Kirigami.Icon {
-                        anchors.fill: parent
-                        source: modelData.glyphKdeFallback || ""
-                        visible: (modelData.glyphKdeFallback || "").length > 0
+                Repeater {
+                    model: {
+                        if (!ttRoot.weatherRoot || ttRoot.ttUseIcons)
+                            return [];
+                        var _ = ttRoot.weatherRoot.temperatureC + ttRoot.weatherRoot.windKmh + ttRoot.weatherRoot.windDirection + ttRoot.weatherRoot.humidityPercent + ttRoot.weatherRoot.pressureHpa + ttRoot.weatherRoot.weatherCode + ttRoot.weatherRoot.sunriseTimeText.length + ttRoot.weatherRoot.sunsetTimeText.length + ttRoot.ttSunTimesMode;
+                        return ttRoot._buildTooltipItems();
                     }
-                    Kirigami.Icon {
-                        anchors.fill: parent
-                        source: modelData.glyph || ""
-                        isMask: ttRoot.ttIconTheme === "symbolic"
+
+                    delegate: Label {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        text: modelData.text || ""
                         color: Kirigami.Theme.textColor
+                        font: ttRoot.ttFont
+                        wrapMode: Text.NoWrap
                     }
                 }
-
-                // ── Value text ────────────────────────────────────────────
-                Label {
-                    Layout.fillWidth: true
-                    text: modelData.text || ""
-                    color: Kirigami.Theme.textColor
-                    font: ttRoot.ttFont
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
-                }
             }
-        }
-    }
-
-    // ── Data rows — TEXT MODE: one labelled row per item ──────────────────
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: 3
-        visible: weatherRoot && weatherRoot.hasSelectedTown && !ttUseIcons
-
-        Repeater {
-            model: {
-                if (!weatherRoot || ttUseIcons)
-                    return [];
-                var _ = weatherRoot.temperatureC + weatherRoot.windKmh + weatherRoot.windDirection + weatherRoot.humidityPercent + weatherRoot.pressureHpa + weatherRoot.weatherCode + weatherRoot.sunriseTimeText.length + weatherRoot.sunsetTimeText.length + ttSunTimesMode;
-                return _buildTooltipItems();
-            }
-
-            delegate: Label {
-                required property var modelData
-                Layout.fillWidth: true
-                text: modelData.text || ""
-                color: Kirigami.Theme.textColor
-                font: ttRoot.ttFont
-                wrapMode: Text.NoWrap
-            }
-        }
-    }
+        } // ttDataCol
+    } // ScrollView
 
     // ── Private: build tooltip rows ───────────────────────────────────────
     function _buildTooltipItems() {

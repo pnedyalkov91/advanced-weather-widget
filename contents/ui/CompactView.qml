@@ -78,9 +78,9 @@ PlasmaCore.ToolTipArea {
     // Font size: auto = proportional to rendered icon (50% of paintedHeight)
     //            manual = fixed pixel size set in settings (Font Size spinner)
     readonly property bool simpleIconAuto: (Plasmoid.configuration.simpleIconSizeMode || "auto") === "auto"
-    readonly property int  simpleIconPx:   Plasmoid.configuration.simpleIconSizeManual || 32
+    readonly property int simpleIconPx: Plasmoid.configuration.simpleIconSizeManual || 32
     readonly property bool simpleFontAuto: (Plasmoid.configuration.simpleFontSizeMode || "auto") === "auto"
-    readonly property int  simpleFontPx:   Plasmoid.configuration.simpleFontSizeManual || 14
+    readonly property int simpleFontPx: Plasmoid.configuration.simpleFontSizeManual || 14
 
     // ── Multiline options ─────────────────────────────────────────────────
     readonly property string mlIconStyle: Plasmoid.configuration.panelMultilineIconStyle || "colorful"
@@ -88,13 +88,9 @@ PlasmaCore.ToolTipArea {
     readonly property bool multiAnimate: Plasmoid.configuration.panelMultiAnimate !== false
     // 0 = auto-fit panel height; >0 = user-specified px (from settings spinner)
     readonly property int _mlIconSizeCfg: Plasmoid.configuration.panelMultilineIconSize || 0
-    readonly property int mlIconSize: _mlIconSizeCfg > 0
-        ? _mlIconSizeCfg
-        : Math.min(Math.max(multiLines * (panelFontPx + 8), 32) - 4, 64)
+    readonly property int mlIconSize: _mlIconSizeCfg > 0 ? _mlIconSizeCfg : Math.min(Math.max(multiLines * (panelFontPx + 8), 32) - 4, 64)
     // Vertical multiline sizing (panel width drives icon; font drives rows)
-    readonly property int mlVertIconSz: _mlIconSizeCfg > 0
-        ? _mlIconSizeCfg
-        : Math.min(Math.max(16, width - 4), 64)
+    readonly property int mlVertIconSz: _mlIconSizeCfg > 0 ? _mlIconSizeCfg : Math.min(Math.max(16, width - 4), 64)
     // Row height must fit both text AND icons (wi-font glyph or SVG).
     readonly property int mlVertRowH: Math.max(14, panelFontPx + 6, glyphSize + 4, svgIconPx + 4)
 
@@ -120,18 +116,12 @@ PlasmaCore.ToolTipArea {
     // Fill-panel for vertical single-line mirrors the horizontal pattern:
     //   horizontal: fillWidth:true  + preferredWidth:-1
     //   vertical:   fillHeight:true + preferredHeight:-1
-    readonly property bool vertFill:
-        vertical && !isSimpleMode && !isMultiLine
-        && Plasmoid.configuration.panelFillWidth
+    readonly property bool vertFill: vertical && !isSimpleMode && !isMultiLine && Plasmoid.configuration.panelFillWidth
 
     Layout.fillHeight: !vertical || compactRoot.vertFill
-    Layout.fillWidth:  vertical || Plasmoid.configuration.panelFillWidth
+    Layout.fillWidth: vertical || Plasmoid.configuration.panelFillWidth
 
-    Layout.preferredWidth: (vertical || Plasmoid.configuration.panelFillWidth)
-        ? -1
-        : isMultiLine
-            ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin
-            : implicitWidth
+    Layout.preferredWidth: (vertical || Plasmoid.configuration.panelFillWidth) ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
     Layout.preferredHeight: {
         // Vertical single-line + fill: return -1 so fillHeight can expand freely
         // (mirrors preferredWidth:-1 used for horizontal fill)
@@ -144,18 +134,18 @@ PlasmaCore.ToolTipArea {
             var nItems = 0, nSeps = 0;
             for (var ii = 0; ii < pd.length; ++ii)
                 pd[ii].isSep ? nSeps++ : nItems++;
-            var sepH   = compactRoot.panelFontPx + 4;  // matches separator Label font
-            var gaps   = Math.max(0, nItems + nSeps - 1) * compactRoot.itemSpacing;
+            var sepH = compactRoot.panelFontPx + 4;  // matches separator Label font
+            var gaps = Math.max(0, nItems + nSeps - 1) * compactRoot.itemSpacing;
             return nItems * compactRoot.mlVertRowH + nSeps * sepH + gaps + 4;
         }
         if (!vertical)
             return -1;
-        var iH = compactRoot.simpleIconAuto
-                 ? Math.max(Kirigami.Units.gridUnit * 2, Math.round(compactRoot.width))
-                 : compactRoot.simpleIconPx;
+        var iH = compactRoot.simpleIconAuto ? Math.max(Kirigami.Units.gridUnit * 2, Math.round(compactRoot.width)) : compactRoot.simpleIconPx;
         var tH = compactRoot.simpleFontAuto ? Math.round(iH * 0.5) : compactRoot.simpleFontPx;
-        if (simpleLayoutType === 1) return iH + tH + 6;
-        if (simpleLayoutType === 2) return iH + 4;
+        if (simpleLayoutType === 1)
+            return iH + tH + 6;
+        if (simpleLayoutType === 2)
+            return iH + 4;
         return Math.max(iH, tH) + 4;
     }
     Layout.minimumWidth: 20
@@ -275,9 +265,9 @@ PlasmaCore.ToolTipArea {
                     }
                     Label {
                         text: slRowItem.modelData.text
-                        font: compactRoot.weatherRoot
-                            ? compactRoot.weatherRoot.wpf(compactRoot.panelFontPx, false)
-                            : Qt.font({ pixelSize: compactRoot.panelFontPx })
+                        font: compactRoot.weatherRoot ? compactRoot.weatherRoot.wpf(compactRoot.panelFontPx, false) : Qt.font({
+                            pixelSize: compactRoot.panelFontPx
+                        })
                         color: Kirigami.Theme.textColor
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
@@ -306,19 +296,17 @@ PlasmaCore.ToolTipArea {
                     Layout.fillWidth: true
                     // Separators stay thin; data rows expand to fill surplus height
                     Layout.fillHeight: !slVertItem.modelData.isSep && compactRoot.vertFill
-                    Layout.preferredHeight: slVertItem.modelData.isSep
-                        ? (compactRoot.panelFontPx + 4) : compactRoot.mlVertRowH
-                    Layout.minimumHeight: slVertItem.modelData.isSep
-                        ? (compactRoot.panelFontPx + 4) : compactRoot.mlVertRowH
+                    Layout.preferredHeight: slVertItem.modelData.isSep ? (compactRoot.panelFontPx + 4) : compactRoot.mlVertRowH
+                    Layout.minimumHeight: slVertItem.modelData.isSep ? (compactRoot.panelFontPx + 4) : compactRoot.mlVertRowH
 
                     // ── Separator ─────────────────────────────────────
                     Label {
                         visible: slVertItem.modelData.isSep
                         anchors.fill: parent
                         text: slVertItem.modelData.text.trim() || "\u2022"
-                        font: compactRoot.weatherRoot
-                            ? compactRoot.weatherRoot.wpf(compactRoot.panelFontPx, false)
-                            : Qt.font({ pixelSize: compactRoot.panelFontPx })
+                        font: compactRoot.weatherRoot ? compactRoot.weatherRoot.wpf(compactRoot.panelFontPx, false) : Qt.font({
+                            pixelSize: compactRoot.panelFontPx
+                        })
                         color: Kirigami.Theme.textColor
                         opacity: 0.5
                         horizontalAlignment: Text.AlignHCenter
@@ -373,9 +361,9 @@ PlasmaCore.ToolTipArea {
                         }
                         Label {
                             text: slVertItem.modelData.text
-                            font: compactRoot.weatherRoot
-                                ? compactRoot.weatherRoot.wpf(compactRoot.mlVertRowH - 4, false)
-                                : Qt.font({ pixelSize: compactRoot.mlVertRowH - 4 })
+                            font: compactRoot.weatherRoot ? compactRoot.weatherRoot.wpf(compactRoot.mlVertRowH - 4, false) : Qt.font({
+                                pixelSize: compactRoot.mlVertRowH - 4
+                            })
                             color: Kirigami.Theme.textColor
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
@@ -413,9 +401,7 @@ PlasmaCore.ToolTipArea {
             spacing: 6
 
             Item {
-                readonly property int iconSz: compactRoot.height > 8
-                    ? Math.min(compactRoot.height - 4, 64)
-                    : compactRoot.mlIconSize
+                readonly property int iconSz: compactRoot.height > 8 ? Math.min(compactRoot.height - 4, 64) : compactRoot.mlIconSize
                 Layout.preferredWidth: iconSz
                 Layout.preferredHeight: iconSz
                 Layout.alignment: Qt.AlignVCenter
@@ -435,10 +421,7 @@ PlasmaCore.ToolTipArea {
                 Kirigami.Icon {
                     anchors.fill: parent
                     visible: compactRoot.mlIconStyle !== "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode,
-                                              compactRoot.weatherRoot.isNightTime())
-                        : "weather-none-available"
+                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime()) : "weather-none-available"
                     smooth: true
                 }
             }
@@ -450,9 +433,7 @@ PlasmaCore.ToolTipArea {
                 Column {
                     id: scrollCol
                     width: parent.width
-                    readonly property real rowH: compactRoot.height > 0
-                        ? Math.max(12, compactRoot.height / compactRoot.multiLines)
-                        : Math.max(12, compactRoot.panelFontPx + 8)
+                    readonly property real rowH: compactRoot.height > 0 ? Math.max(12, compactRoot.height / compactRoot.multiLines) : Math.max(12, compactRoot.panelFontPx + 8)
                     readonly property int rowFontPx: {
                         var sys = Plasmoid.configuration.panelUseSystemFont;
                         var savedP = Plasmoid.configuration.panelFontSize || 0;
@@ -463,7 +444,10 @@ PlasmaCore.ToolTipArea {
                     }
                     Behavior on y {
                         enabled: compactRoot.multiAnimate && compactRoot.mlScrollOffset !== 0
-                        NumberAnimation { duration: 350; easing.type: Easing.InOutCubic }
+                        NumberAnimation {
+                            duration: 350
+                            easing.type: Easing.InOutCubic
+                        }
                     }
                     y: -(compactRoot.mlScrollOffset * scrollCol.rowH)
 
@@ -518,9 +502,9 @@ PlasmaCore.ToolTipArea {
                             }
                             Label {
                                 text: mlRowItem.modelData.text
-                                font: compactRoot.weatherRoot
-                                    ? compactRoot.weatherRoot.wpf(scrollCol.rowFontPx, false)
-                                    : Qt.font({ pixelSize: scrollCol.rowFontPx })
+                                font: compactRoot.weatherRoot ? compactRoot.weatherRoot.wpf(scrollCol.rowFontPx, false) : Qt.font({
+                                    pixelSize: scrollCol.rowFontPx
+                                })
                                 color: Kirigami.Theme.textColor
                                 verticalAlignment: Text.AlignVCenter
                                 Layout.fillWidth: true
@@ -559,10 +543,7 @@ PlasmaCore.ToolTipArea {
                 Kirigami.Icon {
                     anchors.fill: parent
                     visible: compactRoot.mlIconStyle !== "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode,
-                                              compactRoot.weatherRoot.isNightTime())
-                        : "weather-none-available"
+                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime()) : "weather-none-available"
                     smooth: true
                 }
             }
@@ -585,7 +566,10 @@ PlasmaCore.ToolTipArea {
                     }
                     Behavior on y {
                         enabled: compactRoot.multiAnimate && compactRoot.mlScrollOffset !== 0
-                        NumberAnimation { duration: 350; easing.type: Easing.InOutCubic }
+                        NumberAnimation {
+                            duration: 350
+                            easing.type: Easing.InOutCubic
+                        }
                     }
                     y: -(compactRoot.mlScrollOffset * scrollColV.rowH)
 
@@ -640,9 +624,9 @@ PlasmaCore.ToolTipArea {
                             }
                             Label {
                                 text: mlRowItemV.modelData.text
-                                font: compactRoot.weatherRoot
-                                    ? compactRoot.weatherRoot.wpf(scrollColV.rowFontPx, false)
-                                    : Qt.font({ pixelSize: scrollColV.rowFontPx })
+                                font: compactRoot.weatherRoot ? compactRoot.weatherRoot.wpf(scrollColV.rowFontPx, false) : Qt.font({
+                                    pixelSize: scrollColV.rowFontPx
+                                })
                                 color: Kirigami.Theme.textColor
                                 verticalAlignment: Text.AlignVCenter
                                 elide: Text.ElideRight
@@ -788,29 +772,7 @@ PlasmaCore.ToolTipArea {
                     anchors.fill: parent
                     text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
                     font.family: Kirigami.Theme.defaultFont.family
-                    // Always 75 % of the icon's painted size so temp is visually
-                    // smaller than the weather glyph regardless of panel orientation.
-                    // fontSizeMode is FixedSize — the icon auto-fits and drives the
-                    // reference size; temp just follows proportionally.
-                    // Minimum is the KDE panel font size (panelFontPx reads from
-                    // Kirigami.Theme.defaultFont or the user's custom font size).
-                    // font.pixelSize is the UPPER CAP; autoFontSizeMode lets the
-                    // text shrink below that cap when the cell is too narrow (e.g.
-                    // vertical panel, type 0, each cell = half panel width).
-                    // font.pixelSize = upper cap (40% of icon height, at least panelFontPx).
-                    // minimumPixelSize must be a small absolute floor so HorizontalFit can
-                    // actually shrink the temp text when the cell is narrow — e.g. vertical
-                    // panel type 0 at 20px width gives each cell only ~10px.  Using
-                    // panelFontPx (~14px) as the floor prevented shrinking and caused overlap.
-                    // temperature relative to the icon.  The upper cap is still derived from
-                    // iconGlyph.paintedHeight so the two elements stay proportional.
-                    // Same HorizontalFit cap approach as icon.
-                    // Auto: 50% of icon's actual painted height (reactive).
-                    // Manual: fixed pixel size from settings + FixedSize.
-                    font.pixelSize: compactRoot.simpleFontAuto
-                                    ? Math.max(compactRoot.panelFontPx,
-                                               Math.round(iconGlyph.paintedHeight * 0.5))
-                                    : compactRoot.simpleFontPx
+                    font.pixelSize: compactRoot.simpleFontAuto ? Math.max(compactRoot.panelFontPx, Math.round(iconGlyph.paintedHeight * 0.5)) : compactRoot.simpleFontPx
                     font.pointSize: 0
                     minimumPixelSize: Math.round(Kirigami.Units.gridUnit / 2)
                     fontSizeMode: compactRoot.simpleFontAuto ? simpleRoot.autoFontSizeMode : Text.FixedSize
@@ -838,11 +800,7 @@ PlasmaCore.ToolTipArea {
             //   horizontal panel → side = panel HEIGHT (= widget height)
             // This ensures the compressed icon grows when the panel is resized.
             // Auto: size from panel thickness/height. Manual: use icon size setting.
-            readonly property int squareSide: compactRoot.simpleIconAuto
-                ? (compactRoot.vertical
-                   ? Math.max(16, compactRoot.width)
-                   : Math.max(16, compactRoot.height - 2))
-                : Math.max(16, compactRoot.simpleIconPx)
+            readonly property int squareSide: compactRoot.simpleIconAuto ? (compactRoot.vertical ? Math.max(16, compactRoot.width) : Math.max(16, compactRoot.height - 2)) : Math.max(16, compactRoot.simpleIconPx)
             Item {
                 id: compressedSquare
                 width: compressedWrapper.squareSide
@@ -888,9 +846,7 @@ PlasmaCore.ToolTipArea {
                         text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
                         // Badge font ≈ 28 % of the square side; min 8 px
                         // Respect Font Size setting; auto = 40% of square side
-                        font.pixelSize: compactRoot.simpleFontAuto
-                            ? Math.max(8, Math.round(compressedWrapper.squareSide * 0.4))
-                            : Math.max(8, compactRoot.simpleFontPx)
+                        font.pixelSize: compactRoot.simpleFontAuto ? Math.max(8, Math.round(compressedWrapper.squareSide * 0.4)) : Math.max(8, compactRoot.simpleFontPx)
                         font.bold: false
                         color: Kirigami.Theme.textColor
                     }

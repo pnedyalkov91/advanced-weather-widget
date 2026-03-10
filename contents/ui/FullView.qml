@@ -1,11 +1,5 @@
 /**
  * FullView.qml — Main widget popup
- *
- * Applied fixes:
- *  #2 — All hardcoded "white" colours migrated to Kirigami.Theme.textColor
- *       so labels are readable on both dark and light KDE colour schemes.
- *  #6 — Condition icon moved to CENTRE and enlarged to 120 px.
- *  #7 — High / Low temperatures shown on the RIGHT of the hero area.
  */
 import QtQuick
 import QtQuick.Layouts
@@ -31,17 +25,6 @@ Rectangle {
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
     readonly property int maxHeight: Math.min(Screen.desktopAvailableHeight * 0.9, Kirigami.Units.gridUnit * 40)
-
-    // Height depends on which part is visible
-    // height: {
-    //     if (weatherRoot && weatherRoot.hasSelectedTown) {
-    //         // Main content: layout + vertical margins
-    //         return Math.min(mainContent.implicitHeight + mainContent.anchors.topMargin + mainContent.anchors.bottomMargin, maxHeight);
-    //     } else {
-    //         // No‑location placeholder + margins
-    //         return Math.min(noLocationContent.implicitHeight + noLocationContent.anchors.topMargin + noLocationContent.anchors.bottomMargin, maxHeight);
-    //     }
-    // }
 
     // Always transparent — Plasma draws the background via backgroundHints
     // (DefaultBackground | ConfigurableBackground set in main.qml).

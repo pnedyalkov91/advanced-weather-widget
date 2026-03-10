@@ -1,9 +1,5 @@
 /**
- * ForecastView.qml — "Forecast" tab
- *
- * Fix #3 — All hardcoded "white" / Qt.rgba(1,1,1,x) colours replaced with
- *          Kirigami.Theme.textColor so the forecast list is readable on both
- *          dark and light KDE colour schemes.
+ * ForecastView.qml — "Forecast" tab of the main widget popup
  */
 import QtQuick
 import QtQuick.Layouts
