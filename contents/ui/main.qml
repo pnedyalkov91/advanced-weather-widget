@@ -47,8 +47,14 @@ PlasmoidItem {
     property real dewPointC: NaN
     property string sunriseTimeText: "--"
     property string sunsetTimeText: "--"
+    property string moonriseTimeText: "--"
+    property string moonsetTimeText: "--"
     property int weatherCode: -1
     property int isDay: -1   // -1=unknown, 0=night, 1=day (populated by API when available)
+    // UTC offset of the weather location in minutes (e.g. -420 for California UTC-7).
+    // Set by WeatherService from the API response. Used by sunpath.js to convert
+    // UTC clock time to location-local time without relying on Intl (unsupported in Qt V4).
+    property int locationUtcOffsetMins: 0
     property var dailyData: []
     property var hourlyData: []
     property int panelScrollIndex: 0

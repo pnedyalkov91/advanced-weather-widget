@@ -181,8 +181,12 @@ QtObject {
             r.visibilityKm = c.visibility / 1000.0;
             r.weatherCode = c.weather_code;
             r.isDay = (c.is_day !== undefined) ? c.is_day : -1;
+            // Store UTC offset so sunpath.js can compute location-local time reliably
+            r.locationUtcOffsetMins = (d.utc_offset_seconds !== undefined)
+                ? Math.round(d.utc_offset_seconds / 60) : 0;
             r.sunriseTimeText = (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0) ? Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm") : "--";
             r.sunsetTimeText = (d.daily && d.daily.sunset && d.daily.sunset.length > 0) ? Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm") : "--";
+            // Note: Open-Meteo does not provide moonrise/moonset. These remain "--".
             var nd = [];
             if (d.daily && d.daily.time) {
                 var maxD = Math.min(Plasmoid.configuration.forecastDays, d.daily.time.length);
