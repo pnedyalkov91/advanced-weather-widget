@@ -153,6 +153,7 @@ Thank you to everyone who contributed translations to this project ❤️
 - **German** - [HolySoap](https://github.com/HolySoap)
 - **Brazilian Portuguese** - [PauloAlbqrq](https://github.com/PauloAlbqrq)
 - **Bulgarian** - Petar Nedyalkov (Author)
+- **Dutch** - Heimen Stoffels (<vistausss@fastmail.com>)
 - **Russian** - Dmaliog
 
 ## 🎨 Icons & Fonts

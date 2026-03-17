@@ -763,6 +763,10 @@ PlasmoidItem {
         };
     }
 
+    function getSimpleModeIconSourceSvg() {
+        return "image://icon/" + getSimpleModeIconSource();
+    }
+
     /** Returns the display text for a panel chip */
     function panelItemTextOnly(tok) {
         var mode = Plasmoid.configuration.panelSunTimesMode || "upcoming";

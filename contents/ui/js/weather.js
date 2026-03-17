@@ -62,22 +62,98 @@ function windDirectionSvgStem(degrees) {
 // ── Plasma/Breeze theme icon names ──────────────────────────────────────────
 
 /**
- * Returns the KDE Plasma / Breeze theme icon name for a WMO weather code.
- * Kirigami.Icon resolves these automatically with Breeze fallback.
+ * Returns a KDE icon name for a WMO weather code.
+ *
+ * Maps every Open-Meteo WMO code to the best matching icon from the
+ * Breeze icon theme, using proper day/night variants wherever they exist.
+ *
+ * symbolic: when true, appends "-symbolic" so the active icon theme
+ *   serves the monochrome variant (standard Plasma convention).
  */
-function weatherCodeToIcon(code, night) {
+function weatherCodeToIcon(code, night, symbolic) {
     var n = (night !== undefined) ? night : false;
-    if (code < 0)                           return "weather-none-available";
-    if (code === 0)                         return n ? "weather-clear-night"             : "weather-clear";
-    if (code <= 2)                          return n ? "weather-few-clouds-night"        : "weather-few-clouds";
-    if (code === 3)                         return "weather-overcast";
-    if (code === 45 || code === 48)         return "weather-fog";
-    if (code <= 57)                         return n ? "weather-showers-scattered-night" : "weather-showers-scattered";
-    if (code <= 65)                         return n ? "weather-showers-night"           : "weather-showers";
-    if (code <= 77)                         return n ? "weather-snow-night"              : "weather-snow";
-    if (code <= 82)                         return n ? "weather-showers-night"           : "weather-showers";
-    if (code <= 99)                         return n ? "weather-storm-night"             : "weather-storm";
-    return "weather-few-clouds";
+    var s = (symbolic === true) ? "-symbolic" : "";
+    var d = n ? "night" : "day";   // day/night suffix for icons that have both
+
+    if (code < 0)   return "weather-none-available";
+
+    // 0 — Clear sky
+    if (code === 0)
+        return (n ? "weather-clear-night" : "weather-clear") + s;
+
+    // 1 — Mainly clear
+    if (code === 1)
+        return (n ? "weather-few-clouds-night" : "weather-few-clouds") + s;
+
+    // 2 — Partly cloudy
+    if (code === 2)
+        return "weather-clouds-" + d + s;
+
+    // 3 — Overcast
+    if (code === 3)
+        return "weather-many-clouds" + s;
+
+    // 45, 48 — Fog / rime fog
+    if (code === 45 || code === 48)
+        return "weather-fog" + s;
+
+    // 51, 53, 55 — Drizzle (light → dense)
+    if (code === 51 || code === 53 || code === 55)
+        return "weather-showers-scattered-" + d + s;
+
+    // 56, 57 — Freezing drizzle (light, dense)
+    if (code === 56)
+        return "weather-freezing-scattered-rain-" + d + s;
+    if (code === 57)
+        return "weather-freezing-rain-" + d + s;
+
+    // 61, 63, 65 — Rain (slight, moderate, heavy)
+    if (code === 61)
+        return "weather-showers-scattered-" + d + s;
+    if (code === 63 || code === 65)
+        return "weather-showers-" + d + s;
+
+    // 66, 67 — Freezing rain (light, heavy)
+    if (code === 66)
+        return "weather-freezing-scattered-rain-" + d + s;
+    if (code === 67)
+        return "weather-freezing-rain-" + d + s;
+
+    // 71, 73, 75 — Snow fall (slight, moderate, heavy)
+    if (code === 71)
+        return "weather-snow-scattered-" + d + s;
+    if (code === 73 || code === 75)
+        return "weather-snow-" + d + s;
+
+    // 77 — Snow grains
+    if (code === 77)
+        return "weather-snow-scattered-" + d + s;
+
+    // 80, 81, 82 — Rain showers (slight, moderate, violent)
+    if (code === 80)
+        return "weather-showers-scattered-" + d + s;
+    if (code === 81 || code === 82)
+        return "weather-showers-" + d + s;
+
+    // 85, 86 — Snow showers (slight, heavy)
+    if (code === 85)
+        return "weather-snow-scattered-" + d + s;
+    if (code === 86)
+        return "weather-snow-" + d + s;
+
+    // 95 — Thunderstorm (slight or moderate)
+    if (code === 95)
+        return "weather-storm-" + d + s;
+
+    // 96 — Thunderstorm with slight hail
+    if (code === 96)
+        return "weather-showers-scattered-storm-" + d + s;
+
+    // 99 — Thunderstorm with heavy hail
+    if (code === 99)
+        return "weather-snow-scattered-storm-" + d + s;
+
+    return "weather-few-clouds-night" + s;  // safe fallback
 }
 
 // ── Provider code converters ────────────────────────────────────────────────
