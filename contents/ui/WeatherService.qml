@@ -392,8 +392,10 @@ QtObject {
             var sym = (ts.data && ts.data.next_1_hours && ts.data.next_1_hours.summary) ? ts.data.next_1_hours.summary.symbol_code : "";
             r.weatherCode = W.metNoSymbolToWmo(sym);
             r.isDay = -1;   // met.no provides no is_day; derive from sunrise/sunset
+            // met.no does not provide sunrise/sunset — fetch from Open-Meteo as fallback.
             r.sunriseTimeText = "--";
             r.sunsetTimeText = "--";
+            _fetchSunTimesOpenMeteo();
 
             // Build daily forecast from timeseries
             var seen = {};
@@ -430,6 +432,42 @@ QtObject {
             r.dailyData = nd;
             r.loading = false;
             r.updateText = i18n("Updated %1 (met.no)", Qt.formatTime(new Date(), Qt.locale().timeFormat(Locale.ShortFormat)));
+        };
+        req.send();
+    }
+
+    // ─── Sunrise/sunset fallback for providers that don't supply it ─────────
+
+    /**
+     * Fetches today's sunrise and sunset from Open-Meteo and writes them
+     * into weatherRoot.  Called after met.no succeeds so night-icon logic
+     * and isNightTime() work correctly even without a primary API for these.
+     */
+    function _fetchSunTimesOpenMeteo() {
+        var r = weatherRoot;
+        var tz = (Plasmoid.configuration.timezone || "").trim();
+        var today = Qt.formatDate(new Date(), "yyyy-MM-dd");
+        var url = "https://api.open-meteo.com/v1/forecast"
+            + "?latitude="  + Plasmoid.configuration.latitude
+            + "&longitude=" + Plasmoid.configuration.longitude
+            + "&timezone="  + encodeURIComponent(tz.length > 0 ? tz : "auto")
+            + "&daily=sunrise,sunset"
+            + "&start_date=" + today
+            + "&end_date="   + today;
+        var req = new XMLHttpRequest();
+        req.open("GET", url);
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE)
+                return;
+            if (req.status !== 200)
+                return;  // leave "--" in place — better than crashing
+            try {
+                var d = JSON.parse(req.responseText);
+                if (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0)
+                    r.sunriseTimeText = Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm");
+                if (d.daily && d.daily.sunset && d.daily.sunset.length > 0)
+                    r.sunsetTimeText = Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm");
+            } catch (e) {}
         };
         req.send();
     }

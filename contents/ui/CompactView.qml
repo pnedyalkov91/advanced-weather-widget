@@ -116,6 +116,16 @@ PlasmaCore.ToolTipArea {
             : compactRoot.height + Kirigami.Units.largeSpacing * 2)
         : compactRoot.height
 
+    // True panel width for vertical panels.
+    // KDE subtracts largeSpacing (8 px) from ONE side of vertical-panel
+    // widgets (the side away from the screen edge), so:
+    //   compactRoot.width ≈ panelThickness - largeSpacing
+    // Adding largeSpacing back recovers the declared panel thickness:
+    //   e.g. compactRoot.width=40, largeSpacing=8 → _fullPanelW=48 ✓
+    readonly property int _fullPanelW: vertical
+        ? compactRoot.width + Kirigami.Units.largeSpacing
+        : compactRoot.width
+
     // ── Symbolic-icon scale for simple mode ───────────────────────────────
     // ↓↓ EDIT THIS LINE to resize symbolic (wi-font) icons in simple mode ↓↓
     // Horizontal panels: 1.0 = icon fills full panel height (same as colorful)
@@ -128,16 +138,14 @@ PlasmaCore.ToolTipArea {
     // ── Simple-mode computed sizes ─────────────────────────────────────────
     // simpleIconSz: auto horizontal type0   = full panel height
     //               auto horizontal type1   = panel height / 2 (stacked)
-    //               auto vertical   type0   = panel width / 2  (side-by-side)
-    //               auto vertical   type1   = panel width / 1.5 (stacked)
-    //                 e.g. 64 px panel → icon 42 px
+    //               auto vertical   (all)   = panel width  (icon fills panel thickness)
     //               manual = user value (no cap — let KDE clip if needed).
     // simpleIconSz:
-    //   vertical type 0 (side-by-side) → width / 4 = 16 px at 64 px panel
-    //   vertical type 1 (stacked)      → width / 2 = 32 px at 64 px panel
-    //   horizontal type 0              → _fullPanelH (48 px at 48 px panel)
+    //   vertical type 0 (side-by-side) → _fullPanelW / 2 = 24 px at 48 px panel
+    //   vertical type 1 (stacked)      → _fullPanelW     = 48 px at 48 px panel
+    //   horizontal type 0              → _fullPanelH     (48 px at 48 px panel)
     //   horizontal type 1              → _fullPanelH / 2
-    readonly property int simpleIconSz: compactRoot.simpleIconAuto ? (compactRoot.vertical ? (compactRoot.simpleLayoutType === 1 ? Math.max(16, Math.round(compactRoot.width / 2)) : Math.max(16, Math.round(compactRoot.width / 4))) : (compactRoot.simpleLayoutType === 1 ? Math.max(16, Math.round(compactRoot._fullPanelH / 2)) : Math.max(16, compactRoot._fullPanelH))) : compactRoot.simpleIconPx
+    readonly property int simpleIconSz: compactRoot.simpleIconAuto ? (compactRoot.vertical ? (compactRoot.simpleLayoutType === 0 ? Math.max(16, Math.round(compactRoot._fullPanelW / 2)) : Math.max(16, compactRoot._fullPanelW)) : (compactRoot.simpleLayoutType === 1 ? Math.max(16, Math.round(compactRoot._fullPanelH / 2)) : Math.max(16, compactRoot._fullPanelH))) : compactRoot.simpleIconPx
 
     // simpleFontSz auto sizing:
     //
@@ -150,19 +158,28 @@ PlasmaCore.ToolTipArea {
     //   horizontal type 2  (compressed)   → height / 2   (same as type 0)
     //
     //   vertical (auto)                   → panel width / 3
-    //     e.g. 64 px panel: icon = 32 px, font = 21 px
+    //     e.g. 48 px panel: icon = 48 px, font = 16 px
     //
     // manual = user value.
     // simpleFontSz:
     //   horizontal type 0 → _fullPanelH * 11/24 ≈ 22 px at 48 px
     //   horizontal type 1 → _fullPanelH / 3     = 16 px at 48 px
-    //   vertical type 0   → width * 3/16         = 12 px at 64 px
-    //   vertical type 1   → width / 4            = 16 px at 64 px
-    readonly property int simpleFontSz: compactRoot.simpleFontAuto ? (!compactRoot.vertical ? (compactRoot.simpleLayoutType === 1 ? Math.max(8, Math.round(compactRoot._fullPanelH / 3)) : Math.max(8, Math.round(compactRoot._fullPanelH * 11 / 24))) : (compactRoot.simpleLayoutType === 1 ? Math.max(8, Math.round(compactRoot.width / 4)) : Math.max(8, Math.round(compactRoot.width * 3 / 16)))) : compactRoot.simpleFontPx
+    //   vertical (all)    → _fullPanelW / 3      = 16 px at 48 px
+    readonly property int simpleFontSz: compactRoot.simpleFontAuto ? (!compactRoot.vertical ? (compactRoot.simpleLayoutType === 1 ? Math.max(8, Math.round(compactRoot._fullPanelH / 3)) : Math.max(8, Math.round(compactRoot._fullPanelH * 11 / 24))) : Math.max(8, Math.round(compactRoot._fullPanelW / 3))) : compactRoot.simpleFontPx
 
-    // ── Write auto-computed sizes back to Plasmoid.configuration ─────────
-    // This lets configAppearance.qml display the live px value next to the
-    // Auto dropdown — the config page has no access to panel geometry itself.
+    // ── Write auto-computed sizes + panel geometry back to config ────────
+    // simpleIconAutoSz / simpleFontAutoSz — live values for the applied
+    //   layout type; used as fallback when panel dim is not yet stored.
+    // simplePanelDim — raw panel thickness (_fullPanelW or _fullPanelH).
+    //   The config page uses this to recompute auto sizes for whatever
+    //   layout type is currently buffered in the dialog (before Apply).
+    // simplePanelIsVertical — orientation flag, read by config page.
+    readonly property int _simplePanelDim: compactRoot.vertical
+        ? compactRoot._fullPanelW : compactRoot._fullPanelH
+    on_SimplePanelDimChanged: {
+        Plasmoid.configuration.simplePanelDim = compactRoot._simplePanelDim;
+        Plasmoid.configuration.simplePanelIsVertical = compactRoot.vertical;
+    }
     onSimpleIconSzChanged: {
         if (compactRoot.simpleIconAuto)
             Plasmoid.configuration.simpleIconAutoSz = compactRoot.simpleIconSz;
@@ -176,6 +193,8 @@ PlasmaCore.ToolTipArea {
             Plasmoid.configuration.simpleIconAutoSz = compactRoot.simpleIconSz;
         if (compactRoot.simpleFontAuto)
             Plasmoid.configuration.simpleFontAutoSz = compactRoot.simpleFontSz;
+        Plasmoid.configuration.simplePanelDim = compactRoot._simplePanelDim;
+        Plasmoid.configuration.simplePanelIsVertical = compactRoot.vertical;
     }
 
     // ── Multiline options ─────────────────────────────────────────────────
@@ -200,7 +219,15 @@ PlasmaCore.ToolTipArea {
             // side-by-side / stacked: track actual GridLayout content width
             Math.max(Kirigami.Units.gridUnit * 2, simpleGrid.implicitWidth + 2 * leftRightMargin))) : compactRow.implicitWidth + 2 * leftRightMargin
 
-    implicitHeight: isMultiLine ? Math.max(multiLines * (panelFontPx + 8), 32) : (isSimpleMode && vertical) ? Math.max(Kirigami.Units.gridUnit * 2, simpleIconSz + 4) : Kirigami.Units.gridUnit * 2
+    // vertical simple type 0 (side-by-side): content height = max(icon, font)+4;
+    // no gridUnit floor so the widget stays compact and matches preferredHeight.
+    // all other vertical simple types keep the gridUnit*2 floor.
+    implicitHeight: isMultiLine ? Math.max(multiLines * (panelFontPx + 8), 32)
+        : (isSimpleMode && vertical)
+            ? (simpleLayoutType === 0
+                ? Math.max(simpleIconSz, simpleFontSz) + 4
+                : Math.max(Kirigami.Units.gridUnit * 2, simpleIconSz + 4))
+        : Kirigami.Units.gridUnit * 2
 
     // ── Layout hints to the panel ─────────────────────────────────────────
     // vertical panels: fillHeight=false keeps the widget from consuming all
@@ -240,8 +267,12 @@ PlasmaCore.ToolTipArea {
         var tH = compactRoot.simpleFontSz;
         if (simpleLayoutType === 1)
             return iH + tH + 6;
-        if (simpleLayoutType === 2)
-            return iH + 4;
+        if (simpleLayoutType === 2) {
+            var compressedIconSz = compactRoot.vertical
+                ? (compactRoot.simpleIconAuto ? Math.max(16, compactRoot._fullPanelW) : Math.max(16, compactRoot.simpleIconPx))
+                : iH;
+            return compressedIconSz + 4;
+        }
         return Math.max(iH, tH) + 4;
     }
     Layout.minimumWidth: 20
@@ -805,7 +836,7 @@ PlasmaCore.ToolTipArea {
             anchors.centerIn: parent
             // Vertical: fill panel thickness so the temp column gets real width.
             // Horizontal: content-sized so anchors.centerIn can centre the block.
-            width: compactRoot.vertical ? parent.width : implicitWidth
+            width: compactRoot.vertical ? compactRoot._fullPanelW : implicitWidth
 
             // Vertical panels and horizontal stacked (type 1): collapse the grid to
             // exactly its content height so anchors.centerIn centres the icon+temp
@@ -826,8 +857,10 @@ PlasmaCore.ToolTipArea {
             rows: compactRoot.simpleLayoutType === 1 ? 2 : 1
             columns: compactRoot.simpleLayoutType === 1 ? 1 : 2
 
-            // uniformCellHeights only for vertical + stacked — exactly as reference
-            uniformCellHeights: compactRoot.simpleLayoutType === 1 && compactRoot.vertical
+            // uniformCellHeights disabled: with different icon/font sizes (e.g. 24 and
+            // 16 px) forcing equal rows inflates the grid beyond the panel height.
+            // Each row uses its natural cell height; rowSpacing provides the gap.
+            uniformCellHeights: false
 
             // columnSpacing: always 4 px between icon and temp for vertical type 0 so
             //   there is a visible gap at every panel size.
@@ -842,13 +875,14 @@ PlasmaCore.ToolTipArea {
             // ↓↓ EDIT the two numbers below to tune spacing for each icon style ↓↓
             //      first number  = colorful icon gap (px)
             //      second number = symbolic icon gap (px)
-            columnSpacing: compactRoot.simpleLayoutType === 0 ? (compactRoot.vertical ? 2 : (compactRoot.simpleIconStyle === "colorful" ? 6 : 8)) : 0
+            // vertical type 0: no gap — icon and temperature sit flush side-by-side
+            columnSpacing: compactRoot.simpleLayoutType === 0 ? (compactRoot.vertical ? 0 : (compactRoot.simpleIconStyle === "colorful" ? 6 : 8)) : 0
 
             // ↓↓ EDIT the two numbers below to adjust the gap between icon and temperature
             //    in stacked (type 1) simple mode layout:
             //      first number  = vertical panels gap (px)
             //      second number = horizontal panels gap (px)
-            rowSpacing: compactRoot.simpleLayoutType === 1 ? (compactRoot.vertical ? 6 : 8) : 0
+            rowSpacing: compactRoot.simpleLayoutType === 1 ? (compactRoot.vertical ? 0 : 8) : 0
 
             // ── Icon cell ─────────────────────────────────────────────────
             Item {
@@ -874,7 +908,17 @@ PlasmaCore.ToolTipArea {
                 // needed — pinning explicitly avoids Qt distributing columns unevenly
                 // when both cells have fillWidth:true (causes the "go right" bug with
                 // colorful icons on vertical panels in auto mode).
-                readonly property int _cellSz: compactRoot.vertical ? _baseCellSz : Math.min(_baseCellSz, compactRoot._fullPanelH)
+                // vertical type 0 auto: cap to half panel width (24px at 48px panel)
+                //   so icon and temp share the panel width equally.
+                // vertical type 0 manual: no cap — honour the user's chosen size.
+                // vertical type 1/2: cap to full panel width.
+                readonly property int _cellSz: compactRoot.vertical
+                    ? (compactRoot.simpleLayoutType === 0
+                        ? (compactRoot.simpleIconAuto
+                            ? Math.min(_baseCellSz, Math.round(compactRoot._fullPanelW / 2))
+                            : _baseCellSz)
+                        : Math.min(_baseCellSz, compactRoot._fullPanelW))
+                    : Math.min(_baseCellSz, compactRoot._fullPanelH)
                 // Pin the cell to exactly _cellSz on both axes.
                 // The grid is sized to implicitWidth so anchors.centerIn centres
                 // the content block — no fillWidth needed on the icon cell.
@@ -883,9 +927,17 @@ PlasmaCore.ToolTipArea {
                 Layout.preferredWidth: _cellSz
                 Layout.minimumWidth: _cellSz
                 Layout.maximumWidth: _cellSz
-                Layout.preferredHeight: _cellSz
-                Layout.minimumHeight: _cellSz
-                Layout.maximumHeight: _cellSz
+                // vertical type 0 auto: pin cell height to simpleFontSz so the row
+                //   is compact (no gap when font is small; icon renders larger than
+                //   the cell height but is clipped cleanly — same as panel behaviour).
+                // vertical type 0 manual: use _cellSz so a large icon isn't clipped.
+                // All other cases: square cell (height = _cellSz).
+                readonly property int _cellH: (compactRoot.vertical && compactRoot.simpleLayoutType === 0)
+                    ? (compactRoot.simpleIconAuto ? compactRoot.simpleFontSz : _cellSz)
+                    : _cellSz
+                Layout.preferredHeight: _cellH
+                Layout.minimumHeight: _cellH
+                Layout.maximumHeight: _cellH
 
                 // Widget order: 0 = icon first, 1 = temp first
                 Layout.row: compactRoot.simpleLayoutType === 1 ? (compactRoot.simpleWidgetOrder === 0 ? 0 : 1) : 0
@@ -924,11 +976,9 @@ PlasmaCore.ToolTipArea {
                 visible: tempText.text.length > 0 && (compactRoot.simpleLayoutType !== 0 || compactRoot.simpleHorizContent !== "icon_only")
                 Layout.alignment: Qt.AlignCenter
                 Layout.fillWidth: compactRoot.vertical
-                // fillHeight intentionally omitted: height is fully pinned by
-                // preferred/min/max below.  Setting fillHeight:true with a pinned
-                // maximumHeight can cause Qt's GridLayout to shrink the icon row
-                // in the surplus-redistribution pass, making the colorful icon
-                // render smaller than simpleIconSz in auto mode.
+                // Pin height to simpleFontSz on all layouts.
+                // The icon cell is also pinned to simpleFontSz for vertical type 0,
+                // so row height = simpleFontSz — compact with no gaps.
                 Layout.minimumWidth: compactRoot.vertical ? 0 : tempText.paintedWidth
                 Layout.maximumWidth: compactRoot.vertical ? Infinity : tempText.paintedWidth
                 Layout.preferredHeight: compactRoot.simpleFontSz
@@ -975,7 +1025,7 @@ PlasmaCore.ToolTipArea {
             // Manual: use icon size setting.
             readonly property int squareSide: compactRoot.simpleIconAuto
                 ? (compactRoot.vertical
-                    ? Math.max(16, compactRoot.width)
+                    ? Math.max(16, compactRoot._fullPanelW)
                     : Math.max(16, compactRoot._fullPanelH))
                 : Math.max(16, compactRoot.simpleIconPx)
             Item {

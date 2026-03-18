@@ -154,7 +154,8 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Brazilian Portuguese** - [PauloAlbqrq](https://github.com/PauloAlbqrq)
 - **Bulgarian** - Petar Nedyalkov (Author)
 - **Dutch** - Heimen Stoffels (<vistausss@fastmail.com>)
-- **Russian** - Dmaliog
+- **Russian** - [Dmaliog](https://github.com/dmaliog)
+- **French** - [LAZER-TY](https://github.com/LAZER-TY)
 
 ## 🎨 Icons & Fonts
 

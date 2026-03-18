@@ -65,7 +65,7 @@ Item {
                     Rectangle {
                         id: dayRow
                         width: parent.width
-                        height: 52
+                        height: Math.max(52, rowLayoutInner.implicitHeight + 12)
                         color: (rowMouse.containsMouse || forecastRoot.expandedIndex === index) ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08) : "transparent"
                         Behavior on color {
                             ColorAnimation {
@@ -74,6 +74,7 @@ Item {
                         }
 
                         RowLayout {
+                            id: rowLayoutInner
                             anchors {
                                 fill: parent
                                 leftMargin: 10
@@ -91,10 +92,14 @@ Item {
                             }
 
                             ColumnLayout {
-                                Layout.minimumWidth: 50
-                                Layout.maximumWidth: 120
+                                Layout.preferredWidth: 110
+                                Layout.minimumWidth: 110
+                                Layout.maximumWidth: 110
+                                Layout.alignment: Qt.AlignVCenter
                                 spacing: 1
                                 Label {
+                                    width: parent.width
+                                    elide: Text.ElideRight
                                     text: {
                                         if (index === 0)
                                             return i18n("Today");
@@ -136,12 +141,12 @@ Item {
 
                             Label {
                                 Layout.fillWidth: true
-                                Layout.maximumWidth: 140
+                                Layout.alignment: Qt.AlignVCenter
                                 text: weatherRoot.weatherCodeToText(weatherRoot.dailyData[index].code)
                                 color: Kirigami.Theme.textColor
                                 opacity: 0.48
                                 font: weatherRoot.wf(11, false)
-                                elide: Text.ElideRight
+                                wrapMode: Text.WordWrap
                             }
 
                             Item {
@@ -268,7 +273,26 @@ Item {
 
                                             Kirigami.Icon {
                                                 Layout.alignment: Qt.AlignHCenter
-                                                source: W.weatherCodeToIcon(modelData.code || 0)
+                                                source: {
+                                                    // Derive night flag from the hour vs sunrise/sunset
+                                                    var isNight = false;
+                                                    if (modelData.hour && modelData.hour !== "--") {
+                                                        var parts = modelData.hour.split(":");
+                                                        if (parts.length >= 2) {
+                                                            var hMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                                                            function parseSunMins(t) {
+                                                                if (!t || t === "--") return -1;
+                                                                var p = t.split(":");
+                                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+                                                            }
+                                                            var rise = parseSunMins(weatherRoot ? weatherRoot.sunriseTimeText : "--");
+                                                            var set_ = parseSunMins(weatherRoot ? weatherRoot.sunsetTimeText : "--");
+                                                            if (rise >= 0 && set_ >= 0)
+                                                                isNight = hMins < rise || hMins >= set_;
+                                                        }
+                                                    }
+                                                    return W.weatherCodeToIcon(modelData.code || 0, isNight);
+                                                }
                                                 Layout.preferredWidth: 48
                                                 Layout.preferredHeight: 48
                                             }

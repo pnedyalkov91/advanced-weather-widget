@@ -510,7 +510,6 @@ msgid "Humidity:"
 msgstr "Umidade:"
 
 #: contents/ui/configAppearance.qml:1303
-#, fuzzy
 msgid "Icon and temperature"
 msgstr "Sensação térmica"
 
@@ -960,7 +959,6 @@ msgid "Show/hide key"
 msgstr "Mostrar/ocultar chave"
 
 #: contents/ui/configAppearance.qml:1296
-#, fuzzy
 msgid "Show:"
 msgstr "Exibido"
 
@@ -1087,7 +1085,6 @@ msgid "Temperature first"
 msgstr "Temperatura antes"
 
 #: contents/ui/configAppearance.qml:1304
-#, fuzzy
 msgid "Temperature only"
 msgstr "Temperatura"
 

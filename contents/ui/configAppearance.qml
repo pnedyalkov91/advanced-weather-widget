@@ -686,6 +686,30 @@ KCM.AbstractKCM {
     property int cfg_simpleFontSizeManual: 14
     property int cfg_simpleIconAutoSz: 0   // written by CompactView; read-only here
     property int cfg_simpleFontAutoSz: 0   // written by CompactView; read-only here
+    // Panel geometry written back by CompactView so the config page can
+    // recompute auto sizes for the CURRENTLY SELECTED layout type even
+    // before the user clicks Apply (config dialog buffers cfg_* values).
+    property int cfg_simplePanelDim: 48        // _fullPanelW (vertical) or _fullPanelH (horizontal)
+    property bool cfg_simplePanelIsVertical: false
+
+    // Compute auto icon size for a given layout type using the live panel dim.
+    // Mirrors CompactView simpleIconSz formula exactly.
+    function _autoIconSz(lt) {
+        var dim = root.cfg_simplePanelDim > 0 ? root.cfg_simplePanelDim : 48;
+        if (root.cfg_simplePanelIsVertical)
+            return lt === 0 ? Math.max(16, Math.round(dim / 2)) : Math.max(16, dim);
+        else
+            return lt === 1 ? Math.max(16, Math.round(dim / 2)) : Math.max(16, dim);
+    }
+    // Compute auto font size for a given layout type using the live panel dim.
+    // Mirrors CompactView simpleFontSz formula exactly.
+    function _autoFontSz(lt) {
+        var dim = root.cfg_simplePanelDim > 0 ? root.cfg_simplePanelDim : 48;
+        if (root.cfg_simplePanelIsVertical)
+            return Math.max(8, Math.round(dim / 3));
+        else
+            return lt === 1 ? Math.max(8, Math.round(dim / 3)) : Math.max(8, Math.round(dim * 11 / 24));
+    }
 
     // ── Custom icon map helpers ──────────────────────────────────────────
     function parseCustomIcons(raw) {
@@ -1434,8 +1458,11 @@ KCM.AbstractKCM {
                                 : allSizes
                             currentIndex: {
                                 if (root.cfg_simpleIconSizeMode === "auto") {
-                                    // Find closest size to the live auto value
-                                    var target = root.cfg_simpleIconAutoSz;
+                                    // Compute the correct auto value for the CURRENTLY
+                                    // SELECTED layout type (may differ from applied type).
+                                    var target = root.cfg_simplePanelDim > 0
+                                        ? root._autoIconSz(root.cfg_panelSimpleLayoutType)
+                                        : (root.cfg_simpleIconAutoSz > 0 ? root.cfg_simpleIconAutoSz : 24);
                                     var best = 0;
                                     for (var i = 0; i < model.length; i++) {
                                         if (Math.abs(model[i].value - target) < Math.abs(model[best].value - target))
@@ -1492,13 +1519,13 @@ KCM.AbstractKCM {
                             enabled: root.cfg_simpleFontSizeMode === "manual"
                             from: 8
                             to: 72
-                            // Use simpleFontAutoSz written back by CompactView — it always
-                            // reflects the correct formula for the actual panel orientation
-                            // and layout type (vertical vs horizontal, all types).
+                            // Compute the correct auto font for the CURRENTLY SELECTED
+                            // layout type using the live panel dim from CompactView.
+                            // Falls back to cfg_simpleFontAutoSz if dim not yet stored.
                             value: root.cfg_simpleFontSizeMode === "auto"
-                                ? (root.cfg_simpleFontAutoSz > 0
-                                    ? root.cfg_simpleFontAutoSz
-                                    : root.cfg_simpleFontSizeManual)
+                                ? (root.cfg_simplePanelDim > 0
+                                    ? root._autoFontSz(root.cfg_panelSimpleLayoutType)
+                                    : (root.cfg_simpleFontAutoSz > 0 ? root.cfg_simpleFontAutoSz : root.cfg_simpleFontSizeManual))
                                 : root.cfg_simpleFontSizeManual
                             onValueModified: {
                                 if (root.cfg_simpleFontSizeMode === "manual")
@@ -1592,6 +1619,7 @@ KCM.AbstractKCM {
                         }
                     }
                     RowLayout {
+                        visible: root.cfg_panelInfoMode !== "simple"
                         Kirigami.FormData.label: i18n("Item width:")
                         spacing: 8
                         SpinBox {
