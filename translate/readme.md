@@ -49,8 +49,7 @@ msgstr "Configurar ícone…"
 
 5. When the translation is ready:
 
-- open a **GitHub Issue** and attach the `.po` file (you may need to compress it as `.zip` because GitHub blocks `.po` attachments).
-- open a **Pull Request** with the `.po` and `.mo` files  
+- open a [**GitHub Issue**](https://github.com/pnedyalkov91/advanced-weather-widget/issues) and attach the `.po` file (you may need to compress it as `.zip` because GitHub blocks `.po` attachments).
 
 ### Translators
 
@@ -59,4 +58,7 @@ Thank you to everyone who contributed translations to this project ❤️
 - **German** - [HolySoap](https://github.com/HolySoap)
 - **Brazilian Portuguese** - [PauloAlbqrq](https://github.com/PauloAlbqrq)
 - **Bulgarian** - Petar Nedyalkov (Author)
-- **Russian** - [Dmaliog]
+- **Dutch** - Heimen Stoffels (<vistausss@fastmail.com>)
+- **Russian** - [Dmaliog](https://github.com/dmaliog)
+- **French** - [LAZER-TY](https://github.com/LAZER-TY)
+- **Turkish** - [herzane52](https://github.com/herzane52)
