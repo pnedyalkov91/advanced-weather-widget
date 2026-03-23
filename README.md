@@ -144,7 +144,6 @@ msgstr "Configurar ícone…"
 5. When the translation is ready:
 
 - open a **GitHub Issue** and attach the `.po` file (you may need to compress it as `.zip` because GitHub blocks `.po` attachments).
-- open a **Pull Request** with the `.po` and `.mo` files  
 
 ### Translators
 
@@ -156,6 +155,7 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Dutch** - Heimen Stoffels (<vistausss@fastmail.com>)
 - **Russian** - [Dmaliog](https://github.com/dmaliog)
 - **French** - [LAZER-TY](https://github.com/LAZER-TY)
+- **Turkish** - [herzane52](https://github.com/herzane52)
 
 ## 🎨 Icons & Fonts
 

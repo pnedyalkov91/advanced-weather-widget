@@ -7,6 +7,9 @@
     "Name[de]":"Advanced Weather Widget",
     "Name[nl]": "Uitgebreide weerwidget",
     "Name[pt_BR]":"Advanced Weather Widget",
+    "Name[ru]": "Расширенный виджет погоды",
+    "Name[fr_FR]": "Widget météo avancé",
+    "Name[tr_TR]": "Gelişmiş Hava Durumu Widget'ı",
 
     "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6",
     "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6",
@@ -15,6 +18,7 @@
     "Description[pt_BR]": "Um widget de clima moderno e altamente personalizável construído especificamente para o KDE Plasma 6",
     "Description[ru]": "Современный, высоко настраиваемый виджет погоды, созданный специально для KDE Plasma 6",
     "Description[fr_FR]": "Un widget météo moderne et hautement personnalisable, conçu spécifiquement pour KDE Plasma 6",
+    "Description[tr_TR]": "KDE Plasma 6 için özel olarak oluşturulmuş modern, son derece özelleştirilebilir bir hava durumu widget'ı",
 
     "Icon": "weather-clear",
     "Category": "Environment and Weather",
@@ -28,9 +32,9 @@
       }
     ],
 
-    "Version": "1.2.2",
+    "Version": "1.2.3",
     "Website": "https://github.com/pnedyalkov91/advanced-weather-widget",
-    "BugReportUrl": "https://github.com/pnedyalkov91/advanced-weather-widget/is)sues"
+    "BugReportUrl": "https://github.com/pnedyalkov91/advanced-weather-widget/issues"
   },
 
   "X-Plasma-API-Minimum-Version": "6.0",
