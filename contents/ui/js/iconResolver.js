@@ -52,6 +52,7 @@ var _kdeIcons = {
     location:     "mark-location",
     umbrella:     "weather-showers",
     preciprate:   "weather-showers",
+    precipsum:    "weather-showers",
     uvindex:      "weather-clear",
     airquality:   "weather-many-clouds",
     alerts:       "weather-storm",
@@ -79,7 +80,8 @@ var _svgStems = {
     condition:    "day-sunny",
     location:     "wind-deg",
     umbrella:     "umbrella",
-    preciprate:   "raindrop",
+    preciprate:   "raindrops",
+    precipsum:    "flood",
     uvindex:      "hot",
     airquality:   "smog",
     alerts:       "storm-warning",
@@ -109,8 +111,9 @@ var _wiGlyphs = {
     location:     "\uF0B1",
     umbrella:     "\uF084",
     preciprate:   "\uF04E",
+    precipsum:    "\uF04E",
     uvindex:      "\uF072",
-    airquality:   "\uF075",
+    airquality:   "\uF074",
     alerts:       "\uF0CE",
     snowcover:    "\uF076"
 };

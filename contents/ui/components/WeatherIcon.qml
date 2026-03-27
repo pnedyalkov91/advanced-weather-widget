@@ -108,13 +108,15 @@ Item {
     implicitHeight: iconSize
     width: iconSize
     height: iconSize
-    clip: true
+    clip: iconType !== "wi"
 
     visible: iconSource.length > 0
 
     // ── Wi-font glyph ─────────────────────────────────────────────────────
     Text {
         id: wiFontText
+        width: weatherIcon.iconSize
+        height: weatherIcon.iconSize
         anchors.centerIn: parent
         visible: weatherIcon.iconType === "wi" && weatherIcon.wiFontReady
         text: weatherIcon.iconSource

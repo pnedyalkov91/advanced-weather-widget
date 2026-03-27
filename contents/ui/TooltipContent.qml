@@ -139,8 +139,9 @@ Item {
                 "suntimes-sunrise": "\uF051",
                 "suntimes-sunset": "\uF052",
                 preciprate: "\uF04E",
+                precipsum: "\uF04E",
                 uvindex: "\uF072",
-                airquality: "\uF075",
+                airquality: "\uF074",
                 alerts: "\uF0CE",
                 snowcover: "\uF076"
             };
@@ -162,6 +163,7 @@ Item {
                 "suntimes-sunrise": "weather-sunrise",
                 "suntimes-sunset": "weather-sunset",
                 preciprate: "weather-showers",
+                precipsum: "weather-showers",
                 uvindex: "weather-clear",
                 airquality: "weather-many-clouds",
                 alerts: "weather-storm",
@@ -433,6 +435,11 @@ Item {
         if (tok === "preciprate") {
             var pTxt = r.precipValue(r.precipMmh);
             return [row("preciprate", pTxt, i18n("Precipitation:") + " " + pTxt)];
+        }
+
+        if (tok === "precipsum") {
+            var psTxt = r.precipSumText(r.precipSumMm);
+            return [row("precipsum", psTxt, i18n("Precip. Sum:") + " " + psTxt)];
         }
 
         if (tok === "uvindex") {

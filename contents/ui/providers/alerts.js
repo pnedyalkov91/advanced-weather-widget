@@ -82,6 +82,13 @@ function fetchAlerts(service) {
                 _fetchMetNo(service);
             }
         });
+    } else if (isoCode.length > 0) {
+        // Known country code but not in MeteoAlarm — mark unsupported
+        r.weatherAlerts = [{ headline: "Alerts not available for your country",
+            displayName: "Not Supported", severity: "", description: "",
+            event: "", area: "", color: "", awarenessType: 0,
+            onset: "", effective: "", expires: "", instruction: "",
+            web: "", source: "none", action: "", senderName: "" }];
     } else {
         // Country code not set — try reverse-geocoding to determine it
         _resolveCountryThenFetch(service);
@@ -95,23 +102,38 @@ function _resolveCountryThenFetch(service) {
     var lon = service.longitude;
     if (!lat || !lon) return;
 
+    // Use zoom=10 so we also get county/state — avoids a second Nominatim
+    // call (and possible rate-limit) inside _fetchMeteoAlarm.
+    // Use accept-language=en for Latin-script admin names.
     var req = new XMLHttpRequest();
     req.open("GET",
         "https://nominatim.openstreetmap.org/reverse?lat="
         + encodeURIComponent(lat)
         + "&lon=" + encodeURIComponent(lon)
-        + "&format=json&zoom=3&addressdetails=1");
+        + "&format=json&zoom=10&addressdetails=1"
+        + "&accept-language=en");
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         var isoCode = "";
+        var adminTerms = [];
         if (req.status === 200) {
             try {
                 var data = JSON.parse(req.responseText);
-                if (data.address && data.address.country_code)
-                    isoCode = data.address.country_code.toUpperCase();
+                if (data.address) {
+                    if (data.address.country_code)
+                        isoCode = data.address.country_code.toUpperCase();
+                    // Extract admin terms right here so we can reuse them
+                    var keys = ["city", "town", "village", "municipality",
+                                "county", "state", "state_district",
+                                "province", "region"];
+                    keys.forEach(function (k) {
+                        if (data.address[k])
+                            adminTerms.push(data.address[k].toLowerCase());
+                    });
+                }
             } catch (e) { /* ignore */ }
         }
         var slug = _isoToSlug[isoCode];
@@ -119,9 +141,14 @@ function _resolveCountryThenFetch(service) {
             _fetchMeteoAlarm(service, slug, function (ok) {
                 if (!ok)
                     _fetchMetNo(service);
-            });
+            }, adminTerms);
         } else {
-            _fetchMetNo(service);
+            // Resolved country not in MeteoAlarm — mark unsupported
+            r.weatherAlerts = [{ headline: "Alerts not available for your country",
+                displayName: "Not Supported", severity: "", description: "",
+                event: "", area: "", color: "", awarenessType: 0,
+                onset: "", effective: "", expires: "", instruction: "",
+                web: "", source: "none", action: "", senderName: "" }];
         }
     };
     req.send();
@@ -129,7 +156,7 @@ function _resolveCountryThenFetch(service) {
 
 // ── MeteoAlarm Atom feeds ─────────────────────────────────────────────
 
-function _fetchMeteoAlarm(service, slug, callback) {
+function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
     var r = service.weatherRoot;
     var feedUrl = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-" + slug;
 
@@ -145,7 +172,8 @@ function _fetchMeteoAlarm(service, slug, callback) {
         }
         try {
             var alerts = _parseMeteoAlarmAlerts(
-                state.feedData, service.locationName, state.localTerms);
+                state.feedData, service.locationName, state.localTerms,
+                service.latitude, service.longitude);
             r.weatherAlerts = alerts;
             callback(true);
         } catch (e) {
@@ -172,21 +200,32 @@ function _fetchMeteoAlarm(service, slug, callback) {
     };
     req.send();
 
-    // 2) Fetch local admin names via Nominatim (for non-English area matching)
-    _getLocalAdminTerms(service.latitude, service.longitude, function (terms) {
-        state.localTerms = terms;
+    // 2) Use pre-fetched admin terms if available (from _resolveCountryThenFetch),
+    //    otherwise fetch via Nominatim.
+    if (prefetchedTerms && prefetchedTerms.length > 0) {
+        state.localTerms = prefetchedTerms;
         _tryComplete();
-    });
+    } else {
+        _getLocalAdminTerms(service.latitude, service.longitude, function (terms) {
+            state.localTerms = terms;
+            _tryComplete();
+        });
+    }
 }
 
 function _getLocalAdminTerms(lat, lon, callback) {
     if (!lat || !lon) { callback([]); return; }
     var req = new XMLHttpRequest();
+    // Use accept-language=en so we always get Latin-script names.
+    // This is essential for countries like Greece (Cyrillic/Greek script)
+    // where Nominatim defaults would return non-Latin names that can't
+    // match MeteoAlarm's English area descriptions.
     req.open("GET",
         "https://nominatim.openstreetmap.org/reverse?lat="
         + encodeURIComponent(lat)
         + "&lon=" + encodeURIComponent(lon)
-        + "&format=json&zoom=10&addressdetails=1");
+        + "&format=json&zoom=10&addressdetails=1"
+        + "&accept-language=en");
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
     req.onreadystatechange = function () {
@@ -211,9 +250,12 @@ function _getLocalAdminTerms(lat, lon, callback) {
     req.send();
 }
 
-function _parseMeteoAlarmAlerts(data, locationName, localTerms) {
+function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
     var now = new Date();
     var alerts = [];
+    var userLat = parseFloat(lat);
+    var userLon = parseFloat(lon);
+    var hasCoords = !isNaN(userLat) && !isNaN(userLon);
     // API returns { warnings: [...] }, not a plain array
     var entries = (data && Array.isArray(data.warnings)) ? data.warnings
                 : Array.isArray(data) ? data : [];
@@ -241,59 +283,95 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms) {
         if (entry.alert.status && entry.alert.status !== "Actual")
             return;
         var infos = entry.alert.info;
-        // Pick English info block if available, otherwise first
-        var info = _pickEnglishInfo(infos) || infos[0];
-        if (!info)
+        // Pick local-language info block for display text
+        var localInfo = _pickLocalInfo(infos);
+        if (!localInfo)
             return;
 
-        // FIX 1: Normalize responseType to array — CAP spec allows a plain string
-        var rtypes = Array.isArray(info.responseType)
-            ? info.responseType
-            : (info.responseType ? [info.responseType] : []);
+        // For filtering & metadata, merge data from ALL info blocks
+        // (area polygons, parameters, responseType, expires may only
+        //  exist in certain language variants of the same alert)
+        var allAreas = [];
+        var rtypes = [];
+        var expires = "";
+        var levelName = "", color = "", eventType = "", levelNum = 0;
+        var awarenessTypeNum = 0;
+
+        infos.forEach(function (inf) {
+            // Collect areas from every info block
+            if (inf.area) {
+                inf.area.forEach(function (a) { allAreas.push(a); });
+            }
+            // Merge responseType
+            var rt = Array.isArray(inf.responseType)
+                ? inf.responseType
+                : (inf.responseType ? [inf.responseType] : []);
+            rt.forEach(function (r) {
+                if (rtypes.indexOf(r) < 0) rtypes.push(r);
+            });
+            // Keep latest expires
+            if (inf.expires && (!expires || inf.expires > expires))
+                expires = inf.expires;
+            // Extract awareness_level and awareness_type from parameters
+            if (inf.parameter) {
+                inf.parameter.forEach(function (p) {
+                    if (p.valueName === "awareness_level" && p.value && !color) {
+                        var parts = p.value.split(";");
+                        if (parts.length >= 1) levelNum = parseInt(parts[0].trim(), 10) || 0;
+                        if (parts.length >= 3) levelName = parts[2].trim();
+                        if (parts.length >= 2) color = parts[1].trim().toLowerCase();
+                    }
+                    if (p.valueName === "awareness_type" && p.value && !eventType) {
+                        var tp = p.value.split(";");
+                        if (tp.length >= 1) awarenessTypeNum = parseInt(tp[0].trim(), 10) || 0;
+                        if (tp.length >= 2) eventType = tp[1].trim();
+                    }
+                });
+            }
+        });
 
         // Skip "AllClear" cancellation notices
         if (rtypes.indexOf("AllClear") >= 0)
             return;
 
+        // Use localInfo expires if available, otherwise merged expires
+        var alertExpires = localInfo.expires || expires;
+
         // Skip expired alerts
-        if (info.expires) {
-            var exp = new Date(info.expires);
+        if (alertExpires) {
+            var exp = new Date(alertExpires);
             if (exp < now)
                 return;
-        }
-
-        // Extract awareness_level and awareness_type from parameters
-        var levelName = "", color = "", eventType = "", levelNum = 0;
-        if (info.parameter) {
-            info.parameter.forEach(function (p) {
-                if (p.valueName === "awareness_level" && p.value) {
-                    var parts = p.value.split(";");
-                    if (parts.length >= 1) levelNum = parseInt(parts[0].trim(), 10) || 0;
-                    if (parts.length >= 3) levelName = parts[2].trim();
-                    if (parts.length >= 2) color = parts[1].trim().toLowerCase();
-                }
-                if (p.valueName === "awareness_type" && p.value) {
-                    var tp = p.value.split(";");
-                    if (tp.length >= 2) eventType = tp[1].trim();
-                }
-            });
         }
 
         // Skip green/Minor (level 1) — these are "No Special Awareness Required"
         if (levelNum <= 1 && color === "green")
             return;
 
-        // Strict area filtering — only include alerts whose area matches
-        // the user's location (via locationName + Nominatim admin terms)
+        // Area filtering — use merged areas from ALL info blocks
         var matchedAreas = [];
-        if (searchTerms.length > 0 && info.area) {
-            info.area.forEach(function (a) {
-                if (!a.areaDesc) return;
-                var desc = a.areaDesc.toLowerCase();
-                for (var i = 0; i < searchTerms.length; i++) {
-                    if (_textMatch(desc, searchTerms[i])) {
-                        matchedAreas.push(a.areaDesc);
-                        break;
+        var canFilter = hasCoords || searchTerms.length > 0;
+
+        if (canFilter && allAreas.length > 0) {
+            var _seenArea = {};
+            allAreas.forEach(function (a) {
+                var ad = a.areaDesc || "";
+                if (_seenArea[ad]) return;  // deduplicate across info blocks
+                // 1) Coordinate-based match (polygon / circle)
+                if (hasCoords && _areaContainsPoint(a, userLat, userLon)) {
+                    _seenArea[ad] = true;
+                    matchedAreas.push(ad);
+                    return;
+                }
+                // 2) Fallback — fuzzy text match on areaDesc
+                if (ad && searchTerms.length > 0) {
+                    var desc = ad.toLowerCase();
+                    for (var i = 0; i < searchTerms.length; i++) {
+                        if (_textMatch(desc, searchTerms[i])) {
+                            _seenArea[ad] = true;
+                            matchedAreas.push(ad);
+                            return;
+                        }
                     }
                 }
             });
@@ -301,12 +379,8 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms) {
                 return;  // no area match — skip this alert
         }
 
-        // Build formatted display name: "Moderate for Wind"
-        var displayName = "";
-        if (levelName && eventType)
-            displayName = levelName + " for " + eventType;
-        else
-            displayName = info.headline || info.event || "";
+        // Use the local-language event name as display text
+        var displayName = localInfo.event || eventType || localInfo.headline || "";
 
         // FIX 1: Use normalized rtypes array (safe to call .filter on)
         var action = rtypes
@@ -314,18 +388,22 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms) {
             .join(", ");
 
         alerts.push({
-            headline: info.headline || info.event || "",
+            headline: localInfo.headline || localInfo.event || "",
             displayName: displayName,
-            severity: info.severity || "",
-            description: info.description || "",
-            event: info.event || eventType || "",
+            severity: localInfo.severity || "",
+            description: localInfo.description || "",
+            event: localInfo.event || eventType || "",
             area: matchedAreas.join(", "),
             color: color,
-            onset: info.onset || info.effective || "",
-            expires: info.expires || "",
+            awarenessType: awarenessTypeNum,
+            onset: localInfo.onset || localInfo.effective || "",
+            effective: localInfo.effective || localInfo.onset || "",
+            expires: alertExpires || "",
+            instruction: localInfo.instruction || "",
+            web: localInfo.web || "",
             source: "MeteoAlarm",
             action: action,
-            senderName: info.senderName || ""
+            senderName: localInfo.senderName || ""
         });
     });
 
@@ -351,36 +429,155 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms) {
     return unique;
 }
 
-function _pickEnglishInfo(infos) {
+/**
+ * Pick the local-language info block (non-English) from the CAP alert.
+ * Falls back to the first info block if no local language is found.
+ */
+function _pickLocalInfo(infos) {
+    var local = null;
+    var english = null;
     for (var i = 0; i < infos.length; ++i) {
         var lang = (infos[i].language || "").toLowerCase();
-        if (lang === "en-gb" || lang === "en" || lang.indexOf("en") === 0)
-            return infos[i];
+        if (lang === "en-gb" || lang === "en" || lang.indexOf("en") === 0) {
+            if (!english) english = infos[i];
+        } else if (lang.length > 0) {
+            if (!local) local = infos[i];
+        }
     }
-    return null;
+    // Prefer local language; fall back to English; finally first info
+    return local || english || (infos.length > 0 ? infos[0] : null);
+}
+
+/**
+ * Strip combining diacritical marks so accented characters compare equal
+ * to their plain-ASCII equivalents (e.g. "Isère" → "isere").
+ */
+function _stripDiacritics(s) {
+    return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 /**
  * Fuzzy text match — handles English ↔ local name variants.
  * Returns true if:
  *   1. needle is a substring of haystack (or vice-versa), OR
- *   2. any word in haystack shares a common prefix ≥ 5 chars with needle
- *      (e.g. "lombardy" ↔ "lombardia", "milan" ↔ "milano")
+ *   2. any word pair shares a common prefix ≥ 4 chars
+ *      (e.g. "Attiki" ↔ "Attica", "Makedonia" ↔ "Macedonia")
+ * All comparisons are accent-insensitive.
  */
 function _textMatch(haystack, needle) {
-    if (haystack.indexOf(needle) >= 0 || needle.indexOf(haystack) >= 0)
+    // Normalise: strip accents so "isère" matches "isere"
+    var h = _stripDiacritics(haystack);
+    var n = _stripDiacritics(needle);
+    if (h.indexOf(n) >= 0 || n.indexOf(h) >= 0)
         return true;
-    if (needle.length < 5) return false;
-    var words = haystack.split(/[\s,]+/);
-    for (var w = 0; w < words.length; w++) {
-        var word = words[w];
-        var minLen = Math.min(word.length, needle.length);
-        if (minLen < 5) continue;
-        var p = 0;
-        while (p < minLen && word.charAt(p) === needle.charAt(p)) p++;
-        if (p >= 5) return true;
+    if (n.length < 4) return false;
+    // Word-by-word comparison — handles multi-word names like
+    // "Central Macedonia" vs "Central Makedonia" and
+    // transliteration differences like "Attiki" vs "Attica".
+    var hWords = h.split(/[\s,&]+/);
+    var nWords = n.split(/[\s,&]+/);
+    for (var i = 0; i < hWords.length; i++) {
+        var hw = hWords[i];
+        if (hw.length < 4) continue;
+        for (var j = 0; j < nWords.length; j++) {
+            var nw = nWords[j];
+            var minLen = Math.min(hw.length, nw.length);
+            if (minLen < 4) continue;
+            var p = 0;
+            while (p < minLen && hw.charAt(p) === nw.charAt(p)) p++;
+            if (p >= 4) return true;
+        }
     }
     return false;
+}
+
+// ── Coordinate-based area matching (CAP polygon / circle) ─────────────
+
+/**
+ * Check whether the user's lat/lon falls inside any polygon or circle
+ * defined in a CAP area element.
+ */
+function _areaContainsPoint(area, lat, lon) {
+    // Check polygon(s)
+    if (area.polygon) {
+        var polys = Array.isArray(area.polygon) ? area.polygon : [area.polygon];
+        for (var i = 0; i < polys.length; i++) {
+            var pts = _parseCapPolygon(polys[i]);
+            if (pts.length >= 3 && _pointInPolygon(lat, lon, pts))
+                return true;
+        }
+    }
+    // Check circle(s)  — CAP format: "lat,lon radius_km"
+    if (area.circle) {
+        var circles = Array.isArray(area.circle) ? area.circle : [area.circle];
+        for (var j = 0; j < circles.length; j++) {
+            if (_pointInCircle(lat, lon, circles[j]))
+                return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Parse a CAP polygon string "lat,lon lat,lon ..." into [[lat,lon], ...].
+ */
+function _parseCapPolygon(polyStr) {
+    var points = [];
+    var pairs = polyStr.trim().split(/\s+/);
+    for (var i = 0; i < pairs.length; i++) {
+        var parts = pairs[i].split(",");
+        if (parts.length >= 2) {
+            var lat = parseFloat(parts[0]);
+            var lon = parseFloat(parts[1]);
+            if (!isNaN(lat) && !isNaN(lon))
+                points.push([lat, lon]);
+        }
+    }
+    return points;
+}
+
+/**
+ * Ray-casting point-in-polygon test.
+ */
+function _pointInPolygon(lat, lon, polygon) {
+    var inside = false;
+    for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        var yi = polygon[i][0], xi = polygon[i][1];
+        var yj = polygon[j][0], xj = polygon[j][1];
+        if (((yi > lat) !== (yj > lat)) &&
+            (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi)) {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+/**
+ * Check whether a point is inside a CAP circle ("lat,lon radius_km").
+ */
+function _pointInCircle(lat, lon, circleStr) {
+    var parts = circleStr.trim().split(/\s+/);
+    if (parts.length < 2) return false;
+    var center = parts[0].split(",");
+    if (center.length < 2) return false;
+    var cLat = parseFloat(center[0]);
+    var cLon = parseFloat(center[1]);
+    var radius = parseFloat(parts[1]);
+    if (isNaN(cLat) || isNaN(cLon) || isNaN(radius)) return false;
+    return _haversineKm(lat, lon, cLat, cLon) <= radius;
+}
+
+/**
+ * Haversine distance in km between two lat/lon points.
+ */
+function _haversineKm(lat1, lon1, lat2, lon2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // ── MET Norway MetAlerts ──────────────────────────────────────────────
@@ -462,8 +659,11 @@ function _parseMetNoAlerts(data) {
             area: p.area || "",
             color: color,
             onset: (f.when && f.when.interval) ? f.when.interval[0] : "",
+            effective: (f.when && f.when.interval) ? f.when.interval[0] : "",
             expires: (f.when && f.when.interval && f.when.interval.length >= 2)
                 ? f.when.interval[1] : "",
+            instruction: p.instruction || "",
+            web: p.web || "",
             source: "MET Norway",
             action: p.instruction || "",
             senderName: "MET Norway"

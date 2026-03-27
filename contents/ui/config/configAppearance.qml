@@ -1180,6 +1180,13 @@ KCM.AbstractKCM {
             iconFallback: "weather-showers"
         },
         {
+            itemId: "precipsum",
+            label: i18n("Precipitation Sum"),
+            description: i18n("Today's total precipitation (mm/in)"),
+            wiChar: "\uF04E",
+            iconFallback: "weather-showers"
+        },
+        {
             itemId: "uvindex",
             label: i18n("UV Index"),
             description: i18n("Ultraviolet index"),
@@ -1190,7 +1197,7 @@ KCM.AbstractKCM {
             itemId: "airquality",
             label: i18n("Air Quality"),
             description: i18n("Air quality index"),
-            wiChar: "\uF075",
+            wiChar: "\uF074",
             iconFallback: "weather-many-clouds"
         },
         {
@@ -1203,7 +1210,7 @@ KCM.AbstractKCM {
         {
             itemId: "snowcover",
             label: i18n("Snow Cover"),
-            description: i18n("Snow depth (cm)"),
+            description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
         }
@@ -1276,6 +1283,13 @@ KCM.AbstractKCM {
             iconFallback: "weather-showers"
         },
         {
+            itemId: "precipsum",
+            label: i18n("Precipitation Sum"),
+            description: i18n("Today's total precipitation (mm/in)"),
+            wiChar: "\uF04E",
+            iconFallback: "weather-showers"
+        },
+        {
             itemId: "uvindex",
             label: i18n("UV Index"),
             description: i18n("Ultraviolet index"),
@@ -1286,7 +1300,7 @@ KCM.AbstractKCM {
             itemId: "airquality",
             label: i18n("Air Quality"),
             description: i18n("Air quality index"),
-            wiChar: "\uF075",
+            wiChar: "\uF074",
             iconFallback: "weather-many-clouds"
         },
         {
@@ -1299,7 +1313,7 @@ KCM.AbstractKCM {
         {
             itemId: "snowcover",
             label: i18n("Snow Cover"),
-            description: i18n("Snow depth (cm)"),
+            description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
         }
@@ -1371,6 +1385,13 @@ KCM.AbstractKCM {
             iconFallback: "weather-showers"
         },
         {
+            itemId: "precipsum",
+            label: i18n("Precipitation Sum"),
+            description: i18n("Today's total precipitation (mm/in)"),
+            wiChar: "\uF04E",
+            iconFallback: "weather-showers"
+        },
+        {
             itemId: "uvindex",
             label: i18n("UV Index"),
             description: i18n("Ultraviolet index"),
@@ -1381,7 +1402,7 @@ KCM.AbstractKCM {
             itemId: "airquality",
             label: i18n("Air Quality"),
             description: i18n("Air quality index"),
-            wiChar: "\uF075",
+            wiChar: "\uF074",
             iconFallback: "weather-many-clouds"
         },
         {
@@ -1394,7 +1415,7 @@ KCM.AbstractKCM {
         {
             itemId: "snowcover",
             label: i18n("Snow Cover"),
-            description: i18n("Snow depth (cm)"),
+            description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
         }

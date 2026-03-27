@@ -31,7 +31,7 @@ function fetchCurrent(service, chain, idx) {
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
         + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,"
         + "weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,"
-        + "dew_point_2m,visibility,is_day,precipitation,uv_index"
+        + "dew_point_2m,visibility,is_day,precipitation,uv_index,snow_depth"
         + "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,"
         + "precipitation_sum,snowfall_sum";
 
@@ -62,7 +62,7 @@ function fetchCurrent(service, chain, idx) {
         r.isDay = (c.is_day !== undefined) ? c.is_day : -1;
         r.precipMmh = (c.precipitation !== undefined) ? c.precipitation : NaN;
         r.uvIndex = (c.uv_index !== undefined) ? c.uv_index : NaN;
-        r.snowDepthCm = NaN;  // not available in current endpoint
+        r.snowDepthCm = (c.snow_depth !== undefined && c.snow_depth !== null) ? c.snow_depth * 100 : NaN;
         r.locationUtcOffsetMins = (d.utc_offset_seconds !== undefined)
             ? Math.round(d.utc_offset_seconds / 60) : 0;
         r.sunriseTimeText = (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0)

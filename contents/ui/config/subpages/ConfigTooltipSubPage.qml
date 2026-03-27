@@ -202,6 +202,16 @@ ColumnLayout {
                                             return b + "day-cloudy.svg";
                                         if (id === "location")
                                             return b + "wind-deg.svg";
+                                        if (id === "preciprate" || id === "precipsum")
+                                            return b + "raindrop.svg";
+                                        if (id === "uvindex")
+                                            return b + "hot.svg";
+                                        if (id === "airquality")
+                                            return b + "smog.svg";
+                                        if (id === "alerts")
+                                            return b + "storm-warning.svg";
+                                        if (id === "snowcover")
+                                            return b + "snowflake-cold.svg";
                                         return "";
                                     }
                                     isMask: configRoot.cfg_tooltipIconTheme === "symbolic"

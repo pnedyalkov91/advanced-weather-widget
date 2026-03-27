@@ -65,6 +65,7 @@ PlasmoidItem {
     property real visibilityKm: NaN
     property real dewPointC: NaN
     property real precipMmh: NaN           // Current precipitation rate (mm/h)
+    readonly property real precipSumMm: dailyData.length > 0 && !isNaN(dailyData[0].precipMm) ? dailyData[0].precipMm : NaN
     property real uvIndex: NaN             // UV index (0–11+)
     property real airQualityIndex: NaN     // AQI numeric value (provider scale)
     property string airQualityLabel: ""    // "Good", "Moderate", etc.
@@ -253,9 +254,24 @@ PlasmoidItem {
         return W.formatPressure(hpa, _pressureUnit());
     }
 
+    function _isImperial() {
+        if (Plasmoid.configuration.unitsMode === "kde")
+            return Qt.locale().measurementSystem === 1;
+        return (_tempUnit() === "F");
+    }
+
     function precipValue(mmh) {
         if (isNaN(mmh)) return "--";
+        if (_isImperial())
+            return (mmh / 25.4).toFixed(2) + " in/h";
         return mmh.toFixed(1) + " mm/h";
+    }
+
+    function precipSumText(mm) {
+        if (isNaN(mm)) return "--";
+        if (_isImperial())
+            return (mm / 25.4).toFixed(2) + " in";
+        return mm.toFixed(1) + " mm";
     }
 
     function uvIndexText(uv) {
@@ -277,6 +293,8 @@ PlasmoidItem {
 
     function snowDepthText(cm) {
         if (isNaN(cm)) return "--";
+        if (_isImperial())
+            return (cm / 2.54).toFixed(1) + " in";
         return cm.toFixed(1) + " cm";
     }
 
@@ -284,6 +302,24 @@ PlasmoidItem {
         if (!weatherAlerts || weatherAlerts.length === 0) return i18n("None");
         if (weatherAlerts.length === 1) return weatherAlerts[0].displayName || weatherAlerts[0].headline || i18n("1 Alert");
         return weatherAlerts.length + " " + i18n("Alerts");
+    }
+
+    function alertTypeGlyph(typeNum) {
+        switch (typeNum) {
+            case 1:  return "\uF050"; // wind
+            case 2:  return "\uF076"; // snow/ice
+            case 3:  return "\uF01E"; // thunderstorm
+            case 4:  return "\uF014"; // fog
+            case 5:  return "\uF072"; // high temperature
+            case 6:  return "\uF076"; // low temperature
+            case 7:  return "\uF0CD"; // coastal event
+            case 8:  return "\uF0C7"; // forest fire
+            case 9:  return "\uF076"; // avalanche
+            case 10: return "\uF019"; // rain
+            case 11: return "\uF04E"; // flooding
+            case 12: return "\uF019"; // rain-flood
+            default: return "\uF0CE"; // generic warning
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -618,12 +654,19 @@ PlasmoidItem {
         }
         if (tok === "preciprate")
             return "\uF04E";        // wi-sprinkle (rain drop)
+        if (tok === "precipsum")
+            return "\uF04E";        // wi-sprinkle (rain drop)
         if (tok === "uvindex")
             return "\uF072";        // wi-hot
         if (tok === "airquality")
-            return "\uF075";        // wi-smog
-        if (tok === "alerts")
+            return "\uF074";        // wi-smog
+        if (tok === "alerts") {
+            if (weatherAlerts && weatherAlerts.length > 0) {
+                var t = weatherAlerts[0].awarenessType || 0;
+                return alertTypeGlyph(t);
+            }
             return "\uF0CE";        // wi-gale-warning
+        }
         if (tok === "snowcover")
             return "\uF076";        // wi-snowflake-cold
         return "";
@@ -673,6 +716,7 @@ PlasmoidItem {
                 moonphase: "weather-clear-night",
                 location: "mark-location",
                 preciprate: "weather-showers",
+                precipsum: "weather-showers",
                 uvindex: "weather-clear",
                 airquality: "weather-many-clouds",
                 alerts: "weather-storm",
@@ -870,6 +914,8 @@ PlasmoidItem {
         }
         if (tok === "preciprate")
             return precipValue(precipMmh);
+        if (tok === "precipsum")
+            return precipSumText(precipSumMm);
         if (tok === "uvindex")
             return uvIndexText(uvIndex);
         if (tok === "airquality")

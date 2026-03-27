@@ -166,6 +166,9 @@ Item {
     // Collapse state for the two arc cards.
     property bool _sunExpanded: true
     property bool _moonExpanded: true
+    property bool _alertsExpanded: false
+    property int _currentAlertIndex: 0
+
 
     readonly property int regularCardHeight: Plasmoid.configuration.widgetCardsHeightAuto ? 30 : (Plasmoid.configuration.widgetCardsHeight || 30)
 
@@ -219,6 +222,7 @@ Item {
                 moonphase: root.accentViolet,
                 condition: Kirigami.Theme.textColor,
                 preciprate: root.accentBlue,
+                precipsum: root.accentBlue,
                 uvindex: root.accentOrange,
                 airquality: root.accentTeal,
                 alerts: root.accentOrange,
@@ -243,6 +247,7 @@ Item {
                 moonphase: i18n("Moon"),
                 condition: i18n("Condition"),
                 preciprate: i18n("Precipitation"),
+                precipsum: i18n("Precipitation Sum"),
                 uvindex: i18n("UV Index"),
                 airquality: i18n("Air Quality"),
                 alerts: i18n("Alerts"),
@@ -267,6 +272,8 @@ Item {
             return weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime());
         case "preciprate":
             return weatherRoot.precipValue(weatherRoot.precipMmh);
+        case "precipsum":
+            return weatherRoot.precipSumText(weatherRoot.precipSumMm);
         case "uvindex":
             return weatherRoot.uvIndexText(weatherRoot.uvIndex);
         case "airquality":
@@ -372,13 +379,14 @@ Item {
                             required property string modelData   // the detail ID
 
                             // Card height
-                            readonly property bool isExpandedCard: card.modelData === "suntimes" || card.modelData === "moonphase"
+                            readonly property bool isExpandedCard: card.modelData === "suntimes" || card.modelData === "moonphase" || (card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 1)
                             // suntimes and moonphase: height scales with card width
                             // so the arc grows when the widget is stretched.
                             readonly property int autoHeight: {
                                 if (card.modelData === "alerts") {
                                     var n = weatherRoot ? (weatherRoot.weatherAlerts || []).length : 0;
-                                    return n <= 1 ? 30 : (30 + (n - 1) * 22);
+                                    if (n <= 1) return 30;
+                                    return 10 + (n + 1) * 28;
                                 }
                                 if (card.modelData === "suntimes" || card.modelData === "moonphase")
                                     return Math.max(165, Math.round(card.width * 0.55));
@@ -398,6 +406,8 @@ Item {
                                     return root._sunExpanded;
                                 if (card.modelData === "moonphase")
                                     return root._moonExpanded;
+                                if (card.modelData === "alerts")
+                                    return root._alertsExpanded;
                                 return true;
                             }
                             Layout.preferredHeight: root.isList ? (card.isExpandedCard ? 44 : 38) : (card.isExpandedCard ? (card._isArcExpanded ? autoHeight : root.regularCardHeight) : (Plasmoid.configuration.widgetCardsHeightAuto ? autoHeight : Plasmoid.configuration.widgetCardsHeight))
@@ -520,109 +530,479 @@ Item {
                             } // RowLayout (standard)
 
                             // ── Alerts display ──────────────────────────────────────
-                            RowLayout {
-                                anchors {
-                                    fill: parent
-                                    leftMargin: 10
-                                    rightMargin: 10
+                            Item {
+                                id: alertsCard
+                                anchors.fill: parent
+                                clip: true
+                                visible: card.modelData === "alerts" && weatherRoot
+                                         && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 0
+
+                                readonly property var alerts: weatherRoot ? (weatherRoot.weatherAlerts || []) : []
+                                readonly property bool hasMultiple: alerts.length > 1
+
+                                // Alerts active right now (onset <= now <= expires)
+                                readonly property var todayAlerts: {
+                                    var now = new Date();
+                                    var result = [];
+                                    for (var i = 0; i < alerts.length; i++) {
+                                        var a = alerts[i];
+                                        var onset = a.onset ? new Date(a.onset) : null;
+                                        var expires = a.expires ? new Date(a.expires) : null;
+                                        var started = !onset || onset <= now;
+                                        var notExpired = !expires || expires >= now;
+                                        if (started && notExpired)
+                                            result.push(a);
+                                    }
+                                    // If nothing is active yet, show the earliest-future one
+                                    if (result.length === 0 && alerts.length > 0) {
+                                        var best = alerts[0];
+                                        for (var j = 1; j < alerts.length; j++) {
+                                            if (alerts[j].onset && (!best.onset || alerts[j].onset < best.onset))
+                                                best = alerts[j];
+                                        }
+                                        result.push(best);
+                                    }
+                                    return result;
                                 }
-                                spacing: 8
-                                visible: card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 0
+                                readonly property int safeIndex: Math.min(Math.max(0, root._currentAlertIndex),
+                                                                         Math.max(0, todayAlerts.length - 1))
+                                readonly property bool todayHasMultiple: todayAlerts.length > 1
 
-                                // Icon
-                                WeatherIcon {
-                                    iconInfo: root.showIconFor("alerts") ? root.resolveIcon("alerts") : null
-                                    iconSize: root.iconSize
-                                    iconColor: root.iconColorFor(root.accentFor("alerts"))
-                                    Layout.alignment: Qt.AlignVCenter
+                                // All alerts sorted by onset date (for expanded view)
+                                readonly property var sortedAlerts: {
+                                    var copy = alerts.slice();
+                                    copy.sort(function (a, b) {
+                                        var da = a.onset ? new Date(a.onset).getTime() : 0;
+                                        var db = b.onset ? new Date(b.onset).getTime() : 0;
+                                        return da - db;
+                                    });
+                                    return copy;
                                 }
 
-                                // Label
-                                Label {
-                                    text: root.labelFor("alerts") + ":"
-                                    color: Kirigami.Theme.textColor
-                                    opacity: 0.55
-                                    font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
-                                    Layout.alignment: Qt.AlignVCenter
+                                function alertColorDot(c) {
+                                    c = (c || "").toLowerCase();
+                                    if (c === "yellow") return "#ffc107";
+                                    if (c === "orange") return "#ff8c00";
+                                    if (c === "red")    return "#dc3545";
+                                    return "#999";
+                                }
+                                // Map MeteoAlarm awareness_type number to Weather Icons glyph
+                                // 1=Wind, 2=Snow/Ice, 3=Thunderstorm, 4=Fog,
+                                // 5=High temp, 6=Low temp, 7=Coastal, 8=Fire,
+                                // 9=Avalanche, 10=Rain, 11=Flooding, 12=Rain-Flood
+                                function alertTypeIcon(typeNum) {
+                                    return weatherRoot ? weatherRoot.alertTypeGlyph(typeNum) : "\uf0ce";
+                                }
+                                    // Collect unique awareness types across today's alerts
+                                function uniqueAlertTypes() {
+                                    var seen = {};
+                                    var result = [];
+                                    var src = todayAlerts;
+                                    for (var i = 0; i < src.length; i++) {
+                                        var a = src[i];
+                                        var t = a.awarenessType || 0;
+                                        var key = t + "|" + (a.color || "");
+                                        if (!seen[key]) {
+                                            seen[key] = true;
+                                            result.push({ type: t, color: a.color || "" });
+                                        }
+                                    }
+                                    return result;
+                                }
+                                function alertColorText(c) {
+                                    c = (c || "").toLowerCase();
+                                    if (c === "yellow") return root.isDark ? "#ffc107" : "#9a7b00";
+                                    if (c === "orange") return root.isDark ? "#ff8c00" : "#c04000";
+                                    if (c === "red")    return root.isDark ? "#ff4444" : "#cc0000";
+                                    return Kirigami.Theme.textColor;
+                                }
+                                function formatAlertDate(iso) {
+                                    if (!iso) return "";
+                                    var d = new Date(iso);
+                                    if (isNaN(d.getTime())) return "";
+                                    return Qt.formatDate(d, "MMM d");
+                                }
+                                function alertDateRange(a) {
+                                    var from = formatAlertDate(a.onset);
+                                    var to = formatAlertDate(a.expires);
+                                    if (from && to && from !== to)
+                                        return from + " \u2013 " + to;
+                                    if (from) return from;
+                                    if (to) return to;
+                                    return "";
+                                }
+                                function formatAlertDateTime(iso) {
+                                    if (!iso) return "";
+                                    var d = new Date(iso);
+                                    if (isNaN(d.getTime())) return "";
+                                    return Qt.formatDateTime(d, "MMM d, hh:mm");
+                                }
+                                function alertTooltipTitle(a) {
+                                    var town = (Plasmoid.configuration.locationName || "").split(",")[0].trim();
+                                    var area = a ? (a.area || "") : "";
+                                    if (town && area) return town + ", " + area;
+                                    return town || area;
+                                }
+                                function alertTooltipSub(a) {
+                                    var lines = [];
+                                    if (a.headline)
+                                        lines.push("<b>" + i18n("Headline") + ":</b> " + a.headline);
+                                    if (a.description)
+                                        lines.push("<b>" + i18n("Description") + ":</b> " + a.description);
+                                    if (a.effective)
+                                        lines.push("<b>" + i18n("Effective") + ":</b> " + formatAlertDateTime(a.effective));
+                                    if (a.expires)
+                                        lines.push("<b>" + i18n("Expires") + ":</b> " + formatAlertDateTime(a.expires));
+                                    if (a.instruction)
+                                        lines.push("<b>" + i18n("Instruction") + ":</b> " + a.instruction);
+                                    if (a.senderName)
+                                        lines.push("<b>" + i18n("Provider") + ":</b> " + a.senderName);
+                                    if (a.web)
+                                        lines.push("<b>" + i18n("Website") + ":</b> " + a.web);
+                                    return lines.join("<br>");
                                 }
 
-                                // Alert values (right side)
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: 2
+                                // ── Single alert (no expand needed) ──────────────────
+                                RowLayout {
+                                    anchors {
+                                        fill: parent
+                                        leftMargin: 10
+                                        rightMargin: 10
+                                    }
+                                    spacing: 8
+                                    visible: !alertsCard.hasMultiple
 
-                                    // Individual alert rows
-                                    Repeater {
-                                        model: weatherRoot ? (weatherRoot.weatherAlerts || []) : []
-                                        delegate: RowLayout {
-                                            required property var modelData
-                                            Layout.fillWidth: true
-                                            spacing: 6
+                                    WeatherIcon {
+                                        iconInfo: root.showIconFor("alerts") ? root.resolveIcon("alerts") : null
+                                        iconSize: root.iconSize
+                                        iconColor: root.iconColorFor(root.accentFor("alerts"))
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Label {
+                                        text: root.labelFor("alerts") + ":"
+                                        color: Kirigami.Theme.textColor
+                                        opacity: 0.55
+                                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Item { Layout.fillWidth: true }
+                                    Text {
+                                        text: alertsCard.alerts.length > 0
+                                              ? alertsCard.alertTypeIcon(alertsCard.alerts[0].awarenessType || 0) : ""
+                                        font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                        font.pixelSize: 14
+                                        color: alertsCard.alerts.length > 0
+                                               ? alertsCard.alertColorDot(alertsCard.alerts[0].color) : "#999"
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Label {
+                                        text: alertsCard.alerts.length > 0
+                                              ? (alertsCard.alerts[0].displayName || alertsCard.alerts[0].headline || "") : ""
+                                        color: alertsCard.alerts.length > 0
+                                               ? alertsCard.alertColorText(alertsCard.alerts[0].color)
+                                               : Kirigami.Theme.textColor
+                                        font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    PlasmaCore.ToolTipArea {
+                                        Layout.preferredWidth: 26
+                                        Layout.preferredHeight: 26
+                                        Layout.alignment: Qt.AlignVCenter
+                                        active: true
+                                        mainItem: ColumnLayout {
+                                            spacing: 4
+                                            Layout.minimumWidth: 350
+                                            Layout.maximumWidth: 450
+                                            Label {
+                                                text: alertsCard.alerts.length > 0 ? alertsCard.alertTooltipTitle(alertsCard.alerts[0]) : ""
+                                                font.bold: true
+                                                wrapMode: Text.Wrap
+                                                Layout.fillWidth: true
+                                            }
+                                            Label {
+                                                text: alertsCard.alerts.length > 0 ? alertsCard.alertTooltipSub(alertsCard.alerts[0]) : ""
+                                                textFormat: Text.RichText
+                                                wrapMode: Text.Wrap
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+                                        Kirigami.Icon {
+                                            anchors.centerIn: parent
+                                            width: 18; height: 18
+                                            source: "help-about"
+                                        }
+                                    }
+                                }
 
-                                            // Color severity dot
-                                            Rectangle {
-                                                width: 10
-                                                height: 10
-                                                radius: 5
-                                                color: {
-                                                    var c = (modelData.color || "").toLowerCase();
-                                                    if (c === "yellow") return "#ffc107";
-                                                    if (c === "orange") return "#ff8c00";
-                                                    if (c === "red")    return "#dc3545";
-                                                    return "#999";
+                                // ── Collapsed header (multiple alerts) ───────────────
+                                RowLayout {
+                                    id: alertsHeader
+                                    visible: alertsCard.hasMultiple && !card._isArcExpanded
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        right: parent.right
+                                        leftMargin: 10
+                                        rightMargin: 10
+                                    }
+                                    height: card._isArcExpanded ? 0 : root.regularCardHeight
+                                    spacing: 8
+
+                                    WeatherIcon {
+                                        iconInfo: root.showIconFor("alerts") ? root.resolveIcon("alerts") : null
+                                        iconSize: root.iconSize
+                                        iconColor: root.iconColorFor(root.accentFor("alerts"))
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Label {
+                                        text: root.labelFor("alerts") + ":"
+                                        color: Kirigami.Theme.textColor
+                                        opacity: 0.55
+                                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+
+                                    // Left arrow (only when multiple today alerts)
+                                    Item {
+                                        visible: alertsCard.todayHasMultiple
+                                        implicitWidth: 16; implicitHeight: 16
+                                        Layout.alignment: Qt.AlignVCenter
+                                        opacity: alertsCard.safeIndex > 0 ? 0.75 : 0.20
+                                        Kirigami.Icon {
+                                            anchors.fill: parent
+                                            source: "arrow-left"
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            enabled: alertsCard.safeIndex > 0
+                                            onClicked: root._currentAlertIndex = alertsCard.safeIndex - 1
+                                        }
+                                    }
+
+                                    // Icon for the currently displayed warning
+                                    Text {
+                                        text: {
+                                            var a = alertsCard.todayAlerts[alertsCard.safeIndex];
+                                            return a ? alertsCard.alertTypeIcon(a.awarenessType || 0) : "";
+                                        }
+                                        font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                        font.pixelSize: 14
+                                        color: {
+                                            var a = alertsCard.todayAlerts[alertsCard.safeIndex];
+                                            return a ? alertsCard.alertColorDot(a.color) : "#999";
+                                        }
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Label {
+                                        text: {
+                                            var a = alertsCard.todayAlerts[alertsCard.safeIndex];
+                                            return a ? (a.displayName || a.headline || "") : "";
+                                        }
+                                        color: {
+                                            var a = alertsCard.todayAlerts[alertsCard.safeIndex];
+                                            return a ? alertsCard.alertColorText(a.color) : Kirigami.Theme.textColor;
+                                        }
+                                        font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+
+                                    // Right arrow (only when multiple today alerts)
+                                    Item {
+                                        visible: alertsCard.todayHasMultiple
+                                        implicitWidth: 16; implicitHeight: 16
+                                        Layout.alignment: Qt.AlignVCenter
+                                        opacity: alertsCard.safeIndex < alertsCard.todayAlerts.length - 1 ? 0.75 : 0.20
+                                        Kirigami.Icon {
+                                            anchors.fill: parent
+                                            source: "arrow-right"
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            enabled: alertsCard.safeIndex < alertsCard.todayAlerts.length - 1
+                                            onClicked: root._currentAlertIndex = alertsCard.safeIndex + 1
+                                        }
+                                    }
+
+                                    // Info tooltip for current alert
+                                    PlasmaCore.ToolTipArea {
+                                        Layout.preferredWidth: 26; Layout.preferredHeight: 26
+                                        Layout.alignment: Qt.AlignVCenter
+                                        active: true
+                                        mainItem: ColumnLayout {
+                                            spacing: 4
+                                            Layout.minimumWidth: 350
+                                            Layout.maximumWidth: 450
+                                            Label {
+                                                text: {
+                                                    var a = alertsCard.todayAlerts[alertsCard.safeIndex];
+                                                    return alertsCard.alertTooltipTitle(a);
                                                 }
+                                                font.bold: true
+                                                wrapMode: Text.Wrap
+                                                Layout.fillWidth: true
+                                            }
+                                            Label {
+                                                text: {
+                                                    var a = alertsCard.todayAlerts[alertsCard.safeIndex];
+                                                    return a ? alertsCard.alertTooltipSub(a) : "";
+                                                }
+                                                textFormat: Text.RichText
+                                                wrapMode: Text.Wrap
+                                                Layout.fillWidth: true
+                                            }
+                                        }
+                                        Kirigami.Icon {
+                                            anchors.centerIn: parent
+                                            width: 18; height: 18
+                                            source: "help-about"
+                                        }
+                                    }
+
+                                    // Expand chevron
+                                    Item {
+                                        visible: !root.isList
+                                        implicitWidth: 14; implicitHeight: 14
+                                        Layout.alignment: Qt.AlignVCenter
+                                        Kirigami.Icon {
+                                            anchors.fill: parent
+                                            source: "arrow-down"
+                                            opacity: 0.45
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root._alertsExpanded = true
+                                        }
+                                    }
+                                }
+
+                                // ── Expanded view (multiple alerts with dates) ───────
+                                ColumnLayout {
+                                    visible: alertsCard.hasMultiple && card._isArcExpanded
+                                    anchors {
+                                        fill: parent
+                                        leftMargin: 10
+                                        rightMargin: 10
+                                        topMargin: 6
+                                        bottomMargin: 6
+                                    }
+                                    spacing: 4
+
+                                    // Header row
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+
+                                        WeatherIcon {
+                                            iconInfo: root.showIconFor("alerts") ? root.resolveIcon("alerts") : null
+                                            iconSize: root.iconSize
+                                            iconColor: root.iconColorFor(root.accentFor("alerts"))
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Label {
+                                            text: root.labelFor("alerts") + ":"
+                                            color: Kirigami.Theme.textColor
+                                            opacity: 0.55
+                                            font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                        Item {
+                                            implicitWidth: 14; implicitHeight: 14
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Kirigami.Icon {
+                                                anchors.fill: parent
+                                                source: "arrow-up"
+                                                opacity: 0.45
+                                            }
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: root._alertsExpanded = false
+                                            }
+                                        }
+                                    }
+
+                                    // All alert rows sorted by date (scrollable)
+                                    ScrollView {
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+                                        clip: true
+                                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+                                        ColumnLayout {
+                                            width: parent.width
+                                            spacing: 4
+
+                                            Repeater {
+                                                model: alertsCard.sortedAlerts
+                                                delegate: RowLayout {
+                                                    required property var modelData
+                                                    required property int index
+                                                    Layout.fillWidth: true
+                                                    spacing: 6
+
+                                            Text {
+                                                text: alertsCard.alertTypeIcon(modelData.awarenessType || 0)
+                                                font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                                font.pixelSize: 12
+                                                color: alertsCard.alertColorDot(modelData.color)
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
-
-                                            // Alert display name
                                             Label {
                                                 text: modelData.displayName || modelData.headline || ""
-                                                color: {
-                                                    var c = (modelData.color || "").toLowerCase();
-                                                    if (c === "yellow") return root.isDark ? "#ffc107" : "#9a7b00";
-                                                    if (c === "orange") return root.isDark ? "#ff8c00" : "#c04000";
-                                                    if (c === "red")    return root.isDark ? "#ff4444" : "#cc0000";
-                                                    return Kirigami.Theme.textColor;
-                                                }
+                                                color: alertsCard.alertColorText(modelData.color)
                                                 font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
                                                 elide: Text.ElideRight
                                                 Layout.fillWidth: true
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
-
-                                            // Info button
+                                            Label {
+                                                text: alertsCard.alertDateRange(modelData)
+                                                color: Kirigami.Theme.textColor
+                                                opacity: 0.55
+                                                font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+                                                Layout.alignment: Qt.AlignVCenter
+                                                visible: text.length > 0
+                                            }
                                             PlasmaCore.ToolTipArea {
-                                                Layout.preferredWidth: 24
-                                                Layout.preferredHeight: 24
+                                                Layout.preferredWidth: 26
+                                                Layout.preferredHeight: 26
                                                 Layout.alignment: Qt.AlignVCenter
                                                 active: true
-                                                mainText: modelData.headline || ""
-                                                subText: {
-                                                    var lines = [];
-                                                    if (modelData.severity)
-                                                        lines.push(i18n("Severity") + ": " + modelData.severity);
-                                                    if (modelData.area)
-                                                        lines.push(i18n("Region") + ": " + modelData.area);
-                                                    if (modelData.action)
-                                                        lines.push(i18n("Action") + ": " + modelData.action);
-                                                    if (modelData.description)
-                                                        lines.push("\n" + modelData.description);
-                                                    lines.push("");
-                                                    lines.push(i18n("Disclaimer") + ": " + i18n("Time delays between this website and meteoalarm.org are possible. For the most up-to-date information about alert levels as published by the participating National Meteorological Services, please visit Meteoalarm."));
-                                                    if (modelData.senderName)
-                                                        lines.push(i18n("Issued by") + ": EUMETNET - MeteoAlarm - " + modelData.senderName);
-                                                    return lines.join("\n");
+                                                mainItem: ColumnLayout {
+                                                    spacing: 4
+                                                    Layout.minimumWidth: 350
+                                                    Layout.maximumWidth: 450
+                                                    Label {
+                                                        text: alertsCard.alertTooltipTitle(modelData)
+                                                        font.bold: true
+                                                        wrapMode: Text.Wrap
+                                                        Layout.fillWidth: true
+                                                    }
+                                                    Label {
+                                                        text: alertsCard.alertTooltipSub(modelData)
+                                                        textFormat: Text.RichText
+                                                        wrapMode: Text.Wrap
+                                                        Layout.fillWidth: true
+                                                    }
                                                 }
                                                 Kirigami.Icon {
                                                     anchors.centerIn: parent
-                                                    width: 16
-                                                    height: 16
+                                                    width: 18; height: 18
                                                     source: "help-about"
                                                 }
                                             }
                                         }
-                                    }
+                                    } // Repeater
+                                    } // ColumnLayout inside ScrollView
+                                    } // ScrollView
                                 }
                             }
 
