@@ -52,6 +52,7 @@ Item {
     }
     readonly property int iconSz: Plasmoid.configuration.widgetIconSize || 16
     readonly property string iconTheme: widgetIconTheme
+    readonly property bool showSunEvents: Plasmoid.configuration.forecastShowSunEvents !== false
 
     /** Resolve a condition icon, handling the "custom" theme with per-condition overrides */
     function resolveConditionIcon(code, isNight, iconSize) {
@@ -113,7 +114,6 @@ Item {
         visible: !weatherRoot || weatherRoot.dailyData.length === 0
         text: (weatherRoot && weatherRoot.loading) ? i18n("Loading forecast…") : i18n("No forecast data")
         color: Kirigami.Theme.textColor
-        opacity: 0.4
         font: weatherRoot ? weatherRoot.wf(12, false) : Qt.font({})
     }
 
@@ -200,7 +200,6 @@ Item {
                                         return Qt.formatDate(d, fmt);
                                     }
                                     color: Kirigami.Theme.textColor
-                                    opacity: 0.42
                                     font: weatherRoot.wf(9, false)
                                 }
                             }
@@ -220,7 +219,6 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: weatherRoot.weatherCodeToText(weatherRoot.dailyData[index].code)
                                 color: Kirigami.Theme.textColor
-                                opacity: 0.48
                                 font: weatherRoot.wf(11, false)
                                 wrapMode: Text.WordWrap
                             }
@@ -235,13 +233,11 @@ Item {
                                 Label {
                                     text: weatherRoot.tempValue(weatherRoot.dailyData[index].minC)
                                     color: "#42a5f5"
-                                    opacity: 0.48
                                     font: weatherRoot.wf(12, false)
                                 }
                                 Label {
                                     text: "/"
                                     color: Kirigami.Theme.textColor
-                                    opacity: 0.22
                                     font: weatherRoot.wf(12, false)
                                 }
                                 Label {
@@ -290,7 +286,6 @@ Item {
                             visible: !weatherRoot || weatherRoot.hourlyData.length === 0
                             text: i18n("Loading hourly data…")
                             color: Kirigami.Theme.textColor
-                            opacity: 0.32
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                         }
 
@@ -310,6 +305,8 @@ Item {
                                 // inserted between the hour that precedes each event.
                                 property var _hourlyWithSun: {
                                     if (!weatherRoot || !weatherRoot.hourlyData.length) return [];
+                                    if (!forecastRoot.showSunEvents)
+                                        return weatherRoot.hourlyData;
                                     function toMins(t) {
                                         if (!t || t === "--") return -1;
                                         var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
@@ -362,12 +359,12 @@ Item {
                                                     forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
                                                     (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
                                                 iconSize: 32
-                                                iconColor: modelData.isSunrise ? "#ffcf63" : "#ff8c52"
+                                                iconColor: Kirigami.Theme.textColor
                                             }
                                             Label {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 text: weatherRoot ? weatherRoot.formatTimeForDisplay(modelData.time) : "--"
-                                                color: modelData.isSunrise ? "#ffcf63" : "#ff8c52"
+                                                color: Kirigami.Theme.textColor
                                                 font: weatherRoot ? weatherRoot.wf(10, true) : Qt.font({ bold: true })
                                             }
                                         }
@@ -400,7 +397,6 @@ Item {
                                                     return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
                                                 }
                                                 color: Kirigami.Theme.textColor
-                                                opacity: 0.52
                                                 font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                                             }
 
@@ -447,7 +443,6 @@ Item {
                                                 Label {
                                                     text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
                                                     color: Kirigami.Theme.textColor
-                                                    opacity: 0.55
                                                     font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                                                 }
                                                 Text {
@@ -469,7 +464,7 @@ Item {
                                                         forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
                                                         (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
                                                     iconSize: 32
-                                                    iconColor: "#5ea8ff"
+                                                    iconColor: Kirigami.Theme.textColor
                                                     Layout.alignment: Qt.AlignVCenter
                                                 }
                                                 Label {
@@ -480,8 +475,30 @@ Item {
                                                         var h = modelData.humidity;
                                                         return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
                                                     }
-                                                    color: "#5ea8ff"
+                                                    color: Kirigami.Theme.textColor
                                                     font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                }
+                                            }
+
+                                            // Precipitation rate (mm/h)
+                                            RowLayout {
+                                                Layout.alignment: Qt.AlignHCenter
+                                                spacing: -5
+                                                visible: modelData.precipMm !== undefined && !isNaN(modelData.precipMm) && modelData.precipMm > 0
+                                                WeatherIcon {
+                                                    iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir,
+                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
+                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                    iconSize: 32
+                                                    iconColor: Kirigami.Theme.textColor
+                                                    opacity: 0.6
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                }
+                                                Label {
+                                                    text: weatherRoot ? weatherRoot.precipValue(modelData.precipMm) : "--"
+                                                    color: Kirigami.Theme.textColor
+                                                    opacity: 0.6
+                                                    font: weatherRoot ? weatherRoot.wf(8, false) : Qt.font({})
                                                 }
                                             }
 

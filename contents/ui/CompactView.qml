@@ -712,6 +712,27 @@ PlasmaCore.ToolTipArea {
         // fontSizeMode driven purely by panel orientation — not layout type
         readonly property int autoFontSizeMode: compactRoot.vertical ? Text.HorizontalFit : Text.VerticalFit
 
+        // ── No location prompt ────────────────────────────────────────────
+        RowLayout {
+            anchors.centerIn: parent
+            spacing: 5
+            visible: !compactRoot.weatherRoot || !compactRoot.weatherRoot.hasSelectedTown
+
+            Text {
+                text: "\uF041"
+                font.family: wiFontPanel.status === FontLoader.Ready ? wiFontPanel.font.family : ""
+                font.pixelSize: compactRoot.simpleFontSz
+                color: Kirigami.Theme.textColor
+                Layout.alignment: Qt.AlignVCenter
+            }
+            Label {
+                text: i18n("Add a location")
+                font.pixelSize: compactRoot.panelFontPx
+                color: Kirigami.Theme.textColor
+                Layout.alignment: Qt.AlignVCenter
+            }
+        }
+
         // ── Layout types 0 (side-by-side) and 1 (stacked) ────────────────
         // The GridLayout is anchored to the CENTER of its parent and sized
         // to exactly its content.  This prevents any dead space from pooling
@@ -726,7 +747,7 @@ PlasmaCore.ToolTipArea {
         //     width  = auto (sum of column paintedWidths; GridLayout.implicitWidth)
         GridLayout {
             id: simpleGrid
-            visible: compactRoot.simpleLayoutType !== 2
+            visible: compactRoot.simpleLayoutType !== 2 && compactRoot.weatherRoot && compactRoot.weatherRoot.hasSelectedTown
 
             // Centre in parent; size determined by axis.
             anchors.centerIn: parent
@@ -914,7 +935,7 @@ PlasmaCore.ToolTipArea {
             width: parent.width
             height: (!compactRoot.vertical && compactRoot.isSimpleMode)
                 ? compactRoot._fullPanelH : parent.height
-            visible: compactRoot.simpleLayoutType === 2
+            visible: compactRoot.simpleLayoutType === 2 && compactRoot.weatherRoot && compactRoot.weatherRoot.hasSelectedTown
 
             // Orientation-aware square sizing using _fullPanelH (true panel height).
             // Auto: icon = full panel height (48 px on a 48 px panel).
@@ -953,15 +974,43 @@ PlasmaCore.ToolTipArea {
                     smooth: true
                 }
 
-                // Temperature badge — anchored inside the square's bottom-right
-                // so it always overlaps the icon corner regardless of panel size
+                // Temperature badge — position, spacing and color are configurable
                 Rectangle {
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    width: compressedBadge.implicitWidth + 8
-                    height: compressedBadge.implicitHeight + 4
+                    id: compressedBadgeRect
+                    readonly property string _pos: Plasmoid.configuration.compressedBadgePosition || "bottom-right"
+                    readonly property int _spacing: Plasmoid.configuration.compressedBadgeSpacing || 0
+
+                    // Use computed x/y instead of anchors to avoid QML sticky-anchor issues
+                    x: {
+                        if (_pos === "bottom-right" || _pos === "top-right")
+                            return parent.width - width - _spacing;
+                        if (_pos === "bottom-left" || _pos === "top-left")
+                            return _spacing;
+                        // center
+                        return (parent.width - width) / 2;
+                    }
+                    y: {
+                        if (_pos.indexOf("bottom") === 0)
+                            return parent.height - height - _spacing;
+                        // top
+                        return _spacing;
+                    }
+
+                    width: compressedBadge.implicitWidth + 6
+                    height: compressedBadge.implicitHeight + 2
                     radius: height / 2
-                    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.85)
+                    color: {
+                        var cc = Plasmoid.configuration.compressedBadgeColor || "";
+                        var op = Plasmoid.configuration.compressedBadgeOpacity !== undefined
+                            ? Plasmoid.configuration.compressedBadgeOpacity : 0.85;
+                        if (cc.length > 0) {
+                            var parsed = Qt.color(cc);
+                            return Qt.rgba(parsed.r, parsed.g, parsed.b, op);
+                        }
+                        return Qt.rgba(Kirigami.Theme.backgroundColor.r,
+                                       Kirigami.Theme.backgroundColor.g,
+                                       Kirigami.Theme.backgroundColor.b, op);
+                    }
 
                     Label {
                         id: compressedBadge

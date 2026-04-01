@@ -43,7 +43,7 @@ var _kdeIcons = {
     "suntimes-sunset":  "weather-sunset",
     sunrise:      "weather-sunrise",
     sunset:       "weather-sunset",
-    dewpoint:     "weather-dew-point",
+    dewpoint:     "raindrop",
     visibility:   "weather-fog",
     moonphase:    "weather-clear-night",
     moonrise:     "weather-clear-night",
@@ -56,7 +56,9 @@ var _kdeIcons = {
     uvindex:      "weather-clear",
     airquality:   "weather-many-clouds",
     alerts:       "weather-storm",
-    snowcover:    "weather-snow-scattered"
+    snowcover:    "weather-snow-scattered",
+    pollen:       "weather-fog",
+    spaceweather: "solar-eclipse"
 };
 
 // ── Bundled SVG filenames (without "wi-" prefix and ".svg" suffix) ───────────
@@ -85,7 +87,9 @@ var _svgStems = {
     uvindex:      "hot",
     airquality:   "smog",
     alerts:       "storm-warning",
-    snowcover:    "snowflake-cold"
+    snowcover:    "snowflake-cold",
+    pollen:       "sandstorm",
+    spaceweather: "solar-eclipse"
 };
 
 // ── Wi-font glyph code points ───────────────────────────────────────────────
@@ -115,7 +119,9 @@ var _wiGlyphs = {
     uvindex:      "\uF072",
     airquality:   "\uF074",
     alerts:       "\uF0CE",
-    snowcover:    "\uF076"
+    snowcover:    "\uF076",
+    pollen:       "\uF082",
+    spaceweather: "\uF06E"
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

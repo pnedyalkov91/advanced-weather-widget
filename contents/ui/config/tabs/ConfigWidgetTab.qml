@@ -117,6 +117,65 @@ ColumnLayout {
                 checked: widgetTab.configRoot.cfg_showUpdateText
                 onToggled: widgetTab.configRoot.cfg_showUpdateText = checked
             }
+
+            // ── Minimum popup size ────────────────────────────────────
+            RowLayout {
+                Kirigami.FormData.label: i18n("Minimum width:")
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: minWidthModeCombo
+                    Layout.preferredWidth: 130
+                    textRole: "text"
+                    model: [
+                        { text: i18n("Auto"),   value: "auto"   },
+                        { text: i18n("Manual"), value: "manual" }
+                    ]
+                    currentIndex: widgetTab.configRoot.cfg_widgetMinWidthMode === "manual" ? 1 : 0
+                    onActivated: widgetTab.configRoot.cfg_widgetMinWidthMode = model[currentIndex].value
+                }
+                SpinBox {
+                    enabled: widgetTab.configRoot.cfg_widgetMinWidthMode === "manual"
+                    from: 200
+                    to: 2000
+                    stepSize: 10
+                    value: widgetTab.configRoot.cfg_widgetMinWidthMode === "manual"
+                        ? widgetTab.configRoot.cfg_widgetMinWidth : 750
+                    onValueModified: widgetTab.configRoot.cfg_widgetMinWidth = value
+                }
+                Label {
+                    text: "px"
+                    opacity: 0.65
+                }
+            }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Minimum height:")
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: minHeightModeCombo
+                    Layout.preferredWidth: 130
+                    textRole: "text"
+                    model: [
+                        { text: i18n("Auto"),   value: "auto"   },
+                        { text: i18n("Manual"), value: "manual" }
+                    ]
+                    currentIndex: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual" ? 1 : 0
+                    onActivated: widgetTab.configRoot.cfg_widgetMinHeightMode = model[currentIndex].value
+                }
+                SpinBox {
+                    enabled: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual"
+                    from: 200
+                    to: 2000
+                    stepSize: 10
+                    value: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual"
+                        ? widgetTab.configRoot.cfg_widgetMinHeight : 750
+                    onValueModified: widgetTab.configRoot.cfg_widgetMinHeight = value
+                }
+                Label {
+                    visible: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual"
+                    text: "px"
+                    opacity: 0.65
+                }
+            }
         }
 
         // ── SUB-TAB 1: Details ────────────────────────────────────────
@@ -284,6 +343,12 @@ ColumnLayout {
                 to: 7
                 value: widgetTab.configRoot.cfg_forecastDays
                 onValueModified: widgetTab.configRoot.cfg_forecastDays = value
+            }
+            CheckBox {
+                Kirigami.FormData.label: i18n("Hourly forecast:")
+                text: i18n("Show sunrise/sunset markers")
+                checked: widgetTab.configRoot.cfg_forecastShowSunEvents
+                onToggled: widgetTab.configRoot.cfg_forecastShowSunEvents = checked
             }
 
         }

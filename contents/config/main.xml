@@ -83,12 +83,13 @@
     <entry name="altitudeUnit"            type="String"><default>m</default></entry>
     <entry name="apparentTemperatureMode" type="String"><default>apparent</default></entry>
     <entry name="roundValues"             type="Bool"><default>true</default></entry>
+    <entry name="showTempUnit"             type="Bool"><default>false</default></entry>
 
     <!-- ── Panel — layout and items ──────────────────────────────────── -->
     <!-- panelInfoMode: "single" | "multiline" | "simple" -->
-    <entry name="panelInfoMode"    type="String"><default>single</default></entry>
+    <entry name="panelInfoMode"    type="String"><default>simple</default></entry>
     <entry name="panelItemOrder"   type="String"><default>location;temperature;humidity</default></entry>
-    <entry name="panelItemIcons"   type="String"><default>location=1;condition=1;temperature=1;suntimes=1;wind=1;feelslike=1;humidity=1;pressure=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;alerts=1;snowcover=1</default></entry>
+    <entry name="panelItemIcons"   type="String"><default>location=1;condition=1;temperature=1;suntimes=1;wind=1;feelslike=1;humidity=1;pressure=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
     <entry name="panelSeparator"   type="String"><default> • </default></entry>
     <entry name="panelItemSpacing" type="Int"><default>5</default><min>0</min><max>32</max></entry>
     <entry name="panelFillWidth"   type="Bool"><default>false</default></entry>
@@ -118,6 +119,11 @@
     <entry name="panelSimpleWidgetOrder"       type="Int"><default>0</default></entry>
     <entry name="panelSimpleIconStyle"         type="String"><default>symbolic</default></entry>
     <entry name="panelSimpleHorizontalContent" type="String"><default>both</default></entry>
+    <!-- Compressed mode: badge position, spacing, background color -->
+    <entry name="compressedBadgePosition"  type="String"><default>bottom-right</default></entry>
+    <entry name="compressedBadgeSpacing"   type="Int"><default>0</default><min>-20</min><max>20</max></entry>
+    <entry name="compressedBadgeColor"     type="String"><default></default></entry>
+    <entry name="compressedBadgeOpacity"   type="Double"><default>0.85</default></entry>
     <entry name="simpleIconSizeMode"    type="String"><default>auto</default></entry>
     <entry name="simpleIconSizeManual"  type="Int"><default>32</default><min>16</min><max>72</max></entry>
     <entry name="simpleFontSizeMode"    type="String"><default>auto</default></entry>
@@ -145,11 +151,16 @@
     <!-- widgetWidth/Height: 0 = use built-in default (540 × 550) -->
     <entry name="widgetWidth"      type="Int"><default>0</default></entry>
     <entry name="widgetHeight"     type="Int"><default>0</default></entry>
+    <!-- Minimum popup size: "auto" = 750, "manual" = user-set -->
+    <entry name="widgetMinWidthMode"  type="String"><default>auto</default></entry>
+    <entry name="widgetMinWidth"      type="Int"><default>750</default><min>200</min><max>2000</max></entry>
+    <entry name="widgetMinHeightMode" type="String"><default>auto</default></entry>
+    <entry name="widgetMinHeight"     type="Int"><default>750</default><min>200</min><max>2000</max></entry>
     <entry name="widgetDefaultTab" type="String"><default>details</default></entry>
 
     <!-- ── Widget — details view ──────────────────────────────────────── -->
-    <entry name="widgetDetailsOrder"    type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes</default></entry>
-    <entry name="widgetDetailsItemIcons" type="String"><default>feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;alerts=1;snowcover=1</default></entry>
+    <entry name="widgetDetailsOrder"    type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes;preciprate;precipsum;uvindex;airquality;pollen;spaceweather;alerts;snowcover</default></entry>
+    <entry name="widgetDetailsItemIcons" type="String"><default>feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
     <entry name="widgetDetailsCustomIcons" type="String"><default></default></entry>
     <entry name="widgetDetailsLayout"   type="String"><default>cards2</default></entry>
     <entry name="widgetSunTimesMode"    type="String"><default>both</default></entry>
@@ -181,13 +192,14 @@
     <entry name="forecastLayout"      type="String"><default>rows</default></entry>
     <entry name="forecastDays"        type="Int"><default>5</default><min>3</min><max>7</max></entry>
     <entry name="forecastIconTheme"   type="String"><default>symbolic</default></entry>
+    <entry name="forecastShowSunEvents" type="Bool"><default>true</default></entry>
     <entry name="animateTransitions"  type="Bool"><default>true</default></entry>
 
     <!-- ── Tooltip ────────────────────────────────────────────────────── -->
     <entry name="tooltipEnabled"    type="Bool"><default>true</default></entry>
     <entry name="tooltipStyle"      type="String"><default>verbose</default></entry>
     <entry name="tooltipItemOrder"  type="String"><default>temperature;wind;humidity;pressure;suntimes</default></entry>
-    <entry name="tooltipItemIcons"  type="String"><default>temperature=1;condition=1;feelslike=1;wind=1;humidity=1;pressure=1;suntimes=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;alerts=1;snowcover=1</default></entry>
+    <entry name="tooltipItemIcons"  type="String"><default>temperature=1;condition=1;feelslike=1;wind=1;humidity=1;pressure=1;suntimes=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
     <entry name="tooltipSunTimesMode" type="String"><default>both</default></entry>
     <entry name="tooltipMoonPhaseMode" type="String"><default>full</default></entry>
     <!-- tooltipIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "kde" | "custom" -->

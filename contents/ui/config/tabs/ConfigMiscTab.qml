@@ -56,6 +56,19 @@ Kirigami.FormLayout {
             opacity: 0.8
         }
     }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Show temperature unit:")
+        spacing: 12
+        Switch {
+            id: showTempUnitSwitch
+            checked: miscTab.configRoot.cfg_showTempUnit
+            onToggled: miscTab.configRoot.cfg_showTempUnit = checked
+        }
+        Label {
+            text: showTempUnitSwitch.checked ? i18n("Showing °C / °F after values") : i18n("Showing ° only")
+            opacity: 0.8
+        }
+    }
 
     Kirigami.Separator {
         Kirigami.FormData.label: i18n("Units")

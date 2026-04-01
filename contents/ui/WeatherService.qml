@@ -32,6 +32,7 @@ import "providers/openWeather.js" as OpenWeatherJS
 import "providers/weatherApi.js" as WeatherApiJS
 import "providers/metNo.js" as MetNoJS
 import "providers/alerts.js" as AlertsJS
+import "providers/spaceWeather_provider.js" as SpaceWeatherJS
 
 QtObject {
     id: service
@@ -77,12 +78,14 @@ QtObject {
             r.uvIndex = NaN;
             r.airQualityIndex = NaN;
             r.airQualityLabel = "";
-            r.aqiPm10  = NaN;
+            r.aqiPm10 = NaN;
             r.aqiPm2_5 = NaN;
-            r.aqiCo    = NaN;
-            r.aqiNo2   = NaN;
-            r.aqiSo2   = NaN;
-            r.aqiO3    = NaN;
+            r.aqiCo = NaN;
+            r.aqiNo2 = NaN;
+            r.aqiSo2 = NaN;
+            r.aqiO3 = NaN;
+            r.pollenData = [];
+            r.spaceWeather = null;
             r.weatherAlerts = [];
             r.snowDepthCm = NaN;
             r.sunriseTimeText = "--";
@@ -97,14 +100,14 @@ QtObject {
         r.weatherAlerts = [];  // reset before parallel fetch
 
         var provider = Plasmoid.configuration.weatherProvider || "adaptive";
-        var chain = (provider === "adaptive")
-            ? ["openMeteo", "openWeather", "weatherApi", "metno"]
-            : [provider];
+        var chain = (provider === "adaptive") ? ["openMeteo", "openWeather", "weatherApi", "metno"] : [provider];
 
         _tryProvider(chain, 0);
 
         // Fetch alerts independently (MeteoAlarm → met.no fallback)
         AlertsJS.fetchAlerts(service);
+        // Fetch NOAA space weather independently (no location needed)
+        SpaceWeatherJS.fetchSpaceWeather(service);
     }
 
     /** Hourly data fetch for a specific date string (yyyy-MM-dd) */
@@ -151,9 +154,7 @@ QtObject {
             name = "Open-Meteo";
             url = "https://open-meteo.com";
         }
-        return i18n("Updated %1", t)
-            + " \u00B7 " + i18n("Weather provider:")
-            + " <a href='" + url + "'>" + name + "</a>";
+        return i18n("Updated %1", t) + " \u00B7 " + i18n("Weather provider:") + " <a href='" + url + "'>" + name + "</a>";
     }
 
     function _providerLabel(p) {
@@ -203,13 +204,7 @@ QtObject {
         var r = weatherRoot;
         var tz = (Plasmoid.configuration.timezone || "").trim();
         var today = Qt.formatDate(new Date(), "yyyy-MM-dd");
-        var url = "https://api.open-meteo.com/v1/forecast"
-            + "?latitude="  + Plasmoid.configuration.latitude
-            + "&longitude=" + Plasmoid.configuration.longitude
-            + "&timezone="  + encodeURIComponent(tz.length > 0 ? tz : "auto")
-            + "&daily=sunrise,sunset"
-            + "&start_date=" + today
-            + "&end_date="   + today;
+        var url = "https://api.open-meteo.com/v1/forecast" + "?latitude=" + Plasmoid.configuration.latitude + "&longitude=" + Plasmoid.configuration.longitude + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto") + "&daily=sunrise,sunset" + "&start_date=" + today + "&end_date=" + today;
         var req = new XMLHttpRequest();
         req.open("GET", url);
         req.onreadystatechange = function () {

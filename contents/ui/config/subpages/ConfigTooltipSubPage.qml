@@ -27,9 +27,8 @@ import org.kde.kirigami as Kirigami
 import org.kde.iconthemes as KIconThemes
 
 ColumnLayout {
-    required property var configRoot
-
     id: ttSubPageRoot
+    required property var configRoot
     spacing: 0
     property string _savedOrder: configRoot.cfg_tooltipItemOrder
     property string _savedIcons: configRoot.cfg_tooltipItemIcons
@@ -214,6 +213,10 @@ ColumnLayout {
                                             return b + "storm-warning.svg";
                                         if (id === "snowcover")
                                             return b + "snowflake-cold.svg";
+                                        if (id === "pollen")
+                                            return b + "sandstorm.svg";
+                                        if (id === "spaceweather")
+                                            return b + "stars.svg";
                                         return "";
                                     }
                                     isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
@@ -239,45 +242,69 @@ ColumnLayout {
                                 visible: model.itemId === "suntimes"
                                 spacing: 2
                                 opacity: model.itemEnabled ? 1.0 : 0.35
-                                Kirigami.Icon {
+                                Item {
                                     width: Kirigami.Units.iconSizes.smallMedium
                                     height: Kirigami.Units.iconSizes.smallMedium
-                                    source: {
-                                        var th = configRoot.cfg_tooltipIconTheme;
-                                        if (th === "custom") {
-                                            var _w = configRoot.cfg_tooltipCustomIcons;
-                                            var s = configRoot.getTooltipCustomIcon("suntimes-sunrise");
-                                            return s.length > 0 ? s : "weather-sunrise";
-                                        }
-                                        if (th === "kde") return "weather-sunrise";
-                                        if (th === "wi-font") return "weather-sunrise";
-                                        var sz = configRoot.cfg_tooltipIconSize || 22;
-                                        return configRoot.iconsBase + th + "/" + sz + "/wi-sunrise.svg";
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "\uF051"
+                                        font.family: configRoot.wiFontReady ? configRoot.wiFontFamily : ""
+                                        font.pixelSize: parent.width - 2
+                                        color: Kirigami.Theme.textColor
+                                        visible: configRoot.cfg_tooltipIconTheme === "wi-font" && configRoot.wiFontReady
                                     }
-                                    isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
-                                    color: Kirigami.Theme.textColor
+                                    Kirigami.Icon {
+                                        anchors.fill: parent
+                                        visible: configRoot.cfg_tooltipIconTheme !== "wi-font" || !configRoot.wiFontReady
+                                        source: {
+                                            var th = configRoot.cfg_tooltipIconTheme;
+                                            if (th === "custom") {
+                                                var _w = configRoot.cfg_tooltipCustomIcons;
+                                                var s = configRoot.getTooltipCustomIcon("suntimes-sunrise");
+                                                return s.length > 0 ? s : "weather-sunrise";
+                                            }
+                                            if (th === "kde" || th === "wi-font")
+                                                return "weather-sunrise";
+                                            var sz = configRoot.cfg_tooltipIconSize || 22;
+                                            return configRoot.iconsBase + th + "/" + sz + "/wi-sunrise.svg";
+                                        }
+                                        isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
+                                        color: Kirigami.Theme.textColor
+                                    }
                                 }
                                 Kirigami.Separator {
                                     width: 1
                                     height: Kirigami.Units.iconSizes.smallMedium
                                 }
-                                Kirigami.Icon {
+                                Item {
                                     width: Kirigami.Units.iconSizes.smallMedium
                                     height: Kirigami.Units.iconSizes.smallMedium
-                                    source: {
-                                        var th = configRoot.cfg_tooltipIconTheme;
-                                        if (th === "custom") {
-                                            var _w = configRoot.cfg_tooltipCustomIcons;
-                                            var s = configRoot.getTooltipCustomIcon("suntimes-sunset");
-                                            return s.length > 0 ? s : "weather-sunset";
-                                        }
-                                        if (th === "kde") return "weather-sunset";
-                                        if (th === "wi-font") return "weather-sunset";
-                                        var sz = configRoot.cfg_tooltipIconSize || 22;
-                                        return configRoot.iconsBase + th + "/" + sz + "/wi-sunset.svg";
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "\uF052"
+                                        font.family: configRoot.wiFontReady ? configRoot.wiFontFamily : ""
+                                        font.pixelSize: parent.width - 2
+                                        color: Kirigami.Theme.textColor
+                                        visible: configRoot.cfg_tooltipIconTheme === "wi-font" && configRoot.wiFontReady
                                     }
-                                    isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
-                                    color: Kirigami.Theme.textColor
+                                    Kirigami.Icon {
+                                        anchors.fill: parent
+                                        visible: configRoot.cfg_tooltipIconTheme !== "wi-font" || !configRoot.wiFontReady
+                                        source: {
+                                            var th = configRoot.cfg_tooltipIconTheme;
+                                            if (th === "custom") {
+                                                var _w = configRoot.cfg_tooltipCustomIcons;
+                                                var s = configRoot.getTooltipCustomIcon("suntimes-sunset");
+                                                return s.length > 0 ? s : "weather-sunset";
+                                            }
+                                            if (th === "kde" || th === "wi-font")
+                                                return "weather-sunset";
+                                            var sz = configRoot.cfg_tooltipIconSize || 22;
+                                            return configRoot.iconsBase + th + "/" + sz + "/wi-sunset.svg";
+                                        }
+                                        isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
+                                        color: Kirigami.Theme.textColor
+                                    }
                                 }
                             }
                             // ── Dual icons for moonphase (moonrise | moonset) ────
@@ -285,45 +312,69 @@ ColumnLayout {
                                 visible: model.itemId === "moonphase"
                                 spacing: 2
                                 opacity: model.itemEnabled ? 1.0 : 0.35
-                                Kirigami.Icon {
+                                Item {
                                     width: Kirigami.Units.iconSizes.smallMedium
                                     height: Kirigami.Units.iconSizes.smallMedium
-                                    source: {
-                                        var th = configRoot.cfg_tooltipIconTheme;
-                                        if (th === "custom") {
-                                            var _w = configRoot.cfg_tooltipCustomIcons;
-                                            var s = configRoot.getTooltipCustomIcon("moonrise");
-                                            return s.length > 0 ? s : "weather-clear-night";
-                                        }
-                                        if (th === "kde") return "weather-clear-night";
-                                        if (th === "wi-font") return "weather-clear-night";
-                                        var sz = configRoot.cfg_tooltipIconSize || 22;
-                                        return configRoot.iconsBase + th + "/" + sz + "/wi-moonrise.svg";
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "\uF0C9"
+                                        font.family: configRoot.wiFontReady ? configRoot.wiFontFamily : ""
+                                        font.pixelSize: parent.width - 2
+                                        color: Kirigami.Theme.textColor
+                                        visible: configRoot.cfg_tooltipIconTheme === "wi-font" && configRoot.wiFontReady
                                     }
-                                    isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
-                                    color: Kirigami.Theme.textColor
+                                    Kirigami.Icon {
+                                        anchors.fill: parent
+                                        visible: configRoot.cfg_tooltipIconTheme !== "wi-font" || !configRoot.wiFontReady
+                                        source: {
+                                            var th = configRoot.cfg_tooltipIconTheme;
+                                            if (th === "custom") {
+                                                var _w = configRoot.cfg_tooltipCustomIcons;
+                                                var s = configRoot.getTooltipCustomIcon("moonrise");
+                                                return s.length > 0 ? s : "weather-clear-night";
+                                            }
+                                            if (th === "kde" || th === "wi-font")
+                                                return "weather-clear-night";
+                                            var sz = configRoot.cfg_tooltipIconSize || 22;
+                                            return configRoot.iconsBase + th + "/" + sz + "/wi-moonrise.svg";
+                                        }
+                                        isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
+                                        color: Kirigami.Theme.textColor
+                                    }
                                 }
                                 Kirigami.Separator {
                                     width: 1
                                     height: Kirigami.Units.iconSizes.smallMedium
                                 }
-                                Kirigami.Icon {
+                                Item {
                                     width: Kirigami.Units.iconSizes.smallMedium
                                     height: Kirigami.Units.iconSizes.smallMedium
-                                    source: {
-                                        var th = configRoot.cfg_tooltipIconTheme;
-                                        if (th === "custom") {
-                                            var _w = configRoot.cfg_tooltipCustomIcons;
-                                            var s = configRoot.getTooltipCustomIcon("moonset");
-                                            return s.length > 0 ? s : "weather-clear-night";
-                                        }
-                                        if (th === "kde") return "weather-clear-night";
-                                        if (th === "wi-font") return "weather-clear-night";
-                                        var sz = configRoot.cfg_tooltipIconSize || 22;
-                                        return configRoot.iconsBase + th + "/" + sz + "/wi-moonset.svg";
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "\uF0CA"
+                                        font.family: configRoot.wiFontReady ? configRoot.wiFontFamily : ""
+                                        font.pixelSize: parent.width - 2
+                                        color: Kirigami.Theme.textColor
+                                        visible: configRoot.cfg_tooltipIconTheme === "wi-font" && configRoot.wiFontReady
                                     }
-                                    isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
-                                    color: Kirigami.Theme.textColor
+                                    Kirigami.Icon {
+                                        anchors.fill: parent
+                                        visible: configRoot.cfg_tooltipIconTheme !== "wi-font" || !configRoot.wiFontReady
+                                        source: {
+                                            var th = configRoot.cfg_tooltipIconTheme;
+                                            if (th === "custom") {
+                                                var _w = configRoot.cfg_tooltipCustomIcons;
+                                                var s = configRoot.getTooltipCustomIcon("moonset");
+                                                return s.length > 0 ? s : "weather-clear-night";
+                                            }
+                                            if (th === "kde" || th === "wi-font")
+                                                return "weather-clear-night";
+                                            var sz = configRoot.cfg_tooltipIconSize || 22;
+                                            return configRoot.iconsBase + th + "/" + sz + "/wi-moonset.svg";
+                                        }
+                                        isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
+                                        color: Kirigami.Theme.textColor
+                                    }
                                 }
                             }
                             // Labels

@@ -38,15 +38,18 @@
 
 .pragma library
 
+// No-op marker so xgettext can extract these strings (translated at runtime in QML).
+function I18N_NOOP(s) { return s; }
+
 // ─── Band definitions ────────────────────────────────────────────────────────
 
 var BANDS = [
-    { max: 25,  label: "Good",           shortLabel: "Good",     color: "#4CAF50", textColor: "#1B5E20", description: "Air quality is satisfactory." },
-    { max: 50,  label: "Fair",           shortLabel: "Fair",     color: "#CDDC39", textColor: "#4E6B00", description: "Air quality is acceptable." },
-    { max: 75,  label: "Moderate",       shortLabel: "Moderate", color: "#FF9800", textColor: "#7A3500", description: "Air quality is fair." },
-    { max: 100, label: "Poor",           shortLabel: "Poor",     color: "#F44336", textColor: "#7F0000", description: "Air quality is poor." },
-    { max: 150, label: "Very Poor",      shortLabel: "V.Poor",   color: "#9C27B0", textColor: "#4A0072", description: "Air quality is very poor." },
-    { max: 9999,label: "Extremely Poor", shortLabel: "Extreme",  color: "#7B1FA2", textColor: "#1A002A", description: "Air quality is extremely poor." }
+    { max: 25,  label: I18N_NOOP("Good"),           shortLabel: I18N_NOOP("Good"),     color: "#4CAF50", textColor: "#1B5E20", description: I18N_NOOP("Air quality is satisfactory.") },
+    { max: 50,  label: I18N_NOOP("Fair"),           shortLabel: I18N_NOOP("Fair"),     color: "#CDDC39", textColor: "#4E6B00", description: I18N_NOOP("Air quality is acceptable.") },
+    { max: 75,  label: I18N_NOOP("Moderate"),       shortLabel: I18N_NOOP("Moderate"), color: "#FF9800", textColor: "#7A3500", description: I18N_NOOP("Air quality is fair.") },
+    { max: 100, label: I18N_NOOP("Poor"),           shortLabel: I18N_NOOP("Poor"),     color: "#F44336", textColor: "#7F0000", description: I18N_NOOP("Air quality is poor.") },
+    { max: 150, label: I18N_NOOP("Very Poor"),      shortLabel: I18N_NOOP("V.Poor"),   color: "#9C27B0", textColor: "#4A0072", description: I18N_NOOP("Air quality is very poor.") },
+    { max: 9999,label: I18N_NOOP("Extremely Poor"), shortLabel: I18N_NOOP("Extreme"),  color: "#7B1FA2", textColor: "#1A002A", description: I18N_NOOP("Air quality is extremely poor.") }
 ];
 
 // ─── Per-pollutant breakpoints ────────────────────────────────────────────────
@@ -152,16 +155,21 @@ function unitFor(pollutant) {
 }
 
 /**
- * Returns the display name for a pollutant key.
+ * Maps a European AQI value (0–150+) to the AQHI 1–10+ scale.
+ *   EU AQI 0–25   (Good)           → AQHI 1–3
+ *   EU AQI 25–50  (Fair)           → AQHI 4–6
+ *   EU AQI 50–75  (Moderate)       → AQHI 7
+ *   EU AQI 75–100 (Poor)           → AQHI 8–9
+ *   EU AQI 100–150 (Very Poor)     → AQHI 10
+ *   EU AQI >150  (Extremely Poor)  → AQHI 10+
  */
-function nameFor(pollutant) {
-    switch (pollutant) {
-        case "pm2_5": return "PM2.5";
-        case "pm10":  return "PM10";
-        case "no2":   return "NO₂";
-        case "o3":    return "O₃";
-        case "so2":   return "SO₂";
-        case "co":    return "CO";
-    }
-    return pollutant;
+function aqhiFromAqi(aqi) {
+    if (isNaN(aqi) || aqi === null) return NaN;
+    if (aqi <= 0)   return 1;
+    if (aqi <= 25)  return 1 + (aqi / 25) * 2;          // 1–3
+    if (aqi <= 50)  return 4 + ((aqi - 25) / 25) * 2;   // 4–6
+    if (aqi <= 75)  return 7;                            // 7
+    if (aqi <= 100) return 8 + ((aqi - 75) / 25);       // 8–9
+    if (aqi <= 150) return 10;                           // 10
+    return 10;                                           // 10+
 }

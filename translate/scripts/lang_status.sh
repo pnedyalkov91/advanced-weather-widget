@@ -2,7 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+TRANSLATE_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+cd "$TRANSLATE_DIR"
 
 OUTPUT_FILE="translation-status.md"
 
@@ -151,11 +152,15 @@ unset IFS
 
 for po_file in "${sorted_po_files[@]}"; do
     locale="$(basename "$po_file" .po)"
-    translated="$(count_translated "$po_file")"
+    # Merge .po against the template so only current strings are counted
+    merged="$(msgmerge --no-fuzzy-matching --quiet "$po_file" "$TEMPLATE_FILE" -o - 2>/dev/null)"
+    untranslated="$(echo "$merged" | msgattrib --untranslated - 2>/dev/null \
+        | grep -c '^msgid "' || true)"
+    translated=$(( TOTAL_LINES - untranslated ))
     percent=$(( translated * 100 / TOTAL_LINES ))
 
     printf "| %-8s | %3d/%-3d | %4d%% |\n" \
         "$locale" "$translated" "$TOTAL_LINES" "$percent" >> "$OUTPUT_FILE"
 done
 
-echo "Generated: $SCRIPT_DIR/$OUTPUT_FILE"
+echo "Generated: $TRANSLATE_DIR/$OUTPUT_FILE"

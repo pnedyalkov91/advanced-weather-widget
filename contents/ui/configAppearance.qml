@@ -186,157 +186,51 @@ KCM.AbstractKCM {
         // Weather-condition slots — one per distinct KDE icon from _conditionKdeIcon
         readonly property var conditionSlots: [
             // ── Clear ──
-            {
-                key: "condition-clear",
-                label: i18n("Clear (day)"),
-                defaultIcon: "weather-clear"
-            },
-            {
-                key: "condition-clear-night",
-                label: i18n("Clear (night)"),
-                defaultIcon: "weather-clear-night"
-            },
+            { key: "condition-clear",             label: i18n("Clear (day)"),                        defaultIcon: "weather-clear" },
+            { key: "condition-clear-night",       label: i18n("Clear (night)"),                      defaultIcon: "weather-clear-night" },
             // ── Mainly clear ──
-            {
-                key: "condition-few-clouds",
-                label: i18n("Mainly clear (day)"),
-                defaultIcon: "weather-few-clouds"
-            },
-            {
-                key: "condition-few-clouds-night",
-                label: i18n("Mainly clear (night)"),
-                defaultIcon: "weather-few-clouds-night"
-            },
+            { key: "condition-few-clouds",        label: i18n("Mainly clear (day)"),                 defaultIcon: "weather-few-clouds" },
+            { key: "condition-few-clouds-night",  label: i18n("Mainly clear (night)"),               defaultIcon: "weather-few-clouds-night" },
             // ── Partly cloudy ──
-            {
-                key: "condition-cloudy-day",
-                label: i18n("Partly cloudy (day)"),
-                defaultIcon: "weather-clouds-day"
-            },
-            {
-                key: "condition-cloudy-night",
-                label: i18n("Partly cloudy (night)"),
-                defaultIcon: "weather-clouds-night"
-            },
+            { key: "condition-cloudy-day",        label: i18n("Partly cloudy (day)"),                defaultIcon: "weather-clouds-day" },
+            { key: "condition-cloudy-night",      label: i18n("Partly cloudy (night)"),              defaultIcon: "weather-clouds-night" },
             // ── Overcast ──
-            {
-                key: "condition-overcast",
-                label: i18n("Overcast"),
-                defaultIcon: "weather-many-clouds"
-            },
+            { key: "condition-overcast",          label: i18n("Overcast"),                           defaultIcon: "weather-many-clouds" },
             // ── Fog ──
-            {
-                key: "condition-fog",
-                label: i18n("Fog"),
-                defaultIcon: "weather-fog"
-            },
+            { key: "condition-fog",               label: i18n("Fog"),                                defaultIcon: "weather-fog" },
             // ── Light rain / Drizzle ──
-            {
-                key: "condition-showers-scattered-day",
-                label: i18n("Light rain / Drizzle (day)"),
-                defaultIcon: "weather-showers-scattered-day"
-            },
-            {
-                key: "condition-showers-scattered-night",
-                label: i18n("Light rain / Drizzle (night)"),
-                defaultIcon: "weather-showers-scattered-night"
-            },
+            { key: "condition-showers-scattered-day",   label: i18n("Light rain / Drizzle (day)"),   defaultIcon: "weather-showers-scattered-day" },
+            { key: "condition-showers-scattered-night",label: i18n("Light rain / Drizzle (night)"),  defaultIcon: "weather-showers-scattered-night" },
             // ── Rain ──
-            {
-                key: "condition-showers-day",
-                label: i18n("Rain (day)"),
-                defaultIcon: "weather-showers-day"
-            },
-            {
-                key: "condition-showers-night",
-                label: i18n("Rain (night)"),
-                defaultIcon: "weather-showers-night"
-            },
+            { key: "condition-showers-day",       label: i18n("Rain (day)"),                         defaultIcon: "weather-showers-day" },
+            { key: "condition-showers-night",     label: i18n("Rain (night)"),                       defaultIcon: "weather-showers-night" },
             // ── Freezing drizzle / Light freezing rain ──
-            {
-                key: "condition-freezing-scattered-rain-day",
-                label: i18n("Freezing drizzle (day)"),
-                defaultIcon: "weather-freezing-scattered-rain-day"
-            },
-            {
-                key: "condition-freezing-scattered-rain-night",
-                label: i18n("Freezing drizzle (night)"),
-                defaultIcon: "weather-freezing-scattered-rain-night"
-            },
+            { key: "condition-freezing-scattered-rain-day",  label: i18n("Freezing drizzle (day)"),  defaultIcon: "weather-freezing-scattered-rain-day" },
+            { key: "condition-freezing-scattered-rain-night",label: i18n("Freezing drizzle (night)"),defaultIcon: "weather-freezing-scattered-rain-night" },
             // ── Freezing rain ──
-            {
-                key: "condition-freezing-rain-day",
-                label: i18n("Freezing rain (day)"),
-                defaultIcon: "weather-freezing-rain-day"
-            },
-            {
-                key: "condition-freezing-rain-night",
-                label: i18n("Freezing rain (night)"),
-                defaultIcon: "weather-freezing-rain-night"
-            },
+            { key: "condition-freezing-rain-day",  label: i18n("Freezing rain (day)"),               defaultIcon: "weather-freezing-rain-day" },
+            { key: "condition-freezing-rain-night",label: i18n("Freezing rain (night)"),             defaultIcon: "weather-freezing-rain-night" },
             // ── Light snow / Snow grains ──
-            {
-                key: "condition-snow-scattered-day",
-                label: i18n("Light snow (day)"),
-                defaultIcon: "weather-snow-scattered-day"
-            },
-            {
-                key: "condition-snow-scattered-night",
-                label: i18n("Light snow (night)"),
-                defaultIcon: "weather-snow-scattered-night"
-            },
+            { key: "condition-snow-scattered-day", label: i18n("Light snow (day)"),                  defaultIcon: "weather-snow-scattered-day" },
+            { key: "condition-snow-scattered-night",label: i18n("Light snow (night)"),               defaultIcon: "weather-snow-scattered-night" },
             // ── Snow ──
-            {
-                key: "condition-snow-day",
-                label: i18n("Snow (day)"),
-                defaultIcon: "weather-snow-day"
-            },
-            {
-                key: "condition-snow-night",
-                label: i18n("Snow (night)"),
-                defaultIcon: "weather-snow-night"
-            },
+            { key: "condition-snow-day",           label: i18n("Snow (day)"),                        defaultIcon: "weather-snow-day" },
+            { key: "condition-snow-night",         label: i18n("Snow (night)"),                      defaultIcon: "weather-snow-night" },
             // ── Thunderstorm ──
-            {
-                key: "condition-storm-day",
-                label: i18n("Thunderstorm (day)"),
-                defaultIcon: "weather-storm-day"
-            },
-            {
-                key: "condition-storm-night",
-                label: i18n("Thunderstorm (night)"),
-                defaultIcon: "weather-storm-night"
-            },
+            { key: "condition-storm-day",          label: i18n("Thunderstorm (day)"),                defaultIcon: "weather-storm-day" },
+            { key: "condition-storm-night",        label: i18n("Thunderstorm (night)"),              defaultIcon: "weather-storm-night" },
             // ── Thunderstorm with hail ──
-            {
-                key: "condition-hail-storm-rain-day",
-                label: i18n("Thunderstorm with hail (day)"),
-                defaultIcon: "weather-showers-scattered-storm-day"
-            },
-            {
-                key: "condition-hail-storm-rain-night",
-                label: i18n("Thunderstorm with hail (night)"),
-                defaultIcon: "weather-showers-scattered-storm-night"
-            },
+            { key: "condition-hail-storm-rain-day",  label: i18n("Thunderstorm with hail (day)"),   defaultIcon: "weather-showers-scattered-storm-day" },
+            { key: "condition-hail-storm-rain-night",label: i18n("Thunderstorm with hail (night)"), defaultIcon: "weather-showers-scattered-storm-night" },
             // ── Thunderstorm with heavy hail ──
-            {
-                key: "condition-hail-storm-snow-day",
-                label: i18n("Thunderstorm, heavy hail (day)"),
-                defaultIcon: "weather-snow-scattered-storm-day"
-            },
-            {
-                key: "condition-hail-storm-snow-night",
-                label: i18n("Thunderstorm, heavy hail (night)"),
-                defaultIcon: "weather-snow-scattered-storm-night"
-            }
+            { key: "condition-hail-storm-snow-day",  label: i18n("Thunderstorm, heavy hail (day)"), defaultIcon: "weather-snow-scattered-storm-day" },
+            { key: "condition-hail-storm-snow-night",label: i18n("Thunderstorm, heavy hail (night)"),defaultIcon: "weather-snow-scattered-storm-night" }
         ]
 
         // Raw config string for the active context
         function _rawConfig() {
-            if (context === "tooltip")
-                return root.cfg_tooltipCustomIcons;
-            if (context === "widget")
-                return root.cfg_widgetConditionCustomIcons;
+            if (context === "tooltip") return root.cfg_tooltipCustomIcons;
+            if (context === "widget") return root.cfg_widgetConditionCustomIcons;
             return root.cfg_panelCustomIcons;
         }
 
@@ -1023,8 +917,8 @@ KCM.AbstractKCM {
     property int cfg_panelIconSize: 22
     property int cfg_panelFontSize: 0
     property bool cfg_singlePanelRow: true
-    property string cfg_panelItemOrder: "location;temperature;humidity"
-    property string cfg_panelItemIcons: "location=1;condition=1;temperature=1;suntimes=1;wind=1;feelslike=1;humidity=1;pressure=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;alerts=1;snowcover=1"
+    property string cfg_panelItemOrder: "location;temperature;humidity;spaceweather"
+    property string cfg_panelItemIcons: "location=1;condition=1;temperature=1;suntimes=1;wind=1;feelslike=1;humidity=1;pressure=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;spaceweather=1;alerts=1;snowcover=1"
     property string cfg_panelSeparator: " \u2022 "
     property string cfg_panelSunTimesMode: "upcoming"
     property string cfg_panelMoonPhaseMode: "full"   // "full" | "upcoming" | "upcoming-times" | "phase" | "times" | "moonrise" | "moonset"
@@ -1046,24 +940,18 @@ KCM.AbstractKCM {
     property string cfg_panelSimpleHorizontalContent: "both"
     property int cfg_panelSimpleWidgetOrder: 0
     property string cfg_panelSimpleIconStyle: "symbolic"
-    // Compressed badge options
-    property string cfg_compressedBadgePosition: "bottom-right"
-    property int cfg_compressedBadgeSpacing: 0
-    property string cfg_compressedBadgeColor: ""
-    property double cfg_compressedBadgeOpacity: 0.85
 
     // ── Widget config aliases ─────────────────────────────────────────────
     property string cfg_tooltipStyle: "verbose"
     property string cfg_forecastLayout: "rows"
     property int cfg_forecastDays: 5
     property string cfg_forecastIconTheme: "symbolic"
-    property bool cfg_forecastShowSunEvents: true
     property bool cfg_roundValues: true
     property bool cfg_showScrollbox: true
     property bool cfg_showUpdateText: true
     // Issue #7: widgetDetailsOrder replaces individual booleans
-    property string cfg_widgetDetailsOrder: "feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes"
-    property string cfg_widgetDetailsItemIcons: "feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;alerts=1;snowcover=1"
+    property string cfg_widgetDetailsOrder: "feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes;spaceweather"
+    property string cfg_widgetDetailsItemIcons: "feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;spaceweather=1;alerts=1;snowcover=1"
     property string cfg_widgetDetailsCustomIcons: ""
     property string cfg_widgetDetailsLayout: "cards2"  // "cards2" | "list"
     property string cfg_widgetSunTimesMode: "both"   // "both" | "sunrise" | "sunset" | "upcoming"
@@ -1074,10 +962,6 @@ KCM.AbstractKCM {
     property string cfg_widgetConditionCustomIcons: ""   // custom per-condition icons for the widget popup
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
-    property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set
-    property int cfg_widgetMinWidth: 750
-    property string cfg_widgetMinHeightMode: "auto"
-    property int cfg_widgetMinHeight: 750
     property bool cfg_widgetShowFeelsLike: true
     property bool cfg_widgetShowHumidity: true
     property bool cfg_widgetShowPressure: true
@@ -1091,8 +975,8 @@ KCM.AbstractKCM {
     property int cfg_widgetCardsHeight: 44
 
     // ── Tooltip config aliases ────────────────────────────────────────────
-    property string cfg_tooltipItemOrder: "temperature;wind;humidity;pressure;suntimes"
-    property string cfg_tooltipItemIcons: "temperature=1;condition=1;feelslike=1;wind=1;humidity=1;pressure=1;suntimes=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;alerts=1;snowcover=1"
+    property string cfg_tooltipItemOrder: "temperature;wind;humidity;pressure;suntimes;spaceweather"
+    property string cfg_tooltipItemIcons: "temperature=1;condition=1;feelslike=1;wind=1;humidity=1;pressure=1;suntimes=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;spaceweather=1;alerts=1;snowcover=1"
     property string cfg_tooltipIconTheme: "symbolic"
     property int cfg_tooltipIconSize: 22
     property string cfg_tooltipCustomIcons: ""
@@ -1328,7 +1212,7 @@ KCM.AbstractKCM {
             itemId: "spaceweather",
             label: i18n("Space Weather"),
             description: i18n("NOAA Kp index and geomagnetic activity"),
-            wiChar: "\uF06E",
+            wiChar: "\uF077",
             iconFallback: "weather-clear-night"
         },
         {
@@ -1388,8 +1272,8 @@ KCM.AbstractKCM {
             itemId: "dewpoint",
             label: i18n("Dew Point"),
             description: i18n("Dew point temperature"),
-            wiChar: "\uF078",
-            iconFallback: "raindrop"
+            wiChar: "\uF055",
+            iconFallback: "thermometer"
         },
         {
             itemId: "visibility",
@@ -1444,7 +1328,7 @@ KCM.AbstractKCM {
             itemId: "spaceweather",
             label: i18n("Space Weather"),
             description: i18n("NOAA Kp index and geomagnetic activity"),
-            wiChar: "\uF06E",
+            wiChar: "\uF077",
             iconFallback: "weather-clear-night"
         },
         {
@@ -1560,8 +1444,8 @@ KCM.AbstractKCM {
             itemId: "spaceweather",
             label: i18n("Space Weather"),
             description: i18n("NOAA Kp index and geomagnetic activity"),
-            wiChar: "\uF06E",
-            iconFallback: "solar-eclipse"
+            wiChar: "\uF077",
+            iconFallback: "weather-clear-night"
         },
         {
             itemId: "alerts",
@@ -1580,14 +1464,46 @@ KCM.AbstractKCM {
     ]
 
     // ── Working models ────────────────────────────────────────────────────
-    ListModel {
-        id: panelWorkingModel
-    }
-    ListModel {
-        id: detailsWorkingModel
-    }
-    ListModel {
-        id: tooltipWorkingModel
+    ListModel { id: panelWorkingModel    }
+    ListModel { id: detailsWorkingModel  }
+    ListModel { id: tooltipWorkingModel  }
+
+    // ── Migration: append new item tokens to saved order strings ─────────
+    // When a new item (e.g. "spaceweather") is added to the defs after the
+    // user has already saved their config, the saved order string won't
+    // include it. This Timer runs once on startup and appends any missing
+    // known tokens so they appear in the Available list automatically.
+    Timer {
+        id: migrationTimer
+        interval: 0        // run on the next event-loop tick
+        repeat: false
+        running: true
+        onTriggered: {
+            var panelKnown    = allPanelItemDefs.map(function(d) { return d.itemId; });
+            var detailsKnown  = allDetailsDefs.map(function(d)   { return d.itemId; });
+            var tooltipKnown  = allTooltipDefs.map(function(d)   { return d.itemId; });
+
+            function _migrate(current, known) {
+                var existing = current.split(";").map(function(t) { return t.trim(); })
+                                                .filter(function(t) { return t.length > 0; });
+                var added = false;
+                known.forEach(function(id) {
+                    if (existing.indexOf(id) < 0) {
+                        existing.push(id);
+                        added = true;
+                    }
+                });
+                return added ? existing.join(";") : current;
+            }
+
+            var newPanel   = _migrate(cfg_panelItemOrder,      panelKnown);
+            var newDetails = _migrate(cfg_widgetDetailsOrder,  detailsKnown);
+            var newTooltip = _migrate(cfg_tooltipItemOrder,    tooltipKnown);
+
+            if (newPanel   !== cfg_panelItemOrder)     cfg_panelItemOrder     = newPanel;
+            if (newDetails !== cfg_widgetDetailsOrder) cfg_widgetDetailsOrder = newDetails;
+            if (newTooltip !== cfg_tooltipItemOrder)   cfg_tooltipItemOrder   = newTooltip;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────

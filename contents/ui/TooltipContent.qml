@@ -59,11 +59,23 @@ Item {
     // Auto width: fit content, min 280, max 480
     readonly property int ttMaxWidth: ttWidthAuto ? 480 : Math.max(200, ttWidthManual)
 
+    // Track tooltip item count for auto-width sizing
+    readonly property int _ttItemCount: ttIconRepeater.count
+    // Estimate width from actual column count and icon size
+    readonly property int _ttAutoWidth: {
+        if (!ttUseIcons || _ttItemCount === 0)
+            return 280;
+        var effectiveCols = Math.min(3, _ttItemCount);
+        // Each column: icon + 5px spacing + ~100px text + 10px col spacing
+        var colW = ttIconSize + 5 + 100 + 10;
+        return Math.max(280, effectiveCols * colW + 48);
+    }
+
     // Using an Item root (not ColumnLayout) ensures implicitWidth/Height
     // are NOT overridden by the layout engine, so manual tooltip sizing works.
     implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false)
         ? (ttWidthAuto
-            ? Math.min(ttMaxWidth, Math.max(280, ttContentCol.implicitWidth + 48))
+            ? Math.min(ttMaxWidth, _ttAutoWidth)
             : ttWidthManual)
         : 0
     implicitHeight: (Plasmoid.configuration.tooltipEnabled !== false)
@@ -142,6 +154,8 @@ Item {
                 precipsum: "\uF07C",
                 uvindex: "\uF072",
                 airquality: "\uF074",
+                pollen:     "\uF082",
+                spaceweather: "\uF06E",
                 alerts: "\uF0CE",
                 snowcover: "\uF076"
             };
@@ -166,6 +180,8 @@ Item {
                 precipsum: "flood",
                 uvindex: "weather-clear",
                 airquality: "weather-many-clouds",
+                pollen: "sandstorm",
+                spaceweather: "solar-eclipse",
                 alerts: "weather-storm",
                 snowcover: "weather-snow-scattered"
             };
@@ -454,6 +470,16 @@ Item {
         if (tok === "airquality") {
             var aqTxt = r.airQualityText();
             return [row("airquality", aqTxt, i18n("Air Quality:") + " " + aqTxt)];
+        }
+
+        if (tok === "pollen") {
+            var polTxt = r.pollenText();
+            return [row("pollen", polTxt, i18n("Pollen:") + " " + polTxt)];
+        }
+
+        if (tok === "spaceweather") {
+            var swTxt = r.spaceWeatherText();
+            return [row("spaceweather", swTxt, i18n("Space Weather:") + " " + swTxt)];
         }
 
         if (tok === "alerts") {

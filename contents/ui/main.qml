@@ -76,6 +76,8 @@ PlasmoidItem {
     property real aqiSo2:   NaN
     property real aqiO3:    NaN
     property var weatherAlerts: []         // [{headline, severity, description}]
+    property var pollenData: []             // [{key, value}] UPI 0–12 per pollen type
+    property var spaceWeather: null         // NOAA SWPC data object
     property real snowDepthCm: NaN         // Current snow depth (cm)
     property string sunriseTimeText: "--"
     property string sunsetTimeText: "--"
@@ -114,8 +116,16 @@ PlasmoidItem {
         // Plasma reads Layout.minimumWidth/Height from the fullRepresentation
         // item — NOT from PlasmoidItem — to enforce resize limits.
 
-        Layout.minimumWidth: 540
-        Layout.minimumHeight: 550
+        Layout.minimumWidth: {
+            if ((Plasmoid.configuration.widgetMinWidthMode || "auto") === "manual")
+                return Math.max(200, Plasmoid.configuration.widgetMinWidth || 800);
+            return 800;
+        }
+        Layout.minimumHeight: {
+            if ((Plasmoid.configuration.widgetMinHeightMode || "auto") === "manual")
+                return Math.max(200, Plasmoid.configuration.widgetMinHeight || 750);
+            return 750;
+        }
     }
 
 
@@ -239,7 +249,7 @@ PlasmoidItem {
         return Plasmoid.configuration.temperatureUnit || "C";
     }
     function tempValue(celsius) {
-        return W.formatTemp(celsius, _tempUnit(), Plasmoid.configuration.roundValues);
+        return W.formatTemp(celsius, _tempUnit(), Plasmoid.configuration.roundValues, Plasmoid.configuration.showTempUnit);
     }
 
     function _windUnit() {
@@ -301,7 +311,57 @@ PlasmoidItem {
         else if (airQualityIndex < 100) { label = i18n("Poor");           square = "\u{1F534}"; }  // 🔴
         else if (airQualityIndex < 150) { label = i18n("Very Poor");      square = "\u{1F7E3}"; }  // 🟣
         else                            { label = i18n("Extremely Poor"); square = "\u{1F7E4}"; }  // 🟤
-        return square + " " + label + ": " + Math.round(airQualityIndex);
+        // Compute AQHI from EU AQI
+        var aqhi;
+        var aqi = airQualityIndex;
+        if (aqi <= 0)        aqhi = 1;
+        else if (aqi <= 25)  aqhi = 1 + (aqi / 25) * 2;
+        else if (aqi <= 50)  aqhi = 4 + ((aqi - 25) / 25) * 2;
+        else if (aqi <= 75)  aqhi = 7;
+        else if (aqi <= 100) aqhi = 8 + ((aqi - 75) / 25);
+        else                 aqhi = 10;
+        return square + " " + label + " · " + i18n("AQI") + ": " + Math.round(aqi) + " | " + i18n("AQHI") + ": " + Math.round(aqhi);
+    }
+
+    /**
+     * Returns the dominant pollen display text for the panel / tooltip chip.
+     * Format: "<PollenName>: <Label> (<value>)"
+     */
+    function pollenText() {
+        if (!pollenData || pollenData.length === 0) return "--";
+        var best = null;
+        for (var i = 0; i < pollenData.length; i++) {
+            var p = pollenData[i];
+            if (isNaN(p.value) || p.value === null) continue;
+            if (!best || p.value > best.value) best = p;
+        }
+        if (!best) return "--";
+        var label = "";
+        if (best.value < 2.5)      label = i18n("Low");
+        else if (best.value < 4.9) label = i18n("Moderate");
+        else if (best.value < 7.3) label = i18n("High");
+        else                       label = i18n("Very High");
+        var name = "";
+        switch (best.key) {
+            case "alder":   name = i18n("Alder");   break;
+            case "birch":   name = i18n("Birch");   break;
+            case "grass":   name = i18n("Grass");   break;
+            case "mugwort": name = i18n("Mugwort"); break;
+            case "olive":   name = i18n("Olive");   break;
+            case "ragweed": name = i18n("Ragweed"); break;
+            default:        name = best.key;
+        }
+        return name + ": " + label + " (" + best.value.toFixed(1) + ")";
+    }
+
+    /**
+     * Returns the space weather display text for the panel / tooltip chip.
+     * Collapsed: "Kp 3.3" — or "Kp 5.0 · G1" when storm active.
+     */
+    function spaceWeatherText() {
+        var sw = spaceWeather;
+        if (!sw || isNaN(sw.kp)) return "--";
+        return "Kp " + sw.kp.toFixed(1) + " · " + (sw.gScale || "G0");
     }
 
     function snowDepthText(cm) {
@@ -702,6 +762,10 @@ PlasmoidItem {
             return "\uF072";        // wi-hot
         if (tok === "airquality")
             return "\uF074";        // wi-smog
+        if (tok === "pollen")
+            return "\uF082";        // wi-sandstorm
+        if (tok === "spaceweather")
+            return "\uF06E";        // wi-solar-eclipse
         if (tok === "alerts") {
             var pa = primaryAlert();
             if (pa) return alertTypeGlyph(pa.awarenessType || 0);
@@ -759,6 +823,8 @@ PlasmoidItem {
                 precipsum: "flood",
                 uvindex: "weather-clear",
                 airquality: "weather-many-clouds",
+                pollen: "sandstorm",
+                spaceweather: "stars",
                 alerts: "weather-storm",
                 snowcover: "weather-snow-scattered"
             };
@@ -960,6 +1026,10 @@ PlasmoidItem {
             return uvIndexText(uvIndex);
         if (tok === "airquality")
             return airQualityText();
+        if (tok === "pollen")
+            return pollenText();
+        if (tok === "spaceweather")
+            return spaceWeatherText();
         if (tok === "alerts")
             return alertsText();
         if (tok === "snowcover")

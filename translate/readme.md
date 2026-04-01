@@ -1,16 +1,18 @@
 ## 🌐 Translations
 
 
-#### Status
+### Status
 
 |  Locale  |  Lines  | % Done|
 |----------|---------|-------|
-| Template |     314 |       |
-| bg       | 314/314 |  100% |
-| de       | 314/314 |  100% |
-| pt_BR    | 314/314 |  100% |
-| ru       | 314/314 |  100% |
-
+| Template |     493 |       |
+| bg       | 493/493 |  100% |
+| de       | 303/493 |   61% |
+| fr_FR    | 303/493 |   61% |
+| nl       | 303/493 |   61% |
+| pt_BR    | 302/493 |   61% |
+| ru       | 303/493 |   61% |
+| tr_TR    | 303/493 |   61% |
 
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.

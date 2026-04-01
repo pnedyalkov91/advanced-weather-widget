@@ -2,52 +2,106 @@
 
 A modern, highly customizable weather widget built specifically for KDE Plasma 6.
 
-It delivers accurate forecasts, multiple weather provider support, adaptive failover logic, and extensive appearance customization — all while integrating naturally into the Plasma desktop.
+It delivers accurate forecasts, multiple weather provider support, adaptive failover logic, and extensive appearance customization - all while integrating naturally into the Plasma desktop.
 
 ---
 
 ## ✨ Key Features
 
 ### 📍 Location Management
-- Automatic location detection (GeoClue2)
-- Convenient manual city search
-- Reverse geocoding using Nominatim (timezone & elevation detection)
-- Support for non-Latin names (e.g. Cyrillic)
+- Automatic location detection via GeoClue2 (GPS / network geolocation) with confirmation dialog
+- Manual city search with dual geocoding (Open-Meteo + Nominatim / OSM)
+- Reverse geocoding for localized city names and non-Latin scripts (e.g. Cyrillic)
+- Automatic timezone and altitude detection
 
-### 🌦 Multiple Weather Providers
+### 🌦 Weather Providers
 
 Choose between:
-- Open-Meteo
-- met.no
-- WeatherAPI (API key required)
-- OpenWeather (API key required)
+- **Open-Meteo** - free, no API key required (recommended)
+- **MET Norway** - free Norwegian Meteorological Institute, no API key
+- **OpenWeatherMap** - requires API key (built-in test button)
+- **WeatherAPI.com** - requires API key (built-in test button)
 
 ### 🔄 Adaptive Mode
+- Automatic fallback chain: Open-Meteo → Met Norway → OpenWeatherMap → WeatherAPI
+- Seamless provider switching if one fails
+- Provider-specific location availability verification
 
-- Automatically switches providers if one fails
-- Improves reliability and availability
-- Seamless fallback handling
+### 🌡 Weather Data
+- **Temperature** - current, feels like (apparent), dew point, daily high / low
+- **Wind** - speed with 16-point compass direction arrow
+- **Humidity, Pressure, Visibility**
+- **Precipitation** - current rate and daily total
+- **Snow Cover** - current snow depth
+- **UV Index** - 0–11+ scale (Low → Extreme)
+- **Air Quality** - European CAQI with 6 bands (Good → Extremely Poor), per-pollutant breakdown (PM2.5, PM10, NO₂, O₃, SO₂, CO), plus AQHI score
+- **Pollen** - Universal Pollen Index (0–12) with 4 bands, 6 types: Alder, Birch, Grass, Mugwort, Olive, Ragweed
+- **Space Weather** - Kp index, geomagnetic storm scale (G0–G5), solar wind speed, Bz magnetic field, X-ray flux / solar flare class, aurora visibility probability (from NOAA SWPC)
+- **Weather Alerts** - MeteoAlarm (38 European countries) with MET Norway fallback; per-alert severity, area, timing, instructions, and web link
+- **Sunrise / Sunset** - configurable modes (both, upcoming, sunrise only, sunset only)
+- **Moon Phase** - phase name, icon, moonrise / moonset times; multiple display modes
+- **25+ weather conditions** with day / night variants
 
-### 🎨 Appearance Customization
+### 🖥 Panel Modes
+- **Single line** - horizontal row of selected items with configurable separator
+- **Multiline** - large weather icon with scrolling item rows (1–8 visible lines, adjustable scroll speed)
+- **Simple** - compact icon + temperature with layout options:
+  - Horizontal, Vertical, or Compressed (badge overlay)
+  - Compressed badge: position, spacing, background colour, opacity
 
-Individually configurable appearance for:
-- Panel mode
-- Full widget mode
-- Tooltip view
+All panel modes support:
+- Drag-and-drop item reordering (17 available items)
+- Per-item icon show / hide toggle
+- 6 icon themes: Symbolic, Font (wi-font), Flat Color, 3D Oxygen, KDE system, Custom (per-item icon picker)
+- Custom font (family, size, bold) or system font
+- Item spacing and width controls
 
-Additional options:
-- Adjustable transparency
-- Native Plasma blur support
-- Flexible forecast layout
-- Scrollbox mode
+### 💬 Tooltip
+- Enable / disable toggle
+- Prefix style: Icons or Text labels
+- Configurable items with drag-and-drop ordering
+- Location name: truncate or wrap
+- Size: auto or manual (width / height)
+- Icon theme and size selection
 
-### ⚙ Advanced Personalization
+### 📊 Widget Popup
+- Two tabs: **Details** and **Forecast** (configurable default)
+- Header with location name, detect / change / refresh buttons
 
-- Unit configuration
-- Provider selection
-- Auto / manual location mode
-- Clean first-run experience
-- Extensive customization settings
+#### Details View
+- **Cards** (2-column grid) or **List** layout
+- Expandable cards with visualizations:
+  - Sun arc for sunrise / sunset
+  - Moon path for moon phase
+  - CAQI pollutant breakdown bars for air quality
+  - Per-type pollen bars with info tooltips
+  - Space weather dashboard (Kp, Bz, solar wind, flare class, aurora %) (Provider: NOAA SWPC)
+  - Multi-alert carousel for weather alerts (Provider: Eumetnet Meteoalarm)
+- Configurable card height, per-item icons, accent colours
+
+#### Forecast View
+- **Daily forecast** - 3 to 7 days with condition icon, text, and colour-coded min / max temperatures
+- **Hourly forecast** - click a day to expand inline scrolling hourly cards with temperature, wind, precipitation probability, and precipitation rate
+- Optional **sunrise / sunset markers** between hourly cards
+
+### ⚙ Units & Display
+- **Presets**: Metric (°C, km/h, hPa, mm), Imperial (°F, mph, inHg, in), KDE locale (auto), Custom
+- **Individual unit overrides** in custom mode: temperature, wind speed (km/h, mph, m/s, kn), pressure (hPa, mmHg, inHg)
+- **Round values** - toggle between whole numbers and decimals
+- **Show temperature unit** - toggle to display °C / °F or just °
+- Popup minimum size: auto or manual (200–2000 px)
+
+### 🎨 Icon Themes & Fonts
+- 6 panel icon themes, 6 widget condition icon themes (with per-condition custom picker for 24 day / night weather slots)
+- Tooltip and details view icon themes
+- Bundled icon sets in 4 sizes: 16, 22, 24, 32 px
+- Panel and widget fonts configurable independently (system or custom)
+
+### 🌐 Internationalization
+- 7 translations: Bulgarian, German, French, Dutch, Brazilian Portuguese, Russian, Turkish
+- Full i18n support for all UI labels, weather conditions, air quality / pollen / space weather descriptions
+- Locale-aware date / time formatting (12h / 24h, date format)
+- Localized location search results
 
 ---
 
@@ -74,9 +128,8 @@ Additional options:
 ### Settings – General (Providers)
 ![Settings Providers](screenshots/providers.png)
 
-### Settings – General (Appearance)
+### Settings – Appearance
 ![Settings Appearance](screenshots/appearance.png)
-
 
 ---
 
@@ -127,9 +180,9 @@ ru_RU.po
 
 3. Open the `.po` file in a translation editor such as:
 
-- Poedit  
-- Lokalize (KDE)  
-- Kate/Kwrite  
+- Poedit
+- Lokalize (KDE)
+- Kate / Kwrite
 - VS Code
 
 4. Translate all strings by filling the `msgstr ""` fields.
@@ -159,18 +212,18 @@ Thank you to everyone who contributed translations to this project ❤️
 
 ## External resources
 
-- This project uses weather icons and font resources from: https://github.com/erikflowers/weather-icons  
+- This project uses weather icons and font resources from: https://github.com/erikflowers/weather-icons
   Licensed under SIL OFL 1.1 (http://scripts.sil.org/OFL)
 
-- This project uses code from the SunCalc library: https://github.com/mourner/suncalc  
-  Copyright (c) Vladimir Agafonkin  
+- This project uses code from the SunCalc library: https://github.com/mourner/suncalc
+  Copyright (c) Vladimir Agafonkin
   Licensed under the BSD license
 
 ## ❤️ Support the project
 
 Advanced Weather Widget is developed in my free time.
 
-If you enjoy using it, you can supporting the project:
+If you enjoy using it, you can support the project:
 
 - Liberapay: https://liberapay.com/pnedyalkov
 - PayPal: https://paypal.me/pnedyalkov91

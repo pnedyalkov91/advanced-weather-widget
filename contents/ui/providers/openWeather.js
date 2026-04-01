@@ -167,6 +167,7 @@ function _fetchAirQuality(service, W) {
         if (req.status !== 200) {
             r.airQualityIndex = NaN;
             r.airQualityLabel = "";
+            r.pollenData = [];
             return;
         }
         var d = JSON.parse(req.responseText);
@@ -178,6 +179,7 @@ function _fetchAirQuality(service, W) {
             r.airQualityIndex = NaN;
             r.airQualityLabel = "";
         }
+        r.pollenData = []; // not available in OpenWeather free tier
     };
     req.send();
 }
@@ -216,7 +218,10 @@ function fetchHourly(service, W, dateStr) {
                         windDeg: e.wind ? e.wind.deg : NaN,
                         humidity: e.main.humidity,
                         precipProb: (e.pop !== undefined && e.pop !== null)
-                            ? Math.round(e.pop * 100) : NaN
+                            ? Math.round(e.pop * 100) : NaN,
+                        precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
+                            : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
+                            : NaN
                     });
             });
         r.hourlyData = arr;

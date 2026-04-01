@@ -224,6 +224,10 @@ ColumnLayout {
                                             return b + "storm-warning.svg";
                                         if (id === "snowcover")
                                             return b + "snowflake-cold.svg";
+                                        if (id === "pollen")
+                                            return b + "sandstorm.svg";
+                                        if (id === "spaceweather")
+                                            return b + "stars.svg";
                                         return "";
                                     }
                                     isMask: configRoot.cfg_widgetIconTheme === "symbolic"

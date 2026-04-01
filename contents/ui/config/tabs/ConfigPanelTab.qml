@@ -341,6 +341,131 @@ Kirigami.FormLayout {
         }
     }
 
+    // ── Compressed badge options (only in compressed layout) ───────────
+    Kirigami.Separator {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleLayoutType === 2
+        Kirigami.FormData.label: i18n("Temperature badge")
+        Kirigami.FormData.isSection: true
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleLayoutType === 2
+        Kirigami.FormData.label: i18n("Badge position:")
+        spacing: Kirigami.Units.largeSpacing
+        ComboBox {
+            id: badgePosCombo
+            Layout.preferredWidth: 200
+            textRole: "text"
+            model: [
+                { text: i18n("Bottom Right"), value: "bottom-right" },
+                { text: i18n("Bottom Left"),  value: "bottom-left"  },
+                { text: i18n("Top Right"),    value: "top-right"    },
+                { text: i18n("Top Left"),     value: "top-left"     },
+                { text: i18n("Bottom Center"), value: "bottom-center" },
+                { text: i18n("Top Center"),    value: "top-center"    }
+            ]
+            Component.onCompleted: {
+                var cur = panelTab.configRoot.cfg_compressedBadgePosition || "bottom-right";
+                for (var i = 0; i < model.length; ++i)
+                    if (model[i].value === cur) { currentIndex = i; break; }
+            }
+            onActivated: panelTab.configRoot.cfg_compressedBadgePosition = model[currentIndex].value
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleLayoutType === 2
+        Kirigami.FormData.label: i18n("Badge spacing:")
+        spacing: Kirigami.Units.largeSpacing
+        SpinBox {
+            from: -20
+            to: 20
+            value: panelTab.configRoot.cfg_compressedBadgeSpacing
+            onValueModified: panelTab.configRoot.cfg_compressedBadgeSpacing = value
+        }
+        Label {
+            text: "px"
+            opacity: 0.65
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleLayoutType === 2
+        Kirigami.FormData.label: i18n("Badge background:")
+        spacing: Kirigami.Units.largeSpacing
+
+        Rectangle {
+            id: badgeColorPreview
+            width: 24; height: 24
+            radius: 4
+            border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3)
+            border.width: 1
+            color: {
+                var c = panelTab.configRoot.cfg_compressedBadgeColor;
+                if (c && c.length > 0)
+                    return Qt.rgba(Qt.color(c).r, Qt.color(c).g, Qt.color(c).b,
+                                   panelTab.configRoot.cfg_compressedBadgeOpacity);
+                return Qt.rgba(Kirigami.Theme.backgroundColor.r,
+                               Kirigami.Theme.backgroundColor.g,
+                               Kirigami.Theme.backgroundColor.b,
+                               panelTab.configRoot.cfg_compressedBadgeOpacity);
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: badgeColorDialog.open()
+            }
+        }
+        TextField {
+            Layout.preferredWidth: 140
+            readOnly: true
+            text: {
+                var c = panelTab.configRoot.cfg_compressedBadgeColor;
+                return (c && c.length > 0) ? c : i18n("Theme default");
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: badgeColorDialog.open()
+            }
+        }
+        Button {
+            text: i18n("Reset")
+            visible: (panelTab.configRoot.cfg_compressedBadgeColor || "").length > 0
+            onClicked: panelTab.configRoot.cfg_compressedBadgeColor = ""
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleLayoutType === 2
+        Kirigami.FormData.label: i18n("Badge opacity:")
+        spacing: Kirigami.Units.largeSpacing
+        Slider {
+            id: badgeOpacitySlider
+            Layout.preferredWidth: 160
+            from: 0.0
+            to: 1.0
+            stepSize: 0.05
+            value: panelTab.configRoot.cfg_compressedBadgeOpacity
+            onMoved: panelTab.configRoot.cfg_compressedBadgeOpacity = value
+        }
+        Label {
+            text: Math.round(panelTab.configRoot.cfg_compressedBadgeOpacity * 100) + "%"
+            opacity: 0.65
+            Layout.preferredWidth: 40
+        }
+    }
+
+    Platform.ColorDialog {
+        id: badgeColorDialog
+        title: i18n("Badge Background Color")
+        currentColor: {
+            var c = panelTab.configRoot.cfg_compressedBadgeColor;
+            return (c && c.length > 0) ? c : Kirigami.Theme.backgroundColor;
+        }
+        onAccepted: panelTab.configRoot.cfg_compressedBadgeColor = color.toString()
+    }
+
     // ── Multiple lines options (hidden in Simple mode) ─────
     SpinBox {
         Kirigami.FormData.label: i18n("Scroll interval (sec):")

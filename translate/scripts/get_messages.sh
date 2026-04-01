@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-OUT_DIR="$ROOT_DIR/translate"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+OUT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT_DIR="$(cd "$OUT_DIR/.." && pwd)"
 POT_FILE="$OUT_DIR/template.pot"
 TMP_FILES="$OUT_DIR/.i18n_files.txt"
 PACKAGE_NAME="Advanced Weather Widget"
@@ -44,7 +45,7 @@ if [ ${#PO_FILES[@]} -gt 0 ]; then
   echo "Updating PO files..."
   for po in "${PO_FILES[@]}"; do
     echo "  -> $(basename "$po")"
-    msgmerge --update --backup=none --no-wrap "$po" "$POT_FILE"
+    msgmerge --update --backup=none --no-wrap --no-fuzzy-matching "$po" "$POT_FILE"
   done
 else
   echo "No .po files found in $OUT_DIR"

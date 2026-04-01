@@ -219,10 +219,11 @@ function weatherApiCodeToWmo(code) {
  * @param {string} unit      "C" or "F"
  * @param {boolean} round    Round to integer if true
  */
-function formatTemp(celsius, unit, round) {
+function formatTemp(celsius, unit, round, showUnit) {
     if (isNaN(celsius) || celsius === null || celsius === undefined) return "--";
     var value = (unit === "F") ? (celsius * 9 / 5 + 32) : celsius;
     var numStr = round ? String(Math.round(value)) : Number(value).toFixed(1);
+    if (showUnit) return numStr + " \u00B0" + unit;
     return numStr + "\u00B0"; // Unicode degree symbol
 }
 

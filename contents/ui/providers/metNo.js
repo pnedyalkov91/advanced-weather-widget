@@ -194,7 +194,11 @@ function fetchHourly(service, W, dateStr) {
                         precipProb: (ts.data && ts.data.next_1_hours
                             && ts.data.next_1_hours.details
                             && ts.data.next_1_hours.details.probability_of_precipitation !== undefined)
-                            ? ts.data.next_1_hours.details.probability_of_precipitation : NaN
+                            ? ts.data.next_1_hours.details.probability_of_precipitation : NaN,
+                        precipMm: (ts.data && ts.data.next_1_hours
+                            && ts.data.next_1_hours.details
+                            && ts.data.next_1_hours.details.precipitation_amount !== undefined)
+                            ? ts.data.next_1_hours.details.precipitation_amount : NaN
                     });
                 }
             });

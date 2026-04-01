@@ -142,7 +142,6 @@ Rectangle {
             text: i18n("No location set")
             // #2: textColor instead of hardcoded white
             color: Qt.tint(Kirigami.Theme.textColor, Qt.rgba(0, 0, 0, 0))
-            opacity: 0.6
             font: weatherRoot ? weatherRoot.wf(14, true) : Qt.font({
                 bold: true
             })
@@ -178,7 +177,6 @@ Rectangle {
                 source: "mark-location"
                 width: 13
                 height: 13
-                opacity: 0.4
                 Layout.alignment: Qt.AlignVCenter
             }
 
@@ -187,7 +185,6 @@ Rectangle {
                 text: Plasmoid.configuration.locationName || ""
                 // #2
                 color: Kirigami.Theme.textColor
-                opacity: 0.65
                 font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
@@ -199,7 +196,6 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 22
                 height: 22
-                opacity: 0.55
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Detect / change location…")
                 onClicked: if (weatherRoot)
@@ -211,7 +207,6 @@ Rectangle {
                 text: i18n("Updating…")
                 // #2
                 color: Kirigami.Theme.textColor
-                opacity: 0.35
                 font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
             }
 
@@ -266,15 +261,13 @@ Rectangle {
                 Label {
                     text: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
                     color: Kirigami.Theme.textColor
-                    opacity: 0.6
-                    font: weatherRoot ? weatherRoot.wf(13, false) : Qt.font({})
+                    font: weatherRoot ? weatherRoot.wf(15, true) : Qt.font({})
                     wrapMode: Text.WordWrap
                     Layout.maximumWidth: 130
                 }
                 Label {
                     text: weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
                     color: Kirigami.Theme.textColor
-                    opacity: 0.38
                     font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                 }
             }
@@ -303,7 +296,6 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: i18n("High")
                         color: Kirigami.Theme.textColor
-                        opacity: 0.45
                         font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                     }
                     Label {
@@ -324,7 +316,6 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         text: i18n("Low")
                         color: Kirigami.Theme.textColor
-                        opacity: 0.45
                         font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                     }
                     Label {
@@ -432,7 +423,6 @@ Rectangle {
             onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             // #2
             color: Kirigami.Theme.textColor
-            opacity: 0.32
             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

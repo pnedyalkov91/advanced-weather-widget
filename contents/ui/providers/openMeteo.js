@@ -108,6 +108,7 @@ function _fetchAirQuality(service) {
         + "?latitude=" + service.latitude
         + "&longitude=" + service.longitude
         + "&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone"
+        + ",alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen"
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto");
     var req = new XMLHttpRequest();
     req.open("GET", url);
@@ -123,6 +124,7 @@ function _fetchAirQuality(service) {
             r.aqiNo2 = NaN;
             r.aqiSo2 = NaN;
             r.aqiO3 = NaN;
+            r.pollenData = [];
             return;
         }
         var d = JSON.parse(req.responseText);
@@ -142,6 +144,22 @@ function _fetchAirQuality(service) {
         r.aqiO3    = (c.ozone               !== undefined) ? c.ozone               : NaN;
         // Open-Meteo returns CO in µg/m³; our breakpoints use mg/m³
         r.aqiCo    = (c.carbon_monoxide     !== undefined) ? c.carbon_monoxide / 1000.0 : NaN;
+
+        // Pollen — Open-Meteo returns grains/m³ mapped to UPI 0–12 scale
+        var pollenKeys = [
+            { key: "alder",   field: "alder_pollen"   },
+            { key: "birch",   field: "birch_pollen"   },
+            { key: "grass",   field: "grass_pollen"   },
+            { key: "mugwort", field: "mugwort_pollen" },
+            { key: "olive",   field: "olive_pollen"   },
+            { key: "ragweed", field: "ragweed_pollen" }
+        ];
+        var pd = [];
+        pollenKeys.forEach(function (p) {
+            var v = c[p.field];
+            pd.push({ key: p.key, value: (v !== undefined && v !== null) ? v : NaN });
+        });
+        r.pollenData = pd;
     };
     req.send();
 }
@@ -153,7 +171,7 @@ function fetchHourly(service, dateStr) {
         + service.latitude
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
-        + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability"
+        + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation"
         + "&start_date=" + dateStr + "&end_date=" + dateStr;
     var req = new XMLHttpRequest();
     req.open("GET", url);
@@ -175,7 +193,8 @@ function fetchHourly(service, dateStr) {
                     windKmh: d.hourly.wind_speed_10m[i],
                     windDeg: d.hourly.wind_direction_10m ? d.hourly.wind_direction_10m[i] : NaN,
                     humidity: d.hourly.relative_humidity_2m[i],
-                    precipProb: d.hourly.precipitation_probability ? d.hourly.precipitation_probability[i] : NaN
+                    precipProb: d.hourly.precipitation_probability ? d.hourly.precipitation_probability[i] : NaN,
+                    precipMm: d.hourly.precipitation ? d.hourly.precipitation[i] : NaN
                 });
         r.hourlyData = arr;
     };

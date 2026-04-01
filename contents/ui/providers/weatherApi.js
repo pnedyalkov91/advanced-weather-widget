@@ -118,6 +118,7 @@ function fetchCurrent(service, W, chain, idx) {
             r.airQualityIndex = NaN;
             r.airQualityLabel = "";
         }
+        r.pollenData = []; // not available in WeatherAPI free tier
         r.weatherCode = d.current.condition
             ? W.weatherApiCodeToWmo(d.current.condition.code) : 2;
         r.isDay = (d.current.is_day !== undefined) ? d.current.is_day : -1;
@@ -188,7 +189,8 @@ function fetchHourly(service, W, dateStr) {
                             windDeg: h.wind_degree,
                             humidity: h.humidity,
                             precipProb: (h.chance_of_rain !== undefined)
-                                ? h.chance_of_rain : NaN
+                                ? h.chance_of_rain : NaN,
+                            precipMm: (h.precip_mm !== undefined) ? h.precip_mm : NaN
                         });
                     });
             });

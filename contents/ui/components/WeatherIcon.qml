@@ -121,7 +121,7 @@ Item {
         visible: weatherIcon.iconType === "wi" && weatherIcon.wiFontReady
         text: weatherIcon.iconSource
         font.family: weatherIcon.wiFontFamily
-        font.pixelSize: weatherIcon.iconSize
+        font.pixelSize: Math.round(weatherIcon.iconSize * 0.88)
         color: weatherIcon.iconColor
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
