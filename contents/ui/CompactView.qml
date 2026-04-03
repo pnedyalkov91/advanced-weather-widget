@@ -97,6 +97,9 @@ PlasmaCore.ToolTipArea {
     // Has no effect on vertical / compressed layouts.
     readonly property string simpleHorizContent: Plasmoid.configuration.panelSimpleHorizontalContent || "both"
 
+    // Whether a location has been configured
+    readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
+
     // ── Vertical-panel size scale factors ────────────────────────────────
     // Change these two values to resize icon and temperature in vertical panels.
     // 1.0 = natural size (auto-fits panel thickness).  > 1.0 = larger, < 1.0 = smaller.
@@ -232,7 +235,9 @@ PlasmaCore.ToolTipArea {
     // Simple mode horizontal: width is driven by simpleGrid.implicitWidth so the
     // click area hugs icon + gap + temperature text with no dead space.
     // Compressed (type 2) uses a standalone Item — fall back to icon square + margins.
-    implicitWidth: isMultiLine ? mlIconSize + 6 + 110 + 2 * leftRightMargin : isSimpleMode ? (vertical ? Kirigami.Units.gridUnit * 2 : (simpleLayoutType === 2 ?
+    // When no location is set, use the no-location prompt width.
+    implicitWidth: !_hasLocation ? noLocationRow.implicitWidth + 2 * leftRightMargin
+        : isMultiLine ? mlIconSize + 6 + 110 + 2 * leftRightMargin : isSimpleMode ? (vertical ? Kirigami.Units.gridUnit * 2 : (simpleLayoutType === 2 ?
             // compressed: just the icon square + margins
             Math.max(Kirigami.Units.gridUnit * 2, simpleIconSz + 2 * leftRightMargin) :
             // side-by-side / stacked: track actual GridLayout content width
@@ -714,9 +719,10 @@ PlasmaCore.ToolTipArea {
 
         // ── No location prompt ────────────────────────────────────────────
         RowLayout {
+            id: noLocationRow
             anchors.centerIn: parent
             spacing: 5
-            visible: !compactRoot.weatherRoot || !compactRoot.weatherRoot.hasSelectedTown
+            visible: !compactRoot._hasLocation
 
             Text {
                 text: "\uF041"

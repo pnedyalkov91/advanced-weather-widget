@@ -73,6 +73,9 @@
     <entry name="owApiKey"           type="String"><default></default></entry>
     <entry name="waApiKey"           type="String"><default></default></entry>
 
+    <!-- ── Behaviour ─────────────────────────────────────────────────── -->
+    <entry name="keepOpen"           type="Bool"><default>false</default></entry>
+
     <!-- ── Units ─────────────────────────────────────────────────────── -->
     <!-- unitsMode: "metric" | "imperial" | "kde" | "custom" -->
     <entry name="unitsMode"               type="String"><default>kde</default></entry>
@@ -167,6 +170,8 @@
     <entry name="widgetMoonMode"        type="String"><default>full</default></entry>
     <entry name="widgetCardsHeightAuto" type="Bool"><default>true</default></entry>
     <entry name="widgetCardsHeight"     type="Int"><default>44</default><min>30</min><max>120</max></entry>
+    <entry name="widgetExpandedCardsHeightAuto" type="Bool"><default>false</default></entry>
+    <entry name="widgetExpandedCardsHeight"     type="Int"><default>200</default><min>120</min><max>500</max></entry>
     <!-- Legacy details booleans (superseded by widgetDetailsOrder; kept for back-compat) -->
     <entry name="widgetShowFeelsLike"   type="Bool"><default>true</default></entry>
     <entry name="widgetShowHumidity"    type="Bool"><default>true</default></entry>

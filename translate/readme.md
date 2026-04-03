@@ -5,14 +5,14 @@
 
 |  Locale  |  Lines  | % Done|
 |----------|---------|-------|
-| Template |     493 |       |
-| bg       | 493/493 |  100% |
-| de       | 303/493 |   61% |
-| fr_FR    | 303/493 |   61% |
-| nl       | 303/493 |   61% |
-| pt_BR    | 302/493 |   61% |
-| ru       | 303/493 |   61% |
-| tr_TR    | 303/493 |   61% |
+| Template |     500 |       |
+| bg       | 500/500 |  100% |
+| de       | 298/500 |   59% |
+| fr_FR    | 298/500 |   59% |
+| nl       | 500/500 |  100% |
+| pt_BR    | 297/500 |   59% |
+| ru       | 298/500 |   59% |
+| tr_TR    | 298/500 |   59% |
 
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.

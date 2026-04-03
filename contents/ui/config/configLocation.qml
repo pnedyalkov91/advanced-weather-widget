@@ -51,11 +51,21 @@ KCM.SimpleKCM {
     property string detectedTimezone: ""
     property string detectedCountryCode: ""
     property bool   showDetectedLocationDialog: false
+    // Set to true once the user clicks "Apply" in the confirm dialog.
+    // Allows late-arriving metadata (timezone, elevation) from Open-Meteo
+    // to be written directly to Plasmoid.configuration.
+    property bool   _detectedLocationApplied: false
+
+    // Always show the confirmation dialog when auto-detecting via the
+    // config UI so the user can review the detected place before it is saved.
+    property bool _forceConfirmAutoDetect: false
 
     function shouldConfirmAutoDetectedLocation() {
-        return (!cfg_locationName || cfg_locationName.length === 0)
+        return _forceConfirmAutoDetect
+               || (!cfg_locationName || cfg_locationName.length === 0)
     }
     function stageDetectedLocation(lat, lon, altitude, timezone, name) {
+        _detectedLocationApplied = false
         detectedLatitude = lat; detectedLongitude = lon
         if (!isNaN(altitude)) detectedAltitude = Math.round(altitude)
         if (timezone && timezone.length > 0) detectedTimezone = timezone
@@ -64,6 +74,8 @@ KCM.SimpleKCM {
     function applyDetectedLocation() {
         // Apply even if name isn't available yet — coordinates are enough for weather
         showDetectedLocationDialog = false
+        _forceConfirmAutoDetect = false
+        _detectedLocationApplied = true
         Plasmoid.configuration.autoDetectLocation = true
         Plasmoid.configuration.latitude   = detectedLatitude
         Plasmoid.configuration.longitude  = detectedLongitude
@@ -88,6 +100,7 @@ KCM.SimpleKCM {
         verifyProviderLocation(detectedLatitude, detectedLongitude)
     }
     function chooseManualLocation() {
+        _forceConfirmAutoDetect = false
         cfg_autoDetectLocation = false; showDetectedLocationDialog = false; openSearchPage()
     }
 
@@ -229,7 +242,18 @@ KCM.SimpleKCM {
             if (metaReq.readyState !== XMLHttpRequest.DONE) return
             if (metaReq.status === 200) {
                 var meta = JSON.parse(metaReq.responseText)
-                if (shouldConfirmAutoDetectedLocation()) {
+                if (root._detectedLocationApplied) {
+                    // The user already clicked "Apply" before this response
+                    // arrived — write directly to config so it’s not lost.
+                    if (meta.timezone && meta.timezone.length > 0) {
+                        cfg_timezone = meta.timezone
+                        Plasmoid.configuration.timezone = meta.timezone
+                    }
+                    if (meta.elevation !== undefined && !isNaN(meta.elevation)) {
+                        cfg_altitude = Math.round(meta.elevation)
+                        Plasmoid.configuration.altitude = Math.round(meta.elevation)
+                    }
+                } else if (shouldConfirmAutoDetectedLocation()) {
                     if (meta.timezone) root.detectedTimezone = meta.timezone
                     if (meta.elevation !== undefined && !isNaN(meta.elevation)) root.detectedAltitude = Math.round(meta.elevation)
                 } else {
@@ -294,20 +318,205 @@ KCM.SimpleKCM {
                         }
                     }
                 }
-                autoDetectStatus = i18n("Auto-detected via GeoClue2.")
+                autoDetectStatus = i18n("Location auto-detected.")
             } else { autoDetectStatus = i18n("Auto-detection updated coordinates.") }
             autoDetectBusy = false
         }
         req.send()
     }
 
+    // ── 3-tier auto-detection ───────────────────────────────────────────
+    // Tier 1: GeoClue2 explicitly
+    // Tier 2: Any available Qt Positioning plugin
+    // Tier 3: IP geolocation (geo.kamero.ai → reallyfreegeoip.org)
+    // Which tier is active: 0 = idle, 1 = geoclue2, 2 = generic, 3 = IP
+    property int _cfgLocationTier: 0
+
+    function _cfgHandlePosition(lat, lon, alt, tierLabel) {
+        // Deactivate sources after successful fix to avoid duplicate callbacks
+        cfgGeoclue2Source.active = false
+        cfgGenericSource.active = false
+        if (root.shouldConfirmAutoDetectedLocation()) {
+            root.stageDetectedLocation(lat, lon, alt, "", "")
+        } else {
+            root.cfg_latitude   = lat
+            root.cfg_longitude  = lon
+            Plasmoid.configuration.latitude  = lat
+            Plasmoid.configuration.longitude = lon
+            if (!isNaN(alt) && alt > 0) {
+                root.cfg_altitude = Math.round(alt)
+                Plasmoid.configuration.altitude = Math.round(alt)
+            }
+        }
+        autoDetectStatus = i18n("Requesting location… (%1)", tierLabel)
+        root.reverseGeocode(lat, lon)
+    }
+
     function refreshAutoDetectedLocation() {
         if (!cfg_autoDetectLocation) { autoDetectBusy = false; return }
-        autoDetectBusy = true; autoDetectStatus = i18n("Requesting location from GeoClue2…")
-        if (!positionSource.supportedPositioningMethods) {
-            autoDetectBusy = false; autoDetectStatus = i18n("GeoClue2 location unavailable on this system."); return
+        autoDetectBusy = true
+        _cfgLocationTier = 1
+        autoDetectStatus = i18n("Requesting location via GeoClue2…")
+        cfgGeoclue2Source.active = true
+        cfgGeoclue2Source.update()
+        _cfgGeoclue2Timer.restart()
+    }
+
+    function _cfgEscalateToGeneric() {
+        cfgGeoclue2Source.active = false
+        _cfgLocationTier = 2
+        autoDetectStatus = i18n("GeoClue2 unavailable, trying system location…")
+        cfgGenericSource.active = true
+        cfgGenericSource.update()
+        _cfgGenericTimer.restart()
+    }
+
+    function _cfgEscalateToIpGeo() {
+        cfgGenericSource.active = false
+        _cfgLocationTier = 3
+        autoDetectStatus = i18n("System location unavailable, trying IP geolocation…")
+        _cfgIpGeolocate()
+    }
+
+    Timer {
+        id: _cfgGeoclue2Timer; interval: 8000; repeat: false
+        onTriggered: {
+            if (_cfgLocationTier === 1) {
+                console.log("[Location/config] GeoClue2 timed out, trying generic…")
+                _cfgEscalateToGeneric()
+            }
         }
-        positionSource.update()
+    }
+    Timer {
+        id: _cfgGenericTimer; interval: 8000; repeat: false
+        onTriggered: {
+            if (_cfgLocationTier === 2) {
+                console.log("[Location/config] Generic source timed out, trying IP…")
+                _cfgEscalateToIpGeo()
+            }
+        }
+    }
+
+    Timer {
+        id: _cfgIpGeoTimer; interval: 10000; repeat: false
+        property var _activeReq: null
+        onTriggered: {
+            if (_cfgLocationTier === 3 && _activeReq) {
+                console.warn("[Location/config] Tier 3 IP geolocation timed out")
+                _activeReq.abort()
+                _activeReq = null
+                _cfgLocationTier = 0
+                autoDetectBusy = false
+                autoDetectStatus = i18n("Unable to detect location. All methods failed.")
+            }
+        }
+    }
+
+    // Tier 1 — GeoClue2 explicitly
+    PositionSource {
+        id: cfgGeoclue2Source
+        name: "geoclue2"
+        active: false
+        updateInterval: 300000
+        onPositionChanged: {
+            if (!root.cfg_autoDetectLocation) return
+            var c = position.coordinate
+            if (!c || !c.isValid) return
+            _cfgGeoclue2Timer.stop()
+            _cfgLocationTier = 0
+            console.log("[Location/config] Tier 1 (GeoClue2): position acquired")
+            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, "GeoClue2")
+        }
+        onSourceErrorChanged: {
+            if (sourceError !== PositionSource.NoError && _cfgLocationTier === 1) {
+                console.log("[Location/config] Tier 1 (GeoClue2) error:", sourceError)
+                _cfgGeoclue2Timer.stop()
+                _cfgEscalateToGeneric()
+            }
+        }
+    }
+
+    // Tier 2 — any available Qt Positioning plugin
+    PositionSource {
+        id: cfgGenericSource
+        active: false
+        updateInterval: 300000
+        onPositionChanged: {
+            if (!root.cfg_autoDetectLocation) return
+            var c = position.coordinate
+            if (!c || !c.isValid) return
+            _cfgGenericTimer.stop()
+            _cfgLocationTier = 0
+            console.log("[Location/config] Tier 2 (generic): position acquired")
+            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, i18n("system location"))
+        }
+        onSourceErrorChanged: {
+            if (sourceError !== PositionSource.NoError && _cfgLocationTier === 2) {
+                console.log("[Location/config] Tier 2 (generic) error:", sourceError)
+                _cfgGenericTimer.stop()
+                _cfgEscalateToIpGeo()
+            }
+        }
+    }
+
+    // Tier 3 — IP-based geolocation
+    function _cfgIpGeolocate() {
+        console.log("[Location/config] Tier 3: trying geo.kamero.ai…")
+        var req = new XMLHttpRequest()
+        _cfgIpGeoTimer._activeReq = req
+        _cfgIpGeoTimer.restart()
+        req.open("GET", "https://geo.kamero.ai/api/geo")
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return
+            if (req.status === 200) {
+                try {
+                    var data = JSON.parse(req.responseText)
+                    var lat = parseFloat(data.latitude)
+                    var lon = parseFloat(data.longitude)
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        _cfgIpGeoTimer.stop()
+                        _cfgIpGeoTimer._activeReq = null
+                        _cfgLocationTier = 0
+                        console.log("[Location/config] Tier 3 (geo.kamero.ai): position acquired")
+                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"))
+                        return
+                    }
+                } catch (e) { console.warn("[Location/config] geo.kamero.ai parse error:", e) }
+            }
+            _cfgIpGeolocateFallback()
+        }
+        req.send()
+    }
+
+    function _cfgIpGeolocateFallback() {
+        console.log("[Location/config] Tier 3 fallback: trying reallyfreegeoip.org…")
+        var req = new XMLHttpRequest()
+        _cfgIpGeoTimer._activeReq = req
+        _cfgIpGeoTimer.restart()
+        req.open("GET", "https://reallyfreegeoip.org/json/")
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return
+            _cfgIpGeoTimer.stop()
+            _cfgIpGeoTimer._activeReq = null
+            if (req.status === 200) {
+                try {
+                    var data = JSON.parse(req.responseText)
+                    var lat = parseFloat(data.latitude)
+                    var lon = parseFloat(data.longitude)
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        _cfgLocationTier = 0
+                        console.log("[Location/config] Tier 3 (reallyfreegeoip): position acquired")
+                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"))
+                        return
+                    }
+                } catch (e) { console.warn("[Location/config] reallyfreegeoip parse error:", e) }
+            }
+            _cfgLocationTier = 0
+            autoDetectBusy = false
+            autoDetectStatus = i18n("Unable to detect location. All methods failed.")
+            console.warn("[Location/config] All 3 tiers failed")
+        }
+        req.send()
     }
 
     function applySearchResult(item) {
@@ -386,41 +595,11 @@ KCM.SimpleKCM {
 
     onCfg_autoDetectLocationChanged: {
         if (cfg_autoDetectLocation) refreshAutoDetectedLocation()
-        else { autoDetectBusy = false; autoDetectStatus = "" }
-    }
-
-    PositionSource {
-        id: positionSource
-        active: root.cfg_autoDetectLocation
-        updateInterval: 300000
-        onPositionChanged: {
-            if (!root.cfg_autoDetectLocation) return
-            var c = position.coordinate
-            if (!c || !c.isValid) {
-                root.autoDetectBusy = false
-                root.autoDetectStatus = i18n("Unable to get valid position from GeoClue2."); return
-            }
-            if (root.shouldConfirmAutoDetectedLocation()) {
-                root.stageDetectedLocation(c.latitude, c.longitude, c.altitude, "", "")
-            } else {
-                // Write directly to Plasmoid.configuration so the change
-                // survives dialog close and is visible to the widget immediately.
-                root.cfg_latitude   = c.latitude
-                root.cfg_longitude  = c.longitude
-                Plasmoid.configuration.latitude  = c.latitude
-                Plasmoid.configuration.longitude = c.longitude
-                if (!isNaN(c.altitude) && c.altitude > 0) {
-                    root.cfg_altitude = Math.round(c.altitude)
-                    Plasmoid.configuration.altitude = Math.round(c.altitude)
-                }
-            }
-            root.reverseGeocode(c.latitude, c.longitude)
-        }
-        onSourceErrorChanged: {
-            if (sourceError !== PositionSource.NoError) {
-                root.autoDetectBusy = false
-                root.autoDetectStatus = i18n("GeoClue2 error while retrieving location.")
-            }
+        else {
+            autoDetectBusy = false; autoDetectStatus = ""
+            cfgGeoclue2Source.active = false
+            cfgGenericSource.active = false
+            _cfgLocationTier = 0
         }
     }
 
@@ -430,9 +609,9 @@ KCM.SimpleKCM {
         standardButtons: Kirigami.Dialog.NoButton
         leftPadding: Kirigami.Units.gridUnit * 2; rightPadding: Kirigami.Units.gridUnit * 2
         topPadding: Kirigami.Units.gridUnit;      bottomPadding: Kirigami.Units.gridUnit
-        onClosed: root.showDetectedLocationDialog = false
+        onClosed: { root.showDetectedLocationDialog = false; root._forceConfirmAutoDetect = false }
         contentItem: Item {
-            implicitWidth: 420; implicitHeight: contentCol.implicitHeight
+            implicitWidth: 420; implicitHeight: contentCol.implicitHeight 
             ColumnLayout {
                 id: contentCol
                 anchors.left: parent.left; anchors.right: parent.right
@@ -453,19 +632,19 @@ KCM.SimpleKCM {
                     Layout.fillWidth: true; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter; opacity: 0.75
                     text: i18n("If this looks correct, apply it. Otherwise, choose your location manually.")
                 }
+                Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: Kirigami.Units.mediumSpacing
+                    Button { text: i18n("Set manually"); icon.name: "edit-find"; onClicked: root.chooseManualLocation() }
+                    Button {
+                        text: i18n("Apply detected location"); icon.name: "dialog-ok-apply"
+                        enabled: root.detectedLatitude !== 0.0 || root.detectedLongitude !== 0.0
+                        onClicked: root.applyDetectedLocation()
+                    }
+                }
                 Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
             }
-        }
-        footer: RowLayout {
-            Layout.fillWidth: true; spacing: Kirigami.Units.mediumSpacing
-            Item { Layout.fillWidth: true }
-            Button { text: i18n("Set manually"); icon.name: "edit-find"; onClicked: root.chooseManualLocation() }
-            Button {
-                text: i18n("Apply detected location"); icon.name: "dialog-ok-apply"
-                enabled: root.detectedLatitude !== 0.0 || root.detectedLongitude !== 0.0
-                onClicked: root.applyDetectedLocation()
-            }
-            Item { Layout.fillWidth: true }
         }
     }
 
@@ -497,7 +676,7 @@ KCM.SimpleKCM {
                         text: i18n("Automatically detect location")
                         checked: root.cfg_autoDetectLocation
                         ButtonGroup.group: locationModeGroup
-                        onClicked: root.cfg_autoDetectLocation = true
+                        onClicked: { root._forceConfirmAutoDetect = true; root.cfg_autoDetectLocation = true }
                     }
                     RowLayout {
                         Layout.fillWidth: true; Layout.leftMargin: 24; spacing: 8
@@ -510,7 +689,7 @@ KCM.SimpleKCM {
                         Button {
                             text: i18n("Refresh"); visible: root.cfg_autoDetectLocation
                             enabled: root.cfg_autoDetectLocation && !root.autoDetectBusy
-                            onClicked: root.refreshAutoDetectedLocation()
+                            onClicked: { root._forceConfirmAutoDetect = true; root.refreshAutoDetectedLocation() }
                         }
                     }
 

@@ -50,6 +50,7 @@ PlasmoidItem {
     switchHeight: 100
 
     preferredRepresentation: fullRepresentation
+    hideOnWindowDeactivate: !Plasmoid.configuration.keepOpen
 
     // ══════════════════════════════════════════════════════════════════════
     // Weather data model
@@ -115,13 +116,16 @@ PlasmoidItem {
         // ── Minimum popup size ───────────────────────────────────────────
         // Plasma reads Layout.minimumWidth/Height from the fullRepresentation
         // item — NOT from PlasmoidItem — to enforce resize limits.
+        // Use a compact size when no location is configured yet.
 
         Layout.minimumWidth: {
+            if (!root.hasSelectedTown) return 280;
             if ((Plasmoid.configuration.widgetMinWidthMode || "auto") === "manual")
                 return Math.max(200, Plasmoid.configuration.widgetMinWidth || 800);
             return 800;
         }
         Layout.minimumHeight: {
+            if (!root.hasSelectedTown) return 220;
             if ((Plasmoid.configuration.widgetMinHeightMode || "auto") === "manual")
                 return Math.max(200, Plasmoid.configuration.widgetMinHeight || 750);
             return 750;
@@ -139,7 +143,12 @@ PlasmoidItem {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // Auto-detect location — runs even without opening the settings dialog.
+    // Auto-detect location — 3-tier fallback
+    //
+    // Tier 1: GeoClue2 explicitly (PositionSource name: "geoclue2")
+    // Tier 2: Any available Qt Positioning plugin (PositionSource, no name)
+    // Tier 3: IP-based geolocation (geo.kamero.ai → reallyfreegeoip.org)
+    //
     // Active whenever the user has chosen "Automatically detect location".
     // On every position update it:
     //   1. Writes lat/lon/alt directly to Plasmoid.configuration so the
@@ -151,40 +160,187 @@ PlasmoidItem {
     //      user can review the detected place before it is saved.
     // ══════════════════════════════════════════════════════════════════════
 
+    // Which tier is currently active: 0 = idle, 1 = geoclue2, 2 = generic, 3 = IP
+    property int _locationTier: 0
+
+    function _applyAutoPosition(lat, lon, alt) {
+        // Deactivate sources after a successful fix to avoid duplicate callbacks
+        geoclue2Source.active = false;
+        genericPositionSource.active = false;
+        Plasmoid.configuration.latitude = lat;
+        Plasmoid.configuration.longitude = lon;
+        if (!isNaN(alt) && alt > 0)
+            Plasmoid.configuration.altitude = Math.round(alt);
+        // Always reverse-geocode: on first run locationName is empty and
+        // would never get populated if we skipped it.
+        _autoReverseGeocode(lat, lon);
+    }
+
+    function _startAutoDetect() {
+        if (!Plasmoid.configuration.autoDetectLocation) return;
+        _locationTier = 1;
+        geoclue2Source.active = true;
+        geoclue2Source.update();
+        // Timeout: if GeoClue2 doesn't respond within 8 s, escalate
+        _geoclue2Timer.restart();
+    }
+
+    function _escalateToGenericSource() {
+        geoclue2Source.active = false;
+        _locationTier = 2;
+        genericPositionSource.active = true;
+        genericPositionSource.update();
+        _genericSourceTimer.restart();
+    }
+
+    function _escalateToIpGeo() {
+        genericPositionSource.active = false;
+        _locationTier = 3;
+        _ipGeolocate();
+    }
+
+    Timer {
+        id: _geoclue2Timer; interval: 8000; repeat: false
+        onTriggered: {
+            if (_locationTier === 1) {
+                console.log("[Location] GeoClue2 timed out, trying generic PositionSource…");
+                _escalateToGenericSource();
+            }
+        }
+    }
+    Timer {
+        id: _genericSourceTimer; interval: 8000; repeat: false
+        onTriggered: {
+            if (_locationTier === 2) {
+                console.log("[Location] Generic PositionSource timed out, trying IP geolocation…");
+                _escalateToIpGeo();
+            }
+        }
+    }
+    Timer {
+        id: _ipGeoTimer; interval: 10000; repeat: false
+        property var _activeReq: null
+        onTriggered: {
+            if (_locationTier === 3 && _activeReq) {
+                console.warn("[Location] Tier 3 IP geolocation timed out");
+                _activeReq.abort();
+                _activeReq = null;
+                _locationTier = 0;
+            }
+        }
+    }
+    Timer {
+        id: _autoDetectRepeatTimer
+        interval: 300000   // re-check every 5 minutes
+        repeat: true
+        running: Plasmoid.configuration.autoDetectLocation
+        onTriggered: _startAutoDetect()
+    }
+
+    // Tier 1 — GeoClue2 explicitly
     PositionSource {
-        id: mainPositionSource
-        active: Plasmoid.configuration.autoDetectLocation
-        updateInterval: 300000   // re-check every 5 minutes
+        id: geoclue2Source
+        name: "geoclue2"
+        active: false
+        updateInterval: 300000
 
         onPositionChanged: {
             var c = position.coordinate;
-            if (!c || !c.isValid)
-                return;
-            var lat = c.latitude;
-            var lon = c.longitude;
-
-            // Persist coordinates immediately — this is what triggers
-            // onLatitudeChanged / onLongitudeChanged in the Connections block
-            // below and therefore the weather refresh.
-            Plasmoid.configuration.latitude = lat;
-            Plasmoid.configuration.longitude = lon;
-            if (!isNaN(c.altitude) && c.altitude > 0)
-                Plasmoid.configuration.altitude = Math.round(c.altitude);
-
-            // Only silently update the name when one is already confirmed.
-            // If locationName is empty the user hasn't yet seen the
-            // "Confirm your location" dialog — don't bypass it by writing a
-            // name from here; let configLocation.qml handle first-time naming.
-            if ((Plasmoid.configuration.locationName || "").trim().length > 0)
-                _autoReverseGeocode(lat, lon);
+            if (!c || !c.isValid) return;
+            _geoclue2Timer.stop();
+            _locationTier = 0;
+            console.log("[Location] Tier 1 (GeoClue2): position acquired");
+            _applyAutoPosition(c.latitude, c.longitude, c.altitude);
         }
-
         onSourceErrorChanged: {
-            // GeoClue2 unavailable — silently ignore so the widget still
-            // shows weather for any manually-stored coordinates.
-            if (sourceError !== PositionSource.NoError)
-                console.warn("PositionSource error:", sourceError);
+            if (sourceError !== PositionSource.NoError && _locationTier === 1) {
+                console.log("[Location] Tier 1 (GeoClue2) error:", sourceError, "— escalating");
+                _geoclue2Timer.stop();
+                _escalateToGenericSource();
+            }
         }
+    }
+
+    // Tier 2 — any available Qt Positioning plugin
+    PositionSource {
+        id: genericPositionSource
+        active: false
+        updateInterval: 300000
+
+        onPositionChanged: {
+            var c = position.coordinate;
+            if (!c || !c.isValid) return;
+            _genericSourceTimer.stop();
+            _locationTier = 0;
+            console.log("[Location] Tier 2 (generic PositionSource): position acquired");
+            _applyAutoPosition(c.latitude, c.longitude, c.altitude);
+        }
+        onSourceErrorChanged: {
+            if (sourceError !== PositionSource.NoError && _locationTier === 2) {
+                console.log("[Location] Tier 2 (generic) error:", sourceError, "— escalating to IP");
+                _genericSourceTimer.stop();
+                _escalateToIpGeo();
+            }
+        }
+    }
+
+    // Tier 3 — IP-based geolocation
+    function _ipGeolocate() {
+        console.log("[Location] Tier 3: trying geo.kamero.ai…");
+        var req = new XMLHttpRequest();
+        _ipGeoTimer._activeReq = req;
+        _ipGeoTimer.restart();
+        req.open("GET", "https://geo.kamero.ai/api/geo");
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return;
+            if (req.status === 200) {
+                try {
+                    var data = JSON.parse(req.responseText);
+                    var lat = parseFloat(data.latitude);
+                    var lon = parseFloat(data.longitude);
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        _ipGeoTimer.stop();
+                        _ipGeoTimer._activeReq = null;
+                        _locationTier = 0;
+                        console.log("[Location] Tier 3 (geo.kamero.ai): position acquired");
+                        _applyAutoPosition(lat, lon, NaN);
+                        return;
+                    }
+                } catch (e) { console.warn("[Location] geo.kamero.ai parse error:", e); }
+            }
+            // Fallback to reallyfreegeoip.org
+            _ipGeolocateFallback();
+        };
+        req.send();
+    }
+
+    function _ipGeolocateFallback() {
+        console.log("[Location] Tier 3 fallback: trying reallyfreegeoip.org…");
+        var req = new XMLHttpRequest();
+        _ipGeoTimer._activeReq = req;
+        _ipGeoTimer.restart();
+        req.open("GET", "https://reallyfreegeoip.org/json/");
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return;
+            _ipGeoTimer.stop();
+            _ipGeoTimer._activeReq = null;
+            if (req.status === 200) {
+                try {
+                    var data = JSON.parse(req.responseText);
+                    var lat = parseFloat(data.latitude);
+                    var lon = parseFloat(data.longitude);
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        _locationTier = 0;
+                        console.log("[Location] Tier 3 (reallyfreegeoip.org): position acquired");
+                        _applyAutoPosition(lat, lon, NaN);
+                        return;
+                    }
+                } catch (e) { console.warn("[Location] reallyfreegeoip parse error:", e); }
+            }
+            _locationTier = 0;
+            console.warn("[Location] All 3 tiers failed — no position available");
+        };
+        req.send();
     }
 
     /**
@@ -223,7 +379,11 @@ PlasmoidItem {
                     name = data.display_name || "";
                 if (name.length > 0)
                     Plasmoid.configuration.locationName = name;
-            } catch (e) {}
+                // Capture country code for MeteoAlarm alerts
+                var cc = (a.country_code || "").toUpperCase();
+                if (cc.length > 0)
+                    Plasmoid.configuration.countryCode = cc;
+            } catch (e) { console.warn("[Location] reverse geocode parse error:", e); }
         };
         req.send();
     }
@@ -1126,6 +1286,8 @@ PlasmoidItem {
         // the component is fully live — same pattern used by Wunderground and others.
         Plasmoid.backgroundHints = PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground;
         refreshDebounce.restart();
+        if (Plasmoid.configuration.autoDetectLocation)
+            _startAutoDetect();
     }
 
     Connections {

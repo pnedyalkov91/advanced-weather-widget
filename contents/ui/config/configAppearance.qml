@@ -1072,6 +1072,7 @@ KCM.AbstractKCM {
     property string cfg_widgetIconTheme: "symbolic"   // "kde" | "wi-font" | "flat-color" | "symbolic" | "3d-oxygen"
     property string cfg_conditionIconTheme: "kde"      // controls main hero condition icon in widget popup
     property string cfg_widgetConditionCustomIcons: ""   // custom per-condition icons for the widget popup
+    property string cfg_widgetDefaultTab: "details"  // "details" | "forecast"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
     property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set
@@ -1089,6 +1090,8 @@ KCM.AbstractKCM {
     // ✦ NEW: Cards height properties ✦
     property bool cfg_widgetCardsHeightAuto: true
     property int cfg_widgetCardsHeight: 44
+    property bool cfg_widgetExpandedCardsHeightAuto: false
+    property int cfg_widgetExpandedCardsHeight: 200
 
     // ── Tooltip config aliases ────────────────────────────────────────────
     property string cfg_tooltipItemOrder: "temperature;wind;humidity;pressure;suntimes"

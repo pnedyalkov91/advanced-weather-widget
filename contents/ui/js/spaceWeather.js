@@ -66,6 +66,20 @@ function gScaleColor(gScale) {
 }
 
 /**
+ * Returns a darker text-safe color for the G-scale level (light themes).
+ */
+function gScaleTextColor(gScale) {
+    switch (gScale) {
+        case "G5": return "#4A0072";
+        case "G4": return "#7F0000";
+        case "G3": return "#B71C1C";
+        case "G2": return "#7A3500";
+        case "G1": return "#5D4800";
+        default:   return "#1B5E20";
+    }
+}
+
+/**
  * Returns a description for the G-scale level.
  */
 function gScaleDescription(gScale) {
@@ -125,6 +139,21 @@ function xrayClassColor(cls) {
         case "C": return "#FFEB3B";
         case "B": return "#4CAF50";
         default:  return "#4CAF50";
+    }
+}
+
+/**
+ * Returns a darker text-safe color for the X-ray class (light themes).
+ */
+function xrayClassTextColor(cls) {
+    if (!cls || cls === "--") return "#1B5E20";
+    var c = cls.charAt(0).toUpperCase();
+    switch (c) {
+        case "X": return "#7F0000";
+        case "M": return "#7A3500";
+        case "C": return "#5D4800";
+        case "B": return "#1B5E20";
+        default:  return "#1B5E20";
     }
 }
 

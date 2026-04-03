@@ -75,6 +75,14 @@ Item {
     readonly property color accentOrange: isDark ? "#ff8c52" : "#c04000"
     readonly property color accentViolet: isDark ? "#c4b4ff" : "#5030a0"
 
+    // Pick the text-safe variant of a band/scale color on light themes.
+    // band objects from airQuality.js and pollen.js carry both .color (vivid)
+    // and .textColor (high-contrast dark variant).
+    function bandTextColor(band) {
+        if (!band) return Kirigami.Theme.textColor;
+        return isDark ? band.color : band.textColor;
+    }
+
     // ── icon theme ────────────────────────────────────────────────────────
     // Normalise legacy "wi-font" to "symbolic"; "kde" is valid.
     readonly property string iconTheme: {
@@ -399,7 +407,9 @@ Item {
                             // suntimes and moonphase: height scales with card width
                             // so the arc grows when the widget is stretched.
                             readonly property int autoHeight: {
-                                var arcLikeHeight = Math.max(165, Math.round(card.width * 0.55));
+                                var arcLikeHeight = Plasmoid.configuration.widgetExpandedCardsHeightAuto
+                                    ? Math.max(165, Math.round(card.width * 0.55))
+                                    : Plasmoid.configuration.widgetExpandedCardsHeight;
                                 if (card.modelData === "alerts") {
                                     var n = weatherRoot ? (weatherRoot.weatherAlerts || []).length : 0;
                                     if (n <= 1) return 30;
@@ -615,13 +625,13 @@ Item {
                                         visible: aqiCard.aqiBand !== null
                                         width: 10; height: 10
                                         radius: 2
-                                        color: aqiCard.aqiBand ? aqiCard.aqiBand.color : "transparent"
+                                        color: aqiCard.aqiBand ? root.bandTextColor(aqiCard.aqiBand) : "transparent"
                                         Layout.alignment: Qt.AlignVCenter
                                     }
                                     Label {
                                         text: isNaN(aqiCard.aqiValue) ? "--"
                                             : i18n("AQI") + ": " + Math.round(aqiCard.aqiValue) + " | " + i18n("AQHI") + ": " + Math.round(aqiCard.aqhiValue)
-                                        color: aqiCard.aqiBand ? aqiCard.aqiBand.color : root.valueColor
+                                        color: aqiCard.aqiBand ? root.bandTextColor(aqiCard.aqiBand) : root.valueColor
                                         font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
                                         Layout.alignment: Qt.AlignVCenter
                                     }
@@ -745,7 +755,7 @@ Item {
                                                     Label {
                                                         visible: band !== null && !isNaN(modelData.si)
                                                         text: band ? i18n(band.shortLabel) : ""
-                                                        color: band ? band.color : Kirigami.Theme.textColor
+                                                        color: root.bandTextColor(band)
                                                         font: weatherRoot ? weatherRoot.wf(9, true) : Qt.font({ bold: true })
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -835,10 +845,12 @@ Item {
                                                         Text {
                                                             anchors.centerIn: parent
                                                             text: Math.round(modelData.si)
-                                                            color: Kirigami.Theme.textColor
-                                                            font.pixelSize: 9
+                                                            color: "white"
+                                                            font.pixelSize: 11
                                                             font.bold: true
-                                                            style: Text.Outline
+                                                            horizontalAlignment: Text.AlignHCenter
+                                                            verticalAlignment: Text.AlignVCenter
+                                                            style: root.isDark ? Text.Outline : Text.Normal
                                                             styleColor: Qt.rgba(0, 0, 0, 0.55)
                                                         }
                                                     }
@@ -928,7 +940,7 @@ Item {
                                                 + i18n(Pollen.labelForValue(d.value))
                                                 + " (" + d.value.toFixed(1) + " grains/m³)";
                                         }
-                                        color: pollenCard.dominant ? Pollen.colorForValue(pollenCard.dominant.value) : root.valueColor
+                                        color: pollenCard.dominant ? root.bandTextColor(Pollen.bandForValue(pollenCard.dominant.value)) : root.valueColor
                                         font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
                                         elide: Text.ElideRight
                                         Layout.alignment: Qt.AlignVCenter
@@ -1039,7 +1051,7 @@ Item {
                                                         text: "\uF082"  // wi-pollen glyph
                                                         font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                                         font.pixelSize: root.glyphIconSize
-                                                        color: pollenRow.band.color
+                                                        color: root.bandTextColor(pollenRow.band)
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
                                                     ColumnLayout {
@@ -1054,7 +1066,7 @@ Item {
                                                         Label {
                                                             text: modelData.value.toFixed(1) + " grains/m³"
                                                             font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({ bold: true })
-                                                            color: pollenRow.band.color
+                                                            color: root.bandTextColor(pollenRow.band)
                                                         }
                                                     }
                                                     Item { Layout.fillWidth: true }
@@ -1080,7 +1092,7 @@ Item {
                                                         }
                                                         Label {
                                                             text: i18n(pollenRow.band.label)
-                                                            color: pollenRow.band.color
+                                                            color: root.bandTextColor(pollenRow.band)
                                                             font: weatherRoot ? weatherRoot.wf(9, true) : Qt.font({ bold: true })
                                                             Layout.alignment: Qt.AlignHCenter
                                                         }
@@ -1118,8 +1130,12 @@ Item {
                                 readonly property var sw: weatherRoot ? weatherRoot.spaceWeather : null
                                 readonly property real kp: sw && !isNaN(sw.kp) ? sw.kp : NaN
                                 readonly property string gScale: sw ? (sw.gScale || "G0") : "G0"
-                                readonly property color gColor: Qt.color(SW.gScaleColor(gScale))
+                                readonly property color gColor: Qt.color(root.isDark ? SW.gScaleColor(gScale) : SW.gScaleTextColor(gScale))
                                 readonly property color kpColor: kp >= 5 ? gColor
+                                    : (kp >= 3 ? Qt.color(root.isDark ? "#FFEB3B" : "#5D4800") : Qt.color(root.isDark ? "#4CAF50" : "#1B5E20"))
+                                // Vivid variants for progress bar fills (always use bright colors)
+                                readonly property color gColorVivid: Qt.color(SW.gScaleColor(gScale))
+                                readonly property color kpColorVivid: kp >= 5 ? gColorVivid
                                     : (kp >= 3 ? Qt.color("#FFEB3B") : Qt.color("#4CAF50"))
 
                                 // ── Collapsed header ─────────────────────────────────
@@ -1234,7 +1250,7 @@ Item {
                                         Rectangle {
                                             width: root.glyphIconSize + 6; height: root.glyphIconSize + 6
                                             radius: (root.glyphIconSize + 6) / 2
-                                            color: swCard.gColor
+                                            color: swCard.gColorVivid
                                             Layout.alignment: Qt.AlignVCenter
                                             Label {
                                                 anchors.centerIn: parent
@@ -1311,7 +1327,7 @@ Item {
                                             Rectangle {
                                                 width: isNaN(swCard.kp) ? 0 : Math.min(parent.width, parent.width * swCard.kp / 9)
                                                 height: parent.height; radius: 3
-                                                color: swCard.kpColor; opacity: 0.85
+                                                color: swCard.kpColorVivid; opacity: 0.85
                                             }
                                         }
                                     }
@@ -1328,10 +1344,12 @@ Item {
 
                                         readonly property real windSpeed: swCard.sw && !isNaN(swCard.sw.solarWind) ? swCard.sw.solarWind : 0
                                         // Color coding: 300-400 normal (green), 500-700 activity (orange), 700+ storm (red)
-                                        readonly property color windColor: windSpeed < 300 ? Qt.color("#4CAF50")
-                                            : (windSpeed < 500 ? Qt.color("#4CAF50")
-                                            : (windSpeed < 700 ? Qt.color("#FF9800")
-                                            : Qt.color("#D32F2F")))
+                                        readonly property color windColor: windSpeed < 300 ? Qt.color(root.isDark ? "#4CAF50" : "#1B5E20")
+                                            : (windSpeed < 500 ? Qt.color(root.isDark ? "#4CAF50" : "#1B5E20")
+                                            : (windSpeed < 700 ? Qt.color(root.isDark ? "#FF9800" : "#7A3500")
+                                            : Qt.color(root.isDark ? "#D32F2F" : "#7F0000")))
+                                        readonly property color windColorVivid: windSpeed < 500 ? Qt.color("#4CAF50")
+                                            : (windSpeed < 700 ? Qt.color("#FF9800") : Qt.color("#D32F2F"))
                                         readonly property string windStatus: windSpeed < 500 ? i18n("Normal")
                                             : (windSpeed < 700 ? i18n("Increased Activity")
                                             : i18n("Storm"))
@@ -1375,7 +1393,7 @@ Item {
                                             Rectangle {
                                                 width: isNaN(parent.parent.windSpeed) ? 0 : Math.min(parent.width, parent.width * parent.parent.windSpeed / 1000)
                                                 height: parent.height; radius: 3
-                                                color: parent.parent.windColor; opacity: 0.85
+                                                color: parent.parent.windColorVivid; opacity: 0.85
                                             }
                                         }
                                         Label {
@@ -1398,7 +1416,11 @@ Item {
                                         spacing: 10
 
                                         readonly property real auroraPercent: swCard.sw && !isNaN(swCard.sw.auroraPercent) ? swCard.sw.auroraPercent : 0
-                                        readonly property color auroraColor: auroraPercent < 10 ? Qt.color("#4CAF50")
+                                        readonly property color auroraColor: auroraPercent < 10 ? Qt.color(root.isDark ? "#4CAF50" : "#1B5E20")
+                                            : (auroraPercent < 30 ? Qt.color(root.isDark ? "#FFEB3B" : "#5D4800")
+                                            : (auroraPercent < 70 ? Qt.color(root.isDark ? "#FF9800" : "#7A3500")
+                                            : Qt.color(root.isDark ? "#D32F2F" : "#7F0000")))
+                                        readonly property color auroraColorVivid: auroraPercent < 10 ? Qt.color("#4CAF50")
                                             : (auroraPercent < 30 ? Qt.color("#FFEB3B")
                                             : (auroraPercent < 70 ? Qt.color("#FF9800")
                                             : Qt.color("#D32F2F")))
@@ -1440,7 +1462,7 @@ Item {
                                             Rectangle {
                                                 width: parent.width * parent.parent.auroraPercent / 100
                                                 height: parent.height; radius: 3
-                                                color: parent.parent.auroraColor; opacity: 0.85
+                                                color: parent.parent.auroraColorVivid; opacity: 0.85
                                             }
                                         }
                                     }
@@ -1461,7 +1483,7 @@ Item {
                                             text: "\uF0C6"  // wi-wind (repurposed for field)
                                             font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                             font.pixelSize: root.glyphIconSize
-                                            color: parent.activeBz ? Qt.color("#FF9800") : root.accentViolet
+                                            color: parent.activeBz ? Qt.color(root.isDark ? "#FF9800" : "#7A3500") : root.accentViolet
                                             Layout.alignment: Qt.AlignVCenter
                                             rotation: 90
                                         }
@@ -1479,14 +1501,14 @@ Item {
                                                     ? (swCard.sw.bz >= 0 ? "+" : "") + swCard.sw.bz.toFixed(1) + " nT"
                                                     : "--"
                                                 font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({ bold: true })
-                                                color: parent.parent.activeBz ? Qt.color("#FF9800") : root.accentViolet
+                                                color: parent.parent.activeBz ? Qt.color(root.isDark ? "#FF9800" : "#7A3500") : root.accentViolet
                                             }
                                         }
                                         Item { Layout.fillWidth: true }
                                         Label {
                                             visible: parent.activeBz
                                             text: i18n("Active")
-                                            color: Qt.color("#FF9800")
+                                            color: Qt.color(root.isDark ? "#FF9800" : "#7A3500")
                                             font: weatherRoot ? weatherRoot.wf(9, true) : Qt.font({ bold: true })
                                             Layout.alignment: Qt.AlignVCenter
                                         }
@@ -1503,13 +1525,14 @@ Item {
                                         spacing: 10
 
                                         readonly property string xCls: swCard.sw ? (swCard.sw.xrayClass || "--") : "--"
-                                        readonly property color xColor: Qt.color(SW.xrayClassColor(xCls))
+                                        readonly property color xColor: Qt.color(root.isDark ? SW.xrayClassColor(xCls) : SW.xrayClassTextColor(xCls))
+                                        readonly property color xColorVivid: Qt.color(SW.xrayClassColor(xCls))
                                         readonly property bool flareWarning: xCls === "M" || xCls === "X"
 
                                         Rectangle {
                                             width: root.glyphIconSize; height: root.glyphIconSize
                                             radius: 3
-                                            color: parent.xColor
+                                            color: parent.xColorVivid
                                             Layout.alignment: Qt.AlignVCenter
                                             Label {
                                                 anchors.centerIn: parent
@@ -1769,7 +1792,7 @@ Item {
                                         font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                         font.pixelSize: 14
                                         color: alertsCard.alerts.length > 0
-                                               ? alertsCard.alertColorDot(alertsCard.alerts[0].color) : "#999"
+                                               ? alertsCard.alertColorText(alertsCard.alerts[0].color) : "#999"
                                         Layout.alignment: Qt.AlignVCenter
                                     }
                                     Label {
@@ -1869,7 +1892,7 @@ Item {
                                         font.pixelSize: 14
                                         color: {
                                             var a = alertsCard.todayAlerts[alertsCard.safeIndex];
-                                            return a ? alertsCard.alertColorDot(a.color) : "#999";
+                                            return a ? alertsCard.alertColorText(a.color) : "#999";
                                         }
                                         Layout.alignment: Qt.AlignVCenter
                                     }
@@ -2032,7 +2055,7 @@ Item {
                                                 text: alertsCard.alertTypeIcon(modelData.awarenessType || 0)
                                                 font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                                 font.pixelSize: 12
-                                                color: alertsCard.alertColorDot(modelData.color)
+                                                color: alertsCard.alertColorText(modelData.color)
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
                                             Label {
@@ -2125,7 +2148,7 @@ Item {
                                                 text: alertsCard.alertTypeIcon(modelData.awarenessType || 0)
                                                 font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                                 font.pixelSize: 12
-                                                color: alertsCard.alertColorDot(modelData.color)
+                                                color: alertsCard.alertColorText(modelData.color)
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
                                             Label {

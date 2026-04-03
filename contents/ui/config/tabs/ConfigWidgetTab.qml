@@ -111,6 +111,21 @@ ColumnLayout {
                 icon.name: "configure"
                 onClicked: widgetTab.configRoot.conditionIconDialog.openWithContext("widget")
             }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Default tab:")
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: defaultTabCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    model: [
+                        { text: i18n("Details"),  value: "details"  },
+                        { text: i18n("Forecast"), value: "forecast" }
+                    ]
+                    Component.onCompleted: currentIndex = widgetTab.configRoot.cfg_widgetDefaultTab === "forecast" ? 1 : 0
+                    onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
+                }
+            }
             CheckBox {
                 Kirigami.FormData.label: i18n("Footer:")
                 text: i18n("Show update time and provider")
@@ -282,6 +297,40 @@ ColumnLayout {
                 }
                 Label {
                     visible: !widgetTab.configRoot.cfg_widgetCardsHeightAuto
+                    text: "px"
+                    opacity: 0.65
+                }
+            }
+
+            // Expanded cards height (hidden in list mode)
+            RowLayout {
+                visible: widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                Kirigami.FormData.label: i18n("Expanded cards height:")
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: expandedCardsHeightModeCombo
+                    Layout.preferredWidth: 130
+                    textRole: "text"
+                    model: [
+                        { text: i18n("Auto"),   value: true  },
+                        { text: i18n("Manual"), value: false }
+                    ]
+                    currentIndex: widgetTab.configRoot.cfg_widgetExpandedCardsHeightAuto ? 0 : 1
+                    onActivated: {
+                        var newMode = model[currentIndex].value;
+                        if (widgetTab.configRoot.cfg_widgetExpandedCardsHeightAuto !== newMode)
+                            widgetTab.configRoot.cfg_widgetExpandedCardsHeightAuto = newMode;
+                    }
+                }
+                SpinBox {
+                    enabled: !widgetTab.configRoot.cfg_widgetExpandedCardsHeightAuto
+                    from: 120
+                    to: 500
+                    value: widgetTab.configRoot.cfg_widgetExpandedCardsHeight
+                    onValueModified: widgetTab.configRoot.cfg_widgetExpandedCardsHeight = value
+                }
+                Label {
+                    visible: !widgetTab.configRoot.cfg_widgetExpandedCardsHeightAuto
                     text: "px"
                     opacity: 0.65
                 }

@@ -24,6 +24,7 @@ import QtQuick.Controls
 import QtQuick.Window          // for Screen
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import org.kde.plasma.components as PlasmaComponents
 
 import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
@@ -35,11 +36,12 @@ Rectangle {
 
     // Layout.preferred* is what Plasma reads to size the panel popup window.
     // width/height are used when the widget sits on the desktop.
-    // 600 px tall: 252 px fixed chrome + 336 px for 4 card-rows (78+8 each).
-    Layout.preferredWidth: 540
-    Layout.preferredHeight: 550
-    width: 540
-    height: 550
+    // Compact size when no location is set to avoid overlapping other widgets.
+    readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
+    Layout.preferredWidth: _hasLocation ? 540 : 280
+    Layout.preferredHeight: _hasLocation ? 550 : 220
+    width: _hasLocation ? 540 : 280
+    height: _hasLocation ? 550 : 220
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -125,33 +127,45 @@ Rectangle {
     }
 
     // ── No-location placeholder ───────────────────────────────────────────
-    ColumnLayout {
-        anchors.centerIn: parent
-        spacing: 14
+    Item {
+        anchors.fill: parent
         visible: !weatherRoot || !weatherRoot.hasSelectedTown
+        z: 1
 
-        Kirigami.Icon {
-            Layout.alignment: Qt.AlignHCenter
-            source: "mark-location"
-            width: 64
-            height: 64
-            opacity: 0.4
-        }
-        Label {
-            Layout.alignment: Qt.AlignHCenter
-            text: i18n("No location set")
-            // #2: textColor instead of hardcoded white
-            color: Qt.tint(Kirigami.Theme.textColor, Qt.rgba(0, 0, 0, 0))
-            font: weatherRoot ? weatherRoot.wf(14, true) : Qt.font({
-                bold: true
-            })
-        }
-        Button {
-            Layout.alignment: Qt.AlignHCenter
-            text: i18n("Set Location…")
-            icon.name: "mark-location"
+        MouseArea {
+            anchors.fill: parent
             onClicked: if (weatherRoot)
                 weatherRoot.openLocationSettings()
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 14
+
+            Kirigami.Icon {
+                Layout.alignment: Qt.AlignHCenter
+                source: "mark-location"
+                width: 64
+                height: 64
+                opacity: 0.4
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: i18n("No location set")
+                // #2: textColor instead of hardcoded white
+                color: Qt.tint(Kirigami.Theme.textColor, Qt.rgba(0, 0, 0, 0))
+                font: weatherRoot ? weatherRoot.wf(14, true) : Qt.font({
+                    bold: true
+                })
+            }
+            Button {
+                Layout.alignment: Qt.AlignHCenter
+                text: i18n("Set Location…")
+                icon.name: "mark-location"
+                onClicked: if (weatherRoot)
+                    weatherRoot.openLocationSettings()
+            }
         }
     }
 
@@ -188,6 +202,23 @@ Rectangle {
                 font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
+            }
+
+            PlasmaComponents.ToolButton {
+                id: pinButton
+                checkable: true
+                checked: Plasmoid.configuration.keepOpen || false
+                icon.name: "window-pin"
+                flat: true
+                display: AbstractButton.IconOnly
+                width: 26
+                height: 26
+                visible: Plasmoid.formFactor !== 0  // hide on desktop (Planar)
+                ToolTip.visible: hovered
+                ToolTip.text: checked ? i18n("Unpin widget") : i18n("Keep widget open")
+                onToggled: {
+                    Plasmoid.configuration.keepOpen = checked;
+                }
             }
 
             ToolButton {

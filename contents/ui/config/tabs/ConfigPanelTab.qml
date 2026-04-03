@@ -769,7 +769,7 @@ Kirigami.FormLayout {
                     value: "3d-oxygen"
                 },
                 {
-                    text: i18n("Custom"),
+                    text: i18n("KDE Icon Theme"),
                     value: "custom"
                 }
             ]
