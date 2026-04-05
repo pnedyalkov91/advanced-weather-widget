@@ -36,6 +36,7 @@ import "providers/visualCrossing.js" as VisualCrossingJS
 import "providers/tomorrowIo.js" as TomorrowIoJS
 import "providers/stormGlass.js" as StormGlassJS
 import "providers/weatherbit.js" as WeatherbitJS
+import "providers/qWeather.js" as QWeatherJS
 import "providers/alerts.js" as AlertsJS
 import "providers/spaceWeather_provider.js" as SpaceWeatherJS
 
@@ -76,6 +77,9 @@ QtObject {
     }
     function _wbKey() {
         return (Plasmoid.configuration.wbApiKey || "").trim();
+    }
+    function _qwKey() {
+        return (Plasmoid.configuration.qwApiKey || "").trim();
     }
 
     // ── Private: space weather cache timestamp ──────────────────────────
@@ -149,7 +153,7 @@ QtObject {
         r.weatherAlerts = [];  // reset before parallel fetch
 
         var provider = Plasmoid.configuration.weatherProvider || "adaptive";
-        var chain = (provider === "adaptive") ? ["openMeteo", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "openWeather", "weatherApi"] : [provider];
+        var chain = (provider === "adaptive") ? ["openMeteo", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "openWeather", "weatherApi"] : [provider];
         chain._gen = _refreshGen;
 
         _tryProvider(chain, 0);
@@ -203,6 +207,10 @@ QtObject {
             WeatherbitJS.fetchHourly(service, W, dateStr);
             return;
         }
+        if (ap === "qWeather") {
+            QWeatherJS.fetchHourly(service, W, dateStr);
+            return;
+        }
         weatherRoot.hourlyData = [];
     }
 
@@ -252,6 +260,9 @@ QtObject {
         } else if (p === "weatherbit") {
             name = "Weatherbit";
             url = "https://www.weatherbit.io";
+        } else if (p === "qWeather") {
+            name = "QWeather";
+            url = "https://www.qweather.com";
         } else {
             name = "Open-Meteo";
             url = "https://open-meteo.com";
@@ -276,6 +287,8 @@ QtObject {
             return "StormGlass";
         if (p === "weatherbit")
             return "Weatherbit";
+        if (p === "qWeather")
+            return "QWeather";
         return "Open-Meteo";
     }
 
@@ -314,6 +327,10 @@ QtObject {
         }
         if (p === "weatherbit") {
             WeatherbitJS.fetchCurrent(service, W, chain, idx);
+            return;
+        }
+        if (p === "qWeather") {
+            QWeatherJS.fetchCurrent(service, W, chain, idx);
             return;
         }
         if (p === "openWeather") {

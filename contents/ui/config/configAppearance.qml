@@ -1073,6 +1073,7 @@ KCM.AbstractKCM {
     property string cfg_conditionIconTheme: "kde"      // controls main hero condition icon in widget popup
     property string cfg_widgetConditionCustomIcons: ""   // custom per-condition icons for the widget popup
     property string cfg_widgetDefaultTab: "details"  // "details" | "forecast"
+    property string cfg_widgetVisibleTabs: "both"      // "both" | "details" | "forecast" | "none"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
     property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set

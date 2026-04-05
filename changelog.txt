@@ -1,0 +1,32 @@
+--- ADDED ---
+
+- Added new providers
+-- Pirate Weather (API key required)
+-- Visual Crossing (API key required)
+-- Tomorrow IO (API key required)
+-- StormGlass (API key required)
+-- Weatherbit (API key required)
+-- QWeather (API key required)
+
+- Improved alerts support
+-- "NWS" → NOAA NWS (USA Only, No API Key required)
+-- Improved "MET Norway" → MET Norway (Norway only, No API Key required)
+-- "MeteoAlarm" → EUMETNET MeteoAlarm (Most Europe countries, No API Key required)
+
+- Alerts from providers are supported, if you use the following providers as well
+-- Pirate Weather (API Key Required)
+-- Visual Crossing (API Key required)
+-- "Weather API" (API Key required)
+
+- Added initial support for multi-location
+- Added initial support for weather tray icon
+
+--- BUG FIXES ---
+
+- Fix the KDE Plasma hang for a few seconds when you switch locations
+- Fix the bug where mouse scrolling wasn't working in hourly forecast
+- Fix a critical bug where if you choose another provider unless open-meteo or adaptive mode enabled, you cannot find any location manually
+- Fix 18N_ARGUMENT_MISSING in some dialogs
+- 
+
+

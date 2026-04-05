@@ -3,6 +3,7 @@ ConfigPanelSubPage 1.0 subpages/ConfigPanelSubPage.qml
 ConfigDetailsSubPage 1.0 subpages/ConfigDetailsSubPage.qml
 ConfigTooltipSubPage 1.0 subpages/ConfigTooltipSubPage.qml
 ConfigLocationSubPage 1.0 subpages/ConfigLocationSubPage.qml
+ConfigMapSubPage 1.0 subpages/ConfigMapSubPage.qml
 ConfigPanelTab 1.0 tabs/ConfigPanelTab.qml
 ConfigWidgetTab 1.0 tabs/ConfigWidgetTab.qml
 ConfigTooltipTab 1.0 tabs/ConfigTooltipTab.qml

@@ -28,34 +28,34 @@ KCM.SimpleKCM {
 
     Component.onCompleted: {
         if (!cfg_locationName || cfg_locationName.trim().length === 0)
-            cfg_autoDetectLocation = true
+            cfg_autoDetectLocation = true;
     }
 
-    property bool   cfg_autoDetectLocation: true
+    property bool cfg_autoDetectLocation: true
     property string cfg_locationName: ""
-    property real   cfg_latitude: 0.0
-    property real   cfg_longitude: 0.0
-    property int    cfg_altitude: 0
+    property real cfg_latitude: 0.0
+    property real cfg_longitude: 0.0
+    property int cfg_altitude: 0
     property string cfg_timezone: ""
     property string cfg_countryCode: ""
     property string cfg_altitudeUnit: "m"
     property string cfg_weatherProvider: "adaptive"
     property string cfg_savedLocations: "[]"
 
-    property bool   autoDetectBusy: false
+    property bool autoDetectBusy: false
     property string autoDetectStatus: ""
 
     property string detectedLocationName: ""
-    property real   detectedLatitude: 0.0
-    property real   detectedLongitude: 0.0
-    property int    detectedAltitude: 0
+    property real detectedLatitude: 0.0
+    property real detectedLongitude: 0.0
+    property int detectedAltitude: 0
     property string detectedTimezone: ""
     property string detectedCountryCode: ""
-    property bool   showDetectedLocationDialog: false
+    property bool showDetectedLocationDialog: false
     // Set to true once the user clicks "Apply" in the confirm dialog.
     // Allows late-arriving metadata (timezone, elevation) from Open-Meteo
     // to be written directly to Plasmoid.configuration.
-    property bool   _detectedLocationApplied: false
+    property bool _detectedLocationApplied: false
 
     // Pending save entry — set by applySearchResult, consumed by saveLocationDialog
     property var _pendingSaveEntry: null
@@ -68,8 +68,11 @@ KCM.SimpleKCM {
         var locs;
         try {
             locs = JSON.parse(root.cfg_savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
         if (fromIdx < 0 || fromIdx >= locs.length || toIdx < 0 || toIdx >= locs.length)
             return;
         var item = locs.splice(fromIdx, 1)[0];
@@ -78,53 +81,122 @@ KCM.SimpleKCM {
     }
 
     function shouldConfirmAutoDetectedLocation() {
-        return _forceConfirmAutoDetect
-               || (!cfg_locationName || cfg_locationName.length === 0)
+        return _forceConfirmAutoDetect || (!cfg_locationName || cfg_locationName.length === 0);
     }
     function stageDetectedLocation(lat, lon, altitude, timezone, name) {
-        _detectedLocationApplied = false
-        detectedLatitude = lat; detectedLongitude = lon
-        if (!isNaN(altitude)) detectedAltitude = Math.round(altitude)
-        if (timezone && timezone.length > 0) detectedTimezone = timezone
-        if (name && name.length > 0) detectedLocationName = name
+        _detectedLocationApplied = false;
+        detectedLatitude = lat;
+        detectedLongitude = lon;
+        if (!isNaN(altitude))
+            detectedAltitude = Math.round(altitude);
+        if (timezone && timezone.length > 0)
+            detectedTimezone = timezone;
+        if (name && name.length > 0)
+            detectedLocationName = name;
     }
     function applyDetectedLocation() {
         // Apply even if name isn't available yet — coordinates are enough for weather
-        showDetectedLocationDialog = false
-        _forceConfirmAutoDetect = false
-        _detectedLocationApplied = true
-        Plasmoid.configuration.autoDetectLocation = true
-        Plasmoid.configuration.latitude   = detectedLatitude
-        Plasmoid.configuration.longitude  = detectedLongitude
+        showDetectedLocationDialog = false;
+        _forceConfirmAutoDetect = false;
+        _detectedLocationApplied = true;
+        Plasmoid.configuration.autoDetectLocation = true;
+        Plasmoid.configuration.latitude = detectedLatitude;
+        Plasmoid.configuration.longitude = detectedLongitude;
         if (detectedTimezone && detectedTimezone.length > 0)
-            Plasmoid.configuration.timezone = detectedTimezone
+            Plasmoid.configuration.timezone = detectedTimezone;
         if (!isNaN(detectedAltitude) && detectedAltitude !== 0)
-            Plasmoid.configuration.altitude = detectedAltitude
+            Plasmoid.configuration.altitude = detectedAltitude;
         if (detectedLocationName && detectedLocationName.length > 0)
-            Plasmoid.configuration.locationName = detectedLocationName
+            Plasmoid.configuration.locationName = detectedLocationName;
         if (detectedCountryCode && detectedCountryCode.length > 0)
-            Plasmoid.configuration.countryCode = detectedCountryCode
+            Plasmoid.configuration.countryCode = detectedCountryCode;
         // Sync cfg_ back so the config dialog display stays consistent
-        cfg_autoDetectLocation = Plasmoid.configuration.autoDetectLocation
-        cfg_latitude           = Plasmoid.configuration.latitude
-        cfg_longitude          = Plasmoid.configuration.longitude
-        cfg_timezone           = Plasmoid.configuration.timezone
-        cfg_altitude           = Plasmoid.configuration.altitude
-        cfg_locationName       = Plasmoid.configuration.locationName
-        cfg_countryCode        = Plasmoid.configuration.countryCode
+        cfg_autoDetectLocation = Plasmoid.configuration.autoDetectLocation;
+        cfg_latitude = Plasmoid.configuration.latitude;
+        cfg_longitude = Plasmoid.configuration.longitude;
+        cfg_timezone = Plasmoid.configuration.timezone;
+        cfg_altitude = Plasmoid.configuration.altitude;
+        cfg_locationName = Plasmoid.configuration.locationName;
+        cfg_countryCode = Plasmoid.configuration.countryCode;
 
         // Verify the detected location is available on the current provider
-        verifyProviderLocation(detectedLatitude, detectedLongitude)
+        verifyProviderLocation(detectedLatitude, detectedLongitude);
+
+        // Offer to save the newly confirmed auto-detected location
+        var saveEntry = {
+            name: detectedLocationName || "",
+            lat: detectedLatitude,
+            lon: detectedLongitude,
+            altitude: detectedAltitude || 0,
+            timezone: detectedTimezone || "",
+            countryCode: detectedCountryCode || ""
+        };
+        var existingLocs;
+        try {
+            existingLocs = JSON.parse(cfg_savedLocations || "[]");
+            if (!Array.isArray(existingLocs))
+                existingLocs = [];
+        } catch (e) {
+            existingLocs = [];
+        }
+        var alreadySaved = false;
+        for (var si = 0; si < existingLocs.length; si++) {
+            if (Math.abs(existingLocs[si].lat - saveEntry.lat) < 0.01 && Math.abs(existingLocs[si].lon - saveEntry.lon) < 0.01) {
+                alreadySaved = true;
+                break;
+            }
+        }
+        if (!alreadySaved) {
+            _pendingSaveEntry = saveEntry;
+            saveLocationDialog.open();
+        }
     }
     function chooseManualLocation() {
-        _forceConfirmAutoDetect = false
-        cfg_autoDetectLocation = false; showDetectedLocationDialog = false; openSearchPage()
+        _forceConfirmAutoDetect = false;
+        cfg_autoDetectLocation = false;
+        showDetectedLocationDialog = false;
+        openSearchPage();
+    }
+
+    // Apply current cfg_ values to Plasmoid.configuration immediately
+    // (bypasses KCM Apply button) and open the save dialog if a pending
+    // entry is waiting.
+    //
+    // Uses a short Timer to defer the Plasmoid.configuration writes to the
+    // next event-loop iteration.  This avoids timing conflicts with the KCM
+    // framework's own dirty-detection which can intercept synchronous writes.
+    Timer {
+        id: _applyTimer
+        interval: 50
+        repeat: false
+        onTriggered: {
+            Plasmoid.configuration.autoDetectLocation = root.cfg_autoDetectLocation;
+            Plasmoid.configuration.latitude = root.cfg_latitude;
+            Plasmoid.configuration.longitude = root.cfg_longitude;
+            Plasmoid.configuration.locationName = root.cfg_locationName;
+            Plasmoid.configuration.timezone = root.cfg_timezone;
+            Plasmoid.configuration.altitude = root.cfg_altitude;
+            Plasmoid.configuration.countryCode = root.cfg_countryCode;
+            Plasmoid.configuration.savedLocations = root.cfg_savedLocations;
+            // Force flush to disk so the widget picks up the change
+            // even if the config dialog is later closed without Apply/OK.
+            if (typeof Plasmoid.configuration.writeConfig === "function")
+                Plasmoid.configuration.writeConfig();
+        }
+    }
+
+    function _immediateApplyAndOffer() {
+        _applyTimer.restart();
+        if (_pendingSaveEntry)
+            saveLocationDialog.open();
     }
 
     property string preferredLanguage: Qt.locale().name.split("_")[0]
     readonly property string bundledOpenWeatherApiKey: "8003225e8825db83758c237068447229"
     readonly property string bundledWeatherApiKey: "601ba4ac57404ec29ff120510261802"
-    function displayAltitudeUnit() { return cfg_altitudeUnit === "ft" ? "feet" : "meters" }
+    function displayAltitudeUnit() {
+        return cfg_altitudeUnit === "ft" ? "feet" : "meters";
+    }
 
     // ── Provider location check state ───────────────────────────────────
     // 0 = idle, 1 = checking, 2 = ok, 3 = error
@@ -144,34 +216,42 @@ KCM.SimpleKCM {
         var url;
         if (provider === "openWeather") {
             var owKey = (Plasmoid.configuration.owApiKey || "").trim();
-            if (!owKey) { locationCheckState = 0; return; }
-            url = "https://api.openweathermap.org/data/2.5/weather?lat="
-                + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon)
-                + "&units=metric&appid=" + encodeURIComponent(owKey);
+            if (!owKey) {
+                locationCheckState = 0;
+                return;
+            }
+            url = "https://api.openweathermap.org/data/2.5/weather?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&units=metric&appid=" + encodeURIComponent(owKey);
         } else if (provider === "weatherApi") {
             var waKey = (Plasmoid.configuration.waApiKey || "").trim();
-            if (!waKey) { locationCheckState = 0; return; }
-            url = "https://api.weatherapi.com/v1/current.json?key="
-                + encodeURIComponent(waKey)
-                + "&q=" + encodeURIComponent(lat + "," + lon);
+            if (!waKey) {
+                locationCheckState = 0;
+                return;
+            }
+            url = "https://api.weatherapi.com/v1/current.json?key=" + encodeURIComponent(waKey) + "&q=" + encodeURIComponent(lat + "," + lon);
         } else if (provider === "pirateWeather") {
             var pwKey = (Plasmoid.configuration.pwApiKey || "").trim();
-            if (!pwKey) { locationCheckState = 0; return; }
-            url = "https://api.pirateweather.net/forecast/"
-                + encodeURIComponent(pwKey) + "/"
-                + lat + "," + lon
-                + "?units=ca&exclude=minutely,hourly,daily,alerts";
+            if (!pwKey) {
+                locationCheckState = 0;
+                return;
+            }
+            url = "https://api.pirateweather.net/forecast/" + encodeURIComponent(pwKey) + "/" + lat + "," + lon + "?units=ca&exclude=minutely,hourly,daily,alerts";
         } else if (provider === "metno") {
-            url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat="
-                + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+            url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+        } else if (provider === "qWeather") {
+            var qwKey = (Plasmoid.configuration.qwApiKey || "").trim();
+            if (!qwKey) {
+                locationCheckState = 0;
+                return;
+            }
+            var qwLoc = encodeURIComponent(parseFloat(lon).toFixed(2) + "," + parseFloat(lat).toFixed(2));
+            url = "https://devapi.qweather.com/v7/weather/now?location=" + qwLoc + "&key=" + encodeURIComponent(qwKey) + "&unit=m";
         } else {
             locationCheckState = 0;
             return;
         }
         req.open("GET", url);
         if (provider === "metno")
-            req.setRequestHeader("User-Agent",
-                "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");
+            req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
@@ -188,10 +268,16 @@ KCM.SimpleKCM {
     }
 
     function providerDisplayNameFor(p) {
-        if (p === "openWeather") return "OpenWeatherMap";
-        if (p === "weatherApi") return "WeatherAPI.com";
-        if (p === "metno") return "met.no";
-        if (p === "pirateWeather") return "Pirate Weather";
+        if (p === "openWeather")
+            return "OpenWeatherMap";
+        if (p === "weatherApi")
+            return "WeatherAPI.com";
+        if (p === "metno")
+            return "met.no";
+        if (p === "pirateWeather")
+            return "Pirate Weather";
+        if (p === "qWeather")
+            return "QWeather";
         return "Open-Meteo";
     }
 
@@ -200,155 +286,172 @@ KCM.SimpleKCM {
     // and in UTC using basic hour+minute parts — this works in Qt 6's V4+ICU
     // without needing timeZoneName:"shortOffset" (ES2021, not guaranteed available).
     function gmtOffsetLabel(tzId) {
-        if (!tzId || tzId.length === 0) return ""
+        if (!tzId || tzId.length === 0)
+            return "";
         try {
-            var now  = new Date()
+            var now = new Date();
             // Helper: get total minutes-since-midnight for a given timezone
             function totalMins(tz) {
                 var parts = new Intl.DateTimeFormat("en-US", {
-                    timeZone:  tz,
-                    hour:      "numeric",
-                    minute:    "numeric",
-                    hour12:    false
-                }).formatToParts(now)
-                var h = 0, m = 0
+                    timeZone: tz,
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: false
+                }).formatToParts(now);
+                var h = 0, m = 0;
                 for (var i = 0; i < parts.length; ++i) {
-                    if (parts[i].type === "hour")   h = parseInt(parts[i].value, 10)
-                    if (parts[i].type === "minute") m = parseInt(parts[i].value, 10)
+                    if (parts[i].type === "hour")
+                        h = parseInt(parts[i].value, 10);
+                    if (parts[i].type === "minute")
+                        m = parseInt(parts[i].value, 10);
                 }
-                return h * 60 + m
+                return h * 60 + m;
             }
-            var diff = totalMins(tzId) - totalMins("UTC")
+            var diff = totalMins(tzId) - totalMins("UTC");
             // Clamp across midnight boundaries (diff can be ±1439)
-            if (diff >  720) diff -= 1440
-            if (diff < -720) diff += 1440
-            var sign  = diff >= 0 ? "+" : "-"
-            var abs   = Math.abs(diff)
-            var h     = Math.floor(abs / 60)
-            var m     = abs % 60
-            var label = m === 0
-                        ? "GMT " + sign + h
-                        : "GMT " + sign + h + ":" + (m < 10 ? "0" + m : String(m))
-            return "(" + label + ")"
-        } catch(e) { return "" }
+            if (diff > 720)
+                diff -= 1440;
+            if (diff < -720)
+                diff += 1440;
+            var sign = diff >= 0 ? "+" : "-";
+            var abs = Math.abs(diff);
+            var h = Math.floor(abs / 60);
+            var m = abs % 60;
+            var label = m === 0 ? "GMT " + sign + h : "GMT " + sign + h + ":" + (m < 10 ? "0" + m : String(m));
+            return "(" + label + ")";
+        } catch (e) {
+            return "";
+        }
     }
 
     function formatResultTitle(item) {
-        if (!item) return ""
-        if (item.localizedDisplayName && item.localizedDisplayName.length > 0) return item.localizedDisplayName
-        var admin   = item.admin1  ? ", " + item.admin1  : ""
-        var country = item.country ? ", " + item.country : ""
-        var first   = item.name   ? item.name            : ""
-        return first.length > 0 ? first + admin + country : (item.display_name ? item.display_name : "")
+        if (!item)
+            return "";
+        if (item.localizedDisplayName && item.localizedDisplayName.length > 0)
+            return item.localizedDisplayName;
+        var admin = item.admin1 ? ", " + item.admin1 : "";
+        var country = item.country ? ", " + item.country : "";
+        var first = item.name ? item.name : "";
+        return first.length > 0 ? first + admin + country : (item.display_name ? item.display_name : "");
     }
     function formatResultListItem(item) {
-        return formatResultTitle(item)
+        return formatResultTitle(item);
     }
     function selectedProviderDisplayName() {
-        if (cfg_weatherProvider === "adaptive")       return "Adaptive"
-        if (cfg_weatherProvider === "openWeather")    return "OpenWeather"
-        if (cfg_weatherProvider === "weatherApi")     return "WeatherAPI.com"
-        if (cfg_weatherProvider === "pirateWeather")  return "Pirate Weather"
-        if (cfg_weatherProvider === "metno")          return "met.no"
-        return "Open-Meteo"
+        if (cfg_weatherProvider === "adaptive")
+            return "Adaptive";
+        if (cfg_weatherProvider === "openWeather")
+            return "OpenWeather";
+        if (cfg_weatherProvider === "weatherApi")
+            return "WeatherAPI.com";
+        if (cfg_weatherProvider === "pirateWeather")
+            return "Pirate Weather";
+        if (cfg_weatherProvider === "metno")
+            return "met.no";
+        return "Open-Meteo";
     }
     function currentLocationDisplayName() {
-        return cfg_locationName && cfg_locationName.length > 0 ? cfg_locationName : i18n("None Selected")
+        return cfg_locationName && cfg_locationName.length > 0 ? cfg_locationName : i18n("None Selected");
     }
     function openSearchPage() {
-        stack.push(searchSubPage)
+        stack.push(searchSubPage);
+    }
+    function openMapPage() {
+        stack.push(mapSubPage);
     }
 
     function reverseGeocode(lat, lon) {
-        stageDetectedLocation(lat, lon, NaN, "", "")
-        var metaReq = new XMLHttpRequest()
-        metaReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat)
-            + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m&timezone=auto")
-        metaReq.onreadystatechange = function() {
-            if (metaReq.readyState !== XMLHttpRequest.DONE) return
+        stageDetectedLocation(lat, lon, NaN, "", "");
+        var metaReq = new XMLHttpRequest();
+        metaReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m&timezone=auto");
+        metaReq.onreadystatechange = function () {
+            if (metaReq.readyState !== XMLHttpRequest.DONE)
+                return;
             if (metaReq.status === 200) {
-                var meta = JSON.parse(metaReq.responseText)
+                var meta = JSON.parse(metaReq.responseText);
                 if (root._detectedLocationApplied) {
                     // The user already clicked "Apply" before this response
                     // arrived — write directly to config so it’s not lost.
                     if (meta.timezone && meta.timezone.length > 0) {
-                        cfg_timezone = meta.timezone
-                        Plasmoid.configuration.timezone = meta.timezone
+                        cfg_timezone = meta.timezone;
+                        Plasmoid.configuration.timezone = meta.timezone;
                     }
                     if (meta.elevation !== undefined && !isNaN(meta.elevation)) {
-                        cfg_altitude = Math.round(meta.elevation)
-                        Plasmoid.configuration.altitude = Math.round(meta.elevation)
+                        cfg_altitude = Math.round(meta.elevation);
+                        Plasmoid.configuration.altitude = Math.round(meta.elevation);
                     }
                 } else if (shouldConfirmAutoDetectedLocation()) {
-                    if (meta.timezone) root.detectedTimezone = meta.timezone
-                    if (meta.elevation !== undefined && !isNaN(meta.elevation)) root.detectedAltitude = Math.round(meta.elevation)
+                    if (meta.timezone)
+                        root.detectedTimezone = meta.timezone;
+                    if (meta.elevation !== undefined && !isNaN(meta.elevation))
+                        root.detectedAltitude = Math.round(meta.elevation);
                 } else {
                     // Persist directly so the widget sees the new values even
                     // if the config dialog is closed before this callback fires.
                     if (meta.timezone) {
-                        cfg_timezone = meta.timezone
-                        Plasmoid.configuration.timezone = meta.timezone
+                        cfg_timezone = meta.timezone;
+                        Plasmoid.configuration.timezone = meta.timezone;
                     }
                     if (meta.elevation !== undefined && !isNaN(meta.elevation)) {
-                        cfg_altitude = Math.round(meta.elevation)
-                        Plasmoid.configuration.altitude = Math.round(meta.elevation)
+                        cfg_altitude = Math.round(meta.elevation);
+                        Plasmoid.configuration.altitude = Math.round(meta.elevation);
                     }
                 }
             }
-        }
-        metaReq.send()
-        var req = new XMLHttpRequest()
+        };
+        metaReq.send();
+        var req = new XMLHttpRequest();
         // accept-language must NOT be percent-encoded (commas are syntactically significant)
-        var revLang = preferredLanguage.length > 0 ? preferredLanguage + ",en;q=0.8" : "en"
-        req.open("GET", "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1"
-            + "&accept-language=" + revLang
-            + "&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon))
-        req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)")
-        req.onreadystatechange = function() {
-            if (req.readyState !== XMLHttpRequest.DONE) return
+        var revLang = preferredLanguage.length > 0 ? preferredLanguage + ",en;q=0.8" : "en";
+        req.open("GET", "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1" + "&accept-language=" + revLang + "&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon));
+        req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE)
+                return;
             if (req.status === 200) {
-                var data = JSON.parse(req.responseText)
+                var data = JSON.parse(req.responseText);
                 if (data && data.address) {
-                    var a = data.address
+                    var a = data.address;
                     // Extended fallback chain — matches forward-search logic
-                    var city = a.city || a.town || a.village || a.hamlet
-                             || a.suburb || a.municipality || a.county || ""
-                    var country = a.country || ""
-                    var name
+                    var city = a.city || a.town || a.village || a.hamlet || a.suburb || a.municipality || a.county || "";
+                    var country = a.country || "";
+                    var name;
                     if (city.length > 0 && country.length > 0)
-                        name = city + ", " + country
+                        name = city + ", " + country;
                     else if (city.length > 0)
-                        name = city
+                        name = city;
                     else if (country.length > 0)
-                        name = country
+                        name = country;
                     else
-                        name = data.display_name || ""   // last-resort fallback
+                        name = data.display_name || "";   // last-resort fallback
 
                     if (name.length > 0) {
                         if (shouldConfirmAutoDetectedLocation()) {
-                            root.detectedLocationName = name
-                            root.showDetectedLocationDialog = true
+                            root.detectedLocationName = name;
+                            root.showDetectedLocationDialog = true;
                         } else {
-                            cfg_locationName = name
-                            Plasmoid.configuration.locationName = name
+                            cfg_locationName = name;
+                            Plasmoid.configuration.locationName = name;
                         }
                     }
                     // Capture country code for MeteoAlarm alerts
-                    var cc = (a.country_code || "").toUpperCase()
+                    var cc = (a.country_code || "").toUpperCase();
                     if (cc.length > 0) {
                         if (shouldConfirmAutoDetectedLocation()) {
-                            root.detectedCountryCode = cc
+                            root.detectedCountryCode = cc;
                         } else {
-                            cfg_countryCode = cc
-                            Plasmoid.configuration.countryCode = cc
+                            cfg_countryCode = cc;
+                            Plasmoid.configuration.countryCode = cc;
                         }
                     }
                 }
-                autoDetectStatus = i18n("Location auto-detected.")
-            } else { autoDetectStatus = i18n("Auto-detection updated coordinates.") }
-            autoDetectBusy = false
-        }
-        req.send()
+                autoDetectStatus = i18n("Location auto-detected.");
+            } else {
+                autoDetectStatus = i18n("Auto-detection updated coordinates.");
+            }
+            autoDetectBusy = false;
+        };
+        req.send();
     }
 
     // ── 3-tier auto-detection ───────────────────────────────────────────
@@ -360,80 +463,89 @@ KCM.SimpleKCM {
 
     function _cfgHandlePosition(lat, lon, alt, tierLabel) {
         // Deactivate sources after successful fix to avoid duplicate callbacks
-        cfgGeoclue2Source.active = false
-        cfgGenericSource.active = false
+        cfgGeoclue2Source.active = false;
+        cfgGenericSource.active = false;
         if (root.shouldConfirmAutoDetectedLocation()) {
-            root.stageDetectedLocation(lat, lon, alt, "", "")
+            root.stageDetectedLocation(lat, lon, alt, "", "");
         } else {
-            root.cfg_latitude   = lat
-            root.cfg_longitude  = lon
-            Plasmoid.configuration.latitude  = lat
-            Plasmoid.configuration.longitude = lon
+            root.cfg_latitude = lat;
+            root.cfg_longitude = lon;
+            Plasmoid.configuration.latitude = lat;
+            Plasmoid.configuration.longitude = lon;
             if (!isNaN(alt) && alt > 0) {
-                root.cfg_altitude = Math.round(alt)
-                Plasmoid.configuration.altitude = Math.round(alt)
+                root.cfg_altitude = Math.round(alt);
+                Plasmoid.configuration.altitude = Math.round(alt);
             }
         }
-        autoDetectStatus = i18n("Requesting location… (%1)", tierLabel)
-        root.reverseGeocode(lat, lon)
+        autoDetectStatus = i18n("Requesting location… (%1)", tierLabel);
+        root.reverseGeocode(lat, lon);
     }
 
     function refreshAutoDetectedLocation() {
-        if (!cfg_autoDetectLocation) { autoDetectBusy = false; return }
-        autoDetectBusy = true
-        _cfgLocationTier = 1
-        autoDetectStatus = i18n("Requesting location via GeoClue2…")
-        cfgGeoclue2Source.active = true
-        cfgGeoclue2Source.update()
-        _cfgGeoclue2Timer.restart()
+        if (!cfg_autoDetectLocation) {
+            autoDetectBusy = false;
+            return;
+        }
+        autoDetectBusy = true;
+        _cfgLocationTier = 1;
+        autoDetectStatus = i18n("Requesting location via GeoClue2…");
+        cfgGeoclue2Source.active = true;
+        cfgGeoclue2Source.update();
+        _cfgGeoclue2Timer.restart();
     }
 
     function _cfgEscalateToGeneric() {
-        cfgGeoclue2Source.active = false
-        _cfgLocationTier = 2
-        autoDetectStatus = i18n("GeoClue2 unavailable, trying system location…")
-        cfgGenericSource.active = true
-        cfgGenericSource.update()
-        _cfgGenericTimer.restart()
+        cfgGeoclue2Source.active = false;
+        _cfgLocationTier = 2;
+        autoDetectStatus = i18n("GeoClue2 unavailable, trying system location…");
+        cfgGenericSource.active = true;
+        cfgGenericSource.update();
+        _cfgGenericTimer.restart();
     }
 
     function _cfgEscalateToIpGeo() {
-        cfgGenericSource.active = false
-        _cfgLocationTier = 3
-        autoDetectStatus = i18n("System location unavailable, trying IP geolocation…")
-        _cfgIpGeolocate()
+        cfgGenericSource.active = false;
+        _cfgLocationTier = 3;
+        autoDetectStatus = i18n("System location unavailable, trying IP geolocation…");
+        _cfgIpGeolocate();
     }
 
     Timer {
-        id: _cfgGeoclue2Timer; interval: 8000; repeat: false
+        id: _cfgGeoclue2Timer
+        interval: 8000
+        repeat: false
         onTriggered: {
             if (_cfgLocationTier === 1) {
-                console.log("[Location/config] GeoClue2 timed out, trying generic…")
-                _cfgEscalateToGeneric()
+                console.log("[Location/config] GeoClue2 timed out, trying generic…");
+                _cfgEscalateToGeneric();
             }
         }
     }
     Timer {
-        id: _cfgGenericTimer; interval: 8000; repeat: false
+        id: _cfgGenericTimer
+        interval: 8000
+        repeat: false
         onTriggered: {
             if (_cfgLocationTier === 2) {
-                console.log("[Location/config] Generic source timed out, trying IP…")
-                _cfgEscalateToIpGeo()
+                console.log("[Location/config] Generic source timed out, trying IP…");
+                _cfgEscalateToIpGeo();
             }
         }
     }
 
     Timer {
-        id: _cfgIpGeoTimer; interval: 10000; repeat: false
+        id: _cfgIpGeoTimer
+        interval: 10000
+        repeat: false
         property var _activeReq: null
         onTriggered: {
             if (_cfgLocationTier === 3 && _activeReq) {
-                console.warn("[Location/config] Tier 3 IP geolocation timed out")
-                _activeReq.abort()
-                _activeReq = null
-                _cfgLocationTier = 0
-                autoDetectBusy = false
-                autoDetectStatus = i18n("Unable to detect location. All methods failed.")
+                console.warn("[Location/config] Tier 3 IP geolocation timed out");
+                _activeReq.abort();
+                _activeReq = null;
+                _cfgLocationTier = 0;
+                autoDetectBusy = false;
+                autoDetectStatus = i18n("Unable to detect location. All methods failed.");
             }
         }
     }
@@ -445,19 +557,21 @@ KCM.SimpleKCM {
         active: false
         updateInterval: 300000
         onPositionChanged: {
-            if (!root.cfg_autoDetectLocation) return
-            var c = position.coordinate
-            if (!c || !c.isValid) return
-            _cfgGeoclue2Timer.stop()
-            _cfgLocationTier = 0
-            console.log("[Location/config] Tier 1 (GeoClue2): position acquired")
-            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, "GeoClue2")
+            if (!root.cfg_autoDetectLocation)
+                return;
+            var c = position.coordinate;
+            if (!c || !c.isValid)
+                return;
+            _cfgGeoclue2Timer.stop();
+            _cfgLocationTier = 0;
+            console.log("[Location/config] Tier 1 (GeoClue2): position acquired");
+            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, "GeoClue2");
         }
         onSourceErrorChanged: {
             if (sourceError !== PositionSource.NoError && _cfgLocationTier === 1) {
-                console.log("[Location/config] Tier 1 (GeoClue2) error:", sourceError)
-                _cfgGeoclue2Timer.stop()
-                _cfgEscalateToGeneric()
+                console.log("[Location/config] Tier 1 (GeoClue2) error:", sourceError);
+                _cfgGeoclue2Timer.stop();
+                _cfgEscalateToGeneric();
             }
         }
     }
@@ -468,85 +582,94 @@ KCM.SimpleKCM {
         active: false
         updateInterval: 300000
         onPositionChanged: {
-            if (!root.cfg_autoDetectLocation) return
-            var c = position.coordinate
-            if (!c || !c.isValid) return
-            _cfgGenericTimer.stop()
-            _cfgLocationTier = 0
-            console.log("[Location/config] Tier 2 (generic): position acquired")
-            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, i18n("system location"))
+            if (!root.cfg_autoDetectLocation)
+                return;
+            var c = position.coordinate;
+            if (!c || !c.isValid)
+                return;
+            _cfgGenericTimer.stop();
+            _cfgLocationTier = 0;
+            console.log("[Location/config] Tier 2 (generic): position acquired");
+            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, i18n("system location"));
         }
         onSourceErrorChanged: {
             if (sourceError !== PositionSource.NoError && _cfgLocationTier === 2) {
-                console.log("[Location/config] Tier 2 (generic) error:", sourceError)
-                _cfgGenericTimer.stop()
-                _cfgEscalateToIpGeo()
+                console.log("[Location/config] Tier 2 (generic) error:", sourceError);
+                _cfgGenericTimer.stop();
+                _cfgEscalateToIpGeo();
             }
         }
     }
 
     // Tier 3 — IP-based geolocation
     function _cfgIpGeolocate() {
-        console.log("[Location/config] Tier 3: trying geo.kamero.ai…")
-        var req = new XMLHttpRequest()
-        _cfgIpGeoTimer._activeReq = req
-        _cfgIpGeoTimer.restart()
-        req.open("GET", "https://geo.kamero.ai/api/geo")
+        console.log("[Location/config] Tier 3: trying geo.kamero.ai…");
+        var req = new XMLHttpRequest();
+        _cfgIpGeoTimer._activeReq = req;
+        _cfgIpGeoTimer.restart();
+        req.open("GET", "https://geo.kamero.ai/api/geo");
         req.onreadystatechange = function () {
-            if (req.readyState !== XMLHttpRequest.DONE) return
+            if (req.readyState !== XMLHttpRequest.DONE)
+                return;
             if (req.status === 200) {
                 try {
-                    var data = JSON.parse(req.responseText)
-                    var lat = parseFloat(data.latitude)
-                    var lon = parseFloat(data.longitude)
+                    var data = JSON.parse(req.responseText);
+                    var lat = parseFloat(data.latitude);
+                    var lon = parseFloat(data.longitude);
                     if (!isNaN(lat) && !isNaN(lon)) {
-                        _cfgIpGeoTimer.stop()
-                        _cfgIpGeoTimer._activeReq = null
-                        _cfgLocationTier = 0
-                        console.log("[Location/config] Tier 3 (geo.kamero.ai): position acquired")
-                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"))
-                        return
+                        _cfgIpGeoTimer.stop();
+                        _cfgIpGeoTimer._activeReq = null;
+                        _cfgLocationTier = 0;
+                        console.log("[Location/config] Tier 3 (geo.kamero.ai): position acquired");
+                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"));
+                        return;
                     }
-                } catch (e) { console.warn("[Location/config] geo.kamero.ai parse error:", e) }
+                } catch (e) {
+                    console.warn("[Location/config] geo.kamero.ai parse error:", e);
+                }
             }
-            _cfgIpGeolocateFallback()
-        }
-        req.send()
+            _cfgIpGeolocateFallback();
+        };
+        req.send();
     }
 
     function _cfgIpGeolocateFallback() {
-        console.log("[Location/config] Tier 3 fallback: trying reallyfreegeoip.org…")
-        var req = new XMLHttpRequest()
-        _cfgIpGeoTimer._activeReq = req
-        _cfgIpGeoTimer.restart()
-        req.open("GET", "https://reallyfreegeoip.org/json/")
+        console.log("[Location/config] Tier 3 fallback: trying reallyfreegeoip.org…");
+        var req = new XMLHttpRequest();
+        _cfgIpGeoTimer._activeReq = req;
+        _cfgIpGeoTimer.restart();
+        req.open("GET", "https://reallyfreegeoip.org/json/");
         req.onreadystatechange = function () {
-            if (req.readyState !== XMLHttpRequest.DONE) return
-            _cfgIpGeoTimer.stop()
-            _cfgIpGeoTimer._activeReq = null
+            if (req.readyState !== XMLHttpRequest.DONE)
+                return;
+            _cfgIpGeoTimer.stop();
+            _cfgIpGeoTimer._activeReq = null;
             if (req.status === 200) {
                 try {
-                    var data = JSON.parse(req.responseText)
-                    var lat = parseFloat(data.latitude)
-                    var lon = parseFloat(data.longitude)
+                    var data = JSON.parse(req.responseText);
+                    var lat = parseFloat(data.latitude);
+                    var lon = parseFloat(data.longitude);
                     if (!isNaN(lat) && !isNaN(lon)) {
-                        _cfgLocationTier = 0
-                        console.log("[Location/config] Tier 3 (reallyfreegeoip): position acquired")
-                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"))
-                        return
+                        _cfgLocationTier = 0;
+                        console.log("[Location/config] Tier 3 (reallyfreegeoip): position acquired");
+                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"));
+                        return;
                     }
-                } catch (e) { console.warn("[Location/config] reallyfreegeoip parse error:", e) }
+                } catch (e) {
+                    console.warn("[Location/config] reallyfreegeoip parse error:", e);
+                }
             }
-            _cfgLocationTier = 0
-            autoDetectBusy = false
-            autoDetectStatus = i18n("Unable to detect location. All methods failed.")
-            console.warn("[Location/config] All 3 tiers failed")
-        }
-        req.send()
+            _cfgLocationTier = 0;
+            autoDetectBusy = false;
+            autoDetectStatus = i18n("Unable to detect location. All methods failed.");
+            console.warn("[Location/config] All 3 tiers failed");
+        };
+        req.send();
     }
 
     function applySearchResult(item) {
-        if (!item) return
+        if (!item)
+            return;
         // For Nominatim (OSM) results: use localizedDisplayName directly.
         // It is the raw display_name from OSM — already fully localised and
         // containing every address level (city → district → state → country).
@@ -555,102 +678,111 @@ KCM.SimpleKCM {
         // For Open-Meteo results: build from the individual fields because
         // Open-Meteo's geocoder only returns name/admin1/country.
         if (item.providerKey === "nominatim" && item.localizedDisplayName && item.localizedDisplayName.length > 0) {
-            cfg_locationName = item.localizedDisplayName
+            cfg_locationName = item.localizedDisplayName;
         } else {
-            var nameParts = []
-            if (item.name    && item.name.length    > 0) nameParts.push(item.name)
-            if (item.district && item.district.length > 0
-                    && item.district.toLowerCase() !== (item.name || "").toLowerCase())
-                nameParts.push(item.district)
-            if (item.admin1  && item.admin1.length  > 0
-                    && item.admin1.toLowerCase() !== (item.name || "").toLowerCase())
-                nameParts.push(item.admin1)
-            if (item.country && item.country.length > 0) nameParts.push(item.country)
-            cfg_locationName = nameParts.length > 0 ? nameParts.join(", ") : (item.localizedDisplayName || "")
+            var nameParts = [];
+            if (item.name && item.name.length > 0)
+                nameParts.push(item.name);
+            if (item.district && item.district.length > 0 && item.district.toLowerCase() !== (item.name || "").toLowerCase())
+                nameParts.push(item.district);
+            if (item.admin1 && item.admin1.length > 0 && item.admin1.toLowerCase() !== (item.name || "").toLowerCase())
+                nameParts.push(item.admin1);
+            if (item.country && item.country.length > 0)
+                nameParts.push(item.country);
+            cfg_locationName = nameParts.length > 0 ? nameParts.join(", ") : (item.localizedDisplayName || "");
         }
         // Full-precision coordinates
-        cfg_latitude  = parseFloat(item.latitude)
-        cfg_longitude = parseFloat(item.longitude)
-        cfg_timezone  = item.timezone ? item.timezone : cfg_timezone
+        cfg_latitude = parseFloat(item.latitude);
+        cfg_longitude = parseFloat(item.longitude);
+        cfg_timezone = item.timezone ? item.timezone : cfg_timezone;
 
         // Country code for MeteoAlarm alerts
         if (item.countryCode && item.countryCode.length > 0)
-            cfg_countryCode = item.countryCode.toUpperCase()
+            cfg_countryCode = item.countryCode.toUpperCase();
 
         // Always fetch accurate elevation from Open-Meteo elevation API.
         // Nominatim does not return elevation at all; Open-Meteo geocoder
         // returns elevation only for its own results.  The dedicated
         // elevation endpoint is accurate for all coordinate pairs.
-        var lat = parseFloat(item.latitude)
-        var lon = parseFloat(item.longitude)
-        var elevReq = new XMLHttpRequest()
-        elevReq.open("GET", "https://api.open-meteo.com/v1/elevation?latitude="
-                     + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon))
-        elevReq.onreadystatechange = function() {
-            if (elevReq.readyState !== XMLHttpRequest.DONE) return
+        var lat = parseFloat(item.latitude);
+        var lon = parseFloat(item.longitude);
+        var elevReq = new XMLHttpRequest();
+        elevReq.open("GET", "https://api.open-meteo.com/v1/elevation?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon));
+        elevReq.onreadystatechange = function () {
+            if (elevReq.readyState !== XMLHttpRequest.DONE)
+                return;
             if (elevReq.status === 200) {
-                var data = JSON.parse(elevReq.responseText)
+                var data = JSON.parse(elevReq.responseText);
                 // Response: { "elevation": [123.4] }
                 if (data.elevation && data.elevation.length > 0 && !isNaN(data.elevation[0])) {
-                    cfg_altitude = Math.round(data.elevation[0])
+                    cfg_altitude = Math.round(data.elevation[0]);
+                    Plasmoid.configuration.altitude = cfg_altitude;
                 }
             }
-        }
-        elevReq.send()
+        };
+        elevReq.send();
 
         // Always fetch timezone from Open-Meteo when a new location is selected.
         // Do NOT guard with "if (!cfg_timezone)" — the old location's timezone
         // would satisfy that check and the stale value would never be updated.
-        var tzReq = new XMLHttpRequest()
-        tzReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude="
-                   + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon)
-                   + "&current=temperature_2m&timezone=auto")
-        tzReq.onreadystatechange = function() {
-            if (tzReq.readyState !== XMLHttpRequest.DONE) return
+        var tzReq = new XMLHttpRequest();
+        tzReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m&timezone=auto");
+        tzReq.onreadystatechange = function () {
+            if (tzReq.readyState !== XMLHttpRequest.DONE)
+                return;
             if (tzReq.status === 200) {
-                var meta = JSON.parse(tzReq.responseText)
-                if (meta.timezone && meta.timezone.length > 0)
-                    cfg_timezone = meta.timezone
+                var meta = JSON.parse(tzReq.responseText);
+                if (meta.timezone && meta.timezone.length > 0) {
+                    cfg_timezone = meta.timezone;
+                    Plasmoid.configuration.timezone = cfg_timezone;
+                }
             }
-        }
-        tzReq.send()
+        };
+        tzReq.send();
 
         // Verify the new location is available on the current provider
-        verifyProviderLocation(lat, lon)
+        verifyProviderLocation(lat, lon);
 
         // Prepare save prompt — dialog shown when user navigates back
         var entry = {
             name: cfg_locationName,
-            lat:  cfg_latitude,
-            lon:  cfg_longitude,
-            altitude:    cfg_altitude || 0,
-            timezone:    cfg_timezone || "",
+            lat: cfg_latitude,
+            lon: cfg_longitude,
+            altitude: cfg_altitude || 0,
+            timezone: cfg_timezone || "",
             countryCode: cfg_countryCode || ""
         };
         // Check if already in saved locations
         var existing;
         try {
             existing = JSON.parse(cfg_savedLocations || "[]");
-            if (!Array.isArray(existing)) existing = [];
-        } catch (e) { existing = []; }
+            if (!Array.isArray(existing))
+                existing = [];
+        } catch (e) {
+            existing = [];
+        }
         var isDup = false;
         for (var k = 0; k < existing.length; k++) {
-            if (Math.abs(existing[k].lat - entry.lat) < 0.01
-                && Math.abs(existing[k].lon - entry.lon) < 0.01) {
+            if (Math.abs(existing[k].lat - entry.lat) < 0.01 && Math.abs(existing[k].lon - entry.lon) < 0.01) {
                 isDup = true;
                 break;
             }
         }
         _pendingSaveEntry = isDup ? null : entry;
+
+        // Apply immediately — no KCM Apply needed
+        _immediateApplyAndOffer();
     }
 
     onCfg_autoDetectLocationChanged: {
-        if (cfg_autoDetectLocation) refreshAutoDetectedLocation()
+        if (cfg_autoDetectLocation)
+            refreshAutoDetectedLocation();
         else {
-            autoDetectBusy = false; autoDetectStatus = ""
-            cfgGeoclue2Source.active = false
-            cfgGenericSource.active = false
-            _cfgLocationTier = 0
+            autoDetectBusy = false;
+            autoDetectStatus = "";
+            cfgGeoclue2Source.active = false;
+            cfgGenericSource.active = false;
+            _cfgLocationTier = 0;
         }
     }
 
@@ -658,105 +790,162 @@ KCM.SimpleKCM {
         id: detectedLocationDialog
         title: i18n("Confirm your location")
         standardButtons: Kirigami.Dialog.NoButton
-        leftPadding: Kirigami.Units.gridUnit * 2; rightPadding: Kirigami.Units.gridUnit * 2
-        topPadding: Kirigami.Units.gridUnit;      bottomPadding: Kirigami.Units.gridUnit
-        onClosed: { root.showDetectedLocationDialog = false; root._forceConfirmAutoDetect = false }
+        leftPadding: Kirigami.Units.gridUnit * 2
+        rightPadding: Kirigami.Units.gridUnit * 2
+        topPadding: Kirigami.Units.gridUnit
+        bottomPadding: Kirigami.Units.gridUnit
+        onClosed: {
+            root.showDetectedLocationDialog = false;
+            root._forceConfirmAutoDetect = false;
+        }
         contentItem: Item {
-            implicitWidth: 420; implicitHeight: contentCol.implicitHeight 
+            implicitWidth: 420
+            implicitHeight: contentCol.implicitHeight
             ColumnLayout {
                 id: contentCol
-                anchors.left: parent.left; anchors.right: parent.right
+                anchors.left: parent.left
+                anchors.right: parent.right
                 spacing: Kirigami.Units.largeSpacing
                 Kirigami.Icon {
-                    Layout.alignment: Qt.AlignHCenter; source: "mark-location"
+                    Layout.alignment: Qt.AlignHCenter
+                    source: "mark-location"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.huge
                     Layout.preferredHeight: Kirigami.Units.iconSizes.huge
                 }
                 Label {
-                    Layout.fillWidth: true; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter; textFormat: Text.RichText
-                    text: root.detectedLocationName && root.detectedLocationName.length > 0
-                          ? (i18n("We detected your location as: <b>%1</b>.").arg(root.detectedLocationName))
-                          : i18n("We detected your coordinates: <b>%1°, %2°</b>.").arg(
-                                root.detectedLatitude.toFixed(4)).arg(root.detectedLongitude.toFixed(4))
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    textFormat: Text.RichText
+                    text: root.detectedLocationName && root.detectedLocationName.length > 0 ? i18n("We detected your location as: <b>%1</b>.", root.detectedLocationName) : i18n("We detected your coordinates: <b>%1°, %2°</b>.", root.detectedLatitude.toFixed(4), root.detectedLongitude.toFixed(4))
                 }
                 Label {
-                    Layout.fillWidth: true; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter; opacity: 0.75
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    opacity: 0.75
                     text: i18n("If this looks correct, apply it. Otherwise, choose your location manually.")
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-                RowLayout {
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.largeSpacing
+                }
+                ColumnLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Kirigami.Units.mediumSpacing
-                    Button { text: i18n("Set manually"); icon.name: "edit-find"; onClicked: root.chooseManualLocation() }
                     Button {
-                        text: i18n("Apply detected location"); icon.name: "dialog-ok-apply"
+                        Layout.alignment: Qt.AlignHCenter
+                        text: i18n("Apply detected location")
+                        icon.name: "dialog-ok-apply"
                         enabled: root.detectedLatitude !== 0.0 || root.detectedLongitude !== 0.0
                         onClicked: root.applyDetectedLocation()
                     }
+                    RowLayout {
+                        Layout.alignment: Qt.AlignHCenter
+                        spacing: Kirigami.Units.mediumSpacing
+                        Button {
+                            text: i18n("Set manually")
+                            icon.name: "edit-find"
+                            onClicked: root.chooseManualLocation()
+                        }
+                        Button {
+                            text: i18n("Choose on map")
+                            icon.name: "map-flat"
+                            onClicked: {
+                                root.showDetectedLocationDialog = false;
+                                root._forceConfirmAutoDetect = false;
+                                root.cfg_autoDetectLocation = false;
+                                root.openMapPage();
+                            }
+                        }
+                    }
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.smallSpacing
+                }
             }
         }
     }
 
     onShowDetectedLocationDialogChanged: {
-        if (showDetectedLocationDialog) detectedLocationDialog.open()
-        else detectedLocationDialog.close()
+        if (showDetectedLocationDialog)
+            detectedLocationDialog.open();
+        else
+            detectedLocationDialog.close();
     }
+
+    // The save dialog is now opened directly by _immediateApplyAndOffer()
+    // and applyDetectedLocation() — no Connections trigger needed.
 
     Kirigami.Dialog {
         id: saveLocationDialog
         title: i18n("Save location")
         standardButtons: Kirigami.Dialog.NoButton
-        leftPadding: Kirigami.Units.gridUnit * 2; rightPadding: Kirigami.Units.gridUnit * 2
-        topPadding: Kirigami.Units.gridUnit;      bottomPadding: Kirigami.Units.gridUnit
+        leftPadding: Kirigami.Units.gridUnit * 2
+        rightPadding: Kirigami.Units.gridUnit * 2
+        topPadding: Kirigami.Units.gridUnit
+        bottomPadding: Kirigami.Units.gridUnit
         onClosed: root._pendingSaveEntry = null
         contentItem: Item {
-            implicitWidth: 380; implicitHeight: saveDlgCol.implicitHeight
+            implicitWidth: 380
+            implicitHeight: saveDlgCol.implicitHeight
             ColumnLayout {
                 id: saveDlgCol
-                anchors.left: parent.left; anchors.right: parent.right
+                anchors.left: parent.left
+                anchors.right: parent.right
                 spacing: Kirigami.Units.largeSpacing
                 Kirigami.Icon {
-                    Layout.alignment: Qt.AlignHCenter; source: "bookmark-new"
+                    Layout.alignment: Qt.AlignHCenter
+                    source: "bookmark-new"
                     Layout.preferredWidth: Kirigami.Units.iconSizes.huge
                     Layout.preferredHeight: Kirigami.Units.iconSizes.huge
                 }
                 Label {
-                    Layout.fillWidth: true; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
                     textFormat: Text.RichText
-                    text: root._pendingSaveEntry
-                          ? i18n("Save <b>%1</b> to your saved locations?", root._pendingSaveEntry.name || i18n("this location"))
-                          : ""
+                    text: root._pendingSaveEntry ? i18n("Save <b>%1</b> to your saved locations?", root._pendingSaveEntry.name || i18n("this location")) : ""
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.largeSpacing
+                }
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Kirigami.Units.mediumSpacing
                     Button {
                         text: i18n("No, thanks")
                         icon.name: "dialog-cancel"
-                        onClicked: { root._pendingSaveEntry = null; saveLocationDialog.close() }
+                        onClicked: {
+                            root._pendingSaveEntry = null;
+                            saveLocationDialog.close();
+                        }
                     }
                     Button {
                         text: i18n("Save")
                         icon.name: "bookmark-new"
+                        enabled: root._pendingSaveEntry !== null
                         onClicked: {
                             if (root._pendingSaveEntry) {
                                 var locs;
                                 try {
                                     locs = JSON.parse(root.cfg_savedLocations || "[]");
-                                    if (!Array.isArray(locs)) locs = [];
-                                } catch (e) { locs = []; }
+                                    if (!Array.isArray(locs))
+                                        locs = [];
+                                } catch (e) {
+                                    locs = [];
+                                }
                                 locs.push(root._pendingSaveEntry);
                                 root.cfg_savedLocations = JSON.stringify(locs);
+                                Plasmoid.configuration.savedLocations = root.cfg_savedLocations;
                             }
                             root._pendingSaveEntry = null;
                             saveLocationDialog.close();
                         }
                     }
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.smallSpacing
+                }
             }
         }
     }
@@ -766,10 +955,6 @@ KCM.SimpleKCM {
         id: stack
         anchors.fill: parent
         initialItem: mainPage
-        onDepthChanged: {
-            if (depth === 1 && root._pendingSaveEntry)
-                saveLocationDialog.open()
-        }
     }
 
     Component {
@@ -784,298 +969,365 @@ KCM.SimpleKCM {
                     width: mainScrollView.availableWidth
                     spacing: 10
 
-                ButtonGroup { id: locationModeGroup }
-
-                // ── Auto-detect radio ──────────────────────────────────
-                ColumnLayout {
-                    Layout.fillWidth: true; spacing: 4
-
-                    RadioButton {
-                        text: i18n("Automatically detect location")
-                        checked: root.cfg_autoDetectLocation
-                        ButtonGroup.group: locationModeGroup
-                        onClicked: { root._forceConfirmAutoDetect = true; root.cfg_autoDetectLocation = true }
+                    ButtonGroup {
+                        id: locationModeGroup
                     }
-                    RowLayout {
-                        Layout.fillWidth: true; Layout.leftMargin: 24; spacing: 8
-                        Label {
-                            Layout.fillWidth: true; wrapMode: Text.WordWrap; opacity: 0.78
-                            text: root.autoDetectBusy ? i18n("Detecting…")
-                                  : (root.autoDetectStatus.length > 0 ? root.autoDetectStatus
-                                  : i18n("Location detection is depending on system configuration and permissions."))
+
+                    // ── Auto-detect radio ──────────────────────────────────
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 4
+
+                        RadioButton {
+                            text: i18n("Automatically detect location")
+                            checked: root.cfg_autoDetectLocation
+                            ButtonGroup.group: locationModeGroup
+                            onClicked: {
+                                root._forceConfirmAutoDetect = true;
+                                root.cfg_autoDetectLocation = true;
+                            }
                         }
-                        Button {
-                            text: i18n("Refresh"); visible: root.cfg_autoDetectLocation
-                            enabled: root.cfg_autoDetectLocation && !root.autoDetectBusy
-                            onClicked: { root._forceConfirmAutoDetect = true; root.refreshAutoDetectedLocation() }
-                        }
-                    }
-
-                    // ── Manual radio with inline Change Location button ─
-                    Item { Layout.preferredHeight: 4 }
-                    RadioButton {
-                        text: i18n("Use manual location")
-                        checked: !root.cfg_autoDetectLocation
-                        ButtonGroup.group: locationModeGroup
-                        onClicked: root.cfg_autoDetectLocation = false
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true; Layout.leftMargin: 24; spacing: 8
-                        visible: !root.cfg_autoDetectLocation
-                        Label {
-                            Layout.fillWidth: true; wrapMode: Text.WordWrap; opacity: 0.78
-                            text: i18n("Click \'Change Location\' to search and set your location manually.")
-                        }
-                        Button {
-                            text: i18n("Change Location")
-                            enabled: !root.cfg_autoDetectLocation
-                            onClicked: root.openSearchPage()
-                        }
-                    }
-                }
-
-                // ── Saved Locations section header ──────────────────────
-                Item { Layout.preferredHeight: 4 }
-                RowLayout {
-                    Layout.fillWidth: true; spacing: 8
-                    Kirigami.Heading {
-                        text: i18n("Saved locations")
-                        level: 4
-                    }
-                    Rectangle {
-                        Layout.fillWidth: true; height: 1
-                        color: Kirigami.Theme.separatorColor
-                        opacity: 0.6
-                    }
-                }
-
-                Label {
-                    Layout.fillWidth: true; wrapMode: Text.WordWrap; opacity: 0.7
-                    visible: savedLocRepeater.count === 0
-                    text: i18n("No saved locations. Save the current location to quickly switch between places.")
-                }
-
-                ColumnLayout {
-                    Layout.fillWidth: true; spacing: 2
-
-                    Repeater {
-                        id: savedLocRepeater
-                        model: {
-                            try {
-                                var locs = JSON.parse(root.cfg_savedLocations || "[]");
-                                return Array.isArray(locs) ? locs : [];
-                            } catch (e) { return []; }
-                        }
-                        delegate: Rectangle {
-                            required property var modelData
-                            required property int index
+                        RowLayout {
                             Layout.fillWidth: true
-                            implicitHeight: savedLocRow.implicitHeight + 12
-                            radius: 4
-                            color: savedLocMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
-
-                            MouseArea {
-                                id: savedLocMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
+                            Layout.leftMargin: 24
+                            spacing: 8
+                            Label {
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                opacity: 0.78
+                                text: root.autoDetectBusy ? i18n("Detecting…") : (root.autoDetectStatus.length > 0 ? root.autoDetectStatus : i18n("Location detection is depending on system configuration and permissions."))
+                            }
+                            Button {
+                                text: i18n("Refresh")
+                                visible: root.cfg_autoDetectLocation
+                                enabled: root.cfg_autoDetectLocation && !root.autoDetectBusy
                                 onClicked: {
-                                    root.cfg_autoDetectLocation = false;
-                                    root.cfg_locationName = modelData.name || "";
-                                    root.cfg_latitude = modelData.lat || 0;
-                                    root.cfg_longitude = modelData.lon || 0;
-                                    if (modelData.altitude !== undefined)
-                                        root.cfg_altitude = modelData.altitude;
-                                    if (modelData.timezone)
-                                        root.cfg_timezone = modelData.timezone;
-                                    if (modelData.countryCode)
-                                        root.cfg_countryCode = modelData.countryCode;
-                                    root.verifyProviderLocation(modelData.lat || 0, modelData.lon || 0);
+                                    root._forceConfirmAutoDetect = true;
+                                    root.refreshAutoDetectedLocation();
                                 }
                             }
+                        }
 
-                            RowLayout {
-                                id: savedLocRow
-                                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: 6 }
-                                spacing: 8
+                        // ── Manual radio with inline Change Location button ─
+                        Item {
+                            Layout.preferredHeight: 4
+                        }
+                        RadioButton {
+                            text: i18n("Use manual location")
+                            checked: !root.cfg_autoDetectLocation
+                            ButtonGroup.group: locationModeGroup
+                            onClicked: root.cfg_autoDetectLocation = false
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: 24
+                            spacing: 8
+                            visible: !root.cfg_autoDetectLocation
+                            Label {
+                                Layout.fillWidth: true
+                                wrapMode: Text.WordWrap
+                                opacity: 0.78
+                                text: i18n("Search for a location or choose it on the map.")
+                            }
+                            Button {
+                                text: i18n("Search Location")
+                                icon.name: "edit-find"
+                                enabled: !root.cfg_autoDetectLocation
+                                onClicked: root.openSearchPage()
+                            }
+                            Button {
+                                text: i18n("Choose on Map")
+                                icon.name: "map-flat"
+                                enabled: !root.cfg_autoDetectLocation
+                                onClicked: root.openMapPage()
+                            }
+                        }
+                    }
 
-                                Kirigami.Icon {
-                                    source: "mark-location"
-                                    Layout.preferredWidth: Kirigami.Units.iconSizes.small
-                                    Layout.preferredHeight: Kirigami.Units.iconSizes.small
-                                }
+                    // ── Saved Locations section header ──────────────────────
+                    Item {
+                        Layout.preferredHeight: 4
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Kirigami.Heading {
+                            text: i18n("Saved locations")
+                            level: 4
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Kirigami.Theme.separatorColor
+                            opacity: 0.6
+                        }
+                    }
 
-                                ColumnLayout {
-                                    Layout.fillWidth: true; spacing: 0
-                                    Label {
-                                        Layout.fillWidth: true
-                                        text: modelData.name || i18n("Unknown")
-                                        elide: Text.ElideRight
-                                        font.bold: Math.abs(root.cfg_latitude - (modelData.lat || 0)) < 0.01
-                                                   && Math.abs(root.cfg_longitude - (modelData.lon || 0)) < 0.01
-                                    }
-                                    Label {
-                                        Layout.fillWidth: true
-                                        text: (modelData.lat || 0).toFixed(4) + "°, " + (modelData.lon || 0).toFixed(4) + "°"
-                                        opacity: 0.6; font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                    }
-                                }
+                    Label {
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        opacity: 0.7
+                        visible: savedLocRepeater.count === 0
+                        text: i18n("No saved locations. Save the current location to quickly switch between places.")
+                    }
 
-                                ToolButton {
-                                    icon.name: "arrow-up"
-                                    display: AbstractButton.IconOnly
-                                    enabled: index > 0
-                                    opacity: enabled ? 1.0 : 0.3
-                                    ToolTip.visible: hovered
-                                    ToolTip.text: i18n("Move up")
-                                    onClicked: root._moveLocation(index, index - 1)
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        Repeater {
+                            id: savedLocRepeater
+                            model: {
+                                try {
+                                    var locs = JSON.parse(root.cfg_savedLocations || "[]");
+                                    return Array.isArray(locs) ? locs : [];
+                                } catch (e) {
+                                    return [];
                                 }
-                                ToolButton {
-                                    icon.name: "arrow-down"
-                                    display: AbstractButton.IconOnly
-                                    enabled: index < savedLocRepeater.count - 1
-                                    opacity: enabled ? 1.0 : 0.3
-                                    ToolTip.visible: hovered
-                                    ToolTip.text: i18n("Move down")
-                                    onClicked: root._moveLocation(index, index + 1)
-                                }
-                                ToolButton {
-                                    icon.name: "edit-delete"
-                                    display: AbstractButton.IconOnly
-                                    ToolTip.visible: hovered
-                                    ToolTip.text: i18n("Remove saved location")
+                            }
+                            delegate: Rectangle {
+                                required property var modelData
+                                required property int index
+                                Layout.fillWidth: true
+                                implicitHeight: savedLocRow.implicitHeight + 12
+                                radius: 4
+                                color: savedLocMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+
+                                MouseArea {
+                                    id: savedLocMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        var locs;
-                                        try {
-                                            locs = JSON.parse(root.cfg_savedLocations || "[]");
-                                            if (!Array.isArray(locs)) locs = [];
-                                        } catch (e) { locs = []; }
-                                        locs.splice(index, 1);
-                                        root.cfg_savedLocations = JSON.stringify(locs);
+                                        root.cfg_autoDetectLocation = false;
+                                        root.cfg_locationName = modelData.name || "";
+                                        root.cfg_latitude = modelData.lat || 0;
+                                        root.cfg_longitude = modelData.lon || 0;
+                                        if (modelData.altitude !== undefined)
+                                            root.cfg_altitude = modelData.altitude;
+                                        if (modelData.timezone)
+                                            root.cfg_timezone = modelData.timezone;
+                                        if (modelData.countryCode)
+                                            root.cfg_countryCode = modelData.countryCode;
+                                        root.verifyProviderLocation(modelData.lat || 0, modelData.lon || 0);
+                                    }
+                                }
+
+                                RowLayout {
+                                    id: savedLocRow
+                                    anchors {
+                                        left: parent.left
+                                        right: parent.right
+                                        verticalCenter: parent.verticalCenter
+                                        margins: 6
+                                    }
+                                    spacing: 8
+
+                                    Kirigami.Icon {
+                                        source: "mark-location"
+                                        Layout.preferredWidth: Kirigami.Units.iconSizes.small
+                                        Layout.preferredHeight: Kirigami.Units.iconSizes.small
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 0
+                                        Label {
+                                            Layout.fillWidth: true
+                                            text: modelData.name || i18n("Unknown")
+                                            elide: Text.ElideRight
+                                            font.bold: Math.abs(root.cfg_latitude - (modelData.lat || 0)) < 0.01 && Math.abs(root.cfg_longitude - (modelData.lon || 0)) < 0.01
+                                        }
+                                        Label {
+                                            Layout.fillWidth: true
+                                            text: (modelData.lat || 0).toFixed(4) + "°, " + (modelData.lon || 0).toFixed(4) + "°"
+                                            opacity: 0.6
+                                            font.pointSize: Kirigami.Theme.smallFont.pointSize
+                                        }
+                                    }
+
+                                    ToolButton {
+                                        icon.name: "arrow-up"
+                                        display: AbstractButton.IconOnly
+                                        enabled: index > 0
+                                        opacity: enabled ? 1.0 : 0.3
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: i18n("Move up")
+                                        onClicked: root._moveLocation(index, index - 1)
+                                    }
+                                    ToolButton {
+                                        icon.name: "arrow-down"
+                                        display: AbstractButton.IconOnly
+                                        enabled: index < savedLocRepeater.count - 1
+                                        opacity: enabled ? 1.0 : 0.3
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: i18n("Move down")
+                                        onClicked: root._moveLocation(index, index + 1)
+                                    }
+                                    ToolButton {
+                                        icon.name: "edit-delete"
+                                        display: AbstractButton.IconOnly
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: i18n("Remove saved location")
+                                        onClicked: {
+                                            var locs;
+                                            try {
+                                                locs = JSON.parse(root.cfg_savedLocations || "[]");
+                                                if (!Array.isArray(locs))
+                                                    locs = [];
+                                            } catch (e) {
+                                                locs = [];
+                                            }
+                                            locs.splice(index, 1);
+                                            root.cfg_savedLocations = JSON.stringify(locs);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-
-
-                // ── Location information section header ─────────────────
-                Item { Layout.preferredHeight: 4 }
-                RowLayout {
-                    Layout.fillWidth: true; spacing: 8
-                    Kirigami.Heading {
-                        text: i18n("Location information")
-                        level: 4
+                    // ── Location information section header ─────────────────
+                    Item {
+                        Layout.preferredHeight: 4
                     }
-                    Rectangle {
-                        Layout.fillWidth: true; height: 1
-                        color: Kirigami.Theme.separatorColor
-                        opacity: 0.6
-                    }
-                }
-
-                // ── Location fields (read-only display) ─────────────────
-                GridLayout {
-                    Layout.fillWidth: true
-                    columns: 2; columnSpacing: 10; rowSpacing: 8
-
-                    Label { text: i18n("Location name:") }
-                    TextField {
+                    RowLayout {
                         Layout.fillWidth: true
-                        id: locationNameField
-                        text: root.cfg_locationName
-                        readOnly: true
-                        background: Rectangle {
-                            color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                            border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                            border.width: 1; radius: 4
+                        spacing: 8
+                        Kirigami.Heading {
+                            text: i18n("Location information")
+                            level: 4
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Kirigami.Theme.separatorColor
+                            opacity: 0.6
                         }
                     }
 
-                    Label { text: i18n("Latitude:") }
-                    TextField {
+                    // ── Location fields (read-only display) ─────────────────
+                    GridLayout {
                         Layout.fillWidth: true
-                        id: latField
-                        text: {
-                            var v = root.cfg_latitude
-                            if (v === 0.0) return "0°"
-                            return v.toFixed(7).replace(/\.?0+$/, "") + "°"
+                        columns: 2
+                        columnSpacing: 10
+                        rowSpacing: 8
+
+                        Label {
+                            text: i18n("Location name:")
                         }
-                        readOnly: true
-                        background: Rectangle {
-                            color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                            border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                            border.width: 1; radius: 4
+                        TextField {
+                            id: locationNameField
+                            Layout.fillWidth: true
+                            text: root.cfg_locationName
+                            readOnly: true
+                            background: Rectangle {
+                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
+                                border.width: 1
+                                radius: 4
+                            }
+                        }
+
+                        Label {
+                            text: i18n("Latitude:")
+                        }
+                        TextField {
+                            id: latField
+                            Layout.fillWidth: true
+                            text: {
+                                var v = root.cfg_latitude;
+                                if (v === 0.0)
+                                    return "0°";
+                                return v.toFixed(7).replace(/\.?0+$/, "") + "°";
+                            }
+                            readOnly: true
+                            background: Rectangle {
+                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
+                                border.width: 1
+                                radius: 4
+                            }
+                        }
+
+                        Label {
+                            text: i18n("Longitude:")
+                        }
+                        TextField {
+                            id: lonField
+                            Layout.fillWidth: true
+                            text: {
+                                var v = root.cfg_longitude;
+                                if (v === 0.0)
+                                    return "0°";
+                                return v.toFixed(7).replace(/\.?0+$/, "") + "°";
+                            }
+                            readOnly: true
+                            background: Rectangle {
+                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
+                                border.width: 1
+                                radius: 4
+                            }
+                        }
+
+                        Label {
+                            text: i18n("Altitude:")
+                        }
+                        TextField {
+                            id: altField
+                            Layout.fillWidth: true
+                            text: root.cfg_altitude + " m"
+                            readOnly: true
+                            background: Rectangle {
+                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
+                                border.width: 1
+                                radius: 4
+                            }
+                        }
+
+                        Label {
+                            text: i18n("Timezone:")
+                        }
+                        TextField {
+                            id: timezoneField
+                            Layout.fillWidth: true
+                            text: {
+                                var tz = root.cfg_timezone;
+                                if (!tz || tz.length === 0)
+                                    return "";
+                                var offset = root.gmtOffsetLabel(tz);
+                                return offset.length > 0 ? tz + " " + offset : tz;
+                            }
+                            readOnly: true
+                            background: Rectangle {
+                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
+                                border.width: 1
+                                radius: 4
+                            }
                         }
                     }
 
-                    Label { text: i18n("Longitude:") }
-                    TextField {
+                    Kirigami.InlineMessage {
                         Layout.fillWidth: true
-                        id: lonField
-                        text: {
-                            var v = root.cfg_longitude
-                            if (v === 0.0) return "0°"
-                            return v.toFixed(7).replace(/\.?0+$/, "") + "°"
-                        }
-                        readOnly: true
-                        background: Rectangle {
-                            color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                            border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                            border.width: 1; radius: 4
-                        }
+                        visible: root.locationCheckState === 2
+                        type: Kirigami.MessageType.Positive
+                        text: root.locationCheckMessage
                     }
 
-                    Label { text: i18n("Altitude:") }
-                    TextField {
+                    Kirigami.InlineMessage {
                         Layout.fillWidth: true
-                        id: altField
-                        text: root.cfg_altitude + " m"
-                        readOnly: true
-                        background: Rectangle {
-                            color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                            border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                            border.width: 1; radius: 4
-                        }
+                        visible: root.locationCheckState === 3
+                        type: Kirigami.MessageType.Error
+                        text: root.locationCheckMessage
                     }
 
-                    Label { text: i18n("Timezone:") }
-                    TextField {
-                        Layout.fillWidth: true
-                        id: timezoneField
-                        text: {
-                            var tz = root.cfg_timezone
-                            if (!tz || tz.length === 0) return ""
-                            var offset = root.gmtOffsetLabel(tz)
-                            return offset.length > 0 ? tz + " " + offset : tz
-                        }
-                        readOnly: true
-                        background: Rectangle {
-                            color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                            border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                            border.width: 1; radius: 4
-                        }
+                    Item {
+                        Layout.preferredHeight: Kirigami.Units.largeSpacing
                     }
-                }
-
-                Kirigami.InlineMessage {
-                    Layout.fillWidth: true
-                    visible: root.locationCheckState === 2
-                    type: Kirigami.MessageType.Positive
-                    text: root.locationCheckMessage
-                }
-
-                Kirigami.InlineMessage {
-                    Layout.fillWidth: true
-                    visible: root.locationCheckState === 3
-                    type: Kirigami.MessageType.Error
-                    text: root.locationCheckMessage
-                }
-
-                Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-            } // ColumnLayout
+                } // ColumnLayout
             } // ScrollView
         }
     }
@@ -1083,6 +1335,13 @@ KCM.SimpleKCM {
     Component {
         id: searchSubPage
         ConfigLocationSubPage {
+            configRoot: root
+        }
+    }
+
+    Component {
+        id: mapSubPage
+        ConfigMapSubPage {
             configRoot: root
         }
     }

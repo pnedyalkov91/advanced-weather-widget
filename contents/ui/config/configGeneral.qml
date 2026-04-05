@@ -34,6 +34,7 @@ KCM.SimpleKCM {
     property string cfg_tioApiKey: ""
     property string cfg_sgApiKey: ""
     property string cfg_wbApiKey: ""
+    property string cfg_qwApiKey: ""
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
@@ -52,7 +53,8 @@ KCM.SimpleKCM {
     readonly property bool isTomorrowIo: cfg_weatherProvider === "tomorrowIo"
     readonly property bool isStormGlass: cfg_weatherProvider === "stormGlass"
     readonly property bool isWeatherbit: cfg_weatherProvider === "weatherbit"
-    readonly property bool needsKeyUi: isOpenWeather || isWeatherApi || isPirateWeather || isVisualCrossing || isTomorrowIo || isStormGlass || isWeatherbit
+    readonly property bool isQWeather: cfg_weatherProvider === "qWeather"
+    readonly property bool needsKeyUi: isOpenWeather || isWeatherApi || isPirateWeather || isVisualCrossing || isTomorrowIo || isStormGlass || isWeatherbit || isQWeather
 
     // ── API key test state ────────────────────────────────────────────────
     // 0 = idle, 1 = testing, 2 = success, 3 = error
@@ -130,6 +132,12 @@ KCM.SimpleKCM {
         } else if (provider === "metno") {
             url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat="
                 + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+        } else if (provider === "qWeather") {
+            var qwKey = (cfg_qwApiKey || "").trim();
+            if (!qwKey) { locationCheckState = 0; return; }
+            var qwLoc = encodeURIComponent(lon.toFixed(2) + "," + lat.toFixed(2));
+            url = "https://devapi.qweather.com/v7/weather/now?location=" + qwLoc
+                + "&key=" + encodeURIComponent(qwKey) + "&unit=m";
         } else {
             locationCheckState = 0;
             return;
@@ -165,6 +173,7 @@ KCM.SimpleKCM {
         if (p === "tomorrowIo") return "Tomorrow.io";
         if (p === "stormGlass") return "StormGlass";
         if (p === "weatherbit") return "Weatherbit";
+        if (p === "qWeather") return "QWeather";
         return "Open-Meteo";
     }
 
@@ -202,6 +211,9 @@ KCM.SimpleKCM {
         } else if (root.isWeatherbit) {
             url = "https://api.weatherbit.io/v2.0/current?lat=42.7&lon=23.3&key="
                 + encodeURIComponent(key) + "&units=M";
+        } else if (root.isQWeather) {
+            url = "https://devapi.qweather.com/v7/weather/now?location=23.30,42.70&key="
+                + encodeURIComponent(key) + "&unit=m";
         } else {
             url = "https://api.weatherapi.com/v1/current.json?key="
                 + encodeURIComponent(key) + "&q=42.7,23.3";
@@ -213,6 +225,21 @@ KCM.SimpleKCM {
                 return;
             if (_testGen !== myGen) return;
             if (req.status === 200) {
+                // QWeather returns HTTP 200 even on auth failure — check body code
+                if (root.isQWeather) {
+                    try {
+                        var qwBody = JSON.parse(req.responseText);
+                        if (qwBody.code !== "200") {
+                            apiTestState = 3;
+                            apiTestMessage = i18n("QWeather error (code %1). Check your API key.", qwBody.code);
+                            return;
+                        }
+                    } catch (e) {
+                        apiTestState = 3;
+                        apiTestMessage = i18n("Invalid response from QWeather.");
+                        return;
+                    }
+                }
                 apiTestState = 2;
                 var pLabel = root.providerDisplayName(root.cfg_weatherProvider);
                 apiTestMessage = i18n("Connection successful! %1 key is valid.", pLabel);
@@ -265,6 +292,10 @@ KCM.SimpleKCM {
         {
             text: i18n("Weatherbit (Key Required)"),
             value: "weatherbit"
+        },
+        {
+            text: i18n("QWeather (Key Required)"),
+            value: "qWeather"
         }
     ]
 
@@ -343,7 +374,7 @@ KCM.SimpleKCM {
                     Layout.topMargin: 4
                     visible: root.isAdaptive
                     type: Kirigami.MessageType.Information
-                    text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first — it is free and requires no API key.")
+                    text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first — it is free and requires no API key.")
                 }
 
                 Item {
@@ -397,6 +428,8 @@ KCM.SimpleKCM {
                                 return i18n("Marine and weather data provider. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://stormglass.io'>stormglass.io</a>";
                             if (root.isWeatherbit)
                                 return i18n("High precision forecast provider. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.weatherbit.io'>weatherbit.io</a>";
+                            if (root.isQWeather)
+                                return i18n("Chinese weather provider with global coverage. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.qweather.com'>qweather.com</a>";
                             if (root.cfg_weatherProvider === "metno")
                                 return i18n("Free Norwegian Meteorological Institute service. No API key needed.") + "<br/>" + i18n("Provider website:") + " <a href='https://met.no'>met.no</a>";
                             return i18n("Free and open-source. No API key needed. Recommended.") + "<br/>" + i18n("Provider website:") + " <a href='https://open-meteo.com'>open-meteo.com</a>";
@@ -437,6 +470,7 @@ KCM.SimpleKCM {
                             if (root.isTomorrowIo) return i18n("Tomorrow.io API Key:");
                             if (root.isStormGlass) return i18n("StormGlass API Key:");
                             if (root.isWeatherbit) return i18n("Weatherbit API Key:");
+                            if (root.isQWeather) return i18n("QWeather API Key:");
                             return i18n("WeatherAPI.com API Key:");
                         }
                         font.bold: true
@@ -456,6 +490,7 @@ KCM.SimpleKCM {
                                 if (root.isTomorrowIo) return i18n("Enter your Tomorrow.io API key");
                                 if (root.isStormGlass) return i18n("Enter your StormGlass API key");
                                 if (root.isWeatherbit) return i18n("Enter your Weatherbit API key");
+                                if (root.isQWeather) return i18n("Enter your QWeather API key");
                                 return i18n("Enter your WeatherAPI.com key");
                             }
                             text: {
@@ -465,6 +500,7 @@ KCM.SimpleKCM {
                                 if (root.isTomorrowIo) return root.cfg_tioApiKey;
                                 if (root.isStormGlass) return root.cfg_sgApiKey;
                                 if (root.isWeatherbit) return root.cfg_wbApiKey;
+                                if (root.isQWeather) return root.cfg_qwApiKey;
                                 return root.cfg_waApiKey;
                             }
                             echoMode: TextInput.Password
@@ -477,6 +513,7 @@ KCM.SimpleKCM {
                                 else if (root.isTomorrowIo) root.cfg_tioApiKey = text;
                                 else if (root.isStormGlass) root.cfg_sgApiKey = text;
                                 else if (root.isWeatherbit) root.cfg_wbApiKey = text;
+                                else if (root.isQWeather) root.cfg_qwApiKey = text;
                                 else root.cfg_waApiKey = text;
                             }
                             onEditingFinished: {
@@ -486,6 +523,7 @@ KCM.SimpleKCM {
                                 else if (root.isTomorrowIo) root.cfg_tioApiKey = text.trim();
                                 else if (root.isStormGlass) root.cfg_sgApiKey = text.trim();
                                 else if (root.isWeatherbit) root.cfg_wbApiKey = text.trim();
+                                else if (root.isQWeather) root.cfg_qwApiKey = text.trim();
                                 else root.cfg_waApiKey = text.trim();
                             }
                         }
@@ -511,6 +549,7 @@ KCM.SimpleKCM {
                                 else if (root.isTomorrowIo) root.cfg_tioApiKey = "";
                                 else if (root.isStormGlass) root.cfg_sgApiKey = "";
                                 else if (root.isWeatherbit) root.cfg_wbApiKey = "";
+                                else if (root.isQWeather) root.cfg_qwApiKey = "";
                                 else root.cfg_waApiKey = "";
                             }
                         }

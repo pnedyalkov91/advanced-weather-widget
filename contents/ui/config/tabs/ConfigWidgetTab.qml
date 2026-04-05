@@ -126,6 +126,29 @@ ColumnLayout {
                     onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
                 }
             }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Visible tabs:")
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: visibleTabsCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    model: [
+                        { text: i18n("Both"),          value: "both"     },
+                        { text: i18n("Details only"),  value: "details"  },
+                        { text: i18n("Forecast only"), value: "forecast" },
+                        { text: i18n("None"),          value: "none"    }
+                    ]
+                    Component.onCompleted: {
+                        var v = widgetTab.configRoot.cfg_widgetVisibleTabs || "both";
+                        if (v === "details") currentIndex = 1;
+                        else if (v === "forecast") currentIndex = 2;
+                        else if (v === "none") currentIndex = 3;
+                        else currentIndex = 0;
+                    }
+                    onActivated: widgetTab.configRoot.cfg_widgetVisibleTabs = model[currentIndex].value
+                }
+            }
             CheckBox {
                 Kirigami.FormData.label: i18n("Footer:")
                 text: i18n("Show update time and provider")

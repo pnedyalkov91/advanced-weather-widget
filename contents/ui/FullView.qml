@@ -25,6 +25,7 @@ import QtQuick.Window          // for Screen
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import org.kde.plasma.components as PlasmaComponents
+import org.kde.plasma.extras as PlasmaExtras
 
 import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
@@ -33,6 +34,7 @@ import "components"
 Rectangle {
     id: fullView
     property var weatherRoot
+    property bool inSystemTray: false
 
     // Layout.preferred* is what Plasma reads to size the panel popup window.
     // width/height are used when the widget sits on the desktop.
@@ -115,14 +117,29 @@ Rectangle {
     // the background on/off with the button that appears in desktop edit mode.
     color: "transparent"
 
+    // Per-tab visibility flags (both visible by default)
+    readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
+    readonly property bool showDetailsTab: visibleTabs === "both" || visibleTabs === "details"
+    readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
+    readonly property bool showAnyTab: showDetailsTab || showForecastTab
+
+    // Resolve the default tab, falling back if the preferred tab is hidden.
+    // Returns 0 for Details, 1 for Forecast.
+    function _resolvedDefaultTab() {
+        var want = Plasmoid.configuration.widgetDefaultTab === "forecast" ? 1 : 0;
+        if (want === 1 && !fullView.showForecastTab) return fullView.showDetailsTab ? 0 : 0;
+        if (want === 0 && !fullView.showDetailsTab) return fullView.showForecastTab ? 1 : 0;
+        return want;
+    }
+
     // Reset to the configured default tab every time the popup opens
-    property int activeTab: Plasmoid.configuration.widgetDefaultTab === "forecast" ? 1 : 0
+    property int activeTab: _resolvedDefaultTab()
 
     Connections {
         target: Plasmoid
         function onExpandedChanged() {
             if (Plasmoid.expanded)
-                fullView.activeTab = Plasmoid.configuration.widgetDefaultTab === "forecast" ? 1 : 0;
+                fullView.activeTab = fullView._resolvedDefaultTab();
         }
     }
 
@@ -174,7 +191,7 @@ Rectangle {
         id: mainContent
         anchors {
             fill: parent
-            topMargin: 14
+            topMargin: fullView.inSystemTray ? 4 : 14
             leftMargin: 16
             rightMargin: 16
             bottomMargin: 8
@@ -316,7 +333,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 26
                 height: 26
-                visible: Plasmoid.formFactor !== 0  // hide on desktop (Planar)
+                visible: !fullView.inSystemTray && Plasmoid.formFactor !== 0  // hide on desktop (Planar) and in tray (Plasma's own pin is in native header)
                 ToolTip.visible: hovered
                 ToolTip.text: checked ? i18n("Unpin widget") : i18n("Keep widget open")
                 onToggled: {
@@ -330,6 +347,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 22
                 height: 22
+                visible: !fullView.inSystemTray
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Detect / change location…")
                 onClicked: if (weatherRoot)
@@ -337,7 +355,7 @@ Rectangle {
             }
 
             Label {
-                visible: weatherRoot && weatherRoot.loading
+                visible: !fullView.inSystemTray && weatherRoot && weatherRoot.loading
                 text: i18n("Updating…")
                 // #2
                 color: Kirigami.Theme.textColor
@@ -352,6 +370,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 26
                 height: 26
+                visible: !fullView.inSystemTray
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Refresh")
                 onClicked: if (weatherRoot)
@@ -465,14 +484,15 @@ Rectangle {
         }
 
         Item {
-            Layout.preferredHeight: 12
+            Layout.preferredHeight: (fullView.showDetailsTab && fullView.showForecastTab) ? 12 : 0
         }
 
-        // ── Tab bar ───────────────────────────────────────────────────
+        // ── Tab bar — only shown when both tabs are enabled ────────────
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
             radius: 17
+            visible: fullView.showDetailsTab && fullView.showForecastTab
             // #2: tab bar background adapts to theme
             color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
@@ -484,14 +504,19 @@ Rectangle {
                 spacing: 0
 
                 Repeater {
-                    model: [i18n("Details"), i18n("Forecast")]
+                    model: {
+                        var tabs = [];
+                        if (fullView.showDetailsTab) tabs.push({ label: i18n("Details"), logicalIdx: 0 });
+                        if (fullView.showForecastTab) tabs.push({ label: i18n("Forecast"), logicalIdx: 1 });
+                        return tabs;
+                    }
                     delegate: Rectangle {
-                        required property string modelData
+                        required property var modelData
                         required property int index
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         radius: 14
-                        readonly property bool isActive: fullView.activeTab === index
+                        readonly property bool isActive: fullView.activeTab === modelData.logicalIdx
                         color: isActive ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.17) : "transparent"
                         Behavior on color {
                             ColorAnimation {
@@ -500,7 +525,7 @@ Rectangle {
                         }
                         Label {
                             anchors.centerIn: parent
-                            text: parent.modelData
+                            text: parent.modelData.label
                             // #2
                             color: Kirigami.Theme.textColor
                             opacity: parent.isActive ? 1.0 : 0.42
@@ -516,7 +541,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: fullView.activeTab = index
+                            onClicked: fullView.activeTab = modelData.logicalIdx
                         }
                     }
                 }
@@ -524,13 +549,14 @@ Rectangle {
         }
 
         Item {
-            Layout.preferredHeight: 10
+            Layout.preferredHeight: (fullView.showDetailsTab && fullView.showForecastTab) ? 10 : 0
         }
 
         // ── Tab content ───────────────────────────────────────────────
         StackLayout {
             id: tabContent
             Layout.fillWidth: true
+            visible: fullView.showAnyTab
             currentIndex: fullView.activeTab
             // Explicitly follow the current child's implicitHeight
             implicitHeight: currentItem ? currentItem.implicitHeight : 0

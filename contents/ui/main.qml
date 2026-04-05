@@ -44,13 +44,51 @@ import "js/iconResolver.js" as IconResolver
 PlasmoidItem {
     id: root
 
-    implicitWidth: 540
-    implicitHeight: 550
-    switchWidth: 200
-    switchHeight: 100
+    // In the system tray, do NOT set sizing / switch / preferredRepresentation
+    // hints — they confuse Plasma's tray popup manager and cause a rapid
+    // expanded toggling loop.  -1 lets Plasma use its own defaults.
+    implicitWidth: inTray ? -1 : 540
+    implicitHeight: inTray ? -1 : 550
+    switchWidth: inTray ? -1 : 200
+    switchHeight: inTray ? -1 : 100
 
-    preferredRepresentation: fullRepresentation
+    // In a panel (compact form factor) use the compact representation;
+    // on the desktop prefer the full view.
+    // In the system tray, leave unset (null) so Plasma's tray container
+    // manages compact/full switching on its own.
+    preferredRepresentation: inTray ? null
+        : (Plasmoid.formFactor === PlasmaCore.Types.Horizontal ||
+           Plasmoid.formFactor === PlasmaCore.Types.Vertical)
+          ? compactRepresentation : fullRepresentation
+
     hideOnWindowDeactivate: !Plasmoid.configuration.keepOpen
+
+    // System tray status — keeps the widget visible in the notification area.
+    Plasmoid.status: PlasmaCore.Types.ActiveStatus
+
+    // Detect system tray — evaluated immediately at property-init time
+    // so the compactRepresentation binding resolves BEFORE Plasma
+    // instantiates the compact view.  Belt-and-suspenders: containmentType
+    // first, pluginName second, formFactor alone third.
+    property bool inTray: _detectInTray()
+
+    function _detectInTray() {
+        // Method 1: containmentType == 129 (CustomEmbedded) + Horizontal
+        try {
+            if (Plasmoid.containment.containmentType == 129
+                && Plasmoid.formFactor == 2) {
+                return true;
+            }
+        } catch (e) {}
+        // Method 2: pluginName contains 'systemtray'
+        try {
+            var pn = Plasmoid.containment.pluginName || "";
+            if (pn.indexOf("systemtray") >= 0) {
+                return true;
+            }
+        } catch (e) {}
+        return false;
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // Weather data model
@@ -104,27 +142,49 @@ PlasmoidItem {
     // Representations
     // ══════════════════════════════════════════════════════════════════════
 
-    toolTipMainText: ""  // suppress Plasma's built-in metadata tooltip
-    toolTipSubText: ""
+    toolTipMainText: {
+        if (!hasSelectedTown) return i18n("No location set");
+        return Plasmoid.configuration.locationName || i18n("Weather");
+    }
+    toolTipSubText: {
+        if (!hasSelectedTown || isNaN(temperatureC)) return "";
+        var parts = [];
+        parts.push(tempValue(temperatureC));
+        if (weatherCode >= 0)
+            parts.push(weatherCodeToText(weatherCode, isNightTime()));
+        if (!isNaN(humidityPercent))
+            parts.push(i18n("Humidity") + ": " + Math.round(humidityPercent) + "%");
+        if (!isNaN(windKmh))
+            parts.push(i18n("Wind") + ": " + windValue(windKmh));
+        return parts.join(" | ");
+    }
+    toolTipTextFormat: Text.PlainText
 
-    compactRepresentation: CompactView {
+    // ── Separate Component declarations for panel vs tray ────────────────
+    property Component cr: CompactView {
         weatherRoot: root
     }
+    property Component crInTray: CompactRepresentationInTray {}
+
+    compactRepresentation: inTray ? crInTray : cr
 
     fullRepresentation: FullView {
         weatherRoot: root
-        // ── Minimum popup size ───────────────────────────────────────────
-        // Plasma reads Layout.minimumWidth/Height from the fullRepresentation
-        // item — NOT from PlasmoidItem — to enforce resize limits.
-        // Use a compact size when no location is configured yet.
+        inSystemTray: root.inTray
+        // ── Popup size ───────────────────────────────────────────────────
+        // In the system tray use preferred sizes only (no large minimums)
+        // so Plasma can actually show the popup in the constrained tray area.
+        // In the panel, enforce minimums as configured.
 
         Layout.minimumWidth: {
+            if (root.inTray) return 0;
             if (!root.hasSelectedTown) return 280;
             if ((Plasmoid.configuration.widgetMinWidthMode || "auto") === "manual")
                 return Math.max(200, Plasmoid.configuration.widgetMinWidth || 800);
             return 800;
         }
         Layout.minimumHeight: {
+            if (root.inTray) return 0;
             if (!root.hasSelectedTown) return 220;
             if ((Plasmoid.configuration.widgetMinHeightMode || "auto") === "manual")
                 return Math.max(200, Plasmoid.configuration.widgetMinHeight || 750);
@@ -132,6 +192,26 @@ PlasmoidItem {
         }
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // Contextual actions — shown in Plasma's system-tray popup header bar
+    // (HighPriority → toolbar button next to pin & configure)
+    // ══════════════════════════════════════════════════════════════════════
+
+    Plasmoid.contextualActions: [
+        PlasmaCore.Action {
+            text: i18n("Detect / change location")
+            icon.name: "find-location-symbolic"
+            priority: PlasmaCore.Action.HighPriority
+            onTriggered: openLocationSettings()
+        },
+        PlasmaCore.Action {
+            text: i18n("Refresh")
+            icon.name: "view-refresh-symbolic"
+            priority: PlasmaCore.Action.HighPriority
+            enabled: !root.loading
+            onTriggered: refreshWeather()
+        }
+    ]
 
     // ══════════════════════════════════════════════════════════════════════
     // Service — all API calls delegated to WeatherService
@@ -1283,6 +1363,14 @@ PlasmoidItem {
     // ══════════════════════════════════════════════════════════════════════
 
     Component.onCompleted: {
+        // Re-check in case the initial property binding ran before
+        // containment was fully wired up.
+        if (!inTray) {
+            var detected = _detectInTray();
+            if (detected)
+                inTray = true;
+        }
+
         // DefaultBackground: Plasma draws the standard widget frame on the desktop.
         // ConfigurableBackground: tells Plasma to show the "Show / Hide background"
         // toggle button when the widget is on the desktop in edit mode.
