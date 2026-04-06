@@ -191,6 +191,14 @@ KCM.SimpleKCM {
             saveLocationDialog.open();
     }
 
+    // Like _immediateApplyAndOffer but WITHOUT the immediate Plasmoid.configuration
+    // write — used by the map sub-page so changes are only committed when the
+    // user clicks the KCM Apply button.
+    function _offerSave() {
+        if (_pendingSaveEntry)
+            saveLocationDialog.open();
+    }
+
     property string preferredLanguage: Qt.locale().name.split("_")[0]
     readonly property string bundledOpenWeatherApiKey: "8003225e8825db83758c237068447229"
     readonly property string bundledWeatherApiKey: "601ba4ac57404ec29ff120510261802"
@@ -1091,13 +1099,50 @@ KCM.SimpleKCM {
                                 Layout.fillWidth: true
                                 implicitHeight: savedLocRow.implicitHeight + 12
                                 radius: 4
-                                color: savedLocMouse.containsMouse ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent"
+
+                                property bool _renaming: false
+                                property bool _isActive: Math.abs(root.cfg_latitude - (modelData.lat || 0)) < 0.01 &&
+                                                         Math.abs(root.cfg_longitude - (modelData.lon || 0)) < 0.01
+
+                                color: _isActive
+                                    ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.20)
+                                    : (savedLocMouse.containsMouse && !_renaming
+                                        ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.10)
+                                        : "transparent")
+                                border.color: _isActive ? Kirigami.Theme.highlightColor : "transparent"
+                                border.width: _isActive ? 1 : 0
+
+                                function _commitRename() {
+                                    var newName = renameField.text.trim();
+                                    if (newName.length === 0) {
+                                        _renaming = false;
+                                        return;
+                                    }
+                                    var locs;
+                                    try {
+                                        locs = JSON.parse(root.cfg_savedLocations || "[]");
+                                        if (!Array.isArray(locs))
+                                            locs = [];
+                                    } catch (e) {
+                                        locs = [];
+                                    }
+                                    if (index >= 0 && index < locs.length) {
+                                        var updateActive = Math.abs(root.cfg_latitude - (locs[index].lat || 0)) < 0.01 &&
+                                                           Math.abs(root.cfg_longitude - (locs[index].lon || 0)) < 0.01;
+                                        locs[index].name = newName;
+                                        root.cfg_savedLocations = JSON.stringify(locs);
+                                        if (updateActive)
+                                            root.cfg_locationName = newName;
+                                    }
+                                    _renaming = false;
+                                }
 
                                 MouseArea {
                                     id: savedLocMouse
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
+                                    enabled: !_renaming
+                                    cursorShape: _renaming ? Qt.ArrowCursor : Qt.PointingHandCursor
                                     onClicked: {
                                         root.cfg_autoDetectLocation = false;
                                         root.cfg_locationName = modelData.name || "";
@@ -1132,11 +1177,28 @@ KCM.SimpleKCM {
                                     ColumnLayout {
                                         Layout.fillWidth: true
                                         spacing: 0
+
                                         Label {
                                             Layout.fillWidth: true
+                                            visible: !_renaming
                                             text: modelData.name || i18n("Unknown")
                                             elide: Text.ElideRight
-                                            font.bold: Math.abs(root.cfg_latitude - (modelData.lat || 0)) < 0.01 && Math.abs(root.cfg_longitude - (modelData.lon || 0)) < 0.01
+                                            font.bold: _isActive
+                                            color: _isActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
+                                        }
+                                        TextField {
+                                            id: renameField
+                                            Layout.fillWidth: true
+                                            visible: _renaming
+                                            onVisibleChanged: {
+                                                if (visible) {
+                                                    text = modelData.name || "";
+                                                    selectAll();
+                                                    forceActiveFocus();
+                                                }
+                                            }
+                                            Keys.onReturnPressed: _commitRename()
+                                            Keys.onEscapePressed: _renaming = false
                                         }
                                         Label {
                                             Layout.fillWidth: true
@@ -1146,9 +1208,76 @@ KCM.SimpleKCM {
                                         }
                                     }
 
+                                    // ── Star: mark as default location and apply it ──
+                                    ToolButton {
+                                        icon.name: modelData.starred ? "starred-symbolic" : "non-starred-symbolic"
+                                        display: AbstractButton.IconOnly
+                                        visible: !_renaming
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: modelData.starred ? i18n("Default location (click to unset)") : i18n("Set as default location")
+                                        onClicked: {
+                                            var locs;
+                                            try {
+                                                locs = JSON.parse(root.cfg_savedLocations || "[]");
+                                                if (!Array.isArray(locs))
+                                                    locs = [];
+                                            } catch (e) {
+                                                locs = [];
+                                            }
+                                            var wasStarred = !!(locs[index] && locs[index].starred);
+                                            for (var i = 0; i < locs.length; i++)
+                                                delete locs[i].starred;
+                                            if (!wasStarred) {
+                                                locs[index].starred = true;
+                                                // Also apply this location
+                                                root.cfg_autoDetectLocation = false;
+                                                root.cfg_locationName = locs[index].name || "";
+                                                root.cfg_latitude = locs[index].lat || 0;
+                                                root.cfg_longitude = locs[index].lon || 0;
+                                                if (locs[index].altitude !== undefined)
+                                                    root.cfg_altitude = locs[index].altitude;
+                                                if (locs[index].timezone)
+                                                    root.cfg_timezone = locs[index].timezone;
+                                                if (locs[index].countryCode)
+                                                    root.cfg_countryCode = locs[index].countryCode;
+                                                root.verifyProviderLocation(locs[index].lat || 0, locs[index].lon || 0);
+                                            }
+                                            root.cfg_savedLocations = JSON.stringify(locs);
+                                        }
+                                    }
+
+                                    // ── Rename confirm / cancel (while editing)
+                                    ToolButton {
+                                        icon.name: "dialog-ok-apply"
+                                        display: AbstractButton.IconOnly
+                                        visible: _renaming
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: i18n("Confirm rename")
+                                        onClicked: _commitRename()
+                                    }
+                                    ToolButton {
+                                        icon.name: "dialog-cancel"
+                                        display: AbstractButton.IconOnly
+                                        visible: _renaming
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: i18n("Cancel rename")
+                                        onClicked: _renaming = false
+                                    }
+
+                                    // ── Rename button ────────────────────────
+                                    ToolButton {
+                                        icon.name: "edit-rename"
+                                        display: AbstractButton.IconOnly
+                                        visible: !_renaming
+                                        ToolTip.visible: hovered
+                                        ToolTip.text: i18n("Rename location")
+                                        onClicked: _renaming = true
+                                    }
+
                                     ToolButton {
                                         icon.name: "arrow-up"
                                         display: AbstractButton.IconOnly
+                                        visible: !_renaming
                                         enabled: index > 0
                                         opacity: enabled ? 1.0 : 0.3
                                         ToolTip.visible: hovered
@@ -1158,6 +1287,7 @@ KCM.SimpleKCM {
                                     ToolButton {
                                         icon.name: "arrow-down"
                                         display: AbstractButton.IconOnly
+                                        visible: !_renaming
                                         enabled: index < savedLocRepeater.count - 1
                                         opacity: enabled ? 1.0 : 0.3
                                         ToolTip.visible: hovered
@@ -1167,6 +1297,7 @@ KCM.SimpleKCM {
                                     ToolButton {
                                         icon.name: "edit-delete"
                                         display: AbstractButton.IconOnly
+                                        visible: !_renaming
                                         ToolTip.visible: hovered
                                         ToolTip.text: i18n("Remove saved location")
                                         onClicked: {

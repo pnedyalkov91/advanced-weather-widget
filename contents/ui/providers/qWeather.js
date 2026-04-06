@@ -50,38 +50,38 @@ var _BASE = "https://devapi.qweather.com";
  *   900 Hot, 901 Cold
  */
 function _qwCodeToWmo(code) {
-    var c = parseInt(code, 10);
-    if (isNaN(c)) return 2;
+    var code = parseInt(code, 10);
+    if (isNaN(code)) return 2;
     // Clear / Sunny
-    if (c === 100 || c === 150) return 0;
+    if (code === 100 || code === 150) return 0;
     // Few clouds / partly cloudy
-    if (c === 101 || c === 102 || c === 151 || c === 152) return 2;
+    if (code === 101 || code === 102 || code === 151 || code === 152) return 2;
     // Cloudy / overcast
-    if (c === 103 || c === 104 || c === 153) return 3;
+    if (code === 103 || code === 104 || code === 153) return 3;
     // Thunderstorm
-    if (c === 302 || c === 303) return 95;
+    if (code === 302 || code === 303) return 95;
     // Hail
-    if (c === 304) return 99;
+    if (code === 304) return 99;
     // Shower rain (day/night)
-    if (c === 300 || c === 301 || c === 350 || c === 351) return 80;
+    if (code === 300 || code === 301 || code === 350 || code === 351) return 80;
     // Rain variants
-    if (c === 305 || c === 309 || c === 314) return 61;  // light rain
-    if (c === 306 || c === 315) return 63;  // moderate rain
-    if (c >= 307 && c <= 318) return 65;    // heavy rain
-    if (c === 399) return 63;               // generic rain
+    if (code === 305 || code === 309 || code === 314) return 61;  // light rain
+    if (code === 306 || code === 315) return 63;  // moderate rain
+    if (code >= 307 && code <= 318) return 65;    // heavy rain
+    if (code === 399) return 63;               // generic rain
     // Freezing rain
-    if (c === 313) return 66;
+    if (code === 313) return 66;
     // Snow
-    if (c === 400 || c === 408) return 71;  // light snow
-    if (c === 401 || c === 409) return 73;  // moderate snow
-    if (c === 402 || c === 403 || c === 410) return 75; // heavy snow / snowstorm
-    if (c === 404 || c === 405) return 66;  // sleet / rain and snow
-    if (c === 406 || c === 407 || c === 456 || c === 457) return 77; // snow flurry
-    if (c === 499) return 73;               // generic snow
+    if (code === 400 || code === 408) return 71;  // light snow
+    if (code === 401 || code === 409) return 73;  // moderate snow
+    if (code === 402 || code === 403 || code === 410) return 75; // heavy snow / snowstorm
+    if (code === 404 || code === 405) return 66;  // sleet / rain and snow
+    if (code === 406 || code === 407 || code === 456 || code === 457) return 77; // snow flurry
+    if (code === 499) return 73;               // generic snow
     // Fog / mist / haze / dust
-    if (c >= 500 && c <= 515) return 45;
+    if (code >= 500 && code <= 515) return 45;
     // Hot / Cold
-    if (c === 900 || c === 901) return 0;
+    if (code === 900 || code === 901) return 0;
     return 2; // fallback
 }
 
@@ -90,8 +90,8 @@ function _qwCodeToWmo(code) {
  * Night icons: 150-153, 350-351, 456-457.
  */
 function _isDay(iconCode) {
-    var c = parseInt(iconCode, 10);
-    if ((c >= 150 && c <= 153) || c === 350 || c === 351 || c === 456 || c === 457)
+    var code = parseInt(iconCode, 10);
+    if ((c >= 150 && c <= 153) || code === 350 || code === 351 || code === 456 || code === 457)
         return 0;
     return 1;
 }
@@ -99,21 +99,21 @@ function _isDay(iconCode) {
 function _calcDewPoint(T, rh) {
     if (isNaN(T) || isNaN(rh) || rh <= 0)
         return NaN;
-    var b = 17.67, c = 243.5;
+    var b = 17.67, code = 243.5;
     var gamma = Math.log(rh / 100.0) + (b * T) / (c + T);
     return Math.round((c * gamma) / (b - gamma) * 10) / 10;
 }
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var weatherRootService =  service.weatherRoot;
     var key = service._qwKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
         return;
     }
     // QWeather location format: longitude,latitude (up to 2 decimals)
-    var loc = service.longitude.toFixed(2) + "," + service.latitude.toFixed(2);
+    var locode = service.longitude.toFixed(2) + "," + service.latitude.toFixed(2);
     var url = _BASE + "/v7/weather/now?location=" + encodeURIComponent(loc)
         + "&key=" + encodeURIComponent(key) + "&unit=m";
 
@@ -136,13 +136,13 @@ function fetchCurrent(service, W, chain, idx) {
             return;
         }
         var n = d.now;
-        r.temperatureC = parseFloat(n.temp);
-        r.apparentC = parseFloat(n.feelsLike);
+        r.temperaturecode = parseFloat(n.temp);
+        r.apparentcode = parseFloat(n.feelsLike);
         r.humidityPercent = parseFloat(n.humidity);
         r.pressureHpa = parseFloat(n.pressure);
         r.windKmh = parseFloat(n.windSpeed);  // already km/h
         r.windDirection = parseFloat(n.wind360);
-        r.dewPointC = (n.dew !== undefined && n.dew !== null)
+        r.dewPointcode = (n.dew !== undefined && n.dew !== null)
             ? parseFloat(n.dew)
             : _calcDewPoint(parseFloat(n.temp), parseFloat(n.humidity));
         r.visibilityKm = parseFloat(n.vis);
@@ -162,7 +162,7 @@ function fetchCurrent(service, W, chain, idx) {
 }
 
 function _fetchDaily(service, W, key, loc, gen) {
-    var r = service.weatherRoot;
+    var weatherRootService =  service.weatherRoot;
     var days = Math.min(service.forecastDays, 7);
     var url = _BASE + "/v7/weather/" + days + "d?location=" + encodeURIComponent(loc)
         + "&key=" + encodeURIComponent(key) + "&unit=m";
@@ -220,7 +220,7 @@ function _qwAqiLabel(category) {
 }
 
 function _fetchAirQuality(service, W, key, loc, gen) {
-    var r = service.weatherRoot;
+    var weatherRootService =  service.weatherRoot;
     var url = _BASE + "/airquality/v1/current?location=" + encodeURIComponent(loc)
         + "&key=" + encodeURIComponent(key);
 
@@ -258,13 +258,13 @@ function _fetchAirQuality(service, W, key, loc, gen) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var weatherRootService =  service.weatherRoot;
     var key = service._qwKey();
     if (!key) {
         r.hourlyData = [];
         return;
     }
-    var loc = service.longitude.toFixed(2) + "," + service.latitude.toFixed(2);
+    var locode = service.longitude.toFixed(2) + "," + service.latitude.toFixed(2);
     var url = _BASE + "/v7/weather/24h?location=" + encodeURIComponent(loc)
         + "&key=" + encodeURIComponent(key) + "&unit=m";
 
@@ -281,7 +281,7 @@ function fetchHourly(service, W, dateStr) {
                 for (var i = 0; i < d.hourly.length; i++) {
                     var h = d.hourly[i];
                     var fxTime = new Date(h.fxTime);
-                    var fxDateStr = Qt.formatDate(fxTime, "yyyy-MM-dd");
+                    var fxDateStweatherRootService =  Qt.formatDate(fxTime, "yyyy-MM-dd");
                     if (fxDateStr !== dateStr) continue;
                     hours.push({
                         hour: Qt.formatTime(fxTime, "HH:mm"),

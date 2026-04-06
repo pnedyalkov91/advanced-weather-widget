@@ -93,8 +93,8 @@ ColumnLayout {
         }
         configRoot._pendingSaveEntry = isDup ? null : entry;
 
-        // Apply immediately — no KCM Apply needed
-        configRoot._immediateApplyAndOffer();
+        // Stage only — the KCM Apply button will write to Plasmoid.configuration
+        configRoot._offerSave();
     }
 
     function _lookupLocation(lat, lon) {
