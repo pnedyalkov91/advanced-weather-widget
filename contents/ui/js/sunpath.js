@@ -234,10 +234,16 @@ function _drawStars(ctx, cw, ch, hY, count, isDark) {
 function drawSunArc(ctx, cw, ch, prog, isDark, glowPulse, riseText, setText, tz, isNight) {
     ctx.clearRect(0, 0, cw, ch);
 
+    // Guard: canvas not yet laid out — nothing useful to draw
+    if (cw <= 0 || ch <= 0) return;
+
     var padH  = 28;
     var cx    = cw / 2;
     var hY    = ch - 14;
     var r     = Math.min(cx - padH, hY - 12);
+
+    // Guard: canvas too narrow/short for a valid arc radius
+    if (r <= 0) return;
 
     // isNight comes from the API's is_day flag — authoritative for this location.
     // prog is clamped independently: at night it drives moon arc position.

@@ -21,6 +21,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
@@ -843,15 +844,24 @@ Item {
                                                         visible: !isNaN(modelData.si)
 
                                                         Text {
+                                                            id: thumbValueText
                                                             anchors.centerIn: parent
                                                             text: Math.round(modelData.si)
-                                                            color: "white"
+                                                            color: Kirigami.Theme.textColor
                                                             font.pixelSize: 11
                                                             font.bold: true
                                                             horizontalAlignment: Text.AlignHCenter
                                                             verticalAlignment: Text.AlignVCenter
-                                                            style: root.isDark ? Text.Outline : Text.Normal
-                                                            styleColor: Qt.rgba(0, 0, 0, 0.55)
+                                                        }
+
+                                                        DropShadow {
+                                                            anchors.fill: thumbValueText
+                                                            source: thumbValueText
+                                                            radius: 3
+                                                            samples: 16
+                                                            spread: 0.8
+                                                            color: Kirigami.Theme.backgroundColor
+                                                            cached: true
                                                         }
                                                     }
                                                 }
@@ -1079,19 +1089,19 @@ Item {
                                                             Rectangle {
                                                                 anchors.fill: parent
                                                                 radius: 4
-                                                                color: Kirigami.Theme.separatorColor
+                                                                color: root.isDark ? "white" : "black"
                                                                 opacity: 0.4
                                                             }
                                                             Rectangle {
                                                                 width: parent.width * pollenRow.pct / 100
                                                                 height: parent.height
                                                                 radius: 4
-                                                                color: pollenRow.band.color
+                                                                color: pollenRow.band ? pollenRow.band.color : "transparent"
                                                                 opacity: 0.85
                                                             }
                                                         }
                                                         Label {
-                                                            text: i18n(pollenRow.band.label)
+                                                            text: pollenRow.band ? i18n(pollenRow.band.label) : ""
                                                             color: root.bandTextColor(pollenRow.band)
                                                             font: weatherRoot ? weatherRoot.wf(9, true) : Qt.font({ bold: true })
                                                             Layout.alignment: Qt.AlignHCenter
@@ -1102,7 +1112,7 @@ Item {
                                                         Layout.alignment: Qt.AlignVCenter
                                                         active: true
                                                         mainItem: Label {
-                                                            text: i18n(pollenRow.band.description)
+                                                            text: pollenRow.band ? i18n(pollenRow.band.description) : ""
                                                             wrapMode: Text.Wrap
                                                             width: 260
                                                         }

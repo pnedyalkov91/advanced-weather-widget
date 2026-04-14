@@ -33,5 +33,5 @@
 - Fix a critical bug where if you choose another provider unless open-meteo or adaptive mode enabled, you cannot find any location manually
 - Fix 18N_ARGUMENT_MISSING in some dialogs
 - Fix a bug where if you control the widget height/weight it was affected in the widget panel space
-
+- Fix an Air quality outline bug 
 

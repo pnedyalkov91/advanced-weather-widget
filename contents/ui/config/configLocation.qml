@@ -979,9 +979,12 @@ KCM.SimpleKCM {
                         onClicked: {
                             var entry = root._pendingEntry;
                             if (!entry) { setDefaultDialog.close(); return; }
+                            // Clear _pendingEntry FIRST so any signal triggered below
+                            // cannot re-enter _commitPending with a non-null entry.
+                            root._pendingEntry = null;
                             var locs;
                             try {
-                                locs = JSON.parse(root.cfg_savedLocations || "[]");
+                                locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
                                 if (!Array.isArray(locs)) locs = [];
                             } catch (e) { locs = []; }
                             for (var i = 0; i < locs.length; i++)
@@ -993,15 +996,18 @@ KCM.SimpleKCM {
                                 countryCode: entry.countryCode || "",
                                 starred: true
                             });
-                            root.cfg_savedLocations = JSON.stringify(locs);
-                            // Also update active location to the starred entry
-                            root.cfg_autoDetectLocation = false;
-                            root.cfg_locationName = entry.name;
-                            root.cfg_latitude = entry.lat;
-                            root.cfg_longitude = entry.lon;
-                            if (entry.altitude) root.cfg_altitude = entry.altitude;
-                            if (entry.timezone) root.cfg_timezone = entry.timezone;
-                            if (entry.countryCode) root.cfg_countryCode = entry.countryCode;
+                            var newJson = JSON.stringify(locs);
+                            // Write Plasmoid.configuration first, then cfg_ to the same
+                            // value. When KCM evaluates dirty (cfg_ vs Plasmoid.configuration),
+                            // they are already equal → Apply button stays inactive.
+                            // Writing cfg_ also refreshes the savedLocRepeater immediately.
+                            Plasmoid.configuration.savedLocations = newJson;
+                            root.cfg_savedLocations = newJson;
+                            // Do NOT re-write latitude, longitude, locationName, etc. here.
+                            // KCM Apply already synced all those from cfg_* to
+                            // Plasmoid.configuration.*. Re-writing them triggers
+                            // onLatitudeChanged and Plasma widget reload a second time,
+                            // which is what causes the perceived hang.
                             setDefaultDialog.close();
                         }
                     }
@@ -1011,9 +1017,11 @@ KCM.SimpleKCM {
                         onClicked: {
                             var entry = root._pendingEntry;
                             if (!entry) { setDefaultDialog.close(); return; }
+                            // Clear _pendingEntry FIRST — same re-entrancy guard as Yes.
+                            root._pendingEntry = null;
                             var locs;
                             try {
-                                locs = JSON.parse(root.cfg_savedLocations || "[]");
+                                locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
                                 if (!Array.isArray(locs)) locs = [];
                             } catch (e) { locs = []; }
                             locs.push({
@@ -1022,7 +1030,12 @@ KCM.SimpleKCM {
                                 timezone: entry.timezone || "",
                                 countryCode: entry.countryCode || ""
                             });
-                            root.cfg_savedLocations = JSON.stringify(locs);
+                            var newJson = JSON.stringify(locs);
+                            // Same pattern as Yes: Plasmoid.configuration first, then cfg_
+                            // to the same value so KCM sees them equal (not dirty) and
+                            // the savedLocRepeater updates immediately.
+                            Plasmoid.configuration.savedLocations = newJson;
+                            root.cfg_savedLocations = newJson;
                             setDefaultDialog.close();
                         }
                     }

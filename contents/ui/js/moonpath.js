@@ -257,8 +257,15 @@ function _drawStars(ctx, cw, ch, hY, count, isDark) {
 
 function drawMoonArc(ctx, cw, ch, prog, isDark, glowPulse, age) {
     ctx.clearRect(0, 0, cw, ch);
+
+    // Guard: canvas not yet laid out — nothing useful to draw
+    if (cw <= 0 || ch <= 0) return;
+
     var padH = 28, cx = cw / 2, hY = ch - 14;
     var r = Math.min(cx - padH, hY - 12);
+
+    // Guard: canvas too narrow/short for a valid arc radius
+    if (r <= 0) return;
     var isAbove = (prog >= 0 && prog <= 1);
     var clampP  = Math.max(0, Math.min(1, prog));
     var a = Math.PI * (1 + clampP);

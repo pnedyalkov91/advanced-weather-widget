@@ -11,21 +11,29 @@ It delivers accurate forecasts, multiple weather provider support, adaptive fail
 ## ✨ Key Features
 
 ### 📍 Location Management
-- Automatic location detection via GeoClue2 (GPS / network geolocation) with confirmation dialog
+- Automatic location detection via GeoClue2 or IP address with confirmation dialog
 - Manual city search with dual geocoding (Open-Meteo + Nominatim / OSM)
+- Location search with map using OpenStreetMap and Nominatim geocoding API with autocomplete and map preview
 - Reverse geocoding for localized city names and non-Latin scripts (e.g. Cyrillic)
 - Automatic timezone and altitude detection
+- Multi-location support with quick switching and per-location settings
 
 ### 🌦 Weather Providers
 
 Choose between:
 - **Open-Meteo** - free, no API key required (recommended)
 - **MET Norway** - free Norwegian Meteorological Institute, no API key
-- **OpenWeatherMap** - requires API key (built-in test button)
-- **WeatherAPI.com** - requires API key (built-in test button)
+- **OpenWeatherMap** (requires API key)
+- **WeatherAPI.com** (requires API key)
+- **Pirate Weather** (requires API key)
+- **Tomorrow.io** (requires API key)
+- **Visual Crossing** (requires API key)
+- **StormGlass** (requires API key)
+- **Weatherbit** (requires API key)
+- **QWeather** (requires API key)
 
 ### 🔄 Adaptive Mode
-- Automatic fallback chain: Open-Meteo → Met Norway → OpenWeatherMap → WeatherAPI
+- Automatic fallback chain: Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com
 - Seamless provider switching if one fails
 - Provider-specific location availability verification
 
@@ -39,7 +47,7 @@ Choose between:
 - **Air Quality** - European CAQI with 6 bands (Good → Extremely Poor), per-pollutant breakdown (PM2.5, PM10, NO₂, O₃, SO₂, CO), plus AQHI score
 - **Pollen** - Universal Pollen Index (0–12) with 4 bands, 6 types: Alder, Birch, Grass, Mugwort, Olive, Ragweed
 - **Space Weather** - Kp index, geomagnetic storm scale (G0–G5), solar wind speed, Bz magnetic field, X-ray flux / solar flare class, aurora visibility probability (from NOAA SWPC)
-- **Weather Alerts** - MeteoAlarm (38 European countries) with MET Norway fallback; per-alert severity, area, timing, instructions, and web link
+- **Weather Alerts** - Supported providers: MeteoAlarm (38 European countries); NOAA NWS (USA only); MET Norway (Norway only). Also the widget can display alerts from the following providers: Pirate Weather, Visual Crossing and Weather API (Requires API key and alert support from the providers)
 - **Sunrise / Sunset** - configurable modes (both, upcoming, sunrise only, sunset only)
 - **Moon Phase** - phase name, icon, moonrise / moonset times; multiple display modes
 - **25+ weather conditions** with day / night variants
@@ -57,6 +65,7 @@ All panel modes support:
 - 6 icon themes: Symbolic, Font (wi-font), Flat Color, 3D Oxygen, KDE system, Custom (per-item icon picker)
 - Custom font (family, size, bold) or system font
 - Item spacing and width controls
+- System tray support (Compressed mode only)
 
 ### 💬 Tooltip
 - Enable / disable toggle
@@ -78,7 +87,7 @@ All panel modes support:
   - CAQI pollutant breakdown bars for air quality
   - Per-type pollen bars with info tooltips
   - Space weather dashboard (Kp, Bz, solar wind, flare class, aurora %) (Provider: NOAA SWPC)
-  - Multi-alert carousel for weather alerts (Provider: Eumetnet Meteoalarm)
+  - Multi-alert carousel for weather alerts (Providers: Eumetnet Meteoalarm, MET Norway, NOAA NWS or supporting weather provider)
 - Configurable card height, per-item icons, accent colours
 
 #### Forecast View

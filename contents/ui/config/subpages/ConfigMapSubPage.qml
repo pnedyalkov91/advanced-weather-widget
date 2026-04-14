@@ -504,8 +504,10 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: infoPanelLayout.implicitHeight + 16
-        color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95)
-        border.color: Kirigami.Theme.separatorColor
+        color: Kirigami.Theme.backgroundColor !== undefined
+            ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95)
+            : Qt.rgba(0, 0, 0, 0.95)
+        border.color: Qt.rgba(0.5, 0.5, 0.5, 0.4)
         border.width: 1
         visible: !isNaN(mapSubPageRoot.selectedLat)
 
