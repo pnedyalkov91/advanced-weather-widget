@@ -1,1 +1,3 @@
 WeatherIcon 1.0 WeatherIcon.qml
+TemperatureBadge 1.0 TemperatureBadge.qml
+CollapsibleCardHeader 1.0 CollapsibleCardHeader.qml

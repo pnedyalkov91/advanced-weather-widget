@@ -26,6 +26,7 @@ import org.kde.plasma.plasmoid
 
 import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
+import "js/configUtils.js" as ConfigUtils
 import "components"
 
 Item {
@@ -54,57 +55,14 @@ Item {
     readonly property string iconTheme: widgetIconTheme
     readonly property bool showSunEvents: Plasmoid.configuration.forecastShowSunEvents !== false
 
-    /** Resolve a condition icon, handling the "custom" theme with per-condition overrides */
+    /** Resolve a condition icon, handling the "custom" theme with per-condition overrides.
+     *  Delegates to ConfigUtils.resolveCustomConditionIcon() — single source of truth. */
     function resolveConditionIcon(code, isNight, iconSize) {
-        if (forecastRoot.widgetIconTheme === "custom") {
-            var raw = Plasmoid.configuration.widgetConditionCustomIcons || "";
-            var m = {};
-            if (raw.length > 0) {
-                raw.split(";").forEach(function (pair) {
-                    var kv = pair.split("=");
-                    if (kv.length === 2 && kv[0].trim().length > 0)
-                        m[kv[0].trim()] = kv[1].trim();
-                });
-            }
-            if (m["condition-custom"] === "1") {
-                var condKey;
-                if (code === 0)
-                    condKey = isNight ? "condition-clear-night" : "condition-clear";
-                else if (code === 1)
-                    condKey = isNight ? "condition-few-clouds-night" : "condition-few-clouds";
-                else if (code === 2)
-                    condKey = isNight ? "condition-cloudy-night" : "condition-cloudy-day";
-                else if (code === 3)
-                    condKey = "condition-overcast";
-                else if (code === 45 || code === 48)
-                    condKey = "condition-fog";
-                else if (code === 51 || code === 53 || code === 55 || code === 61 || code === 80)
-                    condKey = isNight ? "condition-showers-scattered-night" : "condition-showers-scattered-day";
-                else if (code === 63 || code === 65 || code === 81 || code === 82)
-                    condKey = isNight ? "condition-showers-night" : "condition-showers-day";
-                else if (code === 56 || code === 66)
-                    condKey = isNight ? "condition-freezing-scattered-rain-night" : "condition-freezing-scattered-rain-day";
-                else if (code === 57 || code === 67)
-                    condKey = isNight ? "condition-freezing-rain-night" : "condition-freezing-rain-day";
-                else if (code === 71 || code === 77 || code === 85)
-                    condKey = isNight ? "condition-snow-scattered-night" : "condition-snow-scattered-day";
-                else if (code === 73 || code === 75 || code === 86)
-                    condKey = isNight ? "condition-snow-night" : "condition-snow-day";
-                else if (code === 95)
-                    condKey = isNight ? "condition-storm-night" : "condition-storm-day";
-                else if (code === 96)
-                    condKey = isNight ? "condition-hail-storm-rain-night" : "condition-hail-storm-rain-day";
-                else if (code === 99)
-                    condKey = isNight ? "condition-hail-storm-snow-night" : "condition-hail-storm-snow-day";
-                else
-                    condKey = isNight ? "condition-clear-night" : "condition-clear";
-                var fallback = W.weatherCodeToIcon(code, isNight);
-                var saved = (condKey in m && m[condKey].length > 0) ? m[condKey] : fallback;
-                return { type: "kde", source: saved, svgFallback: "", isMask: false };
-            }
-            return IconResolver.resolveCondition(code, isNight, iconSize, forecastRoot.iconsBaseDir, "kde");
-        }
-        return IconResolver.resolveCondition(code, isNight, iconSize, forecastRoot.iconsBaseDir, forecastRoot.widgetIconTheme);
+        return ConfigUtils.resolveCustomConditionIcon(
+            code, isNight, iconSize, forecastRoot.iconsBaseDir,
+            forecastRoot.widgetIconTheme,
+            Plasmoid.configuration.widgetConditionCustomIcons || "",
+            W.weatherCodeToIcon, IconResolver.resolveCondition);
     }
 
     // ── empty state ───────────────────────────────────────────────────────

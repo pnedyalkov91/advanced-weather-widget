@@ -34,6 +34,7 @@ import "js/moonphase.js" as Moon
 import "js/suncalc.js" as SC
 import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
+import "js/configUtils.js" as ConfigUtils
 import "components"
 
 Item {
@@ -117,17 +118,9 @@ Item {
         return Kirigami.Theme.defaultFont;
     }
 
-    // Custom icon map helper
+    // Custom icon map helper — delegates to ConfigUtils.parseConfigMap()
     function getTooltipCustomIcon(itemId) {
-        var raw = Plasmoid.configuration.tooltipCustomIcons || "";
-        if (raw.length === 0)
-            return "";
-        var m = {};
-        raw.split(";").forEach(function (pair) {
-            var kv = pair.split("=");
-            if (kv.length === 2 && kv[0].trim().length > 0)
-                m[kv[0].trim()] = kv[1].trim();
-        });
+        var m = ConfigUtils.parseConfigMap(Plasmoid.configuration.tooltipCustomIcons || "");
         return (itemId in m) ? m[itemId] : "";
     }
 
@@ -372,15 +365,7 @@ Item {
     function _buildTooltipItems() {
         if (!weatherRoot || !weatherRoot.hasSelectedTown)
             return [];
-        var iconMap = {};
-        var raw = Plasmoid.configuration.tooltipItemIcons || "";
-        if (raw.length > 0) {
-            raw.split(";").forEach(function (pair) {
-                var kv = pair.split("=");
-                if (kv.length === 2)
-                    iconMap[kv[0].trim()] = (kv[1].trim() === "1");
-            });
-        }
+        var iconMap = ConfigUtils.parseBoolMap(Plasmoid.configuration.tooltipItemIcons || "");
         var order = (Plasmoid.configuration.tooltipItemOrder || "temperature;wind;humidity;pressure;suntimes").split(";").filter(function (t) {
             return t.trim().length > 0;
         });

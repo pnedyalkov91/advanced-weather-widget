@@ -40,6 +40,7 @@ import "js/weather.js" as W
 import "js/moonphase.js" as Moon
 import "js/suncalc.js" as SC
 import "js/iconResolver.js" as IconResolver
+import "js/configUtils.js" as ConfigUtils
 
 PlasmoidItem {
     id: root
@@ -933,14 +934,7 @@ PlasmoidItem {
     }
 
     function parsePanelItemIcons() {
-        var raw = Plasmoid.configuration.panelItemIcons || "";
-        var map = {};
-        raw.split(";").forEach(function (pair) {
-            var kv = pair.split("=");
-            if (kv.length === 2)
-                map[kv[0].trim()] = (kv[1].trim() === "1");
-        });
-        return map;
+        return ConfigUtils.parseBoolMap(Plasmoid.configuration.panelItemIcons || "");
     }
 
     /** Returns the wi-font glyph (or Kirigami icon name) for a panel chip */
@@ -1191,29 +1185,10 @@ PlasmoidItem {
         return "rise";
     }
 
-    /** Maps a WMO code + night flag to a condition custom icon key */
+    /** Maps a WMO code + night flag to a condition custom icon key.
+     *  Delegates to ConfigUtils.resolveConditionKey() — single source of truth. */
     function _resolveConditionKey(code, night) {
-        if (code === 0) return night ? "condition-clear-night" : "condition-clear";
-        if (code === 1) return night ? "condition-few-clouds-night" : "condition-few-clouds";
-        if (code === 2) return night ? "condition-cloudy-night" : "condition-cloudy-day";
-        if (code === 3) return "condition-overcast";
-        if (code === 45 || code === 48) return "condition-fog";
-        if (code === 51 || code === 53 || code === 55 || code === 61 || code === 80)
-            return night ? "condition-showers-scattered-night" : "condition-showers-scattered-day";
-        if (code === 63 || code === 65 || code === 81 || code === 82)
-            return night ? "condition-showers-night" : "condition-showers-day";
-        if (code === 56 || code === 66)
-            return night ? "condition-freezing-scattered-rain-night" : "condition-freezing-scattered-rain-day";
-        if (code === 57 || code === 67)
-            return night ? "condition-freezing-rain-night" : "condition-freezing-rain-day";
-        if (code === 71 || code === 77 || code === 85)
-            return night ? "condition-snow-scattered-night" : "condition-snow-scattered-day";
-        if (code === 73 || code === 75 || code === 86)
-            return night ? "condition-snow-night" : "condition-snow-day";
-        if (code === 95) return night ? "condition-storm-night" : "condition-storm-day";
-        if (code === 96) return night ? "condition-hail-storm-rain-night" : "condition-hail-storm-rain-day";
-        if (code === 99) return night ? "condition-hail-storm-snow-night" : "condition-hail-storm-snow-day";
-        return night ? "condition-clear-night" : "condition-clear";
+        return ConfigUtils.resolveConditionKey(code, night);
     }
 
 

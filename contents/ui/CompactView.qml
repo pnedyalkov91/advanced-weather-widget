@@ -53,6 +53,7 @@ import org.kde.kirigami as Kirigami
 
 import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
+import "js/configUtils.js" as ConfigUtils
 import "components"
 
 PlasmaCore.ToolTipArea {

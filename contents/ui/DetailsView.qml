@@ -32,6 +32,7 @@ import "js/moonpath.js" as MoonPath
 import "js/sunpath.js" as SunPath
 import "js/suncalc.js" as SC
 import "js/iconResolver.js" as IconResolver
+import "js/configUtils.js" as ConfigUtils
 import "js/airQuality.js" as AQI
 import "js/pollen.js" as Pollen
 import "js/spaceWeather.js" as SW
@@ -191,17 +192,10 @@ Item {
     readonly property string iconsBaseDir: Qt.resolvedUrl("../icons/")
 
     // ── Icon resolution via IconResolver ──────────────────────────────────
-    /** Returns a saved custom icon name for the given item, or "" */
+    /** Returns a saved custom icon name for the given item, or "".
+     *  Delegates to ConfigUtils.parseConfigMap() — single source of truth. */
     function getDetailsCustomIcon(itemId) {
-        var raw = Plasmoid.configuration.widgetDetailsCustomIcons || "";
-        if (raw.length === 0)
-            return "";
-        var m = {};
-        raw.split(";").forEach(function (pair) {
-            var kv = pair.split("=");
-            if (kv.length === 2 && kv[0].trim().length > 0)
-                m[kv[0].trim()] = kv[1].trim();
-        });
+        var m = ConfigUtils.parseConfigMap(Plasmoid.configuration.widgetDetailsCustomIcons || "");
         return (itemId in m) ? m[itemId] : "";
     }
     /** Resolves an icon for the given detail card ID */
@@ -322,17 +316,8 @@ Item {
     // List of detail IDs in configured order
     property var detailIds: (Plasmoid.configuration.widgetDetailsOrder || "feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase").split(";").map(s => s.trim()).filter(s => s.length > 0)
 
-    // Per-item icon visibility map (parsed from "id=1;id=0;…" config string)
-    readonly property var iconShowMap: {
-        var map = {};
-        var raw = Plasmoid.configuration.widgetDetailsItemIcons || "";
-        raw.split(";").forEach(function (pair) {
-            var kv = pair.split("=");
-            if (kv.length === 2)
-                map[kv[0].trim()] = (kv[1].trim() === "1");
-        });
-        return map;
-    }
+    // Per-item icon visibility map — delegates to ConfigUtils.parseBoolMap()
+    readonly property var iconShowMap: ConfigUtils.parseBoolMap(Plasmoid.configuration.widgetDetailsItemIcons || "")
     function showIconFor(itemId) {
         return (itemId in iconShowMap) ? iconShowMap[itemId] : true;
     }
