@@ -1415,22 +1415,18 @@ KCM.SimpleKCM {
                                             if (!wasStarred) {
                                                 locs[index].starred = true;
 
-                                                // Auto-sort starred item to top
-                                                var starredItem = locs.splice(index, 1)[0];
-                                                locs.unshift(starredItem);
-
-                                                // Apply this location immediately
+                                                // Apply this location immediately (item stays in place)
                                                 root.cfg_autoDetectLocation = false;
-                                                root.cfg_locationName = locs[0].name || "";
-                                                root.cfg_latitude = locs[0].lat || 0;
-                                                root.cfg_longitude = locs[0].lon || 0;
+                                                root.cfg_locationName = locs[index].name || "";
+                                                root.cfg_latitude = locs[index].lat || 0;
+                                                root.cfg_longitude = locs[index].lon || 0;
 
-                                                if (locs[0].altitude !== undefined)
-                                                    root.cfg_altitude = locs[0].altitude;
-                                                if (locs[0].timezone)
-                                                    root.cfg_timezone = locs[0].timezone;
-                                                if (locs[0].countryCode)
-                                                    root.cfg_countryCode = locs[0].countryCode;
+                                                if (locs[index].altitude !== undefined)
+                                                    root.cfg_altitude = locs[index].altitude;
+                                                if (locs[index].timezone)
+                                                    root.cfg_timezone = locs[index].timezone;
+                                                if (locs[index].countryCode)
+                                                    root.cfg_countryCode = locs[index].countryCode;
                                             }
 
                                             root.cfg_savedLocations = JSON.stringify(locs);
