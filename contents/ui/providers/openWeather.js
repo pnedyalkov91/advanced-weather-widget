@@ -63,25 +63,26 @@ function fetchCurrent(service, W, chain, idx) {
             service._tryProvider(chain, idx + 1);
             return;
         }
-        r.temperatureC = d.main.temp;
-        r.apparentC = d.main.feels_like;
-        r.humidityPercent = d.main.humidity;
-        r.pressureHpa = d.main.pressure;
-        r.windKmh = (d.wind && d.wind.speed !== undefined) ? d.wind.speed * 3.6 : NaN;
-        r.windDirection = (d.wind && d.wind.deg !== undefined) ? d.wind.deg : NaN;
-        r.dewPointC = _calcDewPoint(d.main.temp, d.main.humidity);
-        r.visibilityKm = (d.visibility !== undefined) ? d.visibility / 1000.0 : NaN;
-        r.precipMmh = (d.rain && d.rain["1h"] !== undefined) ? d.rain["1h"]
-            : (d.rain && d.rain["3h"] !== undefined) ? d.rain["3h"] / 3.0 : 0;
-        r.uvIndex = NaN;  // not available in free tier
-        r.snowDepthCm = NaN;  // not available
-        r.weatherCode = (d.weather && d.weather.length > 0)
-            ? W.openWeatherCodeToWmo(d.weather[0].id) : 2;
-        r.isDay = -1;
-        r.sunriseTimeText = (d.sys && d.sys.sunrise)
-            ? Qt.formatTime(new Date(d.sys.sunrise * 1000), "HH:mm") : "--";
-        r.sunsetTimeText = (d.sys && d.sys.sunset)
-            ? Qt.formatTime(new Date(d.sys.sunset * 1000), "HH:mm") : "--";
+        var _cur = {
+            temperatureC:    d.main.temp,
+            apparentC:       d.main.feels_like,
+            humidityPercent: d.main.humidity,
+            pressureHpa:     d.main.pressure,
+            windKmh:         (d.wind && d.wind.speed !== undefined) ? d.wind.speed * 3.6 : NaN,
+            windDirection:   (d.wind && d.wind.deg !== undefined) ? d.wind.deg : NaN,
+            dewPointC:       _calcDewPoint(d.main.temp, d.main.humidity),
+            visibilityKm:    (d.visibility !== undefined) ? d.visibility / 1000.0 : NaN,
+            precipMmh:       (d.rain && d.rain["1h"] !== undefined) ? d.rain["1h"]
+                                : (d.rain && d.rain["3h"] !== undefined) ? d.rain["3h"] / 3.0 : 0,
+            uvIndex:         NaN,
+            snowDepthCm:     NaN,
+            weatherCode:     (d.weather && d.weather.length > 0) ? W.openWeatherCodeToWmo(d.weather[0].id) : 2,
+            isDay:           -1,
+            locationUtcOffsetMins: 0,
+            sunriseTimeText: (d.sys && d.sys.sunrise) ? Qt.formatTime(new Date(d.sys.sunrise * 1000), "HH:mm") : "--",
+            sunsetTimeText:  (d.sys && d.sys.sunset)  ? Qt.formatTime(new Date(d.sys.sunset  * 1000), "HH:mm") : "--",
+            dailyData:       []
+        };
 
         // Fetch forecast separately
         var fcReq = new XMLHttpRequest();
@@ -132,7 +133,8 @@ function fetchCurrent(service, W, chain, idx) {
                     });
                 });
             }
-            r.dailyData = nd;
+            _cur.dailyData = nd;
+            r.weatherDataStaged = _cur;
             r.loading = false;
             r.updateText = service._formatUpdateText("openWeather");
 
@@ -160,8 +162,7 @@ function _fetchAirQuality(service, W) {
     var r = service.weatherRoot;
     var key = service._owKey();
     if (!key) {
-        r.airQualityIndex = NaN;
-        r.airQualityLabel = "";
+        r.aqiData = null;
         return;
     }
     var url = "https://api.openweathermap.org/data/2.5/air_pollution?lat="
@@ -174,19 +175,16 @@ function _fetchAirQuality(service, W) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
+            r.aqiData = null;
             r.pollenData = [];
             return;
         }
         var d = JSON.parse(req.responseText);
         if (d.list && d.list.length > 0 && d.list[0].main) {
             var aqi = d.list[0].main.aqi;
-            r.airQualityIndex = aqi;
-            r.airQualityLabel = _owAqiLabel(aqi);
+            r.aqiDataStaged = { index: aqi, label: _owAqiLabel(aqi) };
         } else {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
+            r.aqiData = null;
         }
         r.pollenData = []; // not available in OpenWeather free tier
     };

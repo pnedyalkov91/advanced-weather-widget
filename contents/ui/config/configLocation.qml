@@ -225,7 +225,16 @@ KCM.SimpleKCM {
         cfg_savedLocations = JSON.stringify(locs);
         Plasmoid.configuration.savedLocations = cfg_savedLocations;
 
-        // Always apply as the active location
+        // Always apply as the active location — write once to activeLocation,
+        // then keep individual entries in sync (suppressed from triggering refreshDebounce).
+        Plasmoid.configuration.activeLocation = JSON.stringify({
+            name:        detectedLocationName  || "",
+            lat:         detectedLatitude       || 0,
+            lon:         detectedLongitude      || 0,
+            altitude:    (!isNaN(detectedAltitude) && detectedAltitude !== 0) ? detectedAltitude : 0,
+            timezone:    detectedTimezone       || "",
+            countryCode: detectedCountryCode    || ""
+        });
         Plasmoid.configuration.autoDetectLocation = true;
         Plasmoid.configuration.latitude = detectedLatitude;
         Plasmoid.configuration.longitude = detectedLongitude;
@@ -266,6 +275,14 @@ KCM.SimpleKCM {
         interval: 50
         repeat: false
         onTriggered: {
+            Plasmoid.configuration.activeLocation = JSON.stringify({
+                name:        root.cfg_locationName  || "",
+                lat:         root.cfg_latitude       || 0,
+                lon:         root.cfg_longitude      || 0,
+                altitude:    root.cfg_altitude       || 0,
+                timezone:    root.cfg_timezone       || "",
+                countryCode: root.cfg_countryCode    || ""
+            });
             Plasmoid.configuration.autoDetectLocation = root.cfg_autoDetectLocation;
             Plasmoid.configuration.latitude = root.cfg_latitude;
             Plasmoid.configuration.longitude = root.cfg_longitude;
@@ -274,8 +291,6 @@ KCM.SimpleKCM {
             Plasmoid.configuration.altitude = root.cfg_altitude;
             Plasmoid.configuration.countryCode = root.cfg_countryCode;
             Plasmoid.configuration.savedLocations = root.cfg_savedLocations;
-            // Force flush to disk so the widget picks up the change
-            // even if the config dialog is later closed without Apply/OK.
             if (typeof Plasmoid.configuration.writeConfig === "function")
                 Plasmoid.configuration.writeConfig();
         }
@@ -571,6 +586,14 @@ KCM.SimpleKCM {
         } else {
             root.cfg_latitude = lat;
             root.cfg_longitude = lon;
+            Plasmoid.configuration.activeLocation = JSON.stringify({
+                name:        root.cfg_locationName || "",
+                lat:         lat  || 0,
+                lon:         lon  || 0,
+                altitude:    (!isNaN(alt) && alt > 0) ? Math.round(alt) : (root.cfg_altitude || 0),
+                timezone:    root.cfg_timezone     || "",
+                countryCode: root.cfg_countryCode  || ""
+            });
             Plasmoid.configuration.latitude = lat;
             Plasmoid.configuration.longitude = lon;
             if (!isNaN(alt) && alt > 0) {
@@ -1228,7 +1251,7 @@ KCM.SimpleKCM {
                         Rectangle {
                             Layout.fillWidth: true
                             height: 1
-                            color: Kirigami.Theme.separatorColor
+                            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2)
                             opacity: 0.6
                         }
                     }
@@ -1533,7 +1556,7 @@ KCM.SimpleKCM {
                         Rectangle {
                             Layout.fillWidth: true
                             height: 1
-                            color: Kirigami.Theme.separatorColor
+                            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2)
                             opacity: 0.6
                         }
                     }

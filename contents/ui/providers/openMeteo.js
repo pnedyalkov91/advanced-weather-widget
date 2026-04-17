@@ -52,25 +52,6 @@ function fetchCurrent(service, chain, idx) {
             return;
         }
         var c = d.current;
-        r.temperatureC = c.temperature_2m;
-        r.apparentC = c.apparent_temperature;
-        r.humidityPercent = c.relative_humidity_2m;
-        r.windKmh = c.wind_speed_10m;
-        r.windDirection = isNaN(c.wind_direction_10m) ? NaN : c.wind_direction_10m;
-        r.pressureHpa = c.surface_pressure;
-        r.dewPointC = c.dew_point_2m;
-        r.visibilityKm = c.visibility / 1000.0;
-        r.weatherCode = c.weather_code;
-        r.isDay = (c.is_day !== undefined) ? c.is_day : -1;
-        r.precipMmh = (c.precipitation !== undefined) ? c.precipitation : NaN;
-        r.uvIndex = (c.uv_index !== undefined) ? c.uv_index : NaN;
-        r.snowDepthCm = (c.snow_depth !== undefined && c.snow_depth !== null) ? c.snow_depth * 100 : NaN;
-        r.locationUtcOffsetMins = (d.utc_offset_seconds !== undefined)
-            ? Math.round(d.utc_offset_seconds / 60) : 0;
-        r.sunriseTimeText = (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0)
-            ? Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm") : "--";
-        r.sunsetTimeText = (d.daily && d.daily.sunset && d.daily.sunset.length > 0)
-            ? Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm") : "--";
         var nd = [];
         if (d.daily && d.daily.time) {
             var maxD = Math.min(service.forecastDays, d.daily.time.length);
@@ -85,15 +66,30 @@ function fetchCurrent(service, chain, idx) {
                     snowCm: d.daily.snowfall_sum ? d.daily.snowfall_sum[i] : NaN
                 });
         }
-        r.dailyData = nd;
+        r.weatherDataStaged = {
+            temperatureC:        c.temperature_2m,
+            apparentC:           c.apparent_temperature,
+            humidityPercent:     c.relative_humidity_2m,
+            windKmh:             c.wind_speed_10m,
+            windDirection:       isNaN(c.wind_direction_10m) ? NaN : c.wind_direction_10m,
+            pressureHpa:         c.surface_pressure,
+            dewPointC:           c.dew_point_2m,
+            visibilityKm:        c.visibility / 1000.0,
+            weatherCode:         c.weather_code,
+            isDay:               (c.is_day !== undefined) ? c.is_day : -1,
+            precipMmh:           (c.precipitation !== undefined) ? c.precipitation : NaN,
+            uvIndex:             (c.uv_index !== undefined) ? c.uv_index : NaN,
+            snowDepthCm:         (c.snow_depth !== undefined && c.snow_depth !== null) ? c.snow_depth * 100 : NaN,
+            locationUtcOffsetMins: (d.utc_offset_seconds !== undefined) ? Math.round(d.utc_offset_seconds / 60) : 0,
+            sunriseTimeText:     (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0) ? Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm") : "--",
+            sunsetTimeText:      (d.daily && d.daily.sunset  && d.daily.sunset.length  > 0) ? Qt.formatTime(new Date(d.daily.sunset[0]),  "HH:mm") : "--",
+            dailyData:           nd
+        };
         r.loading = false;
         r.updateText = service._formatUpdateText("openMeteo");
 
         // No native alerts — fall back to MeteoAlarm / NWS
         service._fetchAlertsIfNeeded();
-
-        // Fetch air quality from separate endpoint
-        _fetchAirQuality(service);
     };
     req.send();
 }
@@ -124,36 +120,23 @@ function _fetchAirQuality(service) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
-            r.aqiPm10 = NaN;
-            r.aqiPm2_5 = NaN;
-            r.aqiCo = NaN;
-            r.aqiNo2 = NaN;
-            r.aqiSo2 = NaN;
-            r.aqiO3 = NaN;
-            r.pollenData = [];
+            r.aqiDataStaged = null;
+            r.pollenDataStaged = [];
             return;
         }
         var d = JSON.parse(req.responseText);
         var c = d.current || {};
-        if (c.european_aqi !== undefined) {
-            r.airQualityIndex = c.european_aqi;
-            r.airQualityLabel = _aqiLabel(c.european_aqi);
-        } else {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
-        }
-        // Pollutant concentrations (µg/m³ except CO which is µg/m³ → store as mg/m³)
-        r.aqiPm10  = (c.pm10               !== undefined) ? c.pm10               : NaN;
-        r.aqiPm2_5 = (c.pm2_5              !== undefined) ? c.pm2_5              : NaN;
-        r.aqiNo2   = (c.nitrogen_dioxide    !== undefined) ? c.nitrogen_dioxide    : NaN;
-        r.aqiSo2   = (c.sulphur_dioxide     !== undefined) ? c.sulphur_dioxide     : NaN;
-        r.aqiO3    = (c.ozone               !== undefined) ? c.ozone               : NaN;
-        // Open-Meteo returns CO in µg/m³; our breakpoints use mg/m³
-        r.aqiCo    = (c.carbon_monoxide     !== undefined) ? c.carbon_monoxide / 1000.0 : NaN;
-
-        // Pollen — Open-Meteo returns grains/m³ mapped to UPI 0–12 scale
+        var aqi = c.european_aqi;
+        r.aqiDataStaged = {
+            index: (aqi !== undefined) ? aqi : NaN,
+            label: (aqi !== undefined) ? _aqiLabel(aqi) : "",
+            pm10:  (c.pm10            !== undefined) ? c.pm10            : NaN,
+            pm2_5: (c.pm2_5           !== undefined) ? c.pm2_5           : NaN,
+            no2:   (c.nitrogen_dioxide !== undefined) ? c.nitrogen_dioxide : NaN,
+            so2:   (c.sulphur_dioxide  !== undefined) ? c.sulphur_dioxide  : NaN,
+            o3:    (c.ozone            !== undefined) ? c.ozone            : NaN,
+            co:    (c.carbon_monoxide  !== undefined) ? c.carbon_monoxide / 1000.0 : NaN
+        };
         var pollenKeys = [
             { key: "alder",   field: "alder_pollen"   },
             { key: "birch",   field: "birch_pollen"   },
@@ -167,7 +150,7 @@ function _fetchAirQuality(service) {
             var v = c[p.field];
             pd.push({ key: p.key, value: (v !== undefined && v !== null) ? v : NaN });
         });
-        r.pollenData = pd;
+        r.pollenDataStaged = pd;
     };
     req.send();
 }

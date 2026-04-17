@@ -74,6 +74,15 @@ Rectangle {
     // the background on/off with the button that appears in desktop edit mode.
     color: "transparent"
 
+    // Header summary cached once per weatherData change — avoids N separate Label
+    // bindings each subscribing to individual weatherRoot accessor properties.
+    readonly property string _fvTemp:       weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+    readonly property string _fvCondition:  weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
+    readonly property string _fvFeelsLike:  weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
+    readonly property string _fvHigh:       (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
+    readonly property string _fvLow:        (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
+    readonly property var    _fvCondIcon:   weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
+
     // Per-tab visibility flags (both visible by default)
     readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
     readonly property bool showDetailsTab: visibleTabs === "both" || visibleTabs === "details"
@@ -92,10 +101,13 @@ Rectangle {
     // Reset to the configured default tab every time the popup opens
     property int activeTab: _resolvedDefaultTab()
 
+    // Reset to default tab each time the popup is opened.
+    // Plasmoid.expanded is not a signal in Plasma 6; watch it via onExpandedChanged
+    // on the root PlasmoidItem (weatherRoot) which IS a PlasmoidItem property.
     Connections {
-        target: Plasmoid
+        target: weatherRoot
         function onExpandedChanged() {
-            if (Plasmoid.expanded)
+            if (weatherRoot.expanded)
                 fullView.activeTab = fullView._resolvedDefaultTab();
         }
     }
@@ -127,18 +139,8 @@ Rectangle {
         if (Math.abs(starred.lat - curLat) < 0.01 && Math.abs(starred.lon - curLon) < 0.01)
             return; // already on the default location
 
-        Plasmoid.configuration.autoDetectLocation = false;
-        Plasmoid.configuration.locationName = starred.name || "";
-        Plasmoid.configuration.latitude = starred.lat || 0;
-        Plasmoid.configuration.longitude = starred.lon || 0;
-        if (starred.altitude !== undefined)
-            Plasmoid.configuration.altitude = starred.altitude;
-        if (starred.timezone)
-            Plasmoid.configuration.timezone = starred.timezone;
-        if (starred.countryCode)
-            Plasmoid.configuration.countryCode = starred.countryCode;
-        if (weatherRoot && typeof weatherRoot.refreshWeather === "function")
-            weatherRoot.refreshWeather();
+        if (weatherRoot)
+            weatherRoot.applyLocation(starred);
     }
 
     // Small delay lets weatherRoot and Plasmoid.configuration fully initialise
@@ -222,7 +224,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: Plasmoid.configuration.locationName || ""
+                text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
                 // #2
                 color: Kirigami.Theme.textColor
                 font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
@@ -262,8 +264,9 @@ Rectangle {
 
                     MenuSeparator {}
 
-                    // Saved locations
-                    Instantiator {
+                    // Saved locations — Repeater works correctly in Qt6 QQC2 Menu;
+                    // Instantiator+insertItem breaks onTriggered in Qt6.
+                    Repeater {
                         model: {
                             try {
                                 var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
@@ -272,6 +275,7 @@ Rectangle {
                         }
                         delegate: MenuItem {
                             required property var modelData
+                            required property int index
                             readonly property bool isActive: {
                                 var dLat = Math.abs((modelData.lat || 0) - (Plasmoid.configuration.latitude || 0));
                                 var dLon = Math.abs((modelData.lon || 0) - (Plasmoid.configuration.longitude || 0));
@@ -281,24 +285,10 @@ Rectangle {
                             icon.name: modelData.starred ? "starred-symbolic" : (isActive ? "dialog-ok-apply" : "go-next")
                             font.bold: isActive
                             onTriggered: {
-                                // Switch to this saved location
-                                Plasmoid.configuration.autoDetectLocation = false;
-                                Plasmoid.configuration.locationName = modelData.name || "";
-                                Plasmoid.configuration.latitude = modelData.lat || 0;
-                                Plasmoid.configuration.longitude = modelData.lon || 0;
-                                if (modelData.altitude !== undefined)
-                                    Plasmoid.configuration.altitude = modelData.altitude;
-                                if (modelData.timezone)
-                                    Plasmoid.configuration.timezone = modelData.timezone;
-                                if (modelData.countryCode)
-                                    Plasmoid.configuration.countryCode = modelData.countryCode;
-                                // All properties set — refresh immediately
                                 if (weatherRoot)
-                                    weatherRoot.refreshWeather();
+                                    weatherRoot.applyLocation(modelData);
                             }
                         }
-                        onObjectAdded: function(index, object) { locationMenu.insertItem(index + 2, object) }
-                        onObjectRemoved: function(index, object) { locationMenu.removeItem(object) }
                     }
 
                     MenuSeparator {}
@@ -415,7 +405,7 @@ Rectangle {
                 width: 130
 
                 Label {
-                    text: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+                    text: fullView._fvTemp
                     // #2
                     color: Kirigami.Theme.textColor
                     font {
@@ -427,14 +417,14 @@ Rectangle {
                     Layout.maximumWidth: 130
                 }
                 Label {
-                    text: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
+                    text: fullView._fvCondition
                     color: Kirigami.Theme.textColor
                     font: weatherRoot ? weatherRoot.wf(15, true) : Qt.font({})
                     wrapMode: Text.WordWrap
                     Layout.maximumWidth: 130
                 }
                 Label {
-                    text: weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
+                    text: fullView._fvFeelsLike
                     color: Kirigami.Theme.textColor
                     font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                 }
@@ -443,8 +433,7 @@ Rectangle {
             // CENTRE — condition icon enlarged to 120 px (#6)
             WeatherIcon {
                 anchors.centerIn: parent
-                iconInfo: weatherRoot ? fullView.resolveConditionIcon(
-                    weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
+                iconInfo: fullView._fvCondIcon
                 iconSize: 120
             }
 
@@ -468,7 +457,7 @@ Rectangle {
                     }
                     Label {
                         Layout.alignment: Qt.AlignHCenter
-                        text: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
+                        text: fullView._fvHigh
                         color: "#ff6e40"
                         font: weatherRoot ? weatherRoot.wf(15, true) : Qt.font({
                             bold: true
@@ -488,7 +477,7 @@ Rectangle {
                     }
                     Label {
                         Layout.alignment: Qt.AlignHCenter
-                        text: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
+                        text: fullView._fvLow
                         color: "#42a5f5"
                         font: weatherRoot ? weatherRoot.wf(15, true) : Qt.font({
                             bold: true
@@ -574,7 +563,7 @@ Rectangle {
             visible: fullView.showAnyTab
             currentIndex: fullView.activeTab
             // Explicitly follow the current child's implicitHeight
-            implicitHeight: currentItem ? currentItem.implicitHeight : 0
+            implicitHeight: (children && children[currentIndex]) ? children[currentIndex].implicitHeight : 0
 
             DetailsView {
                 id: detailsView

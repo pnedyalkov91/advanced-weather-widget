@@ -96,48 +96,115 @@ PlasmoidItem {
     // ══════════════════════════════════════════════════════════════════════
 
     property bool loading: false
-    property real temperatureC: NaN
-    property real apparentC: NaN
-    property real windKmh: NaN
-    property real windDirection: NaN   // degrees 0=N, 90=E, 180=S, 270=W
-    property real pressureHpa: NaN
-    property real humidityPercent: NaN
-    property real visibilityKm: NaN
-    property real dewPointC: NaN
-    property real precipMmh: NaN           // Current precipitation rate (mm/h)
-    readonly property real precipSumMm: dailyData.length > 0 && !isNaN(dailyData[0].precipMm) ? dailyData[0].precipMm : NaN
-    property real uvIndex: NaN             // UV index (0–11+)
-    property real airQualityIndex: NaN     // AQI numeric value (provider scale)
-    property string airQualityLabel: ""    // "Good", "Moderate", etc.
-    property real aqiPm10:  NaN
-    property real aqiPm2_5: NaN
-    property real aqiCo:    NaN
-    property real aqiNo2:   NaN
-    property real aqiSo2:   NaN
-    property real aqiO3:    NaN
+
+    // Single-object weather data. Providers write r.weatherDataStaged = {...} once.
+    // Qt.callLater defers the actual weatherData assignment to the next event loop tick
+    // so the XHR callback returns immediately — the 17 accessor Changed signals fire
+    // when the UI thread is idle instead of blocking the network callback.
+    property var weatherDataStaged: null
+    property var weatherData: null
+    function _applyWeatherData() { weatherData = weatherDataStaged; }
+    onWeatherDataStagedChanged: Qt.callLater(_applyWeatherData)
+
+    readonly property real   temperatureC:          weatherData ? weatherData.temperatureC          : NaN
+    readonly property real   apparentC:             weatherData ? weatherData.apparentC             : NaN
+    readonly property real   windKmh:               weatherData ? weatherData.windKmh               : NaN
+    readonly property real   windDirection:         weatherData ? weatherData.windDirection         : NaN
+    readonly property real   pressureHpa:           weatherData ? weatherData.pressureHpa           : NaN
+    readonly property real   humidityPercent:       weatherData ? weatherData.humidityPercent       : NaN
+    readonly property real   visibilityKm:          weatherData ? weatherData.visibilityKm          : NaN
+    readonly property real   dewPointC:             weatherData ? weatherData.dewPointC             : NaN
+    readonly property real   precipMmh:             weatherData ? weatherData.precipMmh             : NaN
+    readonly property real   uvIndex:               weatherData ? weatherData.uvIndex               : NaN
+    readonly property real   snowDepthCm:           weatherData ? weatherData.snowDepthCm           : NaN
+    readonly property int    weatherCode:           weatherData ? weatherData.weatherCode           : -1
+    readonly property int    isDay:                 weatherData ? weatherData.isDay                 : -1
+    readonly property int    locationUtcOffsetMins: weatherData ? weatherData.locationUtcOffsetMins : 0
+    readonly property string sunriseTimeText:       weatherData ? weatherData.sunriseTimeText       : "--"
+    readonly property string sunsetTimeText:        weatherData ? weatherData.sunsetTimeText        : "--"
+    readonly property var    dailyData:             weatherData ? weatherData.dailyData             : []
+    readonly property real   precipSumMm:           dailyData.length > 0 && !isNaN(dailyData[0].precipMm) ? dailyData[0].precipMm : NaN
+
+    property var aqiDataStaged: null
+    property var aqiData: null
+    function _applyAqiData() { aqiData = aqiDataStaged; }
+    onAqiDataStagedChanged: Qt.callLater(_applyAqiData)
+
+    // Inline accessors — callers subscribe to aqiData directly rather than
+    // 8 separate reactive properties each adding their own subscriber chain.
+    function airQualityIndex() { return aqiData ? aqiData.index  : NaN; }
+    function airQualityLabel()  { return aqiData ? aqiData.label  : ""; }
+    function aqiPm10()  { return aqiData ? aqiData.pm10  : NaN; }
+    function aqiPm2_5() { return aqiData ? aqiData.pm2_5 : NaN; }
+    function aqiCo()    { return aqiData ? aqiData.co    : NaN; }
+    function aqiNo2()   { return aqiData ? aqiData.no2   : NaN; }
+    function aqiSo2()   { return aqiData ? aqiData.so2   : NaN; }
+    function aqiO3()    { return aqiData ? aqiData.o3    : NaN; }
     property var weatherAlerts: []         // [{headline, severity, description}]
-    property var pollenData: []             // [{key, value}] UPI 0–12 per pollen type
+    property var pollenDataStaged: []
+    property var pollenData: []             // [{key, value}] UPI 0–12 per pollen type — set via _applyPollenData
+    function _applyPollenData() { pollenData = pollenDataStaged; }
+    onPollenDataStagedChanged: Qt.callLater(_applyPollenData)
     property var spaceWeather: null         // NOAA SWPC data object
-    property real snowDepthCm: NaN         // Current snow depth (cm)
-    property string sunriseTimeText: "--"
-    property string sunsetTimeText: "--"
     property string moonriseTimeText: "--"
     property string moonsetTimeText: "--"
-    property int weatherCode: -1
-    property int isDay: -1   // -1=unknown, 0=night, 1=day (populated by API when available)
-    // UTC offset of the weather location in minutes (e.g. -420 for California UTC-7).
-    // Set by WeatherService from the API response. Used by sunpath.js to convert
-    // UTC clock time to location-local time without relying on Intl (unsupported in Qt V4).
-    property int locationUtcOffsetMins: 0
-    property var dailyData: []
     property var hourlyData: []
     property int panelScrollIndex: 0
     property string updateText: ""
 
-    // hasSelectedTown is true when we have a named location OR when auto-detect
-    // mode has already acquired non-zero GPS coordinates (so weather can load
-    // even before the reverse-geocode name arrives on first placement).
-    readonly property bool hasSelectedTown: (Plasmoid.configuration.locationName || "").trim().length > 0 || (Plasmoid.configuration.autoDetectLocation && (Plasmoid.configuration.latitude !== 0.0 || Plasmoid.configuration.longitude !== 0.0))
+    // Parsed activeLocation — staged so the _locName/_locLat/_locLon/hasSelectedTown
+    // cascade fires in the next event loop tick (Qt.callLater) rather than synchronously
+    // inside the Plasmoid.configuration write, preventing UI hangs on location switch.
+    property var activeLocStaged: ({})
+    // Individual typed fields — QML detects per-field changes precisely,
+    // avoiding the full var-object dirty cascade.
+    property string _activeLocName: ""
+    property real   _activeLocLat:  0
+    property real   _activeLocLon:  0
+    property string _activeLocTz:   ""
+    property string _activeLocCC:   ""
+    property real   _activeLocAlt:  0
+
+    function _applyActiveLoc() {
+        if (_batchingLocation) return;
+        var o = activeLocStaged;
+        if (!o) return;
+        _activeLocName = o.name        || "";
+        _activeLocLat  = o.lat         || 0;
+        _activeLocLon  = o.lon         || 0;
+        _activeLocTz   = o.timezone    || "";
+        _activeLocCC   = o.countryCode || "";
+        _activeLocAlt  = o.altitude    !== undefined ? o.altitude : 0;
+        refreshDebounce.restart();
+    }
+
+    function _locName() { return _activeLocName || Plasmoid.configuration.locationName || ""; }
+    function _locLat()  { return _activeLocLat  !== 0 ? _activeLocLat  : Plasmoid.configuration.latitude; }
+    function _locLon()  { return _activeLocLon  !== 0 ? _activeLocLon  : Plasmoid.configuration.longitude; }
+
+    // Imperative rather than reactive — only notifies subscribers when the
+    // boolean value actually flips. A reactive binding re-notifies on every
+    // _activeLocName change (even true→true), which triggers FullView Layout
+    // resize cascades costing ~70ms on every location switch.
+    property bool hasSelectedTown: false
+    function _updateHasSelectedTown() {
+        var name = _activeLocName || Plasmoid.configuration.locationName || "";
+        var next;
+        if (name.trim().length > 0) {
+            next = true;
+        } else if (Plasmoid.configuration.autoDetectLocation) {
+            var lat = _activeLocLat !== 0 ? _activeLocLat : Plasmoid.configuration.latitude;
+            var lon = _activeLocLon !== 0 ? _activeLocLon : Plasmoid.configuration.longitude;
+            next = (lat !== 0.0 || lon !== 0.0);
+        } else {
+            next = false;
+        }
+        if (hasSelectedTown !== next) hasSelectedTown = next;
+    }
+    on_ActiveLocNameChanged:  _updateHasSelectedTown()
+    on_ActiveLocLatChanged:   _updateHasSelectedTown()
+    on_ActiveLocLonChanged:   _updateHasSelectedTown()
+    onActiveLocStagedChanged: Qt.callLater(_applyActiveLoc)
 
     // ══════════════════════════════════════════════════════════════════════
     // Representations
@@ -472,6 +539,54 @@ PlasmoidItem {
         req.send();
     }
 
+    /** Set to true around a batch location-config write to suppress intermediate debounce restarts. */
+    property bool _batchingLocation: false
+
+    /** Pending location for deferred individual-field sync. */
+    property var _pendingLoc: null
+
+    /** Sync individual config fields from the pending location — called deferred. */
+    function _applyPendingLocFields() {
+        var loc = _pendingLoc;
+        if (!loc) return;
+        _pendingLoc = null;
+        _batchingLocation = true;
+        Plasmoid.configuration.autoDetectLocation = false;
+        Plasmoid.configuration.activeLocation = JSON.stringify({
+            name:        loc.name        || "",
+            lat:         loc.lat         || 0,
+            lon:         loc.lon         || 0,
+            altitude:    loc.altitude    !== undefined ? loc.altitude : 0,
+            timezone:    loc.timezone    || "",
+            countryCode: loc.countryCode || ""
+        });
+        Plasmoid.configuration.locationName  = loc.name        || "";
+        Plasmoid.configuration.latitude      = loc.lat         || 0;
+        Plasmoid.configuration.longitude     = loc.lon         || 0;
+        if (loc.altitude  !== undefined) Plasmoid.configuration.altitude    = loc.altitude;
+        if (loc.timezone)               Plasmoid.configuration.timezone     = loc.timezone;
+        if (loc.countryCode)            Plasmoid.configuration.countryCode  = loc.countryCode;
+        _batchingLocation = false;
+    }
+
+    /** Write all location fields as a single JSON config entry — one signal, one binding cascade. */
+    function applyLocation(loc) {
+        // Stage both the in-memory update and the KConfig persist — both deferred
+        // so the click handler returns in <1ms and the popup closes without a hang.
+        activeLocStaged = {
+            name:        loc.name        || "",
+            lat:         loc.lat         || 0,
+            lon:         loc.lon         || 0,
+            altitude:    loc.altitude    !== undefined ? loc.altitude : 0,
+            timezone:    loc.timezone    || "",
+            countryCode: loc.countryCode || ""
+        };
+        // _applyActiveLoc fires via onActiveLocStagedChanged → Qt.callLater
+        // KConfig persist fires 800ms later via _locPersistTimer
+        _pendingLoc = loc;
+        _locPersistTimer.restart();
+    }
+
     /** Refresh current weather + forecast (called by button, timers, config changes) */
     function refreshWeather() {
         refreshDebounce.stop();
@@ -546,19 +661,19 @@ PlasmoidItem {
     }
 
     function airQualityText() {
-        if (isNaN(airQualityIndex)) return "--";
+        var aqi = airQualityIndex();
+        if (isNaN(aqi)) return "--";
         // EU AQI band
         var label = "";
         var square = "";
-        if (airQualityIndex < 25)       { label = i18n("Good");           square = "\u{1F7E2}"; }  // 🟢
-        else if (airQualityIndex < 50)  { label = i18n("Fair");           square = "\u{1F7E1}"; }  // 🟡
-        else if (airQualityIndex < 75)  { label = i18n("Moderate");       square = "\u{1F7E0}"; }  // 🟠
-        else if (airQualityIndex < 100) { label = i18n("Poor");           square = "\u{1F534}"; }  // 🔴
-        else if (airQualityIndex < 150) { label = i18n("Very Poor");      square = "\u{1F7E3}"; }  // 🟣
-        else                            { label = i18n("Extremely Poor"); square = "\u{1F7E4}"; }  // 🟤
+        if (aqi < 25)       { label = i18n("Good");           square = "\u{1F7E2}"; }  // 🟢
+        else if (aqi < 50)  { label = i18n("Fair");           square = "\u{1F7E1}"; }  // 🟡
+        else if (aqi < 75)  { label = i18n("Moderate");       square = "\u{1F7E0}"; }  // 🟠
+        else if (aqi < 100) { label = i18n("Poor");           square = "\u{1F534}"; }  // 🔴
+        else if (aqi < 150) { label = i18n("Very Poor");      square = "\u{1F7E3}"; }  // 🟣
+        else                { label = i18n("Extremely Poor"); square = "\u{1F7E4}"; }  // 🟤
         // Compute AQHI from EU AQI
         var aqhi;
-        var aqi = airQualityIndex;
         if (aqi <= 0)        aqhi = 1;
         else if (aqi <= 25)  aqhi = 1 + (aqi / 25) * 2;
         else if (aqi <= 50)  aqhi = 4 + ((aqi - 25) / 25) * 2;
@@ -895,7 +1010,7 @@ PlasmoidItem {
     onLoadingChanged: {
         if (!loading) {
             weatherService._safetyTimer.stop();
-            if (!isNaN(temperatureC))
+            if (weatherData && !isNaN(weatherData.temperatureC))
                 _computeMoonTimes();
         }
     }
@@ -1196,7 +1311,7 @@ PlasmoidItem {
     function panelItemTextOnly(tok) {
         var mode = Plasmoid.configuration.panelSunTimesMode || "upcoming";
         if (tok === "location")
-            return (Plasmoid.configuration.locationName || "").split(",")[0].trim();
+            return (_locName() || "").split(",")[0].trim();
         if (tok === "temperature")
             return tempValue(temperatureC);
         if (tok === "condition")
@@ -1332,6 +1447,15 @@ PlasmoidItem {
         onTriggered: refreshWeather()
     }
 
+    // Persists location to KConfig after popup closes — avoids blocking KConfig
+    // D-Bus writes on the UI thread during the location-switch click animation.
+    Timer {
+        id: _locPersistTimer
+        interval: 800
+        repeat: false
+        onTriggered: root._applyPendingLocFields()
+    }
+
     // Panel scroll ticker removed — "scroll/cycle" mode was removed.
     // The multiline Timer in CompactView.qml handles scrolling independently.
 
@@ -1355,6 +1479,20 @@ PlasmoidItem {
         // Must be set here (not as a static binding) so Plasma picks it up after
         // the component is fully live — same pattern used by Wunderground and others.
         Plasmoid.backgroundHints = PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground;
+        // Populate location fields immediately from saved config (no deferral needed at startup)
+        var s = Plasmoid.configuration.activeLocation || "{}";
+        try {
+            var o = JSON.parse(s);
+            if (o && typeof o === "object") {
+                root._activeLocName = o.name        || "";
+                root._activeLocLat  = o.lat         || 0;
+                root._activeLocLon  = o.lon         || 0;
+                root._activeLocTz   = o.timezone    || "";
+                root._activeLocCC   = o.countryCode || "";
+                root._activeLocAlt  = o.altitude    !== undefined ? o.altitude : 0;
+            }
+        } catch(e) {}
+        _updateHasSelectedTown();
         refreshDebounce.restart();
         if (Plasmoid.configuration.autoDetectLocation)
             _startAutoDetect();
@@ -1362,17 +1500,31 @@ PlasmoidItem {
 
     Connections {
         target: Plasmoid.configuration
+        function onActiveLocationChanged() {
+            var s = Plasmoid.configuration.activeLocation || "{}";
+            try {
+                var o = JSON.parse(s);
+                if (o && typeof o === "object") {
+                    // Skip if fields already match (set by applyLocation via _applyActiveLoc)
+                    if (root._activeLocLat === (o.lat || 0) && root._activeLocLon === (o.lon || 0) && root._activeLocName === (o.name || "")) return;
+                    root.activeLocStaged = o;
+                    return;
+                }
+            } catch(e) {}
+            root.activeLocStaged = {};
+        }
         function onLocationNameChanged() {
-            refreshDebounce.restart();
+            root._updateHasSelectedTown();
+            if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLatitudeChanged() {
-            refreshDebounce.restart();
+            if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLongitudeChanged() {
-            refreshDebounce.restart();
+            if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onTimezoneChanged() {
-            refreshDebounce.restart();
+            if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onWeatherProviderChanged() {
             refreshDebounce.restart();

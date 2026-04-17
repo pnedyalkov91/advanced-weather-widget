@@ -115,35 +115,6 @@ function fetchCurrent(service, W, chain, idx) {
         }
 
         var c = d.currentConditions;
-
-        r.temperatureC = c.temp;
-        r.apparentC = c.feelslike;
-        r.humidityPercent = (c.humidity !== undefined) ? c.humidity : NaN;
-        r.windKmh = (c.windspeed !== undefined) ? c.windspeed : NaN;
-        r.windDirection = (c.winddir !== undefined) ? c.winddir : NaN;
-        r.pressureHpa = (c.pressure !== undefined) ? c.pressure : NaN;
-        r.dewPointC = (c.dew !== undefined) ? c.dew : NaN;
-        r.visibilityKm = (c.visibility !== undefined) ? c.visibility : NaN;
-        r.precipMmh = (c.precip !== undefined) ? c.precip : NaN;
-        r.uvIndex = (c.uvindex !== undefined) ? c.uvindex : NaN;
-        r.snowDepthCm = (c.snowdepth !== undefined) ? c.snowdepth : NaN;
-        r.weatherCode = _iconToWmo(c.icon);
-        r.isDay = _iconIsDay(c.icon);
-        r.locationUtcOffsetMins = (d.tzoffset !== undefined) ? Math.round(d.tzoffset * 60) : 0;
-
-        // Sunrise / sunset from currentConditions (time strings "HH:mm:ss")
-        if (c.sunrise) {
-            r.sunriseTimeText = c.sunrise.substring(0, 5);
-        } else {
-            r.sunriseTimeText = "--";
-        }
-        if (c.sunset) {
-            r.sunsetTimeText = c.sunset.substring(0, 5);
-        } else {
-            r.sunsetTimeText = "--";
-        }
-
-        // Daily forecast
         var nd = [];
         if (d.days) {
             var maxD = Math.min(service.forecastDays, d.days.length);
@@ -160,19 +131,27 @@ function fetchCurrent(service, W, chain, idx) {
                 });
             }
         }
-        r.dailyData = nd;
-
-        // Air quality not available natively
-        r.airQualityIndex = NaN;
-        r.airQualityLabel = "";
-        r.aqiPm10 = NaN;
-        r.aqiPm2_5 = NaN;
-        r.aqiCo = NaN;
-        r.aqiNo2 = NaN;
-        r.aqiSo2 = NaN;
-        r.aqiO3 = NaN;
+        r.weatherDataStaged = {
+            temperatureC:    c.temp,
+            apparentC:       c.feelslike,
+            humidityPercent: (c.humidity !== undefined) ? c.humidity : NaN,
+            windKmh:         (c.windspeed !== undefined) ? c.windspeed : NaN,
+            windDirection:   (c.winddir !== undefined) ? c.winddir : NaN,
+            pressureHpa:     (c.pressure !== undefined) ? c.pressure : NaN,
+            dewPointC:       (c.dew !== undefined) ? c.dew : NaN,
+            visibilityKm:    (c.visibility !== undefined) ? c.visibility : NaN,
+            precipMmh:       (c.precip !== undefined) ? c.precip : NaN,
+            uvIndex:         (c.uvindex !== undefined) ? c.uvindex : NaN,
+            snowDepthCm:     (c.snowdepth !== undefined) ? c.snowdepth : NaN,
+            weatherCode:     _iconToWmo(c.icon),
+            isDay:           _iconIsDay(c.icon),
+            locationUtcOffsetMins: (d.tzoffset !== undefined) ? Math.round(d.tzoffset * 60) : 0,
+            sunriseTimeText: c.sunrise ? c.sunrise.substring(0, 5) : "--",
+            sunsetTimeText:  c.sunset  ? c.sunset.substring(0, 5)  : "--",
+            dailyData:       nd
+        };
+        r.aqiData = null;
         r.pollenData = [];
-
         r.loading = false;
         r.updateText = service._formatUpdateText("visualCrossing");
 
@@ -184,8 +163,7 @@ function fetchCurrent(service, W, chain, idx) {
         // Fall back to MeteoAlarm / NWS if no native alerts
         service._fetchAlertsIfNeeded();
 
-        // Fetch air quality from Open-Meteo as fallback
-        _fetchAirQualityFallback(service);
+        // Air quality fetched in parallel from WeatherService.refreshNow()
     };
     req.send();
 }
@@ -226,60 +204,6 @@ function _parseAlerts(r, alerts) {
     }
 }
 
-function _fetchAirQualityFallback(service) {
-    var gen = service._refreshGen;
-    var r = service.weatherRoot;
-    var tz = service.timezone;
-    var url = "https://air-quality-api.open-meteo.com/v1/air-quality"
-        + "?latitude=" + service.latitude
-        + "&longitude=" + service.longitude
-        + "&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone"
-        + ",alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen"
-        + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto");
-    var req = new XMLHttpRequest();
-    req.open("GET", url);
-    req.onreadystatechange = function () {
-        if (req.readyState !== XMLHttpRequest.DONE)
-            return;
-        if (service._refreshGen !== gen) return;
-        if (req.status !== 200) return;
-        try {
-            var d = JSON.parse(req.responseText);
-            var c = d.current || {};
-            if (c.european_aqi !== undefined) {
-                r.airQualityIndex = c.european_aqi;
-                if (c.european_aqi <= 20) r.airQualityLabel = "Good";
-                else if (c.european_aqi <= 40) r.airQualityLabel = "Fair";
-                else if (c.european_aqi <= 60) r.airQualityLabel = "Moderate";
-                else if (c.european_aqi <= 80) r.airQualityLabel = "Poor";
-                else if (c.european_aqi <= 100) r.airQualityLabel = "Very Poor";
-                else r.airQualityLabel = "Hazardous";
-            }
-            r.aqiPm10  = (c.pm10 !== undefined) ? c.pm10 : NaN;
-            r.aqiPm2_5 = (c.pm2_5 !== undefined) ? c.pm2_5 : NaN;
-            r.aqiNo2   = (c.nitrogen_dioxide !== undefined) ? c.nitrogen_dioxide : NaN;
-            r.aqiSo2   = (c.sulphur_dioxide !== undefined) ? c.sulphur_dioxide : NaN;
-            r.aqiO3    = (c.ozone !== undefined) ? c.ozone : NaN;
-            r.aqiCo    = (c.carbon_monoxide !== undefined) ? c.carbon_monoxide / 1000.0 : NaN;
-
-            var pollenKeys = [
-                { key: "alder", field: "alder_pollen" },
-                { key: "birch", field: "birch_pollen" },
-                { key: "grass", field: "grass_pollen" },
-                { key: "mugwort", field: "mugwort_pollen" },
-                { key: "olive", field: "olive_pollen" },
-                { key: "ragweed", field: "ragweed_pollen" }
-            ];
-            var pd = [];
-            pollenKeys.forEach(function (p) {
-                var v = c[p.field];
-                pd.push({ key: p.key, value: (v !== undefined && v !== null) ? v : NaN });
-            });
-            r.pollenData = pd;
-        } catch (e) { /* ignore */ }
-    };
-    req.send();
-}
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;

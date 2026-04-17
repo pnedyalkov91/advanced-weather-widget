@@ -68,6 +68,9 @@
     <entry name="altitude"           type="Int"><default>0</default></entry>
     <entry name="timezone"           type="String"><default></default></entry>
     <entry name="countryCode"        type="String"><default></default></entry>
+    <!-- Single-write active location: JSON {name,lat,lon,altitude,timezone,countryCode}.
+         Written atomically by applyLocation() to avoid 6 separate config-change signals. -->
+    <entry name="activeLocation"     type="String"><default>{}</default></entry>
     <entry name="weatherProvider"    type="String"><default>adaptive</default></entry>
     <!-- Saved locations: JSON array of {name, lat, lon, altitude, timezone, countryCode} -->
     <entry name="savedLocations"     type="String"><default>[]</default></entry>

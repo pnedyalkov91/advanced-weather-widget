@@ -311,13 +311,19 @@ PlasmaCore.ToolTipArea {
     }
 
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
+    readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
 
     // ── Reactive panel items data ─────────────────────────────────────────
     property var panelItemsData: {
         if (!weatherRoot)
             return [];
-        // Touch every reactive property so this re-evaluates when data changes
-        var _deps = weatherRoot.temperatureC + weatherRoot.windKmh + weatherRoot.windDirection + weatherRoot.humidityPercent + weatherRoot.pressureHpa + weatherRoot.weatherCode + weatherRoot.panelScrollIndex + weatherRoot.sunriseTimeText.length + weatherRoot.sunsetTimeText.length + weatherRoot.moonriseTimeText.length + weatherRoot.moonsetTimeText.length + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize;
+        // Subscribe to weatherData object (fires once per refresh) plus scalar deps
+        var _deps = weatherRoot.weatherData + weatherRoot.panelScrollIndex
+            + weatherRoot.moonriseTimeText.length + weatherRoot.moonsetTimeText.length
+            + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons
+            + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator
+            + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode
+            + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize;
         return _buildItems();
     }
 
@@ -916,7 +922,7 @@ PlasmaCore.ToolTipArea {
                 Text {
                     id: tempText
                     anchors.fill: parent
-                    text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
+                    text: compactRoot._cvTemp
                     font.family: Kirigami.Theme.defaultFont.family
                     font.pixelSize: compactRoot.simpleFontSz
                     fontSizeMode: Text.FixedSize
@@ -1035,7 +1041,7 @@ PlasmaCore.ToolTipArea {
                     Label {
                         id: compressedBadge
                         anchors.centerIn: parent
-                        text: compactRoot.weatherRoot ? compactRoot.weatherRoot.tempValue(compactRoot.weatherRoot.temperatureC) : "--"
+                        text: compactRoot._cvTemp
                         // Badge font ≈ 28 % of the square side; min 8 px
                         // Respect Font Size setting; auto = 40% of square side
                         // Auto: squareSide / 3 ≈ 16 px when squareSide = 48 px

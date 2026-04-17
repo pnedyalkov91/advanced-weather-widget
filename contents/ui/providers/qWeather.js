@@ -136,26 +136,27 @@ function fetchCurrent(service, W, chain, idx) {
             return;
         }
         var n = d.now;
-        r.temperaturecode = parseFloat(n.temp);
-        r.apparentcode = parseFloat(n.feelsLike);
-        r.humidityPercent = parseFloat(n.humidity);
-        r.pressureHpa = parseFloat(n.pressure);
-        r.windKmh = parseFloat(n.windSpeed);  // already km/h
-        r.windDirection = parseFloat(n.wind360);
-        r.dewPointcode = (n.dew !== undefined && n.dew !== null)
-            ? parseFloat(n.dew)
-            : _calcDewPoint(parseFloat(n.temp), parseFloat(n.humidity));
-        r.visibilityKm = parseFloat(n.vis);
-        r.precipMmh = parseFloat(n.precip) || 0;
-        r.uvIndex = NaN;      // not in current endpoint
-        r.snowDepthCm = NaN;  // not available
-        r.weatherCode = _qwCodeToWmo(n.icon);
-        r.isDay = _isDay(n.icon);
-        // sunrise/sunset not in current endpoint — will be set from daily
-        r.sunriseTimeText = "--";
-        r.sunsetTimeText = "--";
-
-        // Fetch daily forecast
+        service._qw_cur = {
+            temperatureC:    parseFloat(n.temp),
+            apparentC:       parseFloat(n.feelsLike),
+            humidityPercent: parseFloat(n.humidity),
+            pressureHpa:     parseFloat(n.pressure),
+            windKmh:         parseFloat(n.windSpeed),
+            windDirection:   parseFloat(n.wind360),
+            dewPointC:       (n.dew !== undefined && n.dew !== null)
+                                ? parseFloat(n.dew)
+                                : _calcDewPoint(parseFloat(n.temp), parseFloat(n.humidity)),
+            visibilityKm:    parseFloat(n.vis),
+            precipMmh:       parseFloat(n.precip) || 0,
+            uvIndex:         NaN,
+            snowDepthCm:     NaN,
+            weatherCode:     _qwCodeToWmo(n.icon),
+            isDay:           _isDay(n.icon),
+            locationUtcOffsetMins: 0,
+            sunriseTimeText: "--",
+            sunsetTimeText:  "--",
+            dailyData:       []
+        };
         _fetchDaily(service, W, key, loc, gen);
     };
     req.send();
@@ -189,16 +190,18 @@ function _fetchDaily(service, W, key, loc, gen) {
                         snowCm: 0  // not separated in QWeather daily
                     });
                 }
-                // Set sunrise/sunset from today's data
                 if (d.daily.length > 0) {
                     if (d.daily[0].sunrise)
-                        r.sunriseTimeText = d.daily[0].sunrise;
+                        service._qw_cur.sunriseTimeText = d.daily[0].sunrise;
                     if (d.daily[0].sunset)
-                        r.sunsetTimeText = d.daily[0].sunset;
+                        service._qw_cur.sunsetTimeText = d.daily[0].sunset;
                 }
             }
         }
-        r.dailyData = nd;
+        service._qw_cur.dailyData = nd;
+        var r = service.weatherRoot;
+        r.weatherDataStaged = service._qw_cur;
+        service._qw_cur = null;
         r.loading = false;
         r.updateText = service._formatUpdateText("qWeather");
 
@@ -230,26 +233,22 @@ function _fetchAirQuality(service, W, key, loc, gen) {
         if (req.readyState !== XMLHttpRequest.DONE) return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
+            r.aqiData = null;
             r.pollenData = [];
             return;
         }
         var d;
         try { d = JSON.parse(req.responseText); } catch (e) {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
+            r.aqiData = null;
             r.pollenData = [];
             return;
         }
         if (d.code === "200" && d.indexes && d.indexes.length > 0) {
-            // Use the first index (typically the primary AQI)
             var idx = d.indexes[0];
-            r.airQualityIndex = parseFloat(idx.aqiDisplay) || NaN;
-            r.airQualityLabel = _qwAqiLabel(parseInt(idx.category, 10));
+            var aqi = parseFloat(idx.aqiDisplay) || NaN;
+            r.aqiDataStaged = { index: aqi, label: _qwAqiLabel(parseInt(idx.category, 10)) };
         } else {
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
+            r.aqiData = null;
         }
         r.pollenData = [];
     };

@@ -48,13 +48,20 @@ QtObject {
     property var weatherRoot
 
     // ── Config mirrors (accessible from non-pragma JS providers) ──────────
-    readonly property real latitude: Plasmoid.configuration.latitude
-    readonly property real longitude: Plasmoid.configuration.longitude
-    readonly property string timezone: (Plasmoid.configuration.timezone || "").trim()
-    readonly property int forecastDays: Plasmoid.configuration.forecastDays
-    readonly property real altitude: Plasmoid.configuration.altitude
-    readonly property string countryCode: (Plasmoid.configuration.countryCode || "").toUpperCase()
-    readonly property string locationName: Plasmoid.configuration.locationName || ""
+    // Parse activeLocation once per location switch (single config signal) with
+    // fallback to individual entries for config-page writes that bypass applyLocation().
+    readonly property var _activeLoc: {
+        var s = Plasmoid.configuration.activeLocation || "{}";
+        try { var o = JSON.parse(s); if (o && typeof o === "object") return o; } catch(e) {}
+        return {};
+    }
+    readonly property real latitude:      (_activeLoc.lat  !== undefined && _activeLoc.lat  !== 0) ? _activeLoc.lat  : Plasmoid.configuration.latitude
+    readonly property real longitude:     (_activeLoc.lon  !== undefined && _activeLoc.lon  !== 0) ? _activeLoc.lon  : Plasmoid.configuration.longitude
+    readonly property string timezone:    ((_activeLoc.timezone    || Plasmoid.configuration.timezone    || "")).trim()
+    readonly property int forecastDays:   Plasmoid.configuration.forecastDays
+    readonly property real altitude:      (_activeLoc.altitude    !== undefined) ? _activeLoc.altitude    : Plasmoid.configuration.altitude
+    readonly property string countryCode: ((_activeLoc.countryCode || Plasmoid.configuration.countryCode || "")).toUpperCase()
+    readonly property string locationName: _activeLoc.name || Plasmoid.configuration.locationName || ""
 
     // ── Private: API key helpers ─────────────────────────────────────────
     function _owKey() {
@@ -118,33 +125,11 @@ QtObject {
         if (!r.hasSelectedTown) {
             r.loading = false;
             r.updateText = "";
-            r.temperatureC = NaN;
-            r.apparentC = NaN;
-            r.windKmh = NaN;
-            r.windDirection = NaN;
-            r.pressureHpa = NaN;
-            r.humidityPercent = NaN;
-            r.visibilityKm = NaN;
-            r.dewPointC = NaN;
-            r.precipMmh = NaN;
-            r.uvIndex = NaN;
-            r.airQualityIndex = NaN;
-            r.airQualityLabel = "";
-            r.aqiPm10 = NaN;
-            r.aqiPm2_5 = NaN;
-            r.aqiCo = NaN;
-            r.aqiNo2 = NaN;
-            r.aqiSo2 = NaN;
-            r.aqiO3 = NaN;
-            r.pollenData = [];
+            r.weatherDataStaged = null;
+            r.aqiDataStaged = null;
+            r.pollenDataStaged = [];
             r.spaceWeather = null;
             r.weatherAlerts = [];
-            r.snowDepthCm = NaN;
-            r.sunriseTimeText = "--";
-            r.sunsetTimeText = "--";
-            r.weatherCode = -1;
-            r.isDay = -1;
-            r.dailyData = [];
             r.hourlyData = [];
             return;
         }
@@ -157,6 +142,9 @@ QtObject {
         chain._gen = _refreshGen;
 
         _tryProvider(chain, 0);
+        // Fetch air quality + pollen in parallel with the main weather request
+        // (independent of provider — always uses Open-Meteo air-quality API)
+        _fetchAirQualityOpenMeteo();
         // Fetch NOAA space weather independently (location-independent)
         // Skip if data was fetched recently (< 10 min) since it doesn't change with location
         var now = Date.now();
@@ -348,6 +336,71 @@ QtObject {
         OpenMeteoJS.fetchCurrent(service, chain, idx); // default
     }
 
+    // ─── Shared Open-Meteo air-quality + pollen fallback ────────────────────
+
+    /**
+     * Fetches AQI, pollutant concentrations, and pollen from the Open-Meteo
+     * air-quality API and writes them into weatherRoot.
+     * Called by providers that don't supply this data natively.
+     */
+    function _fetchAirQualityOpenMeteo() {
+        var gen = _refreshGen;
+        var r = weatherRoot;
+        var tz = (Plasmoid.configuration.timezone || "").trim();
+        var url = "https://air-quality-api.open-meteo.com/v1/air-quality"
+            + "?latitude=" + Plasmoid.configuration.latitude
+            + "&longitude=" + Plasmoid.configuration.longitude
+            + "&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone"
+            + ",alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen"
+            + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto");
+        var req = new XMLHttpRequest();
+        req.open("GET", url);
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return;
+            if (_refreshGen !== gen) return;
+            if (req.status !== 200) return;
+            try {
+                var d = JSON.parse(req.responseText);
+                var c = d.current || {};
+                var aqi = c.european_aqi;
+                var label = "";
+                if (aqi !== undefined) {
+                    if      (aqi <= 20)  label = "Good";
+                    else if (aqi <= 40)  label = "Fair";
+                    else if (aqi <= 60)  label = "Moderate";
+                    else if (aqi <= 80)  label = "Poor";
+                    else if (aqi <= 100) label = "Very Poor";
+                    else                 label = "Hazardous";
+                }
+                r.aqiDataStaged = {
+                    index: (aqi !== undefined) ? aqi : NaN,
+                    label: label,
+                    pm10:  (c.pm10            !== undefined) ? c.pm10            : NaN,
+                    pm2_5: (c.pm2_5           !== undefined) ? c.pm2_5           : NaN,
+                    no2:   (c.nitrogen_dioxide !== undefined) ? c.nitrogen_dioxide : NaN,
+                    so2:   (c.sulphur_dioxide  !== undefined) ? c.sulphur_dioxide  : NaN,
+                    o3:    (c.ozone            !== undefined) ? c.ozone            : NaN,
+                    co:    (c.carbon_monoxide  !== undefined) ? c.carbon_monoxide / 1000.0 : NaN
+                };
+                var pollenKeys = [
+                    { key: "alder",   field: "alder_pollen"   },
+                    { key: "birch",   field: "birch_pollen"   },
+                    { key: "grass",   field: "grass_pollen"   },
+                    { key: "mugwort", field: "mugwort_pollen" },
+                    { key: "olive",   field: "olive_pollen"   },
+                    { key: "ragweed", field: "ragweed_pollen" }
+                ];
+                var pd = [];
+                pollenKeys.forEach(function (p) {
+                    var v = c[p.field];
+                    pd.push({ key: p.key, value: (v !== undefined && v !== null) ? v : NaN });
+                });
+                r.pollenDataStaged = pd;
+            } catch (e) {}
+        };
+        req.send();
+    }
+
     // ─── Sunrise/sunset fallback for providers that don't supply it ─────────
 
     /**
@@ -371,10 +424,16 @@ QtObject {
                 return;  // leave "--" in place — better than crashing
             try {
                 var d = JSON.parse(req.responseText);
-                if (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0)
-                    r.sunriseTimeText = Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm");
-                if (d.daily && d.daily.sunset && d.daily.sunset.length > 0)
-                    r.sunsetTimeText = Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm");
+                if (r.weatherData && (
+                    (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0) ||
+                    (d.daily && d.daily.sunset  && d.daily.sunset.length  > 0))) {
+                    var patched = Object.assign({}, r.weatherData);
+                    if (d.daily.sunrise && d.daily.sunrise.length > 0)
+                        patched.sunriseTimeText = Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm");
+                    if (d.daily.sunset && d.daily.sunset.length > 0)
+                        patched.sunsetTimeText = Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm");
+                    r.weatherDataStaged = patched;
+                }
             } catch (e) {}
         };
         req.send();

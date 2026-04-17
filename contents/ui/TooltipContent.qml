@@ -299,7 +299,7 @@ Item {
                     model: {
                         if (!ttRoot.weatherRoot || !ttRoot.ttUseIcons)
                             return [];
-                        var _ = ttRoot.weatherRoot.temperatureC + ttRoot.weatherRoot.windKmh + ttRoot.weatherRoot.windDirection + ttRoot.weatherRoot.humidityPercent + ttRoot.weatherRoot.pressureHpa + ttRoot.weatherRoot.weatherCode + ttRoot.weatherRoot.sunriseTimeText.length + ttRoot.weatherRoot.sunsetTimeText.length + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
+                        var _ = ttRoot.weatherRoot.weatherData + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
                         return ttRoot._buildTooltipItems();
                     }
 
@@ -342,7 +342,7 @@ Item {
                     model: {
                         if (!ttRoot.weatherRoot || ttRoot.ttUseIcons)
                             return [];
-                        var _ = ttRoot.weatherRoot.temperatureC + ttRoot.weatherRoot.windKmh + ttRoot.weatherRoot.windDirection + ttRoot.weatherRoot.humidityPercent + ttRoot.weatherRoot.pressureHpa + ttRoot.weatherRoot.weatherCode + ttRoot.weatherRoot.sunriseTimeText.length + ttRoot.weatherRoot.sunsetTimeText.length + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
+                        var _ = ttRoot.weatherRoot.weatherData + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
                         return ttRoot._buildTooltipItems();
                     }
 

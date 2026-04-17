@@ -244,14 +244,14 @@ function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
         state.localTerms = prefetchedTerms;
         _tryComplete();
     } else {
-        _getLocalAdminTerms(service.latitude, service.longitude, function (terms) {
+        _getLocalAdminTerms(service, gen, service.latitude, service.longitude, function (terms) {
             state.localTerms = terms;
             _tryComplete();
         });
     }
 }
 
-function _getLocalAdminTerms(lat, lon, callback) {
+function _getLocalAdminTerms(service, gen, lat, lon, callback) {
     if (!lat || !lon) { callback([]); return; }
     var req = new XMLHttpRequest();
     // Use accept-language=en so we always get Latin-script names.
@@ -268,6 +268,7 @@ function _getLocalAdminTerms(lat, lon, callback) {
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
+        if (service._refreshGen !== gen) return;
         var terms = [];
         if (req.status === 200) {
             try {

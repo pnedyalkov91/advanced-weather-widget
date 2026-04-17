@@ -70,35 +70,34 @@ function fetchCurrent(service, W, chain, idx) {
             return;
         }
 
-        r.temperatureC = det.air_temperature;
-        r.apparentC = det.air_temperature;
-        r.humidityPercent = det.relative_humidity;
-        r.pressureHpa = det.air_pressure_at_sea_level;
-        r.windKmh = (det.wind_speed !== undefined) ? det.wind_speed * 3.6 : NaN;
-        r.windDirection = (det.wind_from_direction !== undefined)
-            ? det.wind_from_direction : NaN;
-        r.dewPointC = det.dew_point_temperature !== undefined
-            ? det.dew_point_temperature
-            : _calcDewPoint(det.air_temperature, det.relative_humidity);
-        r.visibilityKm = NaN;
-        // Precipitation from next_1_hours
         var precipDet = (ts.data && ts.data.next_1_hours && ts.data.next_1_hours.details)
             ? ts.data.next_1_hours.details : null;
-        r.precipMmh = (precipDet && precipDet.precipitation_amount !== undefined)
-            ? precipDet.precipitation_amount : 0;
-        // UV from complete endpoint
-        r.uvIndex = (det.ultraviolet_index_clear_sky !== undefined)
-            ? det.ultraviolet_index_clear_sky : NaN;
-        r.snowDepthCm = NaN;  // not available
-        r.airQualityIndex = NaN;  // not available
-        r.airQualityLabel = "";
         var sym = (ts.data && ts.data.next_1_hours && ts.data.next_1_hours.summary)
             ? ts.data.next_1_hours.summary.symbol_code : "";
-        r.weatherCode = W.metNoSymbolToWmo(sym);
-        r.isDay = -1;
+        var _cur = {
+            temperatureC:    det.air_temperature,
+            apparentC:       det.air_temperature,
+            humidityPercent: det.relative_humidity,
+            pressureHpa:     det.air_pressure_at_sea_level,
+            windKmh:         (det.wind_speed !== undefined) ? det.wind_speed * 3.6 : NaN,
+            windDirection:   (det.wind_from_direction !== undefined) ? det.wind_from_direction : NaN,
+            dewPointC:       det.dew_point_temperature !== undefined
+                                ? det.dew_point_temperature
+                                : _calcDewPoint(det.air_temperature, det.relative_humidity),
+            visibilityKm:    NaN,
+            precipMmh:       (precipDet && precipDet.precipitation_amount !== undefined)
+                                ? precipDet.precipitation_amount : 0,
+            uvIndex:         (det.ultraviolet_index_clear_sky !== undefined)
+                                ? det.ultraviolet_index_clear_sky : NaN,
+            snowDepthCm:     NaN,
+            weatherCode:     W.metNoSymbolToWmo(sym),
+            isDay:           -1,
+            locationUtcOffsetMins: 0,
+            sunriseTimeText: "--",
+            sunsetTimeText:  "--",
+            dailyData:       []   // filled below
+        };
         // met.no does not provide sunrise/sunset — fetch from Open-Meteo as fallback.
-        r.sunriseTimeText = "--";
-        r.sunsetTimeText = "--";
         service._fetchSunTimesOpenMeteo();
 
         // Build daily forecast from timeseries
@@ -146,7 +145,8 @@ function fetchCurrent(service, W, chain, idx) {
                 snowCm: NaN
             });
         });
-        r.dailyData = nd;
+        _cur.dailyData = nd;
+        r.weatherDataStaged = _cur;
         r.loading = false;
         r.updateText = service._formatUpdateText("metno");
 

@@ -314,7 +314,82 @@ Item {
     }
 
     // List of detail IDs in configured order
-    property var detailIds: (Plasmoid.configuration.widgetDetailsOrder || "feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase").split(";").map(s => s.trim()).filter(s => s.length > 0)
+    readonly property var detailIds: (Plasmoid.configuration.widgetDetailsOrder || "feelslike;humidity;pressure;wind;suntimes;dewpoint;visibility;moonphase").split(";").map(s => s.trim()).filter(s => s.length > 0)
+
+    // Cached row layout — only rebuilds when detailIds or isList changes,
+    // not on every weatherRoot property update.
+    readonly property var _cachedRows: buildRows()
+
+    // Per-detail cached values computed at root level.
+    // Each card delegate uses _detailValue(id) which reads one of these root properties,
+    // so each card only subscribes to its own relevant property — not the full switch.
+    readonly property string _dvFeelslike:   weatherRoot ? weatherRoot.tempValue(weatherRoot.apparentC) : "--"
+    readonly property string _dvHumidity:    weatherRoot && !isNaN(weatherRoot.humidityPercent) ? Math.round(weatherRoot.humidityPercent) + "%" : "--"
+    readonly property string _dvPressure:    weatherRoot ? weatherRoot.pressureValue(weatherRoot.pressureHpa) : "--"
+    readonly property string _dvDewpoint:    weatherRoot ? weatherRoot.tempValue(weatherRoot.dewPointC) : "--"
+    readonly property string _dvVisibility:  weatherRoot && !isNaN(weatherRoot.visibilityKm) ? weatherRoot.visibilityKm.toFixed(1) + " km" : "--"
+    readonly property string _dvCondition:   weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : "--"
+    readonly property string _dvPreciprate:  weatherRoot ? weatherRoot.precipValue(weatherRoot.precipMmh) : "--"
+    readonly property string _dvPrecipsum:   weatherRoot ? weatherRoot.precipSumText(weatherRoot.precipSumMm) : "--"
+    readonly property string _dvUvindex:     weatherRoot ? weatherRoot.uvIndexText(weatherRoot.uvIndex) : "--"
+    readonly property string _dvAirquality:  weatherRoot ? weatherRoot.airQualityText() : "--"
+    readonly property string _dvPollen:      weatherRoot ? weatherRoot.pollenText() : "--"
+    readonly property string _dvSpaceweather: weatherRoot ? weatherRoot.spaceWeatherText() : "--"
+    readonly property string _dvAlerts:      weatherRoot ? weatherRoot.alertsText() : "--"
+    readonly property string _dvSnowcover:   weatherRoot ? weatherRoot.snowDepthText(weatherRoot.snowDepthCm) : "--"
+
+    function _detailValue(id) {
+        switch (id) {
+        case "feelslike":    return _dvFeelslike;
+        case "humidity":     return _dvHumidity;
+        case "pressure":     return _dvPressure;
+        case "dewpoint":     return _dvDewpoint;
+        case "visibility":   return _dvVisibility;
+        case "condition":    return _dvCondition;
+        case "preciprate":   return _dvPreciprate;
+        case "precipsum":    return _dvPrecipsum;
+        case "uvindex":      return _dvUvindex;
+        case "airquality":   return _dvAirquality;
+        case "pollen":       return _dvPollen;
+        case "spaceweather": return _dvSpaceweather;
+        case "alerts":       return _dvAlerts;
+        case "snowcover":    return _dvSnowcover;
+        default:             return "--";
+        }
+    }
+
+    // AQI computed once at root level — not per-delegate — to avoid
+    // re-running AQI.infoForIndex() and building pollutants array N times.
+    readonly property real aqiRootValue: weatherRoot ? (weatherRoot.aqiData, weatherRoot.airQualityIndex()) : NaN
+    readonly property var  aqiRootBand:  !isNaN(aqiRootValue) ? AQI.infoForIndex(aqiRootValue) : null
+    readonly property real aqiRootAqhi:  !isNaN(aqiRootValue) ? AQI.aqhiFromAqi(aqiRootValue) : NaN
+    readonly property var  aqiRootPollutants: {
+        if (!weatherRoot) return [];
+        var r = weatherRoot;
+        return [
+            { key: "pm2_5", value: r.aqiPm2_5(), si: AQI.subIndex("pm2_5", r.aqiPm2_5()) },
+            { key: "pm10",  value: r.aqiPm10(),  si: AQI.subIndex("pm10",  r.aqiPm10())  },
+            { key: "no2",   value: r.aqiNo2(),   si: AQI.subIndex("no2",   r.aqiNo2())   },
+            { key: "o3",    value: r.aqiO3(),    si: AQI.subIndex("o3",    r.aqiO3())    },
+            { key: "so2",   value: r.aqiSo2(),   si: AQI.subIndex("so2",   r.aqiSo2())   },
+            { key: "co",    value: r.aqiCo(),    si: AQI.subIndex("co",    r.aqiCo())    }
+        ];
+    }
+
+    // Pollen computed once at root level — not per-delegate — to avoid
+    // re-running filter() N times (once per card) on every pollenData write.
+    readonly property var pollenEntries: {
+        var pd = weatherRoot ? weatherRoot.pollenData : null;
+        if (!pd) return [];
+        return pd.filter(function(p) { return !isNaN(p.value); });
+    }
+    readonly property var pollenDominant: {
+        var best = null;
+        for (var i = 0; i < pollenEntries.length; i++) {
+            if (!best || pollenEntries[i].value > best.value) best = pollenEntries[i];
+        }
+        return best;
+    }
 
     // Per-item icon visibility map — delegates to ConfigUtils.parseBoolMap()
     readonly property var iconShowMap: ConfigUtils.parseBoolMap(Plasmoid.configuration.widgetDetailsItemIcons || "")
@@ -373,7 +448,7 @@ Item {
             bottomPadding: 4
 
             Repeater {
-                model: root.buildRows()
+                model: root._cachedRows
 
                 delegate: RowLayout {
                     id: rowItem
@@ -492,7 +567,7 @@ Item {
                                 // scalar value
                                 Label {
                                     visible: card.modelData !== "wind"
-                                    text: root.dataValue(card.modelData)
+                                    text: root._detailValue(card.modelData)
                                     color: root.valueColor
                                     font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
                                         bold: true
@@ -562,23 +637,11 @@ Item {
                                 clip: true
                                 visible: card.modelData === "airquality"
 
-                                readonly property real aqiValue: weatherRoot ? weatherRoot.airQualityIndex : NaN
-                                readonly property var  aqiBand:  !isNaN(aqiValue) ? AQI.infoForIndex(aqiValue) : null
-                                readonly property real aqhiValue: !isNaN(aqiValue) ? AQI.aqhiFromAqi(aqiValue) : NaN
-
-                                // Helper: build the 6 pollutant row data objects
-                                readonly property var pollutants: {
-                                    if (!weatherRoot) return [];
-                                    var r = weatherRoot;
-                                    return [
-                                        { key: "pm2_5", value: r.aqiPm2_5, si: AQI.subIndex("pm2_5", r.aqiPm2_5) },
-                                        { key: "pm10",  value: r.aqiPm10,  si: AQI.subIndex("pm10",  r.aqiPm10)  },
-                                        { key: "no2",   value: r.aqiNo2,   si: AQI.subIndex("no2",   r.aqiNo2)   },
-                                        { key: "o3",    value: r.aqiO3,    si: AQI.subIndex("o3",    r.aqiO3)    },
-                                        { key: "so2",   value: r.aqiSo2,   si: AQI.subIndex("so2",   r.aqiSo2)   },
-                                        { key: "co",    value: r.aqiCo,    si: AQI.subIndex("co",    r.aqiCo)    }
-                                    ];
-                                }
+                                // Computed once at root level to avoid per-delegate re-evaluation
+                                readonly property real aqiValue:   root.aqiRootValue
+                                readonly property var  aqiBand:    root.aqiRootBand
+                                readonly property real aqhiValue:  root.aqiRootAqhi
+                                readonly property var  pollutants: root.aqiRootPollutants
 
                                 // ── Collapsed header row ──────────────────────────────
                                 RowLayout {
@@ -865,20 +928,9 @@ Item {
                                 clip: true
                                 visible: card.modelData === "pollen"
 
-                                // Filter to only pollen entries that have real values
-                                readonly property var entries: {
-                                    if (!weatherRoot || !weatherRoot.pollenData) return [];
-                                    return weatherRoot.pollenData.filter(function(p) { return !isNaN(p.value); });
-                                }
-
-                                // Dominant pollen (highest value)
-                                readonly property var dominant: {
-                                    var best = null;
-                                    for (var i = 0; i < entries.length; i++) {
-                                        if (!best || entries[i].value > best.value) best = entries[i];
-                                    }
-                                    return best;
-                                }
+                                // Computed once at root level to avoid per-delegate re-evaluation
+                                readonly property var entries:  root.pollenEntries
+                                readonly property var dominant: root.pollenDominant
 
                                 function pollenName(key) {
                                     switch (key) {
@@ -1125,11 +1177,11 @@ Item {
                                 readonly property var sw: weatherRoot ? weatherRoot.spaceWeather : null
                                 readonly property real kp: sw && !isNaN(sw.kp) ? sw.kp : NaN
                                 readonly property string gScale: sw ? (sw.gScale || "G0") : "G0"
-                                readonly property color gColor: Qt.color(root.isDark ? SW.gScaleColor(gScale) : SW.gScaleTextColor(gScale))
+                                readonly property color gColor: Qt.color((root.isDark ? SW.gScaleColor(gScale) : SW.gScaleTextColor(gScale)) || "#4CAF50")
                                 readonly property color kpColor: kp >= 5 ? gColor
                                     : (kp >= 3 ? Qt.color(root.isDark ? "#FFEB3B" : "#5D4800") : Qt.color(root.isDark ? "#4CAF50" : "#1B5E20"))
                                 // Vivid variants for progress bar fills (always use bright colors)
-                                readonly property color gColorVivid: Qt.color(SW.gScaleColor(gScale))
+                                readonly property color gColorVivid: Qt.color(SW.gScaleColor(gScale) || "#4CAF50")
                                 readonly property color kpColorVivid: kp >= 5 ? gColorVivid
                                     : (kp >= 3 ? Qt.color("#FFEB3B") : Qt.color("#4CAF50"))
 
@@ -1177,9 +1229,13 @@ Item {
                                     }
                                 }
 
-                                // ── Expanded view ─────────────────────────────────────
+                                // ── Expanded view — lazy-loaded to avoid binding errors
+                                // before Kirigami is fully initialised.
+                                Loader {
+                                    active: card._isArcExpanded
+                                    anchors.fill: parent
+                                    sourceComponent: Component {
                                 ColumnLayout {
-                                    visible: card._isArcExpanded
                                     anchors {
                                         fill: parent
                                         leftMargin: 10; rightMargin: 10
@@ -1278,7 +1334,7 @@ Item {
                                     // Row 2: Kp Index
                                     Rectangle {
                                         Layout.fillWidth: true; height: 1
-                                        color: Kirigami.Theme.separatorColor; opacity: 0.5
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.5
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -1316,7 +1372,7 @@ Item {
                                             // Track
                                             Rectangle {
                                                 anchors.fill: parent; radius: 3
-                                                color: Kirigami.Theme.separatorColor; opacity: 0.4
+                                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.4
                                             }
                                             // Fill
                                             Rectangle {
@@ -1330,7 +1386,7 @@ Item {
                                     // Row 3: Solar Wind Speed
                                     Rectangle {
                                         Layout.fillWidth: true; height: 1
-                                        color: Kirigami.Theme.separatorColor; opacity: 0.5
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.5
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -1382,7 +1438,7 @@ Item {
                                             // Track
                                             Rectangle {
                                                 anchors.fill: parent; radius: 3
-                                                color: Kirigami.Theme.separatorColor; opacity: 0.4
+                                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.4
                                             }
                                             // Fill
                                             Rectangle {
@@ -1403,7 +1459,7 @@ Item {
                                     // Row 3.5: Aurora Probability
                                     Rectangle {
                                         Layout.fillWidth: true; height: 1
-                                        color: Kirigami.Theme.separatorColor; opacity: 0.5
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.5
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -1451,7 +1507,7 @@ Item {
                                             // Track
                                             Rectangle {
                                                 anchors.fill: parent; radius: 3
-                                                color: Kirigami.Theme.separatorColor; opacity: 0.4
+                                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.4
                                             }
                                             // Fill
                                             Rectangle {
@@ -1465,7 +1521,7 @@ Item {
                                     // Row 5: Bz (Magnetic Field)
                                     Rectangle {
                                         Layout.fillWidth: true; height: 1
-                                        color: Kirigami.Theme.separatorColor; opacity: 0.5
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.5
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -1512,7 +1568,7 @@ Item {
                                     // Row 6: X-ray Flare Class
                                     Rectangle {
                                         Layout.fillWidth: true; height: 1
-                                        color: Kirigami.Theme.separatorColor; opacity: 0.5
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.5
                                     }
                                     RowLayout {
                                         Layout.fillWidth: true
@@ -1567,7 +1623,7 @@ Item {
 
                                     Rectangle {
                                         Layout.fillWidth: true; height: 1
-                                        color: Kirigami.Theme.separatorColor; opacity: 0.5
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2); opacity: 0.5
                                     }
                                     Label {
                                         Layout.fillWidth: true
@@ -1583,6 +1639,8 @@ Item {
                                     }
 
                                 } // ColumnLayout expanded
+                                    } // Component
+                                } // Loader
                             } // Item (swCard)
 
                             // ── Alerts display ──────────────────────────────────────
@@ -2482,20 +2540,14 @@ Item {
 
                                 Connections {
                                     target: root.weatherRoot
-                                    function onSunriseTimeTextChanged() {
+                                    // weatherData changes once per provider response — covers
+                                    // sunrise, sunset, and all other weather field updates.
+                                    function onWeatherDataChanged() {
                                         suntimesCard._updateProg();
                                     }
-                                    function onSunsetTimeTextChanged() {
-                                        suntimesCard._updateProg();
-                                    }
-                                    // Repaint when is_day flag changes
+                                    // Repaint when is_day flag changes (separate signal path)
                                     function onIsDayChanged() {
                                         sunCanvas.requestPaint();
-                                    }
-                                    // Re-evaluate time labels on every weather refresh.
-                                    // temperatureC changes on every provider response.
-                                    function onTemperatureCChanged() {
-                                        suntimesCard._updateProg();
                                     }
                                 }
 

@@ -85,6 +85,7 @@ function _auroraVisibilityPercent(kp, latitude) {
  * Called from WeatherService after the main weather fetch completes.
  */
 function fetchSpaceWeather(service) {
+    var gen = service._refreshGen;
     var r = service.weatherRoot;
 
     // Collector — wait for all 5 fetches to complete before assembling
@@ -99,6 +100,7 @@ function fetchSpaceWeather(service) {
     function _tryAssemble() {
         state.done++;
         if (state.done < 4) return; // wait for all 4 fast endpoints
+        if (service._refreshGen !== gen) return; // superseded by a newer refresh
 
         var kp        = (state.kp        !== undefined) ? state.kp        : NaN;
         var solarWind = (state.solarWind !== undefined) ? state.solarWind : NaN;

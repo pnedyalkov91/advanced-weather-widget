@@ -15,6 +15,7 @@ Item {
 
     property var weatherRoot
 
+    readonly property string _trayTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
     readonly property bool _hasTemp: weatherRoot
         && weatherRoot.hasSelectedTown
         && !isNaN(weatherRoot.temperatureC)
@@ -37,9 +38,7 @@ Item {
     // Temperature badge — uses shared TemperatureBadge component
     TemperatureBadge {
         visible: trayRoot._hasTemp
-        temperatureText: trayRoot.weatherRoot
-            ? trayRoot.weatherRoot.tempValue(trayRoot.weatherRoot.temperatureC)
-            : "--"
+        temperatureText: trayRoot._trayTemp
         badgePosition: Plasmoid.configuration.compressedBadgePosition || "bottom-right"
         badgeSpacing: Plasmoid.configuration.compressedBadgeSpacing || 0
         badgeColor: Plasmoid.configuration.compressedBadgeColor || ""

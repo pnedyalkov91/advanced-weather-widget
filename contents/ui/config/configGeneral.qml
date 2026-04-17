@@ -331,7 +331,7 @@ KCM.SimpleKCM {
                     Rectangle {
                         Layout.fillWidth: true
                         height: 1
-                        color: Kirigami.Theme.separatorColor
+                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2)
                         opacity: 0.5
                     }
                 }
