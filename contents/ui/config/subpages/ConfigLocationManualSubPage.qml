@@ -39,6 +39,14 @@ ColumnLayout {
     property string mAlt: ""
     property string mTimezone: ""
 
+    // ── Edit mode ──────────────────────────────────────────────────────
+    // When >= 0, the form is editing an existing saved-location entry at
+    // that index in cfg_savedLocations. `_applyToConfig()` then updates
+    // that entry in place instead of creating a new pending entry.
+    // -1 = "Add new location" mode (default).
+    property int editingIndex: -1
+    readonly property bool isEditMode: editingIndex >= 0
+
     // Numeric validity — normalize "," to "." so users in locales like
     // Bulgarian/German (where the keyboard decimal is ",") still parse correctly.
     readonly property real _latNum: parseFloat(String(mLat).replace(",", "."))
@@ -279,6 +287,45 @@ ColumnLayout {
             locs = JSON.parse(configRoot.cfg_savedLocations || "[]");
             if (!Array.isArray(locs)) locs = [];
         } catch (e) { locs = []; }
+
+        // ── EDIT MODE ─────────────────────────────────────────────────
+        // When editing an existing saved location, update that entry in
+        // place (preserving its star flag and list position) instead of
+        // creating a new _pendingEntry. The entry's lat/lon may also be
+        // changed — that's fine, we just overwrite in place.
+        if (isEditMode && editingIndex >= 0 && editingIndex < locs.length) {
+            var prev = locs[editingIndex] || {};
+            var wasActive = Math.abs(configRoot.cfg_latitude  - (prev.lat || 0)) < 0.01 &&
+                            Math.abs(configRoot.cfg_longitude - (prev.lon || 0)) < 0.01;
+            var updated = {
+                name: name,
+                lat: lat,
+                lon: lon
+            };
+            if (alt !== 0)                              updated.altitude    = alt;
+            if (tz && tz.length > 0)                    updated.timezone    = tz;
+            else if (prev.timezone)                     updated.timezone    = prev.timezone;
+            if (prev.countryCode)                       updated.countryCode = prev.countryCode;
+            if (prev.starred)                           updated.starred     = true;
+            locs[editingIndex] = updated;
+            configRoot.cfg_savedLocations = JSON.stringify(locs);
+
+            // If the edited entry is the currently-active location, also
+            // update the live cfg_* so KCM Apply syncs it to Plasmoid.
+            if (wasActive) {
+                configRoot.cfg_autoDetectLocation = false;
+                configRoot.cfg_locationName = name;
+                configRoot.cfg_latitude     = lat;
+                configRoot.cfg_longitude    = lon;
+                configRoot.cfg_altitude     = alt;
+                if (tz && tz.length > 0)
+                    configRoot.cfg_timezone = tz;
+            }
+            configRoot._pendingEntry = null;
+            return;
+        }
+
+        // ── ADD-NEW MODE (original behaviour) ─────────────────────────
         var isNew = !locs.some(function(l) {
             return Math.abs(l.lat - lat) < 0.01 && Math.abs(l.lon - lon) < 0.01;
         });
@@ -318,11 +365,18 @@ ColumnLayout {
             icon.name: "go-previous"
             text: i18n("Back")
             flat: true
-            onClicked: configRoot._goBack()
+            onClicked: {
+                // Leaving the page exits edit mode so the next "Enter Manually"
+                // starts a fresh "Add Location" flow.
+                manualSubPageRoot.editingIndex = -1;
+                configRoot._goBack();
+            }
         }
         Label {
             Layout.fillWidth: true
-            text: i18n("Add Location Manually")
+            text: manualSubPageRoot.isEditMode
+                ? i18n("Edit Saved Location")
+                : i18n("Add Location Manually")
             font.bold: true
         }
     }
@@ -477,7 +531,9 @@ ColumnLayout {
                 wrapMode: Text.WordWrap
                 opacity: 0.75
                 text: manualSubPageRoot._formValid
-                    ? i18n("Location staged. Click the main Apply button to save.")
+                    ? (manualSubPageRoot.isEditMode
+                        ? i18n("Changes staged. Click the main Apply button to save.")
+                        : i18n("Location staged. Click the main Apply button to save."))
                     : i18n("Enter a location name and valid coordinates, then click the main Apply button.")
             }
 
