@@ -185,9 +185,12 @@ PlasmoidItem {
         //                   → refreshDebounce.restart()
     }
 
-    function _locName() { return _activeLocName || Plasmoid.configuration.locationName || ""; }
-    function _locLat()  { return _activeLocLat  !== 0 ? _activeLocLat  : Plasmoid.configuration.latitude; }
-    function _locLon()  { return _activeLocLon  !== 0 ? _activeLocLon  : Plasmoid.configuration.longitude; }
+    // Prefer Plasmoid.configuration (reliably updated by both popup _applyPendingLocFields
+    // and KCM Apply via cfg_* sync) over the in-memory _activeLoc* snapshots which can
+    // lag when activeLocation JSON fails to propagate from the KCM context.
+    function _locName() { return Plasmoid.configuration.locationName || _activeLocName || ""; }
+    function _locLat()  { return Plasmoid.configuration.latitude  !== 0 ? Plasmoid.configuration.latitude  : _activeLocLat; }
+    function _locLon()  { return Plasmoid.configuration.longitude !== 0 ? Plasmoid.configuration.longitude : _activeLocLon; }
 
     // Imperative rather than reactive — only notifies subscribers when the
     // boolean value actually flips. A reactive binding re-notifies on every
@@ -195,13 +198,13 @@ PlasmoidItem {
     // resize cascades costing ~70ms on every location switch.
     property bool hasSelectedTown: false
     function _updateHasSelectedTown() {
-        var name = _activeLocName || Plasmoid.configuration.locationName || "";
+        var name = Plasmoid.configuration.locationName || _activeLocName || "";
         var next;
         if (name.trim().length > 0) {
             next = true;
         } else if (Plasmoid.configuration.autoDetectLocation) {
-            var lat = _activeLocLat !== 0 ? _activeLocLat : Plasmoid.configuration.latitude;
-            var lon = _activeLocLon !== 0 ? _activeLocLon : Plasmoid.configuration.longitude;
+            var lat = Plasmoid.configuration.latitude !== 0 ? Plasmoid.configuration.latitude : _activeLocLat;
+            var lon = Plasmoid.configuration.longitude !== 0 ? Plasmoid.configuration.longitude : _activeLocLon;
             next = (lat !== 0.0 || lon !== 0.0);
         } else {
             next = false;
@@ -1544,20 +1547,16 @@ PlasmoidItem {
             root.activeLocStaged = {};
         }
         function onLocationNameChanged() {
-            root._activeLocName = Plasmoid.configuration.locationName || "";
             root._updateHasSelectedTown();
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLatitudeChanged() {
-            root._activeLocLat = Plasmoid.configuration.latitude || 0;
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLongitudeChanged() {
-            root._activeLocLon = Plasmoid.configuration.longitude || 0;
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onTimezoneChanged() {
-            root._activeLocTz = (Plasmoid.configuration.timezone || "").trim();
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onWeatherProviderChanged() {

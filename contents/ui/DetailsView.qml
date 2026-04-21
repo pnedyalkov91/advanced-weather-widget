@@ -2511,25 +2511,10 @@ Item {
                                     }
                                 }
 
-                                // ── Glow-pulse: 0→1→0 over 3 s, looping ──────────────
-                                property real glowPulse: 0
-                                SequentialAnimation on glowPulse {
-                                    running: suntimesCard.visible
-                                    loops: Animation.Infinite
-                                    NumberAnimation {
-                                        from: 0
-                                        to: 1
-                                        duration: 1500
-                                        easing.type: Easing.InOutSine
-                                    }
-                                    NumberAnimation {
-                                        from: 1
-                                        to: 0
-                                        duration: 1500
-                                        easing.type: Easing.InOutSine
-                                    }
-                                }
-                                onGlowPulseChanged: sunCanvas.requestPaint()
+                                // Glow pulse disabled: infinite animation caused 60fps
+                                // Canvas repaints (see perf) which compounded layout/render
+                                // stalls on NVIDIA EGL during location changes.
+                                readonly property real glowPulse: 0
 
                                 // ── Arc canvas ────────────────────────────────────────
                                 Canvas {
@@ -2967,25 +2952,10 @@ Item {
                                     }
                                 }
 
-                                // ── Glow pulse: 0→1→0 over 3.5 s ─────────────────────
-                                property real glowPulse: 0
-                                SequentialAnimation on glowPulse {
-                                    running: moonCard.visible
-                                    loops: Animation.Infinite
-                                    NumberAnimation {
-                                        from: 0
-                                        to: 1
-                                        duration: 1750
-                                        easing.type: Easing.InOutSine
-                                    }
-                                    NumberAnimation {
-                                        from: 1
-                                        to: 0
-                                        duration: 1750
-                                        easing.type: Easing.InOutSine
-                                    }
-                                }
-                                onGlowPulseChanged: moonCanvas.requestPaint()
+                                // Glow pulse disabled: infinite animation caused 60fps
+                                // Canvas repaints (see perf) which compounded layout/render
+                                // stalls on NVIDIA EGL during location changes.
+                                readonly property real glowPulse: 0
 
                                 // ── Arc canvas ────────────────────────────────────────
                                 Canvas {
