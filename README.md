@@ -196,8 +196,8 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Russian** - [Dmaliog](https://github.com/dmaliog)
 - **French** - [LAZER-TY](https://github.com/LAZER-TY)
 - **Turkish** - [herzane52](https://github.com/herzane52)
-- **Spanish** - [josecarlos99](https://github.com/josecarlos99)
-- **Chinese (Traditional)** - [josecarlos99](https://github.com/josecarlos99)
+- **Spanish** - [NecaX](https://github.com/NecaX)
+- **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
 
 ## External resources
 
