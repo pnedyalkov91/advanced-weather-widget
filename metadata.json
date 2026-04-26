@@ -10,6 +10,8 @@
     "Name[ru]": "Расширенный виджет погоды",
     "Name[fr_FR]": "Widget météo avancé",
     "Name[tr_TR]": "Gelişmiş Hava Durumu Widget'ı",
+    "Name[es]": "Widget de Clima Avanzado",
+    "Name[zh_TW]": "進階天氣小工具",
 
     "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6",
     "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6",
