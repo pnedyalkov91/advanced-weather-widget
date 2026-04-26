@@ -143,9 +143,15 @@ ColumnLayout {
                     textRole: "text"
                     model: [
                         { text: i18n("Details"),  value: "details"  },
-                        { text: i18n("Forecast"), value: "forecast" }
+                        { text: i18n("Forecast"), value: "forecast" },
+                        { text: i18n("Radar"),    value: "radar"    }
                     ]
-                    Component.onCompleted: currentIndex = widgetTab.configRoot.cfg_widgetDefaultTab === "forecast" ? 1 : 0
+                    Component.onCompleted: {
+                        var v = widgetTab.configRoot.cfg_widgetDefaultTab || "details";
+                        if (v === "forecast") currentIndex = 1;
+                        else if (v === "radar") currentIndex = 2;
+                        else currentIndex = 0;
+                    }
                     onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
                 }
             }
@@ -157,16 +163,18 @@ ColumnLayout {
                     Layout.preferredWidth: 200
                     textRole: "text"
                     model: [
-                        { text: i18n("Both"),          value: "both"     },
+                        { text: i18n("All tabs"),      value: "both"     },
                         { text: i18n("Details only"),  value: "details"  },
                         { text: i18n("Forecast only"), value: "forecast" },
-                        { text: i18n("None"),          value: "none"    }
+                        { text: i18n("Radar only"),    value: "radar"    },
+                        { text: i18n("None"),          value: "none"     }
                     ]
                     Component.onCompleted: {
                         var v = widgetTab.configRoot.cfg_widgetVisibleTabs || "both";
                         if (v === "details") currentIndex = 1;
                         else if (v === "forecast") currentIndex = 2;
-                        else if (v === "none") currentIndex = 3;
+                        else if (v === "radar") currentIndex = 3;
+                        else if (v === "none") currentIndex = 4;
                         else currentIndex = 0;
                     }
                     onActivated: widgetTab.configRoot.cfg_widgetVisibleTabs = model[currentIndex].value

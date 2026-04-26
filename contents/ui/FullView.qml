@@ -41,10 +41,11 @@ Rectangle {
     // width/height are used when the widget sits on the desktop.
     // Compact size when no location is set to avoid overlapping other widgets.
     readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
+    readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
     Layout.preferredWidth: _hasLocation ? 540 : 280
-    Layout.preferredHeight: _hasLocation ? 550 : 220
+    Layout.preferredHeight: _hasLocation ? (_isRadarTab ? 680 : 550) : 220
     width: _hasLocation ? 540 : 280
-    height: _hasLocation ? 550 : 220
+    height: _hasLocation ? (_isRadarTab ? 680 : 550) : 220
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -85,16 +86,21 @@ Rectangle {
 
     // Per-tab visibility flags (both visible by default)
     readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
-    readonly property bool showDetailsTab: visibleTabs === "both" || visibleTabs === "details"
+    readonly property bool showDetailsTab:  visibleTabs === "both" || visibleTabs === "details"
     readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
-    readonly property bool showAnyTab: showDetailsTab || showForecastTab
+    readonly property bool showRadarTab:    visibleTabs === "both" || visibleTabs === "radar"
+    readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
-    // Returns 0 for Details, 1 for Forecast.
+    // Returns 0 = Details, 1 = Forecast, 2 = Radar
     function _resolvedDefaultTab() {
-        var want = Plasmoid.configuration.widgetDefaultTab === "forecast" ? 1 : 0;
-        if (want === 1 && !fullView.showForecastTab) return fullView.showDetailsTab ? 0 : 0;
-        if (want === 0 && !fullView.showDetailsTab) return fullView.showForecastTab ? 1 : 0;
+        var want = 0;
+        var pref = Plasmoid.configuration.widgetDefaultTab || "details";
+        if (pref === "forecast") want = 1;
+        else if (pref === "radar") want = 2;
+        if (want === 0 && !fullView.showDetailsTab)  want = fullView.showForecastTab ? 1 : (fullView.showRadarTab ? 2 : 0);
+        if (want === 1 && !fullView.showForecastTab) want = fullView.showDetailsTab  ? 0 : (fullView.showRadarTab ? 2 : 0);
+        if (want === 2 && !fullView.showRadarTab)    want = fullView.showDetailsTab  ? 0 : (fullView.showForecastTab ? 1 : 0);
         return want;
     }
 
@@ -445,12 +451,12 @@ Rectangle {
             Layout.preferredHeight: fullView.showAnyTab ? 12 : 0
         }
 
-        // ── Tab bar — only shown when both tabs are enabled ────────────
+        // ── Tab bar — shown when more than one tab is enabled ──────────
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
             radius: 17
-            visible: fullView.showDetailsTab && fullView.showForecastTab
+            visible: [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab].filter(Boolean).length > 1
             // #2: tab bar background adapts to theme
             color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
@@ -464,8 +470,9 @@ Rectangle {
                 Repeater {
                     model: {
                         var tabs = [];
-                        if (fullView.showDetailsTab) tabs.push({ label: i18n("Details"), logicalIdx: 0 });
+                        if (fullView.showDetailsTab)  tabs.push({ label: i18n("Details"),  logicalIdx: 0 });
                         if (fullView.showForecastTab) tabs.push({ label: i18n("Forecast"), logicalIdx: 1 });
+                        if (fullView.showRadarTab)    tabs.push({ label: i18n("Radar"),    logicalIdx: 2 });
                         return tabs;
                     }
                     delegate: Rectangle {
@@ -518,6 +525,10 @@ Rectangle {
             currentIndex: fullView.activeTab
             // Explicitly follow the current child's implicitHeight
             implicitHeight: (children && children[currentIndex]) ? children[currentIndex].implicitHeight : 0
+            onCurrentIndexChanged: {
+                if (currentIndex === 2 && radarView.visible)
+                    radarView.reload();
+            }
 
             DetailsView {
                 id: detailsView
@@ -525,6 +536,10 @@ Rectangle {
             }
             ForecastView {
                 id: forecastView
+                weatherRoot: fullView.weatherRoot
+            }
+            RadarView {
+                id: radarView
                 weatherRoot: fullView.weatherRoot
             }
         }
