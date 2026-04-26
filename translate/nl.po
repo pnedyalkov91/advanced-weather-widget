@@ -7,9 +7,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-"
+"widget/issues\n"
 "POT-Creation-Date: 2026-04-22 14:15+0300\n"
-"PO-Revision-Date: 2026-04-01 19:44+0200\n"
+"PO-Revision-Date: 2026-04-23 11:09+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: \n"
 "Language: nl\n"
@@ -30,15 +31,15 @@ msgstr "%1pt %2"
 #: contents/ui/js/spaceWeather.js:167 contents/ui/js/spaceWeather.js:181
 #: contents/ui/js/spaceWeather.js:193
 msgid "--"
-msgstr ""
+msgstr "--"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:449
 msgid "-180 to 180 (e.g. 23.3219)"
-msgstr ""
+msgstr "-180 tot 180 (bijv. 23.3219)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:432
 msgid "-90 to 90 (e.g. 42.6977)"
-msgstr ""
+msgstr "-90 tot 90 (bijv. 42.6977)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:572
 msgid "0 = auto (120 px per chip). Increase if values are truncated."
@@ -62,6 +63,8 @@ msgstr "Oxygen 3D (meegeleverd)"
 #: contents/ui/config/configGeneral.qml:435
 msgid "AI-powered weather intelligence. API key required below."
 msgstr ""
+"Een weerdienst aangedreven door kunstmatige intelligentie (AI). Api-sleutel "
+"vereist."
 
 #: contents/ui/config/configGeneral.qml:191
 msgid "API key is empty."
@@ -81,7 +84,7 @@ msgstr "Actief"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:363
 msgid "Adaptive (Open-Meteo)"
-msgstr ""
+msgstr "Automatisch aanpassen (Open-Meteo)"
 
 #: contents/ui/config/configGeneral.qml:370
 msgid "Adaptive (auto-fallback)"
@@ -89,7 +92,7 @@ msgstr "Automatisch aanpassen"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:384
 msgid "Add Location Manually"
-msgstr ""
+msgstr "Eigen plaats toevoegen"
 
 #: contents/ui/CompactView.qml:743 contents/ui/CompactView.qml:1079
 msgid "Add a location"
@@ -137,7 +140,7 @@ msgstr "De luchtkwaliteit is erg slecht."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:329
 msgid "Air quality options"
-msgstr ""
+msgstr "Luchtkwaliteitsopties"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:629
 #: contents/ui/DetailsView.qml:970 contents/ui/main.qml:717
@@ -156,11 +159,11 @@ msgstr "Waarschuwingen:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:341
 msgid "Alt: %1 %2"
-msgstr ""
+msgstr "Hoogte: %1 %2"
 
 #: contents/ui/config/configLocation.qml:1565
 msgid "Alt: %1 m"
-msgstr ""
+msgstr "Hoogte: %1 m"
 
 #: contents/ui/config/configGeneral.qml:429
 msgid "Alternative provider. API key required below."
@@ -168,11 +171,18 @@ msgstr "Een alternatieve weerdienst — api-sleutel vereist."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:461
 msgid "Altitude (%1):"
-msgstr ""
+msgstr "Hoogte (%1):"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:480
-msgid "Altitude is optional, but strongly recommended for accurate forecasts. MET Norway (met.no) uses it to correct temperature and pressure for elevation; leaving it at 0 for a mountain location will return sea-level values."
+msgid ""
+"Altitude is optional, but strongly recommended for accurate forecasts. MET "
+"Norway (met.no) uses it to correct temperature and pressure for elevation; "
+"leaving it at 0 for a mountain location will return sea-level values."
 msgstr ""
+"De hoogte is optioneel, maar aanbevolen om nauwkeurige weerberichten te "
+"ontvangen. MET Norway (met.no) maakt hier gebruik van om de juist "
+"temperatuur en luchtdruk vast te stellen. Stel in het geval van bergen in op "
+"0 om berichten op zeeniveau te krijgen."
 
 #: contents/ui/config/configLocation.qml:1779
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:584
@@ -180,8 +190,11 @@ msgid "Altitude:"
 msgstr "Hoogte:"
 
 #: contents/ui/config/configGeneral.qml:580
-msgid "An API key is required for %1. Weather data cannot be retrieved without it."
+msgid ""
+"An API key is required for %1. Weather data cannot be retrieved without it."
 msgstr ""
+"Voor het gebruik van %1 is een api-sleutel vereist. Zonder deze sleutel kan "
+"er geen weersinformatie worden getoond."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:493
 msgid "Animate row scrolling"
@@ -212,8 +225,12 @@ msgid "Apply detected location"
 msgstr "Gevonden plaats toevoegen"
 
 #: contents/ui/config/configLocation.qml:1218
-msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
+msgid ""
+"Are you sure? This is your last saved location. If you remove it, the widget "
+"will no longer show weather information."
 msgstr ""
+"Weet je het zeker? Dit is de enige opgeslagen locatie. Als je deze "
+"verwijdert, wordt er geen weersinformatie meer getoond."
 
 #: contents/ui/DetailsView.qml:2604
 msgid "Around midnight — "
@@ -244,7 +261,7 @@ msgstr "Automatisch"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:108
 msgid "Auto (detect on save)"
-msgstr ""
+msgstr "Automatisch (vaststellen na opslaan)"
 
 #: contents/ui/config/configLocation.qml:673
 msgid "Auto-detection updated coordinates."
@@ -295,7 +312,7 @@ msgstr "Tussenruimte op embleem:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:132
 msgid "Behavior"
-msgstr ""
+msgstr "Gedrag"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:630
 #: contents/ui/DetailsView.qml:971 contents/ui/main.qml:718
@@ -304,7 +321,7 @@ msgstr "Berk"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:160
 msgid "Both"
-msgstr ""
+msgstr "Beide"
 
 #: contents/ui/config/configAppearance.qml:714
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:529
@@ -353,7 +370,7 @@ msgstr "Bz (magnetisch veld)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:570
 msgid "CO"
-msgstr ""
+msgstr "CO"
 
 #: contents/ui/config/configAppearance.qml:559
 #: contents/ui/config/configLocation.qml:1243
@@ -365,7 +382,7 @@ msgstr "Annuleren"
 
 #: contents/ui/config/configLocation.qml:1633
 msgid "Cancel rename"
-msgstr ""
+msgstr "Naam niet wĳzigen"
 
 #: contents/ui/DetailsView.qml:827
 msgid "Carbon Monoxide (CO)"
@@ -385,7 +402,7 @@ msgstr "Celsius (°C)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:540
 msgid "Changes staged. Click the main Apply button to save."
-msgstr ""
+msgstr "Er zijn wijzigingen aangebracht. Klik op ‘Toepassen’ om op te slaan."
 
 #: contents/ui/config/configGeneral.qml:87
 #: contents/ui/config/configLocation.qml:416
@@ -394,7 +411,7 @@ msgstr "Bezig met controleren van locatie…"
 
 #: contents/ui/config/configGeneral.qml:441
 msgid "Chinese weather provider with global coverage. API key required below."
-msgstr ""
+msgstr "Een Chinese, landelijke weerdienst — api-sleutel vereist."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:721
 msgctxt "@action:button"
@@ -414,11 +431,11 @@ msgstr "Kies een eigen pictogram voor dit item"
 #: contents/ui/config/configLocation.qml:1353
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:253
 msgid "Choose on Map"
-msgstr ""
+msgstr "Kiezen op kaart"
 
 #: contents/ui/config/configLocation.qml:1049
 msgid "Choose on map"
-msgstr ""
+msgstr "Kiezen op kaart"
 
 #: contents/ui/config/configAppearance.qml:1291
 msgid "City / location name"
@@ -447,12 +464,18 @@ msgid "Clear sky"
 msgstr "Heldere lucht"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:578
-msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
+msgid ""
+"Click \"Test across providers\" to check if the coordinates are serviceable "
+"by each supported weather provider. Providers requiring an API key that is "
+"not configured will be skipped."
 msgstr ""
+"Klik op ‘Zoeken op verschillende diensten’ om te zien welke weerdiensten de "
+"coördinaten kunnen verwerken. Diensten die een api-sleutel vereisen worden "
+"overgeslagen."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:609
 msgid "Click on the map to select a location"
-msgstr ""
+msgstr "Klik op de kaart om een locatie te kiezen"
 
 #: contents/ui/TooltipContent.qml:255
 msgid "Click to configure a location"
@@ -514,7 +537,7 @@ msgstr "Instellen…"
 
 #: contents/ui/config/configLocation.qml:1625
 msgid "Confirm rename"
-msgstr ""
+msgstr "Naam wĳzigen"
 
 #: contents/ui/config/configLocation.qml:979
 msgid "Confirm your location"
@@ -526,11 +549,11 @@ msgstr "Er kan geen verbinding worden gemaakt (http %1)."
 
 #: contents/ui/config/configGeneral.qml:254
 msgid "Connection successful! %1 key is valid."
-msgstr ""
+msgstr "Er is verbinding gemaakt! De %1-sleutel is geldig."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:267
 msgid "Coordinates"
-msgstr ""
+msgstr "Coördinaten"
 
 #: contents/ui/config/configAppearance.qml:1298
 msgid "Current moon phase"
@@ -563,6 +586,7 @@ msgstr "Aangepast…"
 #: contents/ui/config/configGeneral.qml:431
 msgid "Dark Sky-compatible API with US alerts. API key required below."
 msgstr ""
+"Een met Dark Sky compatibele api, geschikt voor de VS. Api-sleutel vereist."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:597
 msgid "Dash  –"
@@ -586,7 +610,7 @@ msgstr "Er is geen daglicht meer"
 
 #: contents/ui/config/configLocation.qml:1602
 msgid "Default location (click to unset)"
-msgstr ""
+msgstr "Standaardlocatie (klik om te wĳzigen)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:138
 msgid "Default tab:"
@@ -594,7 +618,7 @@ msgstr "Standaardtabblad:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:658
 msgid "Dense drizzle"
-msgstr ""
+msgstr "Dichte motregen"
 
 #: contents/ui/DetailsView.qml:1801 contents/ui/DetailsView.qml:1803
 msgid "Description"
@@ -620,11 +644,11 @@ msgstr "Detailweergave-indeling:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:161
 msgid "Details only"
-msgstr ""
+msgstr "Alleen details"
 
 #: contents/ui/main.qml:283
 msgid "Detect / change location"
-msgstr ""
+msgstr "Locatie bepalen/wĳzigen"
 
 #: contents/ui/FullView.qml:311
 msgid "Detect / change location…"
@@ -692,16 +716,20 @@ msgid "Drizzle"
 msgstr "Motregen"
 
 #: contents/ui/config/configGeneral.qml:614
-msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
+msgid ""
+"Each QWeather project has a unique API host. Find yours at "
+"console.qweather.com under your project settings."
 msgstr ""
+"Ieder QWeather-project draait op een eigen api-host. Op "
+"console.qweather.com, onder de projectinstellingen, vind je die van jou."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:383
 msgid "Edit Saved Location"
-msgstr ""
+msgstr "Opgeslagen locatie bewerken"
 
 #: contents/ui/config/configLocation.qml:1655
 msgid "Edit location details"
-msgstr ""
+msgstr "Locatiegegevens bewerken"
 
 #: contents/ui/DetailsView.qml:1806
 msgid "Effective"
@@ -711,7 +739,7 @@ msgstr "Effectief"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:609
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:673
 msgid "Enable all"
-msgstr ""
+msgstr "Alles inschakelen"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:481
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:476
@@ -738,15 +766,18 @@ msgstr "Voer een plaatsnaam in"
 
 #: contents/ui/config/configLocation.qml:1359
 msgid "Enter Manually"
-msgstr ""
+msgstr "Handmatig invoeren"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:542
-msgid "Enter a location name and valid coordinates, then click the main Apply button."
+msgid ""
+"Enter a location name and valid coordinates, then click the main Apply "
+"button."
 msgstr ""
+"Voer een plaatsnaam en geldige coördinaten in, en klik daarna op ‘Toepassen’."
 
 #: contents/ui/config/configLocation.qml:1039
 msgid "Enter manually"
-msgstr ""
+msgstr "Handmatig invoeren"
 
 #: contents/ui/config/configGeneral.qml:496
 msgid "Enter your OpenWeatherMap API key"
@@ -754,23 +785,23 @@ msgstr "Voer een OpenWeatherMap-api-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:497
 msgid "Enter your Pirate Weather API key"
-msgstr ""
+msgstr "Voer een Pirate Weather-api-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:502
 msgid "Enter your QWeather API key"
-msgstr ""
+msgstr "Voer een QWeather-api-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:500
 msgid "Enter your StormGlass API key"
-msgstr ""
+msgstr "Voer een StormGlass-api-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:499
 msgid "Enter your Tomorrow.io API key"
-msgstr ""
+msgstr "Voer een Tomorrow.io-api-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:498
 msgid "Enter your Visual Crossing API key"
-msgstr ""
+msgstr "Voer een Visual Crossing-api-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:503
 msgid "Enter your WeatherAPI.com key"
@@ -778,11 +809,11 @@ msgstr "Voer een WeatherAPI.com-sleutel in"
 
 #: contents/ui/config/configGeneral.qml:501
 msgid "Enter your Weatherbit API key"
-msgstr ""
+msgstr "Voer een WeatherBit-api-sleutel in"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:256
 msgid "Error (code %1)"
-msgstr ""
+msgstr "Foutmelding (code %1)"
 
 #: contents/ui/DetailsView.qml:2602
 msgid "Evening — "
@@ -790,7 +821,7 @@ msgstr "Avond — "
 
 #: contents/ui/js/spaceWeather.js:194
 msgid "Excellent"
-msgstr ""
+msgstr "Uitstekend"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:657
 msgid "Expand widget to fill available panel space"
@@ -849,7 +880,7 @@ msgstr "Paneel opvullen:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:311
 msgid "Find"
-msgstr ""
+msgstr "Zoeken"
 
 #: contents/ui/main.qml:989
 msgid "First Quarter"
@@ -897,11 +928,13 @@ msgstr "Aantal dagen op voorspelling:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:162
 msgid "Forecast only"
-msgstr ""
+msgstr "Alleen weerbericht"
 
 #: contents/ui/config/configGeneral.qml:443
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
-msgstr "De gratis dienst van het Noors Meteorologisch Instituut. Geen api-sleutel benodigd."
+msgstr ""
+"De gratis dienst van het Noors Meteorologisch Instituut. Geen api-sleutel "
+"benodigd."
 
 #: contents/ui/config/configGeneral.qml:444
 msgid "Free and open-source. No API key needed. Recommended."
@@ -988,11 +1021,11 @@ msgstr "Zware sneeuwval"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:686
 msgid "Heavy snow showers"
-msgstr ""
+msgstr "Zware sneeuwbuien"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:674
 msgid "Heavy snowfall"
-msgstr ""
+msgstr "Zware sneeuwval"
 
 #: contents/ui/main.qml:866
 msgid "Heavy thunderstorm with hail"
@@ -1016,15 +1049,17 @@ msgstr "Pictogram voor tekst verbergen"
 #: contents/ui/js/spaceWeather.js:183 contents/ui/js/spaceWeather.js:195
 #: contents/ui/main.qml:669 contents/ui/main.qml:713
 msgid "High"
-msgstr "Hoogste temp."
+msgstr "Hoog"
 
 #: contents/ui/config/configGeneral.qml:439
 msgid "High precision forecast provider. API key required below."
-msgstr ""
+msgstr "Een weerdienst met hoge mate van nauwkeurigheid — api-sleutel vereist."
 
 #: contents/ui/config/configGeneral.qml:433
 msgid "Historical and forecast data provider. API key required below."
 msgstr ""
+"Een weerdienst met historische en huidige weerberichten — api-sleutel "
+"vereist."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:100
 msgid "Horizontal"
@@ -1089,16 +1124,24 @@ msgid "Icons"
 msgstr "Pictogrammen"
 
 #: contents/ui/config/configLocation.qml:1015
-msgid "If this looks correct, apply it. Otherwise, choose your location manually."
-msgstr "Als deze locatie klopt, voeg hem dan toe. Klopt de locatie niet? Kies dan handmatig een plaats."
+msgid ""
+"If this looks correct, apply it. Otherwise, choose your location manually."
+msgstr ""
+"Als deze locatie klopt, voeg hem dan toe. Klopt de locatie niet? Kies dan "
+"handmatig een plaats."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:87
 msgid "Imperial (°F, mph, inHg, in)"
 msgstr "Imperiaal (°F, mpu, inHg, in)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:78
-msgid "In a vertical panel, long item labels may be truncated. Consider using \"Simple\" mode, increasing the panel width, or reducing the font size."
-msgstr "Op verticale panelen kunnen lange itemlabels ingekort worden. Overweeg in dat geval de eenvoudige modus of de paneelbreedte of tekstgrootte aan te passen."
+msgid ""
+"In a vertical panel, long item labels may be truncated. Consider using "
+"\"Simple\" mode, increasing the panel width, or reducing the font size."
+msgstr ""
+"Op verticale panelen kunnen lange itemlabels ingekort worden. Overweeg in "
+"dat geval de eenvoudige modus of de paneelbreedte of tekstgrootte aan te "
+"passen."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:244
 msgid ""
@@ -1122,7 +1165,7 @@ msgstr "Iedere:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:268
 msgid "Invalid API key (HTTP %1)"
-msgstr ""
+msgstr "De api-sleutel is ongeldig (http %1)"
 
 #: contents/ui/config/configGeneral.qml:258
 msgid "Invalid API key. Please check and try again."
@@ -1130,11 +1173,11 @@ msgstr "De api-sleutel is ongeldig. Controleer deze en probeer het opnieuw."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:261
 msgid "Invalid response"
-msgstr ""
+msgstr "Ongeldig antwoord"
 
 #: contents/ui/config/configGeneral.qml:248
 msgid "Invalid response from QWeather."
-msgstr ""
+msgstr "Er is een ongeldig antwoord ontvangen van QWeather."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:641
 msgid "Item spacing:"
@@ -1163,8 +1206,12 @@ msgid "KDE System Icons (automatic, follows weather code)"
 msgstr "KDE-systeempictogrammen (automatisch — volgt de weercode)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:309
-msgid "KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\"."
-msgstr "Let op: KDE-pictogramthema's hebben geen ondersteuning voor de meeste pictogrammen. Stel je eigen pictogrammen in via de desbetreffende optie."
+msgid ""
+"KDE icon themes don't fully support many item icons. You can set your own "
+"icons by clicking \"Set your own icons\"."
+msgstr ""
+"Let op: KDE-pictogramthema's hebben geen ondersteuning voor de meeste "
+"pictogrammen. Stel je eigen pictogrammen in via de desbetreffende optie."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:49
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:50
@@ -1203,15 +1250,15 @@ msgstr "Laatste kwartier"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:569
 msgid "Lat:"
-msgstr ""
+msgstr "Brdtgr.:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:337
 msgid "Lat: %1°"
-msgstr ""
+msgstr "Brdtgr.: %1°"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:290
 msgid "Latitude"
-msgstr ""
+msgstr "Breedtegraad"
 
 #: contents/ui/config/configLocation.qml:1737
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:429
@@ -1220,7 +1267,7 @@ msgstr "Breedtegraad:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:330
 msgid "Layout"
-msgstr ""
+msgstr "Indeling"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:92
 msgid "Layout type:"
@@ -1308,8 +1355,10 @@ msgid "Location auto-detected."
 msgstr "Locatie automatisch gedetecteerd."
 
 #: contents/ui/config/configLocation.qml:1312
-msgid "Location detection is depending on system configuration and permissions."
-msgstr "Locatiebepaling is afhankelijk van de systeeminstellingen en toegangsrechten."
+msgid ""
+"Location detection is depending on system configuration and permissions."
+msgstr ""
+"Locatiebepaling is afhankelijk van de systeeminstellingen en toegangsrechten."
 
 #: contents/ui/config/configLocation.qml:1702
 msgid "Location information"
@@ -1322,12 +1371,16 @@ msgstr "Deze locatie is beschikbaar op %1."
 
 #: contents/ui/config/configGeneral.qml:166
 #: contents/ui/config/configLocation.qml:473
-msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
-msgstr "Deze locatie is niet beschikbaar op %1 (http %2). Probeer een andere weerdienst of locatie."
+msgid ""
+"Location is not available on %1 (HTTP %2). Try a different provider or "
+"location."
+msgstr ""
+"Deze locatie is niet beschikbaar op %1 (http %2). Probeer een andere "
+"weerdienst of locatie."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:267
 msgid "Location name"
-msgstr ""
+msgstr "Plaatsnaam"
 
 #: contents/ui/config/configLocation.qml:1721
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:418
@@ -1337,7 +1390,7 @@ msgstr "Plaatsnaam:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
-msgstr ""
+msgstr "De locatie is vastgesteld. Klik op ‘toepassen’ om te bewaren."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:316
 msgid "Location:"
@@ -1345,15 +1398,15 @@ msgstr "Locatie:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:576
 msgid "Lon:"
-msgstr ""
+msgstr "Lngtgr.:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:338
 msgid "Lon: %1°"
-msgstr ""
+msgstr "Lngtgr.: %1°"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:302
 msgid "Longitude"
-msgstr ""
+msgstr "Lengtegraad"
 
 #: contents/ui/config/configLocation.qml:1758
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:446
@@ -1362,17 +1415,17 @@ msgstr "Lengtegraad:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:535
 msgid "Looking up location…"
-msgstr ""
+msgstr "Bezig met vaststellen van locatie…"
 
 #: contents/ui/FullView.qml:428 contents/ui/js/pollen.js:42
 #: contents/ui/js/spaceWeather.js:185 contents/ui/js/spaceWeather.js:197
 #: contents/ui/main.qml:667 contents/ui/main.qml:711
 msgid "Low"
-msgstr "Laagste temp."
+msgstr "Laag"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:697
 msgid "Magnetic Field (Bz)"
-msgstr ""
+msgstr "Magnetisch veld (Bz)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:499
 msgid "Main icon style:"
@@ -1407,6 +1460,8 @@ msgstr "Handmatig"
 #: contents/ui/config/configGeneral.qml:437
 msgid "Marine and weather data provider. API key required below."
 msgstr ""
+"Een weerdienst met weerberichten die ook geschikt zijn voor op zee. Api-"
+"sleutel vereist."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:83
 msgid "Metric (°C, km/h, hPa, mm)"
@@ -1444,23 +1499,23 @@ msgstr "Gemiddeld"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:656
 msgid "Moderate drizzle"
-msgstr ""
+msgstr "Matige motregen"
 
 #: contents/ui/js/spaceWeather.js:90
 msgid "Moderate geomagnetic storm."
-msgstr "Gemiddelde geomagnetische storm"
+msgstr "Gemiddelde geomagnetische storm."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:664
 msgid "Moderate rain"
-msgstr ""
+msgstr "Matige regen"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
 msgid "Moderate rain showers"
-msgstr ""
+msgstr "Matige regenbuien"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:672
 msgid "Moderate snowfall"
-msgstr ""
+msgstr "Matige sneeuwval"
 
 #: contents/ui/DetailsView.qml:290
 msgid "Moon"
@@ -1583,15 +1638,19 @@ msgstr "NOAA Kp-index en geomagnetische activiteit"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:567
 msgid "NO₂"
-msgstr ""
+msgstr "NO₂"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:407
-msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
+msgid ""
+"Need the coordinates for a place? You can look them up at <a href=\"https://"
+"www.mapcoordinates.net/\">mapcoordinates.net</a>."
 msgstr ""
+"Heb je coördinaten nodig? Die kun je opzoeken op <a href=\"https://"
+"www.mapcoordinates.net/\">mapcoordinates.net</a>."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:270
 msgid "Network error"
-msgstr ""
+msgstr "Netwerkfout"
 
 #: contents/ui/main.qml:985
 msgid "New Moon"
@@ -1607,7 +1666,7 @@ msgstr "Stikstofdioxide (NO₂)"
 
 #: contents/ui/config/configLocation.qml:1155
 msgid "No"
-msgstr ""
+msgstr "Nee"
 
 #: contents/ui/DetailsView.qml:460
 msgid "No details data"
@@ -1626,8 +1685,12 @@ msgid "No location set"
 msgstr "Er is geen locatie ingesteld"
 
 #: contents/ui/config/configLocation.qml:1391
-msgid "No saved locations. Save the current location to quickly switch between places."
+msgid ""
+"No saved locations. Save the current location to quickly switch between "
+"places."
 msgstr ""
+"Er zijn geen opgeslagen locaties. Bewaar de huidige locatie om van locatie "
+"te wisselen."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:498
 msgid "No weather stations found for '%1'"
@@ -1646,11 +1709,11 @@ msgstr "Niets gekozen"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:272
 msgid "Not available (HTTP %1)"
-msgstr ""
+msgstr "Niet beschikbaar (http %1)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:620
 msgid "Not tested"
-msgstr ""
+msgstr "Niet-getest"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:738
 msgid "Note: size may be reduced if the panel is not thick enough."
@@ -1659,11 +1722,15 @@ msgstr "Let op: de grootte kan afwijken indien het paneel niet hoog genoeg is."
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:368
 #, javascript-format
 msgid "Now: %1%2"
-msgstr ""
+msgstr "Zojuist: %1%2"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:487
-msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
-msgstr "Het aantal gelijktijdig zichtbare pictogramrijen. Pas de paneelhoogte hierop aan."
+msgid ""
+"Number of item rows visible at once. Resize the panel height in KDE settings "
+"to match."
+msgstr ""
+"Het aantal gelijktijdig zichtbare pictogramrijen. Pas de paneelhoogte hierop "
+"aan."
 
 #: contents/ui/config/configAppearance.qml:551
 msgid "OK"
@@ -1688,7 +1755,7 @@ msgstr "OpenWeatherMap-api-sleutel:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:332
 msgid "Options"
-msgstr ""
+msgstr "Opties"
 
 #: contents/ui/config/configAppearance.qml:224
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
@@ -1703,15 +1770,15 @@ msgstr "Ozon (O₃)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:568
 msgid "O₃"
-msgstr ""
+msgstr "O₃"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:566
 msgid "PM10"
-msgstr ""
+msgstr "PM10"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:565
 msgid "PM2.5"
-msgstr ""
+msgstr "PM2.5"
 
 #: contents/ui/config/configAppearance.qml:1831
 msgid "Panel"
@@ -1779,11 +1846,11 @@ msgstr "Sluisteken  |"
 
 #: contents/ui/config/configGeneral.qml:286
 msgid "Pirate Weather (Key Required)"
-msgstr ""
+msgstr "Pirate Weather (sleutel vereist)"
 
 #: contents/ui/config/configGeneral.qml:477
 msgid "Pirate Weather API Key:"
-msgstr ""
+msgstr "Api-sleutel van Pirate Weather:"
 
 #: contents/ui/config/configAppearance.qml:1332
 #: contents/ui/config/configAppearance.qml:1448
@@ -1797,7 +1864,7 @@ msgstr "Er is geen pollenindex beschikbaar op deze locatie."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:330
 msgid "Pollen options"
-msgstr ""
+msgstr "Opties omtrent pollen"
 
 #: contents/ui/TooltipContent.qml:462
 msgid "Pollen:"
@@ -1854,7 +1921,7 @@ msgstr "Weerdienst"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:563
 msgid "Provider availability"
-msgstr ""
+msgstr "Beschikbaarheid van dienst"
 
 #: contents/ui/config/configGeneral.qml:427
 #: contents/ui/config/configGeneral.qml:429
@@ -1876,34 +1943,42 @@ msgstr "Dienst:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:364
 msgid "Provider: %1"
-msgstr ""
+msgstr "Dienst: %1"
 
 #: contents/ui/config/configGeneral.qml:386
 msgid ""
 "Providers are tried in order until one succeeds:\n"
-"Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
+"Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  "
+"Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  "
+"→  WeatherAPI.com\n"
 "Open-Meteo is always tried first — it is free and requires no API key."
 msgstr ""
+"Diensten worden op volgorde afgelopen, totdat er eentje is die werkt:\n"
+"Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  "
+"Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  "
+"→  WeatherAPI.com\n"
+"Open-Meteo wordt altijd het eerst geprobeerd, daar die gratis is en geen api-"
+"sleutel vereist."
 
 #: contents/ui/config/configGeneral.qml:306
 msgid "QWeather (Key Required)"
-msgstr ""
+msgstr "QWeather (sleutel vereist)"
 
 #: contents/ui/config/configGeneral.qml:607
 msgid "QWeather API Host:"
-msgstr ""
+msgstr "Api-host van QWeather:"
 
 #: contents/ui/config/configGeneral.qml:482
 msgid "QWeather API Key:"
-msgstr ""
+msgstr "Api-sleutel van QWeather:"
 
 #: contents/ui/config/configGeneral.qml:243
 msgid "QWeather error (code %1). Check your API key."
-msgstr ""
+msgstr "QWeather-fout (code %1). Controleer de api-sleutel."
 
 #: contents/ui/js/spaceWeather.js:173
 msgid "Quiet"
-msgstr ""
+msgstr "Stil"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:634
 #: contents/ui/DetailsView.qml:975 contents/ui/main.qml:722
@@ -1925,11 +2000,11 @@ msgstr "Regen ('s nachts)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:59
 msgid "Rain showers"
-msgstr ""
+msgstr "Regenbuien"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
 msgid "Recommended — e.g. 560"
-msgstr ""
+msgstr "Aanbevolen — bijv. 560"
 
 #: contents/ui/config/configLocation.qml:1315 contents/ui/FullView.qml:334
 #: contents/ui/main.qml:289
@@ -1951,23 +2026,23 @@ msgstr "Het percentage van de relatieve luchtvochtigheid"
 
 #: contents/ui/config/configLocation.qml:1193
 msgid "Remove last location?"
-msgstr ""
+msgstr "Wil je de vorige locatie verwijderen?"
 
 #: contents/ui/config/configLocation.qml:1673
 msgid "Remove saved location"
-msgstr ""
+msgstr "Opgeslagen locatie verwijderen"
 
 #: contents/ui/config/configLocation.qml:1642
 msgid "Rename location"
-msgstr ""
+msgstr "Locatienaam wĳzigen"
 
 #: contents/ui/config/configLocation.qml:722
 msgid "Requesting location via GeoClue2…"
-msgstr "Locatie opvragen via GeoClue2…"
+msgstr "Bezig met opvragen van locatie via GeoClue2…"
 
 #: contents/ui/config/configLocation.qml:711
 msgid "Requesting location… (%1)"
-msgstr "Locatie opvragen… (%1)"
+msgstr "Bezig met opvragen van locatie… (%1)"
 
 #: contents/ui/config/configAppearance.qml:520
 #: contents/ui/config/configAppearance.qml:792
@@ -1996,11 +2071,11 @@ msgstr "Afgeronde waarden gebruiken:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:569
 msgid "SO₂"
-msgstr ""
+msgstr "SO₂"
 
 #: contents/ui/config/configLocation.qml:1375
 msgid "Saved locations"
-msgstr ""
+msgstr "Opgeslagen locaties"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:491
 msgid "Scroll animation:"
@@ -2021,15 +2096,15 @@ msgstr "Zoek een weerstation in de buurt"
 
 #: contents/ui/config/configLocation.qml:1344
 msgid "Search for a location or choose it on the map."
-msgstr ""
+msgstr "Zoek een plaats of kies er een op de kaart."
 
 #: contents/ui/config/configLocation.qml:1034
 msgid "Search location"
-msgstr ""
+msgstr "Zoeken naar plaats"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:281
 msgid "Search location…"
-msgstr ""
+msgstr "Bezig met zoeken…"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:582
 msgid "Separator:"
@@ -2041,7 +2116,7 @@ msgstr "Hoog risico: vermijd buitenactiviteiten."
 
 #: contents/ui/config/configLocation.qml:1109
 msgid "Set <b>%1</b> as your default location?"
-msgstr ""
+msgstr "Wil je <b>%1</b> instellen als standaardlocatie?"
 
 #: contents/ui/FullView.qml:192
 msgid "Set Location…"
@@ -2049,11 +2124,11 @@ msgstr "Locatie instellen…"
 
 #: contents/ui/config/configLocation.qml:1603
 msgid "Set as default location"
-msgstr ""
+msgstr "Instellen als standaardlocatie"
 
 #: contents/ui/config/configLocation.qml:1081
 msgid "Set as default?"
-msgstr ""
+msgstr "Instellen als standaardlocatie?"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:841
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:285
@@ -2084,11 +2159,11 @@ msgstr "Detailitem tonen/verbergen"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:602
 msgid "Show pollen types in expanded view:"
-msgstr ""
+msgstr "Soorten pollen tonen in uitgebreide weergave:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:537
 msgid "Show pollutants in expanded view:"
-msgstr ""
+msgstr "Pollenveroorzakers tonen in uitgebreide weergave:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:384
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:469
@@ -2098,7 +2173,7 @@ msgstr "Pictogram voor tekst tonen"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:666
 msgid "Show space weather items in expanded view:"
-msgstr ""
+msgstr "Ruimte-items tonen in uitgebreide weergave:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:487
 msgid "Show sunrise/sunset markers"
@@ -2156,23 +2231,23 @@ msgstr "Grootte:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:215
 msgid "Skipped — API key not configured"
-msgstr ""
+msgstr "Overgeslagen — er is geen api-sleutel ingesteld"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:662
 msgid "Slight rain"
-msgstr ""
+msgstr "Lichte regen"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:678
 msgid "Slight rain showers"
-msgstr ""
+msgstr "Lichte regenbuien"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:684
 msgid "Slight snow showers"
-msgstr ""
+msgstr "Lichte sneeuwbuien"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
 msgid "Slight snowfall"
-msgstr ""
+msgstr "Lichte sneeuwval"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:605
 msgid "Small circle  ⚬"
@@ -2239,7 +2314,7 @@ msgstr "Ruimteweer:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:331
 msgid "Space weather options"
-msgstr ""
+msgstr "Ruimteopties"
 
 #: contents/ui/config/configGeneral.qml:427
 msgid "Standard provider. API key required below."
@@ -2251,15 +2326,15 @@ msgstr "Storm"
 
 #: contents/ui/config/configGeneral.qml:298
 msgid "StormGlass (Key Required)"
-msgstr ""
+msgstr "StormGlass (sleutel vereist)"
 
 #: contents/ui/config/configGeneral.qml:480
 msgid "StormGlass API Key:"
-msgstr ""
+msgstr "Api-sleutel van StormGlass:"
 
 #: contents/ui/js/spaceWeather.js:169
 msgid "Strong"
-msgstr ""
+msgstr "Sterk"
 
 #: contents/ui/js/spaceWeather.js:89
 msgid "Strong geomagnetic storm."
@@ -2346,7 +2421,7 @@ msgstr "Zonsondergang:"
 
 #: contents/ui/FullView.qml:250
 msgid "Switch location"
-msgstr ""
+msgstr "Andere locatie kiezen"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:200
 msgid "Symbolic"
@@ -2395,7 +2470,7 @@ msgstr "Api-sleutel testen"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:524
 msgid "Test across providers"
-msgstr ""
+msgstr "Zoeken op verschillende diensten"
 
 #: contents/ui/config/configGeneral.qml:195
 msgid "Testing connection…"
@@ -2411,12 +2486,19 @@ msgid "Text labels (Temperature, Wind…)"
 msgstr "Tekstlabels (temperatuur, wind, etc.)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:710
-msgid "Text will follow the system font and expand to fill the available space."
-msgstr "Voor de tekst wordt gebruikgemaakt van het systeemlettertype en alle beschikbare ruimte."
+msgid ""
+"Text will follow the system font and expand to fill the available space."
+msgstr ""
+"Voor de tekst wordt gebruikgemaakt van het systeemlettertype en alle "
+"beschikbare ruimte."
 
 #: contents/ui/config/configAppearance.qml:447
-msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
-msgstr "Het weersomstandigheidspictogram toont de huidige omstandigheid op basis van het ingestelde KDE-pictogramthema."
+msgid ""
+"The condition icon will automatically reflect the current weather using your "
+"KDE system icon theme. No customisation is needed."
+msgstr ""
+"Het weersomstandigheidspictogram toont de huidige omstandigheid op basis van "
+"het ingestelde KDE-pictogramthema."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:424
 msgid "Theme default"
@@ -2460,7 +2542,7 @@ msgstr "Zware onweersbui met hagel ('s nachts)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:238
 msgid "Timed out"
-msgstr ""
+msgstr "Verzoek verlopen"
 
 #: contents/ui/config/configLocation.qml:1795
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:485
@@ -2480,11 +2562,11 @@ msgstr "Neerslaghoeveelheid (mm/u)"
 
 #: contents/ui/config/configGeneral.qml:294
 msgid "Tomorrow.io (Key Required)"
-msgstr ""
+msgstr "Tomorrow.io (sleutel vereist)"
 
 #: contents/ui/config/configGeneral.qml:479
 msgid "Tomorrow.io API Key:"
-msgstr ""
+msgstr "Api-sleutel van Tomorrow.io:"
 
 #: contents/ui/config/configAppearance.qml:1839
 msgid "Tooltip"
@@ -2553,7 +2635,7 @@ msgstr "Ultravioletindex"
 #: contents/ui/config/configLocation.qml:779
 #: contents/ui/config/configLocation.qml:895
 msgid "Unable to detect location. All methods failed."
-msgstr "Kan locatie не niet detecteren. Alle methoden zijn mislukt."
+msgstr "De locatie kan niet worden vastgesteld — alle methoden zijn mislukt."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:79
 msgid "Unit preset:"
@@ -2567,11 +2649,11 @@ msgstr "Eenheden"
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:691
 #: contents/ui/FullView.qml:274
 msgid "Unknown"
-msgstr ""
+msgstr "Onbekend"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:535
 msgid "Unknown location"
-msgstr ""
+msgstr "Onbekende locatie"
 
 #: contents/ui/FullView.qml:297
 msgid "Unpin widget"
@@ -2579,7 +2661,7 @@ msgstr "Widget losmaken"
 
 #: contents/ui/js/spaceWeather.js:172
 msgid "Unsettled"
-msgstr ""
+msgstr "Niet-vastgesteld"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:452
 msgid "Upcoming (auto)"
@@ -2600,7 +2682,7 @@ msgstr "Alleen eerstvolgende opkomst en ondergang"
 
 #: contents/ui/WeatherService.qml:117
 msgid "Update timed out. Tap to retry."
-msgstr ""
+msgstr "Het bijwerken is mislukt — klik om opnieuw te proberen."
 
 #: contents/ui/WeatherService.qml:263
 msgid "Updated %1"
@@ -2620,8 +2702,12 @@ msgstr "Zelf bepalen"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:833
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:277
-msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
-msgstr "Standaard worden de KDE-systeempictogrammen gebruikt. Klik op een itemknop om een ander pictogram te kiezen."
+msgid ""
+"Uses KDE system icons by default. Click the button to customise each item's "
+"icon."
+msgstr ""
+"Standaard worden de KDE-systeempictogrammen gebruikt. Klik op een itemknop "
+"om een ander pictogram te kiezen."
 
 #: contents/ui/js/airQuality.js:51
 msgid "V.Poor"
@@ -2642,7 +2728,7 @@ msgstr "Verticaal"
 #: contents/ui/js/pollen.js:45 contents/ui/main.qml:670
 #: contents/ui/main.qml:714
 msgid "Very High"
-msgstr "erg hoog"
+msgstr "Erg hoog"
 
 #: contents/ui/js/airQuality.js:51 contents/ui/main.qml:684
 msgid "Very Poor"
@@ -2650,7 +2736,7 @@ msgstr "Erg slecht"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:682
 msgid "Violent rain showers"
-msgstr ""
+msgstr "Hevige regenbuien"
 
 #: contents/ui/config/configAppearance.qml:1406 contents/ui/DetailsView.qml:289
 msgid "Visibility"
@@ -2666,15 +2752,15 @@ msgstr "Zichtafstand:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:153
 msgid "Visible tabs:"
-msgstr ""
+msgstr "Getoonde tabbladen:"
 
 #: contents/ui/config/configGeneral.qml:290
 msgid "Visual Crossing (Key Required)"
-msgstr ""
+msgstr "Visual Crossing (sleutel vereist)"
 
 #: contents/ui/config/configGeneral.qml:478
 msgid "Visual Crossing API Key:"
-msgstr ""
+msgstr "Api-sleutel van Visual Crossing:"
 
 #: contents/ui/main.qml:999
 msgid "Waning Crescent"
@@ -2744,11 +2830,11 @@ msgstr "WeatherAPI.com-api-sleutel:"
 
 #: contents/ui/config/configGeneral.qml:302
 msgid "Weatherbit (Key Required)"
-msgstr ""
+msgstr "Weatherbit (sleutel vereist)"
 
 #: contents/ui/config/configGeneral.qml:481
 msgid "Weatherbit API Key:"
-msgstr ""
+msgstr "Api-sleutel van Weatherbit:"
 
 #: contents/ui/DetailsView.qml:1814
 msgid "Website"
@@ -2760,7 +2846,7 @@ msgstr "Widget"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:189
 msgid "Widget Size"
-msgstr ""
+msgstr "Widgetgrootte"
 
 #: contents/ui/config/configAppearance.qml:1261
 #: contents/ui/config/configAppearance.qml:1385
@@ -2796,31 +2882,31 @@ msgstr "Röntgenstraalklasse"
 
 #: contents/ui/config/configLocation.qml:1117
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: contents/ui/config/configLocation.qml:1225
 msgid "Yes, remove it"
-msgstr ""
+msgstr "Ja, verwijderen"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:464
 msgid "Zoom in"
-msgstr ""
+msgstr "Inzoomen"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:473
 msgid "Zoom out"
-msgstr ""
+msgstr "Uitzoomen"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:421
 msgid "e.g. Sofia, Bulgaria"
-msgstr ""
+msgstr "bijv. Amsterdam, Nederland"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:462
 msgid "feet"
-msgstr ""
+msgstr "voet"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:340
 msgid "ft"
-msgstr ""
+msgstr "ft"
 
 #: contents/ui/DetailsView.qml:2608
 msgid "left"
@@ -2828,7 +2914,7 @@ msgstr "links"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:340
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #: contents/ui/config/configGeneral.qml:274
 msgid "met.no (free)"
@@ -2836,7 +2922,7 @@ msgstr "met.no (gratis)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:462
 msgid "meters"
-msgstr ""
+msgstr "meter"
 
 #: contents/ui/config/configGeneral.qml:674
 msgid "minutes"
@@ -2856,11 +2942,19 @@ msgstr "systeemlocatie"
 msgid "until dawn"
 msgstr "tot zonsondergang"
 
-#~ msgid "An API key is required for OpenWeatherMap. Weather data cannot be retrieved without it."
-#~ msgstr "Voor het gebruik van OpenWeatherMap is een api-sleutel vereist. Zonder deze sleutel kan er geen weersinformatie worden getoond."
+#~ msgid ""
+#~ "An API key is required for OpenWeatherMap. Weather data cannot be "
+#~ "retrieved without it."
+#~ msgstr ""
+#~ "Voor het gebruik van OpenWeatherMap is een api-sleutel vereist. Zonder "
+#~ "deze sleutel kan er geen weersinformatie worden getoond."
 
-#~ msgid "An API key is required for WeatherAPI.com. Weather data cannot be retrieved without it."
-#~ msgstr "Voor het gebruik van WeatherAPI.com is een api-sleutel vereist. Zonder deze sleutel kan er geen weersinformatie worden getoond."
+#~ msgid ""
+#~ "An API key is required for WeatherAPI.com. Weather data cannot be "
+#~ "retrieved without it."
+#~ msgstr ""
+#~ "Voor het gebruik van WeatherAPI.com is een api-sleutel vereist. Zonder "
+#~ "deze sleutel kan er geen weersinformatie worden getoond."
 
 #~ msgid "Change Location"
 #~ msgstr "Locatie wĳzigen"
@@ -2887,7 +2981,8 @@ msgstr "tot zonsondergang"
 #~ msgstr ""
 #~ "Alle diensten worden een voor een afgegaan tot er resultaat is:\n"
 #~ "Open-Meteo  →  met.no  →  OpenWeatherMap  →  WeatherAPI.com\n"
-#~ "Open-Meteo wordt als eerste geprobeerd, omdat die dienst gratis is en geen api-sleutel vereist."
+#~ "Open-Meteo wordt als eerste geprobeerd, omdat die dienst gratis is en "
+#~ "geen api-sleutel vereist."
 
 #~ msgid "Set manually"
 #~ msgstr "Handmatig instellen"
@@ -2934,8 +3029,12 @@ msgstr "tot zonsondergang"
 #~ msgid "Updated %1 (met.no)"
 #~ msgstr "Bijgewerkt om %1 (met.no)"
 
-#~ msgid "Uses KDE system icons by default. Click the button to customise each item’s icon."
-#~ msgstr "Standaard worden de KDE-systeempictogrammen gebruikt. Klik op een itemknop om een ander pictogram te kiezen."
+#~ msgid ""
+#~ "Uses KDE system icons by default. Click the button to customise each "
+#~ "item’s icon."
+#~ msgstr ""
+#~ "Standaard worden de KDE-systeempictogrammen gebruikt. Klik op een "
+#~ "itemknop om een ander pictogram te kiezen."
 
 #~ msgid "Widget items"
 #~ msgstr "Widgetitems"
