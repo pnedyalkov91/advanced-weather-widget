@@ -1,0 +1,2859 @@
+# Advanced Weather Widget - Traditional Chinese (zh_TW) translation
+# Copyright (C) 2026
+# This file is distributed under the same license as the Advanced Weather Widget package.
+# Yo , 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Advanced Weather Widget\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+"POT-Creation-Date: 2026-04-22 14:15+0300\n"
+"PO-Revision-Date: 2026-04-25 16:00+0800\n"
+"Last-Translator: Yo\n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: contents/ui/DetailsView.qml:2602 contents/ui/DetailsView.qml:2604
+msgid " until dawn"
+msgstr " 直到黎明"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:734
+msgctxt "@info %1 size %2 family"
+msgid "%1pt %2"
+msgstr "%1pt %2"
+
+#: contents/ui/js/spaceWeather.js:167 contents/ui/js/spaceWeather.js:181
+#: contents/ui/js/spaceWeather.js:193
+msgid "--"
+msgstr "--"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:449
+msgid "-180 to 180 (e.g. 23.3219)"
+msgstr "-180 至 180（例如 23.3219）"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:432
+msgid "-90 to 90 (e.g. 42.6977)"
+msgstr "-90 至 90（例如 42.6977）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:572
+msgid "0 = auto (120 px per chip). Increase if values are truncated."
+msgstr "0 = 自動（每個標籤 120 px），若數值被截斷請增加。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:572
+msgid "0 = auto. Increase if items are cut off."
+msgstr "0 = 自動，若項目被截斷請增加。"
+
+#: contents/ui/main.qml:777
+msgid "1 Alert"
+msgstr "1 則警報"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:768
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:212
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:42
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:51
+msgid "3D Oxygen (Bundled)"
+msgstr "3D Oxygen（內建）"
+
+#: contents/ui/config/configGeneral.qml:435
+msgid "AI-powered weather intelligence. API key required below."
+msgstr "AI 驅動的天氣智慧服務，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/configGeneral.qml:191
+msgid "API key is empty."
+msgstr "API 金鑰為空。"
+
+#: contents/ui/DetailsView.qml:714 contents/ui/main.qml:694
+msgid "AQHI"
+msgstr "AQHI"
+
+#: contents/ui/DetailsView.qml:714 contents/ui/main.qml:694
+msgid "AQI"
+msgstr "AQI"
+
+#: contents/ui/DetailsView.qml:1519 contents/ui/js/spaceWeather.js:171
+msgid "Active"
+msgstr "啟用"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:363
+msgid "Adaptive (Open-Meteo)"
+msgstr "自適應（Open-Meteo）"
+
+#: contents/ui/config/configGeneral.qml:370
+msgid "Adaptive (auto-fallback)"
+msgstr "自適應（自動備援）"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:384
+msgid "Add Location Manually"
+msgstr "手動新增地點"
+
+#: contents/ui/CompactView.qml:743 contents/ui/CompactView.qml:1079
+msgid "Add a location"
+msgstr "新增地點"
+
+#: contents/ui/config/configAppearance.qml:1325
+#: contents/ui/config/configAppearance.qml:1441
+#: contents/ui/config/configAppearance.qml:1557 contents/ui/DetailsView.qml:295
+msgid "Air Quality"
+msgstr "空氣品質"
+
+#: contents/ui/TooltipContent.qml:457
+msgid "Air Quality:"
+msgstr "空氣品質："
+
+#: contents/ui/config/configAppearance.qml:1326
+#: contents/ui/config/configAppearance.qml:1442
+#: contents/ui/config/configAppearance.qml:1558
+msgid "Air quality index"
+msgstr "空氣品質指標"
+
+#: contents/ui/js/airQuality.js:48
+msgid "Air quality is acceptable."
+msgstr "空氣品質尚可。"
+
+#: contents/ui/js/airQuality.js:52
+msgid "Air quality is extremely poor."
+msgstr "空氣品質極差。"
+
+#: contents/ui/js/airQuality.js:49
+msgid "Air quality is fair."
+msgstr "空氣品質普通。"
+
+#: contents/ui/js/airQuality.js:50
+msgid "Air quality is poor."
+msgstr "空氣品質差。"
+
+#: contents/ui/js/airQuality.js:47
+msgid "Air quality is satisfactory."
+msgstr "空氣品質良好。"
+
+#: contents/ui/js/airQuality.js:51
+msgid "Air quality is very poor."
+msgstr "空氣品質非常差。"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:329
+msgid "Air quality options"
+msgstr "空氣品質選項"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:629
+#: contents/ui/DetailsView.qml:970 contents/ui/main.qml:717
+msgid "Alder"
+msgstr "榿木"
+
+#: contents/ui/config/configAppearance.qml:1346
+#: contents/ui/config/configAppearance.qml:1462
+#: contents/ui/config/configAppearance.qml:1578 contents/ui/DetailsView.qml:298
+msgid "Alerts"
+msgstr "警報"
+
+#: contents/ui/TooltipContent.qml:472
+msgid "Alerts:"
+msgstr "警報："
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:341
+msgid "Alt: %1 %2"
+msgstr "高度：%1 %2"
+
+#: contents/ui/config/configLocation.qml:1565
+msgid "Alt: %1 m"
+msgstr "高度：%1 公尺"
+
+#: contents/ui/config/configGeneral.qml:429
+msgid "Alternative provider. API key required below."
+msgstr "備用氣象資料來源，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:461
+msgid "Altitude (%1):"
+msgstr "海拔（%1）："
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:480
+msgid "Altitude is optional, but strongly recommended for accurate forecasts. MET Norway (met.no) uses it to correct temperature and pressure for elevation; leaving it at 0 for a mountain location will return sea-level values."
+msgstr "海拔為選填項目，但強烈建議填入以提高預報精確度。MET Norway（met.no）會根據海拔修正溫度與氣壓；若山區地點設為 0，將回傳海平面數值。"
+
+#: contents/ui/config/configLocation.qml:1779
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:584
+msgid "Altitude:"
+msgstr "海拔："
+
+#: contents/ui/config/configGeneral.qml:580
+msgid "An API key is required for %1. Weather data cannot be retrieved without it."
+msgstr "%1 需要 API 金鑰，未設定則無法取得天氣資料。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:493
+msgid "Animate row scrolling"
+msgstr "啟用列捲動動畫"
+
+#: contents/ui/config/configAppearance.qml:1270
+msgid "Apparent (feels-like) temperature"
+msgstr "體感溫度"
+
+#: contents/ui/config/configAppearance.qml:1365
+#: contents/ui/config/configAppearance.qml:1495
+msgid "Apparent temperature"
+msgstr "體感溫度"
+
+#: contents/config/config.qml:57
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:100
+msgid "Appearance"
+msgstr "外觀"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:38
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:39
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:38
+msgid "Apply Settings?"
+msgstr "套用設定？"
+
+#: contents/ui/config/configLocation.qml:1025
+msgid "Apply detected location"
+msgstr "套用偵測到的位置"
+
+#: contents/ui/config/configLocation.qml:1218
+msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
+msgstr "確定要刪除？這是您最後一個儲存的地點，刪除後小工具將不再顯示天氣資訊。"
+
+#: contents/ui/DetailsView.qml:2604
+msgid "Around midnight — "
+msgstr "接近午夜 — "
+
+#: contents/ui/config/configAppearance.qml:1284
+#: contents/ui/config/configAppearance.qml:1379
+#: contents/ui/config/configAppearance.qml:1516
+msgid "Atmospheric pressure"
+msgstr "大氣壓力"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
+#: contents/ui/DetailsView.qml:1475
+msgid "Aurora Visibility"
+msgstr "極光可見度"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:236
+#: contents/ui/config/tabs/ConfigPanelTab.qml:305
+#: contents/ui/config/tabs/ConfigPanelTab.qml:540
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:100
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:143
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:202
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:231
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:359
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:393
+msgid "Auto"
+msgstr "自動"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:108
+msgid "Auto (detect on save)"
+msgstr "自動（儲存時偵測）"
+
+#: contents/ui/config/configLocation.qml:673
+msgid "Auto-detection updated coordinates."
+msgstr "自動偵測已更新座標。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:703
+msgid "Automatic"
+msgstr "自動"
+
+#: contents/ui/config/configLocation.qml:1296
+msgid "Automatically detect location"
+msgstr "自動偵測位置"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:266
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:126
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:124
+msgid "Available"
+msgstr "可用"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:83
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:371
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:257
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:247
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:84
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:83
+msgid "Back"
+msgstr "返回"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:461
+msgid "Badge Background Color"
+msgstr "徽章背景顏色"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:394
+msgid "Badge background:"
+msgstr "徽章背景："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:441
+msgid "Badge opacity:"
+msgstr "徽章不透明度："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:353
+msgid "Badge position:"
+msgstr "徽章位置："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:378
+msgid "Badge spacing:"
+msgstr "徽章間距："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:132
+msgid "Behavior"
+msgstr "行為"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:630
+#: contents/ui/DetailsView.qml:971 contents/ui/main.qml:718
+msgid "Birch"
+msgstr "白樺"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:160
+msgid "Both"
+msgstr "兩者"
+
+#: contents/ui/config/configAppearance.qml:714
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:529
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:519
+msgid "Both  07:17 / 18:03"
+msgstr "兩者  07:17 / 18:03"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:440
+msgid "Both (sunrise & sunset)"
+msgstr "兩者（日出與日落）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:364
+msgid "Bottom Center"
+msgstr "下方置中"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:361
+msgid "Bottom Left"
+msgstr "左下"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:360
+msgid "Bottom Right"
+msgstr "右下"
+
+#: contents/ui/config/configAppearance.qml:510
+#: contents/ui/config/configAppearance.qml:662
+#: contents/ui/config/configAppearance.qml:780
+#: contents/ui/config/configAppearance.qml:823
+#: contents/ui/config/configAppearance.qml:948
+#: contents/ui/config/configAppearance.qml:991
+msgid "Browse…"
+msgstr "瀏覽⋯"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:589
+msgid "Bullet  •"
+msgstr "實心圓點  •"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:734
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:628
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:619
+msgid "Button guide"
+msgstr "按鈕說明"
+
+#: contents/ui/DetailsView.qml:1510
+msgid "Bz (Magnetic Field)"
+msgstr "Bz（磁場）"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:570
+msgid "CO"
+msgstr "CO"
+
+#: contents/ui/config/configAppearance.qml:559
+#: contents/ui/config/configLocation.qml:1243
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:68
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
+msgid "Cancel"
+msgstr "取消"
+
+#: contents/ui/config/configLocation.qml:1633
+msgid "Cancel rename"
+msgstr "取消重新命名"
+
+#: contents/ui/DetailsView.qml:827
+msgid "Carbon Monoxide (CO)"
+msgstr "一氧化碳（CO）"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:341
+msgid "Cards (2 columns)"
+msgstr "卡片（2 欄）"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:352
+msgid "Cards height:"
+msgstr "卡片高度："
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:157
+msgid "Celsius (°C)"
+msgstr "攝氏（°C）"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:540
+msgid "Changes staged. Click the main Apply button to save."
+msgstr "變更已暫存，點擊主套用按鈕以儲存。"
+
+#: contents/ui/config/configGeneral.qml:87
+#: contents/ui/config/configLocation.qml:416
+msgid "Checking location availability…"
+msgstr "正在檢查位置可用性⋯"
+
+#: contents/ui/config/configGeneral.qml:441
+msgid "Chinese weather provider with global coverage. API key required below."
+msgstr "中國天氣服務供應商，涵蓋全球資料，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:721
+msgctxt "@action:button"
+msgid "Choose Style…"
+msgstr "選擇樣式⋯"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:669
+msgid "Choose a Panel Font"
+msgstr "選擇面板字型"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:776
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:662
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:648
+msgid "Choose a custom icon for this item"
+msgstr "為此項目選擇自訂圖示"
+
+#: contents/ui/config/configLocation.qml:1353
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:253
+msgid "Choose on Map"
+msgstr "在地圖上選擇"
+
+#: contents/ui/config/configLocation.qml:1049
+msgid "Choose on map"
+msgstr "在地圖上選擇"
+
+#: contents/ui/config/configAppearance.qml:1291
+msgid "City / location name"
+msgstr "城市／地點名稱"
+
+#: contents/ui/config/configGeneral.qml:549
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
+msgid "Clear"
+msgstr "晴"
+
+#: contents/ui/config/configAppearance.qml:191
+msgid "Clear (day)"
+msgstr "晴（白天）"
+
+#: contents/ui/config/configAppearance.qml:196
+msgid "Clear (night)"
+msgstr "晴（夜晚）"
+
+#: contents/ui/main.qml:812
+msgid "Clear night"
+msgstr "晴夜"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:644
+#: contents/ui/main.qml:812
+msgid "Clear sky"
+msgstr "晴空"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:578
+msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
+msgstr "點擊「測試所有供應商」以檢查該座標是否受各支援天氣供應商服務。未設定 API 金鑰的供應商將被略過。"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:609
+msgid "Click on the map to select a location"
+msgstr "點擊地圖以選擇位置"
+
+#: contents/ui/TooltipContent.qml:255
+msgid "Click to configure a location"
+msgstr "點擊以設定位置"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:196
+msgid "Colorful"
+msgstr "彩色"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:508
+msgid "Colorful (KDE color icons)"
+msgstr "彩色（KDE 彩色圖示）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:108
+msgid "Compressed"
+msgstr "緊湊"
+
+#: contents/ui/config/configAppearance.qml:1240
+#: contents/ui/config/configAppearance.qml:1487 contents/ui/DetailsView.qml:291
+msgid "Condition"
+msgstr "天氣狀況"
+
+#: contents/ui/config/configAppearance.qml:405
+msgid "Condition Icons"
+msgstr "天氣狀況圖示"
+
+#: contents/ui/TooltipContent.qml:409
+msgid "Condition:"
+msgstr "天氣狀況："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:789
+msgid "Configure display mode options"
+msgstr "設定顯示模式選項"
+
+#: contents/ui/config/configAppearance.qml:601
+msgid "Configure icon — %1"
+msgstr "設定圖示 — %1"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:345
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:365
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:426
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:446
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:421
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:441
+msgid "Configure icon…"
+msgstr "設定圖示⋯"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:219
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:120
+msgid "Configure weather icons…"
+msgstr "設定天氣圖示⋯"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:531
+#: contents/ui/config/tabs/ConfigPanelTab.qml:887
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:336
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:465
+msgid "Configure…"
+msgstr "設定⋯"
+
+#: contents/ui/config/configLocation.qml:1625
+msgid "Confirm rename"
+msgstr "確認重新命名"
+
+#: contents/ui/config/configLocation.qml:979
+msgid "Confirm your location"
+msgstr "確認您的位置"
+
+#: contents/ui/config/configGeneral.qml:261
+msgid "Connection failed (HTTP %1)."
+msgstr "連線失敗（HTTP %1）。"
+
+#: contents/ui/config/configGeneral.qml:254
+msgid "Connection successful! %1 key is valid."
+msgstr "連線成功！%1 金鑰有效。"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:267
+msgid "Coordinates"
+msgstr "座標"
+
+#: contents/ui/config/configAppearance.qml:1298
+msgid "Current moon phase"
+msgstr "目前月相"
+
+#: contents/ui/config/configAppearance.qml:1248
+#: contents/ui/config/configAppearance.qml:1481
+msgid "Current temperature"
+msgstr "目前溫度"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:216
+msgid "Custom"
+msgstr "自訂"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:95
+msgid "Custom (set each unit manually)"
+msgstr "自訂（手動設定各單位）"
+
+#: contents/ui/config/configAppearance.qml:433
+msgid "Custom per-condition icons"
+msgstr "依天氣狀況自訂圖示"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:204
+#: contents/ui/config/tabs/ConfigPanelTab.qml:516
+#: contents/ui/config/tabs/ConfigPanelTab.qml:609
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:52
+msgid "Custom…"
+msgstr "自訂⋯"
+
+#: contents/ui/config/configGeneral.qml:431
+msgid "Dark Sky-compatible API with US alerts. API key required below."
+msgstr "相容 Dark Sky 的 API，含美國天氣警報，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:597
+msgid "Dash  –"
+msgstr "破折號  –"
+
+#: contents/ui/config/configGeneral.qml:638
+msgid "Data Refresh"
+msgstr "資料更新"
+
+#: contents/ui/DetailsView.qml:2600
+msgid "Dawn approaching — "
+msgstr "黎明將至 — "
+
+#: contents/ui/DetailsView.qml:2580
+msgid "Day"
+msgstr "白天"
+
+#: contents/ui/DetailsView.qml:2608
+msgid "Daylight over"
+msgstr "日照結束"
+
+#: contents/ui/config/configLocation.qml:1602
+msgid "Default location (click to unset)"
+msgstr "預設地點（點擊取消設定）"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:138
+msgid "Default tab:"
+msgstr "預設頁籤："
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:658
+msgid "Dense drizzle"
+msgstr "濃毛雨"
+
+#: contents/ui/DetailsView.qml:1801 contents/ui/DetailsView.qml:1803
+msgid "Description"
+msgstr "說明"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:78
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:145 contents/ui/FullView.qml:467
+msgid "Details"
+msgstr "詳細資訊"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:94
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:424
+msgid "Details Items"
+msgstr "詳細資訊項目"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:430
+msgid "Details items:"
+msgstr "詳細資訊項目："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:335
+msgid "Details layout:"
+msgstr "詳細資訊版面配置："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:161
+msgid "Details only"
+msgstr "僅顯示詳細資訊"
+
+#: contents/ui/main.qml:283
+msgid "Detect / change location"
+msgstr "偵測／變更位置"
+
+#: contents/ui/FullView.qml:311
+msgid "Detect / change location…"
+msgstr "偵測／變更位置⋯"
+
+#: contents/ui/config/configLocation.qml:1312
+msgid "Detecting…"
+msgstr "偵測中⋯"
+
+#: contents/ui/config/configAppearance.qml:1399 contents/ui/DetailsView.qml:288
+msgid "Dew Point"
+msgstr "露點"
+
+#: contents/ui/config/configAppearance.qml:1400
+msgid "Dew point temperature"
+msgstr "露點溫度"
+
+#: contents/ui/TooltipContent.qml:433
+msgid "Dew point:"
+msgstr "露點："
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:481
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:476
+msgid "Disable item"
+msgstr "停用項目"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:47
+msgid "Disabled"
+msgstr "已停用"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:57
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:58
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:57
+msgid "Discard"
+msgstr "捨棄"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:43
+msgid "Display"
+msgstr "顯示"
+
+#: contents/ui/config/configAppearance.qml:699
+#: contents/ui/config/configAppearance.qml:855
+#: contents/ui/config/tabs/ConfigPanelTab.qml:46
+msgid "Display mode:"
+msgstr "顯示模式："
+
+#: contents/ui/config/configAppearance.qml:1333
+#: contents/ui/config/configAppearance.qml:1449
+#: contents/ui/config/configAppearance.qml:1565
+msgid "Dominant pollen type and index"
+msgstr "主要花粉類型及指數"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:646
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:634
+msgid "Drag to reorder enabled items"
+msgstr "拖曳以重新排列已啟用的項目"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:749
+msgid "Drag to reorder shown items"
+msgstr "拖曳以重新排列顯示的項目"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:53
+#: contents/ui/main.qml:826
+msgid "Drizzle"
+msgstr "毛雨"
+
+#: contents/ui/config/configGeneral.qml:614
+msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
+msgstr "每個 QWeather 專案都有獨特的 API 主機位址，請至 console.qweather.com 的專案設定中查詢。"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:383
+msgid "Edit Saved Location"
+msgstr "編輯已儲存的地點"
+
+#: contents/ui/config/configLocation.qml:1655
+msgid "Edit location details"
+msgstr "編輯地點詳細資訊"
+
+#: contents/ui/DetailsView.qml:1806
+msgid "Effective"
+msgstr "生效中"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:544
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:609
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:673
+msgid "Enable all"
+msgstr "全部啟用"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:481
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:476
+msgid "Enable item"
+msgstr "啟用項目"
+
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:674
+msgid "Enable or disable this item"
+msgstr "啟用或停用此項目"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:692
+msgid "Enable or disable this item on the panel"
+msgstr "在面板上啟用或停用此項目"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:126
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:124
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:47
+msgid "Enabled"
+msgstr "已啟用"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:382
+msgid "Enter Location"
+msgstr "輸入位置"
+
+#: contents/ui/config/configLocation.qml:1359
+msgid "Enter Manually"
+msgstr "手動輸入"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:542
+msgid "Enter a location name and valid coordinates, then click the main Apply button."
+msgstr "輸入地點名稱及有效座標，然後點擊主套用按鈕。"
+
+#: contents/ui/config/configLocation.qml:1039
+msgid "Enter manually"
+msgstr "手動輸入"
+
+#: contents/ui/config/configGeneral.qml:496
+msgid "Enter your OpenWeatherMap API key"
+msgstr "輸入您的 OpenWeatherMap API 金鑰"
+
+#: contents/ui/config/configGeneral.qml:497
+msgid "Enter your Pirate Weather API key"
+msgstr "輸入您的 Pirate Weather API 金鑰"
+
+#: contents/ui/config/configGeneral.qml:502
+msgid "Enter your QWeather API key"
+msgstr "輸入您的 QWeather API 金鑰"
+
+#: contents/ui/config/configGeneral.qml:500
+msgid "Enter your StormGlass API key"
+msgstr "輸入您的 StormGlass API 金鑰"
+
+#: contents/ui/config/configGeneral.qml:499
+msgid "Enter your Tomorrow.io API key"
+msgstr "輸入您的 Tomorrow.io API 金鑰"
+
+#: contents/ui/config/configGeneral.qml:498
+msgid "Enter your Visual Crossing API key"
+msgstr "輸入您的 Visual Crossing API 金鑰"
+
+#: contents/ui/config/configGeneral.qml:503
+msgid "Enter your WeatherAPI.com key"
+msgstr "輸入您的 WeatherAPI.com 金鑰"
+
+#: contents/ui/config/configGeneral.qml:501
+msgid "Enter your Weatherbit API key"
+msgstr "輸入您的 Weatherbit API 金鑰"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:256
+msgid "Error (code %1)"
+msgstr "錯誤（代碼 %1）"
+
+#: contents/ui/DetailsView.qml:2602
+msgid "Evening — "
+msgstr "傍晚 — "
+
+#: contents/ui/js/spaceWeather.js:194
+msgid "Excellent"
+msgstr "優"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:657
+msgid "Expand widget to fill available panel space"
+msgstr "擴展小工具以填滿面板空間"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:386
+msgid "Expanded cards height:"
+msgstr "展開卡片高度："
+
+#: contents/ui/DetailsView.qml:1808
+msgid "Expires"
+msgstr "到期"
+
+#: contents/ui/js/airQuality.js:52 contents/ui/js/spaceWeather.js:168
+#: contents/ui/js/spaceWeather.js:182 contents/ui/main.qml:671
+msgid "Extreme"
+msgstr "極端"
+
+#: contents/ui/js/spaceWeather.js:87
+msgid "Extreme geomagnetic storm."
+msgstr "極端地磁風暴。"
+
+#: contents/ui/js/airQuality.js:52 contents/ui/main.qml:685
+msgid "Extremely Poor"
+msgstr "極差"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:161
+msgid "Fahrenheit (°F)"
+msgstr "華氏（°F）"
+
+#: contents/ui/WeatherService.qml:298
+msgid "Failed: %1"
+msgstr "失敗：%1"
+
+#: contents/ui/js/airQuality.js:48 contents/ui/main.qml:681
+msgid "Fair"
+msgstr "普通"
+
+#: contents/ui/config/configAppearance.qml:1269
+#: contents/ui/config/configAppearance.qml:1364
+#: contents/ui/config/configAppearance.qml:1494 contents/ui/DetailsView.qml:283
+msgid "Feels Like"
+msgstr "體感"
+
+#: contents/ui/TooltipContent.qml:406
+msgid "Feels like:"
+msgstr "體感："
+
+#: contents/ui/FullView.qml:81
+msgid "Feels like: %1"
+msgstr "體感：%1"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:656
+msgid "Fill panel:"
+msgstr "填滿面板："
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:311
+msgid "Find"
+msgstr "尋找"
+
+#: contents/ui/main.qml:989
+msgid "First Quarter"
+msgstr "上弦月"
+
+#: contents/ui/DetailsView.qml:1578
+msgid "Flare Warning"
+msgstr "閃焰警告"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:764
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:208
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:41
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:50
+msgid "Flat Color (Bundled)"
+msgstr "純色（內建）"
+
+#: contents/ui/config/configAppearance.qml:230
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:52
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:652
+#: contents/ui/main.qml:820
+msgid "Fog"
+msgstr "霧"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:756
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:200
+msgid "Font icons (default)"
+msgstr "字型圖示（預設）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:297
+msgid "Font size:"
+msgstr "字型大小："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:176
+msgid "Footer:"
+msgstr "頁尾："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:82
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:146 contents/ui/FullView.qml:468
+msgid "Forecast"
+msgstr "預報"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:479
+msgid "Forecast days:"
+msgstr "預報天數："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:162
+msgid "Forecast only"
+msgstr "僅顯示預報"
+
+#: contents/ui/config/configGeneral.qml:443
+msgid "Free Norwegian Meteorological Institute service. No API key needed."
+msgstr "挪威氣象研究所免費服務，無需 API 金鑰。"
+
+#: contents/ui/config/configGeneral.qml:444
+msgid "Free and open-source. No API key needed. Recommended."
+msgstr "免費且開放原始碼，無需 API 金鑰，推薦使用。"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:54
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:660
+#: contents/ui/main.qml:832
+msgid "Freezing drizzle"
+msgstr "凍毛雨"
+
+#: contents/ui/config/configAppearance.qml:258
+msgid "Freezing drizzle (day)"
+msgstr "凍毛雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:263
+msgid "Freezing drizzle (night)"
+msgstr "凍毛雨（夜晚）"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:668
+#: contents/ui/main.qml:842
+msgid "Freezing rain"
+msgstr "凍雨"
+
+#: contents/ui/config/configAppearance.qml:269
+msgid "Freezing rain (day)"
+msgstr "凍雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:274
+msgid "Freezing rain (night)"
+msgstr "凍雨（夜晚）"
+
+#: contents/ui/main.qml:993
+msgid "Full Moon"
+msgstr "滿月"
+
+#: contents/ui/DetailsView.qml:2178
+msgid "Future alerts"
+msgstr "未來警報"
+
+#: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:74
+msgid "General"
+msgstr "一般"
+
+#: contents/ui/config/configLocation.qml:731
+msgid "GeoClue2 unavailable, trying system location…"
+msgstr "GeoClue2 無法使用，嘗試系統位置⋯"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:693
+#: contents/ui/DetailsView.qml:1363
+msgid "Geomagnetic Storm"
+msgstr "地磁風暴"
+
+#: contents/ui/js/airQuality.js:47 contents/ui/main.qml:680
+msgid "Good"
+msgstr "良好"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:631
+#: contents/ui/DetailsView.qml:972 contents/ui/main.qml:719
+msgid "Grass"
+msgstr "禾草"
+
+#: contents/ui/DetailsView.qml:1798
+msgid "Headline"
+msgstr "標題"
+
+#: contents/ui/main.qml:828
+msgid "Heavy drizzle"
+msgstr "大毛雨"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:666
+#: contents/ui/main.qml:838
+msgid "Heavy rain"
+msgstr "大雨"
+
+#: contents/ui/main.qml:856
+msgid "Heavy showers"
+msgstr "大陣雨"
+
+#: contents/ui/main.qml:848
+msgid "Heavy snow"
+msgstr "大雪"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:686
+msgid "Heavy snow showers"
+msgstr "大陣雪"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:674
+msgid "Heavy snowfall"
+msgstr "大降雪"
+
+#: contents/ui/main.qml:866
+msgid "Heavy thunderstorm with hail"
+msgstr "夾雹大雷雨"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:124
+msgid "Hidden"
+msgstr "隱藏"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:396
+msgid "Hide from details"
+msgstr "在詳細資訊中隱藏"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:384
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:469
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:464
+msgid "Hide prefix icon"
+msgstr "隱藏前綴圖示"
+
+#: contents/ui/FullView.qml:408 contents/ui/js/pollen.js:44
+#: contents/ui/js/spaceWeather.js:183 contents/ui/js/spaceWeather.js:195
+#: contents/ui/main.qml:669 contents/ui/main.qml:713
+msgid "High"
+msgstr "高"
+
+#: contents/ui/config/configGeneral.qml:439
+msgid "High precision forecast provider. API key required below."
+msgstr "高精度天氣預報供應商，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/configGeneral.qml:433
+msgid "Historical and forecast data provider. API key required below."
+msgstr "歷史與預報資料供應商，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:100
+msgid "Horizontal"
+msgstr "水平"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:486
+msgid "Hourly forecast:"
+msgstr "逐時預報："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:477
+msgid "How often the rows scroll to reveal the next item"
+msgstr "列捲動以顯示下一個項目的頻率"
+
+#: contents/ui/config/configAppearance.qml:1276
+#: contents/ui/config/configAppearance.qml:1371
+#: contents/ui/config/configAppearance.qml:1508 contents/ui/DetailsView.qml:284
+msgid "Humidity"
+msgstr "濕度"
+
+#: contents/ui/TooltipContent.qml:427
+msgid "Humidity:"
+msgstr "濕度："
+
+#: contents/ui/config/configLocation.qml:855
+#: contents/ui/config/configLocation.qml:886
+msgid "IP geolocation"
+msgstr "IP 地理定位"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:134
+msgid "Icon and temperature"
+msgstr "圖示與溫度"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:167
+msgid "Icon first"
+msgstr "圖示優先"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:142
+msgid "Icon only"
+msgstr "僅顯示圖示"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:228
+msgid "Icon size:"
+msgstr "圖示大小："
+
+#: contents/ui/config/configAppearance.qml:422
+msgid "Icon source:"
+msgstr "圖示來源："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:748
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:191
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:266
+msgid "Icon theme:"
+msgstr "圖示主題："
+
+#: contents/ui/config/configAppearance.qml:640
+msgid "Icon:"
+msgstr "圖示："
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:184
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:261
+msgid "Icons"
+msgstr "圖示"
+
+#: contents/ui/config/configLocation.qml:1015
+msgid "If this looks correct, apply it. Otherwise, choose your location manually."
+msgstr "若資訊正確，請套用；否則請手動選擇您的位置。"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:87
+msgid "Imperial (°F, mph, inHg, in)"
+msgstr "英制（°F、mph、inHg、in）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:78
+msgid "In a vertical panel, long item labels may be truncated. Consider using \"Simple\" mode, increasing the panel width, or reducing the font size."
+msgstr "在垂直面板中，較長的項目標籤可能被截斷。建議改用「簡易」模式、增加面板寬度或縮小字型大小。"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:244
+msgid ""
+"Individual dropdowns are editable only in Custom mode.\n"
+"Other presets set units automatically."
+msgstr ""
+"各下拉選單只能在「自訂」模式下個別編輯。\n"
+"其他預設模式會自動設定單位。"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:146
+msgid "Individual units"
+msgstr "個別單位"
+
+#: contents/ui/DetailsView.qml:1810
+msgid "Instruction"
+msgstr "說明"
+
+#: contents/ui/config/configGeneral.qml:665
+msgid "Interval:"
+msgstr "間隔："
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:268
+msgid "Invalid API key (HTTP %1)"
+msgstr "API 金鑰無效（HTTP %1）"
+
+#: contents/ui/config/configGeneral.qml:258
+msgid "Invalid API key. Please check and try again."
+msgstr "API 金鑰無效，請確認後重試。"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:261
+msgid "Invalid response"
+msgstr "無效的回應"
+
+#: contents/ui/config/configGeneral.qml:248
+msgid "Invalid response from QWeather."
+msgstr "QWeather 回應無效。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:641
+msgid "Item spacing:"
+msgstr "項目間距："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:559
+msgid "Item width:"
+msgstr "項目寬度："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:159
+msgid "Items Order:"
+msgstr "項目順序："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:772
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:39
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:47
+msgid "KDE Icon Theme"
+msgstr "KDE 圖示主題"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:48
+msgid "KDE Symbolic"
+msgstr "KDE 符號圖示"
+
+#: contents/ui/config/configAppearance.qml:428
+msgid "KDE System Icons (automatic, follows weather code)"
+msgstr "KDE 系統圖示（自動，依天氣代碼）"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:309
+msgid "KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\"."
+msgstr "KDE 圖示主題不完全支援許多項目圖示，您可以點擊「設定自訂圖示」來自行設定。"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:49
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:50
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:49
+msgid "Keep Changes"
+msgstr "保留變更"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:44
+msgid "Keep the changes you made to Details Items?"
+msgstr "是否保留詳細資訊項目的變更？"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:45
+msgid "Keep the changes you made to Panel Items?"
+msgstr "是否保留面板項目的變更？"
+
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:44
+msgid "Keep the changes you made to Tooltip Items?"
+msgstr "是否保留提示項目的變更？"
+
+#: contents/ui/FullView.qml:297
+msgid "Keep widget open"
+msgstr "保持小工具開啟"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:196
+msgid "Knots (kn)"
+msgstr "節（kn）"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:694
+#: contents/ui/DetailsView.qml:1396
+msgid "Kp Index"
+msgstr "Kp 指數"
+
+#: contents/ui/main.qml:997
+msgid "Last Quarter"
+msgstr "下弦月"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:569
+msgid "Lat:"
+msgstr "緯度："
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:337
+msgid "Lat: %1°"
+msgstr "緯度：%1°"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:290
+msgid "Latitude"
+msgstr "緯度"
+
+#: contents/ui/config/configLocation.qml:1737
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:429
+msgid "Latitude:"
+msgstr "緯度："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:330
+msgid "Layout"
+msgstr "版面配置"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:92
+msgid "Layout type:"
+msgstr "版面類型："
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:654
+#: contents/ui/main.qml:824
+msgid "Light drizzle"
+msgstr "輕毛雨"
+
+#: contents/ui/main.qml:830
+msgid "Light freezing drizzle"
+msgstr "輕凍毛雨"
+
+#: contents/ui/main.qml:840
+msgid "Light freezing rain"
+msgstr "輕凍雨"
+
+#: contents/ui/main.qml:834
+msgid "Light rain"
+msgstr "小雨"
+
+#: contents/ui/config/configAppearance.qml:236
+msgid "Light rain / Drizzle (day)"
+msgstr "小雨／毛雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:241
+msgid "Light rain / Drizzle (night)"
+msgstr "小雨／毛雨（夜晚）"
+
+#: contents/ui/main.qml:852
+msgid "Light showers"
+msgstr "小陣雨"
+
+#: contents/ui/main.qml:844
+msgid "Light snow"
+msgstr "小雪"
+
+#: contents/ui/config/configAppearance.qml:280
+msgid "Light snow (day)"
+msgstr "小雪（白天）"
+
+#: contents/ui/config/configAppearance.qml:285
+msgid "Light snow (night)"
+msgstr "小雪（夜晚）"
+
+#: contents/ui/main.qml:858
+msgid "Light snow showers"
+msgstr "小陣雪"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:481
+msgid "Lines:"
+msgstr "行數："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:342
+msgid "List"
+msgstr "清單"
+
+#: contents/ui/DetailsView.qml:460
+msgid "Loading details…"
+msgstr "載入詳細資訊中⋯"
+
+#: contents/ui/ForecastView.qml:73
+msgid "Loading forecast…"
+msgstr "載入預報中⋯"
+
+#: contents/ui/ForecastView.qml:245
+msgid "Loading hourly data…"
+msgstr "載入逐時資料中⋯"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:498
+msgid "Loading locations…"
+msgstr "載入位置中⋯"
+
+#: contents/config/config.qml:47
+msgid "Location"
+msgstr "位置"
+
+#: contents/ui/config/configAppearance.qml:1290
+msgid "Location Name"
+msgstr "地點名稱"
+
+#: contents/ui/config/configLocation.qml:671
+msgid "Location auto-detected."
+msgstr "位置已自動偵測。"
+
+#: contents/ui/config/configLocation.qml:1312
+msgid "Location detection is depending on system configuration and permissions."
+msgstr "位置偵測取決於系統設定與權限。"
+
+#: contents/ui/config/configLocation.qml:1702
+msgid "Location information"
+msgstr "位置資訊"
+
+#: contents/ui/config/configGeneral.qml:163
+#: contents/ui/config/configLocation.qml:470
+msgid "Location is available on %1."
+msgstr "位置在 %1 上可用。"
+
+#: contents/ui/config/configGeneral.qml:166
+#: contents/ui/config/configLocation.qml:473
+msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
+msgstr "位置在 %1 上不可用（HTTP %2），請嘗試其他供應商或位置。"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:267
+msgid "Location name"
+msgstr "地點名稱"
+
+#: contents/ui/config/configLocation.qml:1721
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:418
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:61
+msgid "Location name:"
+msgstr "地點名稱："
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
+msgid "Location staged. Click the main Apply button to save."
+msgstr "位置已暫存，點擊主套用按鈕以儲存。"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:316
+msgid "Location:"
+msgstr "位置："
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:576
+msgid "Lon:"
+msgstr "經度："
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:338
+msgid "Lon: %1°"
+msgstr "經度：%1°"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:302
+msgid "Longitude"
+msgstr "經度"
+
+#: contents/ui/config/configLocation.qml:1758
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:446
+msgid "Longitude:"
+msgstr "經度："
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:535
+msgid "Looking up location…"
+msgstr "查詢位置中⋯"
+
+#: contents/ui/FullView.qml:428 contents/ui/js/pollen.js:42
+#: contents/ui/js/spaceWeather.js:185 contents/ui/js/spaceWeather.js:197
+#: contents/ui/main.qml:667 contents/ui/main.qml:711
+msgid "Low"
+msgstr "低"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:697
+msgid "Magnetic Field (Bz)"
+msgstr "磁場（Bz）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:499
+msgid "Main icon style:"
+msgstr "主圖示樣式："
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:49
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:646
+#: contents/ui/main.qml:814
+msgid "Mainly clear"
+msgstr "大致晴朗"
+
+#: contents/ui/config/configAppearance.qml:202
+msgid "Mainly clear (day)"
+msgstr "大致晴朗（白天）"
+
+#: contents/ui/config/configAppearance.qml:207
+msgid "Mainly clear (night)"
+msgstr "大致晴朗（夜晚）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:240
+#: contents/ui/config/tabs/ConfigPanelTab.qml:309
+#: contents/ui/config/tabs/ConfigPanelTab.qml:703
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:104
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:147
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:203
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:232
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:360
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:394
+msgid "Manual"
+msgstr "手動"
+
+#: contents/ui/config/configGeneral.qml:437
+msgid "Marine and weather data provider. API key required below."
+msgstr "海洋與天氣資料供應商，請在下方填入 API 金鑰。"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:83
+msgid "Metric (°C, km/h, hPa, mm)"
+msgstr "公制（°C、km/h、hPa、mm）"
+
+#: contents/ui/js/pollen.js:43
+msgid "Mild symptoms in highly sensitive individuals."
+msgstr "對花粉極度敏感者可能出現輕微症狀。"
+
+#: contents/ui/js/pollen.js:42
+msgid "Minimal to no risk."
+msgstr "風險極低或無風險。"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:224
+msgid "Minimum height:"
+msgstr "最小高度："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:195
+msgid "Minimum width:"
+msgstr "最小寬度："
+
+#: contents/ui/js/spaceWeather.js:91
+msgid "Minor geomagnetic storm."
+msgstr "輕度地磁風暴。"
+
+#: contents/ui/config/configAppearance.qml:1843
+msgid "Misc"
+msgstr "其他"
+
+#: contents/ui/js/airQuality.js:49 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
+#: contents/ui/main.qml:668 contents/ui/main.qml:682 contents/ui/main.qml:712
+msgid "Moderate"
+msgstr "中度"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:656
+msgid "Moderate drizzle"
+msgstr "中等毛雨"
+
+#: contents/ui/js/spaceWeather.js:90
+msgid "Moderate geomagnetic storm."
+msgstr "中度地磁風暴。"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:664
+msgid "Moderate rain"
+msgstr "中雨"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:680
+msgid "Moderate rain showers"
+msgstr "中等陣雨"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:672
+msgid "Moderate snowfall"
+msgstr "中等降雪"
+
+#: contents/ui/DetailsView.qml:290
+msgid "Moon"
+msgstr "月亮"
+
+#: contents/ui/config/configAppearance.qml:1297
+msgid "Moon Phase"
+msgstr "月相"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:476
+msgid "Moon mode:"
+msgstr "月亮模式："
+
+#: contents/ui/config/configAppearance.qml:1413
+#: contents/ui/config/configAppearance.qml:1529
+msgid "Moon phase and moonrise/moonset"
+msgstr "月相與月出／月落"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:561
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:555
+msgid "Moon phase mode:"
+msgstr "月相模式："
+
+#: contents/ui/config/configAppearance.qml:878
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:497
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:577
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:571
+msgid "Moon phase only"
+msgstr "僅顯示月相"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:328
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:414
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:409
+msgid "Moon phase options"
+msgstr "月相選項"
+
+#: contents/ui/config/configAppearance.qml:1414
+#: contents/ui/config/configAppearance.qml:1530
+msgid "Moon phase, moonrise & moonset"
+msgstr "月相、月出及月落"
+
+#: contents/ui/TooltipContent.qml:488 contents/ui/TooltipContent.qml:530
+#: contents/ui/TooltipContent.qml:552
+msgid "Moon:"
+msgstr "月亮："
+
+#: contents/ui/DetailsView.qml:2804 contents/ui/DetailsView.qml:2809
+#: contents/ui/DetailsView.qml:3123 contents/ui/DetailsView.qml:3128
+msgid "Moonrise"
+msgstr "月出"
+
+#: contents/ui/config/configAppearance.qml:882
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:501
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:581
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:575
+msgid "Moonrise & moonset only"
+msgstr "僅顯示月出與月落"
+
+#: contents/ui/config/configAppearance.qml:929
+msgid "Moonrise icon:"
+msgstr "月出圖示："
+
+#: contents/ui/config/configAppearance.qml:886
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:505
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:589
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:583
+msgid "Moonrise only"
+msgstr "僅顯示月出"
+
+#: contents/ui/DetailsView.qml:2802 contents/ui/DetailsView.qml:3121
+msgid "Moonrise/Moonset"
+msgstr "月出／月落"
+
+#: contents/ui/TooltipContent.qml:491 contents/ui/TooltipContent.qml:513
+#: contents/ui/TooltipContent.qml:520 contents/ui/TooltipContent.qml:544
+#: contents/ui/TooltipContent.qml:553
+msgid "Moonrise:"
+msgstr "月出："
+
+#: contents/ui/DetailsView.qml:2806 contents/ui/DetailsView.qml:2809
+#: contents/ui/DetailsView.qml:3125 contents/ui/DetailsView.qml:3128
+msgid "Moonset"
+msgstr "月落"
+
+#: contents/ui/config/configAppearance.qml:972
+msgid "Moonset icon:"
+msgstr "月落圖示："
+
+#: contents/ui/config/configAppearance.qml:890
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:509
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:593
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:587
+msgid "Moonset only"
+msgstr "僅顯示月落"
+
+#: contents/ui/TooltipContent.qml:495 contents/ui/TooltipContent.qml:510
+#: contents/ui/TooltipContent.qml:520 contents/ui/TooltipContent.qml:541
+#: contents/ui/TooltipContent.qml:554
+msgid "Moonset:"
+msgstr "月落："
+
+#: contents/ui/js/pollen.js:44
+msgid "Most allergy sufferers will experience discomfort."
+msgstr "多數過敏患者將感到不適。"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:632
+#: contents/ui/DetailsView.qml:973 contents/ui/main.qml:720
+msgid "Mugwort"
+msgstr "艾草"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:54
+msgid "Multiple lines (tall panel)"
+msgstr "多行（高面板）"
+
+#: contents/ui/config/configAppearance.qml:1340
+#: contents/ui/config/configAppearance.qml:1456
+#: contents/ui/config/configAppearance.qml:1572
+msgid "NOAA Kp index and geomagnetic activity"
+msgstr "NOAA Kp 指數與地磁活動"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:567
+msgid "NO₂"
+msgstr "NO₂"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:407
+msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
+msgstr "需要查詢某地的座標？可至 <a href=\\\"https://www.mapcoordinates.net/\\\">mapcoordinates.net</a> 搜尋。"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:270
+msgid "Network error"
+msgstr "網路錯誤"
+
+#: contents/ui/main.qml:985
+msgid "New Moon"
+msgstr "新月"
+
+#: contents/ui/DetailsView.qml:2577
+msgid "Night"
+msgstr "夜晚"
+
+#: contents/ui/DetailsView.qml:824
+msgid "Nitrogen Dioxide (NO₂)"
+msgstr "二氧化氮（NO₂）"
+
+#: contents/ui/config/configLocation.qml:1155
+msgid "No"
+msgstr "否"
+
+#: contents/ui/DetailsView.qml:460
+msgid "No details data"
+msgstr "無詳細資訊資料"
+
+#: contents/ui/ForecastView.qml:73
+msgid "No forecast data"
+msgstr "無預報資料"
+
+#: contents/ui/js/spaceWeather.js:92
+msgid "No geomagnetic storm activity."
+msgstr "無地磁風暴活動。"
+
+#: contents/ui/FullView.qml:183
+msgid "No location set"
+msgstr "未設定位置"
+
+#: contents/ui/config/configLocation.qml:1391
+msgid "No saved locations. Save the current location to quickly switch between places."
+msgstr "尚無儲存的地點，儲存目前位置以便快速切換地點。"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:498
+msgid "No weather stations found for '%1'"
+msgstr "未找到「%1」的氣象站"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:318
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:163
+#: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:775
+#: contents/ui/main.qml:777
+msgid "None"
+msgstr "無"
+
+#: contents/ui/config/configLocation.qml:563
+msgid "None Selected"
+msgstr "未選取"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:272
+msgid "Not available (HTTP %1)"
+msgstr "無法使用（HTTP %1）"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:620
+msgid "Not tested"
+msgstr "未測試"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:738
+msgid "Note: size may be reduced if the panel is not thick enough."
+msgstr "注意：若面板不夠厚，大小可能會縮減。"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:368
+#, javascript-format
+msgid "Now: %1%2"
+msgstr "目前：%1%2"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:487
+msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
+msgstr "一次可見的項目列數，請在 KDE 設定中調整面板高度以配合。"
+
+#: contents/ui/config/configAppearance.qml:551
+msgid "OK"
+msgstr "確定"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:633
+#: contents/ui/DetailsView.qml:974 contents/ui/main.qml:721
+msgid "Olive"
+msgstr "橄欖"
+
+#: contents/ui/config/configGeneral.qml:270
+msgid "Open-Meteo (recommended, free)"
+msgstr "Open-Meteo（推薦，免費）"
+
+#: contents/ui/config/configGeneral.qml:278
+msgid "OpenWeatherMap (Key Required)"
+msgstr "OpenWeatherMap（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:476
+msgid "OpenWeatherMap API Key:"
+msgstr "OpenWeatherMap API 金鑰："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:332
+msgid "Options"
+msgstr "選項"
+
+#: contents/ui/config/configAppearance.qml:224
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:650
+#: contents/ui/main.qml:818
+msgid "Overcast"
+msgstr "陰"
+
+#: contents/ui/DetailsView.qml:825
+msgid "Ozone (O₃)"
+msgstr "臭氧（O₃）"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:568
+msgid "O₃"
+msgstr "O₃"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:566
+msgid "PM10"
+msgstr "PM10"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:565
+msgid "PM2.5"
+msgstr "PM2.5"
+
+#: contents/ui/config/configAppearance.qml:1831
+msgid "Panel"
+msgstr "面板"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:96
+msgid "Panel Items"
+msgstr "面板項目"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:41
+msgid "Panel display settings"
+msgstr "面板顯示設定"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:687
+msgid "Panel font:"
+msgstr "面板字型："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:663
+msgid "Panel items settings"
+msgstr "面板項目設定"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:852
+msgid "Panel items:"
+msgstr "面板項目："
+
+#: contents/ui/DetailsView.qml:823
+msgid "Particulate Matter (PM10)"
+msgstr "懸浮微粒（PM10）"
+
+#: contents/ui/DetailsView.qml:822
+msgid "Particulate Matter (PM2.5)"
+msgstr "細懸浮微粒（PM2.5）"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:648
+#: contents/ui/main.qml:816 contents/ui/main.qml:868
+msgid "Partly cloudy"
+msgstr "多雲"
+
+#: contents/ui/config/configAppearance.qml:213
+msgid "Partly cloudy (day)"
+msgstr "多雲（白天）"
+
+#: contents/ui/config/configAppearance.qml:218
+msgid "Partly cloudy (night)"
+msgstr "多雲（夜晚）"
+
+#: contents/ui/config/configAppearance.qml:866
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:485
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:569
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:563
+msgid "Phase + moonrise & moonset"
+msgstr "月相＋月出與月落"
+
+#: contents/ui/config/configAppearance.qml:870
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:489
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:573
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:567
+msgid "Phase + upcoming rise/set"
+msgstr "月相＋即將月出／月落"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:593
+msgid "Pipe  |"
+msgstr "直線  |"
+
+#: contents/ui/config/configGeneral.qml:286
+msgid "Pirate Weather (Key Required)"
+msgstr "Pirate Weather（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:477
+msgid "Pirate Weather API Key:"
+msgstr "Pirate Weather API 金鑰："
+
+#: contents/ui/config/configAppearance.qml:1332
+#: contents/ui/config/configAppearance.qml:1448
+#: contents/ui/config/configAppearance.qml:1564 contents/ui/DetailsView.qml:296
+msgid "Pollen"
+msgstr "花粉"
+
+#: contents/ui/DetailsView.qml:1110
+msgid "Pollen data not available for this location."
+msgstr "此地點無花粉資料。"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:330
+msgid "Pollen options"
+msgstr "花粉選項"
+
+#: contents/ui/TooltipContent.qml:462
+msgid "Pollen:"
+msgstr "花粉："
+
+#: contents/ui/js/airQuality.js:50 contents/ui/main.qml:683
+msgid "Poor"
+msgstr "差"
+
+#: contents/ui/TooltipContent.qml:447
+msgid "Precip. Sum:"
+msgstr "降水總量："
+
+#: contents/ui/config/configAppearance.qml:1304
+#: contents/ui/config/configAppearance.qml:1420
+#: contents/ui/config/configAppearance.qml:1536 contents/ui/DetailsView.qml:292
+msgid "Precipitation"
+msgstr "降水量"
+
+#: contents/ui/config/configAppearance.qml:1311
+#: contents/ui/config/configAppearance.qml:1427
+#: contents/ui/config/configAppearance.qml:1543 contents/ui/DetailsView.qml:293
+msgid "Precipitation Sum"
+msgstr "降水總量"
+
+#: contents/ui/config/configAppearance.qml:1305
+#: contents/ui/config/configAppearance.qml:1421
+#: contents/ui/config/configAppearance.qml:1537
+msgid "Precipitation rate (mm/h)"
+msgstr "降水率（mm/h）"
+
+#: contents/ui/TooltipContent.qml:442
+msgid "Precipitation:"
+msgstr "降水量："
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:176
+msgid "Prefix style:"
+msgstr "前綴樣式："
+
+#: contents/ui/config/configAppearance.qml:1283
+#: contents/ui/config/configAppearance.qml:1378
+#: contents/ui/config/configAppearance.qml:1515 contents/ui/DetailsView.qml:285
+msgid "Pressure"
+msgstr "氣壓"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:213
+#: contents/ui/TooltipContent.qml:430
+msgid "Pressure:"
+msgstr "氣壓："
+
+#: contents/ui/DetailsView.qml:1812
+msgid "Provider"
+msgstr "供應商"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:563
+msgid "Provider availability"
+msgstr "供應商可用性"
+
+#: contents/ui/config/configGeneral.qml:427
+#: contents/ui/config/configGeneral.qml:429
+#: contents/ui/config/configGeneral.qml:431
+#: contents/ui/config/configGeneral.qml:433
+#: contents/ui/config/configGeneral.qml:435
+#: contents/ui/config/configGeneral.qml:437
+#: contents/ui/config/configGeneral.qml:439
+#: contents/ui/config/configGeneral.qml:441
+#: contents/ui/config/configGeneral.qml:443
+#: contents/ui/config/configGeneral.qml:444
+msgid "Provider website:"
+msgstr "供應商網站："
+
+#: contents/ui/config/configGeneral.qml:400 contents/ui/DetailsView.qml:1592
+#: contents/ui/DetailsView.qml:2274
+msgid "Provider:"
+msgstr "供應商："
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:364
+msgid "Provider: %1"
+msgstr "供應商：%1"
+
+#: contents/ui/config/configGeneral.qml:386
+msgid ""
+"Providers are tried in order until one succeeds:\n"
+"Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
+"Open-Meteo is always tried first — it is free and requires no API key."
+msgstr ""
+"依序嘗試各供應商，直到成功為止：\n"
+"Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
+"Open-Meteo 永遠優先嘗試——免費且無需 API 金鑰。"
+
+#: contents/ui/config/configGeneral.qml:306
+msgid "QWeather (Key Required)"
+msgstr "QWeather（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:607
+msgid "QWeather API Host:"
+msgstr "QWeather API 主機："
+
+#: contents/ui/config/configGeneral.qml:482
+msgid "QWeather API Key:"
+msgstr "QWeather API 金鑰："
+
+#: contents/ui/config/configGeneral.qml:243
+msgid "QWeather error (code %1). Check your API key."
+msgstr "QWeather 錯誤（代碼 %1），請檢查您的 API 金鑰。"
+
+#: contents/ui/js/spaceWeather.js:173
+msgid "Quiet"
+msgstr "平靜"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:634
+#: contents/ui/DetailsView.qml:975 contents/ui/main.qml:722
+msgid "Ragweed"
+msgstr "豚草"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
+#: contents/ui/main.qml:836
+msgid "Rain"
+msgstr "雨"
+
+#: contents/ui/config/configAppearance.qml:247
+msgid "Rain (day)"
+msgstr "雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:252
+msgid "Rain (night)"
+msgstr "雨（夜晚）"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:59
+msgid "Rain showers"
+msgstr "陣雨"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
+msgid "Recommended — e.g. 560"
+msgstr "建議值 — 例如 560"
+
+#: contents/ui/config/configLocation.qml:1315 contents/ui/FullView.qml:334
+#: contents/ui/main.qml:289
+msgid "Refresh"
+msgstr "重新整理"
+
+#: contents/ui/config/configGeneral.qml:654
+msgid "Refresh weather automatically"
+msgstr "自動更新天氣"
+
+#: contents/ui/config/configAppearance.qml:1372
+#: contents/ui/config/configAppearance.qml:1509
+msgid "Relative humidity %"
+msgstr "相對濕度 %"
+
+#: contents/ui/config/configAppearance.qml:1277
+msgid "Relative humidity percentage"
+msgstr "相對濕度百分比"
+
+#: contents/ui/config/configLocation.qml:1193
+msgid "Remove last location?"
+msgstr "移除最後一個地點？"
+
+#: contents/ui/config/configLocation.qml:1673
+msgid "Remove saved location"
+msgstr "移除已儲存的地點"
+
+#: contents/ui/config/configLocation.qml:1642
+msgid "Rename location"
+msgstr "重新命名地點"
+
+#: contents/ui/config/configLocation.qml:722
+msgid "Requesting location via GeoClue2…"
+msgstr "透過 GeoClue2 請求位置⋯"
+
+#: contents/ui/config/configLocation.qml:711
+msgid "Requesting location… (%1)"
+msgstr "請求位置中⋯（%1）"
+
+#: contents/ui/config/configAppearance.qml:520
+#: contents/ui/config/configAppearance.qml:792
+#: contents/ui/config/configAppearance.qml:835
+#: contents/ui/config/configAppearance.qml:960
+#: contents/ui/config/configAppearance.qml:1003
+#: contents/ui/config/tabs/ConfigPanelTab.qml:433
+msgid "Reset"
+msgstr "重設"
+
+#: contents/ui/config/configAppearance.qml:537
+msgid "Reset All to Defaults"
+msgstr "全部重設為預設值"
+
+#: contents/ui/config/configAppearance.qml:678
+msgid "Reset to default"
+msgstr "重設為預設值"
+
+#: contents/ui/main.qml:822
+msgid "Rime fog"
+msgstr "霧淞"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:47
+msgid "Round values:"
+msgstr "數值四捨五入："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:569
+msgid "SO₂"
+msgstr "SO₂"
+
+#: contents/ui/config/configLocation.qml:1375
+msgid "Saved locations"
+msgstr "已儲存的地點"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:491
+msgid "Scroll animation:"
+msgstr "捲動動畫："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:471
+msgid "Scroll interval (sec):"
+msgstr "捲動間隔（秒）："
+
+#: contents/ui/config/configLocation.qml:1347
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:263
+msgid "Search Location"
+msgstr "搜尋位置"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:498
+msgid "Search a weather station to set your location"
+msgstr "搜尋氣象站以設定您的位置"
+
+#: contents/ui/config/configLocation.qml:1344
+msgid "Search for a location or choose it on the map."
+msgstr "搜尋位置或在地圖上選擇。"
+
+#: contents/ui/config/configLocation.qml:1034
+msgid "Search location"
+msgstr "搜尋位置"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:281
+msgid "Search location…"
+msgstr "搜尋位置⋯"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:582
+msgid "Separator:"
+msgstr "分隔符號："
+
+#: contents/ui/js/pollen.js:45
+msgid "Serious risk; avoid outdoor activities."
+msgstr "嚴重風險，請避免戶外活動。"
+
+#: contents/ui/config/configLocation.qml:1109
+msgid "Set <b>%1</b> as your default location?"
+msgstr "將 <b>%1</b> 設為預設地點？"
+
+#: contents/ui/FullView.qml:192
+msgid "Set Location…"
+msgstr "設定位置⋯"
+
+#: contents/ui/config/configLocation.qml:1603
+msgid "Set as default location"
+msgstr "設為預設地點"
+
+#: contents/ui/config/configLocation.qml:1081
+msgid "Set as default?"
+msgstr "設為預設？"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:841
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:285
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:313
+msgid "Set your own icons…"
+msgstr "設定自訂圖示⋯"
+
+#: contents/ui/js/spaceWeather.js:88
+msgid "Severe geomagnetic storm."
+msgstr "嚴重地磁風暴。"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:762
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:661
+msgid "Show / hide the prefix icon"
+msgstr "顯示／隱藏前綴圖示"
+
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:677
+msgid "Show / hide the prefix icon on the panel"
+msgstr "在面板上顯示／隱藏前綴圖示"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:396
+msgid "Show in details"
+msgstr "在詳細資訊中顯示"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:802
+msgid "Show or hide this detail item"
+msgstr "顯示或隱藏此詳細資訊項目"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:602
+msgid "Show pollen types in expanded view:"
+msgstr "在展開檢視中顯示花粉類型："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:537
+msgid "Show pollutants in expanded view:"
+msgstr "在展開檢視中顯示污染物："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:384
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:469
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:464
+msgid "Show prefix icon"
+msgstr "顯示前綴圖示"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:666
+msgid "Show space weather items in expanded view:"
+msgstr "在展開檢視中顯示太空天氣項目："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:487
+msgid "Show sunrise/sunset markers"
+msgstr "顯示日出／日落標記"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:60
+msgid "Show temperature unit:"
+msgstr "顯示溫度單位："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:177
+msgid "Show update time and provider"
+msgstr "顯示更新時間與供應商"
+
+#: contents/ui/config/configGeneral.qml:544
+msgid "Show/hide key"
+msgstr "顯示／隱藏金鑰"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:126
+msgid "Show:"
+msgstr "顯示："
+
+#: contents/ui/main.qml:854
+msgid "Showers"
+msgstr "陣雨"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:68
+msgid "Showing ° only"
+msgstr "僅顯示 °"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:68
+msgid "Showing °C / °F after values"
+msgstr "在數值後顯示 °C / °F"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:124
+msgid "Shown"
+msgstr "已顯示"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:58
+msgid "Simple (icon + temperature)"
+msgstr "簡易（圖示＋溫度）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:86
+msgid "Simple display mode settings"
+msgstr "簡易顯示模式設定"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:50
+msgid "Single line (all items at once)"
+msgstr "單行（同時顯示所有項目）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:786
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:230
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:278
+msgid "Size:"
+msgstr "大小："
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:215
+msgid "Skipped — API key not configured"
+msgstr "已略過 — 未設定 API 金鑰"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:662
+msgid "Slight rain"
+msgstr "微雨"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:678
+msgid "Slight rain showers"
+msgstr "微陣雨"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:684
+msgid "Slight snow showers"
+msgstr "微陣雪"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:670
+msgid "Slight snowfall"
+msgstr "微量降雪"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:605
+msgid "Small circle  ⚬"
+msgstr "小圓圈  ⚬"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
+#: contents/ui/main.qml:846
+msgid "Snow"
+msgstr "雪"
+
+#: contents/ui/config/configAppearance.qml:291
+msgid "Snow (day)"
+msgstr "雪（白天）"
+
+#: contents/ui/config/configAppearance.qml:296
+msgid "Snow (night)"
+msgstr "雪（夜晚）"
+
+#: contents/ui/config/configAppearance.qml:1353
+#: contents/ui/config/configAppearance.qml:1469
+#: contents/ui/config/configAppearance.qml:1585 contents/ui/DetailsView.qml:299
+msgid "Snow Cover"
+msgstr "積雪覆蓋"
+
+#: contents/ui/TooltipContent.qml:477
+msgid "Snow Cover:"
+msgstr "積雪覆蓋："
+
+#: contents/ui/config/configAppearance.qml:1354
+#: contents/ui/config/configAppearance.qml:1470
+#: contents/ui/config/configAppearance.qml:1586
+msgid "Snow depth (cm/in)"
+msgstr "積雪深度（公分／英吋）"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:676
+#: contents/ui/main.qml:850
+msgid "Snow grains"
+msgstr "雪粒"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
+#: contents/ui/main.qml:860
+msgid "Snow showers"
+msgstr "陣雪"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:695
+#: contents/ui/DetailsView.qml:1435
+msgid "Solar Wind"
+msgstr "太陽風"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:601
+msgid "Space"
+msgstr "太空"
+
+#: contents/ui/config/configAppearance.qml:1339
+#: contents/ui/config/configAppearance.qml:1455
+#: contents/ui/config/configAppearance.qml:1571 contents/ui/DetailsView.qml:297
+msgid "Space Weather"
+msgstr "太空天氣"
+
+#: contents/ui/TooltipContent.qml:467
+msgid "Space Weather:"
+msgstr "太空天氣："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:331
+msgid "Space weather options"
+msgstr "太空天氣選項"
+
+#: contents/ui/config/configGeneral.qml:427
+msgid "Standard provider. API key required below."
+msgstr "標準天氣供應商，請在下方填入 API 金鑰。"
+
+#: contents/ui/js/spaceWeather.js:170
+msgid "Storm"
+msgstr "暴風雨"
+
+#: contents/ui/config/configGeneral.qml:298
+msgid "StormGlass (Key Required)"
+msgstr "StormGlass（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:480
+msgid "StormGlass API Key:"
+msgstr "StormGlass API 金鑰："
+
+#: contents/ui/js/spaceWeather.js:169
+msgid "Strong"
+msgstr "強烈"
+
+#: contents/ui/js/spaceWeather.js:89
+msgid "Strong geomagnetic storm."
+msgstr "強烈地磁風暴。"
+
+#: contents/ui/DetailsView.qml:826
+msgid "Sulfur Dioxide (SO₂)"
+msgstr "二氧化硫（SO₂）"
+
+#: contents/ui/config/configAppearance.qml:1393
+#: contents/ui/config/configAppearance.qml:1523
+msgid "Sun rise & set times"
+msgstr "日出與日落時間"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:431
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:516
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:511
+msgid "Sun times mode:"
+msgstr "日出日落模式："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:327
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:414
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:409
+msgid "Sun times options"
+msgstr "日出日落選項"
+
+#: contents/ui/DetailsView.qml:2367 contents/ui/DetailsView.qml:2371
+#: contents/ui/DetailsView.qml:2685 contents/ui/DetailsView.qml:2689
+msgid "Sunrise"
+msgstr "日出"
+
+#: contents/ui/config/configAppearance.qml:1255
+msgid "Sunrise and sunset times"
+msgstr "日出與日落時間"
+
+#: contents/ui/config/configAppearance.qml:761
+msgid "Sunrise icon:"
+msgstr "日出圖示："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:444
+msgid "Sunrise only"
+msgstr "僅顯示日出"
+
+#: contents/ui/config/configAppearance.qml:718
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:533
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:527
+msgid "Sunrise only  07:17"
+msgstr "僅日出  07:17"
+
+#: contents/ui/config/configAppearance.qml:1254
+#: contents/ui/config/configAppearance.qml:1392
+#: contents/ui/config/configAppearance.qml:1522 contents/ui/DetailsView.qml:287
+msgid "Sunrise/Sunset"
+msgstr "日出／日落"
+
+#: contents/ui/TooltipContent.qml:580 contents/ui/TooltipContent.qml:596
+#: contents/ui/TooltipContent.qml:601
+msgid "Sunrise:"
+msgstr "日出："
+
+#: contents/ui/DetailsView.qml:2369 contents/ui/DetailsView.qml:2371
+#: contents/ui/DetailsView.qml:2687 contents/ui/DetailsView.qml:2689
+msgid "Sunset"
+msgstr "日落"
+
+#: contents/ui/config/configAppearance.qml:804
+msgid "Sunset icon:"
+msgstr "日落圖示："
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:448
+msgid "Sunset only"
+msgstr "僅顯示日落"
+
+#: contents/ui/config/configAppearance.qml:722
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:537
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:531
+msgid "Sunset only   18:03"
+msgstr "僅日落   18:03"
+
+#: contents/ui/TooltipContent.qml:584 contents/ui/TooltipContent.qml:593
+#: contents/ui/TooltipContent.qml:601
+msgid "Sunset:"
+msgstr "日落："
+
+#: contents/ui/FullView.qml:250
+msgid "Switch location"
+msgstr "切換位置"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:200
+msgid "Symbolic"
+msgstr "符號圖示"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:760
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:204
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:40
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:49
+msgid "Symbolic (Bundled)"
+msgstr "符號圖示（內建）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:512
+msgid "Symbolic (follows theme colour)"
+msgstr "符號圖示（跟隨主題色彩）"
+
+#: contents/ui/config/configLocation.qml:740
+msgid "System location unavailable, trying IP geolocation…"
+msgstr "系統位置無法使用，嘗試 IP 地理定位⋯"
+
+#: contents/ui/config/configAppearance.qml:1247
+#: contents/ui/config/configAppearance.qml:1480
+msgid "Temperature"
+msgstr "溫度"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:347
+msgid "Temperature badge"
+msgstr "溫度徽章"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:171
+msgid "Temperature first"
+msgstr "溫度優先"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:138
+msgid "Temperature only"
+msgstr "僅顯示溫度"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:151
+#: contents/ui/TooltipContent.qml:403
+msgid "Temperature:"
+msgstr "溫度："
+
+#: contents/ui/config/configGeneral.qml:567
+msgid "Test API Key"
+msgstr "測試 API 金鑰"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:524
+msgid "Test across providers"
+msgstr "測試所有供應商"
+
+#: contents/ui/config/configGeneral.qml:195
+msgid "Testing connection…"
+msgstr "測試連線中⋯"
+
+#: contents/ui/config/configGeneral.qml:567
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:219
+msgid "Testing…"
+msgstr "測試中⋯"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:184
+msgid "Text labels (Temperature, Wind…)"
+msgstr "文字標籤（溫度、風速⋯）"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:710
+msgid "Text will follow the system font and expand to fill the available space."
+msgstr "文字將跟隨系統字型並展開以填滿可用空間。"
+
+#: contents/ui/config/configAppearance.qml:447
+msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
+msgstr "天氣狀況圖示將自動使用您的 KDE 系統圖示主題反映目前天氣，無需自訂。"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:424
+msgid "Theme default"
+msgstr "主題預設"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:688
+#: contents/ui/main.qml:862
+msgid "Thunderstorm"
+msgstr "雷雨"
+
+#: contents/ui/config/configAppearance.qml:302
+msgid "Thunderstorm (day)"
+msgstr "雷雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:307
+msgid "Thunderstorm (night)"
+msgstr "雷雨（夜晚）"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:690
+#: contents/ui/main.qml:864
+msgid "Thunderstorm with hail"
+msgstr "夾雹雷雨"
+
+#: contents/ui/config/configAppearance.qml:313
+msgid "Thunderstorm with hail (day)"
+msgstr "夾雹雷雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:318
+msgid "Thunderstorm with hail (night)"
+msgstr "夾雹雷雨（夜晚）"
+
+#: contents/ui/config/configAppearance.qml:324
+msgid "Thunderstorm, heavy hail (day)"
+msgstr "夾雹大雷雨（白天）"
+
+#: contents/ui/config/configAppearance.qml:329
+msgid "Thunderstorm, heavy hail (night)"
+msgstr "夾雹大雷雨（夜晚）"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:238
+msgid "Timed out"
+msgstr "逾時"
+
+#: contents/ui/config/configLocation.qml:1795
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:485
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:591
+msgid "Timezone:"
+msgstr "時區："
+
+#: contents/ui/ForecastView.qml:138
+msgid "Today"
+msgstr "今天"
+
+#: contents/ui/config/configAppearance.qml:1312
+#: contents/ui/config/configAppearance.qml:1428
+#: contents/ui/config/configAppearance.qml:1544
+msgid "Today's total precipitation (mm/in)"
+msgstr "今日累積降水量（mm／英吋）"
+
+#: contents/ui/config/configGeneral.qml:294
+msgid "Tomorrow.io (Key Required)"
+msgstr "Tomorrow.io（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:479
+msgid "Tomorrow.io API Key:"
+msgstr "Tomorrow.io API 金鑰："
+
+#: contents/ui/config/configAppearance.qml:1839
+msgid "Tooltip"
+msgstr "提示"
+
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:94
+msgid "Tooltip Items"
+msgstr "提示項目"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:135
+msgid "Tooltip height:"
+msgstr "提示高度："
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:296
+msgid "Tooltip items"
+msgstr "提示項目"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:54
+msgid "Tooltip items settings"
+msgstr "提示項目設定"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:301
+msgid "Tooltip items:"
+msgstr "提示項目："
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:92
+msgid "Tooltip width:"
+msgstr "提示寬度："
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:39
+msgid "Tooltip:"
+msgstr "提示："
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:365
+msgid "Top Center"
+msgstr "上方置中"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:363
+msgid "Top Left"
+msgstr "左上"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:362
+msgid "Top Right"
+msgstr "右上"
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:68
+msgid "Truncate (single line)"
+msgstr "截斷（單行）"
+
+#: contents/ui/config/configAppearance.qml:1318
+#: contents/ui/config/configAppearance.qml:1434
+#: contents/ui/config/configAppearance.qml:1550 contents/ui/DetailsView.qml:294
+msgid "UV Index"
+msgstr "紫外線指數"
+
+#: contents/ui/TooltipContent.qml:452
+msgid "UV Index:"
+msgstr "紫外線指數："
+
+#: contents/ui/config/configAppearance.qml:1319
+#: contents/ui/config/configAppearance.qml:1435
+#: contents/ui/config/configAppearance.qml:1551
+msgid "Ultraviolet index"
+msgstr "紫外線指數"
+
+#: contents/ui/config/configLocation.qml:779
+#: contents/ui/config/configLocation.qml:895
+msgid "Unable to detect location. All methods failed."
+msgstr "無法偵測位置，所有方法均失敗。"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:79
+msgid "Unit preset:"
+msgstr "單位預設："
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:74
+msgid "Units"
+msgstr "單位"
+
+#: contents/ui/config/configLocation.qml:1541
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:691
+#: contents/ui/FullView.qml:274
+msgid "Unknown"
+msgstr "未知"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:535
+msgid "Unknown location"
+msgstr "未知位置"
+
+#: contents/ui/FullView.qml:297
+msgid "Unpin widget"
+msgstr "取消釘選小工具"
+
+#: contents/ui/js/spaceWeather.js:172
+msgid "Unsettled"
+msgstr "不穩定"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:452
+msgid "Upcoming (auto)"
+msgstr "即將（自動）"
+
+#: contents/ui/config/configAppearance.qml:710
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:525
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:523
+msgid "Upcoming (next sunrise or sunset)"
+msgstr "即將（下一次日出或日落）"
+
+#: contents/ui/config/configAppearance.qml:874
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:493
+#: contents/ui/config/subpages/ConfigPanelSubPage.qml:585
+#: contents/ui/config/subpages/ConfigTooltipSubPage.qml:579
+msgid "Upcoming rise/set only"
+msgstr "僅顯示即將的升降"
+
+#: contents/ui/WeatherService.qml:117
+msgid "Update timed out. Tap to retry."
+msgstr "更新逾時，點擊重試。"
+
+#: contents/ui/WeatherService.qml:263
+msgid "Updated %1"
+msgstr "已於 %1 更新"
+
+#: contents/ui/FullView.qml:318
+msgid "Updating…"
+msgstr "更新中⋯"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:91
+msgid "Use KDE locale settings"
+msgstr "使用 KDE 語系設定"
+
+#: contents/ui/config/configLocation.qml:1330
+msgid "Use manual location"
+msgstr "使用手動位置"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:833
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:277
+msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
+msgstr "預設使用 KDE 系統圖示，點擊按鈕以自訂各項目的圖示。"
+
+#: contents/ui/js/airQuality.js:51
+msgid "V.Poor"
+msgstr "非常差"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:55
+msgid "Values are rounded to whole numbers"
+msgstr "數值四捨五入為整數"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:55
+msgid "Values show decimal places"
+msgstr "數值顯示小數位"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:104
+msgid "Vertical"
+msgstr "垂直"
+
+#: contents/ui/js/pollen.js:45 contents/ui/main.qml:670
+#: contents/ui/main.qml:714
+msgid "Very High"
+msgstr "非常高"
+
+#: contents/ui/js/airQuality.js:51 contents/ui/main.qml:684
+msgid "Very Poor"
+msgstr "非常差"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:682
+msgid "Violent rain showers"
+msgstr "劇烈陣雨"
+
+#: contents/ui/config/configAppearance.qml:1406 contents/ui/DetailsView.qml:289
+msgid "Visibility"
+msgstr "能見度"
+
+#: contents/ui/config/configAppearance.qml:1407
+msgid "Visibility distance"
+msgstr "能見距離"
+
+#: contents/ui/TooltipContent.qml:437
+msgid "Visibility:"
+msgstr "能見度："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:153
+msgid "Visible tabs:"
+msgstr "可見頁籤："
+
+#: contents/ui/config/configGeneral.qml:290
+msgid "Visual Crossing (Key Required)"
+msgstr "Visual Crossing（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:478
+msgid "Visual Crossing API Key:"
+msgstr "Visual Crossing API 金鑰："
+
+#: contents/ui/main.qml:999
+msgid "Waning Crescent"
+msgstr "殘月"
+
+#: contents/ui/main.qml:995
+msgid "Waning Gibbous"
+msgstr "虧凸月"
+
+#: contents/ui/main.qml:987
+msgid "Waxing Crescent"
+msgstr "眉月"
+
+#: contents/ui/main.qml:991
+msgid "Waxing Gibbous"
+msgstr "盈凸月"
+
+#: contents/ui/config/configLocation.qml:1008
+msgid "We detected your coordinates: <b>%1°, %2°</b>."
+msgstr "已偵測到您的座標：<b>%1°、%2°</b>。"
+
+#: contents/ui/config/configLocation.qml:1008
+msgid "We detected your location as: <b>%1</b>."
+msgstr "已偵測到您的位置為：<b>%1</b>。"
+
+#: contents/ui/config/configGeneral.qml:337
+msgid "Weather Provider"
+msgstr "天氣供應商"
+
+#: contents/ui/TooltipContent.qml:226
+msgid "Weather Widget"
+msgstr "天氣小工具"
+
+#: contents/ui/config/configAppearance.qml:1347
+#: contents/ui/config/configAppearance.qml:1463
+#: contents/ui/config/configAppearance.qml:1579
+msgid "Weather alerts"
+msgstr "天氣警報"
+
+#: contents/ui/config/configAppearance.qml:1488
+msgid "Weather condition text"
+msgstr "天氣狀況文字"
+
+#: contents/ui/config/configAppearance.qml:1241
+msgid "Weather icon + condition text"
+msgstr "天氣圖示＋狀況文字"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:188
+msgid "Weather icon style:"
+msgstr "天氣圖示樣式："
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:106
+msgid "Weather icon theme:"
+msgstr "天氣圖示主題："
+
+#: contents/ui/WeatherService.qml:263
+msgid "Weather provider:"
+msgstr "天氣供應商："
+
+#: contents/ui/config/configGeneral.qml:282
+msgid "WeatherAPI.com (Key Required)"
+msgstr "WeatherAPI.com（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:483
+msgid "WeatherAPI.com API Key:"
+msgstr "WeatherAPI.com API 金鑰："
+
+#: contents/ui/config/configGeneral.qml:302
+msgid "Weatherbit (Key Required)"
+msgstr "Weatherbit（需要金鑰）"
+
+#: contents/ui/config/configGeneral.qml:481
+msgid "Weatherbit API Key:"
+msgstr "Weatherbit API 金鑰："
+
+#: contents/ui/DetailsView.qml:1814
+msgid "Website"
+msgstr "網站"
+
+#: contents/ui/config/configAppearance.qml:1835
+msgid "Widget"
+msgstr "小工具"
+
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:189
+msgid "Widget Size"
+msgstr "小工具大小"
+
+#: contents/ui/config/configAppearance.qml:1261
+#: contents/ui/config/configAppearance.qml:1385
+#: contents/ui/config/configAppearance.qml:1501 contents/ui/DetailsView.qml:286
+msgid "Wind"
+msgstr "風"
+
+#: contents/ui/config/configAppearance.qml:1386
+#: contents/ui/config/configAppearance.qml:1502
+msgid "Wind speed + direction"
+msgstr "風速＋風向"
+
+#: contents/ui/config/configAppearance.qml:1262
+msgid "Wind speed and direction"
+msgstr "風速與風向"
+
+#: contents/ui/config/tabs/ConfigMiscTab.qml:178
+msgid "Wind speed:"
+msgstr "風速："
+
+#: contents/ui/TooltipContent.qml:414
+msgid "Wind:"
+msgstr "風："
+
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:72
+msgid "Wrap to next line"
+msgstr "折行"
+
+#: contents/ui/config/subpages/ConfigDetailsSubPage.qml:698
+#: contents/ui/DetailsView.qml:1568
+msgid "X-ray Flare Class"
+msgstr "X 射線閃焰等級"
+
+#: contents/ui/config/configLocation.qml:1117
+msgid "Yes"
+msgstr "是"
+
+#: contents/ui/config/configLocation.qml:1225
+msgid "Yes, remove it"
+msgstr "是，移除"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:464
+msgid "Zoom in"
+msgstr "放大"
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:473
+msgid "Zoom out"
+msgstr "縮小"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:421
+msgid "e.g. Sofia, Bulgaria"
+msgstr "例如：保加利亞索非亞"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:462
+msgid "feet"
+msgstr "英尺"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:340
+msgid "ft"
+msgstr "英尺"
+
+#: contents/ui/DetailsView.qml:2608
+msgid "left"
+msgstr "左"
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:340
+msgid "m"
+msgstr "公尺"
+
+#: contents/ui/config/configGeneral.qml:274
+msgid "met.no (free)"
+msgstr "met.no（免費）"
+
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:462
+msgid "meters"
+msgstr "公尺"
+
+#: contents/ui/config/configGeneral.qml:674
+msgid "minutes"
+msgstr "分鐘"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:568
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:127
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:170
+msgid "px"
+msgstr "px"
+
+#: contents/ui/config/configLocation.qml:824
+msgid "system location"
+msgstr "系統位置"
+
+#: contents/ui/DetailsView.qml:2605
+msgid "until dawn"
+msgstr "直到黎明"

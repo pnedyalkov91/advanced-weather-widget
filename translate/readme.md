@@ -8,11 +8,13 @@
 | Template |     635 |       |
 | bg       | 635/635 |  100% |
 | de       | 294/635 |   46% |
+| es       | 635/635 |  100% |
 | fr       | 294/635 |   46% |
-| nl       | 489/635 |   77% |
+| nl       | 635/635 |  100% |
 | pt_BR    | 293/635 |   46% |
 | ru       | 294/635 |   46% |
 | tr_TR    | 294/635 |   46% |
+| zh_TW    | 635/635 |  100% |
 
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.
@@ -64,3 +66,5 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Russian** - [Dmaliog](https://github.com/dmaliog)
 - **French** - [LAZER-TY](https://github.com/LAZER-TY)
 - **Turkish** - [herzane52](https://github.com/herzane52)
+- **Spanish** - [NecaX](https://github.com/NecaX)
+- **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
