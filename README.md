@@ -141,6 +141,10 @@ rm -rf ~/.cache/plasmashell/qmlcache
 systemctl --user restart plasma-plasmashell
 ```
 
+## ⚠️ Notes 
+
+- The widget uses QtLocation and QtPositioning to determine your location. On some distributions, the 'Location' menu may appear empty. To fix this, install the `qml6-module-qtlocation` and `qml6-module-qtpositioning` packages for your Linux distribution. After installation, please restart your system or log out and back in.
+
 ## 🌐 Translation
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.
@@ -192,6 +196,8 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Russian** - [Dmaliog](https://github.com/dmaliog)
 - **French** - [LAZER-TY](https://github.com/LAZER-TY)
 - **Turkish** - [herzane52](https://github.com/herzane52)
+- **Spanish** - [josecarlos99](https://github.com/josecarlos99)
+- **Chinese (Traditional)** - [josecarlos99](https://github.com/josecarlos99)
 
 ## External resources
 
