@@ -36,6 +36,7 @@ KCM.SimpleKCM {
     property string cfg_wbApiKey: ""
     property string cfg_qwApiKey: ""
     property string cfg_qwApiHost: ""
+    property bool cfg_radarEnabled: true
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
@@ -624,6 +625,60 @@ KCM.SimpleKCM {
                     }
                 }
             }
+
+            // ══════════════════════════════════════════════════════════════
+            // SECTION: Radar
+            // ══════════════════════════════════════════════════════════════
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Kirigami.Heading {
+                        text: i18n("Radar")
+                        level: 4
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: Kirigami.Theme.textColor
+                        opacity: 0.5
+                    }
+                }
+
+                Switch {
+                    text: i18n("Show Radar tab in widget")
+                    checked: root.cfg_radarEnabled
+                    onToggled: root.cfg_radarEnabled = checked
+                }
+
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    visible: root.cfg_radarEnabled
+                    showCloseButton: true
+                    type: Kirigami.MessageType.Information
+                    text: i18n("Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>" +
+                               "Rain Viewer does not guarantee the availability of radar data. " +
+                               "They do not conclude contracts with owners of this data. " +
+                               "The reason is that the owners can ask them to remove their data from Rain Viewer, " +
+                               "change the format, or stop sharing the data. " +
+                               "They are trying to keep radar data for as long as possible, " +
+                               "but sometimes the owners just stop providing the images.")
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
+
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    showCloseButton: true
+                    visible: root.cfg_radarEnabled && (root.cfg_owApiKey || "").trim() === ""
+                    type: Kirigami.MessageType.Information
+                    text: i18n("To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): " +
+                               "disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above.")
+                }
+            }
+
+            Item { Layout.preferredHeight: 8 }
 
             // ══════════════════════════════════════════════════════════════
             // SECTION: Data Refresh

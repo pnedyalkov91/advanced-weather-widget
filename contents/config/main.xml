@@ -141,8 +141,9 @@
     <entry name="widgetMinHeight"     type="Int"><default>750</default><min>200</min><max>2000</max></entry>
     <entry name="widgetDefaultTab" type="String"><default>details</default></entry>
     <entry name="widgetVisibleTabs" type="String"><default>both</default></entry>
-    <entry name="radarLayer" type="String"><default>precipitation_new</default></entry>
-    <entry name="radarZoom" type="Int"><default>9</default><min>3</min><max>18</max></entry>
+    <entry name="radarEnabled"          type="Bool"><default>true</default></entry>
+    <entry name="radarLayer"            type="String"><default>precipitation_new</default></entry>
+    <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
 
     <!-- ── Widget — details view ──────────────────────────────────────── -->
     <entry name="widgetDetailsOrder"    type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes;preciprate;precipsum;uvindex;airquality;pollen;spaceweather;alerts;snowcover</default></entry>

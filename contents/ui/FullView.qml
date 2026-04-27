@@ -88,7 +88,7 @@ Rectangle {
     readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
     readonly property bool showDetailsTab:  visibleTabs === "both" || visibleTabs === "details"
     readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
-    readonly property bool showRadarTab:    visibleTabs === "both" || visibleTabs === "radar"
+    readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && (visibleTabs === "both" || visibleTabs === "radar")
     readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
@@ -551,14 +551,19 @@ Rectangle {
         Label {
             Layout.fillWidth: true
             visible: Plasmoid.configuration.showUpdateText !== false && weatherRoot && !weatherRoot.loading && (weatherRoot.updateText || "").length > 0
-            text: weatherRoot ? weatherRoot.updateText : ""
+            text: {
+                var t = weatherRoot ? weatherRoot.updateText : "";
+                if (fullView._isRadarTab && (Plasmoid.configuration.radarLayer || "rainviewer") === "rainviewer")
+                    t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
+                return t;
+            }
             textFormat: Text.RichText
             onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             // #2
             color: Kirigami.Theme.textColor
             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
             horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
+            wrapMode: Text.WordWrap
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
             }

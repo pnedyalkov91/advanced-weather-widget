@@ -76,7 +76,7 @@ All panel modes support:
 - Icon theme and size selection
 
 ### 📊 Widget Popup
-- Two tabs: **Details** and **Forecast** (configurable default)
+- Three tabs: **Details**, **Forecast**, and **Radar** (configurable default, each tab individually show/hide)
 - Header with location name, detect / change / refresh buttons
 
 #### Details View
@@ -89,6 +89,14 @@ All panel modes support:
   - Space weather dashboard (Kp, Bz, solar wind, flare class, aurora %) (Provider: NOAA SWPC)
   - Multi-alert carousel for weather alerts (Providers: Eumetnet Meteoalarm, MET Norway, NOAA NWS or supporting weather provider)
 - Configurable card height, per-item icons, accent colours
+
+#### Radar View
+- Interactive weather radar map powered by **Leaflet.js** inside an embedded Chromium (QtWebEngine) view
+- **RainViewer** radar animation with play/pause, step forward/back, and timeline scrubber
+- Optional **OpenWeatherMap** overlay layers: Rain, Clouds, Temperature, Wind, Pressure (requires OWM API key)
+- Layer selector buttons: Radar, Rain, Clouds, Temperature, Wind, Pressure
+- Color legend bar for the active layer
+- Animation speed: 500 ms per frame; radar opacity: 80 %
 
 #### Forecast View
 - **Daily forecast** - 3 to 7 days with condition icon, text, and colour-coded min / max temperatures
@@ -141,9 +149,31 @@ rm -rf ~/.cache/plasmashell/qmlcache
 systemctl --user restart plasma-plasmashell
 ```
 
-## ⚠️ Notes 
+## ⚠️ Notes
 
-- The widget uses QtLocation and QtPositioning to determine your location. On some distributions, the 'Location' menu may appear empty. To fix this, install the `qml6-module-qtlocation` and `qml6-module-qtpositioning` packages for your Linux distribution. After installation, please restart your system or log out and back in.
+- **Location detection** requires **Qt Location** and **Qt Positioning**. On some distributions the 'Location' menu may appear empty. Install the appropriate package for your distribution:
+
+  | Distribution | Package |
+  |---|---|
+  | Fedora / RHEL | `qt6-qtlocation` |
+  | openSUSE | `qt6-location` |
+  | Arch Linux | `qt6-location` |
+  | Debian / Ubuntu | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+  | KDE Neon | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+
+  After installing, restart your session or run `systemctl --user restart plasma-plasmashell`.
+
+- The **Radar tab** requires **Qt WebEngine** (Chromium-based). If the radar map is blank or the tab does not load, install the appropriate package for your distribution:
+
+  | Distribution | Package |
+  |---|---|
+  | Fedora / RHEL | `qt6-qtwebengine` |
+  | openSUSE | `qt6-webengine` |
+  | Arch Linux | `qt6-webengine` |
+  | Debian / Ubuntu | `qt6-webengine` or `libqt6webenginewidgets6` |
+  | KDE Neon | `qml6-module-qtwebengine` |
+
+  After installing, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
 ## 🌐 Translation
 
@@ -207,6 +237,15 @@ Thank you to everyone who contributed translations to this project ❤️
 - This project uses code from the SunCalc library: https://github.com/mourner/suncalc
   Copyright (c) Vladimir Agafonkin
   Licensed under the BSD license
+
+- The Radar tab uses the **RainViewer API** for weather radar data: https://www.rainviewer.com/
+
+- The Radar tab uses **Leaflet.js** for interactive map rendering: https://leafletjs.com/
+  Copyright (c) 2010–2024 Vladimir Agafonkin
+  Licensed under BSD 2-Clause License
+
+- Map tiles provided by **OpenStreetMap**: https://www.openstreetmap.org/copyright
+  © OpenStreetMap contributors, licensed under ODbL
 
 ## ❤️ Support the project
 
