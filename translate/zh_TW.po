@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-04-22 14:15+0300\n"
-"PO-Revision-Date: 2026-04-25 16:00+0800\n"
+"PO-Revision-Date: 2026-04-27 12:00+0800\n"
 "Last-Translator: Yo\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -17,9 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+
 #: contents/ui/DetailsView.qml:2602 contents/ui/DetailsView.qml:2604
 msgid " until dawn"
-msgstr " 直到黎明"
+msgstr " 後日出"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:734
 msgctxt "@info %1 size %2 family"
@@ -76,7 +77,7 @@ msgstr "AQI"
 
 #: contents/ui/DetailsView.qml:1519 contents/ui/js/spaceWeather.js:171
 msgid "Active"
-msgstr "啟用"
+msgstr "活躍"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:363
 msgid "Adaptive (Open-Meteo)"
@@ -704,7 +705,7 @@ msgstr "編輯地點詳細資訊"
 
 #: contents/ui/DetailsView.qml:1806
 msgid "Effective"
-msgstr "生效中"
+msgstr "生效時間"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:544
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:609
@@ -2249,7 +2250,7 @@ msgstr "標準天氣供應商，請在下方填入 API 金鑰。"
 
 #: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
-msgstr "暴風雨"
+msgstr "磁暴"
 
 #: contents/ui/config/configGeneral.qml:298
 msgid "StormGlass (Key Required)"
@@ -2826,7 +2827,7 @@ msgstr "英尺"
 
 #: contents/ui/DetailsView.qml:2608
 msgid "left"
-msgstr "左"
+msgstr "後日落"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:340
 msgid "m"
@@ -2856,4 +2857,4 @@ msgstr "系統位置"
 
 #: contents/ui/DetailsView.qml:2605
 msgid "until dawn"
-msgstr "直到黎明"
+msgstr "後日出"
