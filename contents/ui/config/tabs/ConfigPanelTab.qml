@@ -74,6 +74,7 @@ Kirigami.FormLayout {
     Kirigami.InlineMessage {
         visible: panelTab.configRoot.cfg_panelInfoMode === "single" || panelTab.configRoot.cfg_panelInfoMode === "multiline"
         Layout.fillWidth: true
+        Layout.columnSpan: 2
         type: Kirigami.MessageType.Information
         text: i18n("In a vertical panel, long item labels may be truncated. " + "Consider using \"Simple\" mode, increasing the panel width, or reducing the font size.")
         showCloseButton: false

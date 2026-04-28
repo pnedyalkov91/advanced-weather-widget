@@ -71,6 +71,61 @@ Kirigami.FormLayout {
     }
 
     Kirigami.Separator {
+        Kirigami.FormData.label: i18n("Dual temperature")
+        Kirigami.FormData.isSection: true
+    }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Show both units:")
+        spacing: 12
+        Switch {
+            id: dualTempSwitch
+            checked: miscTab.configRoot.cfg_dualTempEnabled
+            onToggled: miscTab.configRoot.cfg_dualTempEnabled = checked
+        }
+        Label {
+            text: dualTempSwitch.checked ? i18n("Displaying °C and °F together") : i18n("Showing primary unit only")
+            opacity: 0.8
+        }
+    }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Separator:")
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        spacing: Kirigami.Units.smallSpacing
+        TextField {
+            id: dualTempSepField
+            Layout.preferredWidth: 80
+            Component.onCompleted: text = miscTab.configRoot.cfg_dualTempSeparator
+            onTextChanged: miscTab.configRoot.cfg_dualTempSeparator = text.length > 0 ? text : " / "
+            onEditingFinished: miscTab.configRoot.cfg_dualTempSeparator = text.length > 0 ? text : " / "
+        }
+        Label {
+            text: i18n("Preview: 20°C") + (dualTempSepField.text || " / ") + i18n("68°F")
+            opacity: 0.65
+            font: Kirigami.Theme.smallFont
+        }
+    }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Show in:")
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        spacing: Kirigami.Units.largeSpacing
+        Switch {
+            text: i18n("Widget")
+            checked: miscTab.configRoot.cfg_dualTempInWidget
+            onToggled: miscTab.configRoot.cfg_dualTempInWidget = checked
+        }
+        Switch {
+            text: i18n("Panel")
+            checked: miscTab.configRoot.cfg_dualTempInPanel
+            onToggled: miscTab.configRoot.cfg_dualTempInPanel = checked
+        }
+        Switch {
+            text: i18n("Tooltip")
+            checked: miscTab.configRoot.cfg_dualTempInTooltip
+            onToggled: miscTab.configRoot.cfg_dualTempInTooltip = checked
+        }
+    }
+
+    Kirigami.Separator {
         Kirigami.FormData.label: i18n("Units")
         Kirigami.FormData.isSection: true
     }

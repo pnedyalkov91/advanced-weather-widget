@@ -311,7 +311,7 @@ PlasmaCore.ToolTipArea {
     }
 
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
-    readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+    readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
 
     // ── Reactive panel items data ─────────────────────────────────────────
     property var panelItemsData: {

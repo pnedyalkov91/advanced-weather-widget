@@ -188,7 +188,10 @@ function fetchCurrent(service, W, chain, idx) {
                 minC: de.minC === Infinity ? NaN : de.minC,
                 code: _deriveWmoCode(avgCC, de.maxPrecip, avgTemp),
                 precipMm: de.maxPrecip > 0 ? de.maxPrecip : NaN,
-                snowCm: NaN
+                snowCm: NaN,
+                precipProb: NaN,
+                windKmh: NaN,
+                windDir: NaN
             });
         }
         _cur.dailyData = nd;

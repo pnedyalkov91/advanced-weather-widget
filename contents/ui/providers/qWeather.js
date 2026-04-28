@@ -189,7 +189,10 @@ function _fetchDaily(service, W, key, loc, gen, base) {
                         minC: parseFloat(day.tempMin),
                         code: _qwCodeToWmo(day.iconDay),
                         precipMm: parseFloat(day.precip) || 0,
-                        snowCm: 0  // not separated in QWeather daily
+                        snowCm: 0, // not separated in QWeather daily
+                        precipProb: (day.pop !== undefined) ? parseFloat(day.pop) : NaN,
+                        windKmh: (day.windSpeed !== undefined) ? parseFloat(day.windSpeed) : NaN,
+                        windDir: (day.wind360 !== undefined) ? parseFloat(day.wind360) : NaN
                     });
                 }
                 if (d.daily.length > 0) {

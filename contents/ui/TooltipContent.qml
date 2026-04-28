@@ -400,10 +400,10 @@ Item {
         }
 
         if (tok === "temperature")
-            return [row("temperature", r.tempValue(r.temperatureC), i18n("Temperature:") + " " + r.tempValue(r.temperatureC))];
+            return [row("temperature", r.tempValue(r.temperatureC, "tooltip"), i18n("Temperature:") + " " + r.tempValue(r.temperatureC, "tooltip"))];
 
         if (tok === "feelslike")
-            return [row("feelslike", r.tempValue(r.apparentC), i18n("Feels like:") + " " + r.tempValue(r.apparentC))];
+            return [row("feelslike", r.tempValue(r.apparentC, "tooltip"), i18n("Feels like:") + " " + r.tempValue(r.apparentC, "tooltip"))];
 
         if (tok === "condition")
             return [row("condition", r.weatherCodeToText(r.weatherCode, r.isNightTime()), i18n("Condition:") + " " + r.weatherCodeToText(r.weatherCode, r.isNightTime()))];
@@ -430,7 +430,7 @@ Item {
             return [row("pressure", r.pressureValue(r.pressureHpa), i18n("Pressure:") + " " + r.pressureValue(r.pressureHpa))];
 
         if (tok === "dewpoint")
-            return [row("dewpoint", r.tempValue(r.dewPointC), i18n("Dew point:") + " " + r.tempValue(r.dewPointC))];
+            return [row("dewpoint", r.tempValue(r.dewPointC, "tooltip"), i18n("Dew point:") + " " + r.tempValue(r.dewPointC, "tooltip"))];
 
         if (tok === "visibility") {
             var visTxt = isNaN(r.visibilityKm) ? "--" : r.visibilityKm.toFixed(1) + " km";

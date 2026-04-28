@@ -15,7 +15,7 @@ Item {
 
     property var weatherRoot
 
-    readonly property string _trayTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+    readonly property string _trayTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
     readonly property bool _hasTemp: weatherRoot
         && weatherRoot.hasSelectedTown
         && !isNaN(weatherRoot.temperatureC)

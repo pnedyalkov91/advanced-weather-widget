@@ -29,10 +29,22 @@ import org.kde.iconthemes as KIconThemes
 ColumnLayout {
     id: detailsSubPageRoot
     required property var configRoot
+    required property var workingModel   // pass detailsWorkingModel or simpleWorkingModel at push time
+    property string mode: "details"   // "details" | "simple"
     spacing: 0
-    property string _savedOrder: configRoot.cfg_widgetDetailsOrder
-    property string _savedIcons: configRoot.cfg_widgetDetailsItemIcons
-    property string _savedCustomIcons: configRoot.cfg_widgetDetailsCustomIcons
+
+    readonly property bool isSimple: mode === "simple"
+
+    // Redirect to the right config key / model / helpers based on mode
+    property string _savedOrder:       isSimple ? configRoot.cfg_widgetSimpleDetailsOrder       : configRoot.cfg_widgetDetailsOrder
+    property string _savedIcons:       isSimple ? configRoot.cfg_widgetSimpleDetailsItemIcons    : configRoot.cfg_widgetDetailsItemIcons
+    property string _savedCustomIcons: isSimple ? "" : configRoot.cfg_widgetDetailsCustomIcons
+
+    function _applyItems()   { isSimple ? configRoot.applySimpleItems()   : configRoot.applyDetailsItems(); }
+    function _firstDisabled(){ return isSimple ? configRoot.firstSimpleDisabledIndex() : configRoot.firstDetailsDisabledIndex(); }
+
+    Component.onCompleted: isSimple ? configRoot.initSimpleModel() : configRoot.initDetailsModel()
+
     Dialog {
         id: detailsLeaveDialog
         title: i18n("Apply Settings?")
@@ -57,9 +69,14 @@ ColumnLayout {
                 text: i18n("Discard")
                 DialogButtonBox.buttonRole: DialogButtonBox.DestructiveRole
                 onClicked: {
-                    configRoot.cfg_widgetDetailsOrder = detailsSubPageRoot._savedOrder;
-                    configRoot.cfg_widgetDetailsItemIcons = detailsSubPageRoot._savedIcons;
-                    configRoot.cfg_widgetDetailsCustomIcons = detailsSubPageRoot._savedCustomIcons;
+                    if (detailsSubPageRoot.isSimple) {
+                        configRoot.cfg_widgetSimpleDetailsOrder = detailsSubPageRoot._savedOrder;
+                        configRoot.cfg_widgetSimpleDetailsItemIcons = detailsSubPageRoot._savedIcons;
+                    } else {
+                        configRoot.cfg_widgetDetailsOrder = detailsSubPageRoot._savedOrder;
+                        configRoot.cfg_widgetDetailsItemIcons = detailsSubPageRoot._savedIcons;
+                        configRoot.cfg_widgetDetailsCustomIcons = detailsSubPageRoot._savedCustomIcons;
+                    }
                     detailsLeaveDialog.close();
                     stack.pop();
                 }
@@ -83,7 +100,10 @@ ColumnLayout {
             text: i18n("Back")
             flat: true
             onClicked: {
-                if (configRoot.cfg_widgetDetailsOrder !== detailsSubPageRoot._savedOrder || configRoot.cfg_widgetDetailsItemIcons !== detailsSubPageRoot._savedIcons || configRoot.cfg_widgetDetailsCustomIcons !== detailsSubPageRoot._savedCustomIcons)
+                var curOrder = detailsSubPageRoot.isSimple ? configRoot.cfg_widgetSimpleDetailsOrder : configRoot.cfg_widgetDetailsOrder;
+                var curIcons = detailsSubPageRoot.isSimple ? configRoot.cfg_widgetSimpleDetailsItemIcons : configRoot.cfg_widgetDetailsItemIcons;
+                var curCustom = detailsSubPageRoot.isSimple ? "" : configRoot.cfg_widgetDetailsCustomIcons;
+                if (curOrder !== detailsSubPageRoot._savedOrder || curIcons !== detailsSubPageRoot._savedIcons || curCustom !== detailsSubPageRoot._savedCustomIcons)
                     detailsLeaveDialog.open();
                 else
                     stack.pop();
@@ -91,7 +111,7 @@ ColumnLayout {
         }
         Label {
             Layout.fillWidth: true
-            text: i18n("Details Items")
+            text: detailsSubPageRoot.isSimple ? i18n("Simple Mode Items") : i18n("Details Items")
             font.bold: true
         }
     }
@@ -109,7 +129,7 @@ ColumnLayout {
             implicitHeight: contentHeight
             clip: true
             spacing: 0
-            model: detailsWorkingModel
+            model: detailsSubPageRoot.workingModel
             highlightMoveDuration: Kirigami.Units.longDuration
             displaced: Transition {
                 YAnimator {
@@ -146,12 +166,12 @@ ColumnLayout {
                                 enabled: model.itemEnabled
                                 opacity: model.itemEnabled ? 1.0 : 0.0
                                 onMoveRequested: function (oldIndex, newIndex) {
-                                    var boundary = configRoot.firstDetailsDisabledIndex();
+                                    var boundary = detailsSubPageRoot._firstDisabled();
                                     var clamped = (boundary < 0) ? newIndex : Math.min(newIndex, boundary - 1);
                                     if (clamped !== oldIndex)
-                                        detailsWorkingModel.move(oldIndex, clamped, 1);
+                                        detailsSubPageRoot.workingModel.move(oldIndex, clamped, 1);
                                 }
-                                onDropped: configRoot.applyDetailsItems()
+                                onDropped: detailsSubPageRoot._applyItems()
                             }
                             // ── Item icon — mirrors the active widget icon theme ──
                             Item {
@@ -383,8 +403,8 @@ ColumnLayout {
                                 ToolTip.visible: hovered
                                 ToolTip.text: model.itemShowIcon ? i18n("Hide prefix icon") : i18n("Show prefix icon")
                                 onClicked: {
-                                    detailsWorkingModel.setProperty(model.index, "itemShowIcon", !model.itemShowIcon);
-                                    configRoot.applyDetailsItems();
+                                    detailsSubPageRoot.workingModel.setProperty(model.index, "itemShowIcon", !model.itemShowIcon);
+                                    detailsSubPageRoot._applyItems();
                                 }
                             }
                             // ── Enable / disable toggle ───────────────────────────
@@ -397,24 +417,25 @@ ColumnLayout {
                                 onClicked: {
                                     var idx = model.index;
                                     var nowOn = !model.itemEnabled;
+                                    var wm = detailsSubPageRoot.workingModel;
                                     if (!nowOn)
                                         detailsDelegateRoot.settingsExpanded = false;
-                                    detailsWorkingModel.setProperty(idx, "itemEnabled", nowOn);
-                                    var boundary = configRoot.firstDetailsDisabledIndex();
+                                    wm.setProperty(idx, "itemEnabled", nowOn);
+                                    var boundary = detailsSubPageRoot._firstDisabled();
                                     if (nowOn) {
                                         if (boundary > 0 && idx >= boundary)
-                                            detailsWorkingModel.move(idx, boundary - 1, 1);
+                                            wm.move(idx, boundary - 1, 1);
                                     } else {
                                         var lastEnabled = -1;
-                                        for (var i = 0; i < detailsWorkingModel.count; ++i)
-                                            if (detailsWorkingModel.get(i).itemEnabled)
+                                        for (var i = 0; i < wm.count; ++i)
+                                            if (wm.get(i).itemEnabled)
                                                 lastEnabled = i;
                                         if (lastEnabled >= 0 && idx <= lastEnabled)
-                                            detailsWorkingModel.move(idx, lastEnabled, 1);
+                                            wm.move(idx, lastEnabled, 1);
                                         else if (lastEnabled < 0 && idx > 0)
-                                            detailsWorkingModel.move(idx, 0, 1);
+                                            wm.move(idx, 0, 1);
                                     }
-                                    configRoot.applyDetailsItems();
+                                    detailsSubPageRoot._applyItems();
                                 }
                             }
                         }

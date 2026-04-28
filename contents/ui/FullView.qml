@@ -42,10 +42,13 @@ Rectangle {
     // Compact size when no location is set to avoid overlapping other widgets.
     readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
     readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
-    Layout.preferredWidth: _hasLocation ? 540 : 280
-    Layout.preferredHeight: _hasLocation ? (_isRadarTab ? 680 : 550) : 220
-    width: _hasLocation ? 540 : 280
-    height: _hasLocation ? (_isRadarTab ? 680 : 550) : 220
+    readonly property bool isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
+    Layout.minimumWidth:    _hasLocation ? (isSimpleMode ? 900 : 540) : 280
+    Layout.minimumHeight:   _hasLocation ? (isSimpleMode ? 550 : 380) : 220
+    Layout.preferredWidth:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
+    width:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    height: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -229,13 +232,58 @@ Rectangle {
             }
 
             Label {
-                Layout.fillWidth: true
+                Layout.fillWidth: !headerDateTimeLabel.visible
                 text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
                 // #2
                 color: Kirigami.Theme.textColor
                 font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
+            }
+
+            // ── Header date / time ────────────────────────────────────────
+            Label {
+                id: headerDateTimeLabel
+                Layout.fillWidth: true
+                visible: Plasmoid.configuration.headerShowDateTime === true
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: Kirigami.Theme.textColor
+                opacity: 1
+                font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+
+                readonly property string _dateFmt: Plasmoid.configuration.headerDateFormat || "locale-long"
+                readonly property string _timeFmt: Plasmoid.configuration.headerTimeFormat || "locale"
+
+                function _formatDate(now) {
+                    var fmt = _dateFmt;
+                    if (fmt === "locale-long")  return now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
+                    if (fmt === "locale-short") return now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+                    if (fmt === "")             return "";
+                    return Qt.formatDate(now, fmt);
+                }
+
+                function _formatTime(now) {
+                    var fmt = _timeFmt;
+                    if (fmt === "locale") return now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
+                    if (fmt === "")       return "";
+                    return Qt.formatTime(now, fmt);
+                }
+
+                Timer {
+                    id: _dtTimer
+                    interval: 1000
+                    repeat: true
+                    running: headerDateTimeLabel.visible
+                    triggeredOnStart: true
+                    onTriggered: {
+                        var now = new Date();
+                        var dateStr = headerDateTimeLabel._formatDate(now);
+                        var timeStr = headerDateTimeLabel._formatTime(now);
+                        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
+                        headerDateTimeLabel.text = dateStr + sep + timeStr;
+                    }
+                }
             }
 
             // ── Location switcher dropdown ────────────────────────────────
@@ -345,15 +393,26 @@ Rectangle {
 
         Item {
             Layout.preferredHeight: 8
+            visible: !fullView.isSimpleMode
         }
 
-        // ── Hero: three-column layout ─────────────────────────────────
+        // ── Simple mode ───────────────────────────────────────────────
+        SimpleView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: fullView.isSimpleMode && weatherRoot && !isNaN(weatherRoot.temperatureC)
+            weatherRoot: fullView.weatherRoot
+            resolveConditionIconFn: fullView.resolveConditionIcon
+        }
+
+        // ── Advanced mode hero: three-column layout ───────────────────
         //   LEFT  — current temperature stack
         //   CENTRE— condition icon 120 px centred  (#6)
         //   RIGHT — today's High / Low             (#7)
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 120
+            visible: !fullView.isSimpleMode
 
             // LEFT — temp + condition + feels-like
             ColumnLayout {
@@ -447,8 +506,10 @@ Rectangle {
             }
         }
 
+
         Item {
             Layout.preferredHeight: fullView.showAnyTab ? 12 : 0
+            visible: !fullView.isSimpleMode
         }
 
         // ── Tab bar — shown when more than one tab is enabled ──────────
@@ -456,7 +517,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
             radius: 17
-            visible: [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab].filter(Boolean).length > 1
+            visible: !fullView.isSimpleMode && [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab].filter(Boolean).length > 1
             // #2: tab bar background adapts to theme
             color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
@@ -521,7 +582,7 @@ Rectangle {
         StackLayout {
             id: tabContent
             Layout.fillWidth: true
-            visible: fullView.showAnyTab
+            visible: !fullView.isSimpleMode && fullView.showAnyTab
             currentIndex: fullView.activeTab
             // Explicitly follow the current child's implicitHeight
             implicitHeight: (children && children[currentIndex]) ? children[currentIndex].implicitHeight : 0
