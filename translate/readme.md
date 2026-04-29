@@ -14,6 +14,7 @@
 | pt_BR    | 293/635 |   46% |
 | ru       | 294/635 |   46% |
 | tr_TR    | 294/635 |   46% |
+| zh_CN    | 635/635 |  100% |
 | zh_TW    | 635/635 |  100% |
 
 
@@ -68,3 +69,4 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Turkish** - [herzane52](https://github.com/herzane52)
 - **Spanish** - [NecaX](https://github.com/NecaX)
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
+- **Chinese (Simplified)** - [Guokangz](https://github.com/Guokangz)
