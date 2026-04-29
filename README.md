@@ -109,7 +109,7 @@ All panel modes support:
 - Panel and widget fonts configurable independently (system or custom)
 
 ### 🌐 Internationalization
-- 7 translations: Bulgarian, German, French, Dutch, Brazilian Portuguese, Russian, Turkish
+- 10 translations: Bulgarian, German, French, Dutch, Brazilian Portuguese, Russian, Turkish, Spanish, Chinese (Simplified), Chinese (Traditional)
 - Full i18n support for all UI labels, weather conditions, air quality / pollen / space weather descriptions
 - Locale-aware date / time formatting (12h / 24h, date format)
 - Localized location search results
@@ -143,7 +143,17 @@ systemctl --user restart plasma-plasmashell
 
 ## ⚠️ Notes 
 
-- The widget uses QtLocation and QtPositioning to determine your location. On some distributions, the 'Location' menu may appear empty. To fix this, install the `qml6-module-qtlocation` and `qml6-module-qtpositioning` packages for your Linux distribution. After installation, please restart your system or log out and back in.
+- **Location detection** requires **Qt Location** and **Qt Positioning**. On some distributions the 'Location' menu may appear empty. Install the appropriate package for your distribution:
+
+  | Distribution | Package |
+  |---|---|
+  | Fedora / RHEL | `qt6-qtlocation` |
+  | openSUSE | `qt6-location` |
+  | Arch Linux | `qt6-location` |
+  | Debian / Ubuntu | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+  | KDE Neon | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+
+  After installing, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
 ## 🌐 Translation
 
@@ -198,6 +208,7 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Turkish** - [herzane52](https://github.com/herzane52)
 - **Spanish** - [NecaX](https://github.com/NecaX)
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
+- **Chinese (Simplified)** - [Guokangz](https://github.com/Guokangz)
 
 ## External resources
 
