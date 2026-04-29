@@ -1126,12 +1126,21 @@ KCM.AbstractKCM {
     property string cfg_tooltipHeightMode: "auto"
     property int cfg_tooltipHeightManual: 300
 
+    // ── Item date/time formats ────────────────────────────────────────────
+    property string cfg_panelDateTimeFormat:   "locale-short"
+    property string cfg_panelTimeFormat:       "locale"
+    property string cfg_detailsDateTimeFormat: "locale-long"
+    property string cfg_detailsTimeFormat:     "locale"
+    property string cfg_tooltipDateTimeFormat: "locale-long"
+    property string cfg_tooltipTimeFormat:     "locale"
+
     // ── Dual temperature display ──────────────────────────────────────────
     property bool   cfg_dualTempEnabled:   false
     property string cfg_dualTempSeparator: " / "
     property bool   cfg_dualTempInWidget:  true
     property bool   cfg_dualTempInPanel:   true
     property bool   cfg_dualTempInTooltip: true
+    property bool   cfg_dualTempSwapOrder: false
 
     // ── Units config aliases (Issue #8) ──────────────────────────────────
     property string cfg_unitsMode: "metric"
@@ -1371,6 +1380,13 @@ KCM.AbstractKCM {
             description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
+        },
+        {
+            itemId: "datetime",
+            label: i18n("Date / Time"),
+            description: i18n("Current date and/or time"),
+            wiChar: "\uF08C",
+            iconFallback: "clock"
         }
     ]
 
@@ -1487,6 +1503,13 @@ KCM.AbstractKCM {
             description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
+        },
+        {
+            itemId: "datetime",
+            label: i18n("Date / Time"),
+            description: i18n("Current date and/or time"),
+            wiChar: "\uF08C",
+            iconFallback: "clock"
         }
     ]
 
@@ -1603,6 +1626,13 @@ KCM.AbstractKCM {
             description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
+        },
+        {
+            itemId: "datetime",
+            label: i18n("Date / Time"),
+            description: i18n("Current date and/or time"),
+            wiChar: "\uF08C",
+            iconFallback: "clock"
         }
     ]
 

@@ -88,6 +88,21 @@ Kirigami.FormLayout {
         }
     }
     RowLayout {
+        Kirigami.FormData.label: i18n("Swap order:")
+        enabled: miscTab.configRoot.cfg_dualTempEnabled
+        opacity: enabled ? 1.0 : 0.5
+        spacing: 12
+        Switch {
+            id: dualTempSwapSwitch
+            checked: miscTab.configRoot.cfg_dualTempSwapOrder
+            onToggled: miscTab.configRoot.cfg_dualTempSwapOrder = checked
+        }
+        Label {
+            text: dualTempSwapSwitch.checked ? i18n("Secondary unit shown first (e.g. °F / °C)") : i18n("Primary unit shown first (e.g. °C / °F)")
+            opacity: 0.8
+        }
+    }
+    RowLayout {
         Kirigami.FormData.label: i18n("Separator:")
         visible: miscTab.configRoot.cfg_dualTempEnabled
         spacing: Kirigami.Units.smallSpacing

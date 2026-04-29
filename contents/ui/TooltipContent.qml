@@ -605,6 +605,13 @@ Item {
                 { iconInfo: infoSet, showIcon: showIcon, text: setTime }
             ];
         }
+        if (tok === "datetime") {
+            var dtTxt = r._formatItemDateTime(
+                Plasmoid.configuration.tooltipDateTimeFormat,
+                Plasmoid.configuration.tooltipTimeFormat);
+            return [row("datetime", dtTxt, i18n("Date/Time:") + " " + dtTxt)];
+        }
+
         return [];
     }
 }

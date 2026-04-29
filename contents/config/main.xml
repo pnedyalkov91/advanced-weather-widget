@@ -184,12 +184,21 @@
     <entry name="fontSize"        type="Int"><default>11</default><min>7</min><max>24</max></entry>
     <entry name="fontBold"        type="Bool"><default>false</default></entry>
 
+    <!-- ── Item date/time formats ───────────────────────────────────── -->
+    <entry name="panelDateTimeFormat"    type="String"><default>locale-short</default></entry>
+    <entry name="panelTimeFormat"        type="String"><default>locale</default></entry>
+    <entry name="detailsDateTimeFormat"  type="String"><default>locale-long</default></entry>
+    <entry name="detailsTimeFormat"      type="String"><default>locale</default></entry>
+    <entry name="tooltipDateTimeFormat"  type="String"><default>locale-long</default></entry>
+    <entry name="tooltipTimeFormat"      type="String"><default>locale</default></entry>
+
     <!-- ── Dual temperature display ─────────────────────────────────── -->
     <entry name="dualTempEnabled"    type="Bool"><default>false</default></entry>
     <entry name="dualTempSeparator"  type="String"><default> / </default></entry>
     <entry name="dualTempInWidget"   type="Bool"><default>true</default></entry>
     <entry name="dualTempInPanel"    type="Bool"><default>true</default></entry>
     <entry name="dualTempInTooltip"  type="Bool"><default>true</default></entry>
+    <entry name="dualTempSwapOrder"  type="Bool"><default>false</default></entry>
 
     <!-- ── Widget — header date/time ─────────────────────────────────── -->
     <entry name="headerShowDateTime" type="Bool"><default>false</default></entry>

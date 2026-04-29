@@ -616,6 +616,20 @@ PlasmoidItem {
     // Value formatters — delegate pure math to weather.js, inject config here
     // ══════════════════════════════════════════════════════════════════════
 
+    // ── Date/time item formatter ─────────────────────────────────────────────
+    function _formatItemDateTime(dateFmt, timeFmt) {
+        var now = new Date();
+        var dateStr = "";
+        if (dateFmt === "locale-long")       dateStr = now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
+        else if (dateFmt === "locale-short") dateStr = now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+        else if (dateFmt && dateFmt !== "")  dateStr = Qt.formatDate(now, dateFmt);
+        var timeStr = "";
+        if (timeFmt === "locale")            timeStr = now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
+        else if (timeFmt && timeFmt !== "") timeStr = Qt.formatTime(now, timeFmt);
+        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
+        return dateStr + sep + timeStr;
+    }
+
     // Returns the effective temperature unit, respecting "kde" locale mode.
     function _tempUnit() {
         if (Plasmoid.configuration.unitsMode === "kde")
@@ -633,7 +647,9 @@ PlasmoidItem {
         var altUnit = (unit === "C") ? "F" : "C";
         var sep = Plasmoid.configuration.dualTempSeparator !== undefined ? Plasmoid.configuration.dualTempSeparator : " / ";
         var secondary = W.formatTemp(celsius, altUnit, Plasmoid.configuration.roundValues, Plasmoid.configuration.showTempUnit);
-        return primary + sep + secondary;
+        return Plasmoid.configuration.dualTempSwapOrder
+            ? secondary + sep + primary
+            : primary + sep + secondary;
     }
 
     function _windUnit() {
@@ -1153,6 +1169,8 @@ PlasmoidItem {
         }
         if (tok === "snowcover")
             return "\uF076";        // wi-snowflake-cold
+        if (tok === "datetime")
+            return "\uF08C";        // wi-time-3
         return "";
     }
 
@@ -1395,6 +1413,10 @@ PlasmoidItem {
             return alertsText();
         if (tok === "snowcover")
             return snowDepthText(snowDepthCm);
+        if (tok === "datetime")
+            return _formatItemDateTime(
+                Plasmoid.configuration.panelDateTimeFormat,
+                Plasmoid.configuration.panelTimeFormat);
         return "";
     }
 

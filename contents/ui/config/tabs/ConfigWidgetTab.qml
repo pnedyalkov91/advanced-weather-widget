@@ -237,7 +237,7 @@ ColumnLayout {
             }
 
             RowLayout {
-                Kirigami.FormData.label: i18n("Date &amp; time in header:")
+                Kirigami.FormData.label: i18n("Date and time in header:")
                 Switch {
                     id: headerDateTimeSwitch
                     checked: widgetTab.configRoot.cfg_headerShowDateTime

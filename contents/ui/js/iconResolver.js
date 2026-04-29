@@ -58,7 +58,8 @@ var _kdeIcons = {
     alerts:       "weather-storm",
     snowcover:    "weather-snow-scattered",
     pollen:       "weather-fog",
-    spaceweather: "solar-eclipse"
+    spaceweather: "solar-eclipse",
+    datetime:     "clock"
 };
 
 // ── Bundled SVG filenames (without "wi-" prefix and ".svg" suffix) ───────────
@@ -89,7 +90,8 @@ var _svgStems = {
     alerts:       "storm-warning",
     snowcover:    "snowflake-cold",
     pollen:       "sandstorm",
-    spaceweather: "solar-eclipse"
+    spaceweather: "solar-eclipse",
+    datetime:     "time-3"
 };
 
 // ── Wi-font glyph code points ───────────────────────────────────────────────
@@ -121,7 +123,8 @@ var _wiGlyphs = {
     alerts:       "\uF0CE",
     snowcover:    "\uF076",
     pollen:       "\uF082",
-    spaceweather: "\uF06E"
+    spaceweather: "\uF06E",
+    datetime:     "\uF08C"
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -269,7 +269,8 @@ Item {
                 pollen: root.accentGold,
                 spaceweather: root.accentViolet,
                 alerts: root.accentOrange,
-                snowcover: root.accentBlue
+                snowcover: root.accentBlue,
+                datetime:  root.accentGold
             })[id] || root.accentBlue;
     }
 
@@ -296,7 +297,8 @@ Item {
                 pollen: i18n("Pollen"),
                 spaceweather: i18n("Space Weather"),
                 alerts: i18n("Alerts"),
-                snowcover: i18n("Snow Cover")
+                snowcover: i18n("Snow Cover"),
+                datetime:  i18n("Date / Time")
             })[id] || id;
     }
     function dataValue(id) {
@@ -331,6 +333,10 @@ Item {
             return weatherRoot.alertsText();
         case "snowcover":
             return weatherRoot.snowDepthText(weatherRoot.snowDepthCm);
+        case "datetime":
+            return weatherRoot._formatItemDateTime(
+                Plasmoid.configuration.detailsDateTimeFormat,
+                Plasmoid.configuration.detailsTimeFormat);
         case "wind":
             // Wind is handled specially in the card
             return "";
@@ -369,6 +375,20 @@ Item {
     readonly property string _dvSpaceweather: weatherRoot ? weatherRoot.spaceWeatherText() : "--"
     readonly property string _dvAlerts:      weatherRoot ? weatherRoot.alertsText() : "--"
     readonly property string _dvSnowcover:   weatherRoot ? weatherRoot.snowDepthText(weatherRoot.snowDepthCm) : "--"
+    property int _dateTimeTick: 0
+    Timer {
+        interval: 60000
+        running: detailsView.detailIds.indexOf("datetime") >= 0
+        repeat: true
+        onTriggered: detailsView._dateTimeTick++
+    }
+    readonly property string _dvDatetime: {
+        var _ = detailsView._dateTimeTick;
+        if (!weatherRoot) return "--";
+        return weatherRoot._formatItemDateTime(
+            Plasmoid.configuration.detailsDateTimeFormat,
+            Plasmoid.configuration.detailsTimeFormat);
+    }
 
     function _detailValue(id) {
         switch (id) {
@@ -386,6 +406,7 @@ Item {
         case "spaceweather": return _dvSpaceweather;
         case "alerts":       return _dvAlerts;
         case "snowcover":    return _dvSnowcover;
+        case "datetime":     return _dvDatetime;
         default:             return "--";
         }
     }

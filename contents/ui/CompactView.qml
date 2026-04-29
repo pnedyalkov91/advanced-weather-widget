@@ -313,6 +313,16 @@ PlasmaCore.ToolTipArea {
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
     readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
 
+    // ── Datetime tick (updates every 60 s to keep the datetime item live) ─────
+    property int _dateTimeTick: 0
+    Timer {
+        id: dateTimeTimer
+        interval: 60000
+        running: Plasmoid.configuration.panelItemOrder.indexOf("datetime") >= 0
+        repeat: true
+        onTriggered: compactRoot._dateTimeTick++
+    }
+
     // ── Reactive panel items data ─────────────────────────────────────────
     property var panelItemsData: {
         if (!weatherRoot)
@@ -323,7 +333,8 @@ PlasmaCore.ToolTipArea {
             + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons
             + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator
             + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode
-            + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize;
+            + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize
+            + compactRoot._dateTimeTick;
         return _buildItems();
     }
 
