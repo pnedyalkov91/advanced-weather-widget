@@ -773,12 +773,52 @@ ColumnLayout {
                 value: widgetTab.configRoot.cfg_forecastDays
                 onValueModified: widgetTab.configRoot.cfg_forecastDays = value
             }
-            CheckBox {
-                Kirigami.FormData.label: i18n("Hourly forecast:")
+            RowLayout {
+                Kirigami.FormData.label: i18n("Show Today:")
+                Switch {
+                    checked: widgetTab.configRoot.cfg_forecastShowToday
+                    onToggled: widgetTab.configRoot.cfg_forecastShowToday = checked
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // SECTION: Hourly Forecast Settings
+            // ═══════════════════════════════════════════════════════════════
+            Kirigami.Separator {
+                Kirigami.FormData.isSection: true
+                Kirigami.FormData.label: i18n("Hourly Forecast Settings")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                text: i18n("Show sunrise/sunset markers")
-                checked: widgetTab.configRoot.cfg_forecastShowSunEvents
-                onToggled: widgetTab.configRoot.cfg_forecastShowSunEvents = checked
+            }
+
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
+
+            ComboBox {
+                Kirigami.FormData.label: i18n("Hourly layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                textRole: "text"
+                readonly property var _opts: [
+                    { text: i18n("Cards"),  value: "cards" },
+                    { text: i18n("Strip"),  value: "strip" }
+                ]
+                model: _opts
+                currentIndex: {
+                    var v = widgetTab.configRoot.cfg_forecastHourlyLayout;
+                    for (var i = 0; i < _opts.length; i++)
+                        if (_opts[i].value === v) return i;
+                    return 0;
+                }
+                onActivated: widgetTab.configRoot.cfg_forecastHourlyLayout = _opts[currentIndex].value
+            }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Sunrise/sunset markers:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Switch {
+                    checked: widgetTab.configRoot.cfg_forecastShowSunEvents
+                    onToggled: widgetTab.configRoot.cfg_forecastShowSunEvents = checked
+                }
             }
 
             Item {

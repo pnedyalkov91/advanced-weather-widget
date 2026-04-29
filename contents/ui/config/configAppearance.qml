@@ -1058,6 +1058,8 @@ KCM.AbstractKCM {
     property int cfg_forecastDays: 5
     property string cfg_forecastIconTheme: "symbolic"
     property bool cfg_forecastShowSunEvents: true
+    property bool cfg_forecastShowToday:    true
+    property string cfg_forecastHourlyLayout: "cards"
     property bool cfg_roundValues: true
     property bool cfg_showScrollbox: true
     property bool cfg_showUpdateText: true

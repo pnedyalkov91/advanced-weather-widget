@@ -595,9 +595,19 @@ Rectangle {
                 id: detailsView
                 weatherRoot: fullView.weatherRoot
             }
-            ForecastView {
-                id: forecastView
-                weatherRoot: fullView.weatherRoot
+            ScrollView {
+                id: forecastScrollView
+                clip: true
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                implicitHeight: forecastView.implicitHeight
+                contentWidth: availableWidth
+
+                ForecastView {
+                    id: forecastView
+                    weatherRoot: fullView.weatherRoot
+                    width: forecastScrollView.availableWidth
+                }
             }
             RadarView {
                 id: radarView

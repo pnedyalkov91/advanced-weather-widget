@@ -57,6 +57,7 @@ ColumnLayout {
     readonly property string _svFeels:     weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
     readonly property var    _svCondIcon:  weatherRoot ? resolveConditionIconFn(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
     readonly property int    forecastDays: Plasmoid.configuration.forecastDays || 5
+    readonly property bool   showToday:    Plasmoid.configuration.forecastShowToday !== false
 
     // ── SECTION 1: Hero ───────────────────────────────────────────────────────
     Item {
@@ -439,19 +440,23 @@ ColumnLayout {
             spacing: 4
 
             Repeater {
-                model: weatherRoot && weatherRoot.dailyData
-                    ? Math.min(simpleView.forecastDays, weatherRoot.dailyData.length) : 0
+                model: {
+                    if (!weatherRoot || !weatherRoot.dailyData) return 0;
+                    var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
+                    return simpleView.showToday ? total : Math.max(0, total - 1);
+                }
 
                 delegate: Rectangle {
                     required property int index
+                    readonly property int dataIndex: simpleView.showToday ? index : index + 1
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 8
-                    color: index === 0
+                    color: dataIndex === 0
                         ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.12)
                         : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.06)
 
-                    readonly property var day: weatherRoot.dailyData[index]
+                    readonly property var day: weatherRoot.dailyData[dataIndex]
 
                     ColumnLayout {
                         anchors {
@@ -468,7 +473,7 @@ ColumnLayout {
                             Layout.alignment: Qt.AlignHCenter
                             text: {
                                 if (!day) return "";
-                                if (index === 0) return i18n("Today");
+                                if (dataIndex === 0) return i18n("Today");
                                 var ds = day.dateStr || "";
                                 if (ds) {
                                     var parts = ds.split("-");

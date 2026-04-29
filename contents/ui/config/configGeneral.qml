@@ -40,7 +40,7 @@ KCM.SimpleKCM {
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
-    // ── Legacy props — keep bound so KCM doesn't lose them ────────────────
+    // ── Legacy props - keep bound so KCM doesn't lose them ────────────────
     property bool cfg_showScrollbox: true
     property int cfg_scrollboxLines: 2
     property string cfg_scrollboxItems: "Humidity;Wind;Pressure;Dew Point;Visibility"
@@ -235,7 +235,7 @@ KCM.SimpleKCM {
                 return;
             if (_testGen !== myGen) return;
             if (req.status === 200) {
-                // QWeather returns HTTP 200 even on auth failure — check body code
+                // QWeather returns HTTP 200 even on auth failure - check body code
                 if (root.isQWeather) {
                     try {
                         var qwBody = JSON.parse(req.responseText);
@@ -265,7 +265,7 @@ KCM.SimpleKCM {
         req.send();
     }
 
-    // Providers without Adaptive — Adaptive is handled by the switch above
+    // Providers without Adaptive - Adaptive is handled by the switch above
     readonly property var providerModel: [
         {
             text: i18n("Open-Meteo (recommended, free)"),
@@ -378,20 +378,20 @@ KCM.SimpleKCM {
                     }
                 }
 
-                // Adaptive description — shown only when Adaptive is ON
+                // Adaptive description - shown only when Adaptive is ON
                 Kirigami.InlineMessage {
                     Layout.fillWidth: true
                     Layout.topMargin: 4
                     visible: root.isAdaptive
                     type: Kirigami.MessageType.Information
-                    text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first — it is free and requires no API key.")
+                    text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key.")
                 }
 
                 Item {
                     Layout.preferredHeight: 8
                 }
 
-                // Manual provider selector — hidden when Adaptive is ON
+                // Manual provider selector - hidden when Adaptive is ON
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 6
@@ -674,7 +674,19 @@ KCM.SimpleKCM {
                     visible: root.cfg_radarEnabled && (root.cfg_owApiKey || "").trim() === ""
                     type: Kirigami.MessageType.Information
                     text: i18n("To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): " +
-                               "disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above.")
+                               "disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again.")
+                }
+
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    showCloseButton: true
+                    visible: root.cfg_radarEnabled && (root.cfg_owApiKey || "").trim() !== ""
+                    type: Kirigami.MessageType.Warning
+                    text: i18n("<b>Why OWM layers may not match RainViewer radar</b><br/><br/>" +
+                               "OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. " +
+                               "They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>" +
+                               "RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. " +
+                               "This discrepancy is expected and known.")
                 }
             }
 
