@@ -1126,6 +1126,9 @@ KCM.AbstractKCM {
     property string cfg_tooltipHeightMode: "auto"
     property int cfg_tooltipHeightManual: 300
 
+    // ── Calendar first day of week (-1 = region default) ─────────────────
+    property int    cfg_calendarFirstDayOfWeek: -1
+
     // ── Item date/time formats ────────────────────────────────────────────
     property string cfg_panelDateTimeFormat:   "locale-short"
     property string cfg_panelTimeFormat:       "locale"

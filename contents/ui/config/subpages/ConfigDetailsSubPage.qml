@@ -886,6 +886,35 @@ ColumnLayout {
                                 onEditingFinished: if (text.trim().length > 0) configRoot.cfg_detailsTimeFormat = text.trim()
                             }
                         }
+                        // First day of week row
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+                            Label {
+                                text: i18n("First day of week:")
+                                font: Kirigami.Theme.smallFont
+                                opacity: 0.8
+                            }
+                            ComboBox {
+                                id: calFirstDowCombo
+                                Layout.fillWidth: true
+                                textRole: "text"
+                                readonly property var _opts: [
+                                    { text: i18n("Use region defaults"), value: -1 },
+                                    { text: i18n("Sunday"),              value: 0  },
+                                    { text: i18n("Monday"),              value: 1  },
+                                    { text: i18n("Friday"),              value: 5  },
+                                    { text: i18n("Saturday"),            value: 6  }
+                                ]
+                                model: _opts
+                                currentIndex: {
+                                    var v = configRoot.cfg_calendarFirstDayOfWeek;
+                                    for (var i = 0; i < _opts.length; i++)
+                                        if (_opts[i].value === v) return i;
+                                    return 0;
+                                }
+                                onActivated: configRoot.cfg_calendarFirstDayOfWeek = _opts[currentIndex].value
+                            }
+                        }
                     }
                     Kirigami.Separator {
                         Layout.fillWidth: true

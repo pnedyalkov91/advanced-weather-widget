@@ -216,6 +216,7 @@ Item {
     property bool _aqiExpanded: false
     property bool _pollenExpanded: false
     property bool _swExpanded: false
+    property bool _dtExpanded: false
     property int _currentAlertIndex: 0
 
     readonly property int regularCardHeight: Plasmoid.configuration.widgetCardsHeightAuto ? 30 : (Plasmoid.configuration.widgetCardsHeight || 30)
@@ -517,7 +518,7 @@ Item {
                             required property string modelData   // the detail ID
 
                             // Card height
-                            readonly property bool isExpandedCard: card.modelData === "suntimes" || card.modelData === "moonphase" || (card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 1) || card.modelData === "airquality" || card.modelData === "pollen" || card.modelData === "spaceweather"
+                            readonly property bool isExpandedCard: card.modelData === "suntimes" || card.modelData === "moonphase" || (card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 1) || card.modelData === "airquality" || card.modelData === "pollen" || card.modelData === "spaceweather" || (card.modelData === "datetime" && !root.isList)
                             // suntimes and moonphase: height scales with card width
                             // so the arc grows when the widget is stretched.
                             readonly property int autoHeight: {
@@ -538,6 +539,8 @@ Item {
                                     return arcLikeHeight;
                                 if (card.modelData === "suntimes" || card.modelData === "moonphase")
                                     return arcLikeHeight;
+                                if (card.modelData === "datetime")
+                                    return 210;
                                 if (isExpandedCard)
                                     return 80;
                                 return 30;  // ← adjust this value to change regular card height
@@ -562,6 +565,8 @@ Item {
                                     return root._pollenExpanded;
                                 if (card.modelData === "spaceweather")
                                     return root._swExpanded;
+                                if (card.modelData === "datetime")
+                                    return root._dtExpanded;
                                 return true;
                             }
                             Layout.preferredHeight: root.isList ? (card.isExpandedCard ? 44 : 38) : (card.isExpandedCard ? (card._isArcExpanded ? autoHeight : root.regularCardHeight) : (Plasmoid.configuration.widgetCardsHeightAuto ? autoHeight : Plasmoid.configuration.widgetCardsHeight))
@@ -597,7 +602,7 @@ Item {
                                     rightMargin: 10
                                 }
                                 spacing: 8
-                                visible: !card.isExpandedCard && card.modelData !== "wind" && !(card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 0) && card.modelData !== "airquality" && card.modelData !== "pollen" && card.modelData !== "spaceweather"
+                                visible: !card.isExpandedCard && card.modelData !== "wind" && !(card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 0) && card.modelData !== "airquality" && card.modelData !== "pollen" && card.modelData !== "spaceweather" && card.modelData !== "datetime"
 
                                 WeatherIcon {
                                     iconInfo: root.showIconFor(card.modelData) ? root.resolveIcon(card.modelData) : null
@@ -2300,6 +2305,297 @@ Item {
                                     }
                                 }
 
+                            }
+
+                            // ═══════════════════════════════════════════════════════════════
+                            // Date / Time — live clock + calendar card
+                            // ═══════════════════════════════════════════════════════════════
+                            Item {
+                                id: datetimeCard
+                                anchors.fill: parent
+                                clip: true
+                                visible: card.modelData === "datetime" && !root.isList
+
+                                property int _tick: 0
+                                Timer {
+                                    interval: 1000
+                                    running: datetimeCard.visible
+                                    repeat: true
+                                    onTriggered: datetimeCard._tick++
+                                }
+
+                                // ── Collapsed header row ──────────────────────────────
+                                RowLayout {
+                                    id: dtHeader
+                                    anchors {
+                                        top: parent.top
+                                        left: parent.left
+                                        right: parent.right
+                                        leftMargin: 10
+                                        rightMargin: 10
+                                    }
+                                    height: root.regularCardHeight
+                                    spacing: 8
+                                    visible: !card._isArcExpanded
+
+                                    WeatherIcon {
+                                        iconInfo: root.showIconFor("datetime") ? root.resolveIcon("datetime") : null
+                                        iconSize: root.iconSize
+                                        iconColor: root.iconColorFor(root.accentFor("datetime"))
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Label {
+                                        text: root.labelFor("datetime") + ":"
+                                        color: Kirigami.Theme.textColor
+                                        opacity: 0.55
+                                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Item { Layout.fillWidth: true }
+                                    Label {
+                                        text: {
+                                            var _ = datetimeCard._tick;
+                                            return weatherRoot ? weatherRoot._formatItemDateTime(
+                                                Plasmoid.configuration.detailsDateTimeFormat,
+                                                Plasmoid.configuration.detailsTimeFormat) : "--";
+                                        }
+                                        color: root.valueColor
+                                        font: weatherRoot ? weatherRoot.wf(12, true) : Qt.font({ bold: true })
+                                        Layout.alignment: Qt.AlignVCenter
+                                    }
+                                    Item {
+                                        implicitWidth: 14; implicitHeight: 14
+                                        Layout.alignment: Qt.AlignVCenter
+                                        Kirigami.Icon {
+                                            anchors.fill: parent
+                                            source: "arrow-down"
+                                            opacity: 0.45
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root._dtExpanded = true
+                                        }
+                                    }
+                                }
+
+                                // ── Expanded view ─────────────────────────────────────
+                                ColumnLayout {
+                                    id: dtExpanded
+                                    visible: card._isArcExpanded
+                                    anchors {
+                                        fill: parent
+                                        leftMargin: 10
+                                        rightMargin: 10
+                                        topMargin: 4
+                                        bottomMargin: 4
+                                    }
+                                    spacing: 2
+
+                                    // Collapse chevron — top-right only
+                                    Item {
+                                        Layout.fillWidth: true
+                                        height: 14
+                                        Item {
+                                            anchors.right: parent.right
+                                            width: 14; height: 14
+                                            Kirigami.Icon {
+                                                anchors.fill: parent
+                                                source: "arrow-up"
+                                                opacity: 0.45
+                                            }
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: root._dtExpanded = false
+                                            }
+                                        }
+                                    }
+
+                                    // ── Calendar grid ─────────────────────────────────
+                                    Item {
+                                        id: calItem
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
+
+                                        // Month offset for prev/next navigation (0 = current month)
+                                        property int _offset: 0
+                                        // Reset to current month when card collapses
+                                        property bool watchExpanded: root._dtExpanded
+                                        onWatchExpandedChanged: if (!root._dtExpanded) _offset = 0
+
+                                        // "Today" — always real today (for highlight)
+                                        readonly property int _todayDay:  { var _ = datetimeCard._tick; return new Date().getDate(); }
+                                        readonly property int _todayMonth:{ var _ = datetimeCard._tick; return new Date().getMonth(); }
+                                        readonly property int _todayYear: { var _ = datetimeCard._tick; return new Date().getFullYear(); }
+
+                                        // "Viewed" month — today + offset
+                                        readonly property date _viewDate:    new Date(_todayYear, _todayMonth + _offset, 1)
+                                        readonly property int  _viewMonth:   _viewDate.getMonth()
+                                        readonly property int  _viewYear:    _viewDate.getFullYear()
+                                        readonly property int  _firstDow:    _viewDate.getDay()   // 0=Sun
+                                        readonly property int  _daysInMonth: new Date(_viewYear, _viewMonth + 1, 0).getDate()
+                                        readonly property int  _fdo: {
+                                            var cfg = Plasmoid.configuration.calendarFirstDayOfWeek;
+                                            var firstDow = (cfg >= 0) ? cfg : Qt.locale().firstDayOfWeek;
+                                            return (_firstDow - firstDow + 7) % 7;
+                                        }
+
+                                        ColumnLayout {
+                                            anchors.fill: parent
+                                            spacing: 2
+
+                                            // Month + year header with prev/next buttons
+                                            RowLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 4
+
+                                                // Prev month
+                                                Item {
+                                                    implicitWidth: 16; implicitHeight: 16
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                    Kirigami.Icon {
+                                                        anchors.fill: parent
+                                                        source: "arrow-left"
+                                                        opacity: 0.55
+                                                    }
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: calItem._offset--
+                                                    }
+                                                }
+
+                                                Label {
+                                                    Layout.fillWidth: true
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                    text: calItem._viewDate.toLocaleDateString(Qt.locale(), "MMMM yyyy")
+                                                    color: Kirigami.Theme.textColor
+                                                    opacity: calItem._offset === 0 ? 0.75 : 1.0
+                                                    font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
+                                                }
+
+                                                // Next month
+                                                Item {
+                                                    implicitWidth: 16; implicitHeight: 16
+                                                    Layout.alignment: Qt.AlignVCenter
+                                                    Kirigami.Icon {
+                                                        anchors.fill: parent
+                                                        source: "arrow-right"
+                                                        opacity: 0.55
+                                                    }
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: calItem._offset++
+                                                    }
+                                                }
+                                            }
+
+                                            // Day-of-week header row
+                                            Row {
+                                                id: dowHeader
+                                                Layout.fillWidth: true
+                                                spacing: 0
+                                                Repeater {
+                                                    model: 7
+                                                    delegate: Item {
+                                                        required property int index
+                                                        width: dowHeader.width / 7
+                                                        height: 16
+                                                        Label {
+                                                            anchors.centerIn: parent
+                                                            text: {
+                                                                var loc = Qt.locale();
+                                                                var cfg = Plasmoid.configuration.calendarFirstDayOfWeek;
+                                                                var firstDow = (cfg >= 0) ? cfg : loc.firstDayOfWeek;
+                                                                var d = (index + firstDow) % 7;
+                                                                return loc.dayName(d === 0 ? 7 : d, Locale.NarrowFormat);
+                                                            }
+                                                            font: weatherRoot ? weatherRoot.wf(9, true) : Qt.font({ bold: true, pixelSize: 9 })
+                                                            color: Kirigami.Theme.textColor
+                                                            opacity: 0.45
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            // Calendar day cells — 6 rows × 7 cols = 42 slots
+                                            Grid {
+                                                id: calGrid
+                                                Layout.fillWidth: true
+                                                Layout.fillHeight: true
+                                                columns: 7
+                                                rows: 6
+                                                spacing: 0
+
+                                                Repeater {
+                                                    model: 42
+                                                    delegate: Item {
+                                                        required property int index
+                                                        width: calGrid.width / 7
+                                                        height: calGrid.height / 6
+
+                                                        readonly property int _dayNum:  index - calItem._fdo + 1
+                                                        readonly property bool _valid:  _dayNum >= 1 && _dayNum <= calItem._daysInMonth
+                                                        readonly property bool _isToday: _valid && _dayNum === calItem._todayDay
+                                                            && calItem._viewMonth === calItem._todayMonth
+                                                            && calItem._viewYear  === calItem._todayYear
+
+                                                        Rectangle {
+                                                            anchors.centerIn: parent
+                                                            width: Math.min(parent.width, parent.height) - 2
+                                                            height: width
+                                                            radius: width / 2
+                                                            color: parent._isToday ? Kirigami.Theme.highlightColor : "transparent"
+                                                            opacity: parent._isToday ? 0.9 : 1.0
+                                                        }
+                                                        Label {
+                                                            anchors.centerIn: parent
+                                                            visible: parent._valid
+                                                            text: parent._dayNum
+                                                            font: weatherRoot ? weatherRoot.wf(10, parent._isToday) : Qt.font({ pixelSize: 10, bold: parent._isToday })
+                                                            color: parent._isToday ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                                                            opacity: parent._isToday ? 1.0 : 0.75
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // ── LIST MODE: compact datetime row ──────────────────────────
+                            RowLayout {
+                                anchors {
+                                    fill: parent
+                                    leftMargin: 10
+                                    rightMargin: 10
+                                }
+                                visible: card.modelData === "datetime" && root.isList
+                                spacing: 8
+
+                                WeatherIcon {
+                                    iconInfo: root.showIconFor("datetime") ? root.resolveIcon("datetime") : null
+                                    iconSize: root.iconSize
+                                    iconColor: root.iconColorFor(root.accentFor("datetime"))
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+                                Label {
+                                    text: root.labelFor("datetime") + ":"
+                                    color: Kirigami.Theme.textColor
+                                    opacity: 0.55
+                                    font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: root._dvDatetime
+                                    color: root.valueColor
+                                    font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({ bold: true })
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
                             }
 
                             // ═══════════════════════════════════════════════════════════════

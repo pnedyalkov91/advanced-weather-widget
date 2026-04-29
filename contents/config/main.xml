@@ -184,6 +184,9 @@
     <entry name="fontSize"        type="Int"><default>11</default><min>7</min><max>24</max></entry>
     <entry name="fontBold"        type="Bool"><default>false</default></entry>
 
+    <!-- ── Calendar first day of week (-1 = region default, 0=Sun, 1=Mon, 5=Fri, 6=Sat) -->
+    <entry name="calendarFirstDayOfWeek" type="Int"><default>-1</default></entry>
+
     <!-- ── Item date/time formats ───────────────────────────────────── -->
     <entry name="panelDateTimeFormat"    type="String"><default>locale-short</default></entry>
     <entry name="panelTimeFormat"        type="String"><default>locale</default></entry>

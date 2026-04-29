@@ -297,7 +297,7 @@ Rectangle {
                 visible: {
                     try {
                         var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-                        return Array.isArray(locs) && locs.length > 0;
+                        return Array.isArray(locs) && locs.length > 1;
                     } catch (e) { return false; }
                 }
                 ToolTip.visible: hovered
