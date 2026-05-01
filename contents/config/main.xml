@@ -216,7 +216,7 @@
 
     <!-- ── Widget — forecast ──────────────────────────────────────────── -->
     <entry name="forecastLayout"      type="String"><default>rows</default></entry>
-    <entry name="forecastDays"        type="Int"><default>5</default><min>3</min><max>7</max></entry>
+    <entry name="forecastDays"        type="Int"><default>5</default><min>3</min><max>16</max></entry>
     <entry name="forecastIconTheme"   type="String"><default>symbolic</default></entry>
     <entry name="forecastShowSunEvents" type="Bool"><default>true</default></entry>
     <entry name="forecastShowToday"    type="Bool"><default>true</default></entry>

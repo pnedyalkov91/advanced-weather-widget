@@ -30,6 +30,7 @@ function fetchCurrent(service, chain, idx) {
         + "?latitude=" + service.latitude
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
+        + "&forecast_days=" + Math.min(service.forecastDays, 16)
         + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,"
         + "weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,"
         + "dew_point_2m,visibility,is_day,precipitation,uv_index,snow_depth"

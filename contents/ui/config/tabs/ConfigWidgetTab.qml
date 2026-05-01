@@ -769,7 +769,7 @@ ColumnLayout {
             SpinBox {
                 Kirigami.FormData.label: i18n("Forecast days:")
                 from: 3
-                to: 7
+                to: 16
                 value: widgetTab.configRoot.cfg_forecastDays
                 onValueModified: widgetTab.configRoot.cfg_forecastDays = value
             }
