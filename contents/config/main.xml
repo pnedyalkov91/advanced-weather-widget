@@ -145,7 +145,7 @@
     <entry name="widgetSimpleDetailsOrder" type="String"><default>humidity;pressure;preciprate;precipsum</default></entry>
     <entry name="widgetSimpleDetailsItemIcons" type="String"><default>humidity=1;pressure=1;preciprate=1;precipsum=1</default></entry>
     <entry name="radarEnabled"          type="Bool"><default>true</default></entry>
-    <entry name="radarLayer"            type="String"><default>precipitation_new</default></entry>
+    <entry name="radarLayer"            type="String"><default>rainviewer</default></entry>
     <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
 
     <!-- ── Widget — details view ──────────────────────────────────────── -->
