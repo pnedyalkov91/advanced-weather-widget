@@ -96,6 +96,36 @@ ColumnLayout {
                         if (data.current_units && data.current_units.temperature_2m)
                             currentTemperatureUnit = data.current_units.temperature_2m;
                     } catch (e) { /* ignore */ }
+
+                    // Update config with missing metadata if needed. This handles cases where
+                    // the search provider (e.g. Nominatim) doesn't supply timezone or altitude.
+                    if (data.timezone && (!configRoot.cfg_timezone || configRoot.cfg_timezone.length === 0)) {
+                        configRoot.cfg_timezone = data.timezone;
+                    }
+                    if (data.elevation !== undefined && (!configRoot.cfg_altitude || configRoot.cfg_altitude === 0)) {
+                        var alt = data.elevation;
+                        if (configRoot.cfg_altitudeUnit === "ft") {
+                            alt = Math.round(alt * 3.28084);
+                        } else {
+                            alt = Math.round(alt);
+                        }
+                        configRoot.cfg_altitude = alt;
+                    }
+                    // Ensure the pending entry (staged for savedLocations) is also updated.
+                    if (configRoot._pendingEntry) {
+                        if (data.timezone && (!configRoot._pendingEntry.timezone || configRoot._pendingEntry.timezone.length === 0)) {
+                            configRoot._pendingEntry.timezone = data.timezone;
+                        }
+                        if (data.elevation !== undefined && (!configRoot._pendingEntry.altitude || configRoot._pendingEntry.altitude === 0)) {
+                            var alt2 = data.elevation;
+                            if (configRoot.cfg_altitudeUnit === "ft") {
+                                alt2 = Math.round(alt2 * 3.28084);
+                            } else {
+                                alt2 = Math.round(alt2);
+                            }
+                            configRoot._pendingEntry.altitude = alt2;
+                        }
+                    }
                 }
             };
             req.send();
@@ -459,11 +489,19 @@ ColumnLayout {
                             if (isNew) {
                                 // Store pending — saved on KCM Apply via save() in configLocation.qml
                                 var entryName = configRoot.formatResultTitle(modelData);
+
+                                var startAlt = modelData.elevation || 0;
+                                if (startAlt !== 0 && configRoot.cfg_altitudeUnit === "ft") {
+                                    startAlt = Math.round(startAlt * 3.28084);
+                                } else {
+                                    startAlt = Math.round(startAlt);
+                                }
+
                                 configRoot._pendingEntry = {
                                     name: entryName,
                                     lat: entryLat,
                                     lon: entryLon,
-                                    altitude: 0,
+                                    altitude: startAlt,
                                     timezone: modelData.timezone || "",
                                     countryCode: (modelData.countryCode || "").toUpperCase()
                                 };

@@ -1397,28 +1397,12 @@ KCM.SimpleKCM {
                     ListView {
                         id: savedLocList
                         Layout.fillWidth: true
-                        // Give the saved-locations list its own bounded,
-                        // scrollable viewport instead of relying on the outer
-                        // ScrollView. This keeps very long lists contained and
-                        // makes drag-and-drop reordering stable (the dragged
-                        // item no longer pops out of a 0-height viewport).
-                        readonly property int _approxRowHeight: 56
-                        readonly property int _visibleRows: 5
-                        Layout.preferredHeight: Math.min(
-                            Math.max(savedLocWorkingModel.count, 1) * _approxRowHeight + 4,
-                            _visibleRows * _approxRowHeight + 4)
-                        Layout.minimumHeight: Math.min(
-                            Math.max(savedLocWorkingModel.count, 1) * _approxRowHeight + 4,
-                            _approxRowHeight + 4)
-                        interactive: true
+                        Layout.preferredHeight: contentHeight
+                        interactive: false
                         reuseItems: false
                         spacing: 2
-                        clip: true
+                        clip: false
                         model: savedLocWorkingModel
-                        boundsBehavior: Flickable.StopAtBounds
-                        ScrollBar.vertical: ScrollBar {
-                            policy: ScrollBar.AsNeeded
-                        }
 
                         moveDisplaced: Transition {
                             NumberAnimation {
@@ -1687,129 +1671,6 @@ KCM.SimpleKCM {
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
-
-                    // ── Location information section header ─────────────────
-                    Item {
-                        Layout.preferredHeight: 4
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Kirigami.Heading {
-                            text: i18n("Location information")
-                            level: 4
-                        }
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2)
-                            opacity: 0.6
-                        }
-                    }
-
-                    // ── Location fields (read-only display) ─────────────────
-                    GridLayout {
-                        Layout.fillWidth: true
-                        columns: 2
-                        columnSpacing: 10
-                        rowSpacing: 8
-
-                        Label {
-                            text: i18n("Location name:")
-                        }
-                        TextField {
-                            id: locationNameField
-                            Layout.fillWidth: true
-                            text: root.cfg_locationName
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Latitude:")
-                        }
-                        TextField {
-                            id: latField
-                            Layout.fillWidth: true
-                            text: {
-                                var v = root.cfg_latitude;
-                                if (v === 0.0)
-                                    return "0°";
-                                return v.toFixed(7).replace(/\.?0+$/, "") + "°";
-                            }
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Longitude:")
-                        }
-                        TextField {
-                            id: lonField
-                            Layout.fillWidth: true
-                            text: {
-                                var v = root.cfg_longitude;
-                                if (v === 0.0)
-                                    return "0°";
-                                return v.toFixed(7).replace(/\.?0+$/, "") + "°";
-                            }
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Altitude:")
-                        }
-                        TextField {
-                            id: altField
-                            Layout.fillWidth: true
-                            text: root.cfg_altitude + " m"
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Timezone:")
-                        }
-                        TextField {
-                            id: timezoneField
-                            Layout.fillWidth: true
-                            text: {
-                                var tz = root.cfg_timezone;
-                                if (!tz || tz.length === 0)
-                                    return "";
-                                var offset = root.gmtOffsetLabel(tz);
-                                return offset.length > 0 ? tz + " " + offset : tz;
-                            }
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
                             }
                         }
                     }
