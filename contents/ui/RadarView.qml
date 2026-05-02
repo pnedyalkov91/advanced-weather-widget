@@ -31,6 +31,24 @@ Item {
     readonly property string owmKey: Plasmoid.configuration.owApiKey || ""
     readonly property string activeLayer: Plasmoid.configuration.radarLayer || "rainviewer"
 
+    readonly property var localeInfo: {
+        var d = new Date(2025, 0, 31); // January 31
+        var s = d.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+        var dayFirst = s.indexOf("31") < s.search(/1|01/);
+        var yearFirst = s.indexOf("2025") === 0;
+        var sepMatch = s.match(/[0-9]([^0-9])[0-9]/);
+        return {
+            "dayFirst": dayFirst,
+            "yearFirst": yearFirst,
+            "sep": sepMatch ? sepMatch[1] : "."
+        };
+    }
+    readonly property string systemLocale: Qt.locale().name
+    readonly property bool is24h: {
+        var f = Qt.locale().timeFormat(Locale.ShortFormat);
+        return f.indexOf('H') !== -1 || f.indexOf('k') !== -1;
+    }
+
     implicitHeight: 380
 
     // ── Wi-font icon loader ───────────────────────────────────────────────
@@ -66,6 +84,9 @@ Item {
         var lblMod     = JSON.stringify(i18n("Moderate"));
         var lblHeavy   = JSON.stringify(i18n("Heavy"));
         var lblStorm   = JSON.stringify(i18n("Storm"));
+        var localeJs   = JSON.stringify(Qt.locale().uiLanguages);
+        var locInfoJs  = JSON.stringify(radarRoot.localeInfo);
+        var hour12Js   = !radarRoot.is24h;
         // KDE Breeze-style SVG icon paths (white, 16×16 viewBox)
         var svgPrev  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="white" d="M4 3h1.5v10H4zm7.5 0L5.5 8l6 5z"/><\/svg>';
         var svgPlay  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="white" d="M4 3l9 5-9 5z"/><\/svg>';
@@ -123,6 +144,9 @@ var LAT = ' + lat + ';\
 var LON = ' + lon + ';\
 var OWM_KEY = ' + owmKeyJs + ';\
 var ACTIVE_LAYER = ' + layerJs + ';\
+var SYS_LOCALE = ' + localeJs + ';\
+var LOC_INFO = ' + locInfoJs + ';\
+var HOUR12 = ' + hour12Js + ';\
 var TILE_SIZE = 512;\
 var RADAR_OPACITY = 0.6;\
 var OWM_OPACITY  = 1.00;\
@@ -162,10 +186,21 @@ function wrapPos(p, wrap) {\
 }\
 \
 function fmtTime(ts) {\
-    return new Date(ts * 1000).toLocaleString([], {\
-        month:"2-digit", day:"2-digit",\
-        hour:"2-digit", minute:"2-digit"\
-    });\
+    var d = new Date(ts * 1000);\
+    var dd = d.getDate();\
+    var mm = d.getMonth() + 1;\
+    var yy = d.getFullYear();\
+    var ms = (mm < 10 ? "0" + mm : mm);\
+    var dStr = "";\
+    if (LOC_INFO.yearFirst) {\
+        dStr = yy + LOC_INFO.sep + ms + LOC_INFO.sep + dd;\
+    } else if (LOC_INFO.dayFirst) {\
+        dStr = dd + LOC_INFO.sep + ms + LOC_INFO.sep + yy;\
+    } else {\
+        dStr = ms + LOC_INFO.sep + dd + LOC_INFO.sep + yy;\
+    }\
+    var tStr = d.toLocaleTimeString(SYS_LOCALE, { hour: "2-digit", minute: "2-digit", hour12: HOUR12 });\
+    return dStr + ", " + tStr;\
 }\
 \
 function updateUI() {\
