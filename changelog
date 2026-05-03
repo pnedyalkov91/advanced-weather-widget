@@ -1,5 +1,22 @@
-- Added
+- New features
 
-- Added Radar funcionality with multiple layers (Radar (Free),Rain, Clouds, Temperature, Wind, Pressure (OWM key required))
-- Added an option to turn off the radar (General settings)
-- 
+-- Added Radar funcionality with multiple layers (Radar (Free, Provider by RainViewer API); Rain, Clouds, Temperature, Wind, Pressure (OWM key required))
+-- Added an option to turn off the radar (General settings) with additional information
+-- Added "Simple mode" for the widget popup with many customization settings
+-- Added date and time in the widget header (optional)
+-- Added date and time item information in the widget, tooltip and panel
+-- Added a simple calendar when the date/time widget item is expandend
+-- Added "Strip" layout in Forecast
+-- Added dual temperature (C/F) support for panel, tooltip and widget (optional) in the Misc settings
+
+- Improvements
+
+-- Increase forecast days up to 16 (Open-Meteo)
+-- Added an option to remove the "Today" forecast 
+-- Removed "Location information" due to duplication with saved location 
+-- Increased hourly forecast performance 
+-- Remove auto scroll based on your current time in the "Today forecast". Now the past times are removed.
+
+- Bug fixes
+-- Fixed a bug where saved locations manually don't have any information about attitude and timezone.
+-- Fixed a bug where the multi-location button was visible when one location is saved in the widget.

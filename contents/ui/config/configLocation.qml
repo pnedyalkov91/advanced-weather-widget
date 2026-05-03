@@ -63,6 +63,7 @@ KCM.SimpleKCM {
     property string cfg_weatherProvider: "adaptive"
     property string cfg_savedLocations: "[]"
 
+    property string duplicateWarning: ""
     property bool autoDetectBusy: false
     property string autoDetectStatus: ""
 
@@ -141,6 +142,7 @@ KCM.SimpleKCM {
         });
         if (isDup) {
             root._pendingEntry = null;
+            root.duplicateWarning = i18n("This location is already in your saved list.");
             return;
         }
         if (locs.length === 0) {
@@ -308,7 +310,13 @@ KCM.SimpleKCM {
                 break;
             }
         }
-        if (!found) locs.unshift(detected);
+        if (found) {
+            root.duplicateWarning = i18n("The auto-detected location is already in your saved list.");
+            duplicateDialog.open();
+        } else {
+            root.duplicateWarning = "";
+            locs.unshift(detected);
+        }
         cfg_savedLocations = JSON.stringify(locs);
         Plasmoid.configuration.savedLocations = cfg_savedLocations;
 
@@ -1285,6 +1293,15 @@ KCM.SimpleKCM {
 
                     ButtonGroup {
                         id: locationModeGroup
+                    }
+
+                    Kirigami.InlineMessage {
+                        Layout.fillWidth: true
+                        visible: root.duplicateWarning !== ""
+                        type: Kirigami.MessageType.Warning
+                        text: root.duplicateWarning
+                        showCloseButton: true
+                        onVisibleChanged: if (!visible) root.duplicateWarning = ""
                     }
 
                     // ── Auto-detect radio ──────────────────────────────────

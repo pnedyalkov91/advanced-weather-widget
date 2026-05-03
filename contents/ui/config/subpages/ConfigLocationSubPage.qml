@@ -474,22 +474,22 @@ ColumnLayout {
 
                             var entryLat = parseFloat(modelData.latitude);
                             var entryLon = parseFloat(modelData.longitude);
+                            var entryName = configRoot.formatResultTitle(modelData);
                             var locs;
                             try {
                                 locs = JSON.parse(configRoot.cfg_savedLocations || "[]");
                                 if (!Array.isArray(locs)) locs = [];
                             } catch (e) { locs = []; }
-                            var isNew = !locs.some(function(l) {
+                            var isDup = locs.some(function(l) {
                                 return Math.abs(l.lat - entryLat) < 0.01 && Math.abs(l.lon - entryLon) < 0.01;
                             });
 
                             // Always stage to cfg_* so KCM Apply becomes active
                             configRoot.applySearchResult(modelData);
 
-                            if (isNew) {
+                            if (!isDup) {
+                                configRoot.duplicateWarning = "";
                                 // Store pending — saved on KCM Apply via save() in configLocation.qml
-                                var entryName = configRoot.formatResultTitle(modelData);
-
                                 var startAlt = modelData.elevation || 0;
                                 if (startAlt !== 0 && configRoot.cfg_altitudeUnit === "ft") {
                                     startAlt = Math.round(startAlt * 3.28084);
@@ -510,6 +510,8 @@ ColumnLayout {
                                 // Already saved — clear pending
                                 configRoot._pendingEntry = null;
                                 searchSubPageRoot._pendingItemData = null;
+                                configRoot.duplicateWarning = i18n("Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again.", entryName);
+                                configRoot.duplicateDialog.open();
                             }
                         }
                     }
@@ -536,6 +538,15 @@ ColumnLayout {
                     text: searchSubPageRoot.searchBusy ? i18n("Loading locations…") : (searchField.text.trim().length < 2 ? i18n("Search a weather station to set your location") : i18n("No weather stations found for '%1'", searchField.text.trim()))
                 }
             }
+        }
+
+        Kirigami.InlineMessage {
+            Layout.fillWidth: true
+            visible: configRoot.duplicateWarning !== ""
+            type: Kirigami.MessageType.Warning
+            text: configRoot.duplicateWarning
+            showCloseButton: true
+            onVisibleChanged: if (!visible) configRoot.duplicateWarning = ""
         }
 
         Kirigami.InlineMessage {
