@@ -717,7 +717,7 @@ KCM.SimpleKCM {
                     Layout.preferredHeight: 4
                 }
 
-                CheckBox {
+                Switch {
                     text: i18n("Refresh weather automatically")
                     checked: root.cfg_autoRefresh
                     onToggled: root.cfg_autoRefresh = checked

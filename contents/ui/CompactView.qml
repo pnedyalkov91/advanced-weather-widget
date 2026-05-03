@@ -313,12 +313,13 @@ PlasmaCore.ToolTipArea {
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
     readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
 
-    // ── Datetime tick (updates every 60 s to keep the datetime item live) ─────
+    // ── Datetime tick (updates every second to keep the datetime item live) ──
     property int _dateTimeTick: 0
     Timer {
         id: dateTimeTimer
-        interval: 60000
-        running: Plasmoid.configuration.panelItemOrder.indexOf("datetime") >= 0
+        interval: 1000
+        running: (Plasmoid.configuration.panelItemOrder || "").indexOf("datetime") >= 0
+            || (Plasmoid.configuration.tooltipItemOrder || "").indexOf("datetime") >= 0
         repeat: true
         onTriggered: compactRoot._dateTimeTick++
     }
@@ -328,8 +329,10 @@ PlasmaCore.ToolTipArea {
         if (!weatherRoot)
             return [];
         // Subscribe to weatherData object (fires once per refresh) plus scalar deps
-        var _deps = weatherRoot.weatherData + weatherRoot.panelScrollIndex
-            + weatherRoot.moonriseTimeText.length + weatherRoot.moonsetTimeText.length
+        // Use safe fallback strings instead of .length to prevent TypeErrors breaking the binding.
+        var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex
+            + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "")
+            + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "")
             + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons
             + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator
             + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode
@@ -356,15 +359,25 @@ PlasmaCore.ToolTipArea {
         running: compactRoot.isMultiLine && compactRoot.multiLineItemsData.length > compactRoot.multiLines
         repeat: true
         onTriggered: {
-            var total = compactRoot.multiLineItemsData.length;
-            compactRoot.mlScrollOffset = (compactRoot.mlScrollOffset + 1) % total;
+            var totalItems = compactRoot.multiLineItemsData.length;
+            var visibleLines = compactRoot.multiLines;
+            if (totalItems <= visibleLines) {
+                compactRoot.mlScrollOffset = 0;
+            } else {
+                var maxOffset = totalItems - visibleLines;
+                compactRoot.mlScrollOffset = (compactRoot.mlScrollOffset + 1);
+                if (compactRoot.mlScrollOffset > maxOffset) {
+                    compactRoot.mlScrollOffset = 0;
+                }
+            }
         }
     }
     onIsMultiLineChanged: mlScrollOffset = 0
-    onMultiLineItemsDataChanged: mlScrollOffset = 0
+    onMultiLineItemsDataChanged: if (mlScrollOffset >= multiLineItemsData.length) mlScrollOffset = 0
 
     mainItem: TooltipContent {
         weatherRoot: compactRoot.weatherRoot
+        _dateTimeTick: compactRoot._dateTimeTick
     }
 
     // ══════════════════════════════════════════════════════════════════════

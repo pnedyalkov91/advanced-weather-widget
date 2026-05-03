@@ -43,6 +43,7 @@ Item {
     // ── Interface ─────────────────────────────────────────────────────────
     /** Reference to the PlasmoidItem root (set by CompactView) */
     property var weatherRoot
+    property int _dateTimeTick: 0
 
     // Respect the global tooltipEnabled setting: collapse to nothing when off.
     // (CompactView also sets active:false on the ToolTipArea, so the popup
@@ -299,7 +300,11 @@ Item {
                     model: {
                         if (!ttRoot.weatherRoot || !ttRoot.ttUseIcons)
                             return [];
-                        var _ = ttRoot.weatherRoot.weatherData + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
+                        var _ = (ttRoot.weatherRoot.weatherData || "") 
+                            + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") 
+                            + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") 
+                            + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode 
+                            + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
                         return ttRoot._buildTooltipItems();
                     }
 
@@ -342,7 +347,10 @@ Item {
                     model: {
                         if (!ttRoot.weatherRoot || ttRoot.ttUseIcons)
                             return [];
-                        var _ = ttRoot.weatherRoot.weatherData + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
+                        var _ = (ttRoot.weatherRoot.weatherData || "") 
+                            + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") 
+                            + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") 
+                            + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
                         return ttRoot._buildTooltipItems();
                     }
 
