@@ -12,6 +12,8 @@
     "Name[tr_TR]": "Gelişmiş Hava Durumu Widget'ı",
     "Name[es]": "Widget de Clima Avanzado",
     "Name[zh_TW]": "進階天氣小工具",
+    "Name[zh_CN]": "高级天气小组件",
+    "Name[cs_CZ]": "Pokročilý widget počasí",
 
     "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6",
     "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6",
@@ -23,6 +25,8 @@
     "Description[tr_TR]": "KDE Plasma 6 için özel olarak oluşturulmuş modern, son derece özelleştirilebilir bir hava durumu widget'ı",
     "Description[es]": "Un widget de clima moderno y altamente personalizable construido específicamente para KDE Plasma 6",
     "Description[zh_TW]": "為 KDE Plasma 6 專門打造的現代、高度可自訂天氣小工具",
+    "Description[zh_CN]": "一款专为 KDE Plasma 6 打造的现代化、高度可定制天气小组件",
+    "Description[cs_CZ]": "Moderní, vysoce přizpůsobitelný widget počasí vytvořený speciálně pro KDE Plasma 6",
 
     "Icon": "weather-clear",
     "Category": "Environment and Weather",
