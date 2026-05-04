@@ -4,156 +4,80 @@
 
 A modern, highly customizable weather widget built specifically for KDE Plasma 6.
 
-It delivers accurate forecasts, multiple weather provider support, adaptive failover logic, and extensive appearance customization - all while integrating naturally into the Plasma desktop.
+### Why this widget?
+*   **Granular Precision:** Uses exact Latitude/Longitude coordinates for local data rather than generic city-level lookups.
+*   **Modern UX:** A clean, native-feeling interface with smooth animations and intuitive layouts.
+*   **Feature Rich:** From interactive radar maps and air quality to space weather and moon phases - everything is configurable.
 
 ---
 
-## ✨ Key Features
+# 📦 Installation
 
-### 📍 Location Management
-- Automatic location detection via GeoClue2 or IP address with confirmation dialog
-- Manual city search with dual geocoding (Open-Meteo + Nominatim / OSM)
-- Location search with map using OpenStreetMap and Nominatim geocoding API with autocomplete and map preview
-- Reverse geocoding for localized city names and non-Latin scripts (e.g. Cyrillic)
-- Automatic timezone and altitude detection
-- Multi-location support with quick switching and per-location settings
+## ⚠️ Prerequisites & Dependencies
+To prevent the "Empty Location Menu" or "Blank Radar" issues, please ensure you have the following Qt6 modules installed for your distribution:
 
-### 🌦 Weather Providers
+### 📍 Location & Search
+*Required for the Location settings menu and auto-detection.*
 
-Choose between:
-- **Open-Meteo** - free, no API key required (recommended)
-- **MET Norway** - free Norwegian Meteorological Institute, no API key
-- **OpenWeatherMap** (requires API key)
-- **WeatherAPI.com** (requires API key)
-- **Pirate Weather** (requires API key)
-- **Tomorrow.io** (requires API key)
-- **Visual Crossing** (requires API key)
-- **StormGlass** (requires API key)
-- **Weatherbit** (requires API key)
-- **QWeather** (requires API key)
+| Distribution | Package Name |
+|---|---|
+| **Fedora / RHEL** | `qt6-qtlocation` |
+| **openSUSE** | `qt6-location` |
+| **Arch Linux** | `qt6-location` |
+| **Debian / Ubuntu / Neon** | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
 
-### 🔄 Adaptive Mode
-- Automatic fallback chain: Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com
-- Seamless provider switching if one fails
-- Provider-specific location availability verification
+### 📡 Radar Map
+*Required for the interactive Radar tab (Chromium-based).*
 
-### 🌡 Weather Data
-- **Temperature** - current, feels like (apparent), dew point, daily high / low
-- **Wind** - speed with 16-point compass direction arrow
-- **Humidity, Pressure, Visibility**
-- **Precipitation** - current rate and daily total
-- **Snow Cover** - current snow depth
-- **UV Index** - 0–11+ scale (Low → Extreme)
-- **Air Quality** - European CAQI with 6 bands (Good → Extremely Poor), per-pollutant breakdown (PM2.5, PM10, NO₂, O₃, SO₂, CO), plus AQHI score
-- **Pollen** - Universal Pollen Index (0–12) with 4 bands, 6 types: Alder, Birch, Grass, Mugwort, Olive, Ragweed
-- **Space Weather** - Kp index, geomagnetic storm scale (G0–G5), solar wind speed, Bz magnetic field, X-ray flux / solar flare class, aurora visibility probability (from NOAA SWPC)
-- **Weather Alerts** - Supported providers: MeteoAlarm (38 European countries); NOAA NWS (USA only); MET Norway (Norway only). Also the widget can display alerts from the following providers: Pirate Weather, Visual Crossing and Weather API (Requires API key and alert support from the providers)
-- **Sunrise / Sunset** - configurable modes (both, upcoming, sunrise only, sunset only)
-- **Moon Phase** - phase name, icon, moonrise / moonset times; multiple display modes
-- **25+ weather conditions** with day / night variants
+| Distribution | Package Name |
+|---|---|
+| **Fedora / RHEL** | `qt6-qtwebengine` |
+| **openSUSE** | `qt6-webengine` |
+| **Arch Linux** | `qt6-webengine` |
+| **Debian / Ubuntu / Neon** | `qml6-module-qtwebengine` |
 
-### 🖥 Panel Modes
-- **Single line** - horizontal row of selected items with configurable separator
-- **Multiline** - large weather icon with scrolling item rows (1–8 visible lines, adjustable scroll speed)
-- **Simple** - compact icon + temperature with layout options:
-  - Horizontal, Vertical, or Compressed (badge overlay)
-  - Compressed badge: position, spacing, background colour, opacity
+> **Note:** After installing these, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
-All panel modes support:
-- Drag-and-drop item reordering (17 available items)
-- Per-item icon show / hide toggle
-- 6 icon themes: Symbolic, Font (wi-font), Flat Color, 3D Oxygen, KDE system, Custom (per-item icon picker)
-- Custom font (family, size, bold) or system font
-- Item spacing and width controls
-- System tray support (Compressed mode only)
+## 🛍 Install from KDE Store (Recommended)
+1. Right-click your Panel or Desktop.
+2. Select **Add Widgets...** -> **Get New Widgets** -> **Download New Plasma Widgets**.
+3. Search for **Advanced Weather Widget**.
+4. Click **Install**.
 
-### 💬 Tooltip
-- Enable / disable toggle
-- Prefix style: Icons or Text labels
-- Configurable items with drag-and-drop ordering
-- Location name: truncate or wrap
-- Size: auto or manual (width / height)
-- Icon theme and size selection
-
-### 📊 Widget Popup
-- Two tabs: **Details** and **Forecast** (configurable default)
-- Header with location name, detect / change / refresh buttons
-
-#### Details View
-- **Cards** (2-column grid) or **List** layout
-- Expandable cards with visualizations:
-  - Sun arc for sunrise / sunset
-  - Moon path for moon phase
-  - CAQI pollutant breakdown bars for air quality
-  - Per-type pollen bars with info tooltips
-  - Space weather dashboard (Kp, Bz, solar wind, flare class, aurora %) (Provider: NOAA SWPC)
-  - Multi-alert carousel for weather alerts (Providers: Eumetnet Meteoalarm, MET Norway, NOAA NWS or supporting weather provider)
-- Configurable card height, per-item icons, accent colours
-
-#### Forecast View
-- **Daily forecast** - 3 to 7 days with condition icon, text, and colour-coded min / max temperatures
-- **Hourly forecast** - click a day to expand inline scrolling hourly cards with temperature, wind, precipitation probability, and precipitation rate
-- Optional **sunrise / sunset markers** between hourly cards
-
-### ⚙ Units & Display
-- **Presets**: Metric (°C, km/h, hPa, mm), Imperial (°F, mph, inHg, in), KDE locale (auto), Custom
-- **Individual unit overrides** in custom mode: temperature, wind speed (km/h, mph, m/s, kn), pressure (hPa, mmHg, inHg)
-- **Round values** - toggle between whole numbers and decimals
-- **Show temperature unit** - toggle to display °C / °F or just °
-- Popup minimum size: auto or manual (200–2000 px)
-
-### 🎨 Icon Themes & Fonts
-- 6 panel icon themes, 6 widget condition icon themes (with per-condition custom picker for 24 day / night weather slots)
-- Tooltip and details view icon themes
-- Bundled icon sets in 4 sizes: 16, 22, 24, 32 px
-- Panel and widget fonts configurable independently (system or custom)
-
-### 🌐 Internationalization
-- 10 translations: Bulgarian, German, French, Dutch, Brazilian Portuguese, Russian, Turkish, Spanish, Chinese (Simplified), Chinese (Traditional)
-- Full i18n support for all UI labels, weather conditions, air quality / pollen / space weather descriptions
-- Locale-aware date / time formatting (12h / 24h, date format)
-- Localized location search results
-
----
-
-## 📦 Installation
-
-### Install from KDE Store (Recommended)
-
-Open:
-
-System Settings → Add Widgets → Download New Widgets
-
-Search for:
-
-**Advanced Weather Widget**
-
-Or visit:
-https://store.kde.org/p/2349879
-
----
-
-## 🛠 Manual Installation (Development)
-
+##  Manual Installation (Development)
+If you prefer to install from source:
 ```bash
+git clone https://github.com/pnedyalkov91/advanced-weather-widget.git && cd advanced-weather-widget
 kpackagetool6 --type Plasma/Applet --install .
 rm -rf ~/.cache/plasmashell/qmlcache
 systemctl --user restart plasma-plasmashell
 ```
 
-## ⚠️ Notes 
+---
 
-- **Location detection** requires **Qt Location** and **Qt Positioning**. On some distributions the 'Location' menu may appear empty. Install the appropriate package for your distribution:
+# ✨ Detailed Features
 
-  | Distribution | Package |
-  |---|---|
-  | Fedora / RHEL | `qt6-qtlocation` |
-  | openSUSE | `qt6-location` |
-  | Arch Linux | `qt6-location` |
-  | Debian / Ubuntu | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
-  | KDE Neon | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+### 📍 Location Management
+- **Precision:** Automatic detection via GeoClue2/IP or manual search with dual geocoding (Open-Meteo + Nominatim).
+- **Map Picker:** Integrated OpenStreetMap preview to pin your exact location.
+- **Smart Data:** Automatic timezone, altitude detection, and localized city names.
 
-  After installing, restart your session or run `systemctl --user restart plasma-plasmashell`.
+### 🌦 Weather Providers & Adaptive Mode
+- Choose from **10 different providers** including Open-Meteo, MET Norway, OpenWeatherMap, WeatherAPI, Pirate Weather, Tomorrow.io, Visual Crossing, StormGlass, Weatherbit, and QWeather.
+- **Adaptive Failover:** Automatically cycles through providers if one goes offline, ensuring you never have a dead widget.
+
+### 🌡 Data Points
+- **Core:** Temp (Current/Apparent/Dew), Wind (Speed/Direction), Humidity, Pressure, Visibility.
+- **Environment:** UV Index, Air Quality (CAQI), Pollen (Universal Index), Space Weather (Kp index, G-index, aurora probability).
+- **Astronomy:** Configurable Sun Arc (Sunrise/Set) and Moon Path (Phases/Rise/Set).
+- **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, and provider-specific sources.
+
+### 🖥 Customization
+- **Panel Layouts:** Single line, Multiline (scrolling), or Simple (compact icon + temp).
+- **Themes:** 6 icon themes (Symbolic, Font, Flat, 3D, KDE) plus a custom per-item picker.
+- **Visuals:** Fully interactive Radar Map (RainViewer), 16-day Daily Forecast, and scrolling Hourly Forecast.
+
+---
 
 ## 🌐 Translation
 
@@ -208,7 +132,6 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Turkish** - [herzane52](https://github.com/herzane52)
 - **Spanish** - [NecaX](https://github.com/NecaX)
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
-- **Chinese (Simplified)** - [Guokangz](https://github.com/Guokangz)
 
 ## External resources
 
@@ -218,6 +141,15 @@ Thank you to everyone who contributed translations to this project ❤️
 - This project uses code from the SunCalc library: https://github.com/mourner/suncalc
   Copyright (c) Vladimir Agafonkin
   Licensed under the BSD license
+
+- The Radar tab uses the **RainViewer API** for weather radar data: https://www.rainviewer.com/
+
+- The Radar tab uses **Leaflet.js** for interactive map rendering: https://leafletjs.com/
+  Copyright (c) 2010–2024 Vladimir Agafonkin
+  Licensed under BSD 2-Clause License
+
+- Map tiles provided by **OpenStreetMap**: https://www.openstreetmap.org/copyright
+  © OpenStreetMap contributors, licensed under ODbL
 
 ## ❤️ Support the project
 
