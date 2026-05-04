@@ -14,7 +14,7 @@ A modern, highly customizable weather widget built specifically for KDE Plasma 6
 # 📦 Installation
 
 ## ⚠️ Prerequisites & Dependencies
-To prevent the "Empty Location Menu" or "Blank Radar" issues, please ensure you have the following Qt6 modules installed for your distribution:
+To prevent the "Empty Location Menu" issue, please ensure you have the following Qt6 modules installed for your distribution:
 
 ### 📍 Location & Search
 *Required for the Location settings menu and auto-detection.*
@@ -25,16 +25,6 @@ To prevent the "Empty Location Menu" or "Blank Radar" issues, please ensure you 
 | **openSUSE** | `qt6-location` |
 | **Arch Linux** | `qt6-location` |
 | **Debian / Ubuntu / Neon** | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
-
-### 📡 Radar Map
-*Required for the interactive Radar tab (Chromium-based).*
-
-| Distribution | Package Name |
-|---|---|
-| **Fedora / RHEL** | `qt6-qtwebengine` |
-| **openSUSE** | `qt6-webengine` |
-| **Arch Linux** | `qt6-webengine` |
-| **Debian / Ubuntu / Neon** | `qml6-module-qtwebengine` |
 
 > **Note:** After installing these, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
