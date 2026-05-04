@@ -632,7 +632,10 @@ KCM.SimpleKCM {
         stack.currentIndex = 1;
     }
     function openMapPage() {
+        // active must be true BEFORE setSource, otherwise Qt queues the URL+props
+        // but never instantiates the item (active:false suppresses loading).
         mapPageLoader.active = true;
+        mapPageLoader.setSource(Qt.resolvedUrl("subpages/ConfigMapSubPage.qml"), { "configRoot": root });
         stack.currentIndex = 2;
     }
     function openManualPage() {
@@ -1093,14 +1096,14 @@ KCM.SimpleKCM {
                     selectedTextColor: Kirigami.Theme.highlightedTextColor
                     selectionColor: Kirigami.Theme.highlightColor
                     font: Kirigami.Theme.defaultFont
-                    text: i18n("Install it for your distribution:\n  • Fedora / RHEL / Arch: qt6-qtlocation\n  • openSUSE: qt6-location\n  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n\nYou can still search for a location or enter coordinates manually. Also note that auto-detection will continue work using IP fallback, but it may be less accurate and won’t update in real-time as you move around.")
+                    text: i18n("Install it for your distribution:\n  • Fedora / RHEL / Arch: qt6-qtlocation\n  • openSUSE: qt6-location\n  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n\nYou can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around.")
                 }
                 Button {
                     Layout.alignment: Qt.AlignHCenter
                     text: i18n("Open install guide")
                     icon.name: "internet-web-browser"
                     onClicked: {
-                        Qt.openUrlExternally("https://github.com/pnedyalkov91/advanced-weather-widget#prerequisites--dependencies");
+                        Qt.openUrlExternally("https://github.com/pnedyalkov91/advanced-weather-widget#%EF%B8%8F-prerequisites--dependencies");
                         missingLocationDialog.close();
                     }
                 }
@@ -1427,10 +1430,9 @@ KCM.SimpleKCM {
             sourceComponent: searchSubPage
             active: false
         }
-        // page 2 — map
+        // page 2 — map (loaded lazily via openMapPage → setSource to satisfy required property)
         Loader {
             id: mapPageLoader
-            source: root._qtLocationAvailable ? Qt.resolvedUrl("subpages/ConfigMapSubPage.qml") : ""
             active: false
         }
         // page 3 — manual entry

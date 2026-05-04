@@ -73,9 +73,10 @@ systemctl --user restart plasma-plasmashell
 - **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, and provider-specific sources.
 
 ### 🖥 Customization
-- **Panel Layouts:** Single line, Multiline (scrolling), or Simple (compact icon + temp).
+- **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
+- **Widget Layouts:** Advanced (Details, Forecast and Radar tabs) and Simple (no tabs)
 - **Themes:** 6 icon themes (Symbolic, Font, Flat, 3D, KDE) plus a custom per-item picker.
-- **Visuals:** Fully interactive Radar Map (RainViewer), 16-day Daily Forecast, and scrolling Hourly Forecast.
+- **Visuals:** Fully interactive Radar Map (RainViewer), 16-day daily forecast, and hourly weather forecast.
 
 ---
 

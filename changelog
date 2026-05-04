@@ -18,5 +18,6 @@
 -- Remove auto scroll based on your current time in the "Today forecast". Now the past times are removed.
 
 - Bug fixes
+-- Handle missing dependencies causing empty 'Location' settings on some Linux distributions (especially Debian-based). Add warning for missing packages and enable partial manual location input without QtLocation and QtPositioning
 -- Fixed a bug where saved locations manually don't have any information about attitude and timezone.
 -- Fixed a bug where the multi-location button was visible when one location is saved in the widget.
