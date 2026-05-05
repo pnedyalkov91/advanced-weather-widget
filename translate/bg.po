@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: advanced-weather-widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-05-03 11:13+0300\n"
+"POT-Creation-Date: 2026-05-04 11:42+0300\n"
 "PO-Revision-Date: 2026-04-22 18:00+0200\n"
 "Last-Translator: Petar Nedyalkov\n"
 "Language-Team: Bulgarian <kde-i18n-bg@kde.org>\n"
@@ -198,7 +198,7 @@ msgstr ""
 msgid "Alt: %1 %2"
 msgstr "Вис: %1 %2"
 
-#: contents/ui/config/configLocation.qml:1566
+#: contents/ui/config/configLocation.qml:1777
 msgid "Alt: %1 m"
 msgstr "Вис: %1 м"
 
@@ -246,11 +246,11 @@ msgstr "Външен вид"
 msgid "Apply Settings?"
 msgstr "Прилагане на настройките?"
 
-#: contents/ui/config/configLocation.qml:1033
+#: contents/ui/config/configLocation.qml:1165
 msgid "Apply detected location"
 msgstr "Прилагане на откритото местоположение"
 
-#: contents/ui/config/configLocation.qml:1226
+#: contents/ui/config/configLocation.qml:1374
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Сигурни ли сте? Това е последното ви запазено местоположение. Ако го премахнете, приспособлението повече няма да показва метеорологична информация."
 
@@ -285,7 +285,15 @@ msgstr "Автоматично"
 msgid "Auto (detect on save)"
 msgstr "Авто (откриване при запазване)"
 
-#: contents/ui/config/configLocation.qml:681
+#: contents/ui/config/configLocation.qml:1518
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1479
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:747
 msgid "Auto-detection updated coordinates."
 msgstr "Координатите са обновени при автоматично откриване."
 
@@ -293,7 +301,7 @@ msgstr "Координатите са обновени при автоматич
 msgid "Automatic"
 msgstr "Автоматично"
 
-#: contents/ui/config/configLocation.qml:1313
+#: contents/ui/config/configLocation.qml:1502
 msgid "Automatically detect location"
 msgstr "Автоматично откриване на местоположение"
 
@@ -391,14 +399,14 @@ msgid "CO"
 msgstr "CO"
 
 #: contents/ui/config/configAppearance.qml:559
-#: contents/ui/config/configLocation.qml:1251
+#: contents/ui/config/configLocation.qml:1401
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:85
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
 msgid "Cancel"
 msgstr "Отказ"
 
-#: contents/ui/config/configLocation.qml:1634
+#: contents/ui/config/configLocation.qml:1842
 msgid "Cancel rename"
 msgstr "Отказ на преименуването"
 
@@ -427,7 +435,7 @@ msgid "Changes staged. Click the main Apply button to save."
 msgstr "Промените са подготвени. Щракнете бутона Приложи, за да запазите."
 
 #: contents/ui/config/configGeneral.qml:88
-#: contents/ui/config/configLocation.qml:424
+#: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr "Проверка на наличността на местоположение…"
 
@@ -450,12 +458,12 @@ msgstr "Избор на шрифт за панела"
 msgid "Choose a custom icon for this item"
 msgstr "Избор на персонализирана икона за този елемент"
 
-#: contents/ui/config/configLocation.qml:1370
+#: contents/ui/config/configLocation.qml:1574
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:256
 msgid "Choose on Map"
 msgstr "Избор от карта"
 
-#: contents/ui/config/configLocation.qml:1057
+#: contents/ui/config/configLocation.qml:1189
 msgid "Choose on map"
 msgstr "Избор от карта"
 
@@ -497,7 +505,7 @@ msgstr "Щракнете върху картата, за да изберете �
 msgid "Click to configure a location"
 msgstr "Щракнете, за да конфигурирате местоположение"
 
-#: contents/ui/RadarView.qml:66
+#: contents/ui/components/RadarWebEngineView.qml:66
 msgid "Clouds"
 msgstr ""
 
@@ -560,11 +568,11 @@ msgstr "Конфигуриране на иконите за времето…"
 msgid "Configure…"
 msgstr "Конфигуриране…"
 
-#: contents/ui/config/configLocation.qml:1626
+#: contents/ui/config/configLocation.qml:1834
 msgid "Confirm rename"
 msgstr "Потвърждаване на преименуването"
 
-#: contents/ui/config/configLocation.qml:987
+#: contents/ui/config/configLocation.qml:1119
 msgid "Confirm your location"
 msgstr "Потвърдете вашето местоположение"
 
@@ -676,7 +684,7 @@ msgstr "Ден"
 msgid "Daylight over"
 msgstr "Дневната светлина свърши"
 
-#: contents/ui/config/configLocation.qml:1603
+#: contents/ui/config/configLocation.qml:1809
 msgid "Default location (click to unset)"
 msgstr "Местоположение по подразбиране (щракнете за премахване)"
 
@@ -722,7 +730,7 @@ msgstr "Откриване / промяна на местоположение"
 msgid "Detect / change location…"
 msgstr "Откриване / промяна на местоположение…"
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Detecting…"
 msgstr "Откриване…"
 
@@ -800,7 +808,7 @@ msgstr "Всеки QWeather проект има уникален API хост. �
 msgid "Edit Saved Location"
 msgstr "Редактиране на запазеното местоположение"
 
-#: contents/ui/config/configLocation.qml:1656
+#: contents/ui/config/configLocation.qml:1864
 msgid "Edit location details"
 msgstr "Редактиране на детайлите за местоположение"
 
@@ -837,7 +845,7 @@ msgstr "Активирана"
 msgid "Enter Location"
 msgstr "Въведете местоположение"
 
-#: contents/ui/config/configLocation.qml:1376
+#: contents/ui/config/configLocation.qml:1588
 msgid "Enter Manually"
 msgstr "Ръчно въвеждане"
 
@@ -845,7 +853,11 @@ msgstr "Ръчно въвеждане"
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
 msgstr "Въведете име на местоположение и валидни координати, след което щракнете бутона Приложи."
 
-#: contents/ui/config/configLocation.qml:1047
+#: contents/ui/config/configLocation.qml:1592
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1179
 msgid "Enter manually"
 msgstr "Въвеждане ръчно"
 
@@ -1057,12 +1069,16 @@ msgstr "Пълнолуние"
 msgid "Future alerts"
 msgstr "Бъдещи предупреждения"
 
+#: contents/ui/config/configLocation.qml:1530
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
+msgstr ""
+
 #: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:76
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:764
 msgid "General"
 msgstr "Общи"
 
-#: contents/ui/config/configLocation.qml:739
+#: contents/ui/config/configLocation.qml:813
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 е недостъпно, опит със системното местоположение…"
 
@@ -1084,7 +1100,8 @@ msgstr "Трева"
 msgid "Headline"
 msgstr "Заглавие"
 
-#: contents/ui/RadarView.qml:85 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:85
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Heavy"
 msgstr ""
 
@@ -1172,8 +1189,8 @@ msgstr "Влажност"
 msgid "Humidity:"
 msgstr "Влажност:"
 
-#: contents/ui/config/configLocation.qml:863
-#: contents/ui/config/configLocation.qml:894
+#: contents/ui/config/configLocation.qml:932
+#: contents/ui/config/configLocation.qml:963
 msgid "IP geolocation"
 msgstr "IP геолокация"
 
@@ -1212,7 +1229,7 @@ msgstr "Икона:"
 msgid "Icons"
 msgstr "Икони"
 
-#: contents/ui/config/configLocation.qml:1023
+#: contents/ui/config/configLocation.qml:1155
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "Ако изглежда правилно, го приложете. В противен случай изберете местоположението ръчно."
 
@@ -1235,6 +1252,24 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigMiscTab.qml:216
 msgid "Individual units"
 msgstr "Индивидуални единици"
+
+#: contents/ui/config/configLocation.qml:1102
+msgid ""
+"Install it for your distribution:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
+"\n"
+"You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
+msgstr ""
+
+#: contents/ui/RadarView.qml:90
+msgid ""
+"Install it for your distribution:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
+msgstr ""
 
 #: contents/ui/DetailsView.qml:1836
 msgid "Instruction"
@@ -1350,7 +1385,8 @@ msgstr "Оформление"
 msgid "Layout type:"
 msgstr "Тип оформление:"
 
-#: contents/ui/RadarView.qml:83 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:83
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Light"
 msgstr ""
 
@@ -1436,21 +1472,21 @@ msgstr ""
 msgid "Location Name"
 msgstr "Име на местоположение"
 
-#: contents/ui/config/configLocation.qml:679
+#: contents/ui/config/configLocation.qml:745
 msgid "Location auto-detected."
 msgstr "Местоположението е открито автоматично."
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "Откриването на местоположение зависи от системната конфигурация и разрешения."
 
 #: contents/ui/config/configGeneral.qml:164
-#: contents/ui/config/configLocation.qml:478
+#: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr "Местоположението е налично на %1."
 
 #: contents/ui/config/configGeneral.qml:167
-#: contents/ui/config/configLocation.qml:481
+#: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "Местоположението не е налично на %1 (HTTP %2). Опитайте с друг доставчик или местоположение."
 
@@ -1462,6 +1498,10 @@ msgstr "Име на местоположение"
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:61
 msgid "Location name:"
 msgstr "Име на местоположение:"
+
+#: contents/ui/config/configLocation.qml:1515
+msgid "Location package notice"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
@@ -1563,7 +1603,7 @@ msgstr "Слаба геомагнитна буря"
 msgid "Misc"
 msgstr "Разни"
 
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Mod"
 msgstr ""
 
@@ -1571,10 +1611,10 @@ msgstr ""
 msgid "Mode:"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:84
 #: contents/ui/js/airQuality.js:49 contents/ui/js/pollen.js:43
 #: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
 #: contents/ui/main.qml:697 contents/ui/main.qml:711 contents/ui/main.qml:741
-#: contents/ui/RadarView.qml:84
 msgid "Moderate"
 msgstr "Умерено"
 
@@ -1745,7 +1785,7 @@ msgstr "Нощ"
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Азотен диоксид (NO₂)"
 
-#: contents/ui/config/configLocation.qml:1163
+#: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr "Не"
 
@@ -1765,7 +1805,7 @@ msgstr "Няма геомагнитна буря"
 msgid "No location set"
 msgstr "Няма зададено местоположение"
 
-#: contents/ui/config/configLocation.qml:1408
+#: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
 msgstr "Няма запазени местоположения. Запазете текущото местоположение, за да превключвате бързо между места."
 
@@ -1773,15 +1813,16 @@ msgstr "Няма запазени местоположения. Запазете
 msgid "No weather stations found for '%1'"
 msgstr "Не са открити метеорологични станции за '%1'"
 
+#: contents/ui/components/RadarWebEngineView.qml:82
+#: contents/ui/components/RadarWebEngineView.qml:497
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:804
-#: contents/ui/main.qml:806 contents/ui/RadarView.qml:82
-#: contents/ui/RadarView.qml:497
+#: contents/ui/main.qml:806
 msgid "None"
 msgstr "Няма"
 
-#: contents/ui/config/configLocation.qml:571
+#: contents/ui/config/configLocation.qml:629
 msgid "None Selected"
 msgstr "Няма избрано"
 
@@ -1814,6 +1855,11 @@ msgstr "OK"
 #: contents/ui/DetailsView.qml:1000 contents/ui/main.qml:750
 msgid "Olive"
 msgstr "Маслина"
+
+#: contents/ui/config/configLocation.qml:1106
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:105
+msgid "Open install guide"
+msgstr ""
 
 #: contents/ui/config/configGeneral.qml:271
 msgid "Open-Meteo (recommended, free)"
@@ -1903,7 +1949,7 @@ msgstr "Променлива облачност (ден)"
 msgid "Partly cloudy (night)"
 msgstr "Променлива облачност (нощ)"
 
-#: contents/ui/RadarView.qml:79
+#: contents/ui/components/RadarWebEngineView.qml:79
 msgid "Pause"
 msgstr ""
 
@@ -1921,6 +1967,10 @@ msgstr "Фаза + изгрев и залез на луната"
 msgid "Phase + upcoming rise/set"
 msgstr "Фаза + предстоящ изгрев/залез"
 
+#: contents/ui/config/configLocation.qml:1578
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:594
 msgid "Pipe  |"
 msgstr "Вертикална черта  |"
@@ -1933,7 +1983,7 @@ msgstr "Pirate Weather (изисква ключ)"
 msgid "Pirate Weather API Key:"
 msgstr "Pirate Weather API ключ:"
 
-#: contents/ui/RadarView.qml:78
+#: contents/ui/components/RadarWebEngineView.qml:78
 msgid "Play"
 msgstr ""
 
@@ -1995,10 +2045,11 @@ msgstr "Валежи:"
 msgid "Prefix style:"
 msgstr "Стил на префикса:"
 
+#: contents/ui/components/RadarWebEngineView.qml:69
 #: contents/ui/config/configAppearance.qml:1314
 #: contents/ui/config/configAppearance.qml:1416
 #: contents/ui/config/configAppearance.qml:1560 contents/ui/DetailsView.qml:287
-#: contents/ui/RadarView.qml:69 contents/ui/SimpleView.qml:313
+#: contents/ui/SimpleView.qml:313
 msgid "Pressure"
 msgstr "Налягане"
 
@@ -2068,13 +2119,21 @@ msgstr "QWeather API ключ:"
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Грешка в QWeather (код %1). Проверете вашия API ключ."
 
+#: contents/ui/config/configLocation.qml:1059
+msgid "QtLocation and QtPositioning are not installed"
+msgstr ""
+
+#: contents/ui/RadarView.qml:65
+msgid "QtWebEngine is not installed"
+msgstr ""
+
 #: contents/ui/js/spaceWeather.js:173
 msgid "Quiet"
 msgstr "Спокойно"
 
+#: contents/ui/components/RadarWebEngineView.qml:64
 #: contents/ui/config/configGeneral.qml:639
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:536
-#: contents/ui/RadarView.qml:64
 msgid "Radar"
 msgstr ""
 
@@ -2095,8 +2154,9 @@ msgstr ""
 msgid "Ragweed"
 msgstr "Амброзия"
 
+#: contents/ui/components/RadarWebEngineView.qml:65
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:865 contents/ui/RadarView.qml:65
+#: contents/ui/main.qml:865
 msgid "Rain"
 msgstr "Дъжд"
 
@@ -2112,11 +2172,11 @@ msgstr "Дъжд (нощ)"
 msgid "Rain showers"
 msgstr "Дъждовни превалявания"
 
-#: contents/ui/RadarView.qml:80
+#: contents/ui/components/RadarWebEngineView.qml:80
 msgid "Real-time"
 msgstr ""
 
-#: contents/ui/RadarView.qml:77
+#: contents/ui/components/RadarWebEngineView.qml:77
 msgid "Recent"
 msgstr ""
 
@@ -2124,7 +2184,7 @@ msgstr ""
 msgid "Recommended — e.g. 560"
 msgstr "Препоръчително — напр. 560"
 
-#: contents/ui/config/configLocation.qml:1332 contents/ui/FullView.qml:388
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:388
 #: contents/ui/main.qml:292
 msgid "Refresh"
 msgstr "Обновяване"
@@ -2163,23 +2223,23 @@ msgstr "Относителна влажност %"
 msgid "Relative humidity percentage"
 msgstr "Процент относителна влажност"
 
-#: contents/ui/config/configLocation.qml:1201
+#: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr "Премахване на последното местоположение?"
 
-#: contents/ui/config/configLocation.qml:1674
+#: contents/ui/config/configLocation.qml:1882
 msgid "Remove saved location"
 msgstr "Премахване на запазено местоположение"
 
-#: contents/ui/config/configLocation.qml:1643
+#: contents/ui/config/configLocation.qml:1851
 msgid "Rename location"
 msgstr "Преименуване на местоположение"
 
-#: contents/ui/config/configLocation.qml:730
+#: contents/ui/config/configLocation.qml:799
 msgid "Requesting location via GeoClue2…"
 msgstr "Заявка за местоположение чрез GeoClue2…"
 
-#: contents/ui/config/configLocation.qml:719
+#: contents/ui/config/configLocation.qml:788
 msgid "Requesting location… (%1)"
 msgstr "Заявка за местоположение… (%1)"
 
@@ -2216,7 +2276,7 @@ msgstr "SO₂"
 msgid "Saturday"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1392
+#: contents/ui/config/configLocation.qml:1605
 msgid "Saved locations"
 msgstr "Запазени местоположения"
 
@@ -2228,7 +2288,7 @@ msgstr "Анимация при превъртане:"
 msgid "Scroll interval (sec):"
 msgstr "Интервал на превъртане (сек):"
 
-#: contents/ui/config/configLocation.qml:1364
+#: contents/ui/config/configLocation.qml:1566
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
 msgid "Search Location"
 msgstr "Търсене на местоположение"
@@ -2237,11 +2297,15 @@ msgstr "Търсене на местоположение"
 msgid "Search a weather station to set your location"
 msgstr "Търсене на метеорологична станция, за да зададете местоположението си"
 
-#: contents/ui/config/configLocation.qml:1361
+#: contents/ui/config/configLocation.qml:1570
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1563
 msgid "Search for a location or choose it on the map."
 msgstr "Търсете местоположение или го изберете на картата."
 
-#: contents/ui/config/configLocation.qml:1042
+#: contents/ui/config/configLocation.qml:1174
 msgid "Search location"
 msgstr "Търсене на местоположение"
 
@@ -2262,7 +2326,7 @@ msgstr "Разделител:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr "Сериозен риск; избягвайте дейности на открито."
 
-#: contents/ui/config/configLocation.qml:1117
+#: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Задаване на <b>%1</b> като местоположение по подразбиране?"
 
@@ -2270,11 +2334,11 @@ msgstr "Задаване на <b>%1</b> като местоположение п
 msgid "Set Location…"
 msgstr "Задаване на местоположение…"
 
-#: contents/ui/config/configLocation.qml:1604
+#: contents/ui/config/configLocation.qml:1809
 msgid "Set as default location"
 msgstr "Задаване като местоположение по подразбиране"
 
-#: contents/ui/config/configLocation.qml:1089
+#: contents/ui/config/configLocation.qml:1219
 msgid "Set as default?"
 msgstr "Задаване по подразбиране?"
 
@@ -2317,7 +2381,7 @@ msgstr "Показване в подробности"
 msgid "Show in:"
 msgstr ""
 
-#: contents/ui/RadarView.qml:81
+#: contents/ui/components/RadarWebEngineView.qml:81
 msgid "Show my location"
 msgstr ""
 
@@ -2511,8 +2575,9 @@ msgstr "Стандартен доставчик. Изисква API ключ п�
 msgid "Stats items:"
 msgstr ""
 
-#: contents/ui/js/spaceWeather.js:170 contents/ui/RadarView.qml:86
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:86
+#: contents/ui/components/RadarWebEngineView.qml:497
+#: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr "Буря"
 
@@ -2651,12 +2716,13 @@ msgstr "Символична (вградена)"
 msgid "Symbolic (follows theme colour)"
 msgstr "Символичен (следва цвета на темата)"
 
-#: contents/ui/config/configLocation.qml:748
+#: contents/ui/config/configLocation.qml:826
 msgid "System location unavailable, trying IP geolocation…"
 msgstr "Системното местоположение е недостъпно, опит с IP геолокация…"
 
+#: contents/ui/components/RadarWebEngineView.qml:67
 #: contents/ui/config/configAppearance.qml:1278
-#: contents/ui/config/configAppearance.qml:1525 contents/ui/RadarView.qml:67
+#: contents/ui/config/configAppearance.qml:1525
 msgid "Temperature"
 msgstr "Температура"
 
@@ -2702,7 +2768,11 @@ msgstr "Текстови етикети (Температура, Вятър…)"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Текстът ще следва системния шрифт и ще се разшири, за да запълни наличното пространство."
 
-#: contents/ui/config/configLocation.qml:314
+#: contents/ui/RadarView.qml:75
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
 msgstr ""
 
@@ -2710,11 +2780,15 @@ msgstr ""
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
 msgstr "Иконата за състоянието автоматично ще отразява текущото време, използвайки темата на иконите на KDE. Не се изисква персонализация."
 
+#: contents/ui/config/configLocation.qml:1089
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:425
 msgid "Theme default"
 msgstr "По подразбиране за темата"
 
-#: contents/ui/config/configLocation.qml:145
+#: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
 msgstr ""
 
@@ -2861,8 +2935,8 @@ msgstr "UV Индекс:"
 msgid "Ultraviolet index"
 msgstr "Ултравиолетов индекс"
 
-#: contents/ui/config/configLocation.qml:787
-#: contents/ui/config/configLocation.qml:903
+#: contents/ui/config/configLocation.qml:865
+#: contents/ui/config/configLocation.qml:972
 msgid "Unable to detect location. All methods failed."
 msgstr "Местоположението не може да бъде определено. Всички методи бяха неуспешни."
 
@@ -2874,7 +2948,7 @@ msgstr "Предварителна настройка за единици:"
 msgid "Units"
 msgstr "Единици"
 
-#: contents/ui/config/configLocation.qml:1542
+#: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
 #: contents/ui/FullView.qml:328
 msgid "Unknown"
@@ -2929,7 +3003,7 @@ msgstr ""
 msgid "Use KDE locale settings"
 msgstr "Използване на настройките за локал на KDE"
 
-#: contents/ui/config/configLocation.qml:1347
+#: contents/ui/config/configLocation.qml:1549
 msgid "Use manual location"
 msgstr "Използване на ръчно местоположение"
 
@@ -3012,11 +3086,11 @@ msgstr "Нарастващ сърп"
 msgid "Waxing Gibbous"
 msgstr "Нарастваща изпъкнала Луна"
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr "Открихме вашите координати: <b>%1°, %2°</b>."
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your location as: <b>%1</b>."
 msgstr "Открихме вашето местоположение като: <b>%1</b>."
 
@@ -3083,10 +3157,10 @@ msgstr "Приспособление"
 msgid "Widget Size"
 msgstr "Размер на притурката"
 
+#: contents/ui/components/RadarWebEngineView.qml:68
 #: contents/ui/config/configAppearance.qml:1292
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1546 contents/ui/DetailsView.qml:288
-#: contents/ui/RadarView.qml:68
 msgid "Wind"
 msgstr "Вятър"
 
@@ -3116,11 +3190,11 @@ msgstr "Пренасяне на следващ ред"
 msgid "X-ray Flare Class"
 msgstr "Клас на рентгеновата слънчева буря"
 
-#: contents/ui/config/configLocation.qml:1125
+#: contents/ui/config/configLocation.qml:1255
 msgid "Yes"
 msgstr "Да"
 
-#: contents/ui/config/configLocation.qml:1233
+#: contents/ui/config/configLocation.qml:1383
 msgid "Yes, remove it"
 msgstr "Да, премахни го"
 
@@ -3175,7 +3249,7 @@ msgstr "минути"
 msgid "px"
 msgstr "пиксели"
 
-#: contents/ui/config/configLocation.qml:832
+#: contents/ui/config/configLocation.qml:900
 msgid "system location"
 msgstr "системно местоположение"
 

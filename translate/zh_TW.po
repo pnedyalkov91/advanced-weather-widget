@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-05-03 11:13+0300\n"
+"POT-Creation-Date: 2026-05-04 11:42+0300\n"
 "PO-Revision-Date: 2026-04-25 16:00+0800\n"
 "Last-Translator: Yo\n"
 "Language-Team: \n"
@@ -199,7 +199,7 @@ msgstr ""
 msgid "Alt: %1 %2"
 msgstr "高度：%1 %2"
 
-#: contents/ui/config/configLocation.qml:1566
+#: contents/ui/config/configLocation.qml:1777
 msgid "Alt: %1 m"
 msgstr "高度：%1 公尺"
 
@@ -247,11 +247,11 @@ msgstr "外觀"
 msgid "Apply Settings?"
 msgstr "套用設定？"
 
-#: contents/ui/config/configLocation.qml:1033
+#: contents/ui/config/configLocation.qml:1165
 msgid "Apply detected location"
 msgstr "套用偵測到的位置"
 
-#: contents/ui/config/configLocation.qml:1226
+#: contents/ui/config/configLocation.qml:1374
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "確定要刪除？這是您最後一個儲存的地點，刪除後小工具將不再顯示天氣資訊。"
 
@@ -286,7 +286,15 @@ msgstr "自動"
 msgid "Auto (detect on save)"
 msgstr "自動（儲存時偵測）"
 
-#: contents/ui/config/configLocation.qml:681
+#: contents/ui/config/configLocation.qml:1518
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1479
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:747
 msgid "Auto-detection updated coordinates."
 msgstr "自動偵測已更新座標。"
 
@@ -294,7 +302,7 @@ msgstr "自動偵測已更新座標。"
 msgid "Automatic"
 msgstr "自動"
 
-#: contents/ui/config/configLocation.qml:1313
+#: contents/ui/config/configLocation.qml:1502
 msgid "Automatically detect location"
 msgstr "自動偵測位置"
 
@@ -392,14 +400,14 @@ msgid "CO"
 msgstr "CO"
 
 #: contents/ui/config/configAppearance.qml:559
-#: contents/ui/config/configLocation.qml:1251
+#: contents/ui/config/configLocation.qml:1401
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:85
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
 msgid "Cancel"
 msgstr "取消"
 
-#: contents/ui/config/configLocation.qml:1634
+#: contents/ui/config/configLocation.qml:1842
 msgid "Cancel rename"
 msgstr "取消重新命名"
 
@@ -428,7 +436,7 @@ msgid "Changes staged. Click the main Apply button to save."
 msgstr "變更已暫存，點擊主套用按鈕以儲存。"
 
 #: contents/ui/config/configGeneral.qml:88
-#: contents/ui/config/configLocation.qml:424
+#: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr "正在檢查位置可用性⋯"
 
@@ -451,12 +459,12 @@ msgstr "選擇面板字型"
 msgid "Choose a custom icon for this item"
 msgstr "為此項目選擇自訂圖示"
 
-#: contents/ui/config/configLocation.qml:1370
+#: contents/ui/config/configLocation.qml:1574
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:256
 msgid "Choose on Map"
 msgstr "在地圖上選擇"
 
-#: contents/ui/config/configLocation.qml:1057
+#: contents/ui/config/configLocation.qml:1189
 msgid "Choose on map"
 msgstr "在地圖上選擇"
 
@@ -498,7 +506,7 @@ msgstr "點擊地圖以選擇位置"
 msgid "Click to configure a location"
 msgstr "點擊以設定位置"
 
-#: contents/ui/RadarView.qml:66
+#: contents/ui/components/RadarWebEngineView.qml:66
 msgid "Clouds"
 msgstr ""
 
@@ -561,11 +569,11 @@ msgstr "設定天氣圖示⋯"
 msgid "Configure…"
 msgstr "設定⋯"
 
-#: contents/ui/config/configLocation.qml:1626
+#: contents/ui/config/configLocation.qml:1834
 msgid "Confirm rename"
 msgstr "確認重新命名"
 
-#: contents/ui/config/configLocation.qml:987
+#: contents/ui/config/configLocation.qml:1119
 msgid "Confirm your location"
 msgstr "確認您的位置"
 
@@ -677,7 +685,7 @@ msgstr "白天"
 msgid "Daylight over"
 msgstr "日照結束"
 
-#: contents/ui/config/configLocation.qml:1603
+#: contents/ui/config/configLocation.qml:1809
 msgid "Default location (click to unset)"
 msgstr "預設地點（點擊取消設定）"
 
@@ -723,7 +731,7 @@ msgstr "偵測／變更位置"
 msgid "Detect / change location…"
 msgstr "偵測／變更位置⋯"
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Detecting…"
 msgstr "偵測中⋯"
 
@@ -801,7 +809,7 @@ msgstr "每個 QWeather 專案都有獨特的 API 主機位址，請至 console.
 msgid "Edit Saved Location"
 msgstr "編輯已儲存的地點"
 
-#: contents/ui/config/configLocation.qml:1656
+#: contents/ui/config/configLocation.qml:1864
 msgid "Edit location details"
 msgstr "編輯地點詳細資訊"
 
@@ -838,7 +846,7 @@ msgstr "已啟用"
 msgid "Enter Location"
 msgstr "輸入位置"
 
-#: contents/ui/config/configLocation.qml:1376
+#: contents/ui/config/configLocation.qml:1588
 msgid "Enter Manually"
 msgstr "手動輸入"
 
@@ -846,7 +854,11 @@ msgstr "手動輸入"
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
 msgstr "輸入地點名稱及有效座標，然後點擊主套用按鈕。"
 
-#: contents/ui/config/configLocation.qml:1047
+#: contents/ui/config/configLocation.qml:1592
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1179
 msgid "Enter manually"
 msgstr "手動輸入"
 
@@ -1058,12 +1070,16 @@ msgstr "滿月"
 msgid "Future alerts"
 msgstr "未來警報"
 
+#: contents/ui/config/configLocation.qml:1530
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
+msgstr ""
+
 #: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:76
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:764
 msgid "General"
 msgstr "一般"
 
-#: contents/ui/config/configLocation.qml:739
+#: contents/ui/config/configLocation.qml:813
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 無法使用，嘗試系統位置⋯"
 
@@ -1085,7 +1101,8 @@ msgstr "禾草"
 msgid "Headline"
 msgstr "標題"
 
-#: contents/ui/RadarView.qml:85 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:85
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Heavy"
 msgstr ""
 
@@ -1173,8 +1190,8 @@ msgstr "濕度"
 msgid "Humidity:"
 msgstr "濕度："
 
-#: contents/ui/config/configLocation.qml:863
-#: contents/ui/config/configLocation.qml:894
+#: contents/ui/config/configLocation.qml:932
+#: contents/ui/config/configLocation.qml:963
 msgid "IP geolocation"
 msgstr "IP 地理定位"
 
@@ -1213,7 +1230,7 @@ msgstr "圖示："
 msgid "Icons"
 msgstr "圖示"
 
-#: contents/ui/config/configLocation.qml:1023
+#: contents/ui/config/configLocation.qml:1155
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "若資訊正確，請套用；否則請手動選擇您的位置。"
 
@@ -1236,6 +1253,24 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigMiscTab.qml:216
 msgid "Individual units"
 msgstr "個別單位"
+
+#: contents/ui/config/configLocation.qml:1102
+msgid ""
+"Install it for your distribution:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
+"\n"
+"You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
+msgstr ""
+
+#: contents/ui/RadarView.qml:90
+msgid ""
+"Install it for your distribution:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
+msgstr ""
 
 #: contents/ui/DetailsView.qml:1836
 msgid "Instruction"
@@ -1351,7 +1386,8 @@ msgstr "版面配置"
 msgid "Layout type:"
 msgstr "版面類型："
 
-#: contents/ui/RadarView.qml:83 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:83
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Light"
 msgstr ""
 
@@ -1437,21 +1473,21 @@ msgstr ""
 msgid "Location Name"
 msgstr "地點名稱"
 
-#: contents/ui/config/configLocation.qml:679
+#: contents/ui/config/configLocation.qml:745
 msgid "Location auto-detected."
 msgstr "位置已自動偵測。"
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "位置偵測取決於系統設定與權限。"
 
 #: contents/ui/config/configGeneral.qml:164
-#: contents/ui/config/configLocation.qml:478
+#: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr "位置在 %1 上可用。"
 
 #: contents/ui/config/configGeneral.qml:167
-#: contents/ui/config/configLocation.qml:481
+#: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "位置在 %1 上不可用（HTTP %2），請嘗試其他供應商或位置。"
 
@@ -1463,6 +1499,10 @@ msgstr "地點名稱"
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:61
 msgid "Location name:"
 msgstr "地點名稱："
+
+#: contents/ui/config/configLocation.qml:1515
+msgid "Location package notice"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
@@ -1564,7 +1604,7 @@ msgstr "輕度地磁風暴。"
 msgid "Misc"
 msgstr "其他"
 
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Mod"
 msgstr ""
 
@@ -1572,10 +1612,10 @@ msgstr ""
 msgid "Mode:"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:84
 #: contents/ui/js/airQuality.js:49 contents/ui/js/pollen.js:43
 #: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
 #: contents/ui/main.qml:697 contents/ui/main.qml:711 contents/ui/main.qml:741
-#: contents/ui/RadarView.qml:84
 msgid "Moderate"
 msgstr "中度"
 
@@ -1746,7 +1786,7 @@ msgstr "夜晚"
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "二氧化氮（NO₂）"
 
-#: contents/ui/config/configLocation.qml:1163
+#: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr "否"
 
@@ -1766,7 +1806,7 @@ msgstr "無地磁風暴活動。"
 msgid "No location set"
 msgstr "未設定位置"
 
-#: contents/ui/config/configLocation.qml:1408
+#: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
 msgstr "尚無儲存的地點，儲存目前位置以便快速切換地點。"
 
@@ -1774,15 +1814,16 @@ msgstr "尚無儲存的地點，儲存目前位置以便快速切換地點。"
 msgid "No weather stations found for '%1'"
 msgstr "未找到「%1」的氣象站"
 
+#: contents/ui/components/RadarWebEngineView.qml:82
+#: contents/ui/components/RadarWebEngineView.qml:497
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:804
-#: contents/ui/main.qml:806 contents/ui/RadarView.qml:82
-#: contents/ui/RadarView.qml:497
+#: contents/ui/main.qml:806
 msgid "None"
 msgstr "無"
 
-#: contents/ui/config/configLocation.qml:571
+#: contents/ui/config/configLocation.qml:629
 msgid "None Selected"
 msgstr "未選取"
 
@@ -1815,6 +1856,11 @@ msgstr "確定"
 #: contents/ui/DetailsView.qml:1000 contents/ui/main.qml:750
 msgid "Olive"
 msgstr "橄欖"
+
+#: contents/ui/config/configLocation.qml:1106
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:105
+msgid "Open install guide"
+msgstr ""
 
 #: contents/ui/config/configGeneral.qml:271
 msgid "Open-Meteo (recommended, free)"
@@ -1904,7 +1950,7 @@ msgstr "多雲（白天）"
 msgid "Partly cloudy (night)"
 msgstr "多雲（夜晚）"
 
-#: contents/ui/RadarView.qml:79
+#: contents/ui/components/RadarWebEngineView.qml:79
 msgid "Pause"
 msgstr ""
 
@@ -1922,6 +1968,10 @@ msgstr "月相＋月出與月落"
 msgid "Phase + upcoming rise/set"
 msgstr "月相＋即將月出／月落"
 
+#: contents/ui/config/configLocation.qml:1578
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:594
 msgid "Pipe  |"
 msgstr "直線  |"
@@ -1934,7 +1984,7 @@ msgstr "Pirate Weather（需要金鑰）"
 msgid "Pirate Weather API Key:"
 msgstr "Pirate Weather API 金鑰："
 
-#: contents/ui/RadarView.qml:78
+#: contents/ui/components/RadarWebEngineView.qml:78
 msgid "Play"
 msgstr ""
 
@@ -1996,10 +2046,11 @@ msgstr "降水量："
 msgid "Prefix style:"
 msgstr "前綴樣式："
 
+#: contents/ui/components/RadarWebEngineView.qml:69
 #: contents/ui/config/configAppearance.qml:1314
 #: contents/ui/config/configAppearance.qml:1416
 #: contents/ui/config/configAppearance.qml:1560 contents/ui/DetailsView.qml:287
-#: contents/ui/RadarView.qml:69 contents/ui/SimpleView.qml:313
+#: contents/ui/SimpleView.qml:313
 msgid "Pressure"
 msgstr "氣壓"
 
@@ -2069,13 +2120,21 @@ msgstr "QWeather API 金鑰："
 msgid "QWeather error (code %1). Check your API key."
 msgstr "QWeather 錯誤（代碼 %1），請檢查您的 API 金鑰。"
 
+#: contents/ui/config/configLocation.qml:1059
+msgid "QtLocation and QtPositioning are not installed"
+msgstr ""
+
+#: contents/ui/RadarView.qml:65
+msgid "QtWebEngine is not installed"
+msgstr ""
+
 #: contents/ui/js/spaceWeather.js:173
 msgid "Quiet"
 msgstr "平靜"
 
+#: contents/ui/components/RadarWebEngineView.qml:64
 #: contents/ui/config/configGeneral.qml:639
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:536
-#: contents/ui/RadarView.qml:64
 msgid "Radar"
 msgstr ""
 
@@ -2096,8 +2155,9 @@ msgstr ""
 msgid "Ragweed"
 msgstr "豚草"
 
+#: contents/ui/components/RadarWebEngineView.qml:65
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:865 contents/ui/RadarView.qml:65
+#: contents/ui/main.qml:865
 msgid "Rain"
 msgstr "雨"
 
@@ -2113,11 +2173,11 @@ msgstr "雨（夜晚）"
 msgid "Rain showers"
 msgstr "陣雨"
 
-#: contents/ui/RadarView.qml:80
+#: contents/ui/components/RadarWebEngineView.qml:80
 msgid "Real-time"
 msgstr ""
 
-#: contents/ui/RadarView.qml:77
+#: contents/ui/components/RadarWebEngineView.qml:77
 msgid "Recent"
 msgstr ""
 
@@ -2125,7 +2185,7 @@ msgstr ""
 msgid "Recommended — e.g. 560"
 msgstr "建議值 — 例如 560"
 
-#: contents/ui/config/configLocation.qml:1332 contents/ui/FullView.qml:388
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:388
 #: contents/ui/main.qml:292
 msgid "Refresh"
 msgstr "重新整理"
@@ -2164,23 +2224,23 @@ msgstr "相對濕度 %"
 msgid "Relative humidity percentage"
 msgstr "相對濕度百分比"
 
-#: contents/ui/config/configLocation.qml:1201
+#: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr "移除最後一個地點？"
 
-#: contents/ui/config/configLocation.qml:1674
+#: contents/ui/config/configLocation.qml:1882
 msgid "Remove saved location"
 msgstr "移除已儲存的地點"
 
-#: contents/ui/config/configLocation.qml:1643
+#: contents/ui/config/configLocation.qml:1851
 msgid "Rename location"
 msgstr "重新命名地點"
 
-#: contents/ui/config/configLocation.qml:730
+#: contents/ui/config/configLocation.qml:799
 msgid "Requesting location via GeoClue2…"
 msgstr "透過 GeoClue2 請求位置⋯"
 
-#: contents/ui/config/configLocation.qml:719
+#: contents/ui/config/configLocation.qml:788
 msgid "Requesting location… (%1)"
 msgstr "請求位置中⋯（%1）"
 
@@ -2217,7 +2277,7 @@ msgstr "SO₂"
 msgid "Saturday"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1392
+#: contents/ui/config/configLocation.qml:1605
 msgid "Saved locations"
 msgstr "已儲存的地點"
 
@@ -2229,7 +2289,7 @@ msgstr "捲動動畫："
 msgid "Scroll interval (sec):"
 msgstr "捲動間隔（秒）："
 
-#: contents/ui/config/configLocation.qml:1364
+#: contents/ui/config/configLocation.qml:1566
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
 msgid "Search Location"
 msgstr "搜尋位置"
@@ -2238,11 +2298,15 @@ msgstr "搜尋位置"
 msgid "Search a weather station to set your location"
 msgstr "搜尋氣象站以設定您的位置"
 
-#: contents/ui/config/configLocation.qml:1361
+#: contents/ui/config/configLocation.qml:1570
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1563
 msgid "Search for a location or choose it on the map."
 msgstr "搜尋位置或在地圖上選擇。"
 
-#: contents/ui/config/configLocation.qml:1042
+#: contents/ui/config/configLocation.qml:1174
 msgid "Search location"
 msgstr "搜尋位置"
 
@@ -2263,7 +2327,7 @@ msgstr "分隔符號："
 msgid "Serious risk; avoid outdoor activities."
 msgstr "嚴重風險，請避免戶外活動。"
 
-#: contents/ui/config/configLocation.qml:1117
+#: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr "將 <b>%1</b> 設為預設地點？"
 
@@ -2271,11 +2335,11 @@ msgstr "將 <b>%1</b> 設為預設地點？"
 msgid "Set Location…"
 msgstr "設定位置⋯"
 
-#: contents/ui/config/configLocation.qml:1604
+#: contents/ui/config/configLocation.qml:1809
 msgid "Set as default location"
 msgstr "設為預設地點"
 
-#: contents/ui/config/configLocation.qml:1089
+#: contents/ui/config/configLocation.qml:1219
 msgid "Set as default?"
 msgstr "設為預設？"
 
@@ -2318,7 +2382,7 @@ msgstr "在詳細資訊中顯示"
 msgid "Show in:"
 msgstr ""
 
-#: contents/ui/RadarView.qml:81
+#: contents/ui/components/RadarWebEngineView.qml:81
 msgid "Show my location"
 msgstr ""
 
@@ -2512,8 +2576,9 @@ msgstr "標準天氣供應商，請在下方填入 API 金鑰。"
 msgid "Stats items:"
 msgstr ""
 
-#: contents/ui/js/spaceWeather.js:170 contents/ui/RadarView.qml:86
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:86
+#: contents/ui/components/RadarWebEngineView.qml:497
+#: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr "暴風雨"
 
@@ -2652,12 +2717,13 @@ msgstr "符號圖示（內建）"
 msgid "Symbolic (follows theme colour)"
 msgstr "符號圖示（跟隨主題色彩）"
 
-#: contents/ui/config/configLocation.qml:748
+#: contents/ui/config/configLocation.qml:826
 msgid "System location unavailable, trying IP geolocation…"
 msgstr "系統位置無法使用，嘗試 IP 地理定位⋯"
 
+#: contents/ui/components/RadarWebEngineView.qml:67
 #: contents/ui/config/configAppearance.qml:1278
-#: contents/ui/config/configAppearance.qml:1525 contents/ui/RadarView.qml:67
+#: contents/ui/config/configAppearance.qml:1525
 msgid "Temperature"
 msgstr "溫度"
 
@@ -2703,7 +2769,11 @@ msgstr "文字標籤（溫度、風速⋯）"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "文字將跟隨系統字型並展開以填滿可用空間。"
 
-#: contents/ui/config/configLocation.qml:314
+#: contents/ui/RadarView.qml:75
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
 msgstr ""
 
@@ -2711,11 +2781,15 @@ msgstr ""
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
 msgstr "天氣狀況圖示將自動使用您的 KDE 系統圖示主題反映目前天氣，無需自訂。"
 
+#: contents/ui/config/configLocation.qml:1089
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:425
 msgid "Theme default"
 msgstr "主題預設"
 
-#: contents/ui/config/configLocation.qml:145
+#: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
 msgstr ""
 
@@ -2862,8 +2936,8 @@ msgstr "紫外線指數："
 msgid "Ultraviolet index"
 msgstr "紫外線指數"
 
-#: contents/ui/config/configLocation.qml:787
-#: contents/ui/config/configLocation.qml:903
+#: contents/ui/config/configLocation.qml:865
+#: contents/ui/config/configLocation.qml:972
 msgid "Unable to detect location. All methods failed."
 msgstr "無法偵測位置，所有方法均失敗。"
 
@@ -2875,7 +2949,7 @@ msgstr "單位預設："
 msgid "Units"
 msgstr "單位"
 
-#: contents/ui/config/configLocation.qml:1542
+#: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
 #: contents/ui/FullView.qml:328
 msgid "Unknown"
@@ -2930,7 +3004,7 @@ msgstr ""
 msgid "Use KDE locale settings"
 msgstr "使用 KDE 語系設定"
 
-#: contents/ui/config/configLocation.qml:1347
+#: contents/ui/config/configLocation.qml:1549
 msgid "Use manual location"
 msgstr "使用手動位置"
 
@@ -3013,11 +3087,11 @@ msgstr "眉月"
 msgid "Waxing Gibbous"
 msgstr "盈凸月"
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr "已偵測到您的座標：<b>%1°、%2°</b>。"
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your location as: <b>%1</b>."
 msgstr "已偵測到您的位置為：<b>%1</b>。"
 
@@ -3084,10 +3158,10 @@ msgstr "小工具"
 msgid "Widget Size"
 msgstr "小工具大小"
 
+#: contents/ui/components/RadarWebEngineView.qml:68
 #: contents/ui/config/configAppearance.qml:1292
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1546 contents/ui/DetailsView.qml:288
-#: contents/ui/RadarView.qml:68
 msgid "Wind"
 msgstr "風"
 
@@ -3117,11 +3191,11 @@ msgstr "折行"
 msgid "X-ray Flare Class"
 msgstr "X 射線閃焰等級"
 
-#: contents/ui/config/configLocation.qml:1125
+#: contents/ui/config/configLocation.qml:1255
 msgid "Yes"
 msgstr "是"
 
-#: contents/ui/config/configLocation.qml:1233
+#: contents/ui/config/configLocation.qml:1383
 msgid "Yes, remove it"
 msgstr "是，移除"
 
@@ -3176,7 +3250,7 @@ msgstr "分鐘"
 msgid "px"
 msgstr "px"
 
-#: contents/ui/config/configLocation.qml:832
+#: contents/ui/config/configLocation.qml:900
 msgid "system location"
 msgstr "系統位置"
 

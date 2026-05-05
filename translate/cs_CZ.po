@@ -3,13 +3,12 @@
 # This file is distributed under the same license as the Advanced Weather Widget package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-05-03 11:13+0300\n"
-"PO-Revision-Date: 2026-05-03 00:51+0200\n"
+"POT-Creation-Date: 2026-05-04 11:42+0300\n"
+"PO-Revision-Date: 2026-05-05 11:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: cs_CZ\n"
@@ -56,25 +55,25 @@ msgstr "1 Upozornění"
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:709
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:703
 msgid "12-hour format"
-msgstr ""
+msgstr "12hodinový formát"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:847
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:721
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:715
 msgid "12h"
-msgstr ""
+msgstr "12h"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:835
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:709
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:703
 msgid "24-hour format"
-msgstr ""
+msgstr "24hodinový formát"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:847
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:721
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:715
 msgid "24h"
-msgstr ""
+msgstr "24h"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:769
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:212
@@ -85,11 +84,11 @@ msgstr "3D Oxygen (vestavěné)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:117
 msgid "68°F"
-msgstr ""
+msgstr "68°F"
 
 #: contents/ui/config/configGeneral.qml:685
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
-msgstr ""
+msgstr "<b>Proč se vrstvy OWM nemusí shodovat s radarem RainViewer</b><br/><br/>Vrstvy srážek/oblačnosti OWM jsou <b>statické modelové dlaždice</b> – zobrazují vyhlazený výstup NWP (numerická předpověď počasí), nikoli skutečné radarové odrazy. Představují místa, kde si model <i>myslí</i>, že prší, na základě interpolace mezi meteorologickými stanicemi a modelovými běhy.<br/><br/>RainViewer používá <b>kompozitní snímky z reálného meteorologického radaru</b> z radarových stanic – skutečná naměřená odrazivost se aktualizuje každé 2–10 minut. Tato nesrovnalost je očekávaná a známá."
 
 #: contents/ui/config/configGeneral.qml:436
 msgid "AI-powered weather intelligence. API key required below."
@@ -129,7 +128,7 @@ msgstr "Přidat polohu"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:115
 msgid "Advanced (all tabs)"
-msgstr ""
+msgstr "Rozšířený (všechny karty)"
 
 #: contents/ui/config/configAppearance.qml:1356
 #: contents/ui/config/configAppearance.qml:1479
@@ -194,13 +193,13 @@ msgstr "Upozornění:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:196
 msgid "All tabs"
-msgstr ""
+msgstr "Všechny karty"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:371
 msgid "Alt: %1 %2"
 msgstr "Nadmoř. výš: %1 %2"
 
-#: contents/ui/config/configLocation.qml:1566
+#: contents/ui/config/configLocation.qml:1777
 msgid "Alt: %1 m"
 msgstr "Nadmoř. výš: %1 m"
 
@@ -248,11 +247,11 @@ msgstr "Vzhled"
 msgid "Apply Settings?"
 msgstr "Použít nastavení?"
 
-#: contents/ui/config/configLocation.qml:1033
+#: contents/ui/config/configLocation.qml:1165
 msgid "Apply detected location"
 msgstr "Použít zjištěnou polohu"
 
-#: contents/ui/config/configLocation.qml:1226
+#: contents/ui/config/configLocation.qml:1374
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Jste si jistý? Toto je vaše poslední uložená poloha. Pokud ji odstraníte, widget již nebude zobrazovat informace o počasí."
 
@@ -287,7 +286,15 @@ msgstr "Automaticky"
 msgid "Auto (detect on save)"
 msgstr "Automaticky (detekce při uložení)"
 
-#: contents/ui/config/configLocation.qml:681
+#: contents/ui/config/configLocation.qml:1518
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr "Automatická detekce se nejprve dotáže služby GeoClue2 (systémová služba polohy) na vaši aktuální pozici. Pokud není systémová poloha k dispozici, widget odhadne vaši polohu podle vaší veřejné IP adresy, což je obvykle méně přesné a aktualizuje se pouze při dalším spuštění detekce."
+
+#: contents/ui/config/configLocation.qml:1479
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr "Automatická detekce je bez modulů QtLocation a QtPositioning omezená. Bude použita detekce založená na IP adrese, která může být méně přesná a nebude se aktualizovat v reálném čase při vašem pohybu. Chcete-li přesnost automatické detekce zlepšit, nainstalujte prosím požadované balíčky pro vaši distribuci. Další podrobnosti naleznete v návodu k instalaci."
+
+#: contents/ui/config/configLocation.qml:747
 msgid "Auto-detection updated coordinates."
 msgstr "Automatická detekce aktualizovaných souřadnic."
 
@@ -295,7 +302,7 @@ msgstr "Automatická detekce aktualizovaných souřadnic."
 msgid "Automatic"
 msgstr "Automatický"
 
-#: contents/ui/config/configLocation.qml:1313
+#: contents/ui/config/configLocation.qml:1502
 msgid "Automatically detect location"
 msgstr "Automaticky detekovat polohu"
 
@@ -393,14 +400,14 @@ msgid "CO"
 msgstr "CO"
 
 #: contents/ui/config/configAppearance.qml:559
-#: contents/ui/config/configLocation.qml:1251
+#: contents/ui/config/configLocation.qml:1401
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:85
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: contents/ui/config/configLocation.qml:1634
+#: contents/ui/config/configLocation.qml:1842
 msgid "Cancel rename"
 msgstr "Zrušit přejmenování"
 
@@ -410,7 +417,7 @@ msgstr "Oxid uhelnatý (CO)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:803
 msgid "Cards"
-msgstr ""
+msgstr "Karty"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:566
 msgid "Cards (2 columns)"
@@ -429,7 +436,7 @@ msgid "Changes staged. Click the main Apply button to save."
 msgstr "Změny připraveny. Kliknutím na hlavní tlačítko Použít je uložíte."
 
 #: contents/ui/config/configGeneral.qml:88
-#: contents/ui/config/configLocation.qml:424
+#: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr "Probíhá kontrola dostupnosti polohy…"
 
@@ -452,12 +459,12 @@ msgstr "Vyberte písmo panelu"
 msgid "Choose a custom icon for this item"
 msgstr "Zvolte vlastní ikonu pro tuto položku"
 
-#: contents/ui/config/configLocation.qml:1370
+#: contents/ui/config/configLocation.qml:1574
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:256
 msgid "Choose on Map"
 msgstr "Vybrat na mapě"
 
-#: contents/ui/config/configLocation.qml:1057
+#: contents/ui/config/configLocation.qml:1189
 msgid "Choose on map"
 msgstr "Vybrat na mapě"
 
@@ -499,9 +506,9 @@ msgstr "Kliknutím na mapu vyberte lokalitu"
 msgid "Click to configure a location"
 msgstr "Klikněte pro nakonfigurování polohy"
 
-#: contents/ui/RadarView.qml:66
+#: contents/ui/components/RadarWebEngineView.qml:66
 msgid "Clouds"
-msgstr ""
+msgstr "Oblačnost"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:197
 msgid "Colorful"
@@ -513,7 +520,7 @@ msgstr "Barevný (ikony barev kde)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:853
 msgid "Compass in forecast:"
-msgstr ""
+msgstr "Kompas v předpovědi:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:109
 msgid "Compressed"
@@ -562,11 +569,11 @@ msgstr "Konfigurovat ikony počasí…"
 msgid "Configure…"
 msgstr "Konfigurovat…"
 
-#: contents/ui/config/configLocation.qml:1626
+#: contents/ui/config/configLocation.qml:1834
 msgid "Confirm rename"
 msgstr "Potvrdit přejmenování"
 
-#: contents/ui/config/configLocation.qml:987
+#: contents/ui/config/configLocation.qml:1119
 msgid "Confirm your location"
 msgstr "Potvrď svou polohu"
 
@@ -586,7 +593,7 @@ msgstr "Souřadnice"
 #: contents/ui/config/configAppearance.qml:1515
 #: contents/ui/config/configAppearance.qml:1638
 msgid "Current date and/or time"
-msgstr ""
+msgstr "Aktuální datum a/nebo čas"
 
 #: contents/ui/config/configAppearance.qml:1329
 msgid "Current moon phase"
@@ -640,31 +647,31 @@ msgstr "Aktualizace dat"
 #: contents/ui/config/configAppearance.qml:1514
 #: contents/ui/config/configAppearance.qml:1637 contents/ui/DetailsView.qml:302
 msgid "Date / Time"
-msgstr ""
+msgstr "Datum / Čas"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:354
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:419
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:414
 msgid "Date / Time options"
-msgstr ""
+msgstr "Možnosti data / času"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:240
 msgid "Date and time in header:"
-msgstr ""
+msgstr "Datum a čas v záhlaví:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:249
 msgid "Date format:"
-msgstr ""
+msgstr "Formát data:"
 
 #: contents/ui/TooltipContent.qml:620
 msgid "Date/Time:"
-msgstr ""
+msgstr "Datum/Čas:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:766
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:640
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:634
 msgid "Date:"
-msgstr ""
+msgstr "Datum:"
 
 #: contents/ui/DetailsView.qml:2917
 msgid "Dawn approaching — "
@@ -678,7 +685,7 @@ msgstr "Den"
 msgid "Daylight over"
 msgstr "Denní světlo skončilo"
 
-#: contents/ui/config/configLocation.qml:1603
+#: contents/ui/config/configLocation.qml:1809
 msgid "Default location (click to unset)"
 msgstr "Výchozí poloha (kliknutím zrušíte)"
 
@@ -724,7 +731,7 @@ msgstr "Zjistit / změnit polohu"
 msgid "Detect / change location…"
 msgstr "Zjistit / změnit polohu…"
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Detecting…"
 msgstr "Detekuje se…"
 
@@ -768,7 +775,7 @@ msgstr "Režim zobrazení:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:86
 msgid "Displaying °C and °F together"
-msgstr ""
+msgstr "Zobrazení °C a °F současně"
 
 #: contents/ui/config/configAppearance.qml:1364
 #: contents/ui/config/configAppearance.qml:1487
@@ -792,7 +799,7 @@ msgstr "Mrholení"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:74
 msgid "Dual temperature"
-msgstr ""
+msgstr "Dvojí zobrazení teploty"
 
 #: contents/ui/config/configGeneral.qml:615
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
@@ -802,7 +809,7 @@ msgstr "Každý projekt QWeather má jedinečného hostitele API. Najděte si sv
 msgid "Edit Saved Location"
 msgstr "Upravit uloženou polohu"
 
-#: contents/ui/config/configLocation.qml:1656
+#: contents/ui/config/configLocation.qml:1864
 msgid "Edit location details"
 msgstr "Upravit podrobnosti o lokalitě"
 
@@ -839,7 +846,7 @@ msgstr "Zapnutý"
 msgid "Enter Location"
 msgstr "Zadejte polohu"
 
-#: contents/ui/config/configLocation.qml:1376
+#: contents/ui/config/configLocation.qml:1588
 msgid "Enter Manually"
 msgstr "Ruční zadávání"
 
@@ -847,7 +854,11 @@ msgstr "Ruční zadávání"
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
 msgstr "Zadejte název místa a platné souřadnice a klikněte na hlavní tlačítko Použít."
 
-#: contents/ui/config/configLocation.qml:1047
+#: contents/ui/config/configLocation.qml:1592
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr "Zadejte přesnou zeměpisnou šířku, délku a volitelně nadmořskou výšku pro lokálnější předpověď. Souřadnice můžete zkopírovat z OpenStreetMap, GeoNames nebo Google Maps."
+
+#: contents/ui/config/configLocation.qml:1179
 msgid "Enter manually"
 msgstr "Ruční zadávání"
 
@@ -961,7 +972,7 @@ msgstr "První čtvrť"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:893
 msgid "First day of week:"
-msgstr ""
+msgstr "První den v týdnu:"
 
 #: contents/ui/DetailsView.qml:1604
 msgid "Flare Warning"
@@ -1009,7 +1020,7 @@ msgstr "Pouze předpověď"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:844
 msgid "Forecast:"
-msgstr ""
+msgstr "Předpověď:"
 
 #: contents/ui/config/configGeneral.qml:444
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
@@ -1049,7 +1060,7 @@ msgstr "Mrznoucí déšť (noc)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:905
 msgid "Friday"
-msgstr ""
+msgstr "Pátek"
 
 #: contents/ui/main.qml:1022
 msgid "Full Moon"
@@ -1059,12 +1070,16 @@ msgstr "Úplněk"
 msgid "Future alerts"
 msgstr "Budoucí upozornění"
 
+#: contents/ui/config/configLocation.qml:1530
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
+msgstr "GPS / GeoClue2 nedostupné (pro nejlepší přesnost nainstalujte qt6-qtlocation). Používám detekci podle IP adresy."
+
 #: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:76
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:764
 msgid "General"
 msgstr "Obecné pokyny"
 
-#: contents/ui/config/configLocation.qml:739
+#: contents/ui/config/configLocation.qml:813
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 není k dispozici, zkouším systémovou polohu…"
 
@@ -1086,9 +1101,10 @@ msgstr "Tráva"
 msgid "Headline"
 msgstr "Titulek"
 
-#: contents/ui/RadarView.qml:85 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:85
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Heavy"
-msgstr ""
+msgstr "Silné"
 
 #: contents/ui/main.qml:857
 msgid "Heavy drizzle"
@@ -1153,11 +1169,11 @@ msgstr "Horizontální"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:789
 msgid "Hourly Forecast Settings"
-msgstr ""
+msgstr "Nastavení hodinové předpovědi"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:799
 msgid "Hourly layout:"
-msgstr ""
+msgstr "Hodinové rozvržení:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:478
 msgid "How often the rows scroll to reveal the next item"
@@ -1174,8 +1190,8 @@ msgstr "Vlhkost"
 msgid "Humidity:"
 msgstr "Vlhkost:"
 
-#: contents/ui/config/configLocation.qml:863
-#: contents/ui/config/configLocation.qml:894
+#: contents/ui/config/configLocation.qml:932
+#: contents/ui/config/configLocation.qml:963
 msgid "IP geolocation"
 msgstr "IP Geolokace"
 
@@ -1214,7 +1230,7 @@ msgstr "Ikona:"
 msgid "Icons"
 msgstr "Ikony"
 
-#: contents/ui/config/configLocation.qml:1023
+#: contents/ui/config/configLocation.qml:1155
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "Pokud to vypadá správně, použij ji. V opačném případě vyber polohu ručně."
 
@@ -1237,6 +1253,34 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigMiscTab.qml:216
 msgid "Individual units"
 msgstr "Jednotlivé jednotky 2005"
+
+#: contents/ui/config/configLocation.qml:1102
+msgid ""
+"Install it for your distribution:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
+"\n"
+"You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
+msgstr ""
+"Nainstalujte jej pro svou distribuci:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation a qml6-module-qtpositioning\n"
+"\n"
+"Stále můžete vyhledat polohu nebo zadat souřadnice ručně. Upozorňujeme, že automatická detekce bude i nadále fungovat s využitím záložní IP adresy, ale může být méně přesná a nebude se při vašem pohybu aktualizovat v reálném čase."
+
+#: contents/ui/RadarView.qml:90
+msgid ""
+"Install it for your distribution:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
+msgstr ""
+"Nainstalujte jej pro svou distribuci:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
 #: contents/ui/DetailsView.qml:1836
 msgid "Instruction"
@@ -1352,9 +1396,10 @@ msgstr "Rozvržení"
 msgid "Layout type:"
 msgstr "Typ rozvržení:"
 
-#: contents/ui/RadarView.qml:83 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:83
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Light"
-msgstr ""
+msgstr "Slabé"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
 #: contents/ui/main.qml:853
@@ -1432,27 +1477,27 @@ msgstr "Poloha"
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:513
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:92
 msgid "Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again."
-msgstr ""
+msgstr "Poloha '%1' je již ve vašem seznamu uložených položek. Vybranou polohu můžete použít, ale nebude znovu uložena."
 
 #: contents/ui/config/configAppearance.qml:1321
 msgid "Location Name"
 msgstr "Název polohy"
 
-#: contents/ui/config/configLocation.qml:679
+#: contents/ui/config/configLocation.qml:745
 msgid "Location auto-detected."
 msgstr "Poloha byla automaticky detekována."
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "Detekce polohy závisí na konfiguraci systému a oprávněních."
 
 #: contents/ui/config/configGeneral.qml:164
-#: contents/ui/config/configLocation.qml:478
+#: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr "Poloha je k dispozici na %1."
 
 #: contents/ui/config/configGeneral.qml:167
-#: contents/ui/config/configLocation.qml:481
+#: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "Poloha není k dispozici na %1 (HTTP %2). Zkus jiného poskytovatele nebo lokalitu."
 
@@ -1464,6 +1509,10 @@ msgstr "Název polohy"
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:61
 msgid "Location name:"
 msgstr "Název polohy:"
+
+#: contents/ui/config/configLocation.qml:1515
+msgid "Location package notice"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
@@ -1565,18 +1614,18 @@ msgstr "Mírná geomagnetická bouře."
 msgid "Misc"
 msgstr "Různé"
 
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Mod"
-msgstr ""
+msgstr "Mírné"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:108
 msgid "Mode:"
-msgstr ""
+msgstr "Režim:"
 
+#: contents/ui/components/RadarWebEngineView.qml:84
 #: contents/ui/js/airQuality.js:49 contents/ui/js/pollen.js:43
 #: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
 #: contents/ui/main.qml:697 contents/ui/main.qml:711 contents/ui/main.qml:741
-#: contents/ui/RadarView.qml:84
 msgid "Moderate"
 msgstr "Průměrná"
 
@@ -1602,7 +1651,7 @@ msgstr "Mírné sněžení"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:904
 msgid "Monday"
-msgstr ""
+msgstr "Pondělí"
 
 #: contents/ui/DetailsView.qml:292
 msgid "Moon"
@@ -1747,7 +1796,7 @@ msgstr "Noc"
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Oxid dusičitý (NO₂)"
 
-#: contents/ui/config/configLocation.qml:1163
+#: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr "Ne"
 
@@ -1767,7 +1816,7 @@ msgstr "Žádná aktivita geomagnetické bouře."
 msgid "No location set"
 msgstr "Není nastavena poloha"
 
-#: contents/ui/config/configLocation.qml:1408
+#: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
 msgstr "Žádná uložená místa. Uložte aktuální místo pro rychlé přepínání mezi místy."
 
@@ -1775,15 +1824,16 @@ msgstr "Žádná uložená místa. Uložte aktuální místo pro rychlé přepí
 msgid "No weather stations found for '%1'"
 msgstr "Pro '%1' nebyly nalezeny žádné meteorologické stanice"
 
+#: contents/ui/components/RadarWebEngineView.qml:82
+#: contents/ui/components/RadarWebEngineView.qml:497
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:804
-#: contents/ui/main.qml:806 contents/ui/RadarView.qml:82
-#: contents/ui/RadarView.qml:497
+#: contents/ui/main.qml:806
 msgid "None"
 msgstr "Žádné"
 
-#: contents/ui/config/configLocation.qml:571
+#: contents/ui/config/configLocation.qml:629
 msgid "None Selected"
 msgstr "Žádné vybrané"
 
@@ -1816,6 +1866,11 @@ msgstr "OK"
 #: contents/ui/DetailsView.qml:1000 contents/ui/main.qml:750
 msgid "Olive"
 msgstr "Olivovník"
+
+#: contents/ui/config/configLocation.qml:1106
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:105
+msgid "Open install guide"
+msgstr ""
 
 #: contents/ui/config/configGeneral.qml:271
 msgid "Open-Meteo (recommended, free)"
@@ -1905,9 +1960,9 @@ msgstr "Polojasno (den)"
 msgid "Partly cloudy (night)"
 msgstr "Polojasno (noc)"
 
-#: contents/ui/RadarView.qml:79
+#: contents/ui/components/RadarWebEngineView.qml:79
 msgid "Pause"
-msgstr ""
+msgstr "Pozastavit"
 
 #: contents/ui/config/configAppearance.qml:866
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:509
@@ -1923,6 +1978,10 @@ msgstr "Fáze + východ a západ měsíce"
 msgid "Phase + upcoming rise/set"
 msgstr "Fáze + nadcházející východ/západ"
 
+#: contents/ui/config/configLocation.qml:1578
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:594
 msgid "Pipe  |"
 msgstr "Svislá čára  |"
@@ -1935,9 +1994,9 @@ msgstr "Pirate Weather (vyžadován klíč)"
 msgid "Pirate Weather API Key:"
 msgstr "Pirate Weather API klíč:"
 
-#: contents/ui/RadarView.qml:78
+#: contents/ui/components/RadarWebEngineView.qml:78
 msgid "Play"
-msgstr ""
+msgstr "Přehrát"
 
 #: contents/ui/config/configAppearance.qml:1363
 #: contents/ui/config/configAppearance.qml:1486
@@ -1964,7 +2023,7 @@ msgstr "Špatná"
 
 #: contents/ui/SimpleView.qml:317
 msgid "Precip Sum"
-msgstr ""
+msgstr "Úhrn srážek"
 
 #: contents/ui/TooltipContent.qml:455
 msgid "Precip. Sum:"
@@ -1997,10 +2056,11 @@ msgstr "Srážky:"
 msgid "Prefix style:"
 msgstr "Styl předpony:"
 
+#: contents/ui/components/RadarWebEngineView.qml:69
 #: contents/ui/config/configAppearance.qml:1314
 #: contents/ui/config/configAppearance.qml:1416
 #: contents/ui/config/configAppearance.qml:1560 contents/ui/DetailsView.qml:287
-#: contents/ui/RadarView.qml:69 contents/ui/SimpleView.qml:313
+#: contents/ui/SimpleView.qml:313
 msgid "Pressure"
 msgstr "Tlak"
 
@@ -2011,11 +2071,11 @@ msgstr "Tlak:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:117
 msgid "Preview: 20°C"
-msgstr ""
+msgstr "Náhled: 20°C"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:101
 msgid "Primary unit shown first (e.g. °C / °F)"
-msgstr ""
+msgstr "Primární jednotka zobrazená jako první (např. °C / °F)"
 
 #: contents/ui/DetailsView.qml:1838
 msgid "Provider"
@@ -2053,6 +2113,9 @@ msgid ""
 "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 "Open-Meteo is always tried first - it is free and requires no API key."
 msgstr ""
+"Poskytovatelé se zkoušejí postupně, dokud jeden neuspěje:\n"
+"Open-Meteo → met.no → Pirate Weather → Visual Crossing → Tomorrow.io → StormGlass → Weatherbit → QWeather → OpenWeatherMap → WeatherAPI.com\n"
+"Open-Meteo se vždy zkouší jako první – je zdarma a nevyžaduje žádný API klíč."
 
 #: contents/ui/config/configGeneral.qml:307
 msgid "QWeather (Key Required)"
@@ -2070,35 +2133,44 @@ msgstr "QWeather API klíč:"
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Chyba QWeather (kód %1). Zkontrolujte svůj klíč API."
 
+#: contents/ui/config/configLocation.qml:1059
+msgid "QtLocation and QtPositioning are not installed"
+msgstr "Moduly QtLocation a QtPositioning nejsou nainstalovány"
+
+#: contents/ui/RadarView.qml:65
+msgid "QtWebEngine is not installed"
+msgstr "Modul QtWebEngine není nainstalován"
+
 #: contents/ui/js/spaceWeather.js:173
 msgid "Quiet"
 msgstr "Tiché"
 
+#: contents/ui/components/RadarWebEngineView.qml:64
 #: contents/ui/config/configGeneral.qml:639
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:536
-#: contents/ui/RadarView.qml:64
 msgid "Radar"
-msgstr ""
+msgstr "Radar"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:199
 msgid "Radar only"
-msgstr ""
+msgstr "Pouze radar"
 
 #: contents/ui/config/configGeneral.qml:661
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
-msgstr ""
+msgstr "Poskytovatel radaru: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Rain Viewer nezaručuje dostupnost radarových dat. S vlastníky těchto dat neuzavírá smlouvy. Důvodem je, že vlastníci je mohou požádat o odstranění svých dat z Rain Vieweru, změnu formátu nebo ukončení sdílení dat. Snaží se uchovávat radarová data co nejdéle, ale někdy vlastníci prostě přestanou snímky poskytovat."
 
 #: contents/ui/FullView.qml:628
 msgid "Radar:"
-msgstr ""
+msgstr "Radar:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:658
 #: contents/ui/DetailsView.qml:1001 contents/ui/main.qml:751
 msgid "Ragweed"
 msgstr "Ambrozie"
 
+#: contents/ui/components/RadarWebEngineView.qml:65
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:865 contents/ui/RadarView.qml:65
+#: contents/ui/main.qml:865
 msgid "Rain"
 msgstr "Déšť"
 
@@ -2114,19 +2186,19 @@ msgstr "Déšť (noc)"
 msgid "Rain showers"
 msgstr "Dešťové přeháňky"
 
-#: contents/ui/RadarView.qml:80
+#: contents/ui/components/RadarWebEngineView.qml:80
 msgid "Real-time"
-msgstr ""
+msgstr "V reálném čase"
 
-#: contents/ui/RadarView.qml:77
+#: contents/ui/components/RadarWebEngineView.qml:77
 msgid "Recent"
-msgstr ""
+msgstr "Nedávné"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
 msgid "Recommended — e.g. 560"
 msgstr "Doporučeno — např. 560"
 
-#: contents/ui/config/configLocation.qml:1332 contents/ui/FullView.qml:388
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:388
 #: contents/ui/main.qml:292
 msgid "Refresh"
 msgstr "Obnovit"
@@ -2140,21 +2212,21 @@ msgstr "Automaticky aktualizovat počasí"
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:725
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:318
 msgid "Region default"
-msgstr ""
+msgstr "Výchozí nastavení regionu"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:777
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:651
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:645
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:257
 msgid "Region default (long)"
-msgstr ""
+msgstr "Výchozí hodnota regionu (dlouhý)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:776
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:650
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:644
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:258
 msgid "Region default (short)"
-msgstr ""
+msgstr "Výchozí hodnota regionu (krátký)"
 
 #: contents/ui/config/configAppearance.qml:1410
 #: contents/ui/config/configAppearance.qml:1554
@@ -2165,23 +2237,23 @@ msgstr "Relativní vlhkost"
 msgid "Relative humidity percentage"
 msgstr "Procento relativní vlhkosti"
 
-#: contents/ui/config/configLocation.qml:1201
+#: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr "Odebrat poslední místo?"
 
-#: contents/ui/config/configLocation.qml:1674
+#: contents/ui/config/configLocation.qml:1882
 msgid "Remove saved location"
 msgstr "Odebrat uložené místo"
 
-#: contents/ui/config/configLocation.qml:1643
+#: contents/ui/config/configLocation.qml:1851
 msgid "Rename location"
 msgstr "Přejmenovat polohu"
 
-#: contents/ui/config/configLocation.qml:730
+#: contents/ui/config/configLocation.qml:799
 msgid "Requesting location via GeoClue2…"
 msgstr "Získávám polohu pomocí GeoClue2…"
 
-#: contents/ui/config/configLocation.qml:719
+#: contents/ui/config/configLocation.qml:788
 msgid "Requesting location… (%1)"
 msgstr "Získávám polohu… (%1)"
 
@@ -2216,9 +2288,9 @@ msgstr "SO₂"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:906
 msgid "Saturday"
-msgstr ""
+msgstr "Sobota"
 
-#: contents/ui/config/configLocation.qml:1392
+#: contents/ui/config/configLocation.qml:1605
 msgid "Saved locations"
 msgstr "Uložená místa"
 
@@ -2230,7 +2302,7 @@ msgstr "Animace posouvání:"
 msgid "Scroll interval (sec):"
 msgstr "Interval posouvání (s):"
 
-#: contents/ui/config/configLocation.qml:1364
+#: contents/ui/config/configLocation.qml:1566
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
 msgid "Search Location"
 msgstr "Hledat místo"
@@ -2239,11 +2311,15 @@ msgstr "Hledat místo"
 msgid "Search a weather station to set your location"
 msgstr "Vyhledej meteorologickou stanici pro nastavení polohy"
 
-#: contents/ui/config/configLocation.qml:1361
+#: contents/ui/config/configLocation.qml:1570
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
+msgstr "Hledejte podle názvu města nebo místa. Výsledky zobrazují název lokality, region a zemi a jsou vhodné spíše pro obecné předpovědi na úrovni města než pro přesné umístění na úrovni ulice."
+
+#: contents/ui/config/configLocation.qml:1563
 msgid "Search for a location or choose it on the map."
 msgstr "Vyhledejte polohu nebo ji vyberte na mapě."
 
-#: contents/ui/config/configLocation.qml:1042
+#: contents/ui/config/configLocation.qml:1174
 msgid "Search location"
 msgstr "Vyhledat místo"
 
@@ -2253,7 +2329,7 @@ msgstr "Vyhledat místo…"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:101
 msgid "Secondary unit shown first (e.g. °F / °C)"
-msgstr ""
+msgstr "Sekundární jednotka zobrazená jako první (např. °F / °C)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:106
 #: contents/ui/config/tabs/ConfigPanelTab.qml:583
@@ -2264,7 +2340,7 @@ msgstr "Oddělovač:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr "Vážné riziko; vyhněte se venkovním aktivitám."
 
-#: contents/ui/config/configLocation.qml:1117
+#: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Nastavit <b>%1</b> jako výchozí místo?"
 
@@ -2272,11 +2348,11 @@ msgstr "Nastavit <b>%1</b> jako výchozí místo?"
 msgid "Set Location…"
 msgstr "Nastavit místo…"
 
-#: contents/ui/config/configLocation.qml:1604
+#: contents/ui/config/configLocation.qml:1809
 msgid "Set as default location"
 msgstr "Nastavit jako výchozí místo"
 
-#: contents/ui/config/configLocation.qml:1089
+#: contents/ui/config/configLocation.qml:1219
 msgid "Set as default?"
 msgstr "Nastavit jako výchozí?"
 
@@ -2301,15 +2377,15 @@ msgstr "Zobrazit / skrýt ikonu předpony na panelu"
 
 #: contents/ui/config/configGeneral.qml:651
 msgid "Show Radar tab in widget"
-msgstr ""
+msgstr "Zobrazit kartu Radar ve widgetu"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:777
 msgid "Show Today:"
-msgstr ""
+msgstr "Zobrazit dnešek:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:78
 msgid "Show both units:"
-msgstr ""
+msgstr "Zobrazit obě jednotky:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:419
 msgid "Show in details"
@@ -2317,11 +2393,11 @@ msgstr "Zobrazit podrobnosti"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:123
 msgid "Show in:"
-msgstr ""
+msgstr "Zobrazit v:"
 
-#: contents/ui/RadarView.qml:81
+#: contents/ui/components/RadarWebEngineView.qml:81
 msgid "Show my location"
-msgstr ""
+msgstr "Zobrazit mou polohu"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:1004
 msgid "Show or hide this detail item"
@@ -2367,7 +2443,7 @@ msgstr "Přeháňky"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:86
 msgid "Showing primary unit only"
-msgstr ""
+msgstr "Zobrazuje se pouze primární jednotka"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:68
 msgid "Showing ° only"
@@ -2383,7 +2459,7 @@ msgstr "Zobrazeno"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:116
 msgid "Simple"
-msgstr ""
+msgstr "Jednoduchý"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:58
 msgid "Simple (icon + temperature)"
@@ -2392,15 +2468,15 @@ msgstr "Jednoduchý (ikona + teplota)"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:114
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:653
 msgid "Simple Mode Items"
-msgstr ""
+msgstr "Položky v jednoduchém režimu"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:834
 msgid "Simple Widget"
-msgstr ""
+msgstr "Jednoduchý widget"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:704
 msgid "Simple chips:"
-msgstr ""
+msgstr "Jednoduché štítky:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:87
 msgid "Simple display mode settings"
@@ -2511,10 +2587,11 @@ msgstr "Standardní poskytovatel. Níže je vyžadován klíč API."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:748
 msgid "Stats items:"
-msgstr ""
+msgstr "Položky přehledu:"
 
-#: contents/ui/js/spaceWeather.js:170 contents/ui/RadarView.qml:86
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:86
+#: contents/ui/components/RadarWebEngineView.qml:497
+#: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr "Bouře"
 
@@ -2528,7 +2605,7 @@ msgstr "Klíč API StormGlass:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:804
 msgid "Strip"
-msgstr ""
+msgstr "Pás"
 
 #: contents/ui/js/spaceWeather.js:169
 msgid "Strong"
@@ -2561,7 +2638,7 @@ msgstr "Možnosti slunečních časů"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:903
 msgid "Sunday"
-msgstr ""
+msgstr "Neděle"
 
 #: contents/ui/DetailsView.qml:2684 contents/ui/DetailsView.qml:2688
 #: contents/ui/DetailsView.qml:3002 contents/ui/DetailsView.qml:3006
@@ -2571,7 +2648,7 @@ msgstr "Východ slunce"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:231
 msgid "Sunrise / Sunset:"
-msgstr ""
+msgstr "Východ / Západ slunce:"
 
 #: contents/ui/config/configAppearance.qml:1286
 msgid "Sunrise and sunset times"
@@ -2599,7 +2676,7 @@ msgstr "Východ/Západ slunce"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:816
 msgid "Sunrise/sunset markers:"
-msgstr ""
+msgstr "Značky východu/západu slunce:"
 
 #: contents/ui/TooltipContent.qml:588 contents/ui/TooltipContent.qml:604
 #: contents/ui/TooltipContent.qml:609
@@ -2632,7 +2709,7 @@ msgstr "Západ slunce:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Swap order:"
-msgstr ""
+msgstr "Prohodit pořadí:"
 
 #: contents/ui/FullView.qml:304
 msgid "Switch location"
@@ -2653,12 +2730,13 @@ msgstr "Symbolické (vestavěné)"
 msgid "Symbolic (follows theme colour)"
 msgstr "Symbolické (podle barvy motivu)"
 
-#: contents/ui/config/configLocation.qml:748
+#: contents/ui/config/configLocation.qml:826
 msgid "System location unavailable, trying IP geolocation…"
 msgstr "Systémová poloha není k dispozici, zkouším geolokaci pomocí IP…"
 
+#: contents/ui/components/RadarWebEngineView.qml:67
 #: contents/ui/config/configAppearance.qml:1278
-#: contents/ui/config/configAppearance.qml:1525 contents/ui/RadarView.qml:67
+#: contents/ui/config/configAppearance.qml:1525
 msgid "Temperature"
 msgstr "Teplota"
 
@@ -2704,21 +2782,29 @@ msgstr "Textové štítky (teplota, vítr…)"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Text bude podle systémového písma a rozbalí se tak, aby vyplnil dostupný prostor."
 
-#: contents/ui/config/configLocation.qml:314
-msgid "The auto-detected location is already in your saved list."
+#: contents/ui/RadarView.qml:75
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
 msgstr ""
+
+#: contents/ui/config/configLocation.qml:371
+msgid "The auto-detected location is already in your saved list."
+msgstr "Automaticky zjištěná poloha je již ve vašem seznamu uložených míst."
 
 #: contents/ui/config/configAppearance.qml:447
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
 msgstr "Ikona podmínek bude automaticky reflektovat aktuální počasí pomocí systémového motivu ikon KDE. Není potřeba žádné nastavení."
 
+#: contents/ui/config/configLocation.qml:1089
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:425
 msgid "Theme default"
 msgstr "Výchozí pozadí motivu"
 
-#: contents/ui/config/configLocation.qml:145
+#: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
-msgstr ""
+msgstr "Toto místo je již ve vašem seznamu uložených položek."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:714
@@ -2758,13 +2844,13 @@ msgstr "Bouřka, silné krupobití (noc)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:310
 msgid "Time format:"
-msgstr ""
+msgstr "Formát času:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:826
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:700
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:694
 msgid "Time:"
-msgstr ""
+msgstr "Čas:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:238
 msgid "Timed out"
@@ -2777,7 +2863,7 @@ msgstr "Časové pásmo:"
 
 #: contents/ui/config/configGeneral.qml:676
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
-msgstr ""
+msgstr "Chcete-li odemknout další vrstvy mapy (déšť, oblačnost, teplota, vítr, tlak): vypněte adaptivní režim, vyberte OpenWeatherMap jako poskytovatele informací o počasí a zadejte výše svůj klíč API. Až budete připraveni, můžete adaptivní režim znovu povolit."
 
 #: contents/ui/ForecastView.qml:146 contents/ui/SimpleView.qml:476
 msgid "Today"
@@ -2863,8 +2949,8 @@ msgstr "UV index:"
 msgid "Ultraviolet index"
 msgstr "Ultrafialový index"
 
-#: contents/ui/config/configLocation.qml:787
-#: contents/ui/config/configLocation.qml:903
+#: contents/ui/config/configLocation.qml:865
+#: contents/ui/config/configLocation.qml:972
 msgid "Unable to detect location. All methods failed."
 msgstr "Nelze zjistit polohu. Všechny metody selhaly."
 
@@ -2876,7 +2962,7 @@ msgstr "Předvolba jednotek:"
 msgid "Units"
 msgstr "Jednotky"
 
-#: contents/ui/config/configLocation.qml:1542
+#: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
 #: contents/ui/FullView.qml:328
 msgid "Unknown"
@@ -2925,19 +3011,19 @@ msgstr "Aktualizuje se…"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:358
 msgid "Use 24-hour format:"
-msgstr ""
+msgstr "Použijte 24hodinový formát:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:161
 msgid "Use KDE locale settings"
 msgstr "Použít nastavení národního prostředí KDE"
 
-#: contents/ui/config/configLocation.qml:1347
+#: contents/ui/config/configLocation.qml:1549
 msgid "Use manual location"
 msgstr "Použít manuální polohu"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:902
 msgid "Use region defaults"
-msgstr ""
+msgstr "Použít výchozí nastavení regionu"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:834
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:277
@@ -3014,11 +3100,11 @@ msgstr "Dorůstající srpek"
 msgid "Waxing Gibbous"
 msgstr "Dorůstající měsíc"
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr "Zjistili jsme vaše souřadnice: <b>%1°, %2°</b>."
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your location as: <b>%1</b>."
 msgstr "Zjistili jsme vaši polohu jako: <b>%1</b>."
 
@@ -3085,10 +3171,10 @@ msgstr "Widget"
 msgid "Widget Size"
 msgstr "Velikost widgetu"
 
+#: contents/ui/components/RadarWebEngineView.qml:68
 #: contents/ui/config/configAppearance.qml:1292
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1546 contents/ui/DetailsView.qml:288
-#: contents/ui/RadarView.qml:68
 msgid "Wind"
 msgstr "Větrná"
 
@@ -3118,18 +3204,18 @@ msgstr "Zalomit na další řádek"
 msgid "X-ray Flare Class"
 msgstr "Třída rentgenové sluneční erupce"
 
-#: contents/ui/config/configLocation.qml:1125
+#: contents/ui/config/configLocation.qml:1255
 msgid "Yes"
 msgstr "Ano"
 
-#: contents/ui/config/configLocation.qml:1233
+#: contents/ui/config/configLocation.qml:1383
 msgid "Yes, remove it"
 msgstr "Ano, odstranit"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:305
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:396
 msgid "You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>"
-msgstr ""
+msgstr "Referenční informace o formátu data/času naleznete v: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Dokumentace Qt</a>"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:490
 msgid "Zoom in"
@@ -3177,7 +3263,7 @@ msgstr "minuty"
 msgid "px"
 msgstr "px"
 
-#: contents/ui/config/configLocation.qml:832
+#: contents/ui/config/configLocation.qml:900
 msgid "system location"
 msgstr "systémová poloha"
 

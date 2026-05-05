@@ -16,8 +16,11 @@
 -- Removed "Location information" due to duplication with saved location 
 -- Increased hourly forecast performance 
 -- Remove auto scroll based on your current time in the "Today forecast". Now the past times are removed.
+-- Added inline messages when QtLocation and QtPositioning are not installed in the "Location" settings.
+-- Added tooltips in manual location buttons. 
 
 - Bug fixes
 -- Handle missing dependencies causing empty 'Location' settings on some Linux distributions (especially Debian-based). Add warning for missing packages and enable partial manual location input without QtLocation and QtPositioning
 -- Fixed a bug where saved locations manually don't have any information about attitude and timezone.
 -- Fixed a bug where the multi-location button was visible when one location is saved in the widget.
+-- Fix a bug where the hourly forecast scroll wasn't smooth with touchpad

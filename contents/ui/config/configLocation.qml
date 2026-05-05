@@ -31,6 +31,7 @@ KCM.SimpleKCM {
     // Probed at startup — true only when QtLocation (map tiles) is installed.
     // When false the "Choose on Map" button is disabled with an install hint.
     property bool _qtLocationAvailable: false
+    readonly property bool _locationPackagesMissing: !_positioningAvailable || !_qtLocationAvailable
 
     Component.onCompleted: {
         // Probe for QtPositioning without an unconditional top-level import.
@@ -635,7 +636,9 @@ KCM.SimpleKCM {
         // active must be true BEFORE setSource, otherwise Qt queues the URL+props
         // but never instantiates the item (active:false suppresses loading).
         mapPageLoader.active = true;
-        mapPageLoader.setSource(Qt.resolvedUrl("subpages/ConfigMapSubPage.qml"), { "configRoot": root });
+        mapPageLoader.setSource(Qt.resolvedUrl("subpages/ConfigMapSubPage.qml"), {
+            "configRoot": root
+        });
         stack.currentIndex = 2;
     }
     function openManualPage() {
@@ -1469,20 +1472,53 @@ KCM.SimpleKCM {
                             root.duplicateWarning = ""
                     }
 
+                    Kirigami.InlineMessage {
+                        Layout.fillWidth: true
+                        visible: root._locationPackagesMissing
+                        type: Kirigami.MessageType.Warning
+                        text: i18n("Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide.")
+                        actions: [
+                            Kirigami.Action {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: i18n("Open install guide")
+                                icon.name: "internet-web-browser"
+                                onTriggered: {
+                                    Qt.openUrlExternally("https://github.com/pnedyalkov91/advanced-weather-widget#%EF%B8%8F-prerequisites--dependencies");
+                                }
+                            }
+                        ]
+                        showCloseButton: true
+                    }
+
                     // ── Auto-detect radio ──────────────────────────────────
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 4
 
-                        RadioButton {
-                            text: i18n("Automatically detect location")
-                            checked: root.cfg_autoDetectLocation
-                            ButtonGroup.group: locationModeGroup
-                            onClicked: {
-                                root._forceConfirmAutoDetect = true;
-                                root.cfg_autoDetectLocation = true;
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+
+                            RadioButton {
+                                text: i18n("Automatically detect location")
+                                checked: root.cfg_autoDetectLocation
+                                ButtonGroup.group: locationModeGroup
+                                onClicked: {
+                                    root._forceConfirmAutoDetect = true;
+                                    root.cfg_autoDetectLocation = true;
+                                }
+                            }
+
+                            ToolButton {
+                                visible: true
+                                icon.name: "help-about"
+                                display: AbstractButton.IconOnly
+                                text: i18n("Location package notice")
+                                Accessible.name: text
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again.")
                             }
                         }
+
                         RowLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: 24
@@ -1530,12 +1566,16 @@ KCM.SimpleKCM {
                             text: i18n("Search Location")
                             icon.name: "edit-find"
                             enabled: !root.cfg_autoDetectLocation
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement.")
                             onClicked: root.openSearchPage()
                         }
                         Button {
                             text: i18n("Choose on Map")
                             icon.name: "map-flat"
                             enabled: !root.cfg_autoDetectLocation
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark.")
                             onClicked: {
                                 if (!root._qtLocationAvailable) {
                                     missingLocationDialog.open();
@@ -1548,6 +1588,8 @@ KCM.SimpleKCM {
                             text: i18n("Enter Manually")
                             icon.name: "document-edit"
                             enabled: !root.cfg_autoDetectLocation
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps.")
                             onClicked: root.openManualPage()
                         }
                     }

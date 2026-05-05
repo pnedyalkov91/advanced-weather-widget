@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-05-03 11:13+0300\n"
+"POT-Creation-Date: 2026-05-04 11:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: herzane <trkaraca@proton.me>\n"
 "Language-Team: Turkish\n"
@@ -201,7 +201,7 @@ msgstr ""
 msgid "Alt: %1 %2"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1566
+#: contents/ui/config/configLocation.qml:1777
 msgid "Alt: %1 m"
 msgstr ""
 
@@ -249,11 +249,11 @@ msgstr "Görünüm"
 msgid "Apply Settings?"
 msgstr "Ayarları Uygula?"
 
-#: contents/ui/config/configLocation.qml:1033
+#: contents/ui/config/configLocation.qml:1165
 msgid "Apply detected location"
 msgstr "Algılanan konumu uygula"
 
-#: contents/ui/config/configLocation.qml:1226
+#: contents/ui/config/configLocation.qml:1374
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr ""
 
@@ -288,7 +288,15 @@ msgstr "Otomatik"
 msgid "Auto (detect on save)"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:681
+#: contents/ui/config/configLocation.qml:1518
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1479
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:747
 msgid "Auto-detection updated coordinates."
 msgstr "Otomatik algılama güncellenmiş koordinatlar."
 
@@ -296,7 +304,7 @@ msgstr "Otomatik algılama güncellenmiş koordinatlar."
 msgid "Automatic"
 msgstr "Otomatik"
 
-#: contents/ui/config/configLocation.qml:1313
+#: contents/ui/config/configLocation.qml:1502
 msgid "Automatically detect location"
 msgstr "Konumu otomatik algıla"
 
@@ -394,14 +402,14 @@ msgid "CO"
 msgstr ""
 
 #: contents/ui/config/configAppearance.qml:559
-#: contents/ui/config/configLocation.qml:1251
+#: contents/ui/config/configLocation.qml:1401
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:85
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
 msgid "Cancel"
 msgstr "İptal"
 
-#: contents/ui/config/configLocation.qml:1634
+#: contents/ui/config/configLocation.qml:1842
 msgid "Cancel rename"
 msgstr ""
 
@@ -430,7 +438,7 @@ msgid "Changes staged. Click the main Apply button to save."
 msgstr ""
 
 #: contents/ui/config/configGeneral.qml:88
-#: contents/ui/config/configLocation.qml:424
+#: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr ""
 
@@ -453,12 +461,12 @@ msgstr "Panel Yazı Tipi Seçin"
 msgid "Choose a custom icon for this item"
 msgstr "Bu öge için özel bir simge seçin"
 
-#: contents/ui/config/configLocation.qml:1370
+#: contents/ui/config/configLocation.qml:1574
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:256
 msgid "Choose on Map"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1057
+#: contents/ui/config/configLocation.qml:1189
 msgid "Choose on map"
 msgstr ""
 
@@ -500,7 +508,7 @@ msgstr ""
 msgid "Click to configure a location"
 msgstr "Konumu yapılandırmak için tıklayın"
 
-#: contents/ui/RadarView.qml:66
+#: contents/ui/components/RadarWebEngineView.qml:66
 msgid "Clouds"
 msgstr ""
 
@@ -563,11 +571,11 @@ msgstr ""
 msgid "Configure…"
 msgstr "Yapılandır…"
 
-#: contents/ui/config/configLocation.qml:1626
+#: contents/ui/config/configLocation.qml:1834
 msgid "Confirm rename"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:987
+#: contents/ui/config/configLocation.qml:1119
 msgid "Confirm your location"
 msgstr "Konumunuzu onaylayın"
 
@@ -679,7 +687,7 @@ msgstr ""
 msgid "Daylight over"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1603
+#: contents/ui/config/configLocation.qml:1809
 msgid "Default location (click to unset)"
 msgstr ""
 
@@ -725,7 +733,7 @@ msgstr ""
 msgid "Detect / change location…"
 msgstr "Konumu algıla / değiştir…"
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Detecting…"
 msgstr "Algılanıyor…"
 
@@ -803,7 +811,7 @@ msgstr ""
 msgid "Edit Saved Location"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1656
+#: contents/ui/config/configLocation.qml:1864
 msgid "Edit location details"
 msgstr ""
 
@@ -840,7 +848,7 @@ msgstr "Etkin"
 msgid "Enter Location"
 msgstr "Konum Gir"
 
-#: contents/ui/config/configLocation.qml:1376
+#: contents/ui/config/configLocation.qml:1588
 msgid "Enter Manually"
 msgstr ""
 
@@ -848,7 +856,11 @@ msgstr ""
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1047
+#: contents/ui/config/configLocation.qml:1592
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1179
 msgid "Enter manually"
 msgstr ""
 
@@ -1060,12 +1072,16 @@ msgstr "Dolunay"
 msgid "Future alerts"
 msgstr ""
 
+#: contents/ui/config/configLocation.qml:1530
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
+msgstr ""
+
 #: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:76
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:764
 msgid "General"
 msgstr "Genel"
 
-#: contents/ui/config/configLocation.qml:739
+#: contents/ui/config/configLocation.qml:813
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr ""
 
@@ -1087,7 +1103,8 @@ msgstr ""
 msgid "Headline"
 msgstr ""
 
-#: contents/ui/RadarView.qml:85 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:85
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Heavy"
 msgstr ""
 
@@ -1175,8 +1192,8 @@ msgstr "Nem"
 msgid "Humidity:"
 msgstr "Nem:"
 
-#: contents/ui/config/configLocation.qml:863
-#: contents/ui/config/configLocation.qml:894
+#: contents/ui/config/configLocation.qml:932
+#: contents/ui/config/configLocation.qml:963
 msgid "IP geolocation"
 msgstr ""
 
@@ -1215,7 +1232,7 @@ msgstr "Simge:"
 msgid "Icons"
 msgstr "Simgeler"
 
-#: contents/ui/config/configLocation.qml:1023
+#: contents/ui/config/configLocation.qml:1155
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "Doğru görünüyorsa uygulayın. Aksi takdirde konumunuzu manuel seçin."
 
@@ -1238,6 +1255,24 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigMiscTab.qml:216
 msgid "Individual units"
 msgstr "Bireysel birimler"
+
+#: contents/ui/config/configLocation.qml:1102
+msgid ""
+"Install it for your distribution:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
+"\n"
+"You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
+msgstr ""
+
+#: contents/ui/RadarView.qml:90
+msgid ""
+"Install it for your distribution:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
+msgstr ""
 
 #: contents/ui/DetailsView.qml:1836
 msgid "Instruction"
@@ -1353,7 +1388,8 @@ msgstr ""
 msgid "Layout type:"
 msgstr "Düzen türü:"
 
-#: contents/ui/RadarView.qml:83 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:83
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Light"
 msgstr ""
 
@@ -1439,21 +1475,21 @@ msgstr ""
 msgid "Location Name"
 msgstr "Konum Adı"
 
-#: contents/ui/config/configLocation.qml:679
+#: contents/ui/config/configLocation.qml:745
 msgid "Location auto-detected."
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "Konum tespiti sistem yapılandırmasına ve izinlere bağlıdır."
 
 #: contents/ui/config/configGeneral.qml:164
-#: contents/ui/config/configLocation.qml:478
+#: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr ""
 
 #: contents/ui/config/configGeneral.qml:167
-#: contents/ui/config/configLocation.qml:481
+#: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr ""
 
@@ -1465,6 +1501,10 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:61
 msgid "Location name:"
 msgstr "Konum adı:"
+
+#: contents/ui/config/configLocation.qml:1515
+msgid "Location package notice"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
@@ -1566,7 +1606,7 @@ msgstr ""
 msgid "Misc"
 msgstr "Çeşitli"
 
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Mod"
 msgstr ""
 
@@ -1574,10 +1614,10 @@ msgstr ""
 msgid "Mode:"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:84
 #: contents/ui/js/airQuality.js:49 contents/ui/js/pollen.js:43
 #: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
 #: contents/ui/main.qml:697 contents/ui/main.qml:711 contents/ui/main.qml:741
-#: contents/ui/RadarView.qml:84
 msgid "Moderate"
 msgstr ""
 
@@ -1748,7 +1788,7 @@ msgstr ""
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1163
+#: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr ""
 
@@ -1768,7 +1808,7 @@ msgstr ""
 msgid "No location set"
 msgstr "Konum ayarlanmadı"
 
-#: contents/ui/config/configLocation.qml:1408
+#: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
 msgstr ""
 
@@ -1776,15 +1816,16 @@ msgstr ""
 msgid "No weather stations found for '%1'"
 msgstr "'%1' için hava istasyonu bulunamadı"
 
+#: contents/ui/components/RadarWebEngineView.qml:82
+#: contents/ui/components/RadarWebEngineView.qml:497
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:804
-#: contents/ui/main.qml:806 contents/ui/RadarView.qml:82
-#: contents/ui/RadarView.qml:497
+#: contents/ui/main.qml:806
 msgid "None"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:571
+#: contents/ui/config/configLocation.qml:629
 msgid "None Selected"
 msgstr "Hiçbiri Seçilmedi"
 
@@ -1816,6 +1857,11 @@ msgstr "TAMAM"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
 #: contents/ui/DetailsView.qml:1000 contents/ui/main.qml:750
 msgid "Olive"
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1106
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:105
+msgid "Open install guide"
 msgstr ""
 
 #: contents/ui/config/configGeneral.qml:271
@@ -1906,7 +1952,7 @@ msgstr "Parçalı bulutlu (gündüz)"
 msgid "Partly cloudy (night)"
 msgstr "Parçalı bulutlu (gece)"
 
-#: contents/ui/RadarView.qml:79
+#: contents/ui/components/RadarWebEngineView.qml:79
 msgid "Pause"
 msgstr ""
 
@@ -1924,6 +1970,10 @@ msgstr ""
 msgid "Phase + upcoming rise/set"
 msgstr ""
 
+#: contents/ui/config/configLocation.qml:1578
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:594
 msgid "Pipe  |"
 msgstr "Boru  |"
@@ -1936,7 +1986,7 @@ msgstr ""
 msgid "Pirate Weather API Key:"
 msgstr ""
 
-#: contents/ui/RadarView.qml:78
+#: contents/ui/components/RadarWebEngineView.qml:78
 msgid "Play"
 msgstr ""
 
@@ -1998,10 +2048,11 @@ msgstr ""
 msgid "Prefix style:"
 msgstr "Önek stili:"
 
+#: contents/ui/components/RadarWebEngineView.qml:69
 #: contents/ui/config/configAppearance.qml:1314
 #: contents/ui/config/configAppearance.qml:1416
 #: contents/ui/config/configAppearance.qml:1560 contents/ui/DetailsView.qml:287
-#: contents/ui/RadarView.qml:69 contents/ui/SimpleView.qml:313
+#: contents/ui/SimpleView.qml:313
 msgid "Pressure"
 msgstr "Basınç"
 
@@ -2071,13 +2122,21 @@ msgstr ""
 msgid "QWeather error (code %1). Check your API key."
 msgstr ""
 
+#: contents/ui/config/configLocation.qml:1059
+msgid "QtLocation and QtPositioning are not installed"
+msgstr ""
+
+#: contents/ui/RadarView.qml:65
+msgid "QtWebEngine is not installed"
+msgstr ""
+
 #: contents/ui/js/spaceWeather.js:173
 msgid "Quiet"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:64
 #: contents/ui/config/configGeneral.qml:639
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:536
-#: contents/ui/RadarView.qml:64
 msgid "Radar"
 msgstr ""
 
@@ -2098,8 +2157,9 @@ msgstr ""
 msgid "Ragweed"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:65
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:865 contents/ui/RadarView.qml:65
+#: contents/ui/main.qml:865
 msgid "Rain"
 msgstr "Yağmur"
 
@@ -2115,11 +2175,11 @@ msgstr ""
 msgid "Rain showers"
 msgstr ""
 
-#: contents/ui/RadarView.qml:80
+#: contents/ui/components/RadarWebEngineView.qml:80
 msgid "Real-time"
 msgstr ""
 
-#: contents/ui/RadarView.qml:77
+#: contents/ui/components/RadarWebEngineView.qml:77
 msgid "Recent"
 msgstr ""
 
@@ -2127,7 +2187,7 @@ msgstr ""
 msgid "Recommended — e.g. 560"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1332 contents/ui/FullView.qml:388
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:388
 #: contents/ui/main.qml:292
 msgid "Refresh"
 msgstr "Yenile"
@@ -2166,23 +2226,23 @@ msgstr "Bağıl nem %"
 msgid "Relative humidity percentage"
 msgstr "Bağıl nem yüzdesi"
 
-#: contents/ui/config/configLocation.qml:1201
+#: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1674
+#: contents/ui/config/configLocation.qml:1882
 msgid "Remove saved location"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1643
+#: contents/ui/config/configLocation.qml:1851
 msgid "Rename location"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:730
+#: contents/ui/config/configLocation.qml:799
 msgid "Requesting location via GeoClue2…"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:719
+#: contents/ui/config/configLocation.qml:788
 msgid "Requesting location… (%1)"
 msgstr ""
 
@@ -2219,7 +2279,7 @@ msgstr ""
 msgid "Saturday"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1392
+#: contents/ui/config/configLocation.qml:1605
 msgid "Saved locations"
 msgstr ""
 
@@ -2231,7 +2291,7 @@ msgstr "Kaydırma animasyonu:"
 msgid "Scroll interval (sec):"
 msgstr "Kaydırma sıklığı (sn):"
 
-#: contents/ui/config/configLocation.qml:1364
+#: contents/ui/config/configLocation.qml:1566
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
 msgid "Search Location"
 msgstr ""
@@ -2240,11 +2300,15 @@ msgstr ""
 msgid "Search a weather station to set your location"
 msgstr "Konumunuzu ayarlamak için hava durumu istasyonu arayın"
 
-#: contents/ui/config/configLocation.qml:1361
+#: contents/ui/config/configLocation.qml:1570
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1563
 msgid "Search for a location or choose it on the map."
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1042
+#: contents/ui/config/configLocation.qml:1174
 msgid "Search location"
 msgstr ""
 
@@ -2265,7 +2329,7 @@ msgstr "Ayırıcı:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1117
+#: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr ""
 
@@ -2273,11 +2337,11 @@ msgstr ""
 msgid "Set Location…"
 msgstr "Konum Ayarla…"
 
-#: contents/ui/config/configLocation.qml:1604
+#: contents/ui/config/configLocation.qml:1809
 msgid "Set as default location"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1089
+#: contents/ui/config/configLocation.qml:1219
 msgid "Set as default?"
 msgstr ""
 
@@ -2320,7 +2384,7 @@ msgstr "Detaylarda göster"
 msgid "Show in:"
 msgstr ""
 
-#: contents/ui/RadarView.qml:81
+#: contents/ui/components/RadarWebEngineView.qml:81
 msgid "Show my location"
 msgstr ""
 
@@ -2514,8 +2578,9 @@ msgstr "Standart sağlayıcı. Aşağıda API anahtarı gereklidir."
 msgid "Stats items:"
 msgstr ""
 
-#: contents/ui/js/spaceWeather.js:170 contents/ui/RadarView.qml:86
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:86
+#: contents/ui/components/RadarWebEngineView.qml:497
+#: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr ""
 
@@ -2654,12 +2719,13 @@ msgstr ""
 msgid "Symbolic (follows theme colour)"
 msgstr "Sembolik (tema rengini takip eder)"
 
-#: contents/ui/config/configLocation.qml:748
+#: contents/ui/config/configLocation.qml:826
 msgid "System location unavailable, trying IP geolocation…"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:67
 #: contents/ui/config/configAppearance.qml:1278
-#: contents/ui/config/configAppearance.qml:1525 contents/ui/RadarView.qml:67
+#: contents/ui/config/configAppearance.qml:1525
 msgid "Temperature"
 msgstr "Sıcaklık"
 
@@ -2705,7 +2771,11 @@ msgstr "Metin etiketleri (Sıcaklık, Rüzgar…)"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Metin, sistem yazı tipine uyacak ve panel alanını dolduracaktır."
 
-#: contents/ui/config/configLocation.qml:314
+#: contents/ui/RadarView.qml:75
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
 msgstr ""
 
@@ -2713,11 +2783,15 @@ msgstr ""
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
 msgstr "Durum simgesi sistem KDE ikon temanıza göre hava durumuna uyum sağlar. Ek özelleştirmeye gerek yoktur."
 
+#: contents/ui/config/configLocation.qml:1089
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:425
 msgid "Theme default"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:145
+#: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
 msgstr ""
 
@@ -2864,8 +2938,8 @@ msgstr ""
 msgid "Ultraviolet index"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:787
-#: contents/ui/config/configLocation.qml:903
+#: contents/ui/config/configLocation.qml:865
+#: contents/ui/config/configLocation.qml:972
 msgid "Unable to detect location. All methods failed."
 msgstr ""
 
@@ -2877,7 +2951,7 @@ msgstr "Birim ön ayarı:"
 msgid "Units"
 msgstr "Birimler"
 
-#: contents/ui/config/configLocation.qml:1542
+#: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
 #: contents/ui/FullView.qml:328
 msgid "Unknown"
@@ -2932,7 +3006,7 @@ msgstr ""
 msgid "Use KDE locale settings"
 msgstr "KDE bölge ve yerel ayarlarını kullan"
 
-#: contents/ui/config/configLocation.qml:1347
+#: contents/ui/config/configLocation.qml:1549
 msgid "Use manual location"
 msgstr "Manuel konumu kullan"
 
@@ -3015,11 +3089,11 @@ msgstr "Büyüyen Hilal"
 msgid "Waxing Gibbous"
 msgstr "Büyüyen Şişkin Ay"
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr "Koordinatlarınız tespit edildi: <b>%1°, %2°</b>."
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your location as: <b>%1</b>."
 msgstr "Konumunuz şu şekilde tespit edildi: <b>%1</b>."
 
@@ -3086,10 +3160,10 @@ msgstr "Widget"
 msgid "Widget Size"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:68
 #: contents/ui/config/configAppearance.qml:1292
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1546 contents/ui/DetailsView.qml:288
-#: contents/ui/RadarView.qml:68
 msgid "Wind"
 msgstr "Rüzgar"
 
@@ -3119,11 +3193,11 @@ msgstr "Sonraki satıra sar"
 msgid "X-ray Flare Class"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1125
+#: contents/ui/config/configLocation.qml:1255
 msgid "Yes"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1233
+#: contents/ui/config/configLocation.qml:1383
 msgid "Yes, remove it"
 msgstr ""
 
@@ -3178,7 +3252,7 @@ msgstr "dakikalar"
 msgid "px"
 msgstr "px"
 
-#: contents/ui/config/configLocation.qml:832
+#: contents/ui/config/configLocation.qml:900
 msgid "system location"
 msgstr ""
 

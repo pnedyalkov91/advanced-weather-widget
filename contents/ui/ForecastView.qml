@@ -280,7 +280,18 @@ Item {
                                     contentWidth: stripContent.width
                                     contentHeight: height
                                     boundsBehavior: Flickable.StopAtBounds
-                                    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+                                    ScrollBar.horizontal: ScrollBar {
+                                        id: stripHBar
+                                        policy: ScrollBar.AsNeeded
+                                    }
+
+                                    NumberAnimation {
+                                        id: stripWheelAnimation
+                                        target: stripScrollView
+                                        property: "contentX"
+                                        duration: 140
+                                        easing.type: Easing.OutCubic
+                                    }
 
                                     // Build combined model same as cards (with sun events)
                                     property var _hourlyWithSun: {
@@ -575,16 +586,23 @@ Item {
                                     }
                                 }
 
-                                // Wheel scroll for strip layout — redirect vertical wheel → horizontal flick
                                 MouseArea {
                                     anchors.fill: stripScrollView
                                     acceptedButtons: Qt.NoButton
                                     onWheel: function(wheel) {
-                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
-                                        var step = stripScrollView.colW * 2 * (delta > 0 ? -1 : 1);
-                                        stripScrollView.contentX = Math.max(0,
-                                            Math.min(stripScrollView.contentWidth - stripScrollView.width,
-                                                     stripScrollView.contentX + step));
+                                        var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
+                                        var pixelDelta = wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.pixelDelta.x;
+                                        if (pixelDelta !== 0) {
+                                            stripWheelAnimation.stop();
+                                            stripScrollView.contentX = Math.max(0, Math.min(maxX, stripScrollView.contentX - pixelDelta));
+                                            wheel.accepted = true;
+                                            return;
+                                        }
+
+                                        var angleDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
+                                        var targetX = Math.max(0, Math.min(maxX, stripScrollView.contentX - (angleDelta / 120) * stripScrollView.colW * 2));
+                                        stripWheelAnimation.to = targetX;
+                                        stripWheelAnimation.restart();
                                         wheel.accepted = true;
                                     }
                                 }
@@ -602,8 +620,17 @@ Item {
                                     anchors.fill: parent
                                     anchors.margins: 8
                                     clip: true
+                                    contentWidth: hourlyRow.implicitWidth
                                     ScrollBar.vertical.policy: ScrollBar.AlwaysOff
                                     ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+
+                                    NumberAnimation {
+                                        id: hourlyWheelAnimation
+                                        target: hourlyScrollView.ScrollBar.horizontal
+                                        property: "position"
+                                        duration: 140
+                                        easing.type: Easing.OutCubic
+                                    }
 
                                     // Auto-scroll to current hour for "Today" (index === 0)
                                     Timer {
@@ -900,12 +927,28 @@ Item {
                                     anchors.fill: hourlyScrollView
                                     acceptedButtons: Qt.NoButton
                                     onWheel: function(wheel) {
-                                        var bar = hourlyScrollView.ScrollBar.horizontal
-                                        if (!bar) return
-                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                        var step = 0.15 * (delta > 0 ? -1 : 1)
-                                        bar.position = Math.max(0, Math.min(1.0 - bar.size, bar.position + step))
-                                        wheel.accepted = true
+                                        var bar = hourlyScrollView.ScrollBar.horizontal;
+                                        if (!bar)
+                                            return;
+
+                                        var maxPos = Math.max(0, 1.0 - bar.size);
+                                        var pixelDelta = wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.pixelDelta.x;
+                                        if (pixelDelta !== 0) {
+                                            var flickable = hourlyScrollView.flickableItem;
+                                            var contentW = flickable ? flickable.contentWidth : hourlyRow.implicitWidth;
+                                            if (contentW > 0) {
+                                                hourlyWheelAnimation.stop();
+                                                bar.position = Math.max(0, Math.min(maxPos, bar.position - (pixelDelta / contentW)));
+                                            }
+                                            wheel.accepted = true;
+                                            return;
+                                        }
+
+                                        var angleDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
+                                        var targetPos = Math.max(0, Math.min(maxPos, bar.position - (angleDelta / 120) * 0.15));
+                                        hourlyWheelAnimation.to = targetPos;
+                                        hourlyWheelAnimation.restart();
+                                        wheel.accepted = true;
                                     }
                                 }
                             }

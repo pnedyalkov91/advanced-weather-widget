@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-05-03 11:13+0300\n"
+"POT-Creation-Date: 2026-05-04 11:42+0300\n"
 "PO-Revision-Date: 2026-04-23 11:09+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: \n"
@@ -200,7 +200,7 @@ msgstr ""
 msgid "Alt: %1 %2"
 msgstr "Hoogte: %1 %2"
 
-#: contents/ui/config/configLocation.qml:1566
+#: contents/ui/config/configLocation.qml:1777
 msgid "Alt: %1 m"
 msgstr "Hoogte: %1 m"
 
@@ -248,11 +248,11 @@ msgstr "Vormgeving"
 msgid "Apply Settings?"
 msgstr "Instellingen toepassen?"
 
-#: contents/ui/config/configLocation.qml:1033
+#: contents/ui/config/configLocation.qml:1165
 msgid "Apply detected location"
 msgstr "Gevonden plaats toevoegen"
 
-#: contents/ui/config/configLocation.qml:1226
+#: contents/ui/config/configLocation.qml:1374
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Weet je het zeker? Dit is de enige opgeslagen locatie. Als je deze verwijdert, wordt er geen weersinformatie meer getoond."
 
@@ -287,7 +287,15 @@ msgstr "Automatisch"
 msgid "Auto (detect on save)"
 msgstr "Automatisch (vaststellen na opslaan)"
 
-#: contents/ui/config/configLocation.qml:681
+#: contents/ui/config/configLocation.qml:1518
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1479
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:747
 msgid "Auto-detection updated coordinates."
 msgstr "Bepaal de bijgewerkte coördinaten automatisch."
 
@@ -295,7 +303,7 @@ msgstr "Bepaal de bijgewerkte coördinaten automatisch."
 msgid "Automatic"
 msgstr "Automatisch"
 
-#: contents/ui/config/configLocation.qml:1313
+#: contents/ui/config/configLocation.qml:1502
 msgid "Automatically detect location"
 msgstr "Automatisch bepalen"
 
@@ -393,14 +401,14 @@ msgid "CO"
 msgstr "CO"
 
 #: contents/ui/config/configAppearance.qml:559
-#: contents/ui/config/configLocation.qml:1251
+#: contents/ui/config/configLocation.qml:1401
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:85
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: contents/ui/config/configLocation.qml:1634
+#: contents/ui/config/configLocation.qml:1842
 msgid "Cancel rename"
 msgstr "Naam niet wĳzigen"
 
@@ -429,7 +437,7 @@ msgid "Changes staged. Click the main Apply button to save."
 msgstr "Er zijn wijzigingen aangebracht. Klik op ‘Toepassen’ om op te slaan."
 
 #: contents/ui/config/configGeneral.qml:88
-#: contents/ui/config/configLocation.qml:424
+#: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr "Bezig met controleren van locatie…"
 
@@ -452,12 +460,12 @@ msgstr "Kies het paneellettertype"
 msgid "Choose a custom icon for this item"
 msgstr "Kies een eigen pictogram voor dit item"
 
-#: contents/ui/config/configLocation.qml:1370
+#: contents/ui/config/configLocation.qml:1574
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:256
 msgid "Choose on Map"
 msgstr "Kiezen op kaart"
 
-#: contents/ui/config/configLocation.qml:1057
+#: contents/ui/config/configLocation.qml:1189
 msgid "Choose on map"
 msgstr "Kiezen op kaart"
 
@@ -499,7 +507,7 @@ msgstr "Klik op de kaart om een locatie te kiezen"
 msgid "Click to configure a location"
 msgstr "Klik om een plaats toe te voegen"
 
-#: contents/ui/RadarView.qml:66
+#: contents/ui/components/RadarWebEngineView.qml:66
 msgid "Clouds"
 msgstr ""
 
@@ -562,11 +570,11 @@ msgstr "Weerpictogrammen instellen…"
 msgid "Configure…"
 msgstr "Instellen…"
 
-#: contents/ui/config/configLocation.qml:1626
+#: contents/ui/config/configLocation.qml:1834
 msgid "Confirm rename"
 msgstr "Naam wĳzigen"
 
-#: contents/ui/config/configLocation.qml:987
+#: contents/ui/config/configLocation.qml:1119
 msgid "Confirm your location"
 msgstr "Bevestig je locatie"
 
@@ -678,7 +686,7 @@ msgstr "Dag"
 msgid "Daylight over"
 msgstr "Er is geen daglicht meer"
 
-#: contents/ui/config/configLocation.qml:1603
+#: contents/ui/config/configLocation.qml:1809
 msgid "Default location (click to unset)"
 msgstr "Standaardlocatie (klik om te wĳzigen)"
 
@@ -724,7 +732,7 @@ msgstr "Locatie bepalen/wĳzigen"
 msgid "Detect / change location…"
 msgstr "Locatie bepalen/wĳzigen…"
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Detecting…"
 msgstr "Bezig met bepalen…"
 
@@ -802,7 +810,7 @@ msgstr "Ieder QWeather-project draait op een eigen api-host. Op console.qweather
 msgid "Edit Saved Location"
 msgstr "Opgeslagen locatie bewerken"
 
-#: contents/ui/config/configLocation.qml:1656
+#: contents/ui/config/configLocation.qml:1864
 msgid "Edit location details"
 msgstr "Locatiegegevens bewerken"
 
@@ -839,7 +847,7 @@ msgstr "Ingeschakeld"
 msgid "Enter Location"
 msgstr "Voer een plaatsnaam in"
 
-#: contents/ui/config/configLocation.qml:1376
+#: contents/ui/config/configLocation.qml:1588
 msgid "Enter Manually"
 msgstr "Handmatig invoeren"
 
@@ -847,7 +855,11 @@ msgstr "Handmatig invoeren"
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
 msgstr "Voer een plaatsnaam en geldige coördinaten in, en klik daarna op ‘Toepassen’."
 
-#: contents/ui/config/configLocation.qml:1047
+#: contents/ui/config/configLocation.qml:1592
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1179
 msgid "Enter manually"
 msgstr "Handmatig invoeren"
 
@@ -1059,12 +1071,16 @@ msgstr "Volle maan"
 msgid "Future alerts"
 msgstr "Aankomende waarschuwingen"
 
+#: contents/ui/config/configLocation.qml:1530
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
+msgstr ""
+
 #: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:76
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:764
 msgid "General"
 msgstr "Algemeen"
 
-#: contents/ui/config/configLocation.qml:739
+#: contents/ui/config/configLocation.qml:813
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 niet beschikbaar, systeemlocatie proberen…"
 
@@ -1086,7 +1102,8 @@ msgstr "Gras"
 msgid "Headline"
 msgstr "Kop"
 
-#: contents/ui/RadarView.qml:85 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:85
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Heavy"
 msgstr ""
 
@@ -1174,8 +1191,8 @@ msgstr "Luchtvochtigheid"
 msgid "Humidity:"
 msgstr "Luchtvochtigheid:"
 
-#: contents/ui/config/configLocation.qml:863
-#: contents/ui/config/configLocation.qml:894
+#: contents/ui/config/configLocation.qml:932
+#: contents/ui/config/configLocation.qml:963
 msgid "IP geolocation"
 msgstr "IP-geolocatie"
 
@@ -1214,7 +1231,7 @@ msgstr "Pictogram:"
 msgid "Icons"
 msgstr "Pictogrammen"
 
-#: contents/ui/config/configLocation.qml:1023
+#: contents/ui/config/configLocation.qml:1155
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "Als deze locatie klopt, voeg hem dan toe. Klopt de locatie niet? Kies dan handmatig een plaats."
 
@@ -1237,6 +1254,24 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigMiscTab.qml:216
 msgid "Individual units"
 msgstr "Individuele eenheden"
+
+#: contents/ui/config/configLocation.qml:1102
+msgid ""
+"Install it for your distribution:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
+"\n"
+"You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
+msgstr ""
+
+#: contents/ui/RadarView.qml:90
+msgid ""
+"Install it for your distribution:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
+msgstr ""
 
 #: contents/ui/DetailsView.qml:1836
 msgid "Instruction"
@@ -1352,7 +1387,8 @@ msgstr "Indeling"
 msgid "Layout type:"
 msgstr "Indeling:"
 
-#: contents/ui/RadarView.qml:83 contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:83
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Light"
 msgstr ""
 
@@ -1438,21 +1474,21 @@ msgstr ""
 msgid "Location Name"
 msgstr "Plaatsnaam"
 
-#: contents/ui/config/configLocation.qml:679
+#: contents/ui/config/configLocation.qml:745
 msgid "Location auto-detected."
 msgstr "Locatie automatisch gedetecteerd."
 
-#: contents/ui/config/configLocation.qml:1329
+#: contents/ui/config/configLocation.qml:1530
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "Locatiebepaling is afhankelijk van de systeeminstellingen en toegangsrechten."
 
 #: contents/ui/config/configGeneral.qml:164
-#: contents/ui/config/configLocation.qml:478
+#: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr "Deze locatie is beschikbaar op %1."
 
 #: contents/ui/config/configGeneral.qml:167
-#: contents/ui/config/configLocation.qml:481
+#: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "Deze locatie is niet beschikbaar op %1 (http %2). Probeer een andere weerdienst of locatie."
 
@@ -1464,6 +1500,10 @@ msgstr "Plaatsnaam"
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:61
 msgid "Location name:"
 msgstr "Plaatsnaam:"
+
+#: contents/ui/config/configLocation.qml:1515
+msgid "Location package notice"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
@@ -1565,7 +1605,7 @@ msgstr "Kleine geomagnetische storm."
 msgid "Misc"
 msgstr "Overig"
 
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:497
 msgid "Mod"
 msgstr ""
 
@@ -1573,10 +1613,10 @@ msgstr ""
 msgid "Mode:"
 msgstr ""
 
+#: contents/ui/components/RadarWebEngineView.qml:84
 #: contents/ui/js/airQuality.js:49 contents/ui/js/pollen.js:43
 #: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
 #: contents/ui/main.qml:697 contents/ui/main.qml:711 contents/ui/main.qml:741
-#: contents/ui/RadarView.qml:84
 msgid "Moderate"
 msgstr "Gemiddeld"
 
@@ -1747,7 +1787,7 @@ msgstr "Nacht"
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Stikstofdioxide (NO₂)"
 
-#: contents/ui/config/configLocation.qml:1163
+#: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr "Nee"
 
@@ -1767,7 +1807,7 @@ msgstr "Er is geen geomagnetische storm waargenomen."
 msgid "No location set"
 msgstr "Er is geen locatie ingesteld"
 
-#: contents/ui/config/configLocation.qml:1408
+#: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
 msgstr "Er zijn geen opgeslagen locaties. Bewaar de huidige locatie om van locatie te wisselen."
 
@@ -1775,15 +1815,16 @@ msgstr "Er zijn geen opgeslagen locaties. Bewaar de huidige locatie om van locat
 msgid "No weather stations found for '%1'"
 msgstr "Er zijn geen weerstations genaamd ‘%1’"
 
+#: contents/ui/components/RadarWebEngineView.qml:82
+#: contents/ui/components/RadarWebEngineView.qml:497
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:804
-#: contents/ui/main.qml:806 contents/ui/RadarView.qml:82
-#: contents/ui/RadarView.qml:497
+#: contents/ui/main.qml:806
 msgid "None"
 msgstr "Geen"
 
-#: contents/ui/config/configLocation.qml:571
+#: contents/ui/config/configLocation.qml:629
 msgid "None Selected"
 msgstr "Niets gekozen"
 
@@ -1816,6 +1857,11 @@ msgstr "Oké"
 #: contents/ui/DetailsView.qml:1000 contents/ui/main.qml:750
 msgid "Olive"
 msgstr "Olijf"
+
+#: contents/ui/config/configLocation.qml:1106
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:105
+msgid "Open install guide"
+msgstr ""
 
 #: contents/ui/config/configGeneral.qml:271
 msgid "Open-Meteo (recommended, free)"
@@ -1905,7 +1951,7 @@ msgstr "Deels bewolkt (overdag)"
 msgid "Partly cloudy (night)"
 msgstr "Deels bewolkt (avond)"
 
-#: contents/ui/RadarView.qml:79
+#: contents/ui/components/RadarWebEngineView.qml:79
 msgid "Pause"
 msgstr ""
 
@@ -1923,6 +1969,10 @@ msgstr "Maanfase, opkomst en ondergang"
 msgid "Phase + upcoming rise/set"
 msgstr "Fase, opkomst en ondergang"
 
+#: contents/ui/config/configLocation.qml:1578
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:594
 msgid "Pipe  |"
 msgstr "Sluisteken  |"
@@ -1935,7 +1985,7 @@ msgstr "Pirate Weather (sleutel vereist)"
 msgid "Pirate Weather API Key:"
 msgstr "Api-sleutel van Pirate Weather:"
 
-#: contents/ui/RadarView.qml:78
+#: contents/ui/components/RadarWebEngineView.qml:78
 msgid "Play"
 msgstr ""
 
@@ -1997,10 +2047,11 @@ msgstr "Neerslag:"
 msgid "Prefix style:"
 msgstr "Stijl:"
 
+#: contents/ui/components/RadarWebEngineView.qml:69
 #: contents/ui/config/configAppearance.qml:1314
 #: contents/ui/config/configAppearance.qml:1416
 #: contents/ui/config/configAppearance.qml:1560 contents/ui/DetailsView.qml:287
-#: contents/ui/RadarView.qml:69 contents/ui/SimpleView.qml:313
+#: contents/ui/SimpleView.qml:313
 msgid "Pressure"
 msgstr "Luchtdruk"
 
@@ -2070,13 +2121,21 @@ msgstr "Api-sleutel van QWeather:"
 msgid "QWeather error (code %1). Check your API key."
 msgstr "QWeather-fout (code %1). Controleer de api-sleutel."
 
+#: contents/ui/config/configLocation.qml:1059
+msgid "QtLocation and QtPositioning are not installed"
+msgstr ""
+
+#: contents/ui/RadarView.qml:65
+msgid "QtWebEngine is not installed"
+msgstr ""
+
 #: contents/ui/js/spaceWeather.js:173
 msgid "Quiet"
 msgstr "Stil"
 
+#: contents/ui/components/RadarWebEngineView.qml:64
 #: contents/ui/config/configGeneral.qml:639
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:536
-#: contents/ui/RadarView.qml:64
 msgid "Radar"
 msgstr ""
 
@@ -2097,8 +2156,9 @@ msgstr ""
 msgid "Ragweed"
 msgstr "Hooikoorts"
 
+#: contents/ui/components/RadarWebEngineView.qml:65
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:865 contents/ui/RadarView.qml:65
+#: contents/ui/main.qml:865
 msgid "Rain"
 msgstr "Regen"
 
@@ -2114,11 +2174,11 @@ msgstr "Regen ('s nachts)"
 msgid "Rain showers"
 msgstr "Regenbuien"
 
-#: contents/ui/RadarView.qml:80
+#: contents/ui/components/RadarWebEngineView.qml:80
 msgid "Real-time"
 msgstr ""
 
-#: contents/ui/RadarView.qml:77
+#: contents/ui/components/RadarWebEngineView.qml:77
 msgid "Recent"
 msgstr ""
 
@@ -2126,7 +2186,7 @@ msgstr ""
 msgid "Recommended — e.g. 560"
 msgstr "Aanbevolen — bijv. 560"
 
-#: contents/ui/config/configLocation.qml:1332 contents/ui/FullView.qml:388
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:388
 #: contents/ui/main.qml:292
 msgid "Refresh"
 msgstr "Herladen"
@@ -2165,23 +2225,23 @@ msgstr "De huidige relatieve luchtvochtigheid (in %)"
 msgid "Relative humidity percentage"
 msgstr "Het percentage van de relatieve luchtvochtigheid"
 
-#: contents/ui/config/configLocation.qml:1201
+#: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr "Wil je de vorige locatie verwijderen?"
 
-#: contents/ui/config/configLocation.qml:1674
+#: contents/ui/config/configLocation.qml:1882
 msgid "Remove saved location"
 msgstr "Opgeslagen locatie verwijderen"
 
-#: contents/ui/config/configLocation.qml:1643
+#: contents/ui/config/configLocation.qml:1851
 msgid "Rename location"
 msgstr "Locatienaam wĳzigen"
 
-#: contents/ui/config/configLocation.qml:730
+#: contents/ui/config/configLocation.qml:799
 msgid "Requesting location via GeoClue2…"
 msgstr "Bezig met opvragen van locatie via GeoClue2…"
 
-#: contents/ui/config/configLocation.qml:719
+#: contents/ui/config/configLocation.qml:788
 msgid "Requesting location… (%1)"
 msgstr "Bezig met opvragen van locatie… (%1)"
 
@@ -2218,7 +2278,7 @@ msgstr "SO₂"
 msgid "Saturday"
 msgstr ""
 
-#: contents/ui/config/configLocation.qml:1392
+#: contents/ui/config/configLocation.qml:1605
 msgid "Saved locations"
 msgstr "Opgeslagen locaties"
 
@@ -2230,7 +2290,7 @@ msgstr "Scrolanimatie:"
 msgid "Scroll interval (sec):"
 msgstr "Scroltussenpoos (in sec.):"
 
-#: contents/ui/config/configLocation.qml:1364
+#: contents/ui/config/configLocation.qml:1566
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
 msgid "Search Location"
 msgstr "Zoeken naar locatie"
@@ -2239,11 +2299,15 @@ msgstr "Zoeken naar locatie"
 msgid "Search a weather station to set your location"
 msgstr "Zoek een weerstation in de buurt"
 
-#: contents/ui/config/configLocation.qml:1361
+#: contents/ui/config/configLocation.qml:1570
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:1563
 msgid "Search for a location or choose it on the map."
 msgstr "Zoek een plaats of kies er een op de kaart."
 
-#: contents/ui/config/configLocation.qml:1042
+#: contents/ui/config/configLocation.qml:1174
 msgid "Search location"
 msgstr "Zoeken naar plaats"
 
@@ -2264,7 +2328,7 @@ msgstr "Scheidingsteken:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr "Hoog risico: vermijd buitenactiviteiten."
 
-#: contents/ui/config/configLocation.qml:1117
+#: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Wil je <b>%1</b> instellen als standaardlocatie?"
 
@@ -2272,11 +2336,11 @@ msgstr "Wil je <b>%1</b> instellen als standaardlocatie?"
 msgid "Set Location…"
 msgstr "Locatie instellen…"
 
-#: contents/ui/config/configLocation.qml:1604
+#: contents/ui/config/configLocation.qml:1809
 msgid "Set as default location"
 msgstr "Instellen als standaardlocatie"
 
-#: contents/ui/config/configLocation.qml:1089
+#: contents/ui/config/configLocation.qml:1219
 msgid "Set as default?"
 msgstr "Instellen als standaardlocatie?"
 
@@ -2319,7 +2383,7 @@ msgstr "Tonen in detailweergave"
 msgid "Show in:"
 msgstr ""
 
-#: contents/ui/RadarView.qml:81
+#: contents/ui/components/RadarWebEngineView.qml:81
 msgid "Show my location"
 msgstr ""
 
@@ -2513,8 +2577,9 @@ msgstr "De standaarddienst. Voer hieronder een api-sleutel in."
 msgid "Stats items:"
 msgstr ""
 
-#: contents/ui/js/spaceWeather.js:170 contents/ui/RadarView.qml:86
-#: contents/ui/RadarView.qml:497
+#: contents/ui/components/RadarWebEngineView.qml:86
+#: contents/ui/components/RadarWebEngineView.qml:497
+#: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr "Storm"
 
@@ -2653,12 +2718,13 @@ msgstr "Symbolisch (meegeleverd)"
 msgid "Symbolic (follows theme colour)"
 msgstr "Symbolisch (themakleur)"
 
-#: contents/ui/config/configLocation.qml:748
+#: contents/ui/config/configLocation.qml:826
 msgid "System location unavailable, trying IP geolocation…"
 msgstr "Systeemlocatie niet beschikbaar, IP-geolocatie proberen…"
 
+#: contents/ui/components/RadarWebEngineView.qml:67
 #: contents/ui/config/configAppearance.qml:1278
-#: contents/ui/config/configAppearance.qml:1525 contents/ui/RadarView.qml:67
+#: contents/ui/config/configAppearance.qml:1525
 msgid "Temperature"
 msgstr "Temperatuur"
 
@@ -2704,7 +2770,11 @@ msgstr "Tekstlabels (temperatuur, wind, etc.)"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Voor de tekst wordt gebruikgemaakt van het systeemlettertype en alle beschikbare ruimte."
 
-#: contents/ui/config/configLocation.qml:314
+#: contents/ui/RadarView.qml:75
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
+msgstr ""
+
+#: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
 msgstr ""
 
@@ -2712,11 +2782,15 @@ msgstr ""
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
 msgstr "Het weersomstandigheidspictogram toont de huidige omstandigheid op basis van het ingestelde KDE-pictogramthema."
 
+#: contents/ui/config/configLocation.qml:1089
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:425
 msgid "Theme default"
 msgstr "Afkomstig uit thema"
 
-#: contents/ui/config/configLocation.qml:145
+#: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
 msgstr ""
 
@@ -2863,8 +2937,8 @@ msgstr "UV-index:"
 msgid "Ultraviolet index"
 msgstr "Ultravioletindex"
 
-#: contents/ui/config/configLocation.qml:787
-#: contents/ui/config/configLocation.qml:903
+#: contents/ui/config/configLocation.qml:865
+#: contents/ui/config/configLocation.qml:972
 msgid "Unable to detect location. All methods failed."
 msgstr "De locatie kan niet worden vastgesteld — alle methoden zijn mislukt."
 
@@ -2876,7 +2950,7 @@ msgstr "Voorinstellingen:"
 msgid "Units"
 msgstr "Eenheden"
 
-#: contents/ui/config/configLocation.qml:1542
+#: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
 #: contents/ui/FullView.qml:328
 msgid "Unknown"
@@ -2931,7 +3005,7 @@ msgstr ""
 msgid "Use KDE locale settings"
 msgstr "KDE-taalinstellingen gebruiken"
 
-#: contents/ui/config/configLocation.qml:1347
+#: contents/ui/config/configLocation.qml:1549
 msgid "Use manual location"
 msgstr "Zelf bepalen"
 
@@ -3014,11 +3088,11 @@ msgstr "Wassende sikkel"
 msgid "Waxing Gibbous"
 msgstr "Wassende volle maan"
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr "Je vastgestelde coördinaten zijn: <b>%1°, %2°</b>."
 
-#: contents/ui/config/configLocation.qml:1016
+#: contents/ui/config/configLocation.qml:1148
 msgid "We detected your location as: <b>%1</b>."
 msgstr "Je vastgestelde locatie is: <b>%1</b>."
 
@@ -3085,10 +3159,10 @@ msgstr "Widget"
 msgid "Widget Size"
 msgstr "Widgetgrootte"
 
+#: contents/ui/components/RadarWebEngineView.qml:68
 #: contents/ui/config/configAppearance.qml:1292
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1546 contents/ui/DetailsView.qml:288
-#: contents/ui/RadarView.qml:68
 msgid "Wind"
 msgstr "Wind"
 
@@ -3118,11 +3192,11 @@ msgstr "Afbreken en verdergaan op volgende regel"
 msgid "X-ray Flare Class"
 msgstr "Röntgenstraalklasse"
 
-#: contents/ui/config/configLocation.qml:1125
+#: contents/ui/config/configLocation.qml:1255
 msgid "Yes"
 msgstr "Ja"
 
-#: contents/ui/config/configLocation.qml:1233
+#: contents/ui/config/configLocation.qml:1383
 msgid "Yes, remove it"
 msgstr "Ja, verwijderen"
 
@@ -3177,7 +3251,7 @@ msgstr "minuten"
 msgid "px"
 msgstr "px"
 
-#: contents/ui/config/configLocation.qml:832
+#: contents/ui/config/configLocation.qml:900
 msgid "system location"
 msgstr "systeemlocatie"
 
