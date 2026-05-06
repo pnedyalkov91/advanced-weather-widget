@@ -1046,6 +1046,10 @@ KCM.AbstractKCM {
     property string cfg_panelSimpleHorizontalContent: "both"
     property int cfg_panelSimpleWidgetOrder: 0
     property string cfg_panelSimpleIconStyle: "symbolic"
+    property string cfg_panelSimpleClickAreaMode: "auto"
+    property int cfg_panelSimpleClickAreaSize: 96
+    property bool cfg_panelSimpleTempShadowEnabled: true
+    property double cfg_panelSimpleTempShadowIntensity: 0.8
     // Compressed badge options
     property string cfg_compressedBadgePosition: "bottom-right"
     property int cfg_compressedBadgeSpacing: 0

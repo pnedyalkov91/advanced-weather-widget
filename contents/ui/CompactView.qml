@@ -90,6 +90,10 @@ PlasmaCore.ToolTipArea {
     readonly property int simpleLayoutType: Plasmoid.configuration.panelSimpleLayoutType || 0
     readonly property int simpleWidgetOrder: Plasmoid.configuration.panelSimpleWidgetOrder || 0
     readonly property string simpleIconStyle: Plasmoid.configuration.panelSimpleIconStyle || "symbolic"
+    readonly property string simpleClickAreaMode: Plasmoid.configuration.panelSimpleClickAreaMode || "auto"
+    readonly property int simpleClickAreaSize: Math.max(20, Plasmoid.configuration.panelSimpleClickAreaSize || 96)
+    readonly property bool simpleTempShadowEnabled: Plasmoid.configuration.panelSimpleTempShadowEnabled !== false
+    readonly property real simpleTempShadowIntensity: Math.max(0.1, Math.min(1.0, Plasmoid.configuration.panelSimpleTempShadowIntensity !== undefined ? Plasmoid.configuration.panelSimpleTempShadowIntensity : 0.8))
 
     // ── Horizontal layout content filter ──────────────────────────────
     // Controls what is shown in simple mode horizontal layout (type 0):
@@ -267,11 +271,19 @@ PlasmaCore.ToolTipArea {
     //   vertical:   fillHeight:true + preferredHeight:-1
     readonly property bool vertFill: vertical && !isSimpleMode && !isMultiLine && Plasmoid.configuration.panelFillWidth
 
-    Layout.fillHeight: !vertical || compactRoot.vertFill
-    Layout.fillWidth: vertical || Plasmoid.configuration.panelFillWidth
+    Layout.fillHeight: !vertical || compactRoot.vertFill || (compactRoot.isSimpleMode && compactRoot.vertical && compactRoot.simpleClickAreaMode === "fill")
+    Layout.fillWidth: vertical || Plasmoid.configuration.panelFillWidth || (compactRoot.isSimpleMode && !compactRoot.vertical && compactRoot.simpleClickAreaMode === "fill")
 
-    Layout.preferredWidth: (vertical || Plasmoid.configuration.panelFillWidth) ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
+    Layout.preferredWidth: (compactRoot.isSimpleMode && !compactRoot.vertical)
+        ? (compactRoot.simpleClickAreaMode === "fill" ? -1 : (compactRoot.simpleClickAreaMode === "manual" ? compactRoot.simpleClickAreaSize : implicitWidth))
+        : (vertical || Plasmoid.configuration.panelFillWidth) ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
     Layout.preferredHeight: {
+        if (compactRoot.isSimpleMode && compactRoot.vertical) {
+            if (compactRoot.simpleClickAreaMode === "fill")
+                return -1;
+            if (compactRoot.simpleClickAreaMode === "manual")
+                return compactRoot.simpleClickAreaSize;
+        }
         // Vertical single-line + fill: return -1 so fillHeight can expand freely
         // (mirrors preferredWidth:-1 used for horizontal fill)
         if (compactRoot.vertFill)
@@ -959,11 +971,12 @@ PlasmaCore.ToolTipArea {
                 // smooth background-coloured halo around each glyph, giving the
                 // same contrast as Text.Outline but with GPU-composited AA.
                 DropShadow {
+                    visible: compactRoot.simpleTempShadowEnabled
                     anchors.fill: tempText
                     source: tempText
                     radius: 3
                     samples: 16
-                    spread: 0.8
+                    spread: compactRoot.simpleTempShadowIntensity
                     color: Kirigami.Theme.backgroundColor
                     cached: true
                 }

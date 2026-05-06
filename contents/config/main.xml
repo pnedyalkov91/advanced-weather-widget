@@ -102,6 +102,10 @@
     <entry name="panelSimpleWidgetOrder"       type="Int"><default>0</default></entry>
     <entry name="panelSimpleIconStyle"         type="String"><default>symbolic</default></entry>
     <entry name="panelSimpleHorizontalContent" type="String"><default>both</default></entry>
+    <entry name="panelSimpleClickAreaMode"     type="String"><default>auto</default></entry>
+    <entry name="panelSimpleClickAreaSize"     type="Int"><default>96</default><min>20</min><max>600</max></entry>
+    <entry name="panelSimpleTempShadowEnabled" type="Bool"><default>true</default></entry>
+    <entry name="panelSimpleTempShadowIntensity" type="Double"><default>0.8</default></entry>
     <!-- Compressed mode: badge position, spacing, background color -->
     <entry name="compressedBadgePosition"  type="String"><default>bottom-right</default></entry>
     <entry name="compressedBadgeSpacing"   type="Int"><default>0</default><min>-20</min><max>20</max></entry>
