@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-05-04 11:42+0300\n"
+"POT-Creation-Date: 2026-05-06 07:19+0300\n"
 "PO-Revision-Date: 2026-05-05 11:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid " until dawn"
 msgstr " do svítání"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:735
+#: contents/ui/config/tabs/ConfigPanelTab.qml:808
 msgctxt "@info %1 size %2 family"
 msgid "%1pt %2"
 msgstr "%1pt %2"
@@ -39,11 +39,11 @@ msgstr "-180 až 180 (např. 23,3219)"
 msgid "-90 to 90 (e.g. 42.6977)"
 msgstr "-90 až 90 (např. 42,6977)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:573
+#: contents/ui/config/tabs/ConfigPanelTab.qml:646
 msgid "0 = auto (120 px per chip). Increase if values are truncated."
 msgstr "0 = výchozí (120 px na čip). Zvýšit, pokud jsou hodnoty zkráceny."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:573
+#: contents/ui/config/tabs/ConfigPanelTab.qml:646
 msgid "0 = auto. Increase if items are cut off."
 msgstr "0 = automaticky. Zvyšte, pokud jsou položky odříznuty."
 
@@ -75,7 +75,7 @@ msgstr "24hodinový formát"
 msgid "24h"
 msgstr "24h"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:769
+#: contents/ui/config/tabs/ConfigPanelTab.qml:842
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:212
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:44
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:53
@@ -122,7 +122,7 @@ msgstr "Adaptivní (záložní)"
 msgid "Add Location Manually"
 msgstr "Přidat polohu ručně"
 
-#: contents/ui/CompactView.qml:767 contents/ui/CompactView.qml:1103
+#: contents/ui/CompactView.qml:779 contents/ui/CompactView.qml:1116
 msgid "Add a location"
 msgstr "Přidat polohu"
 
@@ -130,9 +130,9 @@ msgstr "Přidat polohu"
 msgid "Advanced (all tabs)"
 msgstr "Rozšířený (všechny karty)"
 
-#: contents/ui/config/configAppearance.qml:1356
-#: contents/ui/config/configAppearance.qml:1479
-#: contents/ui/config/configAppearance.qml:1602 contents/ui/DetailsView.qml:297
+#: contents/ui/config/configAppearance.qml:1360
+#: contents/ui/config/configAppearance.qml:1483
+#: contents/ui/config/configAppearance.qml:1606 contents/ui/DetailsView.qml:297
 #: contents/ui/SimpleView.qml:319
 msgid "Air Quality"
 msgstr "Kvalita ovzduší"
@@ -141,9 +141,9 @@ msgstr "Kvalita ovzduší"
 msgid "Air Quality:"
 msgstr "Kvalita ovzduší:"
 
-#: contents/ui/config/configAppearance.qml:1357
-#: contents/ui/config/configAppearance.qml:1480
-#: contents/ui/config/configAppearance.qml:1603
+#: contents/ui/config/configAppearance.qml:1361
+#: contents/ui/config/configAppearance.qml:1484
+#: contents/ui/config/configAppearance.qml:1607
 msgid "Air quality index"
 msgstr "Index kvality ovzduší"
 
@@ -180,9 +180,9 @@ msgstr "Možnosti kvality ovzduší"
 msgid "Alder"
 msgstr "Olše"
 
-#: contents/ui/config/configAppearance.qml:1377
-#: contents/ui/config/configAppearance.qml:1500
-#: contents/ui/config/configAppearance.qml:1623 contents/ui/DetailsView.qml:300
+#: contents/ui/config/configAppearance.qml:1381
+#: contents/ui/config/configAppearance.qml:1504
+#: contents/ui/config/configAppearance.qml:1627 contents/ui/DetailsView.qml:300
 #: contents/ui/SimpleView.qml:322
 msgid "Alerts"
 msgstr "Upozornění"
@@ -223,16 +223,16 @@ msgstr "Nadmořská výška:"
 msgid "An API key is required for %1. Weather data cannot be retrieved without it."
 msgstr "Pro %1 je vyžadován klíč API. Bez něj nelze načíst data o počasí."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:494
+#: contents/ui/config/tabs/ConfigPanelTab.qml:567
 msgid "Animate row scrolling"
 msgstr "Animovat posouvání řádků"
 
-#: contents/ui/config/configAppearance.qml:1301
+#: contents/ui/config/configAppearance.qml:1305
 msgid "Apparent (feels-like) temperature"
 msgstr "Pocitová teplota"
 
-#: contents/ui/config/configAppearance.qml:1403
-#: contents/ui/config/configAppearance.qml:1540
+#: contents/ui/config/configAppearance.qml:1407
+#: contents/ui/config/configAppearance.qml:1544
 msgid "Apparent temperature"
 msgstr "Pocitová teplota"
 
@@ -259,9 +259,9 @@ msgstr "Jste si jistý? Toto je vaše poslední uložená poloha. Pokud ji odstr
 msgid "Around midnight — "
 msgstr "Kolem půlnoci — "
 
-#: contents/ui/config/configAppearance.qml:1315
-#: contents/ui/config/configAppearance.qml:1417
-#: contents/ui/config/configAppearance.qml:1561
+#: contents/ui/config/configAppearance.qml:1319
+#: contents/ui/config/configAppearance.qml:1421
+#: contents/ui/config/configAppearance.qml:1565
 msgid "Atmospheric pressure"
 msgstr "Atmosférický tlak"
 
@@ -272,7 +272,8 @@ msgstr "Viditelnost polární záře"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:237
 #: contents/ui/config/tabs/ConfigPanelTab.qml:306
-#: contents/ui/config/tabs/ConfigPanelTab.qml:541
+#: contents/ui/config/tabs/ConfigPanelTab.qml:354
+#: contents/ui/config/tabs/ConfigPanelTab.qml:614
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:100
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:143
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:418
@@ -298,7 +299,7 @@ msgstr "Automatická detekce je bez modulů QtLocation a QtPositioning omezená.
 msgid "Auto-detection updated coordinates."
 msgstr "Automatická detekce aktualizovaných souřadnic."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:704
+#: contents/ui/config/tabs/ConfigPanelTab.qml:777
 msgid "Automatic"
 msgstr "Automatický"
 
@@ -321,23 +322,23 @@ msgstr "K dispozici"
 msgid "Back"
 msgstr "Zpět"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:462
+#: contents/ui/config/tabs/ConfigPanelTab.qml:535
 msgid "Badge Background Color"
 msgstr "Barva pozadí štítku"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:395
+#: contents/ui/config/tabs/ConfigPanelTab.qml:468
 msgid "Badge background:"
 msgstr "Pozadí štítku:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:442
+#: contents/ui/config/tabs/ConfigPanelTab.qml:515
 msgid "Badge opacity:"
 msgstr "Průhlednost štítku:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:354
+#: contents/ui/config/tabs/ConfigPanelTab.qml:427
 msgid "Badge position:"
 msgstr "Pozice štítku:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:379
+#: contents/ui/config/tabs/ConfigPanelTab.qml:452
 msgid "Badge spacing:"
 msgstr "Odsazení štítku:"
 
@@ -360,15 +361,15 @@ msgstr "Oba  07:17 / 18:03"
 msgid "Both (sunrise & sunset)"
 msgstr "Obojí (východ i západ slunce)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:365
+#: contents/ui/config/tabs/ConfigPanelTab.qml:438
 msgid "Bottom Center"
 msgstr "Dole na střed"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:362
+#: contents/ui/config/tabs/ConfigPanelTab.qml:435
 msgid "Bottom Left"
 msgstr "Vlevo dole"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:361
+#: contents/ui/config/tabs/ConfigPanelTab.qml:434
 msgid "Bottom Right"
 msgstr "Vpravo dole"
 
@@ -381,7 +382,7 @@ msgstr "Vpravo dole"
 msgid "Browse…"
 msgstr "Procházet…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:590
+#: contents/ui/config/tabs/ConfigPanelTab.qml:663
 msgid "Bullet  •"
 msgstr "Odrážka  •"
 
@@ -444,12 +445,12 @@ msgstr "Probíhá kontrola dostupnosti polohy…"
 msgid "Chinese weather provider with global coverage. API key required below."
 msgstr "Čínský poskytovatel počasí s globálním pokrytím. Níže je vyžadován klíč API."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:722
+#: contents/ui/config/tabs/ConfigPanelTab.qml:795
 msgctxt "@action:button"
 msgid "Choose Style…"
 msgstr "Vyberte styl…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:670
+#: contents/ui/config/tabs/ConfigPanelTab.qml:743
 msgid "Choose a Panel Font"
 msgstr "Vyberte písmo panelu"
 
@@ -468,7 +469,7 @@ msgstr "Vybrat na mapě"
 msgid "Choose on map"
 msgstr "Vybrat na mapě"
 
-#: contents/ui/config/configAppearance.qml:1322
+#: contents/ui/config/configAppearance.qml:1326
 msgid "City / location name"
 msgstr "Název města / lokality"
 
@@ -514,7 +515,7 @@ msgstr "Oblačnost"
 msgid "Colorful"
 msgstr "Barevný"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:509
+#: contents/ui/config/tabs/ConfigPanelTab.qml:582
 msgid "Colorful (KDE color icons)"
 msgstr "Barevný (ikony barev kde)"
 
@@ -526,8 +527,8 @@ msgstr "Kompas v předpovědi:"
 msgid "Compressed"
 msgstr "Kompaktní"
 
-#: contents/ui/config/configAppearance.qml:1271
-#: contents/ui/config/configAppearance.qml:1532 contents/ui/DetailsView.qml:293
+#: contents/ui/config/configAppearance.qml:1275
+#: contents/ui/config/configAppearance.qml:1536 contents/ui/DetailsView.qml:293
 msgid "Condition"
 msgstr "Podmínky"
 
@@ -561,8 +562,8 @@ msgstr "Konfigurovat ikonu…"
 msgid "Configure weather icons…"
 msgstr "Konfigurovat ikony počasí…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:532
-#: contents/ui/config/tabs/ConfigPanelTab.qml:888
+#: contents/ui/config/tabs/ConfigPanelTab.qml:605
+#: contents/ui/config/tabs/ConfigPanelTab.qml:961
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:336
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:695
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:740
@@ -589,18 +590,18 @@ msgstr "Připojení bylo úspěšné! Klíč %1 je platný."
 msgid "Coordinates"
 msgstr "Souřadnice"
 
-#: contents/ui/config/configAppearance.qml:1392
-#: contents/ui/config/configAppearance.qml:1515
-#: contents/ui/config/configAppearance.qml:1638
+#: contents/ui/config/configAppearance.qml:1396
+#: contents/ui/config/configAppearance.qml:1519
+#: contents/ui/config/configAppearance.qml:1642
 msgid "Current date and/or time"
 msgstr "Aktuální datum a/nebo čas"
 
-#: contents/ui/config/configAppearance.qml:1329
+#: contents/ui/config/configAppearance.qml:1333
 msgid "Current moon phase"
 msgstr "Aktuální fáze měsíce"
 
-#: contents/ui/config/configAppearance.qml:1279
-#: contents/ui/config/configAppearance.qml:1526
+#: contents/ui/config/configAppearance.qml:1283
+#: contents/ui/config/configAppearance.qml:1530
 msgid "Current temperature"
 msgstr "Aktuální teplota"
 
@@ -623,8 +624,8 @@ msgstr "Vlastní ikony podmínek"
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:649
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:729
 #: contents/ui/config/tabs/ConfigPanelTab.qml:205
-#: contents/ui/config/tabs/ConfigPanelTab.qml:517
-#: contents/ui/config/tabs/ConfigPanelTab.qml:610
+#: contents/ui/config/tabs/ConfigPanelTab.qml:590
+#: contents/ui/config/tabs/ConfigPanelTab.qml:683
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:54
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:264
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:323
@@ -635,7 +636,7 @@ msgstr "Vlastní…"
 msgid "Dark Sky-compatible API with US alerts. API key required below."
 msgstr "Rozhraní API kompatibilní s Dark Sky s výstrahami v USA. Níže je vyžadován klíč API."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:598
+#: contents/ui/config/tabs/ConfigPanelTab.qml:671
 msgid "Dash  –"
 msgstr "Pomlčka  –"
 
@@ -643,9 +644,9 @@ msgstr "Pomlčka  –"
 msgid "Data Refresh"
 msgstr "Aktualizace dat"
 
-#: contents/ui/config/configAppearance.qml:1391
-#: contents/ui/config/configAppearance.qml:1514
-#: contents/ui/config/configAppearance.qml:1637 contents/ui/DetailsView.qml:302
+#: contents/ui/config/configAppearance.qml:1395
+#: contents/ui/config/configAppearance.qml:1518
+#: contents/ui/config/configAppearance.qml:1641 contents/ui/DetailsView.qml:302
 msgid "Date / Time"
 msgstr "Datum / Čas"
 
@@ -735,12 +736,12 @@ msgstr "Zjistit / změnit polohu…"
 msgid "Detecting…"
 msgstr "Detekuje se…"
 
-#: contents/ui/config/configAppearance.qml:1437 contents/ui/DetailsView.qml:290
+#: contents/ui/config/configAppearance.qml:1441 contents/ui/DetailsView.qml:290
 #: contents/ui/SimpleView.qml:314
 msgid "Dew Point"
 msgstr "Rosný bod"
 
-#: contents/ui/config/configAppearance.qml:1438
+#: contents/ui/config/configAppearance.qml:1442
 msgid "Dew point temperature"
 msgstr "Teplota rosného bodu"
 
@@ -753,6 +754,7 @@ msgstr "Rosný bod:"
 msgid "Disable item"
 msgstr "Vypnout položku"
 
+#: contents/ui/config/tabs/ConfigPanelTab.qml:391
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:47
 msgid "Disabled"
 msgstr "Vypnutý"
@@ -777,9 +779,9 @@ msgstr "Režim zobrazení:"
 msgid "Displaying °C and °F together"
 msgstr "Zobrazení °C a °F současně"
 
-#: contents/ui/config/configAppearance.qml:1364
-#: contents/ui/config/configAppearance.qml:1487
-#: contents/ui/config/configAppearance.qml:1610
+#: contents/ui/config/configAppearance.qml:1368
+#: contents/ui/config/configAppearance.qml:1491
+#: contents/ui/config/configAppearance.qml:1614
 msgid "Dominant pollen type and index"
 msgstr "Dominantní typ a index pylu"
 
@@ -838,6 +840,7 @@ msgstr "Povolit nebo zakázat tuto položku na panelu"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:126
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:124
+#: contents/ui/config/tabs/ConfigPanelTab.qml:391
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:47
 msgid "Enabled"
 msgstr "Zapnutý"
@@ -906,7 +909,7 @@ msgstr "Večer — "
 msgid "Excellent"
 msgstr "Výborná"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:658
+#: contents/ui/config/tabs/ConfigPanelTab.qml:731
 msgid "Expand widget to fill available panel space"
 msgstr "Rozbalte widget pro vyplnění dostupného místa na panelu"
 
@@ -943,9 +946,9 @@ msgstr "Selhalo: %1"
 msgid "Fair"
 msgstr "Přiměřená"
 
-#: contents/ui/config/configAppearance.qml:1300
-#: contents/ui/config/configAppearance.qml:1402
-#: contents/ui/config/configAppearance.qml:1539 contents/ui/DetailsView.qml:285
+#: contents/ui/config/configAppearance.qml:1304
+#: contents/ui/config/configAppearance.qml:1406
+#: contents/ui/config/configAppearance.qml:1543 contents/ui/DetailsView.qml:285
 #: contents/ui/SimpleView.qml:311
 msgid "Feels Like"
 msgstr "Pocitová"
@@ -958,7 +961,11 @@ msgstr "Pocitová:"
 msgid "Feels like: %1"
 msgstr "Pocitová: %1"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:657
+#: contents/ui/config/tabs/ConfigPanelTab.qml:355
+msgid "Fill panel"
+msgstr "Vyplnit panel"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:730
 msgid "Fill panel:"
 msgstr "Vyplnit panel:"
 
@@ -978,7 +985,7 @@ msgstr "První den v týdnu:"
 msgid "Flare Warning"
 msgstr "Varování před sluneční erupcí"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:765
+#: contents/ui/config/tabs/ConfigPanelTab.qml:838
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:208
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:43
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:52
@@ -992,7 +999,7 @@ msgstr "Jednobarevné (vestavěné)"
 msgid "Fog"
 msgstr "Mlha"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:757
+#: contents/ui/config/tabs/ConfigPanelTab.qml:830
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:200
 msgid "Font icons (default)"
 msgstr "Ikony písma (výchozí)"
@@ -1175,13 +1182,13 @@ msgstr "Nastavení hodinové předpovědi"
 msgid "Hourly layout:"
 msgstr "Hodinové rozvržení:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:478
+#: contents/ui/config/tabs/ConfigPanelTab.qml:551
 msgid "How often the rows scroll to reveal the next item"
 msgstr "Jak často se řádky posouvají, aby se zobrazila další položka"
 
-#: contents/ui/config/configAppearance.qml:1307
-#: contents/ui/config/configAppearance.qml:1409
-#: contents/ui/config/configAppearance.qml:1553 contents/ui/DetailsView.qml:286
+#: contents/ui/config/configAppearance.qml:1311
+#: contents/ui/config/configAppearance.qml:1413
+#: contents/ui/config/configAppearance.qml:1557 contents/ui/DetailsView.qml:286
 #: contents/ui/SimpleView.qml:312
 msgid "Humidity"
 msgstr "Vlhkost"
@@ -1215,7 +1222,7 @@ msgstr "Velikost ikon:"
 msgid "Icon source:"
 msgstr "Zdroj ikon:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:749
+#: contents/ui/config/tabs/ConfigPanelTab.qml:822
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:191
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:482
 msgid "Icon theme:"
@@ -1306,11 +1313,11 @@ msgstr "Neplatná odpověď"
 msgid "Invalid response from QWeather."
 msgstr "Neplatná odpověď od QWeather."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:642
+#: contents/ui/config/tabs/ConfigPanelTab.qml:715
 msgid "Item spacing:"
 msgstr "Mezery mezi položkami:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:560
+#: contents/ui/config/tabs/ConfigPanelTab.qml:633
 msgid "Item width:"
 msgstr "Šířka položky:"
 
@@ -1318,7 +1325,7 @@ msgstr "Šířka položky:"
 msgid "Items Order:"
 msgstr "Pořadí položek:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:773
+#: contents/ui/config/tabs/ConfigPanelTab.qml:846
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:41
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:49
 msgid "KDE Icon Theme"
@@ -1446,7 +1453,7 @@ msgstr "Slabé sněžení (noc)"
 msgid "Light snow showers"
 msgstr "Slabé sněhové přeháňky"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:482
+#: contents/ui/config/tabs/ConfigPanelTab.qml:555
 msgid "Lines:"
 msgstr "Řádky:"
 
@@ -1479,7 +1486,7 @@ msgstr "Poloha"
 msgid "Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again."
 msgstr "Poloha '%1' je již ve vašem seznamu uložených položek. Vybranou polohu můžete použít, ale nebude znovu uložena."
 
-#: contents/ui/config/configAppearance.qml:1321
+#: contents/ui/config/configAppearance.qml:1325
 msgid "Location Name"
 msgstr "Název polohy"
 
@@ -1512,7 +1519,7 @@ msgstr "Název polohy:"
 
 #: contents/ui/config/configLocation.qml:1515
 msgid "Location package notice"
-msgstr ""
+msgstr "Oznámení o balíčku polohy"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Location staged. Click the main Apply button to save."
@@ -1552,7 +1559,7 @@ msgstr "Nízká"
 msgid "Magnetic Field (Bz)"
 msgstr "Magnetické pole (Bz)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:500
+#: contents/ui/config/tabs/ConfigPanelTab.qml:573
 msgid "Main icon style:"
 msgstr "Styl hlavní ikony:"
 
@@ -1572,7 +1579,8 @@ msgstr "Převážně jasno (v noci)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:241
 #: contents/ui/config/tabs/ConfigPanelTab.qml:310
-#: contents/ui/config/tabs/ConfigPanelTab.qml:704
+#: contents/ui/config/tabs/ConfigPanelTab.qml:356
+#: contents/ui/config/tabs/ConfigPanelTab.qml:777
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:104
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:147
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:419
@@ -1610,7 +1618,7 @@ msgstr "Minimální šířka:"
 msgid "Minor geomagnetic storm."
 msgstr "Mírná geomagnetická bouře."
 
-#: contents/ui/config/configAppearance.qml:1947
+#: contents/ui/config/configAppearance.qml:1951
 msgid "Misc"
 msgstr "Různé"
 
@@ -1657,7 +1665,7 @@ msgstr "Pondělí"
 msgid "Moon"
 msgstr "Měsíc"
 
-#: contents/ui/config/configAppearance.qml:1328
+#: contents/ui/config/configAppearance.qml:1332
 msgid "Moon Phase"
 msgstr "Fáze měsíce"
 
@@ -1665,8 +1673,8 @@ msgstr "Fáze měsíce"
 msgid "Moon mode:"
 msgstr "Možnosti podrobností o měsíci:"
 
-#: contents/ui/config/configAppearance.qml:1451
-#: contents/ui/config/configAppearance.qml:1574
+#: contents/ui/config/configAppearance.qml:1455
+#: contents/ui/config/configAppearance.qml:1578
 msgid "Moon phase and moonrise/moonset"
 msgstr "Fáze měsíce a východ/západ měsíce"
 
@@ -1688,8 +1696,8 @@ msgstr "Měsíc"
 msgid "Moon phase options"
 msgstr "Možnosti fáze měsíce"
 
-#: contents/ui/config/configAppearance.qml:1452
-#: contents/ui/config/configAppearance.qml:1575
+#: contents/ui/config/configAppearance.qml:1456
+#: contents/ui/config/configAppearance.qml:1579
 msgid "Moon phase, moonrise & moonset"
 msgstr "Fáze měsíce, východ a západ měsíce"
 
@@ -1766,9 +1774,9 @@ msgstr "Pelyněk"
 msgid "Multiple lines (tall panel)"
 msgstr "Více řádků (vysoký panel)"
 
-#: contents/ui/config/configAppearance.qml:1371
-#: contents/ui/config/configAppearance.qml:1494
-#: contents/ui/config/configAppearance.qml:1617
+#: contents/ui/config/configAppearance.qml:1375
+#: contents/ui/config/configAppearance.qml:1498
+#: contents/ui/config/configAppearance.qml:1621
 msgid "NOAA Kp index and geomagnetic activity"
 msgstr "NOAA Kp index a geomagnetická aktivita"
 
@@ -1845,7 +1853,7 @@ msgstr "Není k dispozici (HTTP %1)"
 msgid "Not tested"
 msgstr "Netestován"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:739
+#: contents/ui/config/tabs/ConfigPanelTab.qml:812
 msgid "Note: size may be reduced if the panel is not thick enough."
 msgstr "Poznámka: velikost může být zmenšena, pokud panel není dostatečně tlustý."
 
@@ -1854,7 +1862,7 @@ msgstr "Poznámka: velikost může být zmenšena, pokud panel není dostatečn�
 msgid "Now: %1%2"
 msgstr "Nyní: %1%2"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:488
+#: contents/ui/config/tabs/ConfigPanelTab.qml:561
 msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
 msgstr "Počet řádků položek viditelných najednou. Změňte velikost panelu v nastavení KDE tak, aby odpovídala."
 
@@ -1870,7 +1878,7 @@ msgstr "Olivovník"
 #: contents/ui/config/configLocation.qml:1106
 #: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:105
 msgid "Open install guide"
-msgstr ""
+msgstr "Otevřít instalační příručku"
 
 #: contents/ui/config/configGeneral.qml:271
 msgid "Open-Meteo (recommended, free)"
@@ -1913,7 +1921,7 @@ msgstr "PM10"
 msgid "PM2.5"
 msgstr "PM2.5"
 
-#: contents/ui/config/configAppearance.qml:1935
+#: contents/ui/config/configAppearance.qml:1939
 #: contents/ui/config/tabs/ConfigMiscTab.qml:132
 msgid "Panel"
 msgstr "Panel"
@@ -1926,15 +1934,15 @@ msgstr "Položky panelu"
 msgid "Panel display settings"
 msgstr "Nastavení zobrazení panelu"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:688
+#: contents/ui/config/tabs/ConfigPanelTab.qml:761
 msgid "Panel font:"
 msgstr "Písmo panelu:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:664
+#: contents/ui/config/tabs/ConfigPanelTab.qml:737
 msgid "Panel items settings"
 msgstr "Nastavení položek panelu"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:853
+#: contents/ui/config/tabs/ConfigPanelTab.qml:926
 msgid "Panel items:"
 msgstr "Položky panelu:"
 
@@ -1980,9 +1988,9 @@ msgstr "Fáze + nadcházející východ/západ"
 
 #: contents/ui/config/configLocation.qml:1578
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
-msgstr ""
+msgstr "Vyberte si přesné místo na mapě pro lokálnější předpověď, například vaši čtvrť nebo konkrétní památku."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:594
+#: contents/ui/config/tabs/ConfigPanelTab.qml:667
 msgid "Pipe  |"
 msgstr "Svislá čára  |"
 
@@ -1998,9 +2006,9 @@ msgstr "Pirate Weather API klíč:"
 msgid "Play"
 msgstr "Přehrát"
 
-#: contents/ui/config/configAppearance.qml:1363
-#: contents/ui/config/configAppearance.qml:1486
-#: contents/ui/config/configAppearance.qml:1609 contents/ui/DetailsView.qml:298
+#: contents/ui/config/configAppearance.qml:1367
+#: contents/ui/config/configAppearance.qml:1490
+#: contents/ui/config/configAppearance.qml:1613 contents/ui/DetailsView.qml:298
 #: contents/ui/SimpleView.qml:320
 msgid "Pollen"
 msgstr "Pyl"
@@ -2029,22 +2037,22 @@ msgstr "Úhrn srážek"
 msgid "Precip. Sum:"
 msgstr "Úhrn srážek:"
 
-#: contents/ui/config/configAppearance.qml:1335
-#: contents/ui/config/configAppearance.qml:1458
-#: contents/ui/config/configAppearance.qml:1581 contents/ui/DetailsView.qml:294
+#: contents/ui/config/configAppearance.qml:1339
+#: contents/ui/config/configAppearance.qml:1462
+#: contents/ui/config/configAppearance.qml:1585 contents/ui/DetailsView.qml:294
 #: contents/ui/SimpleView.qml:316
 msgid "Precipitation"
 msgstr "Srážky"
 
-#: contents/ui/config/configAppearance.qml:1342
-#: contents/ui/config/configAppearance.qml:1465
-#: contents/ui/config/configAppearance.qml:1588 contents/ui/DetailsView.qml:295
+#: contents/ui/config/configAppearance.qml:1346
+#: contents/ui/config/configAppearance.qml:1469
+#: contents/ui/config/configAppearance.qml:1592 contents/ui/DetailsView.qml:295
 msgid "Precipitation Sum"
 msgstr "Úhrn srážek"
 
-#: contents/ui/config/configAppearance.qml:1336
-#: contents/ui/config/configAppearance.qml:1459
-#: contents/ui/config/configAppearance.qml:1582
+#: contents/ui/config/configAppearance.qml:1340
+#: contents/ui/config/configAppearance.qml:1463
+#: contents/ui/config/configAppearance.qml:1586
 msgid "Precipitation rate (mm/h)"
 msgstr "Úhrn srážek (mm/h)"
 
@@ -2057,9 +2065,9 @@ msgid "Prefix style:"
 msgstr "Styl předpony:"
 
 #: contents/ui/components/RadarWebEngineView.qml:69
-#: contents/ui/config/configAppearance.qml:1314
-#: contents/ui/config/configAppearance.qml:1416
-#: contents/ui/config/configAppearance.qml:1560 contents/ui/DetailsView.qml:287
+#: contents/ui/config/configAppearance.qml:1318
+#: contents/ui/config/configAppearance.qml:1420
+#: contents/ui/config/configAppearance.qml:1564 contents/ui/DetailsView.qml:287
 #: contents/ui/SimpleView.qml:313
 msgid "Pressure"
 msgstr "Tlak"
@@ -2228,12 +2236,12 @@ msgstr "Výchozí hodnota regionu (dlouhý)"
 msgid "Region default (short)"
 msgstr "Výchozí hodnota regionu (krátký)"
 
-#: contents/ui/config/configAppearance.qml:1410
-#: contents/ui/config/configAppearance.qml:1554
+#: contents/ui/config/configAppearance.qml:1414
+#: contents/ui/config/configAppearance.qml:1558
 msgid "Relative humidity %"
 msgstr "Relativní vlhkost"
 
-#: contents/ui/config/configAppearance.qml:1308
+#: contents/ui/config/configAppearance.qml:1312
 msgid "Relative humidity percentage"
 msgstr "Procento relativní vlhkosti"
 
@@ -2262,7 +2270,7 @@ msgstr "Získávám polohu… (%1)"
 #: contents/ui/config/configAppearance.qml:835
 #: contents/ui/config/configAppearance.qml:960
 #: contents/ui/config/configAppearance.qml:1003
-#: contents/ui/config/tabs/ConfigPanelTab.qml:434
+#: contents/ui/config/tabs/ConfigPanelTab.qml:507
 msgid "Reset"
 msgstr "Obnovit"
 
@@ -2294,11 +2302,11 @@ msgstr "Sobota"
 msgid "Saved locations"
 msgstr "Uložená místa"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:492
+#: contents/ui/config/tabs/ConfigPanelTab.qml:565
 msgid "Scroll animation:"
 msgstr "Animace posouvání:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:472
+#: contents/ui/config/tabs/ConfigPanelTab.qml:545
 msgid "Scroll interval (sec):"
 msgstr "Interval posouvání (s):"
 
@@ -2332,7 +2340,7 @@ msgid "Secondary unit shown first (e.g. °F / °C)"
 msgstr "Sekundární jednotka zobrazená jako první (např. °F / °C)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:106
-#: contents/ui/config/tabs/ConfigPanelTab.qml:583
+#: contents/ui/config/tabs/ConfigPanelTab.qml:656
 msgid "Separator:"
 msgstr "Oddělovač:"
 
@@ -2356,7 +2364,7 @@ msgstr "Nastavit jako výchozí místo"
 msgid "Set as default?"
 msgstr "Nastavit jako výchozí?"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:842
+#: contents/ui/config/tabs/ConfigPanelTab.qml:915
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:285
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:530
 msgid "Set your own icons…"
@@ -2365,6 +2373,10 @@ msgstr "Nastavit vlastní ikony…"
 #: contents/ui/js/spaceWeather.js:88
 msgid "Severe geomagnetic storm."
 msgstr "Silná geomagnetická bouře."
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:400
+msgid "Shadow intensity:"
+msgstr "Intenzita stínu:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:964
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:817
@@ -2486,7 +2498,7 @@ msgstr "Nastavení jednoduchého režimu zobrazení"
 msgid "Single line (all items at once)"
 msgstr "Jeden řádek (všechny položky najednou)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:787
+#: contents/ui/config/tabs/ConfigPanelTab.qml:860
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:230
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:494
 msgid "Size:"
@@ -2512,7 +2524,7 @@ msgstr "Mírné sněhové přeháňky"
 msgid "Slight snowfall"
 msgstr "Mírné sněžení"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:606
+#: contents/ui/config/tabs/ConfigPanelTab.qml:679
 msgid "Small circle  ⚬"
 msgstr "Malý kroužek ⚬"
 
@@ -2529,9 +2541,9 @@ msgstr "Sníh (den)"
 msgid "Snow (night)"
 msgstr "Sníh (noc)"
 
-#: contents/ui/config/configAppearance.qml:1384
-#: contents/ui/config/configAppearance.qml:1507
-#: contents/ui/config/configAppearance.qml:1630 contents/ui/DetailsView.qml:301
+#: contents/ui/config/configAppearance.qml:1388
+#: contents/ui/config/configAppearance.qml:1511
+#: contents/ui/config/configAppearance.qml:1634 contents/ui/DetailsView.qml:301
 #: contents/ui/SimpleView.qml:323
 msgid "Snow Cover"
 msgstr "Sněhová pokrývka"
@@ -2540,9 +2552,9 @@ msgstr "Sněhová pokrývka"
 msgid "Snow Cover:"
 msgstr "Sněhová pokrývka:"
 
-#: contents/ui/config/configAppearance.qml:1385
-#: contents/ui/config/configAppearance.qml:1508
-#: contents/ui/config/configAppearance.qml:1631
+#: contents/ui/config/configAppearance.qml:1389
+#: contents/ui/config/configAppearance.qml:1512
+#: contents/ui/config/configAppearance.qml:1635
 msgid "Snow depth (cm/in)"
 msgstr "Hloubka sněhu (cm/in)"
 
@@ -2562,13 +2574,13 @@ msgstr "Sněhové přeháňky"
 msgid "Solar Wind"
 msgstr "Solární vítr"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:602
+#: contents/ui/config/tabs/ConfigPanelTab.qml:675
 msgid "Space"
 msgstr "Vesmír"
 
-#: contents/ui/config/configAppearance.qml:1370
-#: contents/ui/config/configAppearance.qml:1493
-#: contents/ui/config/configAppearance.qml:1616 contents/ui/DetailsView.qml:299
+#: contents/ui/config/configAppearance.qml:1374
+#: contents/ui/config/configAppearance.qml:1497
+#: contents/ui/config/configAppearance.qml:1620 contents/ui/DetailsView.qml:299
 #: contents/ui/SimpleView.qml:321
 msgid "Space Weather"
 msgstr "Vesmírné počasí"
@@ -2619,8 +2631,8 @@ msgstr "Silná geomagnetická bouře."
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "Oxid siřičitý (SO₂)"
 
-#: contents/ui/config/configAppearance.qml:1431
-#: contents/ui/config/configAppearance.qml:1568
+#: contents/ui/config/configAppearance.qml:1435
+#: contents/ui/config/configAppearance.qml:1572
 msgid "Sun rise & set times"
 msgstr "Čas východu a západu slunce"
 
@@ -2642,7 +2654,7 @@ msgstr "Neděle"
 
 #: contents/ui/DetailsView.qml:2684 contents/ui/DetailsView.qml:2688
 #: contents/ui/DetailsView.qml:3002 contents/ui/DetailsView.qml:3006
-#: contents/ui/ForecastView.qml:524
+#: contents/ui/ForecastView.qml:535
 msgid "Sunrise"
 msgstr "Východ slunce"
 
@@ -2650,7 +2662,7 @@ msgstr "Východ slunce"
 msgid "Sunrise / Sunset:"
 msgstr "Východ / Západ slunce:"
 
-#: contents/ui/config/configAppearance.qml:1286
+#: contents/ui/config/configAppearance.qml:1290
 msgid "Sunrise and sunset times"
 msgstr "Časy východu a západu slunce"
 
@@ -2668,9 +2680,9 @@ msgstr "Pouze východ slunce"
 msgid "Sunrise only  07:17"
 msgstr "Pouze východ slunce 07:17"
 
-#: contents/ui/config/configAppearance.qml:1285
-#: contents/ui/config/configAppearance.qml:1430
-#: contents/ui/config/configAppearance.qml:1567 contents/ui/DetailsView.qml:289
+#: contents/ui/config/configAppearance.qml:1289
+#: contents/ui/config/configAppearance.qml:1434
+#: contents/ui/config/configAppearance.qml:1571 contents/ui/DetailsView.qml:289
 msgid "Sunrise/Sunset"
 msgstr "Východ/Západ slunce"
 
@@ -2719,14 +2731,14 @@ msgstr "Umístění přepínače"
 msgid "Symbolic"
 msgstr "Symbolické"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:761
+#: contents/ui/config/tabs/ConfigPanelTab.qml:834
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:204
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:42
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:51
 msgid "Symbolic (Bundled)"
 msgstr "Symbolické (vestavěné)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:513
+#: contents/ui/config/tabs/ConfigPanelTab.qml:586
 msgid "Symbolic (follows theme colour)"
 msgstr "Symbolické (podle barvy motivu)"
 
@@ -2735,12 +2747,12 @@ msgid "System location unavailable, trying IP geolocation…"
 msgstr "Systémová poloha není k dispozici, zkouším geolokaci pomocí IP…"
 
 #: contents/ui/components/RadarWebEngineView.qml:67
-#: contents/ui/config/configAppearance.qml:1278
-#: contents/ui/config/configAppearance.qml:1525
+#: contents/ui/config/configAppearance.qml:1282
+#: contents/ui/config/configAppearance.qml:1529
 msgid "Temperature"
 msgstr "Teplota"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:348
+#: contents/ui/config/tabs/ConfigPanelTab.qml:421
 msgid "Temperature badge"
 msgstr "Štítek teploty"
 
@@ -2751,6 +2763,10 @@ msgstr "Teplota první"
 #: contents/ui/config/tabs/ConfigPanelTab.qml:139
 msgid "Temperature only"
 msgstr "Pouze teplota"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:384
+msgid "Temperature shadow:"
+msgstr "Teplotní stín:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:221
 #: contents/ui/TooltipContent.qml:411
@@ -2778,13 +2794,13 @@ msgstr "Testuji…"
 msgid "Text labels (Temperature, Wind…)"
 msgstr "Textové štítky (teplota, vítr…)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:711
+#: contents/ui/config/tabs/ConfigPanelTab.qml:784
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Text bude podle systémového písma a rozbalí se tak, aby vyplnil dostupný prostor."
 
 #: contents/ui/RadarView.qml:75
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
-msgstr ""
+msgstr "Karta Radar vyžaduje balíček QtWebEngine, který není v tomto systému nainstalován."
 
 #: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
@@ -2796,9 +2812,9 @@ msgstr "Ikona podmínek bude automaticky reflektovat aktuální počasí pomocí
 
 #: contents/ui/config/configLocation.qml:1089
 msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
-msgstr ""
+msgstr "Výběr z mapy vyžaduje balíčky QtLocation a QtPositioning, které nejsou v tomto systému nainstalovány."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:425
+#: contents/ui/config/tabs/ConfigPanelTab.qml:498
 msgid "Theme default"
 msgstr "Výchozí pozadí motivu"
 
@@ -2869,9 +2885,9 @@ msgstr "Chcete-li odemknout další vrstvy mapy (déšť, oblačnost, teplota, v
 msgid "Today"
 msgstr "Dnes"
 
-#: contents/ui/config/configAppearance.qml:1343
-#: contents/ui/config/configAppearance.qml:1466
-#: contents/ui/config/configAppearance.qml:1589
+#: contents/ui/config/configAppearance.qml:1347
+#: contents/ui/config/configAppearance.qml:1470
+#: contents/ui/config/configAppearance.qml:1593
 msgid "Today's total precipitation (mm/in)"
 msgstr "Dnešní celkové srážky (mm/in)"
 
@@ -2883,7 +2899,7 @@ msgstr "Tomorrow.io (klíč je povinný)"
 msgid "Tomorrow.io API Key:"
 msgstr "Tomorrow.io API Key:"
 
-#: contents/ui/config/configAppearance.qml:1943
+#: contents/ui/config/configAppearance.qml:1947
 #: contents/ui/config/tabs/ConfigMiscTab.qml:137
 msgid "Tooltip"
 msgstr "Popisek"
@@ -2916,15 +2932,15 @@ msgstr "Šířka popisku:"
 msgid "Tooltip:"
 msgstr "Popisek:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:366
+#: contents/ui/config/tabs/ConfigPanelTab.qml:439
 msgid "Top Center"
 msgstr "Nahoru na střed"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:364
+#: contents/ui/config/tabs/ConfigPanelTab.qml:437
 msgid "Top Left"
 msgstr "Vlevo nahoře"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:363
+#: contents/ui/config/tabs/ConfigPanelTab.qml:436
 msgid "Top Right"
 msgstr "Vpravo nahoře"
 
@@ -2932,9 +2948,9 @@ msgstr "Vpravo nahoře"
 msgid "Truncate (single line)"
 msgstr "Zkrátit (jeden řádek)"
 
-#: contents/ui/config/configAppearance.qml:1349
-#: contents/ui/config/configAppearance.qml:1472
-#: contents/ui/config/configAppearance.qml:1595 contents/ui/DetailsView.qml:296
+#: contents/ui/config/configAppearance.qml:1353
+#: contents/ui/config/configAppearance.qml:1476
+#: contents/ui/config/configAppearance.qml:1599 contents/ui/DetailsView.qml:296
 #: contents/ui/SimpleView.qml:318
 msgid "UV Index"
 msgstr "UV index"
@@ -2943,9 +2959,9 @@ msgstr "UV index"
 msgid "UV Index:"
 msgstr "UV index:"
 
-#: contents/ui/config/configAppearance.qml:1350
-#: contents/ui/config/configAppearance.qml:1473
-#: contents/ui/config/configAppearance.qml:1596
+#: contents/ui/config/configAppearance.qml:1354
+#: contents/ui/config/configAppearance.qml:1477
+#: contents/ui/config/configAppearance.qml:1600
 msgid "Ultraviolet index"
 msgstr "Ultrafialový index"
 
@@ -3025,7 +3041,7 @@ msgstr "Použít manuální polohu"
 msgid "Use region defaults"
 msgstr "Použít výchozí nastavení regionu"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:834
+#: contents/ui/config/tabs/ConfigPanelTab.qml:907
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:277
 msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
 msgstr "Ve výchozím nastavení používá ikony systému KDE. Kliknutím na tlačítko můžete přizpůsobit ikonu každé položky."
@@ -3059,12 +3075,12 @@ msgstr "Velmi špatná"
 msgid "Violent rain showers"
 msgstr "Prudké dešťové přeháňky"
 
-#: contents/ui/config/configAppearance.qml:1444 contents/ui/DetailsView.qml:291
+#: contents/ui/config/configAppearance.qml:1448 contents/ui/DetailsView.qml:291
 #: contents/ui/SimpleView.qml:315
 msgid "Visibility"
 msgstr "Dohlednost"
 
-#: contents/ui/config/configAppearance.qml:1445
+#: contents/ui/config/configAppearance.qml:1449
 msgid "Visibility distance"
 msgstr "Dohlednost"
 
@@ -3116,17 +3132,17 @@ msgstr "Poskytovatel počasí"
 msgid "Weather Widget"
 msgstr "Widget počasí"
 
-#: contents/ui/config/configAppearance.qml:1378
-#: contents/ui/config/configAppearance.qml:1501
-#: contents/ui/config/configAppearance.qml:1624
+#: contents/ui/config/configAppearance.qml:1382
+#: contents/ui/config/configAppearance.qml:1505
+#: contents/ui/config/configAppearance.qml:1628
 msgid "Weather alerts"
 msgstr "Upozornění na počasí"
 
-#: contents/ui/config/configAppearance.qml:1533
+#: contents/ui/config/configAppearance.qml:1537
 msgid "Weather condition text"
 msgstr "Slovní popis počasí"
 
-#: contents/ui/config/configAppearance.qml:1272
+#: contents/ui/config/configAppearance.qml:1276
 msgid "Weather icon + condition text"
 msgstr "Ikona počasí + slovní popis"
 
@@ -3162,7 +3178,7 @@ msgstr "Klíč API Weatherbit:"
 msgid "Website"
 msgstr "Webové stránky"
 
-#: contents/ui/config/configAppearance.qml:1939
+#: contents/ui/config/configAppearance.qml:1943
 #: contents/ui/config/tabs/ConfigMiscTab.qml:127
 msgid "Widget"
 msgstr "Widget"
@@ -3171,19 +3187,23 @@ msgstr "Widget"
 msgid "Widget Size"
 msgstr "Velikost widgetu"
 
+#: contents/ui/config/tabs/ConfigPanelTab.qml:347
+msgid "Widget panel area:"
+msgstr "Oblast panelu widgetů:"
+
 #: contents/ui/components/RadarWebEngineView.qml:68
-#: contents/ui/config/configAppearance.qml:1292
-#: contents/ui/config/configAppearance.qml:1423
-#: contents/ui/config/configAppearance.qml:1546 contents/ui/DetailsView.qml:288
+#: contents/ui/config/configAppearance.qml:1296
+#: contents/ui/config/configAppearance.qml:1427
+#: contents/ui/config/configAppearance.qml:1550 contents/ui/DetailsView.qml:288
 msgid "Wind"
 msgstr "Větrná"
 
-#: contents/ui/config/configAppearance.qml:1424
-#: contents/ui/config/configAppearance.qml:1547
+#: contents/ui/config/configAppearance.qml:1428
+#: contents/ui/config/configAppearance.qml:1551
 msgid "Wind speed + direction"
 msgstr "Rychlost větru + směr"
 
-#: contents/ui/config/configAppearance.qml:1293
+#: contents/ui/config/configAppearance.qml:1297
 msgid "Wind speed and direction"
 msgstr "Rychlost a směr větru"
 
@@ -3257,11 +3277,19 @@ msgstr "metry"
 msgid "minutes"
 msgstr "minuty"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:569
+#: contents/ui/config/tabs/ConfigPanelTab.qml:642
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:127
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:170
 msgid "px"
 msgstr "px"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:377
+msgid "px height"
+msgstr "Výška (px)"
+
+#: contents/ui/config/tabs/ConfigPanelTab.qml:377
+msgid "px width"
+msgstr "Šířka (px)"
 
 #: contents/ui/config/configLocation.qml:900
 msgid "system location"
@@ -3284,7 +3312,7 @@ msgstr "do úsvitu"
 #~ "Providers are tried in order until one succeeds:\n"
 #~ "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 #~ "Open-Meteo is always tried first — it is free and requires no API key."
-#~ msgstr ""
+#~ msgstr "Open-Meteo se vždy zkouší jako první – je zdarma a nevyžaduje API klíč."
 #~ "Poskytovatelé jsou zkoušeni v pořadí, dokud jeden neuspěje:\n"
 #~ "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 #~ "Open-Meteo je vždy vyzkoušen jako první — je zdarma a nevyžaduje žádný klíč API."

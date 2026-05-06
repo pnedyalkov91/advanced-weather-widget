@@ -42,7 +42,7 @@
     <entry name="weatherProvider"    type="String"><default>adaptive</default></entry>
     <!-- Saved locations: JSON array of {name, lat, lon, altitude, timezone, countryCode} -->
     <entry name="savedLocations"     type="String"><default>[]</default></entry>
-    <!-- User API keys: empty = use widget's bundled key -->
+    <!-- User API keys -->
     <entry name="owApiKey"           type="String"><default></default></entry>
     <entry name="waApiKey"           type="String"><default></default></entry>
     <entry name="pwApiKey"           type="String"><default></default></entry>
@@ -153,8 +153,8 @@
     <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
 
     <!-- ── Widget — details view ──────────────────────────────────────── -->
-    <entry name="widgetDetailsOrder"    type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes;preciprate;precipsum;uvindex;airquality;pollen;spaceweather;alerts;snowcover</default></entry>
-    <entry name="widgetDetailsItemIcons" type="String"><default>feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
+    <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>
+    <entry name="widgetDetailsItemIcons" type="String"><default>humidity=1;pressure=1;wind=1;preciprate=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;datetime=1;pollen=1;snowcover=1</default></entry>
     <entry name="widgetDetailsCustomIcons" type="String"><default></default></entry>
     <entry name="widgetDetailsLayout"   type="String"><default>cards2</default></entry>
     <entry name="widgetSunTimesMode"    type="String"><default>both</default></entry>
