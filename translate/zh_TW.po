@@ -19,7 +19,7 @@ msgstr ""
 
 #: contents/ui/DetailsView.qml:2919 contents/ui/DetailsView.qml:2921
 msgid " until dawn"
-msgstr " 直到黎明"
+msgstr " 後日出"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:808
 msgctxt "@info %1 size %2 family"
@@ -108,7 +108,7 @@ msgstr "AQI"
 
 #: contents/ui/DetailsView.qml:1545 contents/ui/js/spaceWeather.js:171
 msgid "Active"
-msgstr "啟用"
+msgstr "活躍"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:393
 msgid "Adaptive (Open-Meteo)"
@@ -817,7 +817,7 @@ msgstr "編輯地點詳細資訊"
 
 #: contents/ui/DetailsView.qml:1832
 msgid "Effective"
-msgstr "生效中"
+msgstr "生效時間"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:568
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:633
@@ -2592,7 +2592,7 @@ msgstr ""
 #: contents/ui/components/RadarWebEngineView.qml:497
 #: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
-msgstr "暴風雨"
+msgstr "磁暴"
 
 #: contents/ui/config/configGeneral.qml:299
 msgid "StormGlass (Key Required)"
@@ -3246,7 +3246,7 @@ msgstr "英尺"
 
 #: contents/ui/DetailsView.qml:2925
 msgid "left"
-msgstr "左"
+msgstr "後日落"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:370
 msgid "m"
