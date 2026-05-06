@@ -90,6 +90,10 @@ PlasmaCore.ToolTipArea {
     readonly property int simpleLayoutType: Plasmoid.configuration.panelSimpleLayoutType || 0
     readonly property int simpleWidgetOrder: Plasmoid.configuration.panelSimpleWidgetOrder || 0
     readonly property string simpleIconStyle: Plasmoid.configuration.panelSimpleIconStyle || "symbolic"
+    readonly property string simpleClickAreaMode: Plasmoid.configuration.panelSimpleClickAreaMode || "auto"
+    readonly property int simpleClickAreaSize: Math.max(20, Plasmoid.configuration.panelSimpleClickAreaSize || 96)
+    readonly property bool simpleTempShadowEnabled: Plasmoid.configuration.panelSimpleTempShadowEnabled !== false
+    readonly property real simpleTempShadowIntensity: Math.max(0.1, Math.min(1.0, Plasmoid.configuration.panelSimpleTempShadowIntensity !== undefined ? Plasmoid.configuration.panelSimpleTempShadowIntensity : 0.8))
 
     // ── Horizontal layout content filter ──────────────────────────────
     // Controls what is shown in simple mode horizontal layout (type 0):
@@ -267,11 +271,19 @@ PlasmaCore.ToolTipArea {
     //   vertical:   fillHeight:true + preferredHeight:-1
     readonly property bool vertFill: vertical && !isSimpleMode && !isMultiLine && Plasmoid.configuration.panelFillWidth
 
-    Layout.fillHeight: !vertical || compactRoot.vertFill
-    Layout.fillWidth: vertical || Plasmoid.configuration.panelFillWidth
+    Layout.fillHeight: !vertical || compactRoot.vertFill || (compactRoot.isSimpleMode && compactRoot.vertical && compactRoot.simpleClickAreaMode === "fill")
+    Layout.fillWidth: vertical || Plasmoid.configuration.panelFillWidth || (compactRoot.isSimpleMode && !compactRoot.vertical && compactRoot.simpleClickAreaMode === "fill")
 
-    Layout.preferredWidth: (vertical || Plasmoid.configuration.panelFillWidth) ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
+    Layout.preferredWidth: (compactRoot.isSimpleMode && !compactRoot.vertical)
+        ? (compactRoot.simpleClickAreaMode === "fill" ? -1 : (compactRoot.simpleClickAreaMode === "manual" ? compactRoot.simpleClickAreaSize : implicitWidth))
+        : (vertical || Plasmoid.configuration.panelFillWidth) ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
     Layout.preferredHeight: {
+        if (compactRoot.isSimpleMode && compactRoot.vertical) {
+            if (compactRoot.simpleClickAreaMode === "fill")
+                return -1;
+            if (compactRoot.simpleClickAreaMode === "manual")
+                return compactRoot.simpleClickAreaSize;
+        }
         // Vertical single-line + fill: return -1 so fillHeight can expand freely
         // (mirrors preferredWidth:-1 used for horizontal fill)
         if (compactRoot.vertFill)
@@ -311,19 +323,33 @@ PlasmaCore.ToolTipArea {
     }
 
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
-    readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+    readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
+
+    // ── Datetime tick (updates every second to keep the datetime item live) ──
+    property int _dateTimeTick: 0
+    Timer {
+        id: dateTimeTimer
+        interval: 1000
+        running: (Plasmoid.configuration.panelItemOrder || "").indexOf("datetime") >= 0
+            || (Plasmoid.configuration.tooltipItemOrder || "").indexOf("datetime") >= 0
+        repeat: true
+        onTriggered: compactRoot._dateTimeTick++
+    }
 
     // ── Reactive panel items data ─────────────────────────────────────────
     property var panelItemsData: {
         if (!weatherRoot)
             return [];
         // Subscribe to weatherData object (fires once per refresh) plus scalar deps
-        var _deps = weatherRoot.weatherData + weatherRoot.panelScrollIndex
-            + weatherRoot.moonriseTimeText.length + weatherRoot.moonsetTimeText.length
+        // Use safe fallback strings instead of .length to prevent TypeErrors breaking the binding.
+        var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex
+            + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "")
+            + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "")
             + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons
             + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator
             + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode
-            + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize;
+            + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize
+            + compactRoot._dateTimeTick;
         return _buildItems();
     }
 
@@ -345,15 +371,25 @@ PlasmaCore.ToolTipArea {
         running: compactRoot.isMultiLine && compactRoot.multiLineItemsData.length > compactRoot.multiLines
         repeat: true
         onTriggered: {
-            var total = compactRoot.multiLineItemsData.length;
-            compactRoot.mlScrollOffset = (compactRoot.mlScrollOffset + 1) % total;
+            var totalItems = compactRoot.multiLineItemsData.length;
+            var visibleLines = compactRoot.multiLines;
+            if (totalItems <= visibleLines) {
+                compactRoot.mlScrollOffset = 0;
+            } else {
+                var maxOffset = totalItems - visibleLines;
+                compactRoot.mlScrollOffset = (compactRoot.mlScrollOffset + 1);
+                if (compactRoot.mlScrollOffset > maxOffset) {
+                    compactRoot.mlScrollOffset = 0;
+                }
+            }
         }
     }
     onIsMultiLineChanged: mlScrollOffset = 0
-    onMultiLineItemsDataChanged: mlScrollOffset = 0
+    onMultiLineItemsDataChanged: if (mlScrollOffset >= multiLineItemsData.length) mlScrollOffset = 0
 
     mainItem: TooltipContent {
         weatherRoot: compactRoot.weatherRoot
+        _dateTimeTick: compactRoot._dateTimeTick
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -935,11 +971,12 @@ PlasmaCore.ToolTipArea {
                 // smooth background-coloured halo around each glyph, giving the
                 // same contrast as Text.Outline but with GPU-composited AA.
                 DropShadow {
+                    visible: compactRoot.simpleTempShadowEnabled
                     anchors.fill: tempText
                     source: tempText
                     radius: 3
                     samples: 16
-                    spread: 0.8
+                    spread: compactRoot.simpleTempShadowIntensity
                     color: Kirigami.Theme.backgroundColor
                     cached: true
                 }

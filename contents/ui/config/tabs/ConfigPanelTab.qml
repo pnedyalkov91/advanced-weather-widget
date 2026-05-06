@@ -74,6 +74,7 @@ Kirigami.FormLayout {
     Kirigami.InlineMessage {
         visible: panelTab.configRoot.cfg_panelInfoMode === "single" || panelTab.configRoot.cfg_panelInfoMode === "multiline"
         Layout.fillWidth: true
+        Layout.columnSpan: 2
         type: Kirigami.MessageType.Information
         text: i18n("In a vertical panel, long item labels may be truncated. " + "Consider using \"Simple\" mode, increasing the panel width, or reducing the font size.")
         showCloseButton: false
@@ -338,6 +339,79 @@ Kirigami.FormLayout {
         Label {
             text: "px"
             opacity: 0.65
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple"
+        Kirigami.FormData.label: i18n("Widget panel area:")
+        spacing: Kirigami.Units.largeSpacing
+        ComboBox {
+            id: simpleClickAreaModeCombo
+            Layout.preferredWidth: 160
+            textRole: "text"
+            model: [
+                { text: i18n("Auto"), value: "auto" },
+                { text: i18n("Fill panel"), value: "fill" },
+                { text: i18n("Manual"), value: "manual" }
+            ]
+            currentIndex: {
+                var cur = panelTab.configRoot.cfg_panelSimpleClickAreaMode || "auto";
+                for (var i = 0; i < model.length; ++i)
+                    if (model[i].value === cur)
+                        return i;
+                return 0;
+            }
+            onActivated: panelTab.configRoot.cfg_panelSimpleClickAreaMode = model[currentIndex].value
+        }
+        SpinBox {
+            visible: panelTab.configRoot.cfg_panelSimpleClickAreaMode === "manual"
+            from: 20
+            to: 600
+            value: panelTab.configRoot.cfg_panelSimpleClickAreaSize
+            onValueModified: panelTab.configRoot.cfg_panelSimpleClickAreaSize = value
+            Layout.preferredWidth: 90
+        }
+        Label {
+            visible: panelTab.configRoot.cfg_panelSimpleClickAreaMode === "manual"
+            text: panelTab.configRoot.cfg_simplePanelIsVertical ? i18n("px height") : i18n("px width")
+            opacity: 0.65
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        Kirigami.FormData.label: i18n("Temperature shadow:")
+        spacing: Kirigami.Units.largeSpacing
+        Switch {
+            checked: panelTab.configRoot.cfg_panelSimpleTempShadowEnabled
+            onToggled: panelTab.configRoot.cfg_panelSimpleTempShadowEnabled = checked
+        }
+        Label {
+            text: panelTab.configRoot.cfg_panelSimpleTempShadowEnabled ? i18n("Enabled") : i18n("Disabled")
+            opacity: 0.8
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple"
+            && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled
+            && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        Kirigami.FormData.label: i18n("Shadow intensity:")
+        spacing: Kirigami.Units.largeSpacing
+        Slider {
+            id: simpleShadowIntensitySlider
+            Layout.preferredWidth: 160
+            from: 0.1
+            to: 1.0
+            stepSize: 0.05
+            value: panelTab.configRoot.cfg_panelSimpleTempShadowIntensity
+            onMoved: panelTab.configRoot.cfg_panelSimpleTempShadowIntensity = value
+        }
+        Label {
+            text: Math.round(panelTab.configRoot.cfg_panelSimpleTempShadowIntensity * 100) + "%"
+            opacity: 0.65
+            Layout.preferredWidth: 40
         }
     }
 

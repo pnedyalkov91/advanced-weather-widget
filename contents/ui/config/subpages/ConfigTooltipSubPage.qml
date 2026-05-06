@@ -217,6 +217,8 @@ ColumnLayout {
                                             return b + "sandstorm.svg";
                                         if (id === "spaceweather")
                                             return b + "stars.svg";
+                                        if (id === "datetime")
+                                            return b + "time-3.svg";
                                         return "";
                                     }
                                     isMask: configRoot.cfg_tooltipIconTheme === "symbolic"
@@ -395,9 +397,9 @@ ColumnLayout {
                                     opacity: 0.55
                                 }
                             }
-                            // Sun times / Moon phase configure button (all themes)
+                            // Sun times / Moon phase / Date Time configure button (all themes)
                             ToolButton {
-                                visible: model.itemId === "suntimes" || model.itemId === "moonphase"
+                                visible: model.itemId === "suntimes" || model.itemId === "moonphase" || model.itemId === "datetime"
                                 enabled: model.itemEnabled
                                 opacity: model.itemEnabled ? 1.0 : 0.3
                                 implicitWidth: Kirigami.Units.iconSizes.medium
@@ -406,7 +408,12 @@ ColumnLayout {
                                 checkable: true
                                 checked: ttDelegateRoot.settingsExpanded
                                 ToolTip.visible: hovered
-                                ToolTip.text: model.itemId === "suntimes" ? i18n("Sun times options") : i18n("Moon phase options")
+                                ToolTip.text: {
+                                    if (model.itemId === "suntimes")  return i18n("Sun times options");
+                                    if (model.itemId === "moonphase") return i18n("Moon phase options");
+                                    if (model.itemId === "datetime")  return i18n("Date / Time options");
+                                    return i18n("Options");
+                                }
                                 onClicked: ttDelegateRoot.settingsExpanded = !ttDelegateRoot.settingsExpanded
                             }
                             // Configure icon button (custom theme, suntimes/moonphase) — opens icon-config dialog
@@ -597,6 +604,155 @@ ColumnLayout {
                                     }
                             }
                             onActivated: configRoot.cfg_tooltipMoonPhaseMode = model[currentIndex].value
+                        }
+                    }
+                    // ── Inline datetime options ────────────────────────
+                    ColumnLayout {
+                        visible: model.itemId === "datetime" && ttDelegateRoot.settingsExpanded
+                        Layout.fillWidth: true
+                        Layout.leftMargin: Kirigami.Units.iconSizes.smallMedium * 2 + Kirigami.Units.largeSpacing * 2
+                        Layout.rightMargin: Kirigami.Units.largeSpacing
+                        Layout.bottomMargin: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.smallSpacing
+                        // Date row
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+                            Switch {
+                                id: ttDtDateSwitch
+                                checked: configRoot.cfg_tooltipDateTimeFormat !== ""
+                                onToggled: {
+                                    if (!checked) {
+                                        configRoot.cfg_tooltipDateTimeFormat = "";
+                                    } else {
+                                        var ps = ttDtDateCombo._presets;
+                                        var v = ps[ttDtDateCombo.currentIndex].value;
+                                        configRoot.cfg_tooltipDateTimeFormat = (v === "__custom__" || v === "") ? "locale-long" : v;
+                                    }
+                                }
+                            }
+                            Label {
+                                text: i18n("Date:")
+                                font: Kirigami.Theme.smallFont
+                                opacity: ttDtDateSwitch.checked ? 0.8 : 0.4
+                            }
+                            ComboBox {
+                                id: ttDtDateCombo
+                                Layout.fillWidth: true
+                                enabled: ttDtDateSwitch.checked
+                                textRole: "text"
+                                readonly property var _presets: [
+                                    { text: i18n("Region default (short)"), value: "locale-short" },
+                                    { text: i18n("Region default (long)"),  value: "locale-long"  },
+                                    { text: "Mon, Jan 1  (ddd, MMM d)",     value: "ddd, MMM d"   },
+                                    { text: "01/01/2025  (dd/MM/yyyy)",     value: "dd/MM/yyyy"   },
+                                    { text: "2025-01-01  (yyyy-MM-dd)",     value: "yyyy-MM-dd"   },
+                                    { text: i18n("Custom…"),              value: "__custom__"   }
+                                ]
+                                model: _presets
+                                Component.onCompleted: {
+                                    var v = configRoot.cfg_tooltipDateTimeFormat || "locale-long";
+                                    for (var i = 0; i < _presets.length - 1; ++i)
+                                        if (_presets[i].value === v) { currentIndex = i; return; }
+                                    currentIndex = _presets.length - 1;
+                                }
+                                onActivated: {
+                                    var val = _presets[currentIndex].value;
+                                    if (val !== "__custom__") configRoot.cfg_tooltipDateTimeFormat = val;
+                                }
+                            }
+                            TextField {
+                                visible: ttDtDateSwitch.checked && ttDtDateCombo.currentIndex === ttDtDateCombo._presets.length - 1
+                                Layout.preferredWidth: 100
+                                placeholderText: "ddd, MMM d"
+                                text: {
+                                    var v = configRoot.cfg_tooltipDateTimeFormat;
+                                    var ps = ttDtDateCombo._presets;
+                                    for (var i = 0; i < ps.length - 1; ++i)
+                                        if (ps[i].value === v) return "";
+                                    return v;
+                                }
+                                onEditingFinished: if (text.trim().length > 0) configRoot.cfg_tooltipDateTimeFormat = text.trim()
+                            }
+                        }
+                        // Time row
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+                            Switch {
+                                id: ttDtTimeSwitch
+                                checked: configRoot.cfg_tooltipTimeFormat !== ""
+                                onToggled: {
+                                    if (!checked) {
+                                        configRoot.cfg_tooltipTimeFormat = "";
+                                    } else {
+                                        var ps = ttDtTimeCombo._presets;
+                                        var v = ps[ttDtTimeCombo.currentIndex].value;
+                                        configRoot.cfg_tooltipTimeFormat = (v === "__custom__" || v === "") ? "locale" : v;
+                                    }
+                                }
+                            }
+                            Label {
+                                text: i18n("Time:")
+                                font: Kirigami.Theme.smallFont
+                                opacity: ttDtTimeSwitch.checked ? 0.8 : 0.4
+                            }
+                            Switch {
+                                id: ttDt24hSwitch
+                                visible: ttDtTimeSwitch.checked
+                                checked: !(configRoot.cfg_tooltipTimeFormat === "h:mm AP" || configRoot.cfg_tooltipTimeFormat === "h:mm:ss AP")
+                                ToolTip.visible: hovered
+                                ToolTip.text: checked ? i18n("24-hour format") : i18n("12-hour format")
+                                onToggled: {
+                                    var cur = configRoot.cfg_tooltipTimeFormat;
+                                    if (!checked) {
+                                        configRoot.cfg_tooltipTimeFormat = (cur === "HH:mm:ss") ? "h:mm:ss AP" : "h:mm AP";
+                                    } else {
+                                        configRoot.cfg_tooltipTimeFormat = (cur === "h:mm:ss AP") ? "HH:mm:ss" : "HH:mm";
+                                    }
+                                }
+                            }
+                            Label {
+                                visible: ttDtTimeSwitch.checked
+                                text: ttDt24hSwitch.checked ? i18n("24h") : i18n("12h")
+                                font: Kirigami.Theme.smallFont
+                                opacity: 0.7
+                            }
+                            ComboBox {
+                                id: ttDtTimeCombo
+                                Layout.fillWidth: true
+                                enabled: ttDtTimeSwitch.checked
+                                textRole: "text"
+                                readonly property var _presets: [
+                                    { text: i18n("Region default"),  value: "locale"     },
+                                    { text: "14:30  (HH:mm)",        value: "HH:mm"      },
+                                    { text: "14:30:05  (HH:mm:ss)",  value: "HH:mm:ss"   },
+                                    { text: "2:30 PM  (h:mm AP)",    value: "h:mm AP"    },
+                                    { text: i18n("Custom…"),        value: "__custom__" }
+                                ]
+                                model: _presets
+                                Component.onCompleted: {
+                                    var v = configRoot.cfg_tooltipTimeFormat || "locale";
+                                    for (var i = 0; i < _presets.length - 1; ++i)
+                                        if (_presets[i].value === v) { currentIndex = i; return; }
+                                    currentIndex = _presets.length - 1;
+                                }
+                                onActivated: {
+                                    var val = _presets[currentIndex].value;
+                                    if (val !== "__custom__") configRoot.cfg_tooltipTimeFormat = val;
+                                }
+                            }
+                            TextField {
+                                visible: ttDtTimeSwitch.checked && ttDtTimeCombo.currentIndex === ttDtTimeCombo._presets.length - 1
+                                Layout.preferredWidth: 100
+                                placeholderText: "HH:mm"
+                                text: {
+                                    var v = configRoot.cfg_tooltipTimeFormat;
+                                    var ps = ttDtTimeCombo._presets;
+                                    for (var i = 0; i < ps.length - 1; ++i)
+                                        if (ps[i].value === v) return "";
+                                    return v;
+                                }
+                                onEditingFinished: if (text.trim().length > 0) configRoot.cfg_tooltipTimeFormat = text.trim()
+                            }
                         }
                     }
                     Kirigami.Separator {

@@ -142,7 +142,10 @@ function fetchCurrent(service, W, chain, idx) {
                 minC: day.minC,
                 code: day.bestCode,
                 precipMm: day.precipMm,
-                snowCm: NaN
+                snowCm: NaN,
+                precipProb: NaN,
+                windKmh: NaN,
+                windDir: NaN
             });
         });
         _cur.dailyData = nd;

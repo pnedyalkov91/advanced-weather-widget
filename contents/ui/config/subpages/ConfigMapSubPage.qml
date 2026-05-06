@@ -60,7 +60,7 @@ ColumnLayout {
             locs = JSON.parse(configRoot.cfg_savedLocations || "[]");
             if (!Array.isArray(locs)) locs = [];
         } catch (e) { locs = []; }
-        var isNew = !locs.some(function(l) {
+        var isDup = locs.some(function(l) {
             return Math.abs(l.lat - selectedLat) < 0.01 && Math.abs(l.lon - selectedLon) < 0.01;
         });
 
@@ -74,7 +74,8 @@ ColumnLayout {
         if (selectedCountryCode.length > 0) configRoot.cfg_countryCode = selectedCountryCode;
         configRoot.verifyProviderLocation(selectedLat, selectedLon);
 
-        if (isNew) {
+        if (!isDup) {
+            configRoot.duplicateWarning = "";
             // Store pending — saved on KCM Apply via save() in configLocation.qml
             var entryName = selectedName.length > 0
                 ? selectedName : (selectedLat.toFixed(4) + "°, " + selectedLon.toFixed(4) + "°");
@@ -88,6 +89,8 @@ ColumnLayout {
             };
         } else {
             configRoot._pendingEntry = null;
+            configRoot.duplicateWarning = i18n("Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again.", selectedName);
+            configRoot.duplicateDialog.open();
         }
     }
 
@@ -325,6 +328,15 @@ ColumnLayout {
         }
     }
 
+    Kirigami.InlineMessage {
+        Layout.fillWidth: true
+        visible: configRoot.duplicateWarning !== ""
+        type: Kirigami.MessageType.Warning
+        text: configRoot.duplicateWarning
+        showCloseButton: true
+        onVisibleChanged: if (!visible) configRoot.duplicateWarning = ""
+    }
+
     // ── Search results list ──────────────────────────────────────────
     ListView {
         id: searchResultsListView
@@ -375,6 +387,13 @@ ColumnLayout {
             }
             center: QtPositioning.coordinate(isNaN(configRoot.cfg_latitude) || configRoot.cfg_latitude === 0 ? 48.0 : configRoot.cfg_latitude, isNaN(configRoot.cfg_longitude) || configRoot.cfg_longitude === 0 ? 14.0 : configRoot.cfg_longitude)
             zoomLevel: 5
+
+            // Explicitly clamp the map's zoom range to match the active map type.
+            // Using 17 as a conservative maximum ensures consistent coverage globally 
+            // and avoids the "Zoom level not supported" overlay for regions with sparse tiles.
+            maximumZoomLevel: (activeMapType && activeMapType.maximumZoomLevel > 0) ? Math.min(17, activeMapType.maximumZoomLevel) : 17
+            minimumZoomLevel: 3
+
             Behavior on zoomLevel {
                 enabled: !pinch.active
                 NumberAnimation {
@@ -382,7 +401,14 @@ ColumnLayout {
                     easing.type: Easing.OutCubic
                 }
             }
-            activeMapType: supportedMapTypes[supportedMapTypes.length - 1]
+            activeMapType: {
+                for (var i = 0; i < supportedMapTypes.length; i++) {
+                    // Prefer our custom OpenStreetMap provider
+                    if (supportedMapTypes[i].name.indexOf("Custom") !== -1)
+                        return supportedMapTypes[i];
+                }
+                return supportedMapTypes.length > 0 ? supportedMapTypes[0] : null;
+            }
 
             // ── Zoom controls ───────────────────────────────────────
             PinchHandler {
@@ -391,7 +417,7 @@ ColumnLayout {
                 onActiveChanged: if (active)
                     osmMap.startCentroid = osmMap.toCoordinate(pinch.centroid.position, false)
                 onScaleChanged: delta => {
-                    osmMap.zoomLevel += Math.log2(delta);
+                    osmMap.zoomLevel = Math.max(osmMap.minimumZoomLevel, Math.min(osmMap.maximumZoomLevel, osmMap.zoomLevel + Math.log2(delta)));
                     osmMap.alignCoordinateToPoint(osmMap.startCentroid, pinch.centroid.position);
                 }
                 onRotationChanged: delta => {
@@ -410,7 +436,7 @@ ColumnLayout {
                     var delta = rotation - _prevRotation;
                     _prevRotation = rotation;
                     var coord = osmMap.toCoordinate(point.position, false);
-                    osmMap.zoomLevel += delta;
+                    osmMap.zoomLevel = Math.max(osmMap.minimumZoomLevel, Math.min(osmMap.maximumZoomLevel, osmMap.zoomLevel + delta));
                     osmMap.alignCoordinateToPoint(coord, point.position);
                 }
             }
@@ -459,7 +485,7 @@ ColumnLayout {
                 height: 36
                 text: "+"
                 font.pixelSize: 18
-                onClicked: osmMap.zoomLevel = Math.min(osmMap.zoomLevel + 1, 19)
+                onClicked: osmMap.zoomLevel = Math.min(osmMap.zoomLevel + 1, osmMap.maximumZoomLevel)
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Zoom in")
             }
@@ -468,7 +494,7 @@ ColumnLayout {
                 height: 36
                 text: "−"
                 font.pixelSize: 18
-                onClicked: osmMap.zoomLevel = Math.max(osmMap.zoomLevel - 1, 2)
+                onClicked: osmMap.zoomLevel = Math.max(osmMap.zoomLevel - 1, osmMap.minimumZoomLevel)
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Zoom out")
             }

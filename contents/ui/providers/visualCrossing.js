@@ -127,7 +127,10 @@ function fetchCurrent(service, W, chain, idx) {
                     minC: (dd.tempmin !== undefined) ? dd.tempmin : NaN,
                     code: _iconToWmo(dd.icon),
                     precipMm: (dd.precip !== undefined) ? dd.precip : NaN,
-                    snowCm: (dd.snow !== undefined) ? dd.snow : NaN
+                    snowCm: (dd.snow !== undefined) ? dd.snow : NaN,
+                    precipProb: (dd.precipprob !== undefined) ? dd.precipprob : NaN,
+                    windKmh: (dd.windspeed !== undefined) ? dd.windspeed : NaN,
+                    windDir: (dd.winddir !== undefined) ? dd.winddir : NaN
                 });
             }
         }

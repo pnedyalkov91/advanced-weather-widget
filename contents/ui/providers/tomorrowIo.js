@@ -177,7 +177,10 @@ function _fetchForecast(service, W, gen) {
                             minC: (dv.temperatureMin !== undefined) ? dv.temperatureMin : NaN,
                             code: _codeToWmo(dv.weatherCodeMax !== undefined ? dv.weatherCodeMax : dv.weatherCode),
                             precipMm: NaN,
-                            snowCm: NaN
+                            snowCm: NaN,
+                            precipProb: NaN,
+                            windKmh: NaN,
+                            windDir: NaN
                         });
                     }
                     service._tio_cur.dailyData = nd;

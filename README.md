@@ -1,7 +1,5 @@
 # Advanced Weather Widget for KDE Plasma 6
 
-![image](screenshots/image.png)
-
 A modern, highly customizable weather widget built specifically for KDE Plasma 6.
 
 ### Why this widget?
@@ -9,22 +7,46 @@ A modern, highly customizable weather widget built specifically for KDE Plasma 6
 *   **Modern UX:** A clean, native-feeling interface with smooth animations and intuitive layouts.
 *   **Feature Rich:** From interactive radar maps and air quality to space weather and moon phases - everything is configurable.
 
+## 📑 Table of Contents
+- [📦 Installation](#-installation)
+  - [⚠️ Prerequisites & Dependencies](#-prerequisites--dependencies)
+  - [🛍 Install from KDE Store](#-install-from-kde-store-recommended)
+  - [🛠 Manual Installation](#-manual-installation-development)
+- [🖼️ Screenshots](#-screenshots)
+- [✨ Detailed Features](#-detailed-features)
+- [🌐 Translation](#-translation)
+- [📚 External Resources](#external-resources)
+- [🔑 Entering API Keys](#-entering-api-keys)
+- [🐛 Bug Reports & Feedback](#-bug-reports--feedback)
+- [❤️ Support](#-support-the-project)
+- [📜 License](#-license)
+
 ---
 
 # 📦 Installation
 
 ## ⚠️ Prerequisites & Dependencies
-To prevent the "Empty Location Menu" issue, please ensure you have the following Qt6 modules installed for your distribution:
+For the full functionality of this widget, please ensure you have the following Qt6 modules installed for your distribution:
 
 ### 📍 Location & Search
-*Required for the Location settings menu and auto-detection.*
+*Required for the Location map screen and GeoClue2 auto-detection.*
 
 | Distribution | Package Name |
 |---|---|
 | **Fedora / RHEL** | `qt6-qtlocation` |
 | **openSUSE** | `qt6-location` |
 | **Arch Linux** | `qt6-location` |
-| **Debian / Ubuntu / Neon** | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+| **Debian / Kubuntu / KDE Neon** | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
+
+### 📡 Radar Map
+*Required for the interactive Radar tab (Chromium-based).*
+
+| Distribution | Package Name |
+|---|---|
+| **Fedora / RHEL** | `qt6-qtwebengine` |
+| **openSUSE** | `qt6-webengine` |
+| **Arch Linux** | `qt6-webengine` |
+| **Debian / Kubuntu / KDE Neon** | `qml6-module-qtwebengine` |
 
 > **Note:** After installing these, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
@@ -45,6 +67,41 @@ systemctl --user restart plasma-plasmashell
 
 ---
 
+# 🖼️ Screenshots
+
+<p align="center">
+  <b>Panel Layout Styles</b><br>
+  <img src="screenshots/panel/Single line.png" width="420" alt="Single line">
+  <br>
+  (<b>Single line:</b> A compact, one-row layout for a minimalist look.)
+  <br><br>
+  <img src="screenshots/panel/Simple mode.png" width="130" alt="Simple mode"> <br>  
+    (<b>Simple mode:</b> Displays only the essential icon and current temperature.)
+    <br><br>
+  <img src="screenshots/panel/xfce style.png" width="130" alt="XFCE style"> <br>(<b>XFCE style:</b> A multiline display with an automatic scrollbox for detailed info.)
+  <br><br>
+  </p>
+
+<p align="center">
+  <b>Detailed Widget Layouts</b><br>
+  <img src="screenshots/widget/advanced/advanced mode (cards).png" width="800" alt="Advanced Weather Widget (Advance mode)">
+  <img src="screenshots/widget/advanced/advanced mode (list).png" width="800" alt="Advanced Weather Widget (List mode)">
+  (<b>Advanced mode:</b> Choose between modern Cards or a clean List view.)
+  <br><br>
+  <img src="screenshots/widget/simple/simple mode (default).png" width="800" alt="Simple mode">
+  <img src="screenshots/widget/simple/super simple.png" width="800" alt="Super Simple mode">
+      (<b>Simple modes:</b> Focused views for those who want weather without the tabs.)
+</p>
+
+<p align="center">
+  <b>Tabs</b><br>
+  <img src="screenshots/widget/tabs/forecast.png" width="800" alt="Forecast tab">
+  (Forecast tab)
+  <br><br>
+  <img src="screenshots/widget/tabs/radar.png" width="800" alt="Radar tab">
+  (Radar tab)
+</p>
+
 # ✨ Detailed Features
 
 ### 📍 Location Management
@@ -53,8 +110,28 @@ systemctl --user restart plasma-plasmashell
 - **Smart Data:** Automatic timezone, altitude detection, and localized city names.
 
 ### 🌦 Weather Providers & Adaptive Mode
-- Choose from **10 different providers** including Open-Meteo, MET Norway, OpenWeatherMap, WeatherAPI, Pirate Weather, Tomorrow.io, Visual Crossing, StormGlass, Weatherbit, and QWeather.
-- **Adaptive Failover:** Automatically cycles through providers if one goes offline, ensuring you never have a dead widget.
+- Choose from **10 different providers**.
+- **Adaptive Failover:** Automatically cycles through providers if one goes offline, ensuring you never have a widget without data.
+
+### 🔑 Entering API Keys
+For providers that require an API key, you can enter it in the widget's settings:
+1. Right-click on the widget in your panel or desktop.
+2. Select **Configure Advanced Weather Widget**.
+3. Navigate to the **General** settings.
+4. Turn off **Adaptive** mode and choose your preferred provider.
+5. Enter your API key in the corresponding field for your chosen provider.
+
+| Provider | Key Required | Signup Link |
+|---|---|---|
+| **Open-Meteo / MET Norway** | No | - |
+| **OpenWeatherMap** | **Yes** | [Sign Up](https://openweathermap.org/api) |
+| **WeatherAPI** | **Yes** | [Sign Up](https://www.weatherapi.com/) |
+| **Pirate Weather** | **Yes** | [Sign Up](https://pirateweather.net/) |
+| **Tomorrow.io** | **Yes** | [Sign Up](https://www.tomorrow.io/weather-api/) |
+| **Visual Crossing** | **Yes** | [Sign Up](https://www.visualcrossing.com/weather-data) |
+| **StormGlass** | **Yes** | [Sign Up](https://stormglass.io/) |
+| **Weatherbit** | **Yes** | [Sign Up](https://www.weatherbit.io/) |
+| **QWeather** | **Yes** | [Sign Up](https://dev.qweather.com/) |
 
 ### 🌡 Data Points
 - **Core:** Temp (Current/Apparent/Dew), Wind (Speed/Direction), Humidity, Pressure, Visibility.
@@ -63,9 +140,11 @@ systemctl --user restart plasma-plasmashell
 - **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, and provider-specific sources.
 
 ### 🖥 Customization
-- **Panel Layouts:** Single line, Multiline (scrolling), or Simple (compact icon + temp).
+- **Dual Temperature:** Option to display two different temperature metrics simultaneously (e.g., Actual + Apparent).
+- **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
+- **Widget Layouts:** Advanced (Details, Forecast and Radar tabs) and Simple (no tabs)
 - **Themes:** 6 icon themes (Symbolic, Font, Flat, 3D, KDE) plus a custom per-item picker.
-- **Visuals:** Fully interactive Radar Map (RainViewer), 16-day Daily Forecast, and scrolling Hourly Forecast.
+- **Visuals:** Fully interactive Radar Map (RainViewer), 16-day daily forecast, and hourly weather forecast.
 
 ---
 
@@ -109,6 +188,8 @@ msgstr "Configurar ícone…"
 
 - open a **GitHub Issue** and attach the `.po` file (you may need to compress it as `.zip` because GitHub blocks `.po` attachments).
 
+You can check the current translation coverage in translation-status.md.
+
 ### Translators
 
 Thank you to everyone who contributed translations to this project ❤️
@@ -122,6 +203,13 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Turkish** - [herzane52](https://github.com/herzane52)
 - **Spanish** - [NecaX](https://github.com/NecaX)
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
+- **Chinese (Simplified)** - [Guokangz](https://github.com/Guokangz)
+- **Czech** - [Zero-MF](https://github.com/Zero-MF)
+
+---
+
+## 🐛 Bug Reports & Feedback
+If you encounter any issues or have suggestions, please open a [GitHub Issue](https://github.com/pnedyalkov91/advanced-weather-widget/issues). Please include your distribution, Plasma version, and the weather provider you were using.
 
 ## External resources
 
@@ -150,3 +238,9 @@ If you enjoy using it, you can support the project:
 - Liberapay: https://liberapay.com/pnedyalkov
 - PayPal: https://paypal.me/pnedyalkov91
 - Revolut: https://revolut.me/petarnedyalkov91
+
+---
+
+## 📜 License
+
+This project is licensed under the **GNU General Public License v2.0 or later**.

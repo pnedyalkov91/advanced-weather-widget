@@ -14,38 +14,6 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<!--
-  Copyright 2026  Petar Nedyalkov
-
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License as
-  published by the Free Software Foundation; either version 2 of
-  the License, or (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
--->
-<!--
-  Copyright 2026  Petar Nedyalkov
-
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License as
-  published by the Free Software Foundation; either version 2 of
-  the License, or (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
--->
 <kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
@@ -74,7 +42,7 @@
     <entry name="weatherProvider"    type="String"><default>adaptive</default></entry>
     <!-- Saved locations: JSON array of {name, lat, lon, altitude, timezone, countryCode} -->
     <entry name="savedLocations"     type="String"><default>[]</default></entry>
-    <!-- User API keys: empty = use widget's bundled key -->
+    <!-- User API keys -->
     <entry name="owApiKey"           type="String"><default></default></entry>
     <entry name="waApiKey"           type="String"><default></default></entry>
     <entry name="pwApiKey"           type="String"><default></default></entry>
@@ -134,6 +102,10 @@
     <entry name="panelSimpleWidgetOrder"       type="Int"><default>0</default></entry>
     <entry name="panelSimpleIconStyle"         type="String"><default>symbolic</default></entry>
     <entry name="panelSimpleHorizontalContent" type="String"><default>both</default></entry>
+    <entry name="panelSimpleClickAreaMode"     type="String"><default>auto</default></entry>
+    <entry name="panelSimpleClickAreaSize"     type="Int"><default>96</default><min>20</min><max>600</max></entry>
+    <entry name="panelSimpleTempShadowEnabled" type="Bool"><default>true</default></entry>
+    <entry name="panelSimpleTempShadowIntensity" type="Double"><default>0.8</default></entry>
     <!-- Compressed mode: badge position, spacing, background color -->
     <entry name="compressedBadgePosition"  type="String"><default>bottom-right</default></entry>
     <entry name="compressedBadgeSpacing"   type="Int"><default>0</default><min>-20</min><max>20</max></entry>
@@ -173,10 +145,16 @@
     <entry name="widgetMinHeight"     type="Int"><default>750</default><min>200</min><max>2000</max></entry>
     <entry name="widgetDefaultTab" type="String"><default>details</default></entry>
     <entry name="widgetVisibleTabs" type="String"><default>both</default></entry>
+    <entry name="widgetLayoutMode"      type="String"><default>advanced</default></entry>
+    <entry name="widgetSimpleDetailsOrder" type="String"><default>humidity;pressure;preciprate;precipsum</default></entry>
+    <entry name="widgetSimpleDetailsItemIcons" type="String"><default>humidity=1;pressure=1;preciprate=1;precipsum=1</default></entry>
+    <entry name="radarEnabled"          type="Bool"><default>true</default></entry>
+    <entry name="radarLayer"            type="String"><default>rainviewer</default></entry>
+    <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
 
     <!-- ── Widget — details view ──────────────────────────────────────── -->
-    <entry name="widgetDetailsOrder"    type="String"><default>feelslike;humidity;pressure;wind;dewpoint;visibility;moonphase;suntimes;preciprate;precipsum;uvindex;airquality;pollen;spaceweather;alerts;snowcover</default></entry>
-    <entry name="widgetDetailsItemIcons" type="String"><default>feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
+    <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>
+    <entry name="widgetDetailsItemIcons" type="String"><default>humidity=1;pressure=1;wind=1;preciprate=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;datetime=1;pollen=1;snowcover=1</default></entry>
     <entry name="widgetDetailsCustomIcons" type="String"><default></default></entry>
     <entry name="widgetDetailsLayout"   type="String"><default>cards2</default></entry>
     <entry name="widgetSunTimesMode"    type="String"><default>both</default></entry>
@@ -210,11 +188,43 @@
     <entry name="fontSize"        type="Int"><default>11</default><min>7</min><max>24</max></entry>
     <entry name="fontBold"        type="Bool"><default>false</default></entry>
 
+    <!-- ── Calendar first day of week (-1 = region default, 0=Sun, 1=Mon, 5=Fri, 6=Sat) -->
+    <entry name="calendarFirstDayOfWeek" type="Int"><default>-1</default></entry>
+
+    <!-- ── Item date/time formats ───────────────────────────────────── -->
+    <entry name="panelDateTimeFormat"    type="String"><default>locale-short</default></entry>
+    <entry name="panelTimeFormat"        type="String"><default>locale</default></entry>
+    <entry name="detailsDateTimeFormat"  type="String"><default>locale-long</default></entry>
+    <entry name="detailsTimeFormat"      type="String"><default>locale</default></entry>
+    <entry name="tooltipDateTimeFormat"  type="String"><default>locale-long</default></entry>
+    <entry name="tooltipTimeFormat"      type="String"><default>locale</default></entry>
+
+    <!-- ── Dual temperature display ─────────────────────────────────── -->
+    <entry name="dualTempEnabled"    type="Bool"><default>false</default></entry>
+    <entry name="dualTempSeparator"  type="String"><default> / </default></entry>
+    <entry name="dualTempInWidget"   type="Bool"><default>true</default></entry>
+    <entry name="dualTempInPanel"    type="Bool"><default>true</default></entry>
+    <entry name="dualTempInTooltip"  type="Bool"><default>true</default></entry>
+    <entry name="dualTempSwapOrder"  type="Bool"><default>false</default></entry>
+
+    <!-- ── Widget — header date/time ─────────────────────────────────── -->
+    <entry name="headerShowDateTime" type="Bool"><default>false</default></entry>
+    <entry name="headerDateFormat"   type="String"><default>locale-long</default></entry>
+    <entry name="headerTimeFormat"   type="String"><default>locale</default></entry>
+
+    <!-- ── Widget — simple mode options ──────────────────────────────── -->
+    <entry name="simpleShowForecast"     type="Bool"><default>true</default></entry>
+    <entry name="simpleShowSunriseSunset" type="Bool"><default>true</default></entry>
+    <entry name="simpleShowForecastCompass" type="Bool"><default>true</default></entry>
+    <entry name="simpleShowStatsChips"   type="Bool"><default>true</default></entry>
+
     <!-- ── Widget — forecast ──────────────────────────────────────────── -->
     <entry name="forecastLayout"      type="String"><default>rows</default></entry>
-    <entry name="forecastDays"        type="Int"><default>5</default><min>3</min><max>7</max></entry>
+    <entry name="forecastDays"        type="Int"><default>5</default><min>3</min><max>16</max></entry>
     <entry name="forecastIconTheme"   type="String"><default>symbolic</default></entry>
     <entry name="forecastShowSunEvents" type="Bool"><default>true</default></entry>
+    <entry name="forecastShowToday"    type="Bool"><default>true</default></entry>
+    <entry name="forecastHourlyLayout" type="String"><default>cards</default></entry>
     <entry name="animateTransitions"  type="Bool"><default>true</default></entry>
 
     <!-- ── Tooltip ────────────────────────────────────────────────────── -->

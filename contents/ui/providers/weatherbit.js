@@ -163,7 +163,10 @@ function _fetchDailyForecast(service, W, gen) {
                             minC: (dd.min_temp !== undefined) ? dd.min_temp : NaN,
                             code: _codeToWmo(wCode),
                             precipMm: (dd.precip !== undefined) ? dd.precip : NaN,
-                            snowCm: (dd.snow !== undefined) ? dd.snow / 10 : NaN // mm to cm
+                            snowCm: (dd.snow !== undefined) ? dd.snow / 10 : NaN, // mm to cm
+                            precipProb: (dd.pop !== undefined) ? dd.pop : NaN,
+                            windKmh: (dd.wind_spd !== undefined) ? dd.wind_spd * 3.6 : NaN,
+                            windDir: (dd.wind_dir !== undefined) ? dd.wind_dir : NaN
                         });
                     }
                     service._wb_cur.dailyData = nd;

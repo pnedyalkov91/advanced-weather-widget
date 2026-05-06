@@ -119,7 +119,10 @@ function fetchCurrent(service, W, chain, idx) {
                     minC: f.day.mintemp_c,
                     code: W.weatherApiCodeToWmo(f.day.condition.code),
                     precipMm: (f.day.totalprecip_mm !== undefined) ? f.day.totalprecip_mm : NaN,
-                    snowCm: (f.day.totalsnow_cm !== undefined) ? f.day.totalsnow_cm : NaN
+                    snowCm: (f.day.totalsnow_cm !== undefined) ? f.day.totalsnow_cm : NaN,
+                    precipProb: (f.day.daily_chance_of_rain !== undefined) ? f.day.daily_chance_of_rain : NaN,
+                    windKmh: (f.day.maxwind_kph !== undefined) ? f.day.maxwind_kph : NaN,
+                    windDir: NaN
                 });
             }
         }

@@ -18,7 +18,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtPositioning
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
@@ -26,7 +25,38 @@ import org.kde.plasma.plasmoid
 KCM.SimpleKCM {
     id: root
 
+    // Probed at startup — true only when the QtPositioning package is installed.
+    // When false, auto-detect is hidden/disabled and an install-hint banner is shown.
+    property bool _positioningAvailable: false
+    // Probed at startup — true only when QtLocation (map tiles) is installed.
+    // When false the "Choose on Map" button is disabled with an install hint.
+    property bool _qtLocationAvailable: false
+    readonly property bool _locationPackagesMissing: !_positioningAvailable || !_qtLocationAvailable
+
     Component.onCompleted: {
+        // Probe for QtPositioning without an unconditional top-level import.
+        // If the package is missing the try-catch swallows the error cleanly.
+        try {
+            var probe = Qt.createQmlObject('import QtPositioning 6.5; PositionSource { active: false }', root, "qtPositioningProbe");
+            if (probe) {
+                probe.destroy();
+                root._positioningAvailable = true;
+            }
+        } catch (e) {
+            root._positioningAvailable = false;
+        }
+
+        // Probe for QtLocation (needed by ConfigMapSubPage's map tile view).
+        try {
+            var mapProbe = Qt.createQmlObject('import QtLocation 6.5; Plugin { name: "osm" }', root, "qtLocationProbe");
+            if (mapProbe) {
+                mapProbe.destroy();
+                root._qtLocationAvailable = true;
+            }
+        } catch (e) {
+            root._qtLocationAvailable = false;
+        }
+
         if (!cfg_locationName || cfg_locationName.trim().length === 0)
             cfg_autoDetectLocation = true;
         _rebuildSavedLocModel();
@@ -39,15 +69,15 @@ KCM.SimpleKCM {
     function save() {
         if (!root.cfg_autoDetectLocation) {
             Plasmoid.configuration.activeLocation = JSON.stringify({
-                name:        root.cfg_locationName  || "",
-                lat:         root.cfg_latitude       || 0,
-                lon:         root.cfg_longitude      || 0,
-                altitude:    root.cfg_altitude       || 0,
-                timezone:    root.cfg_timezone       || "",
-                countryCode: root.cfg_countryCode    || ""
+                name: root.cfg_locationName || "",
+                lat: root.cfg_latitude || 0,
+                lon: root.cfg_longitude || 0,
+                altitude: root.cfg_altitude || 0,
+                timezone: root.cfg_timezone || "",
+                countryCode: root.cfg_countryCode || ""
             });
         }
-        Qt.callLater(function() {
+        Qt.callLater(function () {
             root._commitPending();
         });
     }
@@ -63,6 +93,7 @@ KCM.SimpleKCM {
     property string cfg_weatherProvider: "adaptive"
     property string cfg_savedLocations: "[]"
 
+    property string duplicateWarning: ""
     property bool autoDetectBusy: false
     property string autoDetectStatus: ""
 
@@ -107,10 +138,14 @@ KCM.SimpleKCM {
         var locs;
         try {
             locs = JSON.parse(cfg_savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
         for (var i = 0; i < locs.length; i++) {
-            if (locs[i].starred) return true;
+            if (locs[i].starred)
+                return true;
         }
         return false;
     }
@@ -134,13 +169,17 @@ KCM.SimpleKCM {
         var locs;
         try {
             locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
-        var isDup = locs.some(function(l) {
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
+        var isDup = locs.some(function (l) {
             return Math.abs(l.lat - entry.lat) < 0.01 && Math.abs(l.lon - entry.lon) < 0.01;
         });
         if (isDup) {
             root._pendingEntry = null;
+            root.duplicateWarning = i18n("This location is already in your saved list.");
             return;
         }
         if (locs.length === 0) {
@@ -161,7 +200,9 @@ KCM.SimpleKCM {
     // to show the setDefaultDialog for new locations.
     Connections {
         target: Plasmoid.configuration
-        function onLatitudeChanged() { root._commitPending(); }
+        function onLatitudeChanged() {
+            root._commitPending();
+        }
         function onAutoDetectLocationChanged() {
             // Auto-detect toggled: clear any stale pending entry
             if (Plasmoid.configuration.autoDetectLocation)
@@ -197,27 +238,33 @@ KCM.SimpleKCM {
     // `cfg_savedLocations` (JSON string) remains the source of truth.
     // We mirror it into `savedLocWorkingModel` so `Kirigami.ListItemDragHandle`
     // can use `.move()` on a ListModel for live visual reordering.
-    ListModel { id: savedLocWorkingModel }
+    ListModel {
+        id: savedLocWorkingModel
+    }
     property bool _savedLocApplying: false
 
     function _rebuildSavedLocModel() {
-        if (_savedLocApplying) return;
+        if (_savedLocApplying)
+            return;
         savedLocWorkingModel.clear();
         var locs;
         try {
             locs = JSON.parse(cfg_savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
         for (var i = 0; i < locs.length; ++i) {
             var it = locs[i] || {};
             savedLocWorkingModel.append({
-                name:        it.name || "",
-                lat:         Number(it.lat) || 0,
-                lon:         Number(it.lon) || 0,
-                altitude:    Number(it.altitude) || 0,
-                timezone:    it.timezone || "",
+                name: it.name || "",
+                lat: Number(it.lat) || 0,
+                lon: Number(it.lon) || 0,
+                altitude: Number(it.altitude) || 0,
+                timezone: it.timezone || "",
                 countryCode: it.countryCode || "",
-                starred:     !!it.starred
+                starred: !!it.starred
             });
         }
     }
@@ -225,11 +272,19 @@ KCM.SimpleKCM {
         var locs = [];
         for (var i = 0; i < savedLocWorkingModel.count; ++i) {
             var it = savedLocWorkingModel.get(i);
-            var entry = { name: it.name, lat: it.lat, lon: it.lon };
-            if (it.altitude)    entry.altitude    = it.altitude;
-            if (it.timezone)    entry.timezone    = it.timezone;
-            if (it.countryCode) entry.countryCode = it.countryCode;
-            if (it.starred)     entry.starred     = true;
+            var entry = {
+                name: it.name,
+                lat: it.lat,
+                lon: it.lon
+            };
+            if (it.altitude)
+                entry.altitude = it.altitude;
+            if (it.timezone)
+                entry.timezone = it.timezone;
+            if (it.countryCode)
+                entry.countryCode = it.countryCode;
+            if (it.starred)
+                entry.starred = true;
             locs.push(entry);
         }
         _savedLocApplying = true;
@@ -251,10 +306,10 @@ KCM.SimpleKCM {
         var page = manualPageLoader.item;
         if (page) {
             page.editingIndex = index;
-            page.mName     = entry.name || "";
-            page.mLat      = String(entry.lat || 0);
-            page.mLon      = String(entry.lon || 0);
-            page.mAlt      = entry.altitude !== undefined ? String(entry.altitude) : "";
+            page.mName = entry.name || "";
+            page.mLat = String(entry.lat || 0);
+            page.mLon = String(entry.lon || 0);
+            page.mAlt = entry.altitude !== undefined ? String(entry.altitude) : "";
             page.mTimezone = entry.timezone || "";
         }
     }
@@ -284,9 +339,13 @@ KCM.SimpleKCM {
         var locs;
         try {
             locs = JSON.parse(cfg_savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
-        for (var i = 0; i < locs.length; i++) delete locs[i].starred;
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
+        for (var i = 0; i < locs.length; i++)
+            delete locs[i].starred;
         var detected = {
             name: detectedLocationName || "",
             lat: detectedLatitude,
@@ -308,19 +367,25 @@ KCM.SimpleKCM {
                 break;
             }
         }
-        if (!found) locs.unshift(detected);
+        if (found) {
+            root.duplicateWarning = i18n("The auto-detected location is already in your saved list.");
+            duplicateDialog.open();
+        } else {
+            root.duplicateWarning = "";
+            locs.unshift(detected);
+        }
         cfg_savedLocations = JSON.stringify(locs);
         Plasmoid.configuration.savedLocations = cfg_savedLocations;
 
         // Always apply as the active location — write once to activeLocation,
         // then keep individual entries in sync (suppressed from triggering refreshDebounce).
         Plasmoid.configuration.activeLocation = JSON.stringify({
-            name:        detectedLocationName  || "",
-            lat:         detectedLatitude       || 0,
-            lon:         detectedLongitude      || 0,
-            altitude:    (!isNaN(detectedAltitude) && detectedAltitude !== 0) ? detectedAltitude : 0,
-            timezone:    detectedTimezone       || "",
-            countryCode: detectedCountryCode    || ""
+            name: detectedLocationName || "",
+            lat: detectedLatitude || 0,
+            lon: detectedLongitude || 0,
+            altitude: (!isNaN(detectedAltitude) && detectedAltitude !== 0) ? detectedAltitude : 0,
+            timezone: detectedTimezone || "",
+            countryCode: detectedCountryCode || ""
         });
         Plasmoid.configuration.autoDetectLocation = true;
         Plasmoid.configuration.latitude = detectedLatitude;
@@ -363,12 +428,12 @@ KCM.SimpleKCM {
         repeat: false
         onTriggered: {
             Plasmoid.configuration.activeLocation = JSON.stringify({
-                name:        root.cfg_locationName  || "",
-                lat:         root.cfg_latitude       || 0,
-                lon:         root.cfg_longitude      || 0,
-                altitude:    root.cfg_altitude       || 0,
-                timezone:    root.cfg_timezone       || "",
-                countryCode: root.cfg_countryCode    || ""
+                name: root.cfg_locationName || "",
+                lat: root.cfg_latitude || 0,
+                lon: root.cfg_longitude || 0,
+                altitude: root.cfg_altitude || 0,
+                timezone: root.cfg_timezone || "",
+                countryCode: root.cfg_countryCode || ""
             });
             Plasmoid.configuration.autoDetectLocation = root.cfg_autoDetectLocation;
             Plasmoid.configuration.latitude = root.cfg_latitude;
@@ -447,7 +512,8 @@ KCM.SimpleKCM {
                 return;
             }
             var qwHost = (Plasmoid.configuration.qwApiHost || "").trim();
-            if (!qwHost) qwHost = "https://devapi.qweather.com";
+            if (!qwHost)
+                qwHost = "https://devapi.qweather.com";
             qwHost = qwHost.replace(/\/+$/, "");
             var qwLoc = encodeURIComponent(parseFloat(lon).toFixed(2) + "," + parseFloat(lat).toFixed(2));
             url = qwHost + "/v7/weather/now?location=" + qwLoc + "&unit=m";
@@ -563,13 +629,21 @@ KCM.SimpleKCM {
         return cfg_locationName && cfg_locationName.length > 0 ? cfg_locationName : i18n("None Selected");
     }
     function openSearchPage() {
-        searchPageLoader.active = true; stack.currentIndex = 1;
+        searchPageLoader.active = true;
+        stack.currentIndex = 1;
     }
     function openMapPage() {
-        mapPageLoader.active = true; stack.currentIndex = 2;
+        // active must be true BEFORE setSource, otherwise Qt queues the URL+props
+        // but never instantiates the item (active:false suppresses loading).
+        mapPageLoader.active = true;
+        mapPageLoader.setSource(Qt.resolvedUrl("subpages/ConfigMapSubPage.qml"), {
+            "configRoot": root
+        });
+        stack.currentIndex = 2;
     }
     function openManualPage() {
-        manualPageLoader.active = true; stack.currentIndex = 3;
+        manualPageLoader.active = true;
+        stack.currentIndex = 3;
         // Fresh "Add new location" flow — clear any leftover edit-mode state
         // from a previous visit to this sub-page.
         var page = manualPageLoader.item;
@@ -686,20 +760,23 @@ KCM.SimpleKCM {
 
     function _cfgHandlePosition(lat, lon, alt, tierLabel) {
         // Deactivate sources after successful fix to avoid duplicate callbacks
-        cfgGeoclue2Source.active = false;
-        cfgGenericSource.active = false;
+        var ps = posSourceLoader.item;
+        if (ps) {
+            ps.geoclue2Active = false;
+            ps.genericActive = false;
+        }
         if (root.shouldConfirmAutoDetectedLocation()) {
             root.stageDetectedLocation(lat, lon, alt, "", "");
         } else {
             root.cfg_latitude = lat;
             root.cfg_longitude = lon;
             Plasmoid.configuration.activeLocation = JSON.stringify({
-                name:        root.cfg_locationName || "",
-                lat:         lat  || 0,
-                lon:         lon  || 0,
-                altitude:    (!isNaN(alt) && alt > 0) ? Math.round(alt) : (root.cfg_altitude || 0),
-                timezone:    root.cfg_timezone     || "",
-                countryCode: root.cfg_countryCode  || ""
+                name: root.cfg_locationName || "",
+                lat: lat || 0,
+                lon: lon || 0,
+                altitude: (!isNaN(alt) && alt > 0) ? Math.round(alt) : (root.cfg_altitude || 0),
+                timezone: root.cfg_timezone || "",
+                countryCode: root.cfg_countryCode || ""
             });
             Plasmoid.configuration.latitude = lat;
             Plasmoid.configuration.longitude = lon;
@@ -720,22 +797,31 @@ KCM.SimpleKCM {
         autoDetectBusy = true;
         _cfgLocationTier = 1;
         autoDetectStatus = i18n("Requesting location via GeoClue2…");
-        cfgGeoclue2Source.active = true;
-        cfgGeoclue2Source.update();
+        var ps = posSourceLoader.item;
+        if (ps) {
+            ps.geoclue2Active = true;
+            ps.geoclue2DoUpdate();
+        }
         _cfgGeoclue2Timer.restart();
     }
 
     function _cfgEscalateToGeneric() {
-        cfgGeoclue2Source.active = false;
+        var ps = posSourceLoader.item;
+        if (ps)
+            ps.geoclue2Active = false;
         _cfgLocationTier = 2;
         autoDetectStatus = i18n("GeoClue2 unavailable, trying system location…");
-        cfgGenericSource.active = true;
-        cfgGenericSource.update();
+        if (ps) {
+            ps.genericActive = true;
+            ps.genericDoUpdate();
+        }
         _cfgGenericTimer.restart();
     }
 
     function _cfgEscalateToIpGeo() {
-        cfgGenericSource.active = false;
+        var ps = posSourceLoader.item;
+        if (ps)
+            ps.genericActive = false;
         _cfgLocationTier = 3;
         autoDetectStatus = i18n("System location unavailable, trying IP geolocation…");
         _cfgIpGeolocate();
@@ -781,54 +867,45 @@ KCM.SimpleKCM {
         }
     }
 
-    // Tier 1 — GeoClue2 explicitly
-    PositionSource {
-        id: cfgGeoclue2Source
-        name: "geoclue2"
-        active: false
-        updateInterval: 300000
-        onPositionChanged: {
-            if (!root.cfg_autoDetectLocation)
-                return;
-            var c = position.coordinate;
-            if (!c || !c.isValid)
-                return;
-            _cfgGeoclue2Timer.stop();
-            _cfgLocationTier = 0;
-            console.log("[Location/config] Tier 1 (GeoClue2): position acquired");
-            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, "GeoClue2");
-        }
-        onSourceErrorChanged: {
-            if (sourceError !== PositionSource.NoError && _cfgLocationTier === 1) {
-                console.log("[Location/config] Tier 1 (GeoClue2) error:", sourceError);
+    // ── Qt Positioning sources — loaded only when the package is present ──
+    // Signals from the loaded item are connected in onLoaded below.
+    Loader {
+        id: posSourceLoader
+        active: root._positioningAvailable
+        source: Qt.resolvedUrl("../components/ConfigLocationPositionSources.qml")
+        onLoaded: {
+            // Tier 1 — GeoClue2
+            item.geoclue2PositionAcquired.connect(function (lat, lon, alt) {
+                if (!root.cfg_autoDetectLocation)
+                    return;
                 _cfgGeoclue2Timer.stop();
-                _cfgEscalateToGeneric();
-            }
-        }
-    }
-
-    // Tier 2 — any available Qt Positioning plugin
-    PositionSource {
-        id: cfgGenericSource
-        active: false
-        updateInterval: 300000
-        onPositionChanged: {
-            if (!root.cfg_autoDetectLocation)
-                return;
-            var c = position.coordinate;
-            if (!c || !c.isValid)
-                return;
-            _cfgGenericTimer.stop();
-            _cfgLocationTier = 0;
-            console.log("[Location/config] Tier 2 (generic): position acquired");
-            _cfgHandlePosition(c.latitude, c.longitude, c.altitude, i18n("system location"));
-        }
-        onSourceErrorChanged: {
-            if (sourceError !== PositionSource.NoError && _cfgLocationTier === 2) {
-                console.log("[Location/config] Tier 2 (generic) error:", sourceError);
+                _cfgLocationTier = 0;
+                console.log("[Location/config] Tier 1 (GeoClue2): position acquired");
+                root._cfgHandlePosition(lat, lon, alt, "GeoClue2");
+            });
+            item.geoclue2Error.connect(function () {
+                if (_cfgLocationTier === 1) {
+                    console.log("[Location/config] Tier 1 (GeoClue2) error");
+                    _cfgGeoclue2Timer.stop();
+                    root._cfgEscalateToGeneric();
+                }
+            });
+            // Tier 2 — generic Qt Positioning plugin
+            item.genericPositionAcquired.connect(function (lat, lon, alt) {
+                if (!root.cfg_autoDetectLocation)
+                    return;
                 _cfgGenericTimer.stop();
-                _cfgEscalateToIpGeo();
-            }
+                _cfgLocationTier = 0;
+                console.log("[Location/config] Tier 2 (generic): position acquired");
+                root._cfgHandlePosition(lat, lon, alt, i18n("system location"));
+            });
+            item.genericError.connect(function () {
+                if (_cfgLocationTier === 2) {
+                    console.log("[Location/config] Tier 2 (generic) error");
+                    _cfgGenericTimer.stop();
+                    root._cfgEscalateToIpGeo();
+                }
+            });
         }
     }
 
@@ -920,8 +997,7 @@ KCM.SimpleKCM {
         var lat = parseFloat(item.latitude);
         var lon = parseFloat(item.longitude);
         var newTimezone = item.timezone || cfg_timezone;
-        var newCountryCode = (item.countryCode && item.countryCode.length > 0)
-            ? item.countryCode.toUpperCase() : cfg_countryCode;
+        var newCountryCode = (item.countryCode && item.countryCode.length > 0) ? item.countryCode.toUpperCase() : cfg_countryCode;
 
         // Stage active location — committed to Plasmoid.configuration only on KCM Apply
         cfg_autoDetectLocation = false;
@@ -968,9 +1044,73 @@ KCM.SimpleKCM {
         else {
             autoDetectBusy = false;
             autoDetectStatus = "";
-            cfgGeoclue2Source.active = false;
-            cfgGenericSource.active = false;
+            var ps = posSourceLoader.item;
+            if (ps) {
+                ps.geoclue2Active = false;
+                ps.genericActive = false;
+            }
             _cfgLocationTier = 0;
+        }
+    }
+
+    // ── Missing QtLocation warning ─────────────────────────────────────────
+    Kirigami.Dialog {
+        id: missingLocationDialog
+        title: i18n("QtLocation and QtPositioning are not installed")
+        standardButtons: Kirigami.Dialog.Close
+        leftPadding: Kirigami.Units.gridUnit * 2
+        rightPadding: Kirigami.Units.gridUnit * 2
+        topPadding: Kirigami.Units.gridUnit
+        bottomPadding: Kirigami.Units.gridUnit
+        contentItem: Item {
+            implicitWidth: 440
+            implicitHeight: missingLocCol.implicitHeight
+            ColumnLayout {
+                id: missingLocCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                spacing: Kirigami.Units.largeSpacing
+                Kirigami.Icon {
+                    Layout.alignment: Qt.AlignHCenter
+                    source: "map-flat"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.huge
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.huge
+                }
+                TextEdit {
+                    Layout.fillWidth: true
+                    readOnly: true
+                    selectByMouse: true
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    color: Kirigami.Theme.textColor
+                    selectedTextColor: Kirigami.Theme.highlightedTextColor
+                    selectionColor: Kirigami.Theme.highlightColor
+                    font: Kirigami.Theme.defaultFont
+                    text: i18n("The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system.")
+                }
+                TextEdit {
+                    Layout.fillWidth: true
+                    readOnly: true
+                    selectByMouse: true
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    opacity: 0.75
+                    color: Kirigami.Theme.textColor
+                    selectedTextColor: Kirigami.Theme.highlightedTextColor
+                    selectionColor: Kirigami.Theme.highlightColor
+                    font: Kirigami.Theme.defaultFont
+                    text: i18n("Install it for your distribution:\n  • Fedora / RHEL / Arch: qt6-qtlocation\n  • openSUSE: qt6-location\n  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n\nYou can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around.")
+                }
+                Button {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: i18n("Open install guide")
+                    icon.name: "internet-web-browser"
+                    onClicked: {
+                        Qt.openUrlExternally("https://github.com/pnedyalkov91/advanced-weather-widget#%EF%B8%8F-prerequisites--dependencies");
+                        missingLocationDialog.close();
+                    }
+                }
+            }
         }
     }
 
@@ -1071,8 +1211,6 @@ KCM.SimpleKCM {
             detectedLocationDialog.close();
     }
 
-
-
     // ── Set as default dialog (shown on KCM Apply for new locations) ──────
     Kirigami.Dialog {
         id: setDefaultDialog
@@ -1105,11 +1243,11 @@ KCM.SimpleKCM {
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
                     textFormat: Text.RichText
-                    text: root._pendingEntry
-                        ? i18n("Set <b>%1</b> as your default location?", root._pendingEntry.name)
-                        : ""
+                    text: root._pendingEntry ? i18n("Set <b>%1</b> as your default location?", root._pendingEntry.name) : ""
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.smallSpacing
+                }
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Kirigami.Units.mediumSpacing
@@ -1118,19 +1256,27 @@ KCM.SimpleKCM {
                         icon.name: "dialog-ok-apply"
                         onClicked: {
                             var entry = root._pendingEntry;
-                            if (!entry) { setDefaultDialog.close(); return; }
+                            if (!entry) {
+                                setDefaultDialog.close();
+                                return;
+                            }
                             // Clear _pendingEntry FIRST so any signal triggered below
                             // cannot re-enter _commitPending with a non-null entry.
                             root._pendingEntry = null;
                             var locs;
                             try {
                                 locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-                                if (!Array.isArray(locs)) locs = [];
-                            } catch (e) { locs = []; }
+                                if (!Array.isArray(locs))
+                                    locs = [];
+                            } catch (e) {
+                                locs = [];
+                            }
                             for (var i = 0; i < locs.length; i++)
                                 delete locs[i].starred;
                             locs.unshift({
-                                name: entry.name, lat: entry.lat, lon: entry.lon,
+                                name: entry.name,
+                                lat: entry.lat,
+                                lon: entry.lon,
                                 altitude: entry.altitude || 0,
                                 timezone: entry.timezone || "",
                                 countryCode: entry.countryCode || "",
@@ -1156,16 +1302,24 @@ KCM.SimpleKCM {
                         icon.name: "dialog-cancel"
                         onClicked: {
                             var entry = root._pendingEntry;
-                            if (!entry) { setDefaultDialog.close(); return; }
+                            if (!entry) {
+                                setDefaultDialog.close();
+                                return;
+                            }
                             // Clear _pendingEntry FIRST — same re-entrancy guard as Yes.
                             root._pendingEntry = null;
                             var locs;
                             try {
                                 locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-                                if (!Array.isArray(locs)) locs = [];
-                            } catch (e) { locs = []; }
+                                if (!Array.isArray(locs))
+                                    locs = [];
+                            } catch (e) {
+                                locs = [];
+                            }
                             locs.push({
-                                name: entry.name, lat: entry.lat, lon: entry.lon,
+                                name: entry.name,
+                                lat: entry.lat,
+                                lon: entry.lon,
                                 altitude: entry.altitude || 0,
                                 timezone: entry.timezone || "",
                                 countryCode: entry.countryCode || ""
@@ -1180,7 +1334,9 @@ KCM.SimpleKCM {
                         }
                     }
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.smallSpacing
+                }
             }
         }
     }
@@ -1217,7 +1373,9 @@ KCM.SimpleKCM {
                     horizontalAlignment: Text.AlignHCenter
                     text: i18n("Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information.")
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.smallSpacing
+                }
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Kirigami.Units.mediumSpacing
@@ -1248,7 +1406,9 @@ KCM.SimpleKCM {
                         }
                     }
                 }
-                Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+                Item {
+                    Layout.preferredHeight: Kirigami.Units.smallSpacing
+                }
             }
         }
     }
@@ -1262,13 +1422,28 @@ KCM.SimpleKCM {
         currentIndex: 0
 
         // page 0 — main
-        Loader { id: mainPageLoader; sourceComponent: mainPage; active: true }
+        Loader {
+            id: mainPageLoader
+            sourceComponent: mainPage
+            active: true
+        }
         // page 1 — search
-        Loader { id: searchPageLoader; sourceComponent: searchSubPage; active: false }
-        // page 2 — map
-        Loader { id: mapPageLoader;    sourceComponent: mapSubPage;    active: false }
+        Loader {
+            id: searchPageLoader
+            sourceComponent: searchSubPage
+            active: false
+        }
+        // page 2 — map (loaded lazily via openMapPage → setSource to satisfy required property)
+        Loader {
+            id: mapPageLoader
+            active: false
+        }
         // page 3 — manual entry
-        Loader { id: manualPageLoader; sourceComponent: manualSubPage; active: false }
+        Loader {
+            id: manualPageLoader
+            sourceComponent: manualSubPage
+            active: false
+        }
     }
 
     Component {
@@ -1287,20 +1462,63 @@ KCM.SimpleKCM {
                         id: locationModeGroup
                     }
 
+                    Kirigami.InlineMessage {
+                        Layout.fillWidth: true
+                        visible: root.duplicateWarning !== ""
+                        type: Kirigami.MessageType.Warning
+                        text: root.duplicateWarning
+                        showCloseButton: true
+                        onVisibleChanged: if (!visible)
+                            root.duplicateWarning = ""
+                    }
+
+                    Kirigami.InlineMessage {
+                        Layout.fillWidth: true
+                        visible: root._locationPackagesMissing
+                        type: Kirigami.MessageType.Warning
+                        text: i18n("Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide.")
+                        actions: [
+                            Kirigami.Action {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: i18n("Open install guide")
+                                icon.name: "internet-web-browser"
+                                onTriggered: {
+                                    Qt.openUrlExternally("https://github.com/pnedyalkov91/advanced-weather-widget#%EF%B8%8F-prerequisites--dependencies");
+                                }
+                            }
+                        ]
+                        showCloseButton: true
+                    }
+
                     // ── Auto-detect radio ──────────────────────────────────
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 4
 
-                        RadioButton {
-                            text: i18n("Automatically detect location")
-                            checked: root.cfg_autoDetectLocation
-                            ButtonGroup.group: locationModeGroup
-                            onClicked: {
-                                root._forceConfirmAutoDetect = true;
-                                root.cfg_autoDetectLocation = true;
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+
+                            RadioButton {
+                                text: i18n("Automatically detect location")
+                                checked: root.cfg_autoDetectLocation
+                                ButtonGroup.group: locationModeGroup
+                                onClicked: {
+                                    root._forceConfirmAutoDetect = true;
+                                    root.cfg_autoDetectLocation = true;
+                                }
+                            }
+
+                            ToolButton {
+                                visible: true
+                                icon.name: "help-about"
+                                display: AbstractButton.IconOnly
+                                text: i18n("Location package notice")
+                                Accessible.name: text
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again.")
                             }
                         }
+
                         RowLayout {
                             Layout.fillWidth: true
                             Layout.leftMargin: 24
@@ -1309,11 +1527,11 @@ KCM.SimpleKCM {
                                 Layout.fillWidth: true
                                 wrapMode: Text.WordWrap
                                 opacity: 0.78
-                                text: root.autoDetectBusy ? i18n("Detecting…") : (root.autoDetectStatus.length > 0 ? root.autoDetectStatus : i18n("Location detection is depending on system configuration and permissions."))
+                                text: root._positioningAvailable ? (root.autoDetectBusy ? i18n("Detecting…") : (root.autoDetectStatus.length > 0 ? root.autoDetectStatus : i18n("Location detection is depending on system configuration and permissions."))) : i18n("GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection.")
                             }
                             Button {
                                 text: i18n("Refresh")
-                                visible: root.cfg_autoDetectLocation
+                                visible: root.cfg_autoDetectLocation && root._positioningAvailable
                                 enabled: root.cfg_autoDetectLocation && !root.autoDetectBusy
                                 onClicked: {
                                     root._forceConfirmAutoDetect = true;
@@ -1321,46 +1539,58 @@ KCM.SimpleKCM {
                                 }
                             }
                         }
+                    }
 
-                        // ── Manual radio with inline Change Location button ─
-                        Item {
-                            Layout.preferredHeight: 4
-                        }
-                        RadioButton {
-                            text: i18n("Use manual location")
-                            checked: !root.cfg_autoDetectLocation
-                            ButtonGroup.group: locationModeGroup
-                            onClicked: root.cfg_autoDetectLocation = false
-                        }
-                        RowLayout {
+                    // ── Manual radio with inline Change Location button ─
+                    Item {
+                        Layout.preferredHeight: 4
+                    }
+                    RadioButton {
+                        text: i18n("Use manual location")
+                        checked: !root.cfg_autoDetectLocation || !root._positioningAvailable
+                        ButtonGroup.group: locationModeGroup
+                        onClicked: root.cfg_autoDetectLocation = false
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 24
+                        spacing: 8
+                        visible: !root.cfg_autoDetectLocation
+                        Label {
                             Layout.fillWidth: true
-                            Layout.leftMargin: 24
-                            spacing: 8
-                            visible: !root.cfg_autoDetectLocation
-                            Label {
-                                Layout.fillWidth: true
-                                wrapMode: Text.WordWrap
-                                opacity: 0.78
-                                text: i18n("Search for a location or choose it on the map.")
+                            wrapMode: Text.WordWrap
+                            opacity: 0.78
+                            text: i18n("Search for a location or choose it on the map.")
+                        }
+                        Button {
+                            text: i18n("Search Location")
+                            icon.name: "edit-find"
+                            enabled: !root.cfg_autoDetectLocation
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement.")
+                            onClicked: root.openSearchPage()
+                        }
+                        Button {
+                            text: i18n("Choose on Map")
+                            icon.name: "map-flat"
+                            enabled: !root.cfg_autoDetectLocation
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark.")
+                            onClicked: {
+                                if (!root._qtLocationAvailable) {
+                                    missingLocationDialog.open();
+                                    return;
+                                }
+                                root.openMapPage();
                             }
-                            Button {
-                                text: i18n("Search Location")
-                                icon.name: "edit-find"
-                                enabled: !root.cfg_autoDetectLocation
-                                onClicked: root.openSearchPage()
-                            }
-                            Button {
-                                text: i18n("Choose on Map")
-                                icon.name: "map-flat"
-                                enabled: !root.cfg_autoDetectLocation
-                                onClicked: root.openMapPage()
-                            }
-                            Button {
-                                text: i18n("Enter Manually")
-                                icon.name: "document-edit"
-                                enabled: !root.cfg_autoDetectLocation
-                                onClicked: root.openManualPage()
-                            }
+                        }
+                        Button {
+                            text: i18n("Enter Manually")
+                            icon.name: "document-edit"
+                            enabled: !root.cfg_autoDetectLocation
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps.")
+                            onClicked: root.openManualPage()
                         }
                     }
 
@@ -1397,28 +1627,12 @@ KCM.SimpleKCM {
                     ListView {
                         id: savedLocList
                         Layout.fillWidth: true
-                        // Give the saved-locations list its own bounded,
-                        // scrollable viewport instead of relying on the outer
-                        // ScrollView. This keeps very long lists contained and
-                        // makes drag-and-drop reordering stable (the dragged
-                        // item no longer pops out of a 0-height viewport).
-                        readonly property int _approxRowHeight: 56
-                        readonly property int _visibleRows: 5
-                        Layout.preferredHeight: Math.min(
-                            Math.max(savedLocWorkingModel.count, 1) * _approxRowHeight + 4,
-                            _visibleRows * _approxRowHeight + 4)
-                        Layout.minimumHeight: Math.min(
-                            Math.max(savedLocWorkingModel.count, 1) * _approxRowHeight + 4,
-                            _approxRowHeight + 4)
-                        interactive: true
+                        Layout.preferredHeight: contentHeight
+                        interactive: false
                         reuseItems: false
                         spacing: 2
-                        clip: true
+                        clip: false
                         model: savedLocWorkingModel
-                        boundsBehavior: Flickable.StopAtBounds
-                        ScrollBar.vertical: ScrollBar {
-                            policy: ScrollBar.AsNeeded
-                        }
 
                         moveDisplaced: Transition {
                             NumberAnimation {
@@ -1450,9 +1664,7 @@ KCM.SimpleKCM {
                             implicitHeight: savedLocDelegate.implicitHeight
 
                             property bool _renaming: false
-                            readonly property bool _isActive:
-                                Math.abs(root.cfg_latitude  - lat) < 0.01 &&
-                                Math.abs(root.cfg_longitude - lon) < 0.01
+                            readonly property bool _isActive: Math.abs(root.cfg_latitude - lat) < 0.01 && Math.abs(root.cfg_longitude - lon) < 0.01
 
                             function _commitRename() {
                                 var newName = renameField.text.trim();
@@ -1463,8 +1675,11 @@ KCM.SimpleKCM {
                                 var locs;
                                 try {
                                     locs = JSON.parse(root.cfg_savedLocations || "[]");
-                                    if (!Array.isArray(locs)) locs = [];
-                                } catch (e) { locs = []; }
+                                    if (!Array.isArray(locs))
+                                        locs = [];
+                                } catch (e) {
+                                    locs = [];
+                                }
                                 if (index >= 0 && index < locs.length) {
                                     locs[index].name = newName;
                                     root.cfg_savedLocations = JSON.stringify(locs);
@@ -1481,11 +1696,7 @@ KCM.SimpleKCM {
 
                                 background: Rectangle {
                                     radius: 4
-                                    color: savedLocDelegateRoot._isActive
-                                        ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.20)
-                                        : (savedLocDelegate.hovered && !savedLocDelegateRoot._renaming
-                                            ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.10)
-                                            : "transparent")
+                                    color: savedLocDelegateRoot._isActive ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.20) : (savedLocDelegate.hovered && !savedLocDelegateRoot._renaming ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.10) : "transparent")
                                     border.color: savedLocDelegateRoot._isActive ? Kirigami.Theme.highlightColor : "transparent"
                                     border.width: savedLocDelegateRoot._isActive ? 1 : 0
                                 }
@@ -1494,11 +1705,12 @@ KCM.SimpleKCM {
                                 // or the user clicks a child button which consumes
                                 // the event first).
                                 onClicked: {
-                                    if (savedLocDelegateRoot._renaming) return;
+                                    if (savedLocDelegateRoot._renaming)
+                                        return;
                                     root.cfg_autoDetectLocation = false;
                                     root.cfg_locationName = savedLocDelegateRoot.name;
-                                    root.cfg_latitude     = savedLocDelegateRoot.lat;
-                                    root.cfg_longitude    = savedLocDelegateRoot.lon;
+                                    root.cfg_latitude = savedLocDelegateRoot.lat;
+                                    root.cfg_longitude = savedLocDelegateRoot.lon;
                                     if (savedLocDelegateRoot.altitude !== 0)
                                         root.cfg_altitude = savedLocDelegateRoot.altitude;
                                     if (savedLocDelegateRoot.timezone && savedLocDelegateRoot.timezone.length > 0)
@@ -1591,22 +1803,19 @@ KCM.SimpleKCM {
                                         }
                                         background: Rectangle {
                                             radius: 3
-                                            color: starButton.pressed
-                                                ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.3)
-                                                : (starButton.hovered
-                                                    ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15)
-                                                    : "transparent")
+                                            color: starButton.pressed ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.3) : (starButton.hovered ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15) : "transparent")
                                         }
                                         ToolTip.visible: hovered
-                                        ToolTip.text: savedLocDelegateRoot.starred
-                                            ? i18n("Default location (click to unset)")
-                                            : i18n("Set as default location")
+                                        ToolTip.text: savedLocDelegateRoot.starred ? i18n("Default location (click to unset)") : i18n("Set as default location")
                                         onClicked: {
                                             var locs;
                                             try {
                                                 locs = JSON.parse(root.cfg_savedLocations || "[]");
-                                                if (!Array.isArray(locs)) locs = [];
-                                            } catch (e) { locs = []; }
+                                                if (!Array.isArray(locs))
+                                                    locs = [];
+                                            } catch (e) {
+                                                locs = [];
+                                            }
                                             var wasStarred = !!(locs[savedLocDelegateRoot.index] && locs[savedLocDelegateRoot.index].starred);
                                             for (var i = 0; i < locs.length; i++)
                                                 delete locs[i].starred;
@@ -1655,11 +1864,11 @@ KCM.SimpleKCM {
                                         ToolTip.text: i18n("Edit location details")
                                         onClicked: {
                                             root.openManualPageForEdit({
-                                                name:        savedLocDelegateRoot.name,
-                                                lat:         savedLocDelegateRoot.lat,
-                                                lon:         savedLocDelegateRoot.lon,
-                                                altitude:    savedLocDelegateRoot.altitude,
-                                                timezone:    savedLocDelegateRoot.timezone,
+                                                name: savedLocDelegateRoot.name,
+                                                lat: savedLocDelegateRoot.lat,
+                                                lon: savedLocDelegateRoot.lon,
+                                                altitude: savedLocDelegateRoot.altitude,
+                                                timezone: savedLocDelegateRoot.timezone,
                                                 countryCode: savedLocDelegateRoot.countryCode
                                             }, savedLocDelegateRoot.index);
                                         }
@@ -1675,8 +1884,11 @@ KCM.SimpleKCM {
                                             var locs;
                                             try {
                                                 locs = JSON.parse(root.cfg_savedLocations || "[]");
-                                                if (!Array.isArray(locs)) locs = [];
-                                            } catch (e) { locs = []; }
+                                                if (!Array.isArray(locs))
+                                                    locs = [];
+                                            } catch (e) {
+                                                locs = [];
+                                            }
                                             if (locs.length === 1) {
                                                 root._deleteLocIndex = savedLocDelegateRoot.index;
                                                 deleteLastLocDialog.open();
@@ -1687,129 +1899,6 @@ KCM.SimpleKCM {
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
-
-                    // ── Location information section header ─────────────────
-                    Item {
-                        Layout.preferredHeight: 4
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Kirigami.Heading {
-                            text: i18n("Location information")
-                            level: 4
-                        }
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 1
-                            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.2)
-                            opacity: 0.6
-                        }
-                    }
-
-                    // ── Location fields (read-only display) ─────────────────
-                    GridLayout {
-                        Layout.fillWidth: true
-                        columns: 2
-                        columnSpacing: 10
-                        rowSpacing: 8
-
-                        Label {
-                            text: i18n("Location name:")
-                        }
-                        TextField {
-                            id: locationNameField
-                            Layout.fillWidth: true
-                            text: root.cfg_locationName
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Latitude:")
-                        }
-                        TextField {
-                            id: latField
-                            Layout.fillWidth: true
-                            text: {
-                                var v = root.cfg_latitude;
-                                if (v === 0.0)
-                                    return "0°";
-                                return v.toFixed(7).replace(/\.?0+$/, "") + "°";
-                            }
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Longitude:")
-                        }
-                        TextField {
-                            id: lonField
-                            Layout.fillWidth: true
-                            text: {
-                                var v = root.cfg_longitude;
-                                if (v === 0.0)
-                                    return "0°";
-                                return v.toFixed(7).replace(/\.?0+$/, "") + "°";
-                            }
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Altitude:")
-                        }
-                        TextField {
-                            id: altField
-                            Layout.fillWidth: true
-                            text: root.cfg_altitude + " m"
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
-                            }
-                        }
-
-                        Label {
-                            text: i18n("Timezone:")
-                        }
-                        TextField {
-                            id: timezoneField
-                            Layout.fillWidth: true
-                            text: {
-                                var tz = root.cfg_timezone;
-                                if (!tz || tz.length === 0)
-                                    return "";
-                                var offset = root.gmtOffsetLabel(tz);
-                                return offset.length > 0 ? tz + " " + offset : tz;
-                            }
-                            readOnly: true
-                            background: Rectangle {
-                                color: Qt.rgba(0.5, 0.5, 0.5, 0.15)
-                                border.color: Qt.rgba(0.5, 0.5, 0.5, 0.35)
-                                border.width: 1
-                                radius: 4
                             }
                         }
                     }
@@ -1839,13 +1928,6 @@ KCM.SimpleKCM {
     Component {
         id: searchSubPage
         ConfigLocationSubPage {
-            configRoot: root
-        }
-    }
-
-    Component {
-        id: mapSubPage
-        ConfigMapSubPage {
             configRoot: root
         }
     }

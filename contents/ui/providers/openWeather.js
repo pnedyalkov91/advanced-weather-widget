@@ -129,7 +129,10 @@ function fetchCurrent(service, W, chain, idx) {
                         minC: day.minC,
                         code: W.openWeatherCodeToWmo(day.bestEntry.weather[0].id),
                         precipMm: day.precipMm,
-                        snowCm: day.snowMm / 10.0  // mm → cm
+                        snowCm: day.snowMm / 10.0, // mm → cm
+                        precipProb: NaN,
+                        windKmh: NaN,
+                        windDir: NaN
                     });
                 });
             }

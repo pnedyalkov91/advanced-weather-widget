@@ -36,10 +36,11 @@ KCM.SimpleKCM {
     property string cfg_wbApiKey: ""
     property string cfg_qwApiKey: ""
     property string cfg_qwApiHost: ""
+    property bool cfg_radarEnabled: true
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
-    // ── Legacy props — keep bound so KCM doesn't lose them ────────────────
+    // ── Legacy props - keep bound so KCM doesn't lose them ────────────────
     property bool cfg_showScrollbox: true
     property int cfg_scrollboxLines: 2
     property string cfg_scrollboxItems: "Humidity;Wind;Pressure;Dew Point;Visibility"
@@ -234,7 +235,7 @@ KCM.SimpleKCM {
                 return;
             if (_testGen !== myGen) return;
             if (req.status === 200) {
-                // QWeather returns HTTP 200 even on auth failure — check body code
+                // QWeather returns HTTP 200 even on auth failure - check body code
                 if (root.isQWeather) {
                     try {
                         var qwBody = JSON.parse(req.responseText);
@@ -264,7 +265,7 @@ KCM.SimpleKCM {
         req.send();
     }
 
-    // Providers without Adaptive — Adaptive is handled by the switch above
+    // Providers without Adaptive - Adaptive is handled by the switch above
     readonly property var providerModel: [
         {
             text: i18n("Open-Meteo (recommended, free)"),
@@ -377,20 +378,20 @@ KCM.SimpleKCM {
                     }
                 }
 
-                // Adaptive description — shown only when Adaptive is ON
+                // Adaptive description - shown only when Adaptive is ON
                 Kirigami.InlineMessage {
                     Layout.fillWidth: true
                     Layout.topMargin: 4
                     visible: root.isAdaptive
                     type: Kirigami.MessageType.Information
-                    text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first — it is free and requires no API key.")
+                    text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key.")
                 }
 
                 Item {
                     Layout.preferredHeight: 8
                 }
 
-                // Manual provider selector — hidden when Adaptive is ON
+                // Manual provider selector - hidden when Adaptive is ON
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 6
@@ -626,6 +627,72 @@ KCM.SimpleKCM {
             }
 
             // ══════════════════════════════════════════════════════════════
+            // SECTION: Radar
+            // ══════════════════════════════════════════════════════════════
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Kirigami.Heading {
+                        text: i18n("Radar")
+                        level: 4
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: Kirigami.Theme.textColor
+                        opacity: 0.5
+                    }
+                }
+
+                Switch {
+                    text: i18n("Show Radar tab in widget")
+                    checked: root.cfg_radarEnabled
+                    onToggled: root.cfg_radarEnabled = checked
+                }
+
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    visible: root.cfg_radarEnabled
+                    showCloseButton: true
+                    type: Kirigami.MessageType.Information
+                    text: i18n("Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>" +
+                               "Rain Viewer does not guarantee the availability of radar data. " +
+                               "They do not conclude contracts with owners of this data. " +
+                               "The reason is that the owners can ask them to remove their data from Rain Viewer, " +
+                               "change the format, or stop sharing the data. " +
+                               "They are trying to keep radar data for as long as possible, " +
+                               "but sometimes the owners just stop providing the images.")
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
+
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    showCloseButton: true
+                    visible: root.cfg_radarEnabled && (root.cfg_owApiKey || "").trim() === ""
+                    type: Kirigami.MessageType.Information
+                    text: i18n("To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): " +
+                               "disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again.")
+                }
+
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    showCloseButton: true
+                    visible: root.cfg_radarEnabled && (root.cfg_owApiKey || "").trim() !== ""
+                    type: Kirigami.MessageType.Warning
+                    text: i18n("<b>Why OWM layers may not match RainViewer radar</b><br/><br/>" +
+                               "OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. " +
+                               "They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>" +
+                               "RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. " +
+                               "This discrepancy is expected and known.")
+                }
+            }
+
+            Item { Layout.preferredHeight: 8 }
+
+            // ══════════════════════════════════════════════════════════════
             // SECTION: Data Refresh
             // ══════════════════════════════════════════════════════════════
             ColumnLayout {
@@ -650,7 +717,7 @@ KCM.SimpleKCM {
                     Layout.preferredHeight: 4
                 }
 
-                CheckBox {
+                Switch {
                     text: i18n("Refresh weather automatically")
                     checked: root.cfg_autoRefresh
                     onToggled: root.cfg_autoRefresh = checked

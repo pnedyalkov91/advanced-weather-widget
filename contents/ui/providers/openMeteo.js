@@ -30,11 +30,12 @@ function fetchCurrent(service, chain, idx) {
         + "?latitude=" + service.latitude
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
+        + "&forecast_days=" + Math.min(service.forecastDays, 16)
         + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,"
         + "weather_code,wind_speed_10m,wind_direction_10m,surface_pressure,"
         + "dew_point_2m,visibility,is_day,precipitation,uv_index,snow_depth"
         + "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,"
-        + "precipitation_sum,snowfall_sum";
+        + "precipitation_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant";
 
     var req = new XMLHttpRequest();
     req.open("GET", url);
@@ -63,7 +64,10 @@ function fetchCurrent(service, chain, idx) {
                     minC: d.daily.temperature_2m_min[i],
                     code: d.daily.weather_code[i],
                     precipMm: d.daily.precipitation_sum ? d.daily.precipitation_sum[i] : NaN,
-                    snowCm: d.daily.snowfall_sum ? d.daily.snowfall_sum[i] : NaN
+                    snowCm: d.daily.snowfall_sum ? d.daily.snowfall_sum[i] : NaN,
+                    precipProb: d.daily.precipitation_probability_max ? d.daily.precipitation_probability_max[i] : NaN,
+                    windKmh: d.daily.wind_speed_10m_max ? d.daily.wind_speed_10m_max[i] : NaN,
+                    windDir: d.daily.wind_direction_10m_dominant ? d.daily.wind_direction_10m_dominant[i] : NaN
                 });
         }
         r.weatherDataStaged = {

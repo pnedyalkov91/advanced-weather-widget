@@ -41,10 +41,14 @@ Rectangle {
     // width/height are used when the widget sits on the desktop.
     // Compact size when no location is set to avoid overlapping other widgets.
     readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
-    Layout.preferredWidth: _hasLocation ? 540 : 280
-    Layout.preferredHeight: _hasLocation ? 550 : 220
-    width: _hasLocation ? 540 : 280
-    height: _hasLocation ? 550 : 220
+    readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
+    readonly property bool isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
+    Layout.minimumWidth:    _hasLocation ? (isSimpleMode ? 900 : 540) : 280
+    Layout.minimumHeight:   _hasLocation ? (isSimpleMode ? 550 : 380) : 220
+    Layout.preferredWidth:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
+    width:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    height: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -85,16 +89,21 @@ Rectangle {
 
     // Per-tab visibility flags (both visible by default)
     readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
-    readonly property bool showDetailsTab: visibleTabs === "both" || visibleTabs === "details"
+    readonly property bool showDetailsTab:  visibleTabs === "both" || visibleTabs === "details"
     readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
-    readonly property bool showAnyTab: showDetailsTab || showForecastTab
+    readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && (visibleTabs === "both" || visibleTabs === "radar")
+    readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
-    // Returns 0 for Details, 1 for Forecast.
+    // Returns 0 = Details, 1 = Forecast, 2 = Radar
     function _resolvedDefaultTab() {
-        var want = Plasmoid.configuration.widgetDefaultTab === "forecast" ? 1 : 0;
-        if (want === 1 && !fullView.showForecastTab) return fullView.showDetailsTab ? 0 : 0;
-        if (want === 0 && !fullView.showDetailsTab) return fullView.showForecastTab ? 1 : 0;
+        var want = 0;
+        var pref = Plasmoid.configuration.widgetDefaultTab || "details";
+        if (pref === "forecast") want = 1;
+        else if (pref === "radar") want = 2;
+        if (want === 0 && !fullView.showDetailsTab)  want = fullView.showForecastTab ? 1 : (fullView.showRadarTab ? 2 : 0);
+        if (want === 1 && !fullView.showForecastTab) want = fullView.showDetailsTab  ? 0 : (fullView.showRadarTab ? 2 : 0);
+        if (want === 2 && !fullView.showRadarTab)    want = fullView.showDetailsTab  ? 0 : (fullView.showForecastTab ? 1 : 0);
         return want;
     }
 
@@ -223,13 +232,58 @@ Rectangle {
             }
 
             Label {
-                Layout.fillWidth: true
+                Layout.fillWidth: !headerDateTimeLabel.visible
                 text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
                 // #2
                 color: Kirigami.Theme.textColor
                 font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
+            }
+
+            // ── Header date / time ────────────────────────────────────────
+            Label {
+                id: headerDateTimeLabel
+                Layout.fillWidth: true
+                visible: Plasmoid.configuration.headerShowDateTime === true
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: Kirigami.Theme.textColor
+                opacity: 1
+                font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+
+                readonly property string _dateFmt: Plasmoid.configuration.headerDateFormat || "locale-long"
+                readonly property string _timeFmt: Plasmoid.configuration.headerTimeFormat || "locale"
+
+                function _formatDate(now) {
+                    var fmt = _dateFmt;
+                    if (fmt === "locale-long")  return now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
+                    if (fmt === "locale-short") return now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+                    if (fmt === "")             return "";
+                    return Qt.formatDate(now, fmt);
+                }
+
+                function _formatTime(now) {
+                    var fmt = _timeFmt;
+                    if (fmt === "locale") return now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
+                    if (fmt === "")       return "";
+                    return Qt.formatTime(now, fmt);
+                }
+
+                Timer {
+                    id: _dtTimer
+                    interval: 1000
+                    repeat: true
+                    running: headerDateTimeLabel.visible
+                    triggeredOnStart: true
+                    onTriggered: {
+                        var now = new Date();
+                        var dateStr = headerDateTimeLabel._formatDate(now);
+                        var timeStr = headerDateTimeLabel._formatTime(now);
+                        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
+                        headerDateTimeLabel.text = dateStr + sep + timeStr;
+                    }
+                }
             }
 
             // ── Location switcher dropdown ────────────────────────────────
@@ -243,7 +297,7 @@ Rectangle {
                 visible: {
                     try {
                         var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-                        return Array.isArray(locs) && locs.length > 0;
+                        return Array.isArray(locs) && locs.length > 1;
                     } catch (e) { return false; }
                 }
                 ToolTip.visible: hovered
@@ -339,15 +393,26 @@ Rectangle {
 
         Item {
             Layout.preferredHeight: 8
+            visible: !fullView.isSimpleMode
         }
 
-        // ── Hero: three-column layout ─────────────────────────────────
+        // ── Simple mode ───────────────────────────────────────────────
+        SimpleView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: fullView.isSimpleMode && weatherRoot && !isNaN(weatherRoot.temperatureC)
+            weatherRoot: fullView.weatherRoot
+            resolveConditionIconFn: fullView.resolveConditionIcon
+        }
+
+        // ── Advanced mode hero: three-column layout ───────────────────
         //   LEFT  — current temperature stack
         //   CENTRE— condition icon 120 px centred  (#6)
         //   RIGHT — today's High / Low             (#7)
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 120
+            visible: !fullView.isSimpleMode
 
             // LEFT — temp + condition + feels-like
             ColumnLayout {
@@ -441,16 +506,18 @@ Rectangle {
             }
         }
 
+
         Item {
             Layout.preferredHeight: fullView.showAnyTab ? 12 : 0
+            visible: !fullView.isSimpleMode
         }
 
-        // ── Tab bar — only shown when both tabs are enabled ────────────
+        // ── Tab bar — shown when more than one tab is enabled ──────────
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
             radius: 17
-            visible: fullView.showDetailsTab && fullView.showForecastTab
+            visible: !fullView.isSimpleMode && [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab].filter(Boolean).length > 1
             // #2: tab bar background adapts to theme
             color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
@@ -464,8 +531,9 @@ Rectangle {
                 Repeater {
                     model: {
                         var tabs = [];
-                        if (fullView.showDetailsTab) tabs.push({ label: i18n("Details"), logicalIdx: 0 });
+                        if (fullView.showDetailsTab)  tabs.push({ label: i18n("Details"),  logicalIdx: 0 });
                         if (fullView.showForecastTab) tabs.push({ label: i18n("Forecast"), logicalIdx: 1 });
+                        if (fullView.showRadarTab)    tabs.push({ label: i18n("Radar"),    logicalIdx: 2 });
                         return tabs;
                     }
                     delegate: Rectangle {
@@ -514,17 +582,35 @@ Rectangle {
         StackLayout {
             id: tabContent
             Layout.fillWidth: true
-            visible: fullView.showAnyTab
+            visible: !fullView.isSimpleMode && fullView.showAnyTab
             currentIndex: fullView.activeTab
             // Explicitly follow the current child's implicitHeight
             implicitHeight: (children && children[currentIndex]) ? children[currentIndex].implicitHeight : 0
+            onCurrentIndexChanged: {
+                if (currentIndex === 2 && radarView.visible)
+                    radarView.reload();
+            }
 
             DetailsView {
                 id: detailsView
                 weatherRoot: fullView.weatherRoot
             }
-            ForecastView {
-                id: forecastView
+            ScrollView {
+                id: forecastScrollView
+                clip: true
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                implicitHeight: forecastView.implicitHeight
+                contentWidth: availableWidth
+
+                ForecastView {
+                    id: forecastView
+                    weatherRoot: fullView.weatherRoot
+                    width: forecastScrollView.availableWidth
+                }
+            }
+            RadarView {
+                id: radarView
                 weatherRoot: fullView.weatherRoot
             }
         }
@@ -536,14 +622,19 @@ Rectangle {
         Label {
             Layout.fillWidth: true
             visible: Plasmoid.configuration.showUpdateText !== false && weatherRoot && !weatherRoot.loading && (weatherRoot.updateText || "").length > 0
-            text: weatherRoot ? weatherRoot.updateText : ""
+            text: {
+                var t = weatherRoot ? weatherRoot.updateText : "";
+                if (fullView._isRadarTab && (Plasmoid.configuration.radarLayer || "rainviewer") === "rainviewer")
+                    t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
+                return t;
+            }
             textFormat: Text.RichText
             onLinkActivated: function(link) { Qt.openUrlExternally(link) }
             // #2
             color: Kirigami.Theme.textColor
             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
             horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
+            wrapMode: Text.WordWrap
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
             }

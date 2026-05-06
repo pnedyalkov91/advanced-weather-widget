@@ -43,6 +43,7 @@ Item {
     // ── Interface ─────────────────────────────────────────────────────────
     /** Reference to the PlasmoidItem root (set by CompactView) */
     property var weatherRoot
+    property int _dateTimeTick: 0
 
     // Respect the global tooltipEnabled setting: collapse to nothing when off.
     // (CompactView also sets active:false on the ToolTipArea, so the popup
@@ -299,7 +300,11 @@ Item {
                     model: {
                         if (!ttRoot.weatherRoot || !ttRoot.ttUseIcons)
                             return [];
-                        var _ = ttRoot.weatherRoot.weatherData + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
+                        var _ = (ttRoot.weatherRoot.weatherData || "") 
+                            + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") 
+                            + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") 
+                            + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode 
+                            + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
                         return ttRoot._buildTooltipItems();
                     }
 
@@ -342,7 +347,10 @@ Item {
                     model: {
                         if (!ttRoot.weatherRoot || ttRoot.ttUseIcons)
                             return [];
-                        var _ = ttRoot.weatherRoot.weatherData + ttRoot.weatherRoot.moonriseTimeText.length + ttRoot.weatherRoot.moonsetTimeText.length + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode;
+                        var _ = (ttRoot.weatherRoot.weatherData || "") 
+                            + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") 
+                            + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") 
+                            + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
                         return ttRoot._buildTooltipItems();
                     }
 
@@ -400,10 +408,10 @@ Item {
         }
 
         if (tok === "temperature")
-            return [row("temperature", r.tempValue(r.temperatureC), i18n("Temperature:") + " " + r.tempValue(r.temperatureC))];
+            return [row("temperature", r.tempValue(r.temperatureC, "tooltip"), i18n("Temperature:") + " " + r.tempValue(r.temperatureC, "tooltip"))];
 
         if (tok === "feelslike")
-            return [row("feelslike", r.tempValue(r.apparentC), i18n("Feels like:") + " " + r.tempValue(r.apparentC))];
+            return [row("feelslike", r.tempValue(r.apparentC, "tooltip"), i18n("Feels like:") + " " + r.tempValue(r.apparentC, "tooltip"))];
 
         if (tok === "condition")
             return [row("condition", r.weatherCodeToText(r.weatherCode, r.isNightTime()), i18n("Condition:") + " " + r.weatherCodeToText(r.weatherCode, r.isNightTime()))];
@@ -430,7 +438,7 @@ Item {
             return [row("pressure", r.pressureValue(r.pressureHpa), i18n("Pressure:") + " " + r.pressureValue(r.pressureHpa))];
 
         if (tok === "dewpoint")
-            return [row("dewpoint", r.tempValue(r.dewPointC), i18n("Dew point:") + " " + r.tempValue(r.dewPointC))];
+            return [row("dewpoint", r.tempValue(r.dewPointC, "tooltip"), i18n("Dew point:") + " " + r.tempValue(r.dewPointC, "tooltip"))];
 
         if (tok === "visibility") {
             var visTxt = isNaN(r.visibilityKm) ? "--" : r.visibilityKm.toFixed(1) + " km";
@@ -605,6 +613,13 @@ Item {
                 { iconInfo: infoSet, showIcon: showIcon, text: setTime }
             ];
         }
+        if (tok === "datetime") {
+            var dtTxt = r._formatItemDateTime(
+                Plasmoid.configuration.tooltipDateTimeFormat,
+                Plasmoid.configuration.tooltipTimeFormat);
+            return [row("datetime", dtTxt, i18n("Date/Time:") + " " + dtTxt)];
+        }
+
         return [];
     }
 }

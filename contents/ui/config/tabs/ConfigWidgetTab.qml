@@ -33,6 +33,8 @@ ColumnLayout {
 
     /** Emitted when the user clicks Configure… to push the details sub-page */
     signal pushSubPage()
+    /** Emitted when the user clicks Configure… to push the simple items sub-page */
+    signal pushSimpleSubPage()
 
     /** Icon theme choices shared by all combos */
     readonly property var iconThemeModel: [
@@ -93,6 +95,34 @@ ColumnLayout {
         // ── SUB-TAB 0: General ────────────────────────────────────────
         Kirigami.FormLayout {
             // ═══════════════════════════════════════════════════════════════
+            // SECTION: Layout
+            // ═══════════════════════════════════════════════════════════════
+            Kirigami.Separator {
+                Kirigami.FormData.isSection: true
+                Kirigami.FormData.label: i18n("Layout")
+            }
+
+            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Mode:")
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: layoutModeCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    model: [
+                        { text: i18n("Advanced (all tabs)"),             value: "advanced" },
+                        { text: i18n("Simple"), value: "simple"   }
+                    ]
+                    Component.onCompleted: {
+                        currentIndex = (widgetTab.configRoot.cfg_widgetLayoutMode === "simple") ? 1 : 0;
+                    }
+                    onActivated: widgetTab.configRoot.cfg_widgetLayoutMode = model[currentIndex].value
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
             // SECTION: Appearance
             // ═══════════════════════════════════════════════════════════════
             Kirigami.Separator {
@@ -122,8 +152,6 @@ ColumnLayout {
                 onClicked: widgetTab.configRoot.conditionIconDialog.openWithContext("widget")
             }
 
-            Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
-
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Behavior
             // ═══════════════════════════════════════════════════════════════
@@ -136,6 +164,7 @@ ColumnLayout {
 
             RowLayout {
                 Kirigami.FormData.label: i18n("Default tab:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: defaultTabCombo
@@ -143,43 +172,230 @@ ColumnLayout {
                     textRole: "text"
                     model: [
                         { text: i18n("Details"),  value: "details"  },
-                        { text: i18n("Forecast"), value: "forecast" }
+                        { text: i18n("Forecast"), value: "forecast" },
+                        { text: i18n("Radar"),    value: "radar"    }
                     ]
-                    Component.onCompleted: currentIndex = widgetTab.configRoot.cfg_widgetDefaultTab === "forecast" ? 1 : 0
+                    Component.onCompleted: {
+                        var v = widgetTab.configRoot.cfg_widgetDefaultTab || "details";
+                        if (v === "forecast") currentIndex = 1;
+                        else if (v === "radar") currentIndex = 2;
+                        else currentIndex = 0;
+                    }
                     onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
                 }
             }
             RowLayout {
                 Kirigami.FormData.label: i18n("Visible tabs:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: visibleTabsCombo
                     Layout.preferredWidth: 200
                     textRole: "text"
                     model: [
-                        { text: i18n("Both"),          value: "both"     },
+                        { text: i18n("All tabs"),      value: "both"     },
                         { text: i18n("Details only"),  value: "details"  },
                         { text: i18n("Forecast only"), value: "forecast" },
-                        { text: i18n("None"),          value: "none"    }
+                        { text: i18n("Radar only"),    value: "radar"    },
+                        { text: i18n("None"),          value: "none"     }
                     ]
                     Component.onCompleted: {
                         var v = widgetTab.configRoot.cfg_widgetVisibleTabs || "both";
                         if (v === "details") currentIndex = 1;
                         else if (v === "forecast") currentIndex = 2;
-                        else if (v === "none") currentIndex = 3;
+                        else if (v === "radar") currentIndex = 3;
+                        else if (v === "none") currentIndex = 4;
                         else currentIndex = 0;
                     }
                     onActivated: widgetTab.configRoot.cfg_widgetVisibleTabs = model[currentIndex].value
                 }
             }
-            CheckBox {
+            RowLayout {
                 Kirigami.FormData.label: i18n("Footer:")
-                text: i18n("Show update time and provider")
-                checked: widgetTab.configRoot.cfg_showUpdateText
-                onToggled: widgetTab.configRoot.cfg_showUpdateText = checked
+                Switch {
+                    id: footerSwitch
+                    checked: widgetTab.configRoot.cfg_showUpdateText
+                    onToggled: widgetTab.configRoot.cfg_showUpdateText = checked
+                }
+                Label {
+                    text: i18n("Show update time and provider")
+                    opacity: 0.8
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: footerSwitch.toggle()
+                    }
+                }
             }
 
-            Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Sunrise / Sunset:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                Switch {
+                    checked: widgetTab.configRoot.cfg_simpleShowSunriseSunset
+                    onToggled: widgetTab.configRoot.cfg_simpleShowSunriseSunset = checked
+                }
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Date and time in header:")
+                Switch {
+                    id: headerDateTimeSwitch
+                    checked: widgetTab.configRoot.cfg_headerShowDateTime
+                    onToggled: widgetTab.configRoot.cfg_headerShowDateTime = checked
+                }
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Date format:")
+                visible: widgetTab.configRoot.cfg_headerShowDateTime
+                spacing: Kirigami.Units.smallSpacing
+                ComboBox {
+                    id: headerDateFormatCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    readonly property var _presets: [
+                        { text: i18n("Region default (long)"),  value: "locale-long"  },
+                        { text: i18n("Region default (short)"), value: "locale-short" },
+                        { text: "Mon, Jan 1  (ddd, MMM d)",     value: "ddd, MMM d"   },
+                        { text: "Monday, Jan 1  (dddd, MMM d)", value: "dddd, MMM d"  },
+                        { text: "01/01/2025  (dd/MM/yyyy)",     value: "dd/MM/yyyy"   },
+                        { text: "01.01.2025  (dd.MM.yyyy)",     value: "dd.MM.yyyy"   },
+                        { text: "2025-01-01  (yyyy-MM-dd)",     value: "yyyy-MM-dd"   },
+                        { text: i18n("Custom…"),                value: "__custom__"   }
+                    ]
+                    model: _presets
+                    Component.onCompleted: {
+                        var v = widgetTab.configRoot.cfg_headerDateFormat || "locale-long";
+                        for (var i = 0; i < _presets.length - 1; ++i) {
+                            if (_presets[i].value === v) { currentIndex = i; return; }
+                        }
+                        currentIndex = _presets.length - 1;
+                    }
+                    onActivated: {
+                        var val = _presets[currentIndex].value;
+                        if (val !== "__custom__")
+                            widgetTab.configRoot.cfg_headerDateFormat = val;
+                    }
+                }
+                TextField {
+                    id: headerDateCustomField
+                    visible: headerDateFormatCombo.currentIndex === headerDateFormatCombo._presets.length - 1
+                    Layout.preferredWidth: 140
+                    placeholderText: "ddd, MMM d"
+                    text: {
+                        var v = widgetTab.configRoot.cfg_headerDateFormat;
+                        var presets = headerDateFormatCombo._presets;
+                        for (var i = 0; i < presets.length - 1; ++i)
+                            if (presets[i].value === v) return "";
+                        return v;
+                    }
+                    onEditingFinished: {
+                        if (text.trim().length > 0)
+                            widgetTab.configRoot.cfg_headerDateFormat = text.trim();
+                    }
+                }
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                Layout.columnSpan: 2
+                visible: widgetTab.configRoot.cfg_headerShowDateTime &&
+                         headerDateFormatCombo.currentIndex === headerDateFormatCombo._presets.length - 1
+                type: Kirigami.MessageType.Information
+                text: i18n("You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>")
+                onLinkActivated: link => Qt.openUrlExternally(link)
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Time format:")
+                visible: widgetTab.configRoot.cfg_headerShowDateTime
+                spacing: Kirigami.Units.smallSpacing
+                ComboBox {
+                    id: headerTimeFormatCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    readonly property var _presets: [
+                        { text: i18n("Region default"), value: "locale"    },
+                        { text: "14:30  (HH:mm)",       value: "HH:mm"    },
+                        { text: "14:30:05  (HH:mm:ss)", value: "HH:mm:ss" },
+                        { text: "2:30 PM  (h:mm AP)",   value: "h:mm AP"  },
+                        { text: "2:30:05 PM  (h:mm:ss AP)", value: "h:mm:ss AP" },
+                        { text: i18n("Custom…"),         value: "__custom__" }
+                    ]
+                    model: _presets
+                    Component.onCompleted: {
+                        var v = widgetTab.configRoot.cfg_headerTimeFormat || "locale";
+                        for (var i = 0; i < _presets.length - 1; ++i) {
+                            if (_presets[i].value === v) { currentIndex = i; return; }
+                        }
+                        currentIndex = _presets.length - 1;
+                    }
+                    onActivated: {
+                        var val = _presets[currentIndex].value;
+                        if (val !== "__custom__")
+                            widgetTab.configRoot.cfg_headerTimeFormat = val;
+                    }
+                }
+                TextField {
+                    id: headerTimeCustomField
+                    visible: headerTimeFormatCombo.currentIndex === headerTimeFormatCombo._presets.length - 1
+                    Layout.preferredWidth: 140
+                    placeholderText: "HH:mm"
+                    text: {
+                        var v = widgetTab.configRoot.cfg_headerTimeFormat;
+                        var presets = headerTimeFormatCombo._presets;
+                        for (var i = 0; i < presets.length - 1; ++i)
+                            if (presets[i].value === v) return "";
+                        return v;
+                    }
+                    onEditingFinished: {
+                        if (text.trim().length > 0)
+                            widgetTab.configRoot.cfg_headerTimeFormat = text.trim();
+                    }
+                }
+                Label {
+                    visible: !headerTimeCustomField.visible && widgetTab.configRoot.cfg_headerTimeFormat !== "locale"
+                    text: i18n("Use 24-hour format:")
+                    opacity: 0.8
+                }
+                Switch {
+                    id: header24hSwitch
+                    visible: !headerTimeCustomField.visible && widgetTab.configRoot.cfg_headerTimeFormat !== "locale"
+                    readonly property bool _is24h: {
+                        var v = widgetTab.configRoot.cfg_headerTimeFormat;
+                        return v === "locale" || v === "HH:mm" || v === "HH:mm:ss";
+                    }
+                    checked: _is24h
+                    onToggled: {
+                        var cur = headerTimeFormatCombo.currentIndex;
+                        var presets = headerTimeFormatCombo._presets;
+                        if (cur >= presets.length - 1) return;
+                        var v = presets[cur].value;
+                        if (v === "locale" || v === "") return;
+                        if (checked) {
+                            if (v === "h:mm AP")       widgetTab.configRoot.cfg_headerTimeFormat = "HH:mm";
+                            else if (v === "h:mm:ss AP") widgetTab.configRoot.cfg_headerTimeFormat = "HH:mm:ss";
+                        } else {
+                            if (v === "HH:mm")    widgetTab.configRoot.cfg_headerTimeFormat = "h:mm AP";
+                            else if (v === "HH:mm:ss") widgetTab.configRoot.cfg_headerTimeFormat = "h:mm:ss AP";
+                        }
+                        var newV = widgetTab.configRoot.cfg_headerTimeFormat;
+                        for (var i = 0; i < presets.length - 1; ++i) {
+                            if (presets[i].value === newV) { headerTimeFormatCombo.currentIndex = i; break; }
+                        }
+                    }
+                }
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                Layout.columnSpan: 2
+                visible: widgetTab.configRoot.cfg_headerShowDateTime &&
+                         headerTimeFormatCombo.currentIndex === headerTimeFormatCombo._presets.length - 1
+                type: Kirigami.MessageType.Information
+                text: i18n("You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>")
+                onLinkActivated: link => Qt.openUrlExternally(link)
+            }
 
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Widget popup size
@@ -304,6 +520,7 @@ ColumnLayout {
             // ── Warning — KDE themes lack some item icons ──
             Kirigami.InlineMessage {
                 Layout.fillWidth: true
+                Layout.columnSpan: 2
                 visible: widgetTab.configRoot.cfg_widgetIconTheme === "kde"
                 type: Kirigami.MessageType.Warning
                 text: i18n("KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\".")
@@ -320,7 +537,10 @@ ColumnLayout {
                 ]
             }
 
-            Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.largeSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
 
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Layout
@@ -328,11 +548,16 @@ ColumnLayout {
             Kirigami.Separator {
                 Kirigami.FormData.isSection: true
                 Kirigami.FormData.label: i18n("Layout")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
 
             RowLayout {
                 Kirigami.FormData.label: i18n("Details layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 ComboBox {
                     id: detailsLayoutCombo
                     Layout.preferredWidth: 160
@@ -346,9 +571,9 @@ ColumnLayout {
                 }
             }
 
-            // Cards height (hidden in list mode)
+            // Cards height (hidden in list mode or simple mode)
             RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
                 Kirigami.FormData.label: i18n("Cards height:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
@@ -380,9 +605,9 @@ ColumnLayout {
                 }
             }
 
-            // Expanded cards height (hidden in list mode)
+            // Expanded cards height (hidden in list mode or simple mode)
             RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
                 Kirigami.FormData.label: i18n("Expanded cards height:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
@@ -414,20 +639,25 @@ ColumnLayout {
                 }
             }
 
-            Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.largeSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
 
             // ═══════════════════════════════════════════════════════════════
-            // SECTION: Items
+            // SECTION: Items — switches between advanced and simple mode
             // ═══════════════════════════════════════════════════════════════
             Kirigami.Separator {
                 Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Details Items")
+                Kirigami.FormData.label: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                    ? i18n("Simple Mode Items") : i18n("Details Items")
             }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
-            // Details items configurator
+            // Advanced mode: details items preview + Configure
             Item {
                 Kirigami.FormData.label: i18n("Details items:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 implicitWidth: detailsPreviewRow.implicitWidth
                 implicitHeight: detailsPreviewRow.implicitHeight
                 RowLayout {
@@ -462,31 +692,171 @@ ColumnLayout {
                         }
                     }
                     Button {
-                        text: i18n("Configure\u2026")
+                        text: i18n("Configure…")
                         icon.name: "configure"
-                        onClicked: {
-                            widgetTab.configRoot.initDetailsModel();
-                            widgetTab.pushSubPage();
+                        onClicked: widgetTab.pushSubPage()
+                    }
+                }
+            }
+
+            // Simple mode: simple chips preview + Configure
+            Item {
+                Kirigami.FormData.label: i18n("Simple chips:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                implicitWidth: simplePreviewRow.implicitWidth
+                implicitHeight: simplePreviewRow.implicitHeight
+                RowLayout {
+                    id: simplePreviewRow
+                    spacing: 10
+                    Flow {
+                        spacing: 4
+                        Layout.maximumWidth: 260
+                        Repeater {
+                            model: widgetTab.configRoot.cfg_widgetSimpleDetailsOrder.split(";").filter(function (t) {
+                                return t.length > 0;
+                            })
+                            delegate: Rectangle {
+                                radius: 3
+                                color: Qt.rgba(1, 1, 1, 0.10)
+                                border.color: Qt.rgba(1, 1, 1, 0.22)
+                                border.width: 1
+                                implicitWidth: simpleChipLbl.implicitWidth + 10
+                                implicitHeight: simpleChipLbl.implicitHeight + 6
+                                Label {
+                                    id: simpleChipLbl
+                                    anchors.centerIn: parent
+                                    text: {
+                                        var d = modelData.trim();
+                                        for (var i = 0; i < widgetTab.configRoot.allSimpleDefs.length; ++i)
+                                            if (widgetTab.configRoot.allSimpleDefs[i].itemId === d)
+                                                return widgetTab.configRoot.allSimpleDefs[i].label;
+                                        return d;
+                                    }
+                                }
+                            }
                         }
                     }
+                    Button {
+                        text: i18n("Configure…")
+                        icon.name: "configure"
+                        onClicked: widgetTab.pushSimpleSubPage()
+                    }
+                }
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Stats items:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                Switch {
+                    checked: widgetTab.configRoot.cfg_simpleShowStatsChips
+                    onToggled: widgetTab.configRoot.cfg_simpleShowStatsChips = checked
                 }
             }
         }
 
         // ── SUB-TAB 2: Forecast ───────────────────────────────────────
         Kirigami.FormLayout {
+            // ═══════════════════════════════════════════════════════════════
+            // SECTION: General
+            // ═══════════════════════════════════════════════════════════════
+            Kirigami.Separator {
+                Kirigami.FormData.isSection: true
+                Kirigami.FormData.label: i18n("General")
+            }
+
+            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+
             SpinBox {
                 Kirigami.FormData.label: i18n("Forecast days:")
                 from: 3
-                to: 7
+                to: 16
                 value: widgetTab.configRoot.cfg_forecastDays
                 onValueModified: widgetTab.configRoot.cfg_forecastDays = value
             }
-            CheckBox {
-                Kirigami.FormData.label: i18n("Hourly forecast:")
-                text: i18n("Show sunrise/sunset markers")
-                checked: widgetTab.configRoot.cfg_forecastShowSunEvents
-                onToggled: widgetTab.configRoot.cfg_forecastShowSunEvents = checked
+            RowLayout {
+                Kirigami.FormData.label: i18n("Show Today:")
+                Switch {
+                    checked: widgetTab.configRoot.cfg_forecastShowToday
+                    onToggled: widgetTab.configRoot.cfg_forecastShowToday = checked
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // SECTION: Hourly Forecast Settings
+            // ═══════════════════════════════════════════════════════════════
+            Kirigami.Separator {
+                Kirigami.FormData.isSection: true
+                Kirigami.FormData.label: i18n("Hourly Forecast Settings")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
+
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
+
+            ComboBox {
+                Kirigami.FormData.label: i18n("Hourly layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                textRole: "text"
+                readonly property var _opts: [
+                    { text: i18n("Cards"),  value: "cards" },
+                    { text: i18n("Strip"),  value: "strip" }
+                ]
+                model: _opts
+                currentIndex: {
+                    var v = widgetTab.configRoot.cfg_forecastHourlyLayout;
+                    for (var i = 0; i < _opts.length; i++)
+                        if (_opts[i].value === v) return i;
+                    return 0;
+                }
+                onActivated: widgetTab.configRoot.cfg_forecastHourlyLayout = _opts[currentIndex].value
+            }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Sunrise/sunset markers:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Switch {
+                    checked: widgetTab.configRoot.cfg_forecastShowSunEvents
+                    onToggled: widgetTab.configRoot.cfg_forecastShowSunEvents = checked
+                }
+            }
+
+            Item {
+                Layout.preferredHeight: Kirigami.Units.largeSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // SECTION: Simple widget
+            // ═══════════════════════════════════════════════════════════════
+            Kirigami.Separator {
+                Kirigami.FormData.isSection: true
+                Kirigami.FormData.label: i18n("Simple Widget")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+            }
+
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                Switch {
+                    checked: widgetTab.configRoot.cfg_simpleShowForecast
+                    onToggled: widgetTab.configRoot.cfg_simpleShowForecast = checked
+                }
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Compass in forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                enabled: widgetTab.configRoot.cfg_simpleShowForecast
+                Switch {
+                    checked: widgetTab.configRoot.cfg_simpleShowForecastCompass
+                    onToggled: widgetTab.configRoot.cfg_simpleShowForecastCompass = checked
+                }
             }
 
         }

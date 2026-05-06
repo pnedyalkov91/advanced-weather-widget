@@ -1046,6 +1046,10 @@ KCM.AbstractKCM {
     property string cfg_panelSimpleHorizontalContent: "both"
     property int cfg_panelSimpleWidgetOrder: 0
     property string cfg_panelSimpleIconStyle: "symbolic"
+    property string cfg_panelSimpleClickAreaMode: "auto"
+    property int cfg_panelSimpleClickAreaSize: 96
+    property bool cfg_panelSimpleTempShadowEnabled: true
+    property double cfg_panelSimpleTempShadowIntensity: 0.8
     // Compressed badge options
     property string cfg_compressedBadgePosition: "bottom-right"
     property int cfg_compressedBadgeSpacing: 0
@@ -1058,6 +1062,8 @@ KCM.AbstractKCM {
     property int cfg_forecastDays: 5
     property string cfg_forecastIconTheme: "symbolic"
     property bool cfg_forecastShowSunEvents: true
+    property bool cfg_forecastShowToday:    true
+    property string cfg_forecastHourlyLayout: "cards"
     property bool cfg_roundValues: true
     property bool cfg_showScrollbox: true
     property bool cfg_showUpdateText: true
@@ -1072,6 +1078,16 @@ KCM.AbstractKCM {
     property string cfg_widgetIconTheme: "symbolic"   // "kde" | "wi-font" | "flat-color" | "symbolic" | "3d-oxygen"
     property string cfg_conditionIconTheme: "kde"      // controls main hero condition icon in widget popup
     property string cfg_widgetConditionCustomIcons: ""   // custom per-condition icons for the widget popup
+    property string cfg_widgetLayoutMode: "advanced"  // "advanced" | "simple"
+    property string cfg_widgetSimpleDetailsOrder: "humidity;pressure;preciprate;precipsum"
+    property string cfg_widgetSimpleDetailsItemIcons: "humidity=1;pressure=1;preciprate=1;precipsum=1"
+    property bool   cfg_headerShowDateTime: false
+    property string cfg_headerDateFormat:   "locale-long"
+    property string cfg_headerTimeFormat:   "locale"
+    property bool cfg_simpleShowForecast: true
+    property bool cfg_simpleShowSunriseSunset: true
+    property bool cfg_simpleShowForecastCompass: true
+    property bool cfg_simpleShowStatsChips: true
     property string cfg_widgetDefaultTab: "details"  // "details" | "forecast"
     property string cfg_widgetVisibleTabs: "both"      // "both" | "details" | "forecast" | "none"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
@@ -1115,6 +1131,25 @@ KCM.AbstractKCM {
     property int cfg_tooltipWidthManual: 320
     property string cfg_tooltipHeightMode: "auto"
     property int cfg_tooltipHeightManual: 300
+
+    // ── Calendar first day of week (-1 = region default) ─────────────────
+    property int    cfg_calendarFirstDayOfWeek: -1
+
+    // ── Item date/time formats ────────────────────────────────────────────
+    property string cfg_panelDateTimeFormat:   "locale-short"
+    property string cfg_panelTimeFormat:       "locale"
+    property string cfg_detailsDateTimeFormat: "locale-long"
+    property string cfg_detailsTimeFormat:     "locale"
+    property string cfg_tooltipDateTimeFormat: "locale-long"
+    property string cfg_tooltipTimeFormat:     "locale"
+
+    // ── Dual temperature display ──────────────────────────────────────────
+    property bool   cfg_dualTempEnabled:   false
+    property string cfg_dualTempSeparator: " / "
+    property bool   cfg_dualTempInWidget:  true
+    property bool   cfg_dualTempInPanel:   true
+    property bool   cfg_dualTempInTooltip: true
+    property bool   cfg_dualTempSwapOrder: false
 
     // ── Units config aliases (Issue #8) ──────────────────────────────────
     property string cfg_unitsMode: "metric"
@@ -1354,6 +1389,13 @@ KCM.AbstractKCM {
             description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
+        },
+        {
+            itemId: "datetime",
+            label: i18n("Date / Time"),
+            description: i18n("Current date and/or time"),
+            wiChar: "\uF08C",
+            iconFallback: "clock"
         }
     ]
 
@@ -1470,6 +1512,13 @@ KCM.AbstractKCM {
             description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
+        },
+        {
+            itemId: "datetime",
+            label: i18n("Date / Time"),
+            description: i18n("Current date and/or time"),
+            wiChar: "\uF08C",
+            iconFallback: "clock"
         }
     ]
 
@@ -1586,6 +1635,13 @@ KCM.AbstractKCM {
             description: i18n("Snow depth (cm/in)"),
             wiChar: "\uF076",
             iconFallback: "weather-snow-scattered"
+        },
+        {
+            itemId: "datetime",
+            label: i18n("Date / Time"),
+            description: i18n("Current date and/or time"),
+            wiChar: "\uF08C",
+            iconFallback: "clock"
         }
     ]
 
@@ -1595,6 +1651,9 @@ KCM.AbstractKCM {
     }
     ListModel {
         id: detailsWorkingModel
+    }
+    ListModel {
+        id: simpleWorkingModel
     }
     ListModel {
         id: tooltipWorkingModel
@@ -1700,6 +1759,55 @@ KCM.AbstractKCM {
         cfg_panelShowHumidity = ids.indexOf("humidity") >= 0;
         cfg_panelShowPressure = ids.indexOf("pressure") >= 0;
         cfg_panelShowLocation = ids.indexOf("location") >= 0;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Simple mode items helpers  (chip-only subset — no wind/moonphase/condition)
+    // ─────────────────────────────────────────────────────────────────────
+    readonly property var allSimpleDefs: allDetailsDefs.filter(function(d) {
+        return ["wind", "moonphase", "condition", "suntimes"].indexOf(d.itemId) < 0;
+    })
+    function parseSimpleItemIcons() {
+        var raw = cfg_widgetSimpleDetailsItemIcons || "";
+        var map = {};
+        raw.split(";").forEach(function (pair) {
+            var kv = pair.split("=");
+            if (kv.length === 2)
+                map[kv[0].trim()] = (kv[1].trim() === "1");
+        });
+        return map;
+    }
+    function serializeSimpleItemIcons(map) {
+        return allSimpleDefs.map(function (d) {
+            var v = (d.itemId in map) ? map[d.itemId] : true;
+            return d.itemId + "=" + (v !== false ? "1" : "0");
+        }).join(";");
+    }
+    function initSimpleModel() {
+        var raw = (cfg_widgetSimpleDetailsOrder || "humidity;pressure;preciprate;precipsum").split(";").map(function(t) {
+            return t.trim();
+        }).filter(function(t) { return t.length > 0; });
+        var iconMap = parseSimpleItemIcons();
+        _initItemModel(simpleWorkingModel, allSimpleDefs, raw.join(";"), function(def, tok) {
+            return { itemShowIcon: (tok in iconMap) ? iconMap[tok] : true };
+        });
+    }
+    function applySimpleItems() {
+        var ids = [], iconMap = {};
+        for (var i = 0; i < simpleWorkingModel.count; ++i) {
+            var item = simpleWorkingModel.get(i);
+            iconMap[item.itemId] = item.itemShowIcon;
+            if (item.itemEnabled)
+                ids.push(item.itemId);
+        }
+        cfg_widgetSimpleDetailsOrder = ids.join(";");
+        cfg_widgetSimpleDetailsItemIcons = serializeSimpleItemIcons(iconMap);
+    }
+    function firstSimpleDisabledIndex() {
+        for (var i = 0; i < simpleWorkingModel.count; ++i)
+            if (!simpleWorkingModel.get(i).itemEnabled)
+                return i;
+        return -1;
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -1873,6 +1981,7 @@ KCM.AbstractKCM {
                 ConfigWidgetTab {
                     configRoot: root
                     onPushSubPage: stack.push(detailsSubPage)
+                    onPushSimpleSubPage: stack.push(simpleSubPage)
                 }
 
                 // ════════════════════════════════════════════════════════
@@ -1911,6 +2020,19 @@ KCM.AbstractKCM {
         id: detailsSubPage
         ConfigDetailsSubPage {
             configRoot: root
+            workingModel: detailsWorkingModel
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // SUB-PAGE: Simple Mode Chip Items
+    // ════════════════════════════════════════════════════════════════════════
+    Component {
+        id: simpleSubPage
+        ConfigDetailsSubPage {
+            configRoot: root
+            workingModel: simpleWorkingModel
+            mode: "simple"
         }
     }
 

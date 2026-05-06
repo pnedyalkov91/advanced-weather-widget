@@ -48,7 +48,8 @@ PlasmoidItem {
     // In the system tray, do NOT set sizing / switch / preferredRepresentation
     // hints — they confuse Plasma's tray popup manager and cause a rapid
     // expanded toggling loop.  -1 lets Plasma use its own defaults.
-    implicitWidth: inTray ? -1 : 540
+    readonly property bool _isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
+    implicitWidth: inTray ? -1 : (_isSimpleMode ? 800 : 540)
     implicitHeight: inTray ? -1 : 550
     switchWidth: inTray ? -1 : 200
     switchHeight: inTray ? -1 : 100
@@ -260,16 +261,18 @@ PlasmoidItem {
         Layout.minimumWidth: {
             if (root.inTray) return 0;
             if (!root.hasSelectedTown) return 280;
+            var isSimple = (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple";
             if ((Plasmoid.configuration.widgetMinWidthMode || "auto") === "manual")
-                return Math.max(200, Plasmoid.configuration.widgetMinWidth || 800);
-            return 800;
+                return Math.max(200, Plasmoid.configuration.widgetMinWidth || (isSimple ? 765 : 800));
+            return isSimple ? 765 : 800;
         }
         Layout.minimumHeight: {
             if (root.inTray) return 0;
             if (!root.hasSelectedTown) return 220;
+            var isSimple = (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple";
             if ((Plasmoid.configuration.widgetMinHeightMode || "auto") === "manual")
-                return Math.max(200, Plasmoid.configuration.widgetMinHeight || 750);
-            return 750;
+                return Math.max(200, Plasmoid.configuration.widgetMinHeight || (isSimple ? 550 : 750));
+            return isSimple ? 550 : 750;
         }
     }
 
@@ -613,14 +616,40 @@ PlasmoidItem {
     // Value formatters — delegate pure math to weather.js, inject config here
     // ══════════════════════════════════════════════════════════════════════
 
+    // ── Date/time item formatter ─────────────────────────────────────────────
+    function _formatItemDateTime(dateFmt, timeFmt) {
+        var now = new Date();
+        var dateStr = "";
+        if (dateFmt === "locale-long")       dateStr = now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
+        else if (dateFmt === "locale-short") dateStr = now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+        else if (dateFmt && dateFmt !== "")  dateStr = Qt.formatDate(now, dateFmt);
+        var timeStr = "";
+        if (timeFmt === "locale")            timeStr = now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
+        else if (timeFmt && timeFmt !== "") timeStr = Qt.formatTime(now, timeFmt);
+        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
+        return dateStr + sep + timeStr;
+    }
+
     // Returns the effective temperature unit, respecting "kde" locale mode.
     function _tempUnit() {
         if (Plasmoid.configuration.unitsMode === "kde")
             return Qt.locale().measurementSystem === 1 ? "F" : "C";
         return Plasmoid.configuration.temperatureUnit || "C";
     }
-    function tempValue(celsius) {
-        return W.formatTemp(celsius, _tempUnit(), Plasmoid.configuration.roundValues, Plasmoid.configuration.showTempUnit);
+    function tempValue(celsius, context) {
+        var unit = _tempUnit();
+        var primary = W.formatTemp(celsius, unit, Plasmoid.configuration.roundValues, Plasmoid.configuration.showTempUnit);
+        if (!Plasmoid.configuration.dualTempEnabled) return primary;
+        var inCtx = (context === "panel"   && Plasmoid.configuration.dualTempInPanel)
+                 || (context === "tooltip" && Plasmoid.configuration.dualTempInTooltip)
+                 || (context !== "panel" && context !== "tooltip" && Plasmoid.configuration.dualTempInWidget);
+        if (!inCtx) return primary;
+        var altUnit = (unit === "C") ? "F" : "C";
+        var sep = Plasmoid.configuration.dualTempSeparator !== undefined ? Plasmoid.configuration.dualTempSeparator : " / ";
+        var secondary = W.formatTemp(celsius, altUnit, Plasmoid.configuration.roundValues, Plasmoid.configuration.showTempUnit);
+        return Plasmoid.configuration.dualTempSwapOrder
+            ? secondary + sep + primary
+            : primary + sep + secondary;
     }
 
     function _windUnit() {
@@ -1140,6 +1169,8 @@ PlasmoidItem {
         }
         if (tok === "snowcover")
             return "\uF076";        // wi-snowflake-cold
+        if (tok === "datetime")
+            return "\uF08C";        // wi-time-3
         return "";
     }
 
@@ -1382,6 +1413,10 @@ PlasmoidItem {
             return alertsText();
         if (tok === "snowcover")
             return snowDepthText(snowDepthCm);
+        if (tok === "datetime")
+            return _formatItemDateTime(
+                Plasmoid.configuration.panelDateTimeFormat,
+                Plasmoid.configuration.panelTimeFormat);
         return "";
     }
 

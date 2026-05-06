@@ -29,10 +29,22 @@ import org.kde.iconthemes as KIconThemes
 ColumnLayout {
     id: detailsSubPageRoot
     required property var configRoot
+    required property var workingModel   // pass detailsWorkingModel or simpleWorkingModel at push time
+    property string mode: "details"   // "details" | "simple"
     spacing: 0
-    property string _savedOrder: configRoot.cfg_widgetDetailsOrder
-    property string _savedIcons: configRoot.cfg_widgetDetailsItemIcons
-    property string _savedCustomIcons: configRoot.cfg_widgetDetailsCustomIcons
+
+    readonly property bool isSimple: mode === "simple"
+
+    // Redirect to the right config key / model / helpers based on mode
+    property string _savedOrder:       isSimple ? configRoot.cfg_widgetSimpleDetailsOrder       : configRoot.cfg_widgetDetailsOrder
+    property string _savedIcons:       isSimple ? configRoot.cfg_widgetSimpleDetailsItemIcons    : configRoot.cfg_widgetDetailsItemIcons
+    property string _savedCustomIcons: isSimple ? "" : configRoot.cfg_widgetDetailsCustomIcons
+
+    function _applyItems()   { isSimple ? configRoot.applySimpleItems()   : configRoot.applyDetailsItems(); }
+    function _firstDisabled(){ return isSimple ? configRoot.firstSimpleDisabledIndex() : configRoot.firstDetailsDisabledIndex(); }
+
+    Component.onCompleted: isSimple ? configRoot.initSimpleModel() : configRoot.initDetailsModel()
+
     Dialog {
         id: detailsLeaveDialog
         title: i18n("Apply Settings?")
@@ -57,9 +69,14 @@ ColumnLayout {
                 text: i18n("Discard")
                 DialogButtonBox.buttonRole: DialogButtonBox.DestructiveRole
                 onClicked: {
-                    configRoot.cfg_widgetDetailsOrder = detailsSubPageRoot._savedOrder;
-                    configRoot.cfg_widgetDetailsItemIcons = detailsSubPageRoot._savedIcons;
-                    configRoot.cfg_widgetDetailsCustomIcons = detailsSubPageRoot._savedCustomIcons;
+                    if (detailsSubPageRoot.isSimple) {
+                        configRoot.cfg_widgetSimpleDetailsOrder = detailsSubPageRoot._savedOrder;
+                        configRoot.cfg_widgetSimpleDetailsItemIcons = detailsSubPageRoot._savedIcons;
+                    } else {
+                        configRoot.cfg_widgetDetailsOrder = detailsSubPageRoot._savedOrder;
+                        configRoot.cfg_widgetDetailsItemIcons = detailsSubPageRoot._savedIcons;
+                        configRoot.cfg_widgetDetailsCustomIcons = detailsSubPageRoot._savedCustomIcons;
+                    }
                     detailsLeaveDialog.close();
                     stack.pop();
                 }
@@ -83,7 +100,10 @@ ColumnLayout {
             text: i18n("Back")
             flat: true
             onClicked: {
-                if (configRoot.cfg_widgetDetailsOrder !== detailsSubPageRoot._savedOrder || configRoot.cfg_widgetDetailsItemIcons !== detailsSubPageRoot._savedIcons || configRoot.cfg_widgetDetailsCustomIcons !== detailsSubPageRoot._savedCustomIcons)
+                var curOrder = detailsSubPageRoot.isSimple ? configRoot.cfg_widgetSimpleDetailsOrder : configRoot.cfg_widgetDetailsOrder;
+                var curIcons = detailsSubPageRoot.isSimple ? configRoot.cfg_widgetSimpleDetailsItemIcons : configRoot.cfg_widgetDetailsItemIcons;
+                var curCustom = detailsSubPageRoot.isSimple ? "" : configRoot.cfg_widgetDetailsCustomIcons;
+                if (curOrder !== detailsSubPageRoot._savedOrder || curIcons !== detailsSubPageRoot._savedIcons || curCustom !== detailsSubPageRoot._savedCustomIcons)
                     detailsLeaveDialog.open();
                 else
                     stack.pop();
@@ -91,7 +111,7 @@ ColumnLayout {
         }
         Label {
             Layout.fillWidth: true
-            text: i18n("Details Items")
+            text: detailsSubPageRoot.isSimple ? i18n("Simple Mode Items") : i18n("Details Items")
             font.bold: true
         }
     }
@@ -109,7 +129,7 @@ ColumnLayout {
             implicitHeight: contentHeight
             clip: true
             spacing: 0
-            model: detailsWorkingModel
+            model: detailsSubPageRoot.workingModel
             highlightMoveDuration: Kirigami.Units.longDuration
             displaced: Transition {
                 YAnimator {
@@ -146,12 +166,12 @@ ColumnLayout {
                                 enabled: model.itemEnabled
                                 opacity: model.itemEnabled ? 1.0 : 0.0
                                 onMoveRequested: function (oldIndex, newIndex) {
-                                    var boundary = configRoot.firstDetailsDisabledIndex();
+                                    var boundary = detailsSubPageRoot._firstDisabled();
                                     var clamped = (boundary < 0) ? newIndex : Math.min(newIndex, boundary - 1);
                                     if (clamped !== oldIndex)
-                                        detailsWorkingModel.move(oldIndex, clamped, 1);
+                                        detailsSubPageRoot.workingModel.move(oldIndex, clamped, 1);
                                 }
-                                onDropped: configRoot.applyDetailsItems()
+                                onDropped: detailsSubPageRoot._applyItems()
                             }
                             // ── Item icon — mirrors the active widget icon theme ──
                             Item {
@@ -228,6 +248,8 @@ ColumnLayout {
                                             return b + "sandstorm.svg";
                                         if (id === "spaceweather")
                                             return b + "stars.svg";
+                                        if (id === "datetime")
+                                            return b + "time-3.svg";
                                         return "";
                                     }
                                     isMask: configRoot.cfg_widgetIconTheme === "symbolic"
@@ -312,9 +334,9 @@ ColumnLayout {
                                     opacity: 0.55
                                 }
                             }
-                            // ── Configure button (suntimes / moonphase / airquality / pollen / spaceweather) ──────────
+                            // ── Configure button (suntimes / moonphase / airquality / pollen / spaceweather / datetime) ──────────
                             ToolButton {
-                                visible: model.itemId === "suntimes" || model.itemId === "moonphase" || model.itemId === "airquality" || model.itemId === "pollen" || model.itemId === "spaceweather"
+                                visible: model.itemId === "suntimes" || model.itemId === "moonphase" || model.itemId === "airquality" || model.itemId === "pollen" || model.itemId === "spaceweather" || model.itemId === "datetime"
                                 enabled: model.itemEnabled
                                 opacity: model.itemEnabled ? 1.0 : 0.3
                                 implicitWidth: Kirigami.Units.iconSizes.medium
@@ -329,6 +351,7 @@ ColumnLayout {
                                     if (model.itemId === "airquality") return i18n("Air quality options");
                                     if (model.itemId === "pollen") return i18n("Pollen options");
                                     if (model.itemId === "spaceweather") return i18n("Space weather options");
+                                    if (model.itemId === "datetime")     return i18n("Date / Time options");
                                     return i18n("Options");
                                 }
                                 onClicked: detailsDelegateRoot.settingsExpanded = !detailsDelegateRoot.settingsExpanded
@@ -383,8 +406,8 @@ ColumnLayout {
                                 ToolTip.visible: hovered
                                 ToolTip.text: model.itemShowIcon ? i18n("Hide prefix icon") : i18n("Show prefix icon")
                                 onClicked: {
-                                    detailsWorkingModel.setProperty(model.index, "itemShowIcon", !model.itemShowIcon);
-                                    configRoot.applyDetailsItems();
+                                    detailsSubPageRoot.workingModel.setProperty(model.index, "itemShowIcon", !model.itemShowIcon);
+                                    detailsSubPageRoot._applyItems();
                                 }
                             }
                             // ── Enable / disable toggle ───────────────────────────
@@ -397,24 +420,25 @@ ColumnLayout {
                                 onClicked: {
                                     var idx = model.index;
                                     var nowOn = !model.itemEnabled;
+                                    var wm = detailsSubPageRoot.workingModel;
                                     if (!nowOn)
                                         detailsDelegateRoot.settingsExpanded = false;
-                                    detailsWorkingModel.setProperty(idx, "itemEnabled", nowOn);
-                                    var boundary = configRoot.firstDetailsDisabledIndex();
+                                    wm.setProperty(idx, "itemEnabled", nowOn);
+                                    var boundary = detailsSubPageRoot._firstDisabled();
                                     if (nowOn) {
                                         if (boundary > 0 && idx >= boundary)
-                                            detailsWorkingModel.move(idx, boundary - 1, 1);
+                                            wm.move(idx, boundary - 1, 1);
                                     } else {
                                         var lastEnabled = -1;
-                                        for (var i = 0; i < detailsWorkingModel.count; ++i)
-                                            if (detailsWorkingModel.get(i).itemEnabled)
+                                        for (var i = 0; i < wm.count; ++i)
+                                            if (wm.get(i).itemEnabled)
                                                 lastEnabled = i;
                                         if (lastEnabled >= 0 && idx <= lastEnabled)
-                                            detailsWorkingModel.move(idx, lastEnabled, 1);
+                                            wm.move(idx, lastEnabled, 1);
                                         else if (lastEnabled < 0 && idx > 0)
-                                            detailsWorkingModel.move(idx, 0, 1);
+                                            wm.move(idx, 0, 1);
                                     }
-                                    configRoot.applyDetailsItems();
+                                    detailsSubPageRoot._applyItems();
                                 }
                             }
                         }
@@ -712,6 +736,184 @@ ColumnLayout {
                             var newVal = arr.join(",");
                             if (newVal !== configRoot.cfg_spaceWeatherExpandedItems)
                                 configRoot.cfg_spaceWeatherExpandedItems = newVal;
+                        }
+                    }
+                    // ── Inline datetime options ─────────────────────────────
+                    ColumnLayout {
+                        visible: model.itemId === "datetime" && detailsDelegateRoot.settingsExpanded
+                        Layout.fillWidth: true
+                        Layout.leftMargin: Kirigami.Units.iconSizes.smallMedium * 2 + Kirigami.Units.largeSpacing * 2
+                        Layout.rightMargin: Kirigami.Units.largeSpacing
+                        Layout.bottomMargin: Kirigami.Units.smallSpacing
+                        spacing: Kirigami.Units.smallSpacing
+                        // Date row
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+                            Switch {
+                                id: detailsDtDateSwitch
+                                checked: configRoot.cfg_detailsDateTimeFormat !== ""
+                                onToggled: {
+                                    if (!checked) {
+                                        configRoot.cfg_detailsDateTimeFormat = "";
+                                    } else {
+                                        var ps = detailsDtDateCombo._presets;
+                                        var v = ps[detailsDtDateCombo.currentIndex].value;
+                                        configRoot.cfg_detailsDateTimeFormat = (v === "__custom__" || v === "") ? "locale-long" : v;
+                                    }
+                                }
+                            }
+                            Label {
+                                text: i18n("Date:")
+                                font: Kirigami.Theme.smallFont
+                                opacity: detailsDtDateSwitch.checked ? 0.8 : 0.4
+                            }
+                            ComboBox {
+                                id: detailsDtDateCombo
+                                Layout.fillWidth: true
+                                enabled: detailsDtDateSwitch.checked
+                                textRole: "text"
+                                readonly property var _presets: [
+                                    { text: i18n("Region default (short)"), value: "locale-short" },
+                                    { text: i18n("Region default (long)"),  value: "locale-long"  },
+                                    { text: "Mon, Jan 1  (ddd, MMM d)",     value: "ddd, MMM d"   },
+                                    { text: "01/01/2025  (dd/MM/yyyy)",     value: "dd/MM/yyyy"   },
+                                    { text: "2025-01-01  (yyyy-MM-dd)",     value: "yyyy-MM-dd"   },
+                                    { text: i18n("Custom…"),              value: "__custom__"   }
+                                ]
+                                model: _presets
+                                Component.onCompleted: {
+                                    var v = configRoot.cfg_detailsDateTimeFormat || "locale-long";
+                                    for (var i = 0; i < _presets.length - 1; ++i)
+                                        if (_presets[i].value === v) { currentIndex = i; return; }
+                                    currentIndex = _presets.length - 1;
+                                }
+                                onActivated: {
+                                    var val = _presets[currentIndex].value;
+                                    if (val !== "__custom__") configRoot.cfg_detailsDateTimeFormat = val;
+                                }
+                            }
+                            TextField {
+                                visible: detailsDtDateSwitch.checked && detailsDtDateCombo.currentIndex === detailsDtDateCombo._presets.length - 1
+                                Layout.preferredWidth: 100
+                                placeholderText: "ddd, MMM d"
+                                text: {
+                                    var v = configRoot.cfg_detailsDateTimeFormat;
+                                    var ps = detailsDtDateCombo._presets;
+                                    for (var i = 0; i < ps.length - 1; ++i)
+                                        if (ps[i].value === v) return "";
+                                    return v;
+                                }
+                                onEditingFinished: if (text.trim().length > 0) configRoot.cfg_detailsDateTimeFormat = text.trim()
+                            }
+                        }
+                        // Time row
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+                            Switch {
+                                id: detailsDtTimeSwitch
+                                checked: configRoot.cfg_detailsTimeFormat !== ""
+                                onToggled: {
+                                    if (!checked) {
+                                        configRoot.cfg_detailsTimeFormat = "";
+                                    } else {
+                                        var ps = detailsDtTimeCombo._presets;
+                                        var v = ps[detailsDtTimeCombo.currentIndex].value;
+                                        configRoot.cfg_detailsTimeFormat = (v === "__custom__" || v === "") ? "locale" : v;
+                                    }
+                                }
+                            }
+                            Label {
+                                text: i18n("Time:")
+                                font: Kirigami.Theme.smallFont
+                                opacity: detailsDtTimeSwitch.checked ? 0.8 : 0.4
+                            }
+                            Switch {
+                                id: detailsDt24hSwitch
+                                visible: detailsDtTimeSwitch.checked
+                                checked: !(configRoot.cfg_detailsTimeFormat === "h:mm AP" || configRoot.cfg_detailsTimeFormat === "h:mm:ss AP")
+                                ToolTip.visible: hovered
+                                ToolTip.text: checked ? i18n("24-hour format") : i18n("12-hour format")
+                                onToggled: {
+                                    var cur = configRoot.cfg_detailsTimeFormat;
+                                    if (!checked) {
+                                        configRoot.cfg_detailsTimeFormat = (cur === "HH:mm:ss") ? "h:mm:ss AP" : "h:mm AP";
+                                    } else {
+                                        configRoot.cfg_detailsTimeFormat = (cur === "h:mm:ss AP") ? "HH:mm:ss" : "HH:mm";
+                                    }
+                                }
+                            }
+                            Label {
+                                visible: detailsDtTimeSwitch.checked
+                                text: detailsDt24hSwitch.checked ? i18n("24h") : i18n("12h")
+                                font: Kirigami.Theme.smallFont
+                                opacity: 0.7
+                            }
+                            ComboBox {
+                                id: detailsDtTimeCombo
+                                Layout.fillWidth: true
+                                enabled: detailsDtTimeSwitch.checked
+                                textRole: "text"
+                                readonly property var _presets: [
+                                    { text: i18n("Region default"),  value: "locale"     },
+                                    { text: "14:30  (HH:mm)",        value: "HH:mm"      },
+                                    { text: "14:30:05  (HH:mm:ss)",  value: "HH:mm:ss"   },
+                                    { text: "2:30 PM  (h:mm AP)",    value: "h:mm AP"    },
+                                    { text: i18n("Custom…"),        value: "__custom__" }
+                                ]
+                                model: _presets
+                                Component.onCompleted: {
+                                    var v = configRoot.cfg_detailsTimeFormat || "locale";
+                                    for (var i = 0; i < _presets.length - 1; ++i)
+                                        if (_presets[i].value === v) { currentIndex = i; return; }
+                                    currentIndex = _presets.length - 1;
+                                }
+                                onActivated: {
+                                    var val = _presets[currentIndex].value;
+                                    if (val !== "__custom__") configRoot.cfg_detailsTimeFormat = val;
+                                }
+                            }
+                            TextField {
+                                visible: detailsDtTimeSwitch.checked && detailsDtTimeCombo.currentIndex === detailsDtTimeCombo._presets.length - 1
+                                Layout.preferredWidth: 100
+                                placeholderText: "HH:mm"
+                                text: {
+                                    var v = configRoot.cfg_detailsTimeFormat;
+                                    var ps = detailsDtTimeCombo._presets;
+                                    for (var i = 0; i < ps.length - 1; ++i)
+                                        if (ps[i].value === v) return "";
+                                    return v;
+                                }
+                                onEditingFinished: if (text.trim().length > 0) configRoot.cfg_detailsTimeFormat = text.trim()
+                            }
+                        }
+                        // First day of week row
+                        RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+                            Label {
+                                text: i18n("First day of week:")
+                                font: Kirigami.Theme.smallFont
+                                opacity: 0.8
+                            }
+                            ComboBox {
+                                id: calFirstDowCombo
+                                Layout.fillWidth: true
+                                textRole: "text"
+                                readonly property var _opts: [
+                                    { text: i18n("Use region defaults"), value: -1 },
+                                    { text: i18n("Sunday"),              value: 0  },
+                                    { text: i18n("Monday"),              value: 1  },
+                                    { text: i18n("Friday"),              value: 5  },
+                                    { text: i18n("Saturday"),            value: 6  }
+                                ]
+                                model: _opts
+                                currentIndex: {
+                                    var v = configRoot.cfg_calendarFirstDayOfWeek;
+                                    for (var i = 0; i < _opts.length; i++)
+                                        if (_opts[i].value === v) return i;
+                                    return 0;
+                                }
+                                onActivated: configRoot.cfg_calendarFirstDayOfWeek = _opts[currentIndex].value
+                            }
                         }
                     }
                     Kirigami.Separator {

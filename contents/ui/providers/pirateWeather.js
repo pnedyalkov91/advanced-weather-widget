@@ -145,7 +145,10 @@ function fetchCurrent(service, W, chain, idx) {
                     minC: (dd.temperatureMin !== undefined) ? dd.temperatureMin : dd.temperatureLow,
                     code: _iconToWmo(dd.icon),
                     precipMm: (dd.precipAccumulation !== undefined) ? dd.precipAccumulation * 10 : NaN,
-                    snowCm: (dd.snowAccumulation !== undefined) ? dd.snowAccumulation : NaN
+                    snowCm: (dd.snowAccumulation !== undefined) ? dd.snowAccumulation : NaN,
+                    precipProb: (dd.precipProbability !== undefined) ? Math.round(dd.precipProbability * 100) : NaN,
+                    windKmh: (dd.windSpeed !== undefined) ? dd.windSpeed : NaN,
+                    windDir: (dd.windBearing !== undefined) ? dd.windBearing : NaN
                 });
             }
         }
