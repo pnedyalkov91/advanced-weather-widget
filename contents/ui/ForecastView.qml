@@ -35,7 +35,7 @@ Item {
     property int expandedIndex: -1
 
     // Set implicit height based on content
-    implicitHeight: (weatherRoot && weatherRoot.dailyData.length > 0) ? forecastColumn.height : (emptyLabel.implicitHeight + 40) // extra space for centering
+    implicitHeight: (weatherRoot && weatherRoot.dailyData.length > 0) ? forecastColumn.height : (emptyLabel.implicitHeight + 40)
 
     // Font for weather icons (wind direction glyph)
     FontLoader {
@@ -77,16 +77,11 @@ Item {
         font: weatherRoot ? weatherRoot.wf(12, false) : Qt.font({})
     }
 
-    ScrollView {
-        anchors.fill: parent
-        clip: true
-        contentWidth: availableWidth
+    Column {
+        id: forecastColumn
+        width: parent.width
+        spacing: 0
         visible: weatherRoot && weatherRoot.dailyData.length > 0
-
-        Column {
-            id: forecastColumn
-            width: parent.width
-            spacing: 0
 
             Repeater {
                 model: {
@@ -590,20 +585,16 @@ Item {
                                     anchors.fill: stripScrollView
                                     acceptedButtons: Qt.NoButton
                                     onWheel: function(wheel) {
-                                        var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
-                                        var pixelDelta = wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.pixelDelta.x;
-                                        if (pixelDelta !== 0) {
-                                            stripWheelAnimation.stop();
-                                            stripScrollView.contentX = Math.max(0, Math.min(maxX, stripScrollView.contentX - pixelDelta));
+                                        if (wheel.angleDelta.x !== 0 || (wheel.modifiers & Qt.ShiftModifier)) {
+                                            var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : wheel.angleDelta.y;
+                                            var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
+                                            var targetX = Math.max(0, Math.min(maxX, stripScrollView.contentX - (delta / 120) * stripScrollView.colW * 2));
+                                            stripWheelAnimation.to = targetX;
+                                            stripWheelAnimation.restart();
                                             wheel.accepted = true;
-                                            return;
+                                        } else {
+                                            wheel.accepted = false;
                                         }
-
-                                        var angleDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
-                                        var targetX = Math.max(0, Math.min(maxX, stripScrollView.contentX - (angleDelta / 120) * stripScrollView.colW * 2));
-                                        stripWheelAnimation.to = targetX;
-                                        stripWheelAnimation.restart();
-                                        wheel.accepted = true;
                                     }
                                 }
                             }
@@ -620,6 +611,13 @@ Item {
                                     anchors.fill: parent
                                     anchors.margins: 8
                                     clip: true
+                                    // ScrollView itself does not have flickableDirection.
+                                    // This property needs to be set on the internal flickableItem.
+                                    Component.onCompleted: {
+                                        if (hourlyScrollView.flickableItem) {
+                                            hourlyScrollView.flickableItem.flickableDirection = Flickable.HorizontalFlick;
+                                        }
+                                    }
                                     contentWidth: hourlyRow.implicitWidth
                                     ScrollBar.vertical.policy: ScrollBar.AlwaysOff
                                     ScrollBar.horizontal.policy: ScrollBar.AsNeeded
@@ -930,25 +928,16 @@ Item {
                                         var bar = hourlyScrollView.ScrollBar.horizontal;
                                         if (!bar)
                                             return;
-
-                                        var maxPos = Math.max(0, 1.0 - bar.size);
-                                        var pixelDelta = wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.pixelDelta.x;
-                                        if (pixelDelta !== 0) {
-                                            var flickable = hourlyScrollView.flickableItem;
-                                            var contentW = flickable ? flickable.contentWidth : hourlyRow.implicitWidth;
-                                            if (contentW > 0) {
-                                                hourlyWheelAnimation.stop();
-                                                bar.position = Math.max(0, Math.min(maxPos, bar.position - (pixelDelta / contentW)));
-                                            }
+                                        if (wheel.angleDelta.x !== 0 || (wheel.modifiers & Qt.ShiftModifier)) {
+                                            var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : wheel.angleDelta.y;
+                                            var maxPos = Math.max(0, 1.0 - bar.size);
+                                            var targetPos = Math.max(0, Math.min(maxPos, bar.position - (delta / 120) * 0.15));
+                                            hourlyWheelAnimation.to = targetPos;
+                                            hourlyWheelAnimation.restart();
                                             wheel.accepted = true;
-                                            return;
+                                        } else {
+                                            wheel.accepted = false;
                                         }
-
-                                        var angleDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
-                                        var targetPos = Math.max(0, Math.min(maxPos, bar.position - (angleDelta / 120) * 0.15));
-                                        hourlyWheelAnimation.to = targetPos;
-                                        hourlyWheelAnimation.restart();
-                                        wheel.accepted = true;
                                     }
                                 }
                             }
@@ -964,4 +953,3 @@ Item {
             }
         }
     }
-}
