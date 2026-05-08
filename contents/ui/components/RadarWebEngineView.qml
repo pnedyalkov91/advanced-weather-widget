@@ -30,6 +30,7 @@ Item {
     readonly property double lon:    weatherRoot ? (Plasmoid.configuration.longitude || 0) : 0
     readonly property string owmKey: Plasmoid.configuration.owApiKey || ""
     readonly property string activeLayer: Plasmoid.configuration.radarLayer || "rainviewer"
+    readonly property int    initialZoom: Plasmoid.configuration.radarZoom || 9
 
     readonly property var localeInfo: {
         var d = new Date(2025, 0, 31); // January 31
@@ -70,7 +71,7 @@ Item {
     ]
 
     // ── Build the Leaflet HTML page ──────────────────────────────────────
-    function _buildHtml(lat, lon, owmKey, layer) {
+    function _buildHtml(lat, lon, owmKey, layer, initZoom) {
         var owmKeyJs   = JSON.stringify(owmKey || "");
         var layerJs    = JSON.stringify(layer  || "rainviewer");
         var fontFamily = JSON.stringify(Kirigami.Theme.defaultFont.family || "sans-serif");
@@ -142,6 +143,7 @@ Item {
 <script>\
 var LAT = ' + lat + ';\
 var LON = ' + lon + ';\
+var INIT_ZOOM = ' + initZoom + ';\
 var OWM_KEY = ' + owmKeyJs + ';\
 var ACTIVE_LAYER = ' + layerJs + ';\
 var SYS_LOCALE = ' + localeJs + ';\
@@ -154,7 +156,9 @@ var ANIM_DELAY = 500;\
 var API_URL = "https://api.rainviewer.com/public/weather-maps.json";\
 \
 var map = L.map("map", { zoomControl: true, attributionControl: true })\
-           .setView([LAT, LON], 7);\
+           .setView([LAT, LON], INIT_ZOOM);\
+\
+map.on("zoomend", function() { document.title = "zoom:" + map.getZoom(); });\
 \
 var _baseClass = (ACTIVE_LAYER !== "rainviewer") ? "base-dimmed" : "";\
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {\
@@ -344,7 +348,7 @@ document.getElementById("btnPlay").onclick  = function() {\
 document.getElementById("btnBack").onclick  = function() { stopAnim(); showFrame(0); };\
 document.getElementById("btnFwd").onclick   = function() { stopAnim(); showFrame(mapFrames.length - 1); };\
 document.getElementById("slider").oninput   = function() { stopAnim(); showFrame(parseInt(this.value)); };\
-document.getElementById("btnLoc").onclick   = function() { map.setView([LAT, LON], 7); };\
+document.getElementById("btnLoc").onclick   = function() { map.setView([LAT, LON], map.getZoom()); };\
 \
 map.on("movestart", clearCache);\
 \
@@ -449,19 +453,28 @@ loadApi();\
             onNewWindowRequested: function(req) { Qt.openUrlExternally(req.requestedUrl); }
 
             Component.onCompleted: {
-                var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer);
+                var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
                 webView.loadHtml(html, "https://rainviewer.com/");
+            }
+
+            onTitleChanged: {
+                if (title.indexOf("zoom:") === 0) {
+                    var z = parseInt(title.substring(5));
+                    if (!isNaN(z) && z !== Plasmoid.configuration.radarZoom) {
+                        Plasmoid.configuration.radarZoom = z;
+                    }
+                }
             }
 
             // Reload when lat/lon change (location change)
             Connections {
                 target: radarRoot
                 function onLatChanged() {
-                    var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer);
+                    var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
                     webView.loadHtml(html, "https://rainviewer.com/");
                 }
                 function onLonChanged() {
-                    var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer);
+                    var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
                     webView.loadHtml(html, "https://rainviewer.com/");
                 }
             }
@@ -561,7 +574,7 @@ loadApi();\
     }
 
     function reload() {
-        var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer);
+        var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
         webView.loadHtml(html, "https://rainviewer.com/");
     }
 }
