@@ -606,6 +606,7 @@ Rectangle {
                 ForecastView {
                     id: forecastView
                     weatherRoot: fullView.weatherRoot
+                    verticalScrollView: forecastScrollView.contentItem
                     width: forecastScrollView.availableWidth
                 }
             }

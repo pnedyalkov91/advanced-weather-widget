@@ -35,7 +35,7 @@ Kirigami.FormLayout {
     required property var configRoot
 
     /** Emitted when the user clicks Configure… to push the panel sub-page */
-    signal pushSubPage()
+    signal pushSubPage
 
     Kirigami.Separator {
         Kirigami.FormData.label: i18n("Panel display settings")
@@ -185,6 +185,52 @@ Kirigami.FormLayout {
     }
 
     RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple"
+        Kirigami.FormData.label: i18n("Widget panel area:")
+        spacing: Kirigami.Units.largeSpacing
+        ComboBox {
+            id: simpleClickAreaModeCombo
+            Layout.preferredWidth: 160
+            textRole: "text"
+            model: [
+                {
+                    text: i18n("Auto"),
+                    value: "auto"
+                },
+                {
+                    text: i18n("Fill panel"),
+                    value: "fill"
+                },
+                {
+                    text: i18n("Manual"),
+                    value: "manual"
+                }
+            ]
+            currentIndex: {
+                var cur = panelTab.configRoot.cfg_panelSimpleClickAreaMode || "auto";
+                for (var i = 0; i < model.length; ++i)
+                    if (model[i].value === cur)
+                        return i;
+                return 0;
+            }
+            onActivated: panelTab.configRoot.cfg_panelSimpleClickAreaMode = model[currentIndex].value
+        }
+        SpinBox {
+            visible: panelTab.configRoot.cfg_panelSimpleClickAreaMode === "manual"
+            from: 20
+            to: 600
+            value: panelTab.configRoot.cfg_panelSimpleClickAreaSize
+            onValueModified: panelTab.configRoot.cfg_panelSimpleClickAreaSize = value
+            Layout.preferredWidth: 90
+        }
+        Label {
+            visible: panelTab.configRoot.cfg_panelSimpleClickAreaMode === "manual"
+            text: panelTab.configRoot.cfg_simplePanelIsVertical ? i18n("px height") : i18n("px width")
+            opacity: 0.65
+        }
+    }
+
+    RowLayout {
         visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "temp_only")
         Kirigami.FormData.label: i18n("Weather icon style:")
         spacing: Kirigami.Units.largeSpacing
@@ -258,20 +304,33 @@ Kirigami.FormLayout {
             Layout.preferredWidth: 90
             textRole: "text"
             property var allSizes: [
-                { text: "16 px", value: 16 },
-                { text: "24 px", value: 24 },
-                { text: "32 px", value: 32 },
-                { text: "48 px", value: 48 },
-                { text: "64 px", value: 64 }
+                {
+                    text: "16 px",
+                    value: 16
+                },
+                {
+                    text: "24 px",
+                    value: 24
+                },
+                {
+                    text: "32 px",
+                    value: 32
+                },
+                {
+                    text: "48 px",
+                    value: 48
+                },
+                {
+                    text: "64 px",
+                    value: 64
+                }
             ]
-            model: panelTab.configRoot.cfg_panelSimpleIconStyle === "colorful"
-                ? allSizes.filter(function(s) { return s.value <= 48; })
-                : allSizes
+            model: panelTab.configRoot.cfg_panelSimpleIconStyle === "colorful" ? allSizes.filter(function (s) {
+                return s.value <= 48;
+            }) : allSizes
             currentIndex: {
                 if (panelTab.configRoot.cfg_simpleIconSizeMode === "auto") {
-                    var target = panelTab.configRoot.cfg_simplePanelDim > 0
-                        ? panelTab.configRoot._autoIconSz(panelTab.configRoot.cfg_panelSimpleLayoutType)
-                        : (panelTab.configRoot.cfg_simpleIconAutoSz > 0 ? panelTab.configRoot.cfg_simpleIconAutoSz : 24);
+                    var target = panelTab.configRoot.cfg_simplePanelDim > 0 ? panelTab.configRoot._autoIconSz(panelTab.configRoot.cfg_panelSimpleLayoutType) : (panelTab.configRoot.cfg_simpleIconAutoSz > 0 ? panelTab.configRoot.cfg_simpleIconAutoSz : 24);
                     var best = 0;
                     for (var i = 0; i < model.length; i++) {
                         if (Math.abs(model[i].value - target) < Math.abs(model[best].value - target))
@@ -292,7 +351,7 @@ Kirigami.FormLayout {
         }
     }
 
-    // Font size mode
+    // ── Simple mode: font size ────────────────────────────────────────────────
     RowLayout {
         visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
         Kirigami.FormData.label: i18n("Font size:")
@@ -325,11 +384,7 @@ Kirigami.FormLayout {
             enabled: panelTab.configRoot.cfg_simpleFontSizeMode === "manual"
             from: 8
             to: 72
-            value: panelTab.configRoot.cfg_simpleFontSizeMode === "auto"
-                ? (panelTab.configRoot.cfg_simplePanelDim > 0
-                    ? panelTab.configRoot._autoFontSz(panelTab.configRoot.cfg_panelSimpleLayoutType)
-                    : (panelTab.configRoot.cfg_simpleFontAutoSz > 0 ? panelTab.configRoot.cfg_simpleFontAutoSz : panelTab.configRoot.cfg_simpleFontSizeManual))
-                : panelTab.configRoot.cfg_simpleFontSizeManual
+            value: panelTab.configRoot.cfg_simpleFontSizeMode === "auto" ? (panelTab.configRoot.cfg_simplePanelDim > 0 ? panelTab.configRoot._autoFontSz(panelTab.configRoot.cfg_panelSimpleLayoutType) : (panelTab.configRoot.cfg_simpleFontAutoSz > 0 ? panelTab.configRoot.cfg_simpleFontAutoSz : panelTab.configRoot.cfg_simpleFontSizeManual)) : panelTab.configRoot.cfg_simpleFontSizeManual
             onValueModified: {
                 if (panelTab.configRoot.cfg_simpleFontSizeMode === "manual")
                     panelTab.configRoot.cfg_simpleFontSizeManual = value;
@@ -342,40 +397,44 @@ Kirigami.FormLayout {
         }
     }
 
+    // ── Simple mode: temperature color ───────────────────────────────────────
     RowLayout {
-        visible: panelTab.configRoot.cfg_panelInfoMode === "simple"
-        Kirigami.FormData.label: i18n("Widget panel area:")
-        spacing: Kirigami.Units.largeSpacing
-        ComboBox {
-            id: simpleClickAreaModeCombo
-            Layout.preferredWidth: 160
-            textRole: "text"
-            model: [
-                { text: i18n("Auto"), value: "auto" },
-                { text: i18n("Fill panel"), value: "fill" },
-                { text: i18n("Manual"), value: "manual" }
-            ]
-            currentIndex: {
-                var cur = panelTab.configRoot.cfg_panelSimpleClickAreaMode || "auto";
-                for (var i = 0; i < model.length; ++i)
-                    if (model[i].value === cur)
-                        return i;
-                return 0;
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        Kirigami.FormData.label: i18n("Temperature color:")
+        spacing: Kirigami.Units.smallSpacing
+        Rectangle {
+            width: 24
+            height: 24
+            radius: 4
+            border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3)
+            border.width: 1
+            color: {
+                var c = panelTab.configRoot.cfg_simpleTempColor;
+                return (c && c.length > 0) ? c : Kirigami.Theme.textColor;
             }
-            onActivated: panelTab.configRoot.cfg_panelSimpleClickAreaMode = model[currentIndex].value
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: simpleTempColorDialog.open()
+            }
         }
-        SpinBox {
-            visible: panelTab.configRoot.cfg_panelSimpleClickAreaMode === "manual"
-            from: 20
-            to: 600
-            value: panelTab.configRoot.cfg_panelSimpleClickAreaSize
-            onValueModified: panelTab.configRoot.cfg_panelSimpleClickAreaSize = value
-            Layout.preferredWidth: 90
+        TextField {
+            Layout.preferredWidth: 110
+            readOnly: true
+            text: {
+                var c = panelTab.configRoot.cfg_simpleTempColor;
+                return (c && c.length > 0) ? c : i18n("Default");
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: simpleTempColorDialog.open()
+            }
         }
-        Label {
-            visible: panelTab.configRoot.cfg_panelSimpleClickAreaMode === "manual"
-            text: panelTab.configRoot.cfg_simplePanelIsVertical ? i18n("px height") : i18n("px width")
-            opacity: 0.65
+        Button {
+            text: i18n("Reset")
+            visible: (panelTab.configRoot.cfg_simpleTempColor || "").length > 0
+            onClicked: panelTab.configRoot.cfg_simpleTempColor = ""
         }
     }
 
@@ -394,9 +453,7 @@ Kirigami.FormLayout {
     }
 
     RowLayout {
-        visible: panelTab.configRoot.cfg_panelInfoMode === "simple"
-            && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled
-            && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
         Kirigami.FormData.label: i18n("Shadow intensity:")
         spacing: Kirigami.Units.largeSpacing
         Slider {
@@ -412,6 +469,46 @@ Kirigami.FormLayout {
             text: Math.round(panelTab.configRoot.cfg_panelSimpleTempShadowIntensity * 100) + "%"
             opacity: 0.65
             Layout.preferredWidth: 40
+        }
+    }
+
+    RowLayout {
+        visible: panelTab.configRoot.cfg_panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled && (panelTab.configRoot.cfg_panelSimpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        Kirigami.FormData.label: i18n("Shadow color:")
+        spacing: Kirigami.Units.smallSpacing
+        Rectangle {
+            width: 24
+            height: 24
+            radius: 4
+            border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3)
+            border.width: 1
+            color: {
+                var c = panelTab.configRoot.cfg_panelSimpleTempShadowColor;
+                return (c && c.length > 0) ? c : Kirigami.Theme.backgroundColor;
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: simpleShadowColorDialog.open()
+            }
+        }
+        TextField {
+            Layout.preferredWidth: 110
+            readOnly: true
+            text: {
+                var c = panelTab.configRoot.cfg_panelSimpleTempShadowColor;
+                return (c && c.length > 0) ? c : i18n("Default");
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: simpleShadowColorDialog.open()
+            }
+        }
+        Button {
+            text: i18n("Reset")
+            visible: (panelTab.configRoot.cfg_panelSimpleTempShadowColor || "").length > 0
+            onClicked: panelTab.configRoot.cfg_panelSimpleTempShadowColor = ""
         }
     }
 
@@ -431,17 +528,38 @@ Kirigami.FormLayout {
             Layout.preferredWidth: 200
             textRole: "text"
             model: [
-                { text: i18n("Bottom Right"), value: "bottom-right" },
-                { text: i18n("Bottom Left"),  value: "bottom-left"  },
-                { text: i18n("Top Right"),    value: "top-right"    },
-                { text: i18n("Top Left"),     value: "top-left"     },
-                { text: i18n("Bottom Center"), value: "bottom-center" },
-                { text: i18n("Top Center"),    value: "top-center"    }
+                {
+                    text: i18n("Bottom Right"),
+                    value: "bottom-right"
+                },
+                {
+                    text: i18n("Bottom Left"),
+                    value: "bottom-left"
+                },
+                {
+                    text: i18n("Top Right"),
+                    value: "top-right"
+                },
+                {
+                    text: i18n("Top Left"),
+                    value: "top-left"
+                },
+                {
+                    text: i18n("Bottom Center"),
+                    value: "bottom-center"
+                },
+                {
+                    text: i18n("Top Center"),
+                    value: "top-center"
+                }
             ]
             Component.onCompleted: {
                 var cur = panelTab.configRoot.cfg_compressedBadgePosition || "bottom-right";
                 for (var i = 0; i < model.length; ++i)
-                    if (model[i].value === cur) { currentIndex = i; break; }
+                    if (model[i].value === cur) {
+                        currentIndex = i;
+                        break;
+                    }
             }
             onActivated: panelTab.configRoot.cfg_compressedBadgePosition = model[currentIndex].value
         }
@@ -470,19 +588,16 @@ Kirigami.FormLayout {
 
         Rectangle {
             id: badgeColorPreview
-            width: 24; height: 24
+            width: 24
+            height: 24
             radius: 4
             border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.3)
             border.width: 1
             color: {
                 var c = panelTab.configRoot.cfg_compressedBadgeColor;
                 if (c && c.length > 0)
-                    return Qt.rgba(Qt.color(c).r, Qt.color(c).g, Qt.color(c).b,
-                                   panelTab.configRoot.cfg_compressedBadgeOpacity);
-                return Qt.rgba(Kirigami.Theme.backgroundColor.r,
-                               Kirigami.Theme.backgroundColor.g,
-                               Kirigami.Theme.backgroundColor.b,
-                               panelTab.configRoot.cfg_compressedBadgeOpacity);
+                    return Qt.rgba(Qt.color(c).r, Qt.color(c).g, Qt.color(c).b, panelTab.configRoot.cfg_compressedBadgeOpacity);
+                return Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, panelTab.configRoot.cfg_compressedBadgeOpacity);
             }
             MouseArea {
                 anchors.fill: parent
@@ -611,12 +726,30 @@ Kirigami.FormLayout {
             Layout.preferredWidth: 100
             textRole: "text"
             property var sizeModel: [
-                { text: i18n("Auto"),  value: 0  },
-                { text: "16 px",       value: 16 },
-                { text: "24 px",       value: 24 },
-                { text: "32 px",       value: 32 },
-                { text: "48 px",       value: 48 },
-                { text: "64 px",       value: 64 }
+                {
+                    text: i18n("Auto"),
+                    value: 0
+                },
+                {
+                    text: "16 px",
+                    value: 16
+                },
+                {
+                    text: "24 px",
+                    value: 24
+                },
+                {
+                    text: "32 px",
+                    value: 32
+                },
+                {
+                    text: "48 px",
+                    value: 48
+                },
+                {
+                    text: "64 px",
+                    value: 64
+                }
             ]
             model: sizeModel
             currentIndex: {
@@ -737,6 +870,45 @@ Kirigami.FormLayout {
         Kirigami.FormData.label: i18n("Panel items settings")
         Kirigami.FormData.isSection: true
     }
+    // ── Simple mode font style dialog ─────────────────────────────────────────
+    Platform.FontDialog {
+        id: simpleFontDialog
+        title: i18n("Choose Simple Mode Font")
+        modality: Qt.WindowModal
+        property font fontChosen: Qt.font({
+            family: panelTab.configRoot.cfg_simpleFontFamily || Kirigami.Theme.defaultFont.family,
+            pointSize: panelTab.configRoot.cfg_simpleFontSizeManual > 0 ? panelTab.configRoot.cfg_simpleFontSizeManual : 14,
+            bold: panelTab.configRoot.cfg_simpleFontBold
+        })
+        onAccepted: {
+            fontChosen = font;
+            panelTab.configRoot.cfg_simpleFontFamily = fontChosen.family;
+            panelTab.configRoot.cfg_simpleFontBold = fontChosen.bold;
+        }
+    }
+
+    // ── Simple mode temperature color dialog ──────────────────────────────────
+    Platform.ColorDialog {
+        id: simpleTempColorDialog
+        title: i18n("Temperature Color")
+        currentColor: {
+            var c = panelTab.configRoot.cfg_simpleTempColor;
+            return (c && c.length > 0) ? c : Kirigami.Theme.textColor;
+        }
+        onAccepted: panelTab.configRoot.cfg_simpleTempColor = color.toString()
+    }
+
+    // ── Simple mode shadow color dialog ───────────────────────────────────────
+    Platform.ColorDialog {
+        id: simpleShadowColorDialog
+        title: i18n("Shadow Color")
+        currentColor: {
+            var c = panelTab.configRoot.cfg_panelSimpleTempShadowColor;
+            return (c && c.length > 0) ? c : Kirigami.Theme.backgroundColor;
+        }
+        onAccepted: panelTab.configRoot.cfg_panelSimpleTempShadowColor = color.toString()
+    }
+
     // ── Panel font — Switch + native Platform.FontDialog (like KDE clock) ──
     Platform.FontDialog {
         id: panelFontDialog

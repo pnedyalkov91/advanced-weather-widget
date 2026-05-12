@@ -205,6 +205,8 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
 - **Chinese (Simplified)** - [Guokangz](https://github.com/Guokangz)
 - **Czech** - [Zero-MF](https://github.com/Zero-MF)
+- **Italian** - [Aldo Latino](https://github.com/aldolat)
+- **Hungarian** - [summoner001](https://github.com/summoner001)
 
 ---
 

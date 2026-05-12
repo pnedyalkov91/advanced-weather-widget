@@ -780,6 +780,40 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_forecastShowToday = checked
                 }
             }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Auto-open hourly forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Switch {
+                    id: forecastAutoOpenSwitch
+                    checked: widgetTab.configRoot.cfg_forecastAutoOpen
+                    onToggled: widgetTab.configRoot.cfg_forecastAutoOpen = checked
+                }
+                Label {
+                    text: forecastAutoOpenSwitch.checked
+                        ? i18n("Opens today's hourly forecast automatically (or the next available day)")
+                        : i18n("All days start collapsed")
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                    opacity: 0.7
+                }
+            }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Expand all days:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Switch {
+                    id: forecastExpandAllSwitch
+                    checked: widgetTab.configRoot.cfg_forecastExpandAll
+                    onToggled: widgetTab.configRoot.cfg_forecastExpandAll = checked
+                }
+                Label {
+                    text: forecastExpandAllSwitch.checked
+                        ? i18n("All days show hourly forecast when opening the tab")
+                        : i18n("Only the clicked day expands")
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                    opacity: 0.7
+                }
+            }
 
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Hourly Forecast Settings

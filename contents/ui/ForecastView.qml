@@ -32,10 +32,154 @@ import "components"
 Item {
     id: forecastRoot
     property var weatherRoot
+    property var verticalScrollView
     property int expandedIndex: -1
 
+    // ── Auto-open: expand the first available day's hourly forecast ────────
+    readonly property bool autoOpen: Plasmoid.configuration.forecastAutoOpen !== false
+    property bool _autoOpenDone: false
+
+    // ── Expand-all: show hourly for every day simultaneously ───────────────
+    readonly property bool expandAll: Plasmoid.configuration.forecastExpandAll === true
+    // Per-day hourly cache: maps dateStr → hourly array; populated progressively
+    property var _perDayHourlyData: ({})
+    // Per-day loading state: maps dateStr → true while a fetch is in flight
+    property var _loadingDays: ({})
+    // Set of dateStr values the user has manually collapsed in expandAll mode
+    property var _collapsedDays: ({})
+    property var _expandAllQueue: []
+    property int _expandAllActiveFetches: 0
+    property int _expandAllFetchGeneration: 0
+    readonly property int _expandAllMaxConcurrentFetches: 1
+
+    function _cancelExpandAllFetch(clearData) {
+        _expandAllFetchGeneration++;
+        _expandAllQueue = [];
+        _expandAllActiveFetches = 0;
+        expandAllFetchPump.stop();
+        _loadingDays = {};
+        if (clearData)
+            _perDayHourlyData = {};
+    }
+
+    function _startExpandAll() {
+        if (!weatherRoot || weatherRoot.dailyData.length === 0) return;
+        _expandAllFetchGeneration++;
+        _expandAllQueue = [];
+        _expandAllActiveFetches = 0;
+        _perDayHourlyData = {};
+        var loading = {};
+        var total    = Math.min(Plasmoid.configuration.forecastDays, weatherRoot.dailyData.length);
+        var startDi  = forecastRoot.showToday ? 0 : 1;
+        for (var di = startDi; di < total; di++) {
+            var dateStr = weatherRoot.dailyData[di].dateStr || "";
+            if (!dateStr) continue;
+            _expandAllQueue.push(dateStr);
+            loading[dateStr] = true;
+        }
+        _loadingDays = loading;
+        expandAllFetchPump.restart();
+    }
+
+    function _pumpExpandAllQueue() {
+        if (!expandAll || !weatherRoot) return;
+        var generation = _expandAllFetchGeneration;
+        while (_expandAllActiveFetches < _expandAllMaxConcurrentFetches && _expandAllQueue.length > 0) {
+            var dateStr = _expandAllQueue.shift();
+            _expandAllActiveFetches++;
+            (function(ds, gen) {
+                weatherRoot.fetchHourlyForDateDirect(ds, function(hourlyArr) {
+                    if (gen !== forecastRoot._expandAllFetchGeneration) return;
+                    var dataUpd = Object.assign({}, forecastRoot._perDayHourlyData);
+                    dataUpd[ds] = hourlyArr || [];
+                    forecastRoot._perDayHourlyData = dataUpd;
+                    var loadDone = Object.assign({}, forecastRoot._loadingDays);
+                    delete loadDone[ds];
+                    forecastRoot._loadingDays = loadDone;
+                    forecastRoot._expandAllActiveFetches = Math.max(0, forecastRoot._expandAllActiveFetches - 1);
+                    if (forecastRoot._expandAllQueue.length > 0)
+                        expandAllFetchPump.restart();
+                });
+            })(dateStr, generation);
+        }
+    }
+
+    Timer {
+        id: expandAllFetchPump
+        interval: 80
+        repeat: false
+        onTriggered: forecastRoot._pumpExpandAllQueue()
+    }
+
+    onExpandAllChanged: {
+        if (expandAll) {
+            expandedIndex = -1;
+            _autoOpenDone = true;
+            _collapsedDays = {};
+            _loadingDays   = {};
+            if (visible && weatherRoot && weatherRoot.dailyData.length > 0)
+                _startExpandAll();
+        } else {
+            _cancelExpandAllFetch(true);
+            _collapsedDays = {};
+            _autoOpenDone = false;
+        }
+    }
+
+    function _doAutoOpen() {
+        if (_autoOpenDone) return;
+        if (!weatherRoot || weatherRoot.dailyData.length === 0) return;
+        _autoOpenDone = true;
+        if (expandAll) {
+            _startExpandAll();
+            return;
+        }
+        if (!autoOpen) return;
+        var firstDataIndex = forecastRoot.showToday ? 0 : 1;
+        if (firstDataIndex >= weatherRoot.dailyData.length) return;
+        forecastRoot.expandedIndex = 0;
+        weatherRoot.hourlyData = [];
+        weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[firstDataIndex].dateStr || "");
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            _autoOpenDone = false;
+            _collapsedDays = {};
+            _loadingDays   = {};
+            if (expandAll) {
+                _perDayHourlyData = {};
+                _startExpandAll();
+            } else {
+                _doAutoOpen();
+            }
+        } else {
+            _cancelExpandAllFetch(false);
+        }
+    }
+
+    Connections {
+        target: weatherRoot
+        function onDailyDataChanged() {
+            if (!forecastRoot.visible) {
+                forecastRoot._autoOpenDone = false;
+                forecastRoot._cancelExpandAllFetch(true);
+                return;
+            }
+            if (forecastRoot.expandAll) {
+                // expandAll always re-fetches when new data arrives —
+                // independent of autoOpen and _autoOpenDone.
+                forecastRoot._perDayHourlyData = {};
+                forecastRoot._loadingDays      = {};
+                forecastRoot._startExpandAll();
+            } else {
+                forecastRoot._doAutoOpen();
+            }
+        }
+    }
+
     // Set implicit height based on content
-    implicitHeight: (weatherRoot && weatherRoot.dailyData.length > 0) ? forecastColumn.height : (emptyLabel.implicitHeight + 40) // extra space for centering
+    implicitHeight: (weatherRoot && weatherRoot.dailyData.length > 0) ? forecastColumn.height : (emptyLabel.implicitHeight + 40)
 
     // Font for weather icons (wind direction glyph)
     FontLoader {
@@ -57,6 +201,47 @@ Item {
     readonly property bool showToday:       Plasmoid.configuration.forecastShowToday !== false
     readonly property string hourlyLayout:  Plasmoid.configuration.forecastHourlyLayout || "cards"
 
+    function _wheelDeltaX(wheel) {
+        return wheel.pixelDelta.x !== 0 ? wheel.pixelDelta.x : wheel.angleDelta.x;
+    }
+
+    function _wheelDeltaY(wheel) {
+        return wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.angleDelta.y;
+    }
+
+    function _wheelWantsHorizontal(wheel) {
+        if (wheel.modifiers & Qt.ShiftModifier)
+            return true;
+        var dx = Math.abs(_wheelDeltaX(wheel));
+        var dy = Math.abs(_wheelDeltaY(wheel));
+        return dx > 0 && dx >= dy;
+    }
+
+    function _scrollParentVertically(wheel) {
+        if (!verticalScrollView)
+            return false;
+        var delta = _wheelDeltaY(wheel);
+        if (delta === 0)
+            return false;
+        var scale = wheel.pixelDelta.y !== 0 ? 1 : 0.5;
+        var amount = delta * scale;
+
+        var flick = verticalScrollView.flickableItem || verticalScrollView.contentItem || verticalScrollView;
+        if (flick && flick.contentHeight !== undefined && flick.contentY !== undefined) {
+            var maxY = Math.max(0, flick.contentHeight - flick.height);
+            flick.contentY = Math.max(0, Math.min(maxY, flick.contentY - amount));
+            return true;
+        }
+
+        var bar = verticalScrollView.ScrollBar ? verticalScrollView.ScrollBar.vertical : null;
+        if (bar) {
+            var maxPos = Math.max(0, 1.0 - bar.size);
+            bar.position = Math.max(0, Math.min(maxPos, bar.position - amount / 1200));
+            return true;
+        }
+        return false;
+    }
+
     /** Resolve a condition icon, handling the "custom" theme with per-condition overrides.
      *  Delegates to ConfigUtils.resolveCustomConditionIcon() — single source of truth. */
     function resolveConditionIcon(code, isNight, iconSize) {
@@ -68,6 +253,15 @@ Item {
     }
 
     // ── empty state ───────────────────────────────────────────────────────
+    BusyIndicator {
+        id: emptyBusy
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: emptyLabel.top
+        anchors.bottomMargin: 8
+        running: visible
+        visible: weatherRoot && weatherRoot.loading && weatherRoot.dailyData.length === 0
+    }
+
     Label {
         id: emptyLabel
         anchors.centerIn: parent
@@ -77,16 +271,11 @@ Item {
         font: weatherRoot ? weatherRoot.wf(12, false) : Qt.font({})
     }
 
-    ScrollView {
-        anchors.fill: parent
-        clip: true
-        contentWidth: availableWidth
+    Column {
+        id: forecastColumn
+        width: parent.width
+        spacing: 0
         visible: weatherRoot && weatherRoot.dailyData.length > 0
-
-        Column {
-            id: forecastColumn
-            width: parent.width
-            spacing: 0
 
             Repeater {
                 model: {
@@ -101,12 +290,35 @@ Item {
                     width: parent.width
                     spacing: 0
 
+                    // Per-delegate hourly data: in expandAll mode pulls from the
+                    // per-day cache; in single-expand mode uses weatherRoot.hourlyData
+                    // (only valid for the currently expanded day).
+                    property var _dayHourlyData: {
+                        var dateStr = (weatherRoot && weatherRoot.dailyData[dataIndex])
+                            ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
+                        if (forecastRoot.expandAll && dateStr) {
+                            if (forecastRoot._collapsedDays[dateStr]) return [];
+                            return forecastRoot._perDayHourlyData[dateStr] || [];
+                        }
+                        if (!forecastRoot.expandAll && forecastRoot.expandedIndex === index)
+                            return weatherRoot ? weatherRoot.hourlyData : [];
+                        return [];
+                    }
+
+                    readonly property bool _dayIsLoading: {
+                        var dateStr = (weatherRoot && weatherRoot.dailyData[dataIndex])
+                            ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
+                        if (forecastRoot.expandAll && dateStr && !forecastRoot._collapsedDays[dateStr])
+                            return !!forecastRoot._loadingDays[dateStr];
+                        return false;
+                    }
+
                     // ── day row ─────────────────────────────────────────
                     Rectangle {
                         id: dayRow
                         width: parent.width
                         height: Math.max(52, rowLayoutInner.implicitHeight + 12)
-                        color: (rowMouse.containsMouse || forecastRoot.expandedIndex === index) ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08) : "transparent"
+                        color: (rowMouse.containsMouse || (forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08) : "transparent"
                         Behavior on color {
                             ColorAnimation {
                                 duration: 120
@@ -123,7 +335,7 @@ Item {
                             spacing: 0
 
                             Kirigami.Icon {
-                                source: forecastRoot.expandedIndex === index ? "arrow-down" : "arrow-right"
+                                source: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? "arrow-down" : "arrow-right"
                                 width: 14
                                 height: 14
                                 opacity: 0.45
@@ -190,13 +402,50 @@ Item {
                             }
 
                             Item {
-                                Layout.preferredWidth: 8
+                                Layout.preferredWidth: 5
+                            }
+
+                            RowLayout {
+                                visible: !isNaN(weatherRoot.dailyData[dataIndex].windKmh)
+                                Layout.alignment: Qt.AlignVCenter
+                                Layout.preferredWidth: 100
+                                Layout.minimumWidth: 100
+                                Layout.maximumWidth: 100
+                                spacing: 1
+
+                                Item {
+                                    visible: !isNaN(weatherRoot.dailyData[dataIndex].windDir)
+                                    implicitWidth: forecastRoot.iconSz
+                                    implicitHeight: forecastRoot.iconSz
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: W.windDirectionGlyph(weatherRoot.dailyData[dataIndex].windDir)
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                        font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                        font.pixelSize: forecastRoot.iconSz
+                                    }
+                                }
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: weatherRoot.windValue(weatherRoot.dailyData[dataIndex].windKmh)
+                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    font: weatherRoot.wf(10, false)
+                                    elide: Text.ElideRight
+                                }
                             }
 
                             RowLayout {
                                 spacing: 2
                                 Layout.alignment: Qt.AlignRight
+                                Layout.preferredWidth: 84
+                                Layout.minimumWidth: 84
+                                Layout.maximumWidth: 84
                                 Label {
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignRight
                                     text: weatherRoot.tempValue(weatherRoot.dailyData[dataIndex].minC)
                                     color: "#42a5f5"
                                     font: weatherRoot.wf(12, false)
@@ -207,6 +456,7 @@ Item {
                                     font: weatherRoot.wf(12, false)
                                 }
                                 Label {
+                                    Layout.fillWidth: true
                                     text: weatherRoot.tempValue(weatherRoot.dailyData[dataIndex].maxC)
                                     color: "#ff6e40"
                                     font: weatherRoot.wf(12, true)
@@ -220,14 +470,25 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                if (forecastRoot.expandedIndex === index) {
-                                    forecastRoot.expandedIndex = -1;
+                                var dateStr = weatherRoot.dailyData[dataIndex].dateStr || "";
+                                if (forecastRoot.expandAll) {
+                                    // Toggle this specific day's collapsed state
+                                    var col = Object.assign({}, forecastRoot._collapsedDays);
+                                    if (col[dateStr]) {
+                                        delete col[dateStr];
+                                    } else {
+                                        col[dateStr] = true;
+                                    }
+                                    forecastRoot._collapsedDays = col;
                                 } else {
-                                    forecastRoot.expandedIndex = index;
-                                    if (weatherRoot) {
-                                        weatherRoot.hourlyData = [];
-                                        // Use dataIndex so "Hide today" still maps correctly
-                                        weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "");
+                                    if (forecastRoot.expandedIndex === index) {
+                                        forecastRoot.expandedIndex = -1;
+                                    } else {
+                                        forecastRoot.expandedIndex = index;
+                                        if (weatherRoot) {
+                                            weatherRoot.hourlyData = [];
+                                            weatherRoot.fetchHourlyForDate(dateStr);
+                                        }
                                     }
                                 }
                             }
@@ -238,7 +499,7 @@ Item {
                     Rectangle {
                         id: hourlyPanel
                         width: parent.width
-                        height: forecastRoot.expandedIndex === index ? (forecastRoot.hourlyLayout === "strip" ? 200 : 240) : 0
+                        height: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? (forecastRoot.hourlyLayout === "strip" ? 200 : 240) : 0
                         visible: height > 0
                         clip: true
                         color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.04)
@@ -249,9 +510,17 @@ Item {
                             }
                         }
 
+                        // Per-day loading spinner (expandAll parallel fetch)
+                        BusyIndicator {
+                            anchors.centerIn: parent
+                            running: _dayIsLoading
+                            visible: _dayIsLoading
+                        }
+
+                        // Plain loading text for single-expand mode
                         Label {
                             anchors.centerIn: parent
-                            visible: (forecastRoot.expandedIndex === index) && (!weatherRoot || weatherRoot.hourlyData.length === 0)
+                            visible: !_dayIsLoading && ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && _dayHourlyData.length === 0
                             text: i18n("Loading hourly data…")
                             color: Kirigami.Theme.textColor
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
@@ -260,7 +529,7 @@ Item {
                         // Only instantiate the heavy hourly UI for the expanded day.
                         Loader {
                             anchors.fill: parent
-                            active: forecastRoot.expandedIndex === index && weatherRoot && weatherRoot.hourlyData.length > 0
+                            active: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && weatherRoot && _dayHourlyData.length > 0
                             asynchronous: true
                             sourceComponent: forecastRoot.hourlyLayout === "strip" ? stripHourlyComponent : cardsHourlyComponent
                         }
@@ -295,7 +564,7 @@ Item {
 
                                     // Build combined model same as cards (with sun events)
                                     property var _hourlyWithSun: {
-                                        if (!weatherRoot || !weatherRoot.hourlyData.length) return [];
+                                        if (!_dayHourlyData || !_dayHourlyData.length) return [];
                                         function toMins(t) {
                                             if (!t || t === "--") return -1;
                                             var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
@@ -307,8 +576,8 @@ Item {
                                             nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                         }
                                         var source = nowMins >= 0
-                                            ? weatherRoot.hourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
-                                            : weatherRoot.hourlyData;
+                                            ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
+                                            : _dayHourlyData;
                                         if (!forecastRoot.showSunEvents)
                                             return source;
                                         var rise = toMins(weatherRoot.sunriseTimeText);
@@ -590,20 +859,23 @@ Item {
                                     anchors.fill: stripScrollView
                                     acceptedButtons: Qt.NoButton
                                     onWheel: function(wheel) {
-                                        var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
-                                        var pixelDelta = wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.pixelDelta.x;
-                                        if (pixelDelta !== 0) {
-                                            stripWheelAnimation.stop();
-                                            stripScrollView.contentX = Math.max(0, Math.min(maxX, stripScrollView.contentX - pixelDelta));
+                                        if (forecastRoot._wheelWantsHorizontal(wheel)) {
+                                            var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : forecastRoot._wheelDeltaX(wheel);
+                                            var pixelDelta = wheel.angleDelta.x === 0 && wheel.pixelDelta.x !== 0;
+                                            if (delta === 0) {
+                                                delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : forecastRoot._wheelDeltaY(wheel);
+                                                pixelDelta = wheel.angleDelta.y === 0 && wheel.pixelDelta.y !== 0;
+                                            }
+                                            var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
+                                            var targetX = pixelDelta
+                                                ? Math.max(0, Math.min(maxX, stripScrollView.contentX - delta))
+                                                : Math.max(0, Math.min(maxX, stripScrollView.contentX - (delta / 120) * stripScrollView.colW * 2));
+                                            stripWheelAnimation.to = targetX;
+                                            stripWheelAnimation.restart();
                                             wheel.accepted = true;
-                                            return;
+                                        } else {
+                                            wheel.accepted = forecastRoot._scrollParentVertically(wheel);
                                         }
-
-                                        var angleDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
-                                        var targetX = Math.max(0, Math.min(maxX, stripScrollView.contentX - (angleDelta / 120) * stripScrollView.colW * 2));
-                                        stripWheelAnimation.to = targetX;
-                                        stripWheelAnimation.restart();
-                                        wheel.accepted = true;
                                     }
                                 }
                             }
@@ -620,6 +892,13 @@ Item {
                                     anchors.fill: parent
                                     anchors.margins: 8
                                     clip: true
+                                    // ScrollView itself does not have flickableDirection.
+                                    // This property needs to be set on the internal flickableItem.
+                                    Component.onCompleted: {
+                                        if (hourlyScrollView.flickableItem) {
+                                            hourlyScrollView.flickableItem.flickableDirection = Flickable.HorizontalFlick;
+                                        }
+                                    }
                                     contentWidth: hourlyRow.implicitWidth
                                     ScrollBar.vertical.policy: ScrollBar.AlwaysOff
                                     ScrollBar.horizontal.policy: ScrollBar.AsNeeded
@@ -637,14 +916,13 @@ Item {
                                         id: scrollTimer
                                         interval: 150
                                         onTriggered: {
-                                            if (index !== 0 || !weatherRoot.hourlyData.length) return;
+                                            if (index !== 0 || !_dayHourlyData.length) return;
                                             var now = new Date();
                                             var currentTotalMins = now.getHours() * 60 + now.getMinutes();
-                                            // Find the closest hour in the data
                                             var closestIdx = 0;
                                             var minDiff = 86400;
-                                            for (var i = 0; i < weatherRoot.hourlyData.length; i++) {
-                                                var h = weatherRoot.hourlyData[i].hour;
+                                            for (var i = 0; i < _dayHourlyData.length; i++) {
+                                                var h = _dayHourlyData[i].hour;
                                                 if (!h) continue;
                                                 var parts = h.split(":");
                                                 if (parts.length < 2) continue;
@@ -655,7 +933,6 @@ Item {
                                                     closestIdx = i;
                                                 }
                                             }
-                                            // Account for sunrise/sunset cards inserted before this index
                                             if (forecastRoot.showSunEvents && weatherRoot.sunriseTimeText && weatherRoot.sunsetTimeText) {
                                                 function toMins(t) {
                                                     if (!t || t === "--") return -1;
@@ -663,16 +940,14 @@ Item {
                                                 }
                                                 var rise = toMins(weatherRoot.sunriseTimeText);
                                                 var set_ = toMins(weatherRoot.sunsetTimeText);
-                                                var targetMins = closestIdx < weatherRoot.hourlyData.length ? toMins(weatherRoot.hourlyData[closestIdx].hour) : -1;
+                                                var targetMins = closestIdx < _dayHourlyData.length ? toMins(_dayHourlyData[closestIdx].hour) : -1;
                                                 if (rise >= 0 && targetMins >= 0 && rise < targetMins) closestIdx++;
                                                 if (set_ >= 0 && targetMins >= 0 && set_ < targetMins) closestIdx++;
                                             }
-                                            // Calculate scroll position using actual card widths
                                             var hourlyWidth = 100;
                                             var sunWidth = 70;
                                             var spacing = 6;
                                             var scrollPos = 0;
-                                            // Count cards before closestIdx (accounting for sun cards)
                                             if (forecastRoot.showSunEvents && weatherRoot.sunriseTimeText && weatherRoot.sunsetTimeText) {
                                                 function toMins2(t) {
                                                     if (!t || t === "--") return -1;
@@ -681,8 +956,7 @@ Item {
                                                 var rise2 = toMins2(weatherRoot.sunriseTimeText);
                                                 var set2 = toMins2(weatherRoot.sunsetTimeText);
                                                 for (var j = 0; j < closestIdx; j++) {
-                                                    var hm2 = toMins2(weatherRoot.hourlyData[j].hour);
-                                                    // Check if a sun card appears before this hour
+                                                    var hm2 = toMins2(_dayHourlyData[j].hour);
                                                     if (rise2 >= 0 && hm2 > rise2) { scrollPos += sunWidth + spacing; rise2 = -1; }
                                                     if (set2 >= 0 && hm2 > set2) { scrollPos += sunWidth + spacing; set2 = -1; }
                                                     scrollPos += hourlyWidth + spacing;
@@ -692,7 +966,7 @@ Item {
                                             }
                                             var bar = hourlyScrollView.ScrollBar.horizontal;
                                             if (!bar) return;
-                                            var contentW = hourlyRow.implicitWidth || hourlyRow.width || (weatherRoot.hourlyData.length * (hourlyWidth + spacing));
+                                            var contentW = hourlyRow.implicitWidth || hourlyRow.width || (_dayHourlyData.length * (hourlyWidth + spacing));
                                             var viewW = hourlyScrollView.width;
                                             if (contentW > viewW) {
                                                 var maxPos = Math.max(0, contentW - viewW);
@@ -704,7 +978,7 @@ Item {
                                     Connections {
                                         target: weatherRoot
                                         function onHourlyDataChanged() {
-                                            if (index !== 0 || !weatherRoot.hourlyData.length) return;
+                                            if (index !== 0 || !_dayHourlyData.length) return;
                                             scrollTimer.start();
                                         }
                                     }
@@ -717,7 +991,7 @@ Item {
                                         // Build combined model: hourly entries + sunrise/sunset marker cards
                                         // inserted between the hour that precedes each event.
                                         property var _hourlyWithSun: {
-                                            if (!weatherRoot || !weatherRoot.hourlyData.length) return [];
+                                            if (!_dayHourlyData || !_dayHourlyData.length) return [];
                                             function toMins(t) {
                                                 if (!t || t === "--") return -1;
                                                 var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
@@ -729,8 +1003,8 @@ Item {
                                                 nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                             }
                                             var source = nowMins >= 0
-                                                ? weatherRoot.hourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
-                                                : weatherRoot.hourlyData;
+                                                ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
+                                                : _dayHourlyData;
                                             if (!forecastRoot.showSunEvents)
                                                 return source;
                                             var rise = toMins(weatherRoot.sunriseTimeText);
@@ -930,25 +1204,23 @@ Item {
                                         var bar = hourlyScrollView.ScrollBar.horizontal;
                                         if (!bar)
                                             return;
-
-                                        var maxPos = Math.max(0, 1.0 - bar.size);
-                                        var pixelDelta = wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : wheel.pixelDelta.x;
-                                        if (pixelDelta !== 0) {
-                                            var flickable = hourlyScrollView.flickableItem;
-                                            var contentW = flickable ? flickable.contentWidth : hourlyRow.implicitWidth;
-                                            if (contentW > 0) {
-                                                hourlyWheelAnimation.stop();
-                                                bar.position = Math.max(0, Math.min(maxPos, bar.position - (pixelDelta / contentW)));
+                                        if (forecastRoot._wheelWantsHorizontal(wheel)) {
+                                            var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : forecastRoot._wheelDeltaX(wheel);
+                                            var pixelDelta = wheel.angleDelta.x === 0 && wheel.pixelDelta.x !== 0;
+                                            if (delta === 0) {
+                                                delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : forecastRoot._wheelDeltaY(wheel);
+                                                pixelDelta = wheel.angleDelta.y === 0 && wheel.pixelDelta.y !== 0;
                                             }
+                                            var maxPos = Math.max(0, 1.0 - bar.size);
+                                            var targetPos = pixelDelta
+                                                ? Math.max(0, Math.min(maxPos, bar.position - delta / Math.max(1, hourlyRow.implicitWidth)))
+                                                : Math.max(0, Math.min(maxPos, bar.position - (delta / 120) * 0.15));
+                                            hourlyWheelAnimation.to = targetPos;
+                                            hourlyWheelAnimation.restart();
                                             wheel.accepted = true;
-                                            return;
+                                        } else {
+                                            wheel.accepted = forecastRoot._scrollParentVertically(wheel);
                                         }
-
-                                        var angleDelta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x;
-                                        var targetPos = Math.max(0, Math.min(maxPos, bar.position - (angleDelta / 120) * 0.15));
-                                        hourlyWheelAnimation.to = targetPos;
-                                        hourlyWheelAnimation.restart();
-                                        wheel.accepted = true;
                                     }
                                 }
                             }
@@ -964,4 +1236,3 @@ Item {
             }
         }
     }
-}

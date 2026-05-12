@@ -78,7 +78,7 @@ function fetchCurrent(service, W, chain, idx) {
             snowDepthCm:     NaN,
             weatherCode:     (d.weather && d.weather.length > 0) ? W.openWeatherCodeToWmo(d.weather[0].id) : 2,
             isDay:           -1,
-            locationUtcOffsetMins: 0,
+            locationUtcOffsetMins: (d.timezone !== undefined) ? Math.round(d.timezone / 60) : 0,
             sunriseTimeText: (d.sys && d.sys.sunrise) ? Qt.formatTime(new Date(d.sys.sunrise * 1000), "HH:mm") : "--",
             sunsetTimeText:  (d.sys && d.sys.sunset)  ? Qt.formatTime(new Date(d.sys.sunset  * 1000), "HH:mm") : "--",
             dailyData:       []

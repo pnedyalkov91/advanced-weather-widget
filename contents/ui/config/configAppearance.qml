@@ -1050,6 +1050,8 @@ KCM.AbstractKCM {
     property int cfg_panelSimpleClickAreaSize: 96
     property bool cfg_panelSimpleTempShadowEnabled: true
     property double cfg_panelSimpleTempShadowIntensity: 0.8
+    property string cfg_panelSimpleTempShadowColor: ""   // empty = theme background
+    property string cfg_simpleTempColor: ""              // empty = theme text color
     // Compressed badge options
     property string cfg_compressedBadgePosition: "bottom-right"
     property int cfg_compressedBadgeSpacing: 0
@@ -1064,6 +1066,8 @@ KCM.AbstractKCM {
     property bool cfg_forecastShowSunEvents: true
     property bool cfg_forecastShowToday:    true
     property string cfg_forecastHourlyLayout: "cards"
+    property bool   cfg_forecastAutoOpen:     true
+    property bool   cfg_forecastExpandAll:    false
     property bool cfg_roundValues: true
     property bool cfg_showScrollbox: true
     property bool cfg_showUpdateText: true

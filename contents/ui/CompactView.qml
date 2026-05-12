@@ -94,6 +94,14 @@ PlasmaCore.ToolTipArea {
     readonly property int simpleClickAreaSize: Math.max(20, Plasmoid.configuration.panelSimpleClickAreaSize || 96)
     readonly property bool simpleTempShadowEnabled: Plasmoid.configuration.panelSimpleTempShadowEnabled !== false
     readonly property real simpleTempShadowIntensity: Math.max(0.1, Math.min(1.0, Plasmoid.configuration.panelSimpleTempShadowIntensity !== undefined ? Plasmoid.configuration.panelSimpleTempShadowIntensity : 0.8))
+    readonly property color simpleTempShadowColor: {
+        var c = Plasmoid.configuration.panelSimpleTempShadowColor;
+        return (c && c.length > 0) ? c : Kirigami.Theme.backgroundColor;
+    }
+    readonly property color simpleTempColor: {
+        var c = Plasmoid.configuration.simpleTempColor;
+        return (c && c.length > 0) ? c : Kirigami.Theme.textColor;
+    }
 
     // ── Horizontal layout content filter ──────────────────────────────
     // Controls what is shown in simple mode horizontal layout (type 0):
@@ -960,9 +968,10 @@ PlasmaCore.ToolTipArea {
                     anchors.fill: parent
                     text: compactRoot._cvTemp
                     font.family: Kirigami.Theme.defaultFont.family
+                    font.bold: false
                     font.pixelSize: compactRoot.simpleFontSz
                     fontSizeMode: Text.FixedSize
-                    color: Kirigami.Theme.textColor
+                    color: compactRoot.simpleTempColor
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     wrapMode: Text.NoWrap
@@ -977,7 +986,7 @@ PlasmaCore.ToolTipArea {
                     radius: 3
                     samples: 16
                     spread: compactRoot.simpleTempShadowIntensity
-                    color: Kirigami.Theme.backgroundColor
+                    color: compactRoot.simpleTempShadowColor
                     cached: true
                 }
             }
@@ -1079,12 +1088,10 @@ PlasmaCore.ToolTipArea {
                         id: compressedBadge
                         anchors.centerIn: parent
                         text: compactRoot._cvTemp
-                        // Badge font ≈ 28 % of the square side; min 8 px
-                        // Respect Font Size setting; auto = 40% of square side
-                        // Auto: squareSide / 3 ≈ 16 px when squareSide = 48 px
+                        font.family: Kirigami.Theme.defaultFont.family
                         font.pixelSize: compactRoot.simpleFontAuto ? Math.max(8, Math.round(compressedWrapper.squareSide / 3)) : Math.max(8, compactRoot.simpleFontPx)
                         font.bold: false
-                        color: Kirigami.Theme.textColor
+                        color: compactRoot.simpleTempColor
                     }
                 }
             }

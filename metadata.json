@@ -15,6 +15,7 @@
     "Name[zh_CN]": "高级天气小组件",
     "Name[cs_CZ]": "Pokročilý widget počasí",
     "Name[it_IT]": "Widget meteo avanzato",
+    "Name[hu_HU]": "Fejlett időjárás widget",
 
     "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6",
     "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6",
@@ -29,6 +30,7 @@
     "Description[zh_CN]": "一款专为 KDE Plasma 6 打造的现代化、高度可定制天气小组件",
     "Description[cs_CZ]": "Moderní, vysoce přizpůsobitelný widget počasí vytvořený speciálně pro KDE Plasma 6",
     "Description[it_IT]": "Un widget meteo moderno e altamente personalizzabile creato appositamente per KDE Plasma 6",
+    "Description[hu_HU]": "Egy modern, rendkívül testreszabható időjárás widget, amely kifejezetten a KDE Plasma 6-hoz készült",
 
     "Icon": "weather-clear",
     "Category": "Environment and Weather",
@@ -42,7 +44,7 @@
       }
     ],
 
-    "Version": "1.5.0",
+    "Version": "1.5.1",
     "Website": "https://github.com/pnedyalkov91/advanced-weather-widget",
     "BugReportUrl": "https://github.com/pnedyalkov91/advanced-weather-widget/issues"
   },

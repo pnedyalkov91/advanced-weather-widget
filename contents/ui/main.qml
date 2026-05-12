@@ -612,6 +612,11 @@ PlasmoidItem {
         weatherService.fetchHourlyForDate(dateStr);
     }
 
+    /** Fetch hourly data without touching shared hourlyData — used by expand-all forecast */
+    function fetchHourlyForDateDirect(dateStr, callback) {
+        weatherService.fetchHourlyForDateDirect(dateStr, callback);
+    }
+
     // ══════════════════════════════════════════════════════════════════════
     // Value formatters — delegate pure math to weather.js, inject config here
     // ══════════════════════════════════════════════════════════════════════

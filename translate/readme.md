@@ -5,18 +5,20 @@
 
 |  Locale  |  Lines  | % Done|
 |----------|---------|-------|
-| Template |     720 |       |
-| bg       | 720/720 |  100% |
-| cs_CZ    | 720/720 |  100% |
-| de       | 291/720 |   40% |
-| es       | 627/720 |   87% |
-| fr       | 291/720 |   40% |
-| nl       | 627/720 |   87% |
-| pt_BR    | 290/720 |   40% |
-| ru       | 291/720 |   40% |
-| tr_TR    | 291/720 |   40% |
-| zh_CN    | 627/720 |   87% |
-| zh_TW    | 627/720 |   87% |
+| Template |     735 |       |
+| bg       | 718/735 |   97% |
+| cs_CZ    | 698/735 |   94% |
+| de       | 291/735 |   39% |
+| es       | 627/735 |   85% |
+| fr       | 291/735 |   39% |
+| hu_HU    | 718/735 |   97% |
+| it_IT    | 718/735 |   97% |
+| nl       | 718/735 |   97% |
+| pt_BR    | 290/735 |   39% |
+| ru       | 291/735 |   39% |
+| tr_TR    | 291/735 |   39% |
+| zh_CN    | 627/735 |   85% |
+| zh_TW    | 718/735 |   97% |
 
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.
@@ -72,3 +74,5 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
 - **Chinese (Simplified)** - [Guokangz](https://github.com/Guokangz)
 - **Czech** - [Zero-MF](https://github.com/Zero-MF)
+- **Italian** - [Aldo Latino](https://github.com/aldolat)
+- **Hungarian** - [summoner001](https://github.com/summoner001)
