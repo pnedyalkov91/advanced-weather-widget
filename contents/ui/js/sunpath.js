@@ -117,6 +117,11 @@ function minsUntilSunrise(riseText, setText, tz) {
     return (1440 - now) + rise;
 }
 
+function minsUntilNextEvent(eventMins, nowMins) {
+    if (eventMins < 0) return -1;
+    return eventMins >= nowMins ? eventMins - nowMins : (1440 - nowMins) + eventMins;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Daylight durations
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,10 +134,12 @@ function dayLengthMins(riseText, setText) {
 }
 
 function remainingMins(riseText, setText, tz) {
+    var rise = parseMins(riseText);
     var set = parseMins(setText);
-    if (set < 0) return 0;
+    if (rise < 0 || set < 0) return 0;
     var now = nowMinsAt(tz);
-    return Math.max(0, set - now);
+    if (now < rise || now >= set) return 0;
+    return set - now;
 }
 
 function formatDuration(totalMins) {

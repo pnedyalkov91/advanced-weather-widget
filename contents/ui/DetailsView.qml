@@ -105,24 +105,21 @@ Item {
         var nowM = SunPath.nowMinsAt(utcOff);
         var riseM = SunPath.parseMins(weatherRoot.sunriseTimeText);
         var setM = SunPath.parseMins(weatherRoot.sunsetTimeText);
-        if (riseM >= 0 && nowM < riseM)
+        var untilRise = SunPath.minsUntilNextEvent(riseM, nowM);
+        var untilSet = SunPath.minsUntilNextEvent(setM, nowM);
+        if (untilRise < 0 && untilSet < 0)
             return "sunrise";
-        if (setM >= 0 && nowM < setM)
+        if (untilRise < 0)
             return "sunset";
-        return "sunrise";
+        if (untilSet < 0)
+            return "sunrise";
+        return untilRise <= untilSet ? "sunrise" : "sunset";
     }
 
     /** Returns "moonrise" or "moonset" depending on which is next (for upcoming mode) */
     function upcomingMoonEvent(riseText, setText) {
         var utcOff = (weatherRoot ? weatherRoot.locationUtcOffsetMins : 0) || 0;
-        var nowM = SunPath.nowMinsAt(utcOff);
-        var riseM = SunPath.parseMins(riseText);
-        var setM = SunPath.parseMins(setText);
-        if (riseM >= 0 && nowM < riseM)
-            return "moonrise";
-        if (setM >= 0 && nowM < setM)
-            return "moonset";
-        return "moonrise";
+        return MoonPath.nextMoonEvent(riseText, setText, utcOff);
     }
 
     /** Whether to show sunrise items in sun collapsed/list row */

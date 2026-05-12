@@ -364,9 +364,46 @@ Item {
                             }
 
                             RowLayout {
+                                visible: !isNaN(weatherRoot.dailyData[dataIndex].windKmh)
+                                Layout.alignment: Qt.AlignVCenter
+                                Layout.preferredWidth: 92
+                                Layout.minimumWidth: 92
+                                Layout.maximumWidth: 92
+                                spacing: 3
+
+                                Item {
+                                    visible: !isNaN(weatherRoot.dailyData[dataIndex].windDir)
+                                    implicitWidth: forecastRoot.iconSz
+                                    implicitHeight: forecastRoot.iconSz
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: W.windDirectionGlyph(weatherRoot.dailyData[dataIndex].windDir)
+                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                        font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                        font.pixelSize: forecastRoot.iconSz
+                                    }
+                                }
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: weatherRoot.windValue(weatherRoot.dailyData[dataIndex].windKmh)
+                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    font: weatherRoot.wf(10, false)
+                                    elide: Text.ElideRight
+                                }
+                            }
+
+                            RowLayout {
                                 spacing: 2
                                 Layout.alignment: Qt.AlignRight
+                                Layout.preferredWidth: 84
+                                Layout.minimumWidth: 84
+                                Layout.maximumWidth: 84
                                 Label {
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignRight
                                     text: weatherRoot.tempValue(weatherRoot.dailyData[dataIndex].minC)
                                     color: "#42a5f5"
                                     font: weatherRoot.wf(12, false)
@@ -377,6 +414,7 @@ Item {
                                     font: weatherRoot.wf(12, false)
                                 }
                                 Label {
+                                    Layout.fillWidth: true
                                     text: weatherRoot.tempValue(weatherRoot.dailyData[dataIndex].maxC)
                                     color: "#ff6e40"
                                     font: weatherRoot.wf(12, true)

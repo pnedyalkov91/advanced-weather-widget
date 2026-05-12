@@ -159,6 +159,34 @@ function moonVisibleMins(riseText, setText) {
     return set > rise ? set - rise : (1440 - rise) + set;
 }
 
+function minsUntilNextEvent(eventMins, nowMins) {
+    if (eventMins < 0) return -1;
+    return eventMins >= nowMins ? eventMins - nowMins : (1440 - nowMins) + eventMins;
+}
+
+function nextMoonEvent(riseText, setText, utcOffsetMins) {
+    var rise = parseMins(riseText);
+    var set  = parseMins(setText);
+    var now  = nowMinsAt(utcOffsetMins);
+    var untilRise = minsUntilNextEvent(rise, now);
+    var untilSet  = minsUntilNextEvent(set, now);
+    if (untilRise < 0 && untilSet < 0) return "moonrise";
+    if (untilRise < 0) return "moonset";
+    if (untilSet < 0) return "moonrise";
+    return untilRise <= untilSet ? "moonrise" : "moonset";
+}
+
+function remainingUntilNextMoonEvent(riseText, setText, utcOffsetMins) {
+    var rise = parseMins(riseText);
+    var set  = parseMins(setText);
+    var now  = nowMinsAt(utcOffsetMins);
+    var untilRise = minsUntilNextEvent(rise, now);
+    var untilSet  = minsUntilNextEvent(set, now);
+    if (untilRise < 0) return Math.max(0, untilSet);
+    if (untilSet < 0) return Math.max(0, untilRise);
+    return Math.min(untilRise, untilSet);
+}
+
 function formatDuration(totalMins) {
     if (totalMins <= 0) return "0m";
     var h = Math.floor(totalMins / 60);

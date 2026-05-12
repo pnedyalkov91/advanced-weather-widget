@@ -871,6 +871,8 @@ QtObject {
                         patched.sunriseTimeText = Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm");
                     if (d.daily.sunset && d.daily.sunset.length > 0)
                         patched.sunsetTimeText = Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm");
+                    if (d.utc_offset_seconds !== undefined)
+                        patched.locationUtcOffsetMins = Math.round(d.utc_offset_seconds / 60);
                     r.weatherDataStaged = patched;
                 }
             } catch (e) {}

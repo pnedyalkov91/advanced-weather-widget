@@ -17,25 +17,98 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasmoid
 
 Item {
     id: radarRoot
 
     property var weatherRoot
     readonly property bool radarReady: radarLoader.status === Loader.Ready && radarLoader.item !== null
+    property bool loadEmbeddedRadar: false
+
+    readonly property double lat: Plasmoid.configuration.latitude || 0
+    readonly property double lon: Plasmoid.configuration.longitude || 0
+    readonly property string externalRadarUrl: {
+        if (!lat || !lon)
+            return "https://www.rainviewer.com/map.html";
+        return "https://www.rainviewer.com/map.html?loc=" + lat + "," + lon + "," + (Plasmoid.configuration.radarZoom || 9);
+    }
 
     implicitHeight: 380
 
     onWeatherRootChanged: _syncLoadedItem()
+    onVisibleChanged: {
+        console.log("[Advanced Weather Widget Radar] wrapper visible changed:", visible,
+                    "loadEmbeddedRadar=", loadEmbeddedRadar,
+                    "loaderStatus=", _loaderStatusText(radarLoader.status));
+        if (visible && !loadEmbeddedRadar)
+            deferredLoadTimer.restart();
+    }
+
+    Timer {
+        id: deferredLoadTimer
+        interval: 250
+        repeat: false
+        onTriggered: {
+            console.log("[Advanced Weather Widget Radar] deferred WebEngine activation tick; visible=", radarRoot.visible,
+                        "lat=", radarRoot.lat, "lon=", radarRoot.lon,
+                        "layer=", Plasmoid.configuration.radarLayer || "rainviewer",
+                        "zoom=", Plasmoid.configuration.radarZoom || 9,
+                        "qt=", Qt.version, "platform=", Qt.platform.os);
+            if (radarRoot.visible)
+                radarRoot.loadEmbeddedRadar = true;
+        }
+    }
 
     Loader {
         id: radarLoader
         anchors.fill: parent
-        active: radarRoot.visible
+        active: radarRoot.visible && radarRoot.loadEmbeddedRadar
         source: Qt.resolvedUrl("components/RadarWebEngineView.qml")
         asynchronous: false
 
-        onLoaded: radarRoot._syncLoadedItem()
+        onStatusChanged: {
+            console.log("[Advanced Weather Widget Radar] loader status:", radarRoot._loaderStatusText(status),
+                        "active=", active, "visible=", radarRoot.visible,
+                        "loadEmbeddedRadar=", radarRoot.loadEmbeddedRadar);
+            if (status === Loader.Error)
+                console.warn("[Advanced Weather Widget Radar] failed to load RadarWebEngineView:", radarLoader.source);
+        }
+
+        onLoaded: {
+            console.log("[Advanced Weather Widget Radar] RadarWebEngineView loaded; syncing weatherRoot");
+            radarRoot._syncLoadedItem();
+        }
+    }
+
+    ColumnLayout {
+        anchors {
+            fill: parent
+            margins: Kirigami.Units.largeSpacing
+        }
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarLoader.status === Loader.Null
+
+        Item {
+            Layout.fillHeight: true
+        }
+
+        BusyIndicator {
+            Layout.alignment: Qt.AlignHCenter
+            running: visible
+        }
+
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            text: i18n("Loading radar…")
+            color: Kirigami.Theme.textColor
+            opacity: 0.72
+            font: Kirigami.Theme.defaultFont
+        }
+
+        Item {
+            Layout.fillHeight: true
+        }
     }
 
     ColumnLayout {
@@ -107,6 +180,13 @@ Item {
             onClicked: Qt.openUrlExternally("https://github.com/pnedyalkov91/advanced-weather-widget#%EF%B8%8F-prerequisites--dependencies")
         }
 
+        Button {
+            Layout.alignment: Qt.AlignHCenter
+            text: i18n("Open radar in browser")
+            icon.name: "internet-web-browser"
+            onClicked: Qt.openUrlExternally(radarRoot.externalRadarUrl)
+        }
+
         Item {
             Layout.fillHeight: true
         }
@@ -120,13 +200,25 @@ Item {
 
     function reload() {
         if (radarReady) {
+            console.log("[Advanced Weather Widget Radar] reload requested");
             radarLoader.item.reload();
+        } else {
+            console.log("[Advanced Weather Widget Radar] reload requested before radarReady; status=", _loaderStatusText(radarLoader.status));
         }
     }
 
     function _syncLoadedItem() {
         if (radarReady) {
+            console.log("[Advanced Weather Widget Radar] sync weatherRoot into RadarWebEngineView");
             radarLoader.item.weatherRoot = radarRoot.weatherRoot;
         }
+    }
+
+    function _loaderStatusText(status) {
+        if (status === Loader.Null) return "Null";
+        if (status === Loader.Ready) return "Ready";
+        if (status === Loader.Loading) return "Loading";
+        if (status === Loader.Error) return "Error";
+        return "Unknown(" + status + ")";
     }
 }

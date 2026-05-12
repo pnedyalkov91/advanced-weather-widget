@@ -52,6 +52,13 @@ Item {
 
     implicitHeight: 380
 
+    Component.onCompleted: {
+        console.log("[Advanced Weather Widget Radar/WebEngine] component completed; lat=", lat,
+                    "lon=", lon, "layer=", activeLayer,
+                    "zoom=", initialZoom, "owmKeyPresent=", owmKey.length > 0,
+                    "qt=", Qt.version, "platform=", Qt.platform.os);
+    }
+
     // ── Wi-font icon loader ───────────────────────────────────────────────
     FontLoader {
         id: wiFont
@@ -454,7 +461,21 @@ loadApi();\
 
             Component.onCompleted: {
                 var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
+                console.log("[Advanced Weather Widget Radar/WebEngine] WebEngineView completed; calling loadHtml, htmlLength=", html.length);
                 webView.loadHtml(html, "https://rainviewer.com/");
+            }
+
+            onLoadingChanged: function(loadRequest) {
+                console.log("[Advanced Weather Widget Radar/WebEngine] loading changed:",
+                            "status=", loadRequest.status,
+                            "url=", loadRequest.url,
+                            "errorCode=", loadRequest.errorCode,
+                            "error=", loadRequest.errorString);
+            }
+
+            onRenderProcessTerminated: function(terminationStatus, exitCode) {
+                console.warn("[Advanced Weather Widget Radar/WebEngine] render process terminated:",
+                             "status=", terminationStatus, "exitCode=", exitCode);
             }
 
             onTitleChanged: {
@@ -471,10 +492,12 @@ loadApi();\
                 target: radarRoot
                 function onLatChanged() {
                     var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
+                    console.log("[Advanced Weather Widget Radar/WebEngine] latitude changed; reloading html, lat=", radarRoot.lat, "lon=", radarRoot.lon);
                     webView.loadHtml(html, "https://rainviewer.com/");
                 }
                 function onLonChanged() {
                     var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
+                    console.log("[Advanced Weather Widget Radar/WebEngine] longitude changed; reloading html, lat=", radarRoot.lat, "lon=", radarRoot.lon);
                     webView.loadHtml(html, "https://rainviewer.com/");
                 }
             }
@@ -507,6 +530,7 @@ loadApi();\
             function labelsFor(layer) {
                 var pu = precipUnit, wu = windUnit, pu2 = pressUnit, tu = tempUnit;
                 var imp = isImperial;
+                console.log("[Advanced Weather Widget Radar/WebEngine] generating labels for layer:", layer);
                 if (layer === "rainviewer")        return [i18n("None"), i18n("Light"), i18n("Mod"), i18n("Heavy"), i18n("Storm")];
                 if (layer === "precipitation_new") return imp ? ["0","0.04","0.4","5.5 in/h"] : ["0","1","25","100 mm/h"];
                 if (layer === "clouds_new")        return ["0%","40%","60%","80%","100%"];
@@ -575,6 +599,9 @@ loadApi();\
 
     function reload() {
         var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
+        console.log("[Advanced Weather Widget Radar/WebEngine] reload; htmlLength=", html.length,
+                    "lat=", radarRoot.lat, "lon=", radarRoot.lon,
+                    "layer=", radarRoot.activeLayer);
         webView.loadHtml(html, "https://rainviewer.com/");
     }
 }
