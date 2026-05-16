@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/"
 "issues\n"
 "POT-Creation-Date: 2026-05-12 08:28+0300\n"
-"PO-Revision-Date: 2026-05-14 19:42+0200\n"
+"PO-Revision-Date: 2026-05-16 06:41+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -1265,7 +1265,7 @@ msgstr "Nascondi icona prefisso"
 #: contents/ui/js/spaceWeather.js:183 contents/ui/js/spaceWeather.js:195
 #: contents/ui/main.qml:703 contents/ui/main.qml:747
 msgid "High"
-msgstr "Alto"
+msgstr "Massima"
 
 #: contents/ui/config/configGeneral.qml:454
 msgid "High precision forecast provider. API key required below."
@@ -1706,7 +1706,7 @@ msgstr "Ricerca posizione…"
 #: contents/ui/js/spaceWeather.js:185 contents/ui/js/spaceWeather.js:197
 #: contents/ui/main.qml:701 contents/ui/main.qml:745
 msgid "Low"
-msgstr "Basso"
+msgstr "Minima"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
 msgid "Magnetic Field (Bz)"
