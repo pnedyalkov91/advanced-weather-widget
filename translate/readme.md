@@ -5,20 +5,21 @@
 
 |  Locale  |  Lines  | % Done|
 |----------|---------|-------|
-| Template |     735 |       |
-| bg       | 718/735 |   97% |
-| cs_CZ    | 698/735 |   94% |
-| de       | 291/735 |   39% |
-| es       | 627/735 |   85% |
-| fr       | 291/735 |   39% |
-| hu_HU    | 718/735 |   97% |
-| it_IT    | 718/735 |   97% |
-| nl       | 718/735 |   97% |
-| pt_BR    | 290/735 |   39% |
-| ru       | 291/735 |   39% |
-| tr_TR    | 291/735 |   39% |
-| zh_CN    | 627/735 |   85% |
-| zh_TW    | 718/735 |   97% |
+| Template |     739 |       |
+| bg       | 739/739 |  100% |
+| cs_CZ    | 698/739 |   94% |
+| de       | 291/739 |   39% |
+| es       | 627/739 |   84% |
+| fr       | 291/739 |   39% |
+| hu_HU    | 734/739 |   99% |
+| it_IT    | 734/739 |   99% |
+| nl       | 734/739 |   99% |
+| pl_PL    | 734/739 |   99% |
+| pt_BR    | 290/739 |   39% |
+| ru       | 291/739 |   39% |
+| tr_TR    | 291/739 |   39% |
+| zh_CN    | 627/739 |   84% |
+| zh_TW    | 718/739 |   97% |
 
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.
@@ -76,3 +77,4 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Czech** - [Zero-MF](https://github.com/Zero-MF)
 - **Italian** - [Aldo Latino](https://github.com/aldolat)
 - **Hungarian** - [summoner001](https://github.com/summoner001)
+- **Polish** - [l3monik](https://github.com/l3monik)

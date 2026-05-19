@@ -196,7 +196,7 @@ Thank you to everyone who contributed translations to this project ❤️
 
 - **German** - [HolySoap](https://github.com/HolySoap)
 - **Brazilian Portuguese** - [PauloAlbqrq](https://github.com/PauloAlbqrq)
-- **Bulgarian** - Petar Nedyalkov (Author)
+- **Bulgarian** - Petar Nedyalkov (me)
 - **Dutch** - Heimen Stoffels (<vistausss@fastmail.com>)
 - **Russian** - [Dmaliog](https://github.com/dmaliog)
 - **French** - [LAZER-TY](https://github.com/LAZER-TY)
@@ -207,6 +207,7 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Czech** - [Zero-MF](https://github.com/Zero-MF)
 - **Italian** - [Aldo Latino](https://github.com/aldolat)
 - **Hungarian** - [summoner001](https://github.com/summoner001)
+- **Polish** - [l3monik](https://github.com/l3monik)
 
 ---
 
