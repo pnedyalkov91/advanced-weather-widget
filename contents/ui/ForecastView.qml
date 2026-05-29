@@ -237,6 +237,19 @@ Item {
         return dx > 0 && dx >= dy;
     }
 
+    function _isClassicMouseWheel(wheel) {
+        return wheel.pixelDelta.x === 0 && wheel.pixelDelta.y === 0
+            && (wheel.angleDelta.x !== 0 || wheel.angleDelta.y !== 0);
+    }
+
+    function _hourlyWheelWantsHorizontal(wheel) {
+        if (_wheelWantsHorizontal(wheel))
+            return true;
+        // Classic mouse wheels emit vertical angleDelta only.
+        // In hourly horizontal views, map that to horizontal scroll.
+        return _isClassicMouseWheel(wheel) && wheel.angleDelta.y !== 0;
+    }
+
     function _scrollParentVertically(wheel) {
         if (!verticalScrollView)
             return false;
@@ -886,7 +899,7 @@ Item {
                                     anchors.fill: stripScrollView
                                     acceptedButtons: Qt.NoButton
                                     onWheel: function(wheel) {
-                                        if (forecastRoot._wheelWantsHorizontal(wheel)) {
+                                        if (forecastRoot._hourlyWheelWantsHorizontal(wheel)) {
                                             var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : forecastRoot._wheelDeltaX(wheel);
                                             var pixelDelta = wheel.angleDelta.x === 0 && wheel.pixelDelta.x !== 0;
                                             if (delta === 0) {
@@ -1231,7 +1244,7 @@ Item {
                                         var bar = hourlyScrollView.ScrollBar.horizontal;
                                         if (!bar)
                                             return;
-                                        if (forecastRoot._wheelWantsHorizontal(wheel)) {
+                                        if (forecastRoot._hourlyWheelWantsHorizontal(wheel)) {
                                             var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : forecastRoot._wheelDeltaX(wheel);
                                             var pixelDelta = wheel.angleDelta.x === 0 && wheel.pixelDelta.x !== 0;
                                             if (delta === 0) {
