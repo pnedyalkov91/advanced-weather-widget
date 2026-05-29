@@ -58,4 +58,9 @@ ConfigModel {
         icon: "preferences-desktop-theme"
         source: "config/configAppearance.qml"
     }
+    ConfigCategory {
+        name: i18n("Notifications")
+        icon: "preferences-desktop-notification"
+        source: "config/configNotifications.qml"
+    }
 }

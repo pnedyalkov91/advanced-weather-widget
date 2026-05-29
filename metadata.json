@@ -17,7 +17,7 @@
     "Name[it_IT]": "Widget meteo avanzato",
     "Name[hu_HU]": "Fejlett időjárás widget",
     "Name[pl_PL]": "Zaawansowany widget pogodowy",
-    "Name[ua_UA]": "Розширений віджет погоди",
+    "Name[uk_UA]": "Розширений віджет погоди",
 
     "Description": "A modern, highly customizable weather widget built specifically for KDE Plasma 6",
     "Description[bg]": "Модерен и силно персонализируем уиджет за времето, създаден специално за KDE Plasma 6",
@@ -34,7 +34,7 @@
     "Description[it_IT]": "Un widget meteo moderno e altamente personalizzabile creato appositamente per KDE Plasma 6",
     "Description[hu_HU]": "Egy modern, rendkívül testreszabható időjárás widget, amely kifejezetten a KDE Plasma 6-hoz készült",
     "Description[pl_PL]": "Nowoczesny, wysoce konfigurowalny widget pogodowy stworzony specjalnie dla KDE Plasma 6",
-    "Description[ua_UA]": "Сучасний, дуже налаштовний віджет погоди, створений спеціально для KDE Plasma 6",
+    "Description[uk_UA]": "Сучасний, дуже налаштовний віджет погоди, створений спеціально для KDE Plasma 6",
     
     "Icon": "weather-clear",
     "Category": "Environment and Weather",
@@ -48,7 +48,7 @@
       }
     ],
 
-    "Version": "1.5.3",
+    "Version": "1.5.80 (1.6 Alpha)",
     "Website": "https://github.com/pnedyalkov91/advanced-weather-widget",
     "BugReportUrl": "https://github.com/pnedyalkov91/advanced-weather-widget/issues"
   },
