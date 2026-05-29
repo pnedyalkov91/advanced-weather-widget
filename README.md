@@ -199,7 +199,7 @@ Thank you to everyone who contributed translations to this project ❤️
 - **Bulgarian** - Petar Nedyalkov (me)
 - **Dutch** - Heimen Stoffels (<vistausss@fastmail.com>)
 - **Russian** - [Dmaliog](https://github.com/dmaliog)
-- **French** - [LAZER-TY](https://github.com/LAZER-TY)
+- **French** - [LAZER-TY](https://github.com/LAZER-TY) and [rcspam](https://github.com/rcspam)
 - **Turkish** - [herzane52](https://github.com/herzane52)
 - **Spanish** - [NecaX](https://github.com/NecaX)
 - **Chinese (Traditional)** - [Yo-oo](https://github.com/Yo-oo)
