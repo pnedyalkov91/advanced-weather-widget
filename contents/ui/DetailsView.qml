@@ -845,49 +845,55 @@ Item {
                                     }
                                 }
 
-                                // Compass canvas
-                                Canvas {
-                                    id: windCanvas
-                                    visible: card._isArcExpanded
-                                    anchors.top: parent.top
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.topMargin: 4
-                                    height: parent.height - 4
-                                    antialiasing: true
-                                    onWidthChanged: requestPaint()
-                                    onHeightChanged: requestPaint()
-                                    onVisibleChanged: if (visible) requestPaint()
-                                    onPaint: {
-                                        var ctx2d = getContext("2d");
-                                        WindCompass.drawWindCompass(ctx2d, width, height,
-                                            windCard._dirVal, root.isDark,
-                                            String(root.iconColorFor(root.accentFor("wind"))));
-                                    }
-                                }
-                                readonly property real _dirVal: root.weatherRoot ? root.weatherRoot.windDirection : NaN
-                                on_DirValChanged: windCanvas.requestPaint()
-
-                                // Centre overlay: wind speed + "from <cardinal>"
+                                // Wind speed + compass — centred as a group within the card.
                                 Column {
+                                    id: windCenterColumn
                                     visible: card._isArcExpanded
-                                    anchors.centerIn: windCanvas
-                                    spacing: 0
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    // Wind speed — font follows the widget's Plasma-scaled
+                                    // font size (wf()); colour follows the theme like every
+                                    // other value label (root.valueColor), so it stays
+                                    // readable in light themes too.
                                     Label {
+                                        id: windSpeedLabel
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: root.weatherRoot ? root.weatherRoot.windValue(root.weatherRoot.windKmh) : "--"
                                         color: root.valueColor
                                         font: root.weatherRoot ? root.weatherRoot.wf(15, true) : Qt.font({ bold: true })
                                     }
-                                    Label {
+
+                                    // Compass canvas — scales with the expanded card's size.
+                                    Canvas {
+                                        id: windCanvas
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        visible: root.weatherRoot && !isNaN(root.weatherRoot.windDirection)
-                                        text: root.weatherRoot ? WindCompass.cardinal(root.weatherRoot.windDirection) : ""
-                                        color: Kirigami.Theme.textColor
-                                        opacity: 0.6
-                                        font: root.weatherRoot ? root.weatherRoot.wf(10, false) : Qt.font({})
-                                    }
-                                }
+                                        readonly property real _maxW: windCard.width - 40
+                                        readonly property real _maxH: windCard.height - windSpeedLabel.height - windCenterColumn.spacing - 24
+                                        width: Math.max(70, Math.min(_maxW, _maxH))
+                                        height: width
+                                        antialiasing: true
+                                        readonly property real _dirVal: root.weatherRoot ? root.weatherRoot.windDirection : NaN
+                                        readonly property real _speedKmh: root.weatherRoot ? root.weatherRoot.windKmh : NaN
+                                        readonly property color _textCol: Kirigami.Theme.textColor
+                                        onWidthChanged: requestPaint()
+                                        onHeightChanged: requestPaint()
+                                        onVisibleChanged: if (visible) requestPaint()
+                                        on_DirValChanged: requestPaint()
+                                        on_SpeedKmhChanged: requestPaint()
+                                        on_TextColChanged: requestPaint()
+                                        onPaint: {
+                                            var ctx2d = getContext("2d");
+                                            WindCompass.drawWindCompass(ctx2d, width, height,
+                                                _dirVal,
+                                                String(_textCol),
+                                                null,
+                                                "",
+                                                root.isDark,
+                                                _speedKmh);
+                                        }
+                                    } // Canvas (compass)
+                                } // Column (centred speed + compass)
                             } // Item (wind compass)
 
                             // ── Pressure gauge (cards mode, expandable) ───────────

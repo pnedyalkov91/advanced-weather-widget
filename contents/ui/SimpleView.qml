@@ -31,6 +31,7 @@ import org.kde.plasma.plasmoid
 import "js/weather.js" as W
 import "js/configUtils.js" as ConfigUtils
 import "js/iconResolver.js" as IconResolver
+import "js/windCompass.js" as WindCompass
 import "components"
 
 ColumnLayout {
@@ -50,6 +51,7 @@ ColumnLayout {
 
     readonly property bool wiFontReady: svWiFont.status === FontLoader.Ready
     readonly property string wiFontFamily: wiFontReady ? svWiFont.font.family : ""
+    readonly property bool isDark: Kirigami.Theme.textColor.r > 0.5
 
     // ── Helpers ──────────────────────────────────────────────────────────────
     readonly property string _svTemp:      weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
@@ -131,73 +133,18 @@ ColumnLayout {
                     anchors.fill: parent
 
                     readonly property real windDeg: weatherRoot ? weatherRoot.windDirection : NaN
+                    readonly property real windKmh: weatherRoot ? weatherRoot.windKmh : NaN
                     readonly property color textCol: Kirigami.Theme.textColor
 
                     onWindDegChanged: requestPaint()
+                    onWindKmhChanged: requestPaint()
                     onTextColChanged: requestPaint()
 
                     onPaint: {
                         var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, width, height);
-                        var cx = width / 2, cy = height / 2;
-                        var r = Math.min(cx, cy) - 2;
-
-                        // Outer ring
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                        ctx.strokeStyle = Qt.rgba(textCol.r, textCol.g, textCol.b, 0.25);
-                        ctx.lineWidth = 1.5;
-                        ctx.stroke();
-
-                        // Cardinal labels
-                        var cardinals = [["N", 0], ["E", 90], ["S", 180], ["W", 270]];
-                        ctx.font = "bold 9px sans-serif";
-                        ctx.textAlign = "center";
-                        ctx.textBaseline = "middle";
-                        for (var i = 0; i < cardinals.length; i++) {
-                            var lbl = cardinals[i][0];
-                            var ang = (cardinals[i][1] - 90) * Math.PI / 180;
-                            var lx = cx + (r - 7) * Math.cos(ang);
-                            var ly = cy + (r - 7) * Math.sin(ang);
-                            ctx.fillStyle = Qt.rgba(textCol.r, textCol.g, textCol.b, lbl === "N" ? 1.0 : 0.55);
-                            ctx.fillText(lbl, lx, ly);
-                        }
-
-                        // Directional arrow
-                        if (!isNaN(windDeg)) {
-                            var arrowAng = (windDeg - 90) * Math.PI / 180;
-                            var arrowLen = r - 16;
-                            var ax = cx + arrowLen * Math.cos(arrowAng);
-                            var ay = cy + arrowLen * Math.sin(arrowAng);
-                            var tailX = cx - (arrowLen * 0.5) * Math.cos(arrowAng);
-                            var tailY = cy - (arrowLen * 0.5) * Math.sin(arrowAng);
-
-                            ctx.beginPath();
-                            ctx.moveTo(tailX, tailY);
-                            ctx.lineTo(ax, ay);
-                            ctx.strokeStyle = "#4db6f0";
-                            ctx.lineWidth = 2.5;
-                            ctx.lineCap = "round";
-                            ctx.stroke();
-
-                            var headLen = 7, headAng = 0.45;
-                            ctx.beginPath();
-                            ctx.moveTo(ax, ay);
-                            ctx.lineTo(ax - headLen * Math.cos(arrowAng - headAng),
-                                       ay - headLen * Math.sin(arrowAng - headAng));
-                            ctx.moveTo(ax, ay);
-                            ctx.lineTo(ax - headLen * Math.cos(arrowAng + headAng),
-                                       ay - headLen * Math.sin(arrowAng + headAng));
-                            ctx.strokeStyle = "#4db6f0";
-                            ctx.lineWidth = 2.5;
-                            ctx.lineCap = "round";
-                            ctx.stroke();
-
-                            ctx.beginPath();
-                            ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
-                            ctx.fillStyle = "#4db6f0";
-                            ctx.fill();
-                        }
+                        WindCompass.drawWindCompass(ctx, width, height,
+                            windDeg, String(textCol), null, "",
+                            simpleView.isDark, windKmh);
                     }
                 }
             }
@@ -554,77 +501,19 @@ ColumnLayout {
                                 width: 64; height: 64
 
                                 readonly property real windDeg: day ? (isNaN(day.windDir) ? NaN : day.windDir) : NaN
+                                readonly property real windKmhVal: day ? day.windKmh : NaN
                                 readonly property color textCol: Kirigami.Theme.textColor
 
                                 onWindDegChanged: requestPaint()
+                                onWindKmhValChanged: requestPaint()
                                 onTextColChanged: requestPaint()
                                 Component.onCompleted: requestPaint()
 
                                 onPaint: {
                                     var ctx = getContext("2d");
-                                    ctx.clearRect(0, 0, width, height);
-                                    var cx = width / 2, cy = height / 2;
-                                    var r = Math.min(cx, cy) - 2;
-
-                                    // Outer ring
-                                    ctx.beginPath();
-                                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                                    ctx.strokeStyle = Qt.rgba(textCol.r, textCol.g, textCol.b, 0.25);
-                                    ctx.lineWidth = 1.5;
-                                    ctx.stroke();
-
-                                    // Cardinal labels — bold the one closest to the arrow direction
-                                    var cardinals = [["N", 0], ["E", 90], ["S", 180], ["W", 270]];
-                                    ctx.textAlign = "center";
-                                    ctx.textBaseline = "middle";
-                                    for (var i = 0; i < cardinals.length; i++) {
-                                        var lbl = cardinals[i][0];
-                                        var ang = (cardinals[i][1] - 90) * Math.PI / 180;
-                                        var lx = cx + (r - 6) * Math.cos(ang);
-                                        var ly = cy + (r - 6) * Math.sin(ang);
-                                        // Bold the cardinal closest to the wind direction
-                                        var diff = Math.abs(((cardinals[i][1] - windDeg) + 540) % 360 - 180);
-                                        var isClosest = !isNaN(windDeg) && diff <= 45;
-                                        ctx.font = isClosest ? "bold 11px sans-serif" : "11px sans-serif";
-                                        ctx.fillStyle = Qt.rgba(textCol.r, textCol.g, textCol.b, isClosest ? 1.0 : 0.45);
-                                        ctx.fillText(lbl, lx, ly);
-                                    }
-
-                                    // Arrow
-                                    if (!isNaN(windDeg)) {
-                                        var arrowAng = (windDeg - 90) * Math.PI / 180;
-                                        var arrowLen = r - 14;
-                                        var ax = cx + arrowLen * Math.cos(arrowAng);
-                                        var ay = cy + arrowLen * Math.sin(arrowAng);
-                                        var tailX = cx - (arrowLen * 0.5) * Math.cos(arrowAng);
-                                        var tailY = cy - (arrowLen * 0.5) * Math.sin(arrowAng);
-
-                                        ctx.beginPath();
-                                        ctx.moveTo(tailX, tailY);
-                                        ctx.lineTo(ax, ay);
-                                        ctx.strokeStyle = "#4db6f0";
-                                        ctx.lineWidth = 2;
-                                        ctx.lineCap = "round";
-                                        ctx.stroke();
-
-                                        var headLen = 5, headAng = 0.45;
-                                        ctx.beginPath();
-                                        ctx.moveTo(ax, ay);
-                                        ctx.lineTo(ax - headLen * Math.cos(arrowAng - headAng),
-                                                   ay - headLen * Math.sin(arrowAng - headAng));
-                                        ctx.moveTo(ax, ay);
-                                        ctx.lineTo(ax - headLen * Math.cos(arrowAng + headAng),
-                                                   ay - headLen * Math.sin(arrowAng + headAng));
-                                        ctx.strokeStyle = "#4db6f0";
-                                        ctx.lineWidth = 2;
-                                        ctx.lineCap = "round";
-                                        ctx.stroke();
-
-                                        ctx.beginPath();
-                                        ctx.arc(cx, cy, 2, 0, Math.PI * 2);
-                                        ctx.fillStyle = "#4db6f0";
-                                        ctx.fill();
-                                    }
+                                    WindCompass.drawWindCompass(ctx, width, height,
+                                        windDeg, String(textCol), null, "",
+                                        simpleView.isDark, windKmhVal, true);
                                 }
                             }
                         }
