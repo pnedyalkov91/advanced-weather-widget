@@ -992,19 +992,27 @@ Item {
                                     onVisibleChanged: if (visible) requestPaint()
                                     onPaint: {
                                         var ctx2d = getContext("2d");
+                                        // null accent → drawPressureGauge uses the LO..HI
+                                        // colour scale (low=blue, normal=teal, high=amber)
+                                        // instead of a single fixed colour.
                                         PressureGauge.drawPressureGauge(ctx2d, width, height,
-                                            _hpa, root.isDark,
-                                            String(root.iconColorFor(root.accentFor("pressure"))));
+                                            _hpa, root.isDark, null);
                                     }
                                 }
 
-                                // Centre overlay: pressure value + band label
+                                // Centre overlay: icon + pressure value + band label
                                 Column {
                                     visible: card._isArcExpanded
                                     anchors.horizontalCenter: pressureCanvas.horizontalCenter
                                     anchors.bottom: pressureCanvas.bottom
                                     anchors.bottomMargin: Math.round(pressureCanvas.height * 0.18)
-                                    spacing: 0
+                                    spacing: 2
+                                    WeatherIcon {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        iconInfo: root.showIconFor("pressure") ? root.resolveIcon("pressure") : null
+                                        iconSize: root.iconSize
+                                        iconColor: root.iconColorFor(root.weatherRoot ? PressureGauge.pressureColor(root.weatherRoot.pressureHpa, root.isDark) : root.accentFor("pressure"))
+                                    }
                                     Label {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: root.weatherRoot ? root.weatherRoot.pressureValue(root.weatherRoot.pressureHpa) : "--"

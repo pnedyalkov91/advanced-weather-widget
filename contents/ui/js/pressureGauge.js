@@ -40,12 +40,60 @@ function band(hpa) {
     return "normal";
 }
 
+/** Pads a 0-255 channel value to a 2-digit hex string. */
+function _hx(n) {
+    var s = Math.max(0, Math.min(255, Math.round(n))).toString(16);
+    return s.length < 2 ? "0" + s : s;
+}
+
+/**
+ * Theme-aware colour for an hPa value across the LO..HI gauge range —
+ * low pressure (storm-ish) → blue/violet, normal → teal/green, high
+ * (fair-weather) → warm amber. Mirrors the same multi-stop interpolation
+ * pattern used by the hourly-forecast temperature trend line. Returns a
+ * "#rrggbb" string usable both as a Canvas fill/strokeStyle and as a QML
+ * `color` binding.
+ */
+function pressureColor(hpa, isDark) {
+    if (hpa === undefined || hpa === null || isNaN(hpa))
+        return isDark ? "#4ecdc4" : "#007070";
+    var stops = isDark ? [
+        { t: 970,  r: 120, g: 130, b: 255 },
+        { t: 1000, r:  80, g: 190, b: 230 },
+        { t: 1013, r:  78, g: 205, b: 196 },
+        { t: 1025, r: 120, g: 220, b: 140 },
+        { t: 1040, r: 255, g: 190, b:  90 }
+    ] : [
+        { t: 970,  r:  70, g:  70, b: 210 },
+        { t: 1000, r:   0, g: 120, b: 190 },
+        { t: 1013, r:   0, g: 112, b: 112 },
+        { t: 1025, r:  40, g: 140, b:  60 },
+        { t: 1040, r: 200, g: 120, b:   0 }
+    ];
+    var t = Math.max(LO, Math.min(HI, hpa));
+    if (t <= stops[0].t) { var s0 = stops[0]; return "#" + _hx(s0.r) + _hx(s0.g) + _hx(s0.b); }
+    if (t >= stops[stops.length - 1].t) { var sN = stops[stops.length - 1]; return "#" + _hx(sN.r) + _hx(sN.g) + _hx(sN.b); }
+    for (var i = 1; i < stops.length; i++) {
+        if (t <= stops[i].t) {
+            var frac = (t - stops[i - 1].t) / (stops[i].t - stops[i - 1].t);
+            var r = stops[i - 1].r + frac * (stops[i].r - stops[i - 1].r);
+            var g = stops[i - 1].g + frac * (stops[i].g - stops[i - 1].g);
+            var b = stops[i - 1].b + frac * (stops[i].b - stops[i - 1].b);
+            return "#" + _hx(r) + _hx(g) + _hx(b);
+        }
+    }
+    return isDark ? "#4ecdc4" : "#007070";
+}
+
 /**
  * @param ctx        2D canvas context
  * @param cw, ch     canvas size
  * @param hpa        pressure in hPa, may be NaN
  * @param isDark     dark theme flag
- * @param accentCss  accent colour (CSS string) for the progress arc / marker
+ * @param accentCss  accent colour (CSS string) — when given, overrides the
+ *                    min/max-based colour scale with a single fixed colour
+ *                    for the traveled arc + marker. Pass null to use the
+ *                    LO..HI colour scale (low→blue, normal→teal, high→amber).
  */
 function drawPressureGauge(ctx, cw, ch, hpa, isDark, accentCss) {
     ctx.clearRect(0, 0, cw, ch);
@@ -57,7 +105,6 @@ function drawPressureGauge(ctx, cw, ch, hpa, isDark, accentCss) {
     if (r <= 4) return;
 
     var trackCol = isDark ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.11)";
-    var accent   = accentCss || (isDark ? "#4ecdc4" : "#007070");
 
     // Track (semicircle, left → right over the top)
     ctx.beginPath();
@@ -67,17 +114,28 @@ function drawPressureGauge(ctx, cw, ch, hpa, isDark, accentCss) {
     ctx.strokeStyle = trackCol;
     ctx.stroke();
 
-    // Progress arc up to the current value
+    // Traveled arc up to the current value — swept through the LO..HI colour
+    // scale (or a single fixed accentCss, if given) segment-by-segment, the
+    // same per-segment-gradient technique used by the hourly temperature
+    // trend line elsewhere in this widget.
     var t = progress(hpa);
     var ang = Math.PI * (1 + t);
     if (t > 0) {
-        ctx.beginPath();
-        ctx.arc(cx, baseY, r, Math.PI, ang, false);
-        ctx.lineWidth = 6;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = accent;
-        ctx.stroke();
+        var steps = Math.max(1, Math.ceil(t * 60));
+        for (var i = 0; i < steps; i++) {
+            var a0 = Math.PI + (ang - Math.PI) * (i / steps);
+            var a1 = Math.PI + (ang - Math.PI) * ((i + 1) / steps);
+            var midHpa = LO + (HI - LO) * (((i + 0.5) / steps) * t);
+            ctx.beginPath();
+            ctx.arc(cx, baseY, r, a0, a1, false);
+            ctx.lineWidth = 6;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = accentCss || pressureColor(midHpa, isDark);
+            ctx.stroke();
+        }
     }
+
+    var accent = accentCss || pressureColor(hpa, isDark);
 
     // Marker dot
     var dx = cx + Math.cos(ang) * r;
