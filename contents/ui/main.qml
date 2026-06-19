@@ -1025,9 +1025,25 @@ PlasmoidItem {
         return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    /** Notification body: headline, effective range, instruction, provider. */
+    /** Maps an alert severity color to a colored-circle emoji — KDE notification
+     *  bodies strip <font color>, but emoji glyphs keep their own color. */
+    function _alertSeverityEmoji(color) {
+        var c = (color || "").toLowerCase();
+        if (c === "red")    return "🔴"; // 🔴
+        if (c === "orange") return "🟠"; // 🟠
+        if (c === "yellow") return "🟡"; // 🟡
+        return "";
+    }
+
+    /** Notification body: severity, headline, effective range, instruction, provider. */
     function _alertNotificationBody(a) {
         var lines = [];
+        var emoji = _alertSeverityEmoji(a.color);
+        var severity = (a.severity || a.color || "").trim();
+        if (severity.length > 0) {
+            var marker = emoji.length > 0 ? (emoji + " ") : "";
+            lines.push(i18n("<b>Severity:</b> %1%2", marker, _escapeHtml(severity.toUpperCase())));
+        }
         lines.push(i18n("<b>Headline:</b> %1", _escapeHtml(a.displayName || a.headline || i18n("Weather alert"))));
         var range = _alertEffectiveRangeText(a);
         if (range.length > 0)
@@ -2369,16 +2385,19 @@ PlasmoidItem {
         function onLocationNameChanged() {
             root._updateHasSelectedTown();
             root._resetAllNotificationState();
+            root.weatherAlerts = [];
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLatitudeChanged() {
             root._resetAllNotificationState();
             root._refreshNotificationRainWindowIfNeeded(true);
+            root.weatherAlerts = [];
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLongitudeChanged() {
             root._resetAllNotificationState();
             root._refreshNotificationRainWindowIfNeeded(true);
+            root.weatherAlerts = [];
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onTimezoneChanged() {

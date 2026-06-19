@@ -178,7 +178,8 @@ function fetchCurrent(service, W, chain, idx) {
 
         // Pirate Weather provides its own alerts — parse them
         if (d.alerts && d.alerts.length > 0) {
-            _parseAlerts(r, d.alerts);
+            if (_parseAlerts(r, d.alerts))
+                service._nativeAlertsSetThisGen = true;
         }
 
         // Fall back to MeteoAlarm / NWS if no native alerts
@@ -233,7 +234,9 @@ function _parseAlerts(r, alerts) {
     // Only update if we actually got alerts from PW
     if (parsed.length > 0) {
         r.weatherAlerts = parsed;
+        return true;
     }
+    return false;
 }
 
 

@@ -152,7 +152,8 @@ function fetchCurrent(service, W, chain, idx) {
 
         // Parse native alerts if available
         if (d.alerts && d.alerts.alert && d.alerts.alert.length > 0) {
-            _parseAlerts(r, d.alerts.alert);
+            if (_parseAlerts(r, d.alerts.alert))
+                service._nativeAlertsSetThisGen = true;
         }
 
         // Fall back to MeteoAlarm / NWS if no native alerts
@@ -202,7 +203,9 @@ function _parseAlerts(r, alerts) {
 
     if (parsed.length > 0) {
         r.weatherAlerts = parsed;
+        return true;
     }
+    return false;
 }
 
 function fetchHourly(service, W, dateStr) {
