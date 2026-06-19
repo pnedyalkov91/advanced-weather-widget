@@ -143,17 +143,14 @@ PlasmoidItem {
     function aqiSo2()   { return aqiData ? aqiData.so2   : NaN; }
     function aqiO3()    { return aqiData ? aqiData.o3    : NaN; }
     property var weatherAlerts: []         // [{headline, severity, description}]
-    // Alert notification de-duplication cache (key -> true).
-    // Resets on location change or when notifications are disabled.
-    property var _notifiedAlertFingerprints: ({})
-    property bool _alertNotificationBaselineReady: false
-    property string _alertNotificationLocationKey: ""
-    // True once the user dismisses the current alert(s) — suppresses
-    // re-notification until a genuinely new alert appears.
-    property bool _alertNotificationDismissed: false
-    // Epoch ms of the next allowed repeat/postponed notification for the
-    // currently active alert(s). 0 = due immediately.
-    property real _alertNotificationNextDueMs: 0
+    // Per-alert notification state, keyed by alert fingerprint (identity —
+    // not location), so dismiss/postpone survive switching locations:
+    //   fingerprint -> { dismissed: bool, nextDueMs: number, expiresMs: number }
+    // Persisted to Plasmoid.configuration.alertNotificationState.
+    property var _alertNotificationState: ({})
+    // The fingerprint of the alert currently shown in weatherAlertNotification —
+    // lets the Dismiss/Postpone actions know which entry to update.
+    property string _activeAlertNotificationFingerprint: ""
     property var _notificationSentKeys: ({})
     // Keys older than this are pruned when persisting, so the stored map can't
     // grow without bound (e.g. time-based rain keys). 3 days covers "today" +
@@ -347,7 +344,7 @@ PlasmoidItem {
         actions: [
             NotificationAction {
                 label: i18n("Dismiss")
-                onActivated: root._alertNotificationDismissed = true
+                onActivated: root._dismissAlertNotification()
             },
             NotificationAction {
                 label: i18n("Postpone %1 min", Plasmoid.configuration.notificationAlertsRepeatMinutes)
@@ -893,24 +890,14 @@ PlasmoidItem {
     }
 
     function _resetAlertNotificationState() {
-        _notifiedAlertFingerprints = ({});
-        _alertNotificationBaselineReady = false;
-        _alertNotificationDismissed = false;
-        _alertNotificationNextDueMs = 0;
+        _alertNotificationState = ({});
+        Plasmoid.configuration.alertNotificationState = "{}";
     }
 
     function _resetAllNotificationState() {
         _resetAlertNotificationState();
         _notificationSentKeys = ({});
         Plasmoid.configuration.notificationSentKeys = "{}";
-    }
-
-    function _alertNotificationLocationSignature() {
-        var lat = parseFloat(Plasmoid.configuration.latitude);
-        var lon = parseFloat(Plasmoid.configuration.longitude);
-        if (isNaN(lat)) lat = 0;
-        if (isNaN(lon)) lon = 0;
-        return lat.toFixed(2) + "," + lon.toFixed(2);
     }
 
     function _notificationTimeToMinutes(raw, fallback) {
@@ -988,9 +975,29 @@ PlasmoidItem {
         return Math.max(1, Math.min(30, m));
     }
 
+    /** Looks up (or lazily creates) the per-alert state entry for a fingerprint. */
+    function _alertEntry(fingerprint) {
+        var entry = _alertNotificationState[fingerprint];
+        if (!entry) {
+            entry = { dismissed: false, nextDueMs: 0, expiresMs: 0 };
+            _alertNotificationState[fingerprint] = entry;
+        }
+        return entry;
+    }
+
+    function _dismissAlertNotification() {
+        if (!_activeAlertNotificationFingerprint) return;
+        var entry = _alertEntry(_activeAlertNotificationFingerprint);
+        entry.dismissed = true;
+        _persistAlertNotificationState();
+    }
+
     function _postponeAlertNotification() {
-        _alertNotificationDismissed = false;
-        _alertNotificationNextDueMs = Date.now() + _alertNotificationRepeatMinutes() * 60000;
+        if (!_activeAlertNotificationFingerprint) return;
+        var entry = _alertEntry(_activeAlertNotificationFingerprint);
+        entry.dismissed = false;
+        entry.nextDueMs = Date.now() + _alertNotificationRepeatMinutes() * 60000;
+        _persistAlertNotificationState();
     }
 
     function _formatAlertTimestamp(raw) {
@@ -1092,6 +1099,7 @@ PlasmoidItem {
     /** Sends (or refreshes) the persistent weather-alert notification for a single alert. */
     function _sendAlertNotification(alert) {
         var location = (_locName() || "").trim();
+        _activeAlertNotificationFingerprint = _alertFingerprint(alert);
         weatherAlertNotification.title = _alertNotificationTitle(alert, location);
         weatherAlertNotification.text = _alertNotificationBody(alert);
         weatherAlertNotification.iconName = _alertNotificationIconName(alert);
@@ -1104,12 +1112,6 @@ PlasmoidItem {
                 : Notification.LowUrgency;
         }
         weatherAlertNotification.sendEvent();
-    }
-
-    /** Sends one separate notification per active alert. */
-    function _sendAlertNotifications(alerts) {
-        for (var i = 0; i < alerts.length; i++)
-            _sendAlertNotification(alerts[i]);
     }
 
     function _sendNotification(title, text, urgency, iconName) {
@@ -1143,6 +1145,30 @@ PlasmoidItem {
         }
     }
 
+    /** Load the persisted per-alert dismiss/postpone state so it survives a restart. */
+    function _loadAlertNotificationState() {
+        try {
+            var o = JSON.parse(Plasmoid.configuration.alertNotificationState || "{}");
+            _alertNotificationState = (o && typeof o === "object") ? o : ({});
+        } catch (e) {
+            _alertNotificationState = ({});
+        }
+    }
+
+    /** Drop entries for alerts that have expired, then write the map back to config. */
+    function _persistAlertNotificationState() {
+        var now = Date.now();
+        var pruned = {};
+        for (var k in _alertNotificationState) {
+            if (!_alertNotificationState.hasOwnProperty(k)) continue;
+            var entry = _alertNotificationState[k];
+            if (!entry.expiresMs || entry.expiresMs >= now)
+                pruned[k] = entry;
+        }
+        _alertNotificationState = pruned;
+        Plasmoid.configuration.alertNotificationState = JSON.stringify(pruned);
+    }
+
     /** Prune stale keys, then write the map back to config. */
     function _persistNotificationSentKeys() {
         var cutoff = Date.now() - _notificationSentKeyMaxAgeMs;
@@ -1163,6 +1189,11 @@ PlasmoidItem {
      * (10–30, default 30) until the user dismisses it (no repeat until a
      * new alert appears) or postpones it (repeats again after the same
      * interval).
+     *
+     * State is tracked per alert *identity* (fingerprint: name+source+
+     * onset+expires), not per location — so dismissing/postponing an alert
+     * sticks even if the user switches to a different location and back
+     * (or to a different location under the same regional warning).
      */
     function _processAlertNotifications(now) {
         if (!Plasmoid.configuration.alertNotificationsEnabled) {
@@ -1170,79 +1201,53 @@ PlasmoidItem {
             return;
         }
 
-        var sig = _alertNotificationLocationSignature();
-        if (_alertNotificationLocationKey !== sig) {
-            _alertNotificationLocationKey = sig;
-            _resetAlertNotificationState();
-        }
-
         var alerts = weatherAlerts || [];
-        if (alerts.length === 0) {
-            if (!loading) {
-                _notifiedAlertFingerprints = ({});
-                _alertNotificationBaselineReady = true;
-                _alertNotificationDismissed = false;
-                _alertNotificationNextDueMs = 0;
-            }
+        if (alerts.length === 0)
             return;
-        }
 
-        var activeAlerts = [];
-        var activeKeys = {};
+        var nowMs = now.getTime();
+        var didChange = false;
+
         for (var i = 0; i < alerts.length; i++) {
             var a = alerts[i];
             if (!_isAlertActiveNow(a, now))
                 continue;
             if (!_alertColorAllowed(a.color))
                 continue;
-            var key = _alertFingerprint(a);
-            activeAlerts.push(a);
-            activeKeys[key] = true;
-        }
 
-        if (activeAlerts.length === 0) {
-            _notifiedAlertFingerprints = ({});
-            _alertNotificationBaselineReady = true;
-            _alertNotificationDismissed = false;
-            _alertNotificationNextDueMs = 0;
-            return;
-        }
+            var fp = _alertFingerprint(a);
+            var entry = _alertNotificationState[fp];
+            var isNewAlert = !entry;
+            if (isNewAlert) {
+                entry = { dismissed: false, nextDueMs: 0, expiresMs: 0 };
+                _alertNotificationState[fp] = entry;
+            }
+            // Keep the expiry fresh so pruning drops it once it truly expires.
+            var expMs = a.expires ? new Date(a.expires).getTime() : 0;
+            if (expMs !== entry.expiresMs) {
+                entry.expiresMs = expMs;
+                didChange = true;
+            }
 
-        var nextNotified = {};
-        for (var oldKey in _notifiedAlertFingerprints) {
-            if (_notifiedAlertFingerprints.hasOwnProperty(oldKey) && activeKeys[oldKey])
-                nextNotified[oldKey] = true;
-        }
+            if (isNewAlert) {
+                _sendAlertNotification(a);
+                entry.nextDueMs = nowMs + _alertNotificationRepeatMinutes() * 60000;
+                didChange = true;
+                continue;
+            }
 
-        if (!_alertNotificationBaselineReady) {
-            _notifiedAlertFingerprints = activeKeys;
-            _alertNotificationBaselineReady = true;
-            return;
-        }
+            if (entry.dismissed)
+                continue;
 
-        var hasNewAlert = false;
-        for (var j = 0; j < activeAlerts.length; j++) {
-            if (!nextNotified[_alertFingerprint(activeAlerts[j])]) {
-                hasNewAlert = true;
-                break;
+            if (nowMs >= entry.nextDueMs) {
+                _sendAlertNotification(a);
+                entry.nextDueMs = nowMs + _alertNotificationRepeatMinutes() * 60000;
+                didChange = true;
             }
         }
-        _notifiedAlertFingerprints = activeKeys;
 
-        if (hasNewAlert) {
-            _alertNotificationDismissed = false;
-            _sendAlertNotifications(activeAlerts);
-            _alertNotificationNextDueMs = now.getTime() + _alertNotificationRepeatMinutes() * 60000;
-            return;
-        }
-
-        if (_alertNotificationDismissed)
-            return;
-
-        if (now.getTime() >= _alertNotificationNextDueMs) {
-            _sendAlertNotifications(activeAlerts);
-            _alertNotificationNextDueMs = now.getTime() + _alertNotificationRepeatMinutes() * 60000;
-        }
+        if (didChange)
+            _persistAlertNotificationState();
     }
 
     /** Lowercases the first character, for mid-sentence use (e.g. "Overcast" -> "overcast"). */
@@ -1828,11 +1833,6 @@ PlasmoidItem {
                 _computeMoonTimes();
             _refreshNotificationRainWindowIfNeeded(true);
             _evaluateNotifications();
-            if (Plasmoid.configuration.alertNotificationsEnabled
-                    && !_alertNotificationBaselineReady
-                    && (!weatherAlerts || weatherAlerts.length === 0)) {
-                _alertNotificationBaselineReady = true;
-            }
         }
     }
 
@@ -2361,6 +2361,7 @@ PlasmoidItem {
         // so a plasmashell restart doesn't re-fire daily notifications already
         // shown today (e.g. the geomagnetic-activity summary).
         _loadNotificationSentKeys();
+        _loadAlertNotificationState();
         _refreshNotificationRainWindowIfNeeded(true);
         _evaluateNotifications();
         if (Plasmoid.configuration.autoDetectLocation)
@@ -2382,31 +2383,33 @@ PlasmoidItem {
             } catch(e) {}
             root.activeLocStaged = {};
         }
+        // Location/provider/timezone changes must NOT reset alert-notification
+        // state: it's keyed by alert identity (fingerprint), not location, so
+        // dismiss/postpone correctly survive switching locations. They also
+        // must NOT call _resetAllNotificationState(), which wipes
+        // _notificationSentKeys — that would make today/tomorrow/rain/UV/
+        // space-weather notifications (deduped only by date) re-fire
+        // immediately for the new location even though they already fired today.
         function onLocationNameChanged() {
             root._updateHasSelectedTown();
-            root._resetAllNotificationState();
             root.weatherAlerts = [];
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLatitudeChanged() {
-            root._resetAllNotificationState();
             root._refreshNotificationRainWindowIfNeeded(true);
             root.weatherAlerts = [];
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onLongitudeChanged() {
-            root._resetAllNotificationState();
             root._refreshNotificationRainWindowIfNeeded(true);
             root.weatherAlerts = [];
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onTimezoneChanged() {
-            root._resetAllNotificationState();
             root._refreshNotificationRainWindowIfNeeded(true);
             if (!root._batchingLocation) refreshDebounce.restart();
         }
         function onWeatherProviderChanged() {
-            root._resetAllNotificationState();
             root._refreshNotificationRainWindowIfNeeded(true);
             refreshDebounce.restart();
         }

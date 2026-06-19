@@ -308,6 +308,11 @@
          Persisted so the once-per-day dedup survives a plasmashell restart. -->
     <entry name="notificationSentKeys"               type="String"><default>{}</default></entry>
 
+    <!-- Internal: JSON map of alert fingerprint → { dismissed, nextDueMs, expiresMs }.
+         Keyed by alert identity (not location) so dismiss/postpone survive
+         switching locations and a plasmashell restart. -->
+    <entry name="alertNotificationState"             type="String"><default>{}</default></entry>
+
     <entry name="singlePanelRow"         type="Bool"><default>true</default></entry>
     <entry name="showScrollbox"          type="Bool"><default>true</default></entry>
     <entry name="scrollboxLines"         type="Int"><default>2</default><min>1</min><max>6</max></entry>
