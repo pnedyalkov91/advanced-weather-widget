@@ -459,6 +459,12 @@ loadApi();\
             // Prevent popups / navigation away from our page
             onNewWindowRequested: function(req) { Qt.openUrlExternally(req.requestedUrl); }
 
+            // Replace the native Chromium context menu (Back/Forward/Reload/Save page/View source) with our own
+            onContextMenuRequested: function(request) {
+                request.accepted = true;
+                radarContextMenu.popup();
+            }
+
             Component.onCompleted: {
                 var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
                 console.log("[Advanced Weather Widget Radar/WebEngine] WebEngineView completed; calling loadHtml, htmlLength=", html.length);
@@ -484,6 +490,14 @@ loadApi();\
                     if (!isNaN(z) && z !== Plasmoid.configuration.radarZoom) {
                         Plasmoid.configuration.radarZoom = z;
                     }
+                }
+            }
+
+            Menu {
+                id: radarContextMenu
+                MenuItem {
+                    text: i18n("Reload radar")
+                    onTriggered: radarRoot.reload()
                 }
             }
 

@@ -245,7 +245,11 @@ Item {
         return c;
     }
     readonly property int _hourlyCardHeight: 200 + _hourlyExtraRowCount * 26
-    readonly property int _hourlyStripHeight: 200 + (_hourlyShowWind ? 20 : 0) + _hourlyExtraRowCount * 20
+    // Sum of strip rows always shown: time(18) + icon(48) + trend(32) + temp(18) + precip(18) + 4×2 spacing
+    readonly property int _hourlyStripBaseHeight: 142
+    readonly property int _hourlyStripContentHeight: _hourlyStripBaseHeight + (_hourlyShowWind ? 30 : 0) + _hourlyExtraRowCount * 20
+    // +16 reserves room for the horizontal scrollbar overlay so it doesn't cover the last row
+    readonly property int _hourlyStripHeight: _hourlyStripContentHeight + 8 + 16
     readonly property int _hourlyCardWidth: {
         var w = 100;
         if (_hourlyShowKpIndex)    w = Math.max(w, 132);
@@ -673,6 +677,7 @@ Item {
                                 visible: rowLayoutInner._windVisible || rowLayoutInner._pressureVisible || rowLayoutInner._kpVisible || rowLayoutInner._uvVisible || rowLayoutInner._precipVisible || rowLayoutInner._visibilityVisible
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
+                                Layout.rightMargin: 6
                                 text: "•"
                                 color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
@@ -788,7 +793,7 @@ Item {
                                     clip: true
                                     flickableDirection: Flickable.HorizontalFlick
                                     contentWidth: stripContent.width
-                                    contentHeight: height
+                                    contentHeight: stripContent.height
                                     boundsBehavior: Flickable.StopAtBounds
                                     ScrollBar.horizontal: ScrollBar {
                                         id: stripHBar
@@ -842,14 +847,14 @@ Item {
                                         return result;
                                     }
 
-                                    readonly property int colW: 68
+                                    readonly property int colW: 100
                                     readonly property int colSpacing: 0
 
                                     // Column of rows
                                     Item {
                                         id: stripContent
-                                        height: stripScrollView.height
-                                        width: Math.max(stripScrollView.width, stripScrollView._hourlyWithSun.length * (stripScrollView.colW + stripScrollView.colSpacing))
+                                        height: forecastRoot._hourlyStripContentHeight
+                                        width: stripScrollView._hourlyWithSun.length * (stripScrollView.colW + stripScrollView.colSpacing)
 
                                         // Temps array for trend line (only regular hourly entries)
                                         property var _temps: {
@@ -1064,14 +1069,14 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
-                                                    spacing: 1
+                                                    spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
                                                         iconInfo: IconResolver.resolve("umbrella", 16, forecastRoot.iconsBaseDir,
                                                             forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
                                                             (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                        iconSize: 14
+                                                        iconSize: 16
                                                         iconColor: "#7ec8e3"
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1085,7 +1090,7 @@ Item {
                                                             return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
                                                         }
                                                         color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1098,35 +1103,35 @@ Item {
                                         Row {
                                             id: stripWindRow
                                             x: 0; y: stripPrecipRow.y + stripPrecipRow.height + 2
+                                            height: 28
                                             visible: forecastRoot._hourlyShowWind
                                             spacing: stripScrollView.colSpacing
                                             Repeater {
                                                 model: stripScrollView._hourlyWithSun
-                                                delegate: RowLayout {
+                                                delegate: Item {
                                                     required property var modelData
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
-                                                    height: 18
-                                                    spacing: 1
-                                                    Item { Layout.fillWidth: true }
-                                                    Label {
-                                                        visible: !parent._isSun
-                                                        text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
-                                                        color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        opacity: 0.7
-                                                        Layout.alignment: Qt.AlignVCenter
+                                                    height: 28
+                                                    RowLayout {
+                                                        anchors.centerIn: parent
+                                                        spacing: 2
+                                                        Label {
+                                                            visible: !parent.parent._isSun
+                                                            text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
+                                                            color: Kirigami.Theme.textColor
+                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                            opacity: 0.7
+                                                        }
+                                                        Text {
+                                                            visible: !parent.parent._isSun && weatherRoot && !isNaN(modelData.windDeg)
+                                                            text: W.windDirectionGlyph(modelData.windDeg)
+                                                            font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                                            font.pixelSize: 24
+                                                            color: Kirigami.Theme.textColor
+                                                            opacity: 0.7
+                                                        }
                                                     }
-                                                    Text {
-                                                        visible: !parent._isSun && weatherRoot && !isNaN(modelData.windDeg)
-                                                        text: W.windDirectionGlyph(modelData.windDeg)
-                                                        font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
-                                                        font.pixelSize: 14
-                                                        color: Kirigami.Theme.textColor
-                                                        opacity: 0.7
-                                                        Layout.alignment: Qt.AlignVCenter
-                                                    }
-                                                    Item { Layout.fillWidth: true }
                                                 }
                                             }
                                         }
@@ -1148,8 +1153,8 @@ Item {
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
-                                                        iconInfo: IconResolver.resolve("pressure", 14, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                        iconSize: 14
+                                                        iconInfo: IconResolver.resolve("pressure", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                        iconSize: 16
                                                         iconColor: Kirigami.Theme.textColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1158,7 +1163,7 @@ Item {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.pressureValue(modelData.pressureHpa) : "--"
                                                         color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1184,8 +1189,8 @@ Item {
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
-                                                        iconInfo: IconResolver.resolve("spaceweather", 14, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                        iconSize: 14
+                                                        iconInfo: IconResolver.resolve("spaceweather", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                        iconSize: 16
                                                         iconColor: Kirigami.Theme.textColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1198,7 +1203,7 @@ Item {
                                                             return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
                                                         }
                                                         color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1224,8 +1229,8 @@ Item {
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
-                                                        iconInfo: IconResolver.resolve("uvindex", 14, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                        iconSize: 14
+                                                        iconInfo: IconResolver.resolve("uvindex", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                        iconSize: 16
                                                         iconColor: Kirigami.Theme.textColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1237,7 +1242,7 @@ Item {
                                                             return (uv === undefined || isNaN(uv)) ? "--" : "UV " + uv.toFixed(1);
                                                         }
                                                         color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1263,8 +1268,8 @@ Item {
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
-                                                        iconInfo: IconResolver.resolve("precipsum", 14, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                        iconSize: 14
+                                                        iconInfo: IconResolver.resolve("precipsum", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                        iconSize: 16
                                                         iconColor: Kirigami.Theme.textColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1273,7 +1278,7 @@ Item {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.precipSumText(modelData.precipMm) : "--"
                                                         color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1299,8 +1304,8 @@ Item {
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
-                                                        iconInfo: IconResolver.resolve("visibility", 14, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                        iconSize: 14
+                                                        iconInfo: IconResolver.resolve("visibility", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                        iconSize: 16
                                                         iconColor: Kirigami.Theme.textColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1309,7 +1314,7 @@ Item {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
                                                         color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }

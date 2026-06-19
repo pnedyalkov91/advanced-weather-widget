@@ -116,6 +116,11 @@ QtObject {
     // We intentionally do NOT call abort() on old XHRs — Qt QML's
     // XMLHttpRequest.abort() can block the JS thread on some platforms.
     property int _refreshGen: 0
+    // True once the current provider has written native alerts for this
+    // refresh generation — lets _fetchAlertsIfNeeded() decide whether to
+    // fall back to AlertsJS without having to blank weatherRoot.weatherAlerts
+    // up front (which would hide a still-valid alert for the fetch duration).
+    property bool _nativeAlertsSetThisGen: false
 
     // Safety timer — if loading stays true for 20 s, force-reset state
     // so the widget never gets stuck in "Loading…" forever.
@@ -152,7 +157,10 @@ QtObject {
         }
         r.loading = true;
         _safetyTimer.restart();
-        r.weatherAlerts = [];  // reset before parallel fetch
+        // Don't blank r.weatherAlerts here — that would hide the still-valid
+        // alert from the UI for the whole duration of the fetch. The provider
+        // (or the AlertsJS fallback) replaces it once new data is actually in.
+        _nativeAlertsSetThisGen = false;
 
         var provider = Plasmoid.configuration.weatherProvider || "adaptive";
         var chain = (provider === "adaptive") ? ["openMeteo", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "openWeather", "weatherApi"] : [provider];
@@ -627,12 +635,12 @@ QtObject {
      */
     function _fetchAlertsIfNeeded() {
         var r = weatherRoot;
-        if (!r.weatherAlerts || r.weatherAlerts.length === 0) {
+        if (!_nativeAlertsSetThisGen) {
             console.log("[WeatherService] No native alerts → fetching via AlertsJS (countryCode=" + countryCode + ")");
             var _pA = _providers();
             if (_pA) _pA.fetchAlerts(service);
         } else {
-            console.log("[WeatherService] Provider set", r.weatherAlerts.length, "native alert(s) → skipping AlertsJS");
+            console.log("[WeatherService] Provider set", (r.weatherAlerts || []).length, "native alert(s) → skipping AlertsJS");
         }
     }
 

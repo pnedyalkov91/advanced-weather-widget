@@ -159,191 +159,190 @@ KCM.SimpleKCM {
         }
     }
 
-    ScrollView {
-        id: notificationsScroll
-        anchors.fill: parent
-        clip: true
-        contentWidth: availableWidth
+    // KCM.SimpleKCM is itself a Kirigami.ScrollablePage, so it already
+    // provides mouse-wheel/touchpad scrolling for its content. Wrapping
+    // this in a second, nested ScrollView (as a previous version did)
+    // breaks wheel/touchpad scrolling: the outer page's flickable sees
+    // the nested ScrollView's height (which fills the viewport) and never
+    // detects an overflow, so it doesn't relay scroll events down — and
+    // the page appears to not scroll at all. Just use a plain ColumnLayout.
+    ColumnLayout {
+        spacing: 14
 
+        Kirigami.Heading {
+            text: i18n("Notifications")
+            level: 3
+        }
+
+        Kirigami.InlineMessage {
+            Layout.fillWidth: true
+            type: Kirigami.MessageType.Information
+            visible: true
+            text: i18n("Each notification type can be enabled independently, with its own daily time where applicable.")
+        }
+
+        // Alerts
         ColumnLayout {
-            width: notificationsScroll.availableWidth
-            spacing: 14
+            Layout.fillWidth: true
+            spacing: 6
 
-            Kirigami.Heading {
-                text: i18n("Notifications")
-                level: 3
+            SectionHeader { title: i18n("Weather alerts") }
+
+            Switch {
+                text: i18n("Enable alert notifications")
+                checked: root.cfg_alertNotificationsEnabled
+                onToggled: root.cfg_alertNotificationsEnabled = checked
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                spacing: 10
+                Label { text: i18n("Severities:") }
+                Switch {
+                    text: i18n("Yellow")
+                    checked: root.cfg_alertNotificationsYellowEnabled
+                    onToggled: root.cfg_alertNotificationsYellowEnabled = checked
+                }
+                Switch {
+                    text: i18n("Orange")
+                    checked: root.cfg_alertNotificationsOrangeEnabled
+                    onToggled: root.cfg_alertNotificationsOrangeEnabled = checked
+                }
+                Switch {
+                    text: i18n("Red")
+                    checked: root.cfg_alertNotificationsRedEnabled
+                    onToggled: root.cfg_alertNotificationsRedEnabled = checked
+                }
+            }
+
+            Switch {
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                text: i18n("Treat alert notifications as critical")
+                checked: root.cfg_alertNotificationsCriticalEnabled
+                onToggled: root.cfg_alertNotificationsCriticalEnabled = checked
             }
 
             Kirigami.InlineMessage {
                 Layout.fillWidth: true
                 type: Kirigami.MessageType.Information
-                visible: true
-                text: i18n("Each notification type can be enabled independently, with its own daily time where applicable.")
+                visible: root.cfg_alertNotificationsEnabled && root.cfg_alertNotificationsCriticalEnabled
+                text: i18n("Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications).")
             }
 
-            // Alerts
-            ColumnLayout {
+            RowLayout {
                 Layout.fillWidth: true
-                spacing: 6
-
-                SectionHeader { title: i18n("Weather alerts") }
-
-                Switch {
-                    text: i18n("Enable alert notifications")
-                    checked: root.cfg_alertNotificationsEnabled
-                    onToggled: root.cfg_alertNotificationsEnabled = checked
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                spacing: 8
+                Label { text: i18n("Repeat reminder every:") }
+                SpinBox {
+                    from: 1
+                    to: 30
+                    stepSize: 1
+                    value: root.cfg_notificationAlertsRepeatMinutes
+                    onValueModified: root.cfg_notificationAlertsRepeatMinutes = value
                 }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    enabled: root.cfg_alertNotificationsEnabled
-                    opacity: enabled ? 1.0 : 0.5
-                    spacing: 10
-                    Label { text: i18n("Severities:") }
-                    Switch {
-                        text: i18n("Yellow")
-                        checked: root.cfg_alertNotificationsYellowEnabled
-                        onToggled: root.cfg_alertNotificationsYellowEnabled = checked
-                    }
-                    Switch {
-                        text: i18n("Orange")
-                        checked: root.cfg_alertNotificationsOrangeEnabled
-                        onToggled: root.cfg_alertNotificationsOrangeEnabled = checked
-                    }
-                    Switch {
-                        text: i18n("Red")
-                        checked: root.cfg_alertNotificationsRedEnabled
-                        onToggled: root.cfg_alertNotificationsRedEnabled = checked
-                    }
-                }
-
-                Switch {
-                    enabled: root.cfg_alertNotificationsEnabled
-                    opacity: enabled ? 1.0 : 0.5
-                    text: i18n("Treat alert notifications as critical")
-                    checked: root.cfg_alertNotificationsCriticalEnabled
-                    onToggled: root.cfg_alertNotificationsCriticalEnabled = checked
-                }
-
-                Kirigami.InlineMessage {
-                    Layout.fillWidth: true
-                    type: Kirigami.MessageType.Information
-                    visible: root.cfg_alertNotificationsEnabled && root.cfg_alertNotificationsCriticalEnabled
-                    text: i18n("Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications).")
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    enabled: root.cfg_alertNotificationsEnabled
-                    opacity: enabled ? 1.0 : 0.5
-                    spacing: 8
-                    Label { text: i18n("Repeat reminder every:") }
-                    SpinBox {
-                        from: 1
-                        to: 30
-                        stepSize: 1
-                        value: root.cfg_notificationAlertsRepeatMinutes
-                        onValueModified: root.cfg_notificationAlertsRepeatMinutes = value
-                    }
-                    Label { text: i18n("minutes") }
-                }
+                Label { text: i18n("minutes") }
             }
-
-            // Today's weather
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 6
-
-                SectionHeader { title: i18n("Today's weather") }
-
-                Switch {
-                    text: i18n("Notify with today's forecast")
-                    checked: root.cfg_notificationTodayEnabled
-                    onToggled: root.cfg_notificationTodayEnabled = checked
-                }
-
-                SingleTimeEditor {
-                    active: root.cfg_notificationTodayEnabled
-                    time: root.cfg_notificationTodayTime
-                    onTimeEdited: function(value) { root.cfg_notificationTodayTime = value; }
-                }
-            }
-
-            // Tomorrow forecast
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 6
-
-                SectionHeader { title: i18n("Tomorrow forecast") }
-
-                Switch {
-                    text: i18n("Notify with tomorrow's forecast")
-                    checked: root.cfg_notificationTomorrowEnabled
-                    onToggled: root.cfg_notificationTomorrowEnabled = checked
-                }
-
-                SingleTimeEditor {
-                    active: root.cfg_notificationTomorrowEnabled
-                    time: root.cfg_notificationTomorrowTime
-                    onTimeEdited: function(value) { root.cfg_notificationTomorrowTime = value; }
-                }
-            }
-
-            // Rain/Storm
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 6
-
-                SectionHeader { title: i18n("Rain/Storm") }
-
-                Switch {
-                    text: i18n("Notify about upcoming rain/storms")
-                    checked: root.cfg_notificationRainEnabled
-                    onToggled: root.cfg_notificationRainEnabled = checked
-                }
-            }
-
-            // UV index
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 6
-
-                SectionHeader { title: i18n("UV index") }
-
-                Switch {
-                    text: i18n("Notify with today's UV forecast")
-                    checked: root.cfg_notificationUvEnabled
-                    onToggled: root.cfg_notificationUvEnabled = checked
-                }
-
-                SingleTimeEditor {
-                    active: root.cfg_notificationUvEnabled
-                    time: root.cfg_notificationUvTime
-                    onTimeEdited: function(value) { root.cfg_notificationUvTime = value; }
-                }
-            }
-
-            // Geomagnetic activity
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 6
-
-                SectionHeader { title: i18n("Geomagnetic activity") }
-
-                Switch {
-                    text: i18n("Notify with today's geomagnetic activity forecast")
-                    checked: root.cfg_notificationSpaceWeatherEnabled
-                    onToggled: root.cfg_notificationSpaceWeatherEnabled = checked
-                }
-
-                SingleTimeEditor {
-                    active: root.cfg_notificationSpaceWeatherEnabled
-                    time: root.cfg_notificationSpaceWeatherTime
-                    onTimeEdited: function(value) { root.cfg_notificationSpaceWeatherTime = value; }
-                }
-            }
-
-            Item { Layout.preferredHeight: 12 }
         }
+
+        // Today's weather
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            SectionHeader { title: i18n("Today's weather") }
+
+            Switch {
+                text: i18n("Notify with today's forecast")
+                checked: root.cfg_notificationTodayEnabled
+                onToggled: root.cfg_notificationTodayEnabled = checked
+            }
+
+            SingleTimeEditor {
+                active: root.cfg_notificationTodayEnabled
+                time: root.cfg_notificationTodayTime
+                onTimeEdited: function(value) { root.cfg_notificationTodayTime = value; }
+            }
+        }
+
+        // Tomorrow forecast
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            SectionHeader { title: i18n("Tomorrow forecast") }
+
+            Switch {
+                text: i18n("Notify with tomorrow's forecast")
+                checked: root.cfg_notificationTomorrowEnabled
+                onToggled: root.cfg_notificationTomorrowEnabled = checked
+            }
+
+            SingleTimeEditor {
+                active: root.cfg_notificationTomorrowEnabled
+                time: root.cfg_notificationTomorrowTime
+                onTimeEdited: function(value) { root.cfg_notificationTomorrowTime = value; }
+            }
+        }
+
+        // Rain/Storm
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            SectionHeader { title: i18n("Rain/Storm") }
+
+            Switch {
+                text: i18n("Notify about upcoming rain/storms")
+                checked: root.cfg_notificationRainEnabled
+                onToggled: root.cfg_notificationRainEnabled = checked
+            }
+        }
+
+        // UV index
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            SectionHeader { title: i18n("UV index") }
+
+            Switch {
+                text: i18n("Notify with today's UV forecast")
+                checked: root.cfg_notificationUvEnabled
+                onToggled: root.cfg_notificationUvEnabled = checked
+            }
+
+            SingleTimeEditor {
+                active: root.cfg_notificationUvEnabled
+                time: root.cfg_notificationUvTime
+                onTimeEdited: function(value) { root.cfg_notificationUvTime = value; }
+            }
+        }
+
+        // Geomagnetic activity
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            SectionHeader { title: i18n("Geomagnetic activity") }
+
+            Switch {
+                text: i18n("Notify with today's geomagnetic activity forecast")
+                checked: root.cfg_notificationSpaceWeatherEnabled
+                onToggled: root.cfg_notificationSpaceWeatherEnabled = checked
+            }
+
+            SingleTimeEditor {
+                active: root.cfg_notificationSpaceWeatherEnabled
+                time: root.cfg_notificationSpaceWeatherTime
+                onTimeEdited: function(value) { root.cfg_notificationSpaceWeatherTime = value; }
+            }
+        }
+
+        Item { Layout.preferredHeight: 12 }
     }
 }
