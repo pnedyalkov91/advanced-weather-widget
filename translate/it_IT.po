@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/"
 "issues\n"
 "POT-Creation-Date: 2026-06-19 17:03+0300\n"
-"PO-Revision-Date: 2026-06-19 19:26+0200\n"
+"PO-Revision-Date: 2026-06-21 11:30+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -3777,7 +3777,7 @@ msgstr "Rimpicciolisci"
 
 #: contents/ui/main.qml:1517
 msgid "a decrease from yesterday"
-msgstr "una diminuzione da ieri"
+msgstr "una diminuzione rispetto a ieri"
 
 #: contents/ui/main.qml:1364
 msgid "a few clouds"
@@ -3785,7 +3785,7 @@ msgstr "un po' di nuvole"
 
 #: contents/ui/main.qml:1516
 msgid "an increase from yesterday"
-msgstr "un aumento da ieri"
+msgstr "un aumento rispetto a ieri"
 
 #: contents/ui/main.qml:1365
 msgid "clear skies"
@@ -3821,7 +3821,7 @@ msgstr "pioggia ghiacciata"
 
 #: contents/ui/main.qml:1060
 msgid "from %1"
-msgstr "da %1"
+msgstr "dal %1"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:370
 msgid "ft"
@@ -3944,7 +3944,7 @@ msgstr "temporali"
 
 #: contents/ui/main.qml:1061
 msgid "until %1"
-msgstr "fino a %1"
+msgstr "fino al %1"
 
 #: contents/ui/DetailsView.qml:3446
 msgid "until dawn"
