@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-24 11:05+0300\n"
+"POT-Creation-Date: 2026-06-24 11:56+0300\n"
 "PO-Revision-Date: 2026-06-19 08:45+0200\n"
 "Last-Translator: summoner <summoner@disroot.org>\n"
 "Language-Team: Hungarian <>\n"
@@ -673,7 +673,7 @@ msgstr "A kapcsolat sikeresen létre lett hozva! A(z) %1 kulcs érvényes."
 msgid "Coordinates"
 msgstr "Koordináták"
 
-#: contents/ui/config/configNotifications.qml:280
+#: contents/ui/config/configNotifications.qml:282
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
 msgstr "A kritikus értesítések akkor is megjelennek, ha a „Ne zavarjanak mód” be van kapcsolva, vagy ha Ön éppen játszik, illetve teljes képernyős videót néz (amennyiben ezek a beállítások engedélyezve vannak a Rendszerbeállítások → Értesítések menüpontban)."
 
@@ -799,7 +799,7 @@ msgid "Description"
 msgstr "Leírás"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:80
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:554
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:560
 msgid "Details"
 msgstr "Részletek"
 
@@ -845,7 +845,7 @@ msgstr "Harmatponti hőmérséklet"
 msgid "Dew point:"
 msgstr "Harmatpont:"
 
-#: contents/ui/config/configNotifications.qml:327
+#: contents/ui/config/configNotifications.qml:331
 msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
 msgstr "Kapcsoljon ki egy típust az elnémításához, vagy adjon meg neki saját ismétlési időközt. Az időköz csak akkor érvényes, ha az „Emlékeztető ismétlése az elvetésig” be van kapcsolva."
 
@@ -912,11 +912,11 @@ msgstr "Kettős hőmérséklet"
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
 msgstr "Minden QWeather projekt egyedi API-kiszolgálóval rendelkezik. Sajátját a console.qweather.com oldalon találja a projektbeállítások alatt."
 
-#: contents/ui/config/configNotifications.qml:295
+#: contents/ui/config/configNotifications.qml:298
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
 msgstr "Minden riasztás csak egyszer jelenik meg, az Elvetés és Halasztás gombok nélkül."
 
-#: contents/ui/config/configNotifications.qml:229
+#: contents/ui/config/configNotifications.qml:230
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "Minden értesítési típus egymástól függetlenül engedélyezhető, a megfelelő napi időpont megadásával, ahol ez alkalmazható."
 
@@ -932,7 +932,7 @@ msgstr "Hely részleteinek szerkesztése"
 msgid "Effective"
 msgstr "Tényleges"
 
-#: contents/ui/config/configNotifications.qml:240
+#: contents/ui/config/configNotifications.qml:241
 msgid "Enable alert notifications"
 msgstr "Riasztási értesítések engedélyezése"
 
@@ -1143,7 +1143,7 @@ msgid "Footer:"
 msgstr "Lábléc:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:84
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:555
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:561
 msgid "Forecast"
 msgstr "Előrejelzés"
 
@@ -1229,7 +1229,7 @@ msgstr "GeoClue2 nem érhető el, rendszer helymeghatározásának próbálása�
 msgid "Geomagnetic Storm"
 msgstr "Geomágneses vihar"
 
-#: contents/ui/config/configNotifications.qml:453 contents/ui/main.qml:1711
+#: contents/ui/config/configNotifications.qml:457 contents/ui/main.qml:1711
 msgid "Geomagnetic activity"
 msgstr "Geomágneses aktivitás"
 
@@ -1251,7 +1251,7 @@ msgid "Headline"
 msgstr "Szalagcím"
 
 #: contents/ui/components/RadarWebEngineView.qml:93
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Heavy"
 msgstr "Heves"
 
@@ -1298,7 +1298,7 @@ msgstr "Elrejtés a részletekből"
 msgid "Hide prefix icon"
 msgstr "Előtagikon elrejtése"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:493
+#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:499
 #: contents/ui/js/pollen.js:44 contents/ui/js/spaceWeather.js:183
 #: contents/ui/js/spaceWeather.js:195 contents/ui/main.qml:804
 #: contents/ui/main.qml:848
@@ -1561,7 +1561,7 @@ msgid "Layout type:"
 msgstr "Elrendezés típusa:"
 
 #: contents/ui/components/RadarWebEngineView.qml:91
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Light"
 msgstr "Gyenge"
 
@@ -1622,11 +1622,11 @@ msgstr "Lista"
 msgid "Loading details…"
 msgstr "Részletek betöltése…"
 
-#: contents/ui/ForecastView.qml:342
+#: contents/ui/ForecastView.qml:347
 msgid "Loading forecast…"
 msgstr "Előrejelzés betöltése…"
 
-#: contents/ui/ForecastView.qml:770
+#: contents/ui/ForecastView.qml:775
 msgid "Loading hourly data…"
 msgstr "Óránkénti adatok betöltése…"
 
@@ -1710,7 +1710,7 @@ msgstr "Hosszúság:"
 msgid "Looking up location…"
 msgstr "Hely keresése…"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:513
+#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:519
 #: contents/ui/js/pollen.js:42 contents/ui/js/spaceWeather.js:185
 #: contents/ui/js/spaceWeather.js:197 contents/ui/main.qml:802
 #: contents/ui/main.qml:846
@@ -1788,7 +1788,7 @@ msgstr "Kisebb geomágneses vihar."
 msgid "Misc"
 msgstr "Egyéb"
 
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Mod"
 msgstr "Mérsékelt"
 
@@ -1982,7 +1982,7 @@ msgstr "Nem"
 msgid "No details data"
 msgstr "Nincsenek részletes adatok"
 
-#: contents/ui/ForecastView.qml:342
+#: contents/ui/ForecastView.qml:347
 msgid "No forecast data"
 msgstr "Nincsenek előrejelzési adatok"
 
@@ -1990,11 +1990,11 @@ msgstr "Nincsenek előrejelzési adatok"
 msgid "No geomagnetic storm activity."
 msgstr "Nincs geomágneses vihar aktivitás."
 
-#: contents/ui/ForecastView.qml:1202 contents/ui/ForecastView.qml:1651
+#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
 msgid "No info"
 msgstr "Nincs adat"
 
-#: contents/ui/ForecastView.qml:581
+#: contents/ui/ForecastView.qml:586
 msgid "No information"
 msgstr "Nincs adat"
 
@@ -2011,7 +2011,7 @@ msgid "No weather stations found for '%1'"
 msgstr "Nem találhatók időjárás-állomások a következőhöz: „%1”"
 
 #: contents/ui/components/RadarWebEngineView.qml:90
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:910
@@ -2043,27 +2043,27 @@ msgstr "Megjegyzés: a méret csökkenhet, ha a panel nem elég vastag."
 msgid "Notifications"
 msgstr "Értesítések"
 
-#: contents/ui/config/configNotifications.qml:408
+#: contents/ui/config/configNotifications.qml:412
 msgid "Notify about upcoming rain/storms"
 msgstr "Értesítés közelgő esőről/viharról"
 
-#: contents/ui/config/configNotifications.qml:422
+#: contents/ui/config/configNotifications.qml:426
 msgid "Notify about upcoming snow"
 msgstr "Értesítés a várható havazásról"
 
-#: contents/ui/config/configNotifications.qml:436
+#: contents/ui/config/configNotifications.qml:440
 msgid "Notify with today's UV forecast"
 msgstr "Értesítés a mai UV-előrejelzésről"
 
-#: contents/ui/config/configNotifications.qml:368
+#: contents/ui/config/configNotifications.qml:372
 msgid "Notify with today's forecast"
 msgstr "Értesítés a mai előrejelzésről"
 
-#: contents/ui/config/configNotifications.qml:456
+#: contents/ui/config/configNotifications.qml:460
 msgid "Notify with today's geomagnetic activity forecast"
 msgstr "Értesítés a mai geomágneses aktivitás előrejelzéséről"
 
-#: contents/ui/config/configNotifications.qml:388
+#: contents/ui/config/configNotifications.qml:392
 msgid "Notify with tomorrow's forecast"
 msgstr "Értesítés a holnapi előrejelzésről"
 
@@ -2120,7 +2120,7 @@ msgstr "A mai (vagy a következő elérhető) nap óránkénti előrejelzéséne
 msgid "Options"
 msgstr "Beállítások"
 
-#: contents/ui/config/configNotifications.qml:257
+#: contents/ui/config/configNotifications.qml:258
 msgid "Orange"
 msgstr "Narancssárga"
 
@@ -2198,7 +2198,7 @@ msgstr "Részben felhős (éjszaka)"
 msgid "Pause"
 msgstr "Szüneteltetés"
 
-#: contents/ui/config/configNotifications.qml:319
+#: contents/ui/config/configNotifications.qml:322
 msgid "Per alert type:"
 msgstr "Riasztástípusonként:"
 
@@ -2399,7 +2399,7 @@ msgstr "Nyugodt"
 
 #: contents/ui/components/RadarWebEngineView.qml:72
 #: contents/ui/config/configGeneral.qml:706
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:556
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:562
 msgid "Radar"
 msgstr "Radar"
 
@@ -2411,7 +2411,7 @@ msgstr "Csak radar"
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "Radarszolgáltató: <a href='[https://www.rainviewer.com/](https://www.rainviewer.com/)'>Rain Viewer</a>A kisalkalmazás az ingyenes RainViewer API-t használja, amely az elmúlt 2 óra radaradatait biztosítja 10 perces időközönként. A radarképes előrejelzés nem támogatott. A Rain Viewer nem garantálja a radaradatok elérhetőségét. Nem kötnek szerződést az adatok tulajdonosaival. Ennek az az oka, hogy a tulajdonosok kérhetik adataik eltávolítását a Rain Viewerről, módosíthatják az adatformátumot, vagy leállíthatják a megosztást. A Rain Viewer igyekszik a lehető legtovább elérhetővé tenni az adatokat, de előfordulhat, hogy a tulajdonosok egyszerűen megszüntetik a képek szolgáltatását."
 
-#: contents/ui/FullView.qml:713
+#: contents/ui/FullView.qml:719
 msgid "Radar:"
 msgstr "Radar:"
 
@@ -2439,7 +2439,7 @@ msgstr "Eső (éjszaka)"
 msgid "Rain showers"
 msgstr "Esőzáporok"
 
-#: contents/ui/config/configNotifications.qml:405
+#: contents/ui/config/configNotifications.qml:409
 msgid "Rain/Storm"
 msgstr "Eső/Vihar"
 
@@ -2455,7 +2455,7 @@ msgstr "Legutóbbi"
 msgid "Recommended — e.g. 560"
 msgstr "Ajánlott — például: 560"
 
-#: contents/ui/config/configNotifications.qml:262
+#: contents/ui/config/configNotifications.qml:263
 msgid "Red"
 msgstr "Vörös"
 
@@ -2498,10 +2498,6 @@ msgstr "Relatív páratartalom %"
 msgid "Relative humidity percentage"
 msgstr "Relatív páratartalom százalékban"
 
-#: contents/ui/components/RadarWebEngineView.qml:499
-msgid "Reload radar"
-msgstr "Radar újratöltése"
-
 #: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr "Eltávolítja az utolsó helyet?"
@@ -2514,11 +2510,11 @@ msgstr "Mentett hely eltávolítása"
 msgid "Rename location"
 msgstr "Hely átnevezése"
 
-#: contents/ui/config/configNotifications.qml:303
+#: contents/ui/config/configNotifications.qml:306
 msgid "Repeat reminder every:"
 msgstr "Emlékeztető ismétlésének időköze:"
 
-#: contents/ui/config/configNotifications.qml:286
+#: contents/ui/config/configNotifications.qml:288
 msgid "Repeat reminder until dismissed"
 msgstr "Emlékeztető ismétlése az elvetésig"
 
@@ -2641,7 +2637,7 @@ msgstr "Saját ikonok beállítása…"
 msgid "Severe geomagnetic storm."
 msgstr "Súlyos geomágneses vihar."
 
-#: contents/ui/config/configNotifications.qml:250
+#: contents/ui/config/configNotifications.qml:251
 msgid "Severities:"
 msgstr "Súlyossági szintek:"
 
@@ -2808,7 +2804,7 @@ msgstr "Enyhe hóesés"
 msgid "Small circle  ⚬"
 msgstr "Kis kör  ⚬"
 
-#: contents/ui/config/configNotifications.qml:419
+#: contents/ui/config/configNotifications.qml:423
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
 #: contents/ui/main.qml:1840
 msgid "Snow"
@@ -2903,7 +2899,7 @@ msgid "Stats items:"
 msgstr "Statisztikai elemek:"
 
 #: contents/ui/components/RadarWebEngineView.qml:94
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 #: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr "Vihar"
@@ -2955,7 +2951,7 @@ msgstr "Vasárnap"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1050
+#: contents/ui/ForecastView.qml:1066
 msgid "Sunrise"
 msgstr "Napkelte"
 
@@ -3218,7 +3214,7 @@ msgstr "Időzóna:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "További térképrétegek (Eső, Felhők, Hőmérséklet, Szél, Nyomás) feloldásához: tiltsa le az Adaptív módot és válassza az OpenWeatherMap szolgáltatót, majd adja meg fent az API-kulcsát. Ha készen áll, újra engedélyezheti az Adaptív módot."
 
-#: contents/ui/ForecastView.qml:440 contents/ui/main.qml:1416
+#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1416
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Ma"
@@ -3229,7 +3225,7 @@ msgstr "Ma"
 msgid "Today's total precipitation (mm/in)"
 msgstr "Mai összes csapadék (mm/in)"
 
-#: contents/ui/config/configNotifications.qml:365
+#: contents/ui/config/configNotifications.qml:369
 msgid "Today's weather"
 msgstr "Mai napra vonatkozó előrejelzések"
 
@@ -3237,7 +3233,7 @@ msgstr "Mai napra vonatkozó előrejelzések"
 msgid "Tomorrow"
 msgstr "Holnap"
 
-#: contents/ui/config/configNotifications.qml:385
+#: contents/ui/config/configNotifications.qml:389
 msgid "Tomorrow forecast"
 msgstr "Holnapi előrejelzés"
 
@@ -3298,7 +3294,7 @@ msgstr "Balra fent"
 msgid "Top Right"
 msgstr "Jobbra fent"
 
-#: contents/ui/config/configNotifications.qml:271
+#: contents/ui/config/configNotifications.qml:272
 msgid "Treat alert notifications as critical"
 msgstr "Riasztási értesítések kezelése kritikusként"
 
@@ -3317,7 +3313,7 @@ msgstr "UV-index"
 msgid "UV Index:"
 msgstr "UV-index:"
 
-#: contents/ui/config/configNotifications.qml:433 contents/ui/main.qml:1671
+#: contents/ui/config/configNotifications.qml:437 contents/ui/main.qml:1671
 msgid "UV index"
 msgstr "UV-index"
 
@@ -3512,7 +3508,7 @@ msgstr "Időjárási riasztás"
 #: contents/ui/config/configAppearance.qml:1421
 #: contents/ui/config/configAppearance.qml:1544
 #: contents/ui/config/configAppearance.qml:1667
-#: contents/ui/config/configNotifications.qml:237
+#: contents/ui/config/configNotifications.qml:238
 msgid "Weather alerts"
 msgstr "Időjárási riasztások"
 
@@ -3606,7 +3602,7 @@ msgstr "Sortörés a következő sorba"
 msgid "X-ray Flare Class"
 msgstr "Röntgen-napkitörési osztály"
 
-#: contents/ui/config/configNotifications.qml:252
+#: contents/ui/config/configNotifications.qml:253
 msgid "Yellow"
 msgstr "Sárga"
 
@@ -3720,8 +3716,8 @@ msgid "minor"
 msgstr "kisebb"
 
 #: contents/ui/config/configGeneral.qml:799
-#: contents/ui/config/configNotifications.qml:311
-#: contents/ui/config/configNotifications.qml:355
+#: contents/ui/config/configNotifications.qml:314
+#: contents/ui/config/configNotifications.qml:359
 msgid "minutes"
 msgstr "perc"
 
@@ -3819,6 +3815,9 @@ msgstr "nagyon magas"
 #: contents/ui/main.qml:1487
 msgid "your location"
 msgstr "saját hely"
+
+#~ msgid "Reload radar"
+#~ msgstr "Radar újratöltése"
 
 #~ msgid "this night"
 #~ msgstr "ma este"

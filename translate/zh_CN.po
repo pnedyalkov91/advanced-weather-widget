@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-24 11:05+0300\n"
+"POT-Creation-Date: 2026-06-24 11:56+0300\n"
 "PO-Revision-Date: 2026-04-26 00:00+0800\n"
 "Last-Translator: kang guo\n"
 "Language-Team: Chinese (Simplified)\n"
@@ -672,7 +672,7 @@ msgstr "连接成功！%1 密钥有效。"
 msgid "Coordinates"
 msgstr "坐标"
 
-#: contents/ui/config/configNotifications.qml:280
+#: contents/ui/config/configNotifications.qml:282
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
 msgstr "即使启用了勿扰模式，或者你正在玩游戏或观看全屏视频，严重通知仍会显示（前提是这些选项已在“系统设置 → 通知”中启用）。"
 
@@ -798,7 +798,7 @@ msgid "Description"
 msgstr "描述"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:80
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:554
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:560
 msgid "Details"
 msgstr "详情"
 
@@ -844,7 +844,7 @@ msgstr "露点温度"
 msgid "Dew point:"
 msgstr "露点："
 
-#: contents/ui/config/configNotifications.qml:327
+#: contents/ui/config/configNotifications.qml:331
 msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
 msgstr "禁用某一类型可将其静音，或为其设置专属的重复间隔。仅当开启“重复提醒直至关闭”时，该间隔才会生效。"
 
@@ -911,11 +911,11 @@ msgstr "双温度显示"
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
 msgstr "每个 QWeather 项目都有唯一的 API 主机。请在 console.qweather.com 的项目设置中查找。"
 
-#: contents/ui/config/configNotifications.qml:295
+#: contents/ui/config/configNotifications.qml:298
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
 msgstr "每条警报仅显示一次，且不带“关闭”和“推迟”按钮。"
 
-#: contents/ui/config/configNotifications.qml:229
+#: contents/ui/config/configNotifications.qml:230
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "每种通知类型都可以独立启用，并可在适用时设置各自的每日通知时间。"
 
@@ -931,7 +931,7 @@ msgstr "编辑位置详情"
 msgid "Effective"
 msgstr "生效时间"
 
-#: contents/ui/config/configNotifications.qml:240
+#: contents/ui/config/configNotifications.qml:241
 msgid "Enable alert notifications"
 msgstr "启用警报通知"
 
@@ -1142,7 +1142,7 @@ msgid "Footer:"
 msgstr "页脚："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:84
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:555
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:561
 msgid "Forecast"
 msgstr "预报"
 
@@ -1228,7 +1228,7 @@ msgstr "GeoClue2 不可用，正在尝试系统位置…"
 msgid "Geomagnetic Storm"
 msgstr "地磁暴"
 
-#: contents/ui/config/configNotifications.qml:453 contents/ui/main.qml:1711
+#: contents/ui/config/configNotifications.qml:457 contents/ui/main.qml:1711
 msgid "Geomagnetic activity"
 msgstr "地磁活动"
 
@@ -1250,7 +1250,7 @@ msgid "Headline"
 msgstr "标题"
 
 #: contents/ui/components/RadarWebEngineView.qml:93
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Heavy"
 msgstr "强"
 
@@ -1297,7 +1297,7 @@ msgstr "从详情中隐藏"
 msgid "Hide prefix icon"
 msgstr "隐藏前缀图标"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:493
+#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:499
 #: contents/ui/js/pollen.js:44 contents/ui/js/spaceWeather.js:183
 #: contents/ui/js/spaceWeather.js:195 contents/ui/main.qml:804
 #: contents/ui/main.qml:848
@@ -1550,7 +1550,7 @@ msgid "Layout type:"
 msgstr "布局类型："
 
 #: contents/ui/components/RadarWebEngineView.qml:91
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Light"
 msgstr "弱"
 
@@ -1611,11 +1611,11 @@ msgstr "列表"
 msgid "Loading details…"
 msgstr "正在加载详情…"
 
-#: contents/ui/ForecastView.qml:342
+#: contents/ui/ForecastView.qml:347
 msgid "Loading forecast…"
 msgstr "正在加载预报…"
 
-#: contents/ui/ForecastView.qml:770
+#: contents/ui/ForecastView.qml:775
 msgid "Loading hourly data…"
 msgstr "正在加载逐小时数据…"
 
@@ -1699,7 +1699,7 @@ msgstr "经度："
 msgid "Looking up location…"
 msgstr "正在查找位置…"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:513
+#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:519
 #: contents/ui/js/pollen.js:42 contents/ui/js/spaceWeather.js:185
 #: contents/ui/js/spaceWeather.js:197 contents/ui/main.qml:802
 #: contents/ui/main.qml:846
@@ -1777,7 +1777,7 @@ msgstr "轻微地磁暴。"
 msgid "Misc"
 msgstr "杂项"
 
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Mod"
 msgstr "中"
 
@@ -1971,7 +1971,7 @@ msgstr "否"
 msgid "No details data"
 msgstr "无详情数据"
 
-#: contents/ui/ForecastView.qml:342
+#: contents/ui/ForecastView.qml:347
 msgid "No forecast data"
 msgstr "无预报数据"
 
@@ -1979,11 +1979,11 @@ msgstr "无预报数据"
 msgid "No geomagnetic storm activity."
 msgstr "无地磁暴活动。"
 
-#: contents/ui/ForecastView.qml:1202 contents/ui/ForecastView.qml:1651
+#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
 msgid "No info"
 msgstr "无信息"
 
-#: contents/ui/ForecastView.qml:581
+#: contents/ui/ForecastView.qml:586
 msgid "No information"
 msgstr "无可用信息"
 
@@ -2000,7 +2000,7 @@ msgid "No weather stations found for '%1'"
 msgstr "未找到 '%1' 的气象站"
 
 #: contents/ui/components/RadarWebEngineView.qml:90
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:200
 #: contents/ui/js/spaceWeather.js:198 contents/ui/main.qml:910
@@ -2032,27 +2032,27 @@ msgstr "注意：如果面板厚度不足，大小可能会被减小。"
 msgid "Notifications"
 msgstr "通知"
 
-#: contents/ui/config/configNotifications.qml:408
+#: contents/ui/config/configNotifications.qml:412
 msgid "Notify about upcoming rain/storms"
 msgstr "提醒即将到来的降雨/雷暴"
 
-#: contents/ui/config/configNotifications.qml:422
+#: contents/ui/config/configNotifications.qml:426
 msgid "Notify about upcoming snow"
 msgstr "即将降雪时通知"
 
-#: contents/ui/config/configNotifications.qml:436
+#: contents/ui/config/configNotifications.qml:440
 msgid "Notify with today's UV forecast"
 msgstr "发送今日紫外线预报通知"
 
-#: contents/ui/config/configNotifications.qml:368
+#: contents/ui/config/configNotifications.qml:372
 msgid "Notify with today's forecast"
 msgstr "发送今日天气预报通知"
 
-#: contents/ui/config/configNotifications.qml:456
+#: contents/ui/config/configNotifications.qml:460
 msgid "Notify with today's geomagnetic activity forecast"
 msgstr "发送今日地磁活动预报通知"
 
-#: contents/ui/config/configNotifications.qml:388
+#: contents/ui/config/configNotifications.qml:392
 msgid "Notify with tomorrow's forecast"
 msgstr "发送明日天气预报通知"
 
@@ -2109,7 +2109,7 @@ msgstr "自动打开今天的逐小时预报（或下一个可用日期）"
 msgid "Options"
 msgstr "选项"
 
-#: contents/ui/config/configNotifications.qml:257
+#: contents/ui/config/configNotifications.qml:258
 msgid "Orange"
 msgstr "橙色"
 
@@ -2187,7 +2187,7 @@ msgstr "局部多云（夜间）"
 msgid "Pause"
 msgstr "暂停"
 
-#: contents/ui/config/configNotifications.qml:319
+#: contents/ui/config/configNotifications.qml:322
 msgid "Per alert type:"
 msgstr "按警报类型："
 
@@ -2385,7 +2385,7 @@ msgstr "平静"
 
 #: contents/ui/components/RadarWebEngineView.qml:72
 #: contents/ui/config/configGeneral.qml:706
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:556
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:562
 msgid "Radar"
 msgstr "雷达"
 
@@ -2397,7 +2397,7 @@ msgstr "仅雷达"
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "雷达数据源：<a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>本小组件使用免费的 RainViewer API，它以 10 分钟为间隔提供过去 2 小时的天气雷达数据。不支持雷达预报。<br/><br/>Rain Viewer 不保证雷达数据始终可用。它们不会与这些数据的所有者签订合同，原因是数据所有者可以要求它们从 Rain Viewer 移除数据、更改格式，或停止共享数据。Rain Viewer 会尽量长期保留雷达数据，但有时数据所有者会直接停止提供图像。"
 
-#: contents/ui/FullView.qml:713
+#: contents/ui/FullView.qml:719
 msgid "Radar:"
 msgstr "雷达："
 
@@ -2425,7 +2425,7 @@ msgstr "雨（夜间）"
 msgid "Rain showers"
 msgstr "阵雨"
 
-#: contents/ui/config/configNotifications.qml:405
+#: contents/ui/config/configNotifications.qml:409
 msgid "Rain/Storm"
 msgstr "降雨/雷暴"
 
@@ -2441,7 +2441,7 @@ msgstr "最近"
 msgid "Recommended — e.g. 560"
 msgstr "推荐 — 例如 560"
 
-#: contents/ui/config/configNotifications.qml:262
+#: contents/ui/config/configNotifications.qml:263
 msgid "Red"
 msgstr "红色"
 
@@ -2484,10 +2484,6 @@ msgstr "相对湿度 %"
 msgid "Relative humidity percentage"
 msgstr "相对湿度百分比"
 
-#: contents/ui/components/RadarWebEngineView.qml:499
-msgid "Reload radar"
-msgstr "重新加载雷达"
-
 #: contents/ui/config/configLocation.qml:1349
 msgid "Remove last location?"
 msgstr "移除最后一个位置？"
@@ -2500,11 +2496,11 @@ msgstr "移除已保存位置"
 msgid "Rename location"
 msgstr "重命名位置"
 
-#: contents/ui/config/configNotifications.qml:303
+#: contents/ui/config/configNotifications.qml:306
 msgid "Repeat reminder every:"
 msgstr "提醒重复间隔："
 
-#: contents/ui/config/configNotifications.qml:286
+#: contents/ui/config/configNotifications.qml:288
 msgid "Repeat reminder until dismissed"
 msgstr "重复提醒直至关闭"
 
@@ -2627,7 +2623,7 @@ msgstr "设置自己的图标…"
 msgid "Severe geomagnetic storm."
 msgstr "严重地磁暴。"
 
-#: contents/ui/config/configNotifications.qml:250
+#: contents/ui/config/configNotifications.qml:251
 msgid "Severities:"
 msgstr "严重程度："
 
@@ -2794,7 +2790,7 @@ msgstr "小雪"
 msgid "Small circle  ⚬"
 msgstr "小圆圈  ⚬"
 
-#: contents/ui/config/configNotifications.qml:419
+#: contents/ui/config/configNotifications.qml:423
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
 #: contents/ui/main.qml:1840
 msgid "Snow"
@@ -2889,7 +2885,7 @@ msgid "Stats items:"
 msgstr "统计项："
 
 #: contents/ui/components/RadarWebEngineView.qml:94
-#: contents/ui/components/RadarWebEngineView.qml:548
+#: contents/ui/components/RadarWebEngineView.qml:538
 #: contents/ui/js/spaceWeather.js:170
 msgid "Storm"
 msgstr "磁暴"
@@ -2941,7 +2937,7 @@ msgstr "星期日"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1050
+#: contents/ui/ForecastView.qml:1066
 msgid "Sunrise"
 msgstr "日出"
 
@@ -3204,7 +3200,7 @@ msgstr "时区："
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "要解锁更多地图图层（降雨、云层、温度、风、气压），请先禁用自适应模式，选择 OpenWeatherMap 作为天气数据源，并在上方输入你的 API 密钥。准备就绪后，可以重新启用自适应模式。"
 
-#: contents/ui/ForecastView.qml:440 contents/ui/main.qml:1416
+#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1416
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "今天"
@@ -3215,7 +3211,7 @@ msgstr "今天"
 msgid "Today's total precipitation (mm/in)"
 msgstr "今天的总降水量（mm/in）"
 
-#: contents/ui/config/configNotifications.qml:365
+#: contents/ui/config/configNotifications.qml:369
 msgid "Today's weather"
 msgstr "今日天气"
 
@@ -3223,7 +3219,7 @@ msgstr "今日天气"
 msgid "Tomorrow"
 msgstr "明天"
 
-#: contents/ui/config/configNotifications.qml:385
+#: contents/ui/config/configNotifications.qml:389
 msgid "Tomorrow forecast"
 msgstr "明日预报"
 
@@ -3284,7 +3280,7 @@ msgstr "左上"
 msgid "Top Right"
 msgstr "右上"
 
-#: contents/ui/config/configNotifications.qml:271
+#: contents/ui/config/configNotifications.qml:272
 msgid "Treat alert notifications as critical"
 msgstr "将警报通知视为严重通知"
 
@@ -3303,7 +3299,7 @@ msgstr "紫外线指数"
 msgid "UV Index:"
 msgstr "紫外线指数："
 
-#: contents/ui/config/configNotifications.qml:433 contents/ui/main.qml:1671
+#: contents/ui/config/configNotifications.qml:437 contents/ui/main.qml:1671
 msgid "UV index"
 msgstr "紫外线指数"
 
@@ -3498,7 +3494,7 @@ msgstr "天气警报"
 #: contents/ui/config/configAppearance.qml:1421
 #: contents/ui/config/configAppearance.qml:1544
 #: contents/ui/config/configAppearance.qml:1667
-#: contents/ui/config/configNotifications.qml:237
+#: contents/ui/config/configNotifications.qml:238
 msgid "Weather alerts"
 msgstr "天气警报"
 
@@ -3592,7 +3588,7 @@ msgstr "换行显示"
 msgid "X-ray Flare Class"
 msgstr "X 射线耀斑等级"
 
-#: contents/ui/config/configNotifications.qml:252
+#: contents/ui/config/configNotifications.qml:253
 msgid "Yellow"
 msgstr "黄色"
 
@@ -3706,8 +3702,8 @@ msgid "minor"
 msgstr "轻微"
 
 #: contents/ui/config/configGeneral.qml:799
-#: contents/ui/config/configNotifications.qml:311
-#: contents/ui/config/configNotifications.qml:355
+#: contents/ui/config/configNotifications.qml:314
+#: contents/ui/config/configNotifications.qml:359
 msgid "minutes"
 msgstr "分钟"
 
@@ -3805,6 +3801,9 @@ msgstr "很高"
 #: contents/ui/main.qml:1487
 msgid "your location"
 msgstr "你的位置"
+
+#~ msgid "Reload radar"
+#~ msgstr "重新加载雷达"
 
 #~ msgid "this night"
 #~ msgstr "今晚"
