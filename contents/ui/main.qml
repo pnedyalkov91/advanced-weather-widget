@@ -367,25 +367,31 @@ PlasmoidItem {
         flags: Notification.CloseOnTimeout | Notification.SkipGrouping | Notification.DefaultEvent
     }
 
-    // Dedicated notification for weather alerts — stays open (no auto-timeout)
-    // and offers Dismiss / Postpone actions.
+    // Dedicated notification for weather alerts. When repeat is enabled it stays
+    // open (no auto-timeout) and offers Dismiss / Postpone actions. When repeat is
+    // disabled it is shown once as a normal auto-closing notification with no actions.
     Notification {
         id: weatherAlertNotification
         componentName: "plasma_workspace"
         eventId: "notification"
         iconName: _bundledAlertIcon("storm-warning")
-        flags: Notification.Persistent | Notification.SkipGrouping | Notification.DefaultEvent
+        flags: root._alertNotificationRepeatEnabled()
+            ? (Notification.Persistent | Notification.SkipGrouping | Notification.DefaultEvent)
+            : (Notification.CloseOnTimeout | Notification.SkipGrouping | Notification.DefaultEvent)
 
-        actions: [
-            NotificationAction {
-                label: i18n("Dismiss")
-                onActivated: root._dismissAlertNotification()
-            },
-            NotificationAction {
-                label: i18n("Postpone %1 min", Plasmoid.configuration.notificationAlertsRepeatMinutes)
-                onActivated: root._postponeAlertNotification()
-            }
-        ]
+        actions: root._alertNotificationRepeatEnabled() ? [dismissAlertAction, postponeAlertAction] : []
+    }
+
+    NotificationAction {
+        id: dismissAlertAction
+        label: i18n("Dismiss")
+        onActivated: root._dismissAlertNotification()
+    }
+
+    NotificationAction {
+        id: postponeAlertAction
+        label: i18n("Postpone %1 min", Plasmoid.configuration.notificationAlertsRepeatMinutes)
+        onActivated: root._postponeAlertNotification()
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -924,6 +930,64 @@ PlasmoidItem {
         }
     }
 
+    /** Canonical MeteoAlarm awareness types exposed in the config UI.
+     *  rain-flood (12) is folded into rain (10); unknown (0) is not configurable. */
+    function _alertTypeList() {
+        return [
+            { type: 1,  name: i18n("Wind") },
+            { type: 2,  name: i18n("Snow/Ice") },
+            { type: 3,  name: i18n("Thunderstorm") },
+            { type: 4,  name: i18n("Fog") },
+            { type: 5,  name: i18n("High temperature") },
+            { type: 6,  name: i18n("Low temperature") },
+            { type: 7,  name: i18n("Coastal event") },
+            { type: 8,  name: i18n("Forest fire") },
+            { type: 9,  name: i18n("Avalanche") },
+            { type: 10, name: i18n("Rain") },
+            { type: 11, name: i18n("Flood") }
+        ];
+    }
+
+    /** Normalizes an alert's awareness type to one of the configurable types
+     *  (folds rain-flood 12 → rain 10; everything unknown → 10/rain is NOT assumed,
+     *  unknown stays 0 and is treated as always-allowed with the global interval). */
+    function _alertConfigType(awarenessType) {
+        var t = parseInt(awarenessType, 10);
+        if (isNaN(t)) return 0;
+        if (t === 12) return 10;   // rain-flood → rain
+        return t;
+    }
+
+    /** Parsed JSON map: awareness type → { enabled, minutes }. */
+    property var _alertTypeSettings: ({})
+    function _loadAlertTypeSettings() {
+        try {
+            var o = JSON.parse(Plasmoid.configuration.alertNotificationsTypeSettings || "{}");
+            _alertTypeSettings = (o && typeof o === "object") ? o : ({});
+        } catch (e) {
+            _alertTypeSettings = ({});
+        }
+    }
+
+    /** Whether the given alert's type is enabled for notifications.
+     *  Unknown types (0) and types with no stored setting default to enabled. */
+    function _alertTypeEnabled(awarenessType) {
+        var t = _alertConfigType(awarenessType);
+        if (t === 0) return true;
+        var s = _alertTypeSettings[t];
+        if (!s || s.enabled === undefined) return true;
+        return s.enabled === true;
+    }
+
+    /** Per-type repeat interval in minutes, falling back to the global value. */
+    function _alertTypeRepeatMinutes(awarenessType) {
+        var t = _alertConfigType(awarenessType);
+        var s = (t !== 0) ? _alertTypeSettings[t] : null;
+        var m = (s && s.minutes !== undefined) ? parseInt(s.minutes, 10) : NaN;
+        if (isNaN(m)) m = _alertNotificationRepeatMinutes();
+        return Math.max(1, Math.min(720, m));
+    }
+
     function _resetAlertNotificationState() {
         _alertNotificationState = ({});
         Plasmoid.configuration.alertNotificationState = "{}";
@@ -1014,11 +1078,17 @@ PlasmoidItem {
         return [name, src, onset, expires].join("|");
     }
 
-    /** Clamp the configured alert repeat/postpone interval to 1–30 minutes. */
+    /** Clamp the configured alert repeat/postpone interval to 1–720 minutes. */
     function _alertNotificationRepeatMinutes() {
         var m = parseInt(Plasmoid.configuration.notificationAlertsRepeatMinutes, 10);
         if (isNaN(m)) m = 30;
-        return Math.max(1, Math.min(30, m));
+        return Math.max(1, Math.min(720, m));
+    }
+
+    /** Whether the persistent alert notification should repeat (and offer
+     *  Dismiss/Postpone). When false, each alert is shown exactly once. */
+    function _alertNotificationRepeatEnabled() {
+        return Plasmoid.configuration.alertNotificationsRepeatEnabled !== false;
     }
 
     /** Looks up (or lazily creates) the per-alert state entry for a fingerprint. */
@@ -1266,6 +1336,7 @@ PlasmoidItem {
             return;
 
         var nowMs = now.getTime();
+        var repeatEnabled = _alertNotificationRepeatEnabled();
         var didChange = false;
 
         for (var i = 0; i < alerts.length; i++) {
@@ -1274,12 +1345,14 @@ PlasmoidItem {
                 continue;
             if (!_alertColorAllowed(a.color))
                 continue;
+            if (!_alertTypeEnabled(a.awarenessType))
+                continue;
 
             var fp = _alertFingerprint(a);
             var entry = _alertNotificationState[fp];
             var isNewAlert = !entry;
             if (isNewAlert) {
-                entry = { dismissed: false, nextDueMs: 0, expiresMs: 0 };
+                entry = { dismissed: false, nextDueMs: 0, expiresMs: 0, shownOnce: false };
                 _alertNotificationState[fp] = entry;
             }
             // Keep the expiry fresh so pruning drops it once it truly expires.
@@ -1291,17 +1364,23 @@ PlasmoidItem {
 
             if (isNewAlert) {
                 _sendAlertNotification(a);
-                entry.nextDueMs = nowMs + _alertNotificationRepeatMinutes() * 60000;
+                entry.shownOnce = true;
+                entry.nextDueMs = nowMs + _alertTypeRepeatMinutes(a.awarenessType) * 60000;
                 didChange = true;
                 continue;
             }
+
+            // Repeat disabled: alert was already shown once; never re-fire while
+            // it stays active (the user only wants a single, button-less alert).
+            if (!repeatEnabled)
+                continue;
 
             if (entry.dismissed)
                 continue;
 
             if (nowMs >= entry.nextDueMs) {
                 _sendAlertNotification(a);
-                entry.nextDueMs = nowMs + _alertNotificationRepeatMinutes() * 60000;
+                entry.nextDueMs = nowMs + _alertTypeRepeatMinutes(a.awarenessType) * 60000;
                 didChange = true;
             }
         }
@@ -2488,6 +2567,7 @@ PlasmoidItem {
         // shown today (e.g. the geomagnetic-activity summary).
         _loadNotificationSentKeys();
         _loadAlertNotificationState();
+        _loadAlertTypeSettings();
         _refreshNotificationRainWindowIfNeeded(true);
         _evaluateNotifications();
         if (Plasmoid.configuration.autoDetectLocation)
@@ -2559,6 +2639,16 @@ PlasmoidItem {
             root._evaluateNotifications();
         }
         function onAlertNotificationsRedEnabledChanged() {
+            root._evaluateNotifications();
+        }
+        function onAlertNotificationsRepeatEnabledChanged() {
+            root._evaluateNotifications();
+        }
+        function onNotificationAlertsRepeatMinutesChanged() {
+            root._evaluateNotifications();
+        }
+        function onAlertNotificationsTypeSettingsChanged() {
+            root._loadAlertTypeSettings();
             root._evaluateNotifications();
         }
         function onNotificationAlertsDaysChanged() {

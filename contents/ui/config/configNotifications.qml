@@ -29,7 +29,44 @@ KCM.SimpleKCM {
     property bool cfg_alertNotificationsOrangeEnabled: true
     property bool cfg_alertNotificationsRedEnabled: true
     property bool cfg_alertNotificationsCriticalEnabled: true
+    property bool cfg_alertNotificationsRepeatEnabled: true
     property int cfg_notificationAlertsRepeatMinutes: 30
+    property string cfg_alertNotificationsTypeSettings: "{}"
+
+    // Parsed working copy of the per-type settings JSON map.
+    property var alertTypeSettings: ({})
+
+    // Canonical MeteoAlarm awareness types shown in the per-type list.
+    readonly property var alertTypeList: [
+        { type: 1,  name: i18n("Wind") },
+        { type: 2,  name: i18n("Snow/Ice") },
+        { type: 3,  name: i18n("Thunderstorm") },
+        { type: 4,  name: i18n("Fog") },
+        { type: 5,  name: i18n("High temperature") },
+        { type: 6,  name: i18n("Low temperature") },
+        { type: 7,  name: i18n("Coastal event") },
+        { type: 8,  name: i18n("Forest fire") },
+        { type: 9,  name: i18n("Avalanche") },
+        { type: 10, name: i18n("Rain") },
+        { type: 11, name: i18n("Flood") }
+    ]
+
+    function alertTypeEnabled(t) {
+        var s = alertTypeSettings[t];
+        return (!s || s.enabled === undefined) ? true : s.enabled === true;
+    }
+    function alertTypeMinutes(t) {
+        var s = alertTypeSettings[t];
+        var m = (s && s.minutes !== undefined) ? parseInt(s.minutes, 10) : NaN;
+        return isNaN(m) ? cfg_notificationAlertsRepeatMinutes : Math.max(1, Math.min(720, m));
+    }
+    function setAlertType(t, enabled, minutes) {
+        var copy = {};
+        for (var k in alertTypeSettings) copy[k] = alertTypeSettings[k];
+        copy[t] = { enabled: enabled, minutes: minutes };
+        alertTypeSettings = copy;
+        cfg_alertNotificationsTypeSettings = JSON.stringify(copy);
+    }
 
     property bool cfg_notificationTodayEnabled: false
     property string cfg_notificationTodayTime: "08:00"
@@ -46,6 +83,15 @@ KCM.SimpleKCM {
 
     property bool cfg_notificationSpaceWeatherEnabled: false
     property string cfg_notificationSpaceWeatherTime: "08:00"
+
+    Component.onCompleted: {
+        try {
+            var o = JSON.parse(cfg_alertNotificationsTypeSettings || "{}");
+            alertTypeSettings = (o && typeof o === "object") ? o : ({});
+        } catch (e) {
+            alertTypeSettings = ({});
+        }
+    }
 
     function normalizeTime(s, fallback) {
         var t = (s || "").trim();
@@ -179,6 +225,7 @@ KCM.SimpleKCM {
         Kirigami.InlineMessage {
             Layout.fillWidth: true
             type: Kirigami.MessageType.Information
+            showCloseButton: true
             visible: true
             text: i18n("Each notification type can be enabled independently, with its own daily time where applicable.")
         }
@@ -230,24 +277,87 @@ KCM.SimpleKCM {
             Kirigami.InlineMessage {
                 Layout.fillWidth: true
                 type: Kirigami.MessageType.Information
+                showCloseButton: true
                 visible: root.cfg_alertNotificationsEnabled && root.cfg_alertNotificationsCriticalEnabled
                 text: i18n("Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications).")
             }
 
+            Switch {
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                text: i18n("Repeat reminder until dismissed")
+                checked: root.cfg_alertNotificationsRepeatEnabled
+                onToggled: root.cfg_alertNotificationsRepeatEnabled = checked
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                type: Kirigami.MessageType.Information
+                showCloseButton: true
+                visible: root.cfg_alertNotificationsEnabled && !root.cfg_alertNotificationsRepeatEnabled
+                text: i18n("Each alert is shown only once, without Dismiss and Postpone buttons.")
+            }
+
             RowLayout {
                 Layout.fillWidth: true
-                enabled: root.cfg_alertNotificationsEnabled
+                enabled: root.cfg_alertNotificationsEnabled && root.cfg_alertNotificationsRepeatEnabled
                 opacity: enabled ? 1.0 : 0.5
                 spacing: 8
                 Label { text: i18n("Repeat reminder every:") }
                 SpinBox {
                     from: 1
-                    to: 30
+                    to: 720
                     stepSize: 1
                     value: root.cfg_notificationAlertsRepeatMinutes
                     onValueModified: root.cfg_notificationAlertsRepeatMinutes = value
                 }
                 Label { text: i18n("minutes") }
+            }
+
+            // ── Per-type overrides ─────────────────────────────────────────
+            Label {
+                Layout.topMargin: 4
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                text: i18n("Per alert type:")
+                font.bold: true
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                type: Kirigami.MessageType.Information
+                showCloseButton: true
+                visible: root.cfg_alertNotificationsEnabled
+                text: i18n("Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on.")
+            }
+
+            Repeater {
+                model: root.alertTypeList
+                delegate: RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    enabled: root.cfg_alertNotificationsEnabled
+                    opacity: enabled ? 1.0 : 0.5
+                    spacing: 8
+
+                    Switch {
+                        Layout.preferredWidth: 200
+                        text: modelData.name
+                        checked: root.alertTypeEnabled(modelData.type)
+                        onToggled: root.setAlertType(modelData.type, checked, root.alertTypeMinutes(modelData.type))
+                    }
+                    Item { Layout.fillWidth: true }
+                    SpinBox {
+                        enabled: root.cfg_alertNotificationsRepeatEnabled && root.alertTypeEnabled(modelData.type)
+                        opacity: enabled ? 1.0 : 0.5
+                        from: 1
+                        to: 720
+                        stepSize: 1
+                        value: root.alertTypeMinutes(modelData.type)
+                        onValueModified: root.setAlertType(modelData.type, root.alertTypeEnabled(modelData.type), value)
+                    }
+                    Label { text: i18n("minutes") }
+                }
             }
         }
 
