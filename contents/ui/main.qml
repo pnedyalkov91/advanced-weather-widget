@@ -1465,16 +1465,16 @@ PlasmoidItem {
 
     /** "Thunderstorm" for storm codes (95/96/99), otherwise "Rain". */
     function _rainOrThunderLabel(code) {
-        return _isStormCode(code) ? i18n("Thunderstorm") : i18n("Rain");
+        return _isStormCode(code) ? i18n("Thunderstorms") : i18n("Rain");
     }
 
-    /** "in the next hours" / "this morning" / "this afternoon" / "this night" for a target time. */
+    /** "in the next hours" / "this morning" / "this afternoon" / "tonight" for a target time. */
     function _dayPartLabel(targetMs, nowMs) {
         if ((targetMs - nowMs) <= 3 * 3600000) return i18n("in the next hours");
         var h = new Date(targetMs).getHours();
         if (h >= 6 && h < 12) return i18n("this morning");
         if (h >= 12 && h < 18) return i18n("this afternoon");
-        return i18n("this night");
+        return i18n("tonight");
     }
 
     function _processRainNotifications(now) {
