@@ -459,11 +459,9 @@ loadApi();\
             // Prevent popups / navigation away from our page
             onNewWindowRequested: function(req) { Qt.openUrlExternally(req.requestedUrl); }
 
-            // Replace the native Chromium context menu (Back/Forward/Reload/Save page/View source) with our own
-            onContextMenuRequested: function(request) {
-                request.accepted = true;
-                radarContextMenu.popup();
-            }
+            // Disable the native Chromium context menu (Back/Forward/Reload/Save page/View source).
+            // Radar reload is handled by the header Refresh button instead, for a consistent UI.
+            onContextMenuRequested: function(request) { request.accepted = true; }
 
             Component.onCompleted: {
                 var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom);
@@ -490,14 +488,6 @@ loadApi();\
                     if (!isNaN(z) && z !== Plasmoid.configuration.radarZoom) {
                         Plasmoid.configuration.radarZoom = z;
                     }
-                }
-            }
-
-            Menu {
-                id: radarContextMenu
-                MenuItem {
-                    text: i18n("Reload radar")
-                    onTriggered: radarRoot.reload()
                 }
             }
 

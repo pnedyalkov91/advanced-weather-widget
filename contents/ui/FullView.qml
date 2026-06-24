@@ -406,8 +406,14 @@ Rectangle {
                 visible: !fullView.inSystemTray
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Refresh")
-                onClicked: if (weatherRoot)
-                    weatherRoot.refreshWeather()
+                onClicked: {
+                    if (weatherRoot)
+                        weatherRoot.refreshWeather()
+                    // On the Radar tab, also flush and reload the radar tiles so the
+                    // Refresh button is consistent across all tabs.
+                    if (fullView.activeTab === 2 && radarLoader.item)
+                        radarLoader.item.reload()
+                }
             }
         }
 
