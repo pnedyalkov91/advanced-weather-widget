@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-"
 "widget/issues\n"
 "POT-Creation-Date: 2026-06-24 15:31+0300\n"
-"PO-Revision-Date: 2026-06-27 11:11+0200\n"
+"PO-Revision-Date: 2026-06-27 16:54+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: \n"
 "Language: nl\n"
@@ -254,7 +254,7 @@ msgstr "Luchtkwaliteitsopties"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:653
 #: contents/ui/DetailsView.qml:1402 contents/ui/main.qml:855
 msgid "Alder"
-msgstr "Alder"
+msgstr "Els"
 
 #: contents/ui/config/configAppearance.qml:1420
 #: contents/ui/config/configAppearance.qml:1543
