@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-06-24 15:24+0300\n"
-"PO-Revision-Date: 2026-06-19 08:45+0200\n"
+"PO-Revision-Date: 2026-06-25 09:12+0200\n"
 "Last-Translator: summoner <summoner@disroot.org>\n"
 "Language-Team: Hungarian <>\n"
 "Language: hu_HU\n"
@@ -250,7 +250,7 @@ msgstr "Riasztások:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:810
 msgid "All days show hourly forecast when opening the tab"
-msgstr "A fül megnyitásakor minden napnál megjelenik az óránkénti előrejelzés"
+msgstr "A lap megnyitásakor minden napnál megjelenik az óránkénti előrejelzés"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:794
 msgid "All days start collapsed"
@@ -294,12 +294,12 @@ msgstr "Sorgörgetés animálása"
 
 #: contents/ui/config/configAppearance.qml:1344
 msgid "Apparent (feels-like) temperature"
-msgstr "Érzékelt hőmérséklet (hőérzet)"
+msgstr "Hőérzet"
 
 #: contents/ui/config/configAppearance.qml:1446
 #: contents/ui/config/configAppearance.qml:1583
 msgid "Apparent temperature"
-msgstr "Érzékelt hőmérséklet"
+msgstr "Hőérzet"
 
 #: contents/config/config.qml:57
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:130
@@ -507,7 +507,7 @@ msgstr "Celsius (°C)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:540
 msgid "Changes staged. Click the main Apply button to save."
-msgstr "Változtatások előjegyezve. Kattintson az Alkalmaz gombra a mentéshez."
+msgstr "Változtatások előjegyezve. Kattintson az „Alkalmaz” gombra a mentéshez."
 
 #: contents/ui/config/configGeneral.qml:88
 #: contents/ui/config/configLocation.qml:481
@@ -574,7 +574,7 @@ msgstr "Tiszta égbolt"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:578
 msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
-msgstr "Kattintson a „Szolgáltatók tesztelés” gombra, hogy ellenőrizze, az egyes támogatott időjárási szolgáltatók képesek-e feldolgozni a koordinátákat. Azok a szolgáltatók, amelyekhez API-kulcs szükséges, de az nincs beállítva, ki lesznek hagyva."
+msgstr "Kattintson a „Szolgáltatók tesztelése” gombra, hogy ellenőrizze, az egyes támogatott időjárási szolgáltatók képesek-e feldolgozni a koordinátákat. Azok a szolgáltatók, amelyekhez API-kulcs szükséges, de az nincs beállítva, ki lesznek hagyva."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:635
 msgid "Click on the map to select a location"
@@ -685,7 +685,7 @@ msgstr "Jelenlegi dátum / idő"
 
 #: contents/ui/config/configAppearance.qml:1372
 msgid "Current moon phase"
-msgstr "Jelenlegi Holdfázis"
+msgstr "Jelenlegi holdfázis"
 
 #: contents/ui/config/configAppearance.qml:1322
 #: contents/ui/config/configAppearance.qml:1569
@@ -968,7 +968,7 @@ msgstr "Hely megadása"
 
 #: contents/ui/config/configLocation.qml:1588
 msgid "Enter Manually"
-msgstr "Megadás kézzel"
+msgstr "Kézi megadás"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:542
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
@@ -1165,7 +1165,7 @@ msgstr "Erdőtűz"
 
 #: contents/ui/config/configGeneral.qml:458
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
-msgstr "Ingyenes Norvég Meteorológiai Intézet szolgáltatás. Nincs szükség API-kulcsra."
+msgstr "A Norvég Meteorológiai Intézet szolgáltatása ingyenes és nincs szükség hozzá API-kulcsra."
 
 #: contents/ui/config/configGeneral.qml:459
 msgid "Free and open-source. No API key needed. Recommended."
@@ -1347,7 +1347,7 @@ msgstr "Páratartalom:"
 #: contents/ui/config/configLocation.qml:932
 #: contents/ui/config/configLocation.qml:963
 msgid "IP geolocation"
-msgstr "IP-cím alapú helymeghatározás"
+msgstr "IP-cím-alapú helymeghatározás"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:195
 msgid "Icon and temperature"
@@ -1462,11 +1462,11 @@ msgstr "Érvénytelen válasz"
 
 #: contents/ui/config/configGeneral.qml:265
 msgid "Invalid response from QWeather."
-msgstr "Érvénytelen válasz érkezett a QWeather-től."
+msgstr "Érvénytelen válasz érkezett a QWeathertől."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:917
 msgid "Item spacing:"
-msgstr "Elem térköz:"
+msgstr "Elem térköze:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:835
 msgid "Item width:"
