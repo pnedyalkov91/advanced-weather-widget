@@ -148,8 +148,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-24 15:24+0300\n"
-"PO-Revision-Date: 2026-06-19 23:36+0200\n"
+"POT-Creation-Date: 2026-06-28 18:40+0300\n"
+"PO-Revision-Date: 2026-06-25 20:44+0200\n"
 "Last-Translator: Konrad Lemanowski <lokalize@ajnulo.ovh>\n"
 "Language-Team: Polish <kde-i18n-doc@kde.org>\n"
 "Language: pl\n"
@@ -193,7 +193,7 @@ msgstr "%1: może być %2"
 
 #: contents/ui/main.qml:1422
 msgid "%1 will be %2 with a low of %3 and a high of %4."
-msgstr "%1 %2, minimalnie %3, maksymalnie %$."
+msgstr "%1 %2, minimalnie %3, maksymalnie %4."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1049
 msgctxt "@info %1 size %2 family"
@@ -262,7 +262,7 @@ msgstr "68°F"
 
 #: contents/ui/main.qml:1187
 msgid "<b>Effective:</b> %1"
-msgstr "<b>W mocy:</b> %1"
+msgstr "<b>Od:</b> %1"
 
 #: contents/ui/main.qml:1184
 msgid "<b>Headline:</b> %1"
@@ -526,7 +526,7 @@ msgstr "Dostępne"
 
 #: contents/ui/config/configNotifications.qml:48 contents/ui/main.qml:948
 msgid "Avalanche"
-msgstr "Lawina"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:100
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:371
@@ -732,7 +732,7 @@ msgstr "Chmury"
 
 #: contents/ui/config/configNotifications.qml:46 contents/ui/main.qml:946
 msgid "Coastal event"
-msgstr "Zjawisko przybrzeżne"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:303
 #: contents/ui/config/tabs/ConfigPanelTab.qml:312
@@ -989,7 +989,7 @@ msgstr "Punkt rosy:"
 
 #: contents/ui/config/configNotifications.qml:317
 msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
-msgstr "Wyłącz typ, aby go wyciszyć, lub nadaj mu własny odstęp powtarzania. Odstęp jest używany tylko wtedy, gdy włączone jest „Powtarzaj przypomnienie do zamknięcia”."
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:488
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:483
@@ -1056,7 +1056,7 @@ msgstr "Każdy projekt QWeather ma unikatowego hosta API. Znajdź swojego na con
 
 #: contents/ui/config/configNotifications.qml:300
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
-msgstr "Każde ostrzeżenie jest pokazywane tylko raz, bez przycisków Zamknij i Odłóż."
+msgstr ""
 
 #: contents/ui/config/configNotifications.qml:232
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
@@ -1072,7 +1072,7 @@ msgstr "Edytuj szczegóły lokalizacji"
 
 #: contents/ui/DetailsView.qml:2308
 msgid "Effective"
-msgstr "W mocy"
+msgstr "Od:"
 
 #: contents/ui/config/configNotifications.qml:243
 msgid "Enable alert notifications"
@@ -1261,7 +1261,7 @@ msgstr "Płaskie, kolorowe (Wbudowany)"
 
 #: contents/ui/config/configNotifications.qml:50 contents/ui/main.qml:950
 msgid "Flood"
-msgstr "Powódź"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:248
 #: contents/ui/config/configNotifications.qml:43
@@ -1303,7 +1303,7 @@ msgstr "Prognoza:"
 
 #: contents/ui/config/configNotifications.qml:47 contents/ui/main.qml:947
 msgid "Forest fire"
-msgstr "Pożar lasu"
+msgstr ""
 
 #: contents/ui/config/configGeneral.qml:458
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
@@ -1445,7 +1445,7 @@ msgstr "Ukryj ikonę"
 #: contents/ui/js/spaceWeather.js:195 contents/ui/main.qml:807
 #: contents/ui/main.qml:851
 msgid "High"
-msgstr "Wysoki(a)"
+msgstr "Wys."
 
 #: contents/ui/config/configGeneral.qml:454
 msgid "High precision forecast provider. API key required below."
@@ -1453,7 +1453,7 @@ msgstr "Dostawca pogody o wysokiej dokładności. Klucz API wymagany poniżej."
 
 #: contents/ui/config/configNotifications.qml:44 contents/ui/main.qml:944
 msgid "High temperature"
-msgstr "Wysoka temperatura"
+msgstr ""
 
 #: contents/ui/config/configGeneral.qml:448
 msgid "Historical and forecast data provider. API key required below."
@@ -1584,7 +1584,7 @@ msgstr ""
 
 #: contents/ui/DetailsView.qml:2312
 msgid "Instruction"
-msgstr "Instrukcja"
+msgstr "Zalecenia"
 
 #: contents/ui/config/configGeneral.qml:790
 msgid "Interval:"
@@ -1857,11 +1857,11 @@ msgstr "Sprawdzam lokalizację..."
 #: contents/ui/js/spaceWeather.js:197 contents/ui/main.qml:805
 #: contents/ui/main.qml:849
 msgid "Low"
-msgstr "Niski(a)"
+msgstr "Nis."
 
 #: contents/ui/config/configNotifications.qml:45 contents/ui/main.qml:945
 msgid "Low temperature"
-msgstr "Niska temperatura"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
 msgid "Magnetic Field (Bz)"
@@ -1943,7 +1943,7 @@ msgstr "Tryb:"
 #: contents/ui/js/spaceWeather.js:184 contents/ui/js/spaceWeather.js:196
 #: contents/ui/main.qml:806 contents/ui/main.qml:820 contents/ui/main.qml:850
 msgid "Moderate"
-msgstr "Średni(a)"
+msgstr "Średn."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:682
 msgid "Moderate drizzle"
@@ -2191,7 +2191,7 @@ msgstr "Powiadom o nadchodzącym deszczu/burzy"
 
 #: contents/ui/config/configNotifications.qml:412
 msgid "Notify about upcoming snow"
-msgstr "Powiadom o nadchodzącym śniegu"
+msgstr ""
 
 #: contents/ui/config/configNotifications.qml:426
 msgid "Notify with today's UV forecast"
@@ -2342,7 +2342,7 @@ msgstr "Zatrzymaj"
 
 #: contents/ui/config/configNotifications.qml:308
 msgid "Per alert type:"
-msgstr "Według typu ostrzeżenia:"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:884
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:509
@@ -2403,7 +2403,7 @@ msgstr "Słaba"
 
 #: contents/ui/main.qml:396
 msgid "Postpone"
-msgstr "Opóźnij"
+msgstr ""
 
 #: contents/ui/SimpleView.qml:264
 msgid "Precip Sum"
@@ -2654,7 +2654,7 @@ msgstr "Zmień nazwę lokalizacji"
 
 #: contents/ui/config/configNotifications.qml:290
 msgid "Repeat reminder until dismissed"
-msgstr "Powtarzaj przypomnienie do zamknięcia"
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:799
 msgid "Requesting location via GeoClue2…"
@@ -2975,15 +2975,15 @@ msgstr "Grubość pokrywy śnieżnej (cm/in)"
 
 #: contents/ui/main.qml:1644
 msgid "Snow ending"
-msgstr "Śnieg kończy się"
+msgstr ""
 
 #: contents/ui/main.qml:1639
 msgid "Snow expected"
-msgstr "Prognoza: śnieg"
+msgstr ""
 
 #: contents/ui/main.qml:1645
 msgid "Snow expected to end %1."
-msgstr "Śnieg: spodziewany koniec %1"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:702
@@ -2993,7 +2993,7 @@ msgstr "Śnieg ziarnisty"
 
 #: contents/ui/main.qml:1640
 msgid "Snow possible %1."
-msgstr "Śnieg: może być %1"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
 #: contents/ui/main.qml:1874
@@ -3002,7 +3002,7 @@ msgstr "Przelotne opady śniegu"
 
 #: contents/ui/config/configNotifications.qml:41 contents/ui/main.qml:941
 msgid "Snow/Ice"
-msgstr "Śnieg/Lód"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:719
 #: contents/ui/DetailsView.qml:1906
@@ -3326,7 +3326,7 @@ msgstr "Burza z gradobiciem (noc)"
 
 #: contents/ui/main.qml:1587
 msgid "Thunderstorms"
-msgstr "Burze"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:310
 msgid "Time format:"
@@ -3570,7 +3570,7 @@ msgstr "Pionowy"
 #: contents/ui/js/pollen.js:45 contents/ui/main.qml:808
 #: contents/ui/main.qml:852
 msgid "Very High"
-msgstr "Bardzo wysoki(a)"
+msgstr "Bardzo wys."
 
 #: contents/ui/js/airQuality.js:51 contents/ui/main.qml:822
 msgid "Very Poor"
@@ -3874,7 +3874,7 @@ msgstr "px"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:288
 msgid "px height"
-msgstr "ps wysokości"
+msgstr "px wysokości"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:288
 msgid "px width"
@@ -3934,7 +3934,7 @@ msgstr "burze"
 
 #: contents/ui/main.qml:1596
 msgid "tonight"
-msgstr "dziś w nocy"
+msgstr ""
 
 #: contents/ui/main.qml:1147
 msgid "until %1"
@@ -3956,11 +3956,11 @@ msgstr "Twoja lokalizacja"
 #~ msgid "Postpone %1 min"
 #~ msgstr "Opóźnij %1 min"
 
-#~ msgid "Repeat reminder every:"
-#~ msgstr "Powtarzaj przypomnienie co:"
-
 #~ msgid "Reload radar"
 #~ msgstr "Załaduj radar ponownie"
+
+#~ msgid "Repeat reminder every:"
+#~ msgstr "Powtarzaj przypomnienie co:"
 
 #~ msgid "this night"
 #~ msgstr "dzisiejszej nocy"
