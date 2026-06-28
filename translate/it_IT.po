@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/"
 "issues\n"
 "POT-Creation-Date: 2026-06-24 15:31+0300\n"
-"PO-Revision-Date: 2026-06-27 12:10+0200\n"
+"PO-Revision-Date: 2026-06-28 07:45+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -544,15 +544,15 @@ msgstr "Monossido di carbonio (CO)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:913
 msgid "Cards"
-msgstr "Card"
+msgstr "Schede"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:566
 msgid "Cards (2 columns)"
-msgstr "Card (2 colonne)"
+msgstr "Schede (2 colonne)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:577
 msgid "Cards height:"
-msgstr "Altezza card:"
+msgstr "Altezza schede:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:227
 msgid "Celsius (°C)"
@@ -877,11 +877,11 @@ msgstr "Dettagli"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:114
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:653
 msgid "Details Items"
-msgstr "Elementi dettagli"
+msgstr "Elementi dei dettagli"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:659
 msgid "Details items:"
-msgstr "Elementi dettagli:"
+msgstr "Elementi dei dettagli:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:559
 msgid "Details layout:"
@@ -1133,7 +1133,7 @@ msgstr "Espandi il widget per riempire lo spazio disponibile del pannello"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:611
 msgid "Expanded cards height:"
-msgstr "Altezza card espanse:"
+msgstr "Altezza schede espanse:"
 
 #: contents/ui/DetailsView.qml:2310
 msgid "Expires"
