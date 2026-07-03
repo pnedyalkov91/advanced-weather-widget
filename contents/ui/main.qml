@@ -1596,6 +1596,18 @@ PlasmoidItem {
         return i18n("tonight");
     }
 
+    /** Rain/snow transitions are only notified when they happen "today": before
+     *  tomorrow 06:00, so late-night rain still counts as "tonight" but
+     *  _dayPartLabel's same-day wording stays truthful. The hourly window spans
+     *  today + tomorrow (the tomorrow-outlook notification needs it), so without
+     *  this cutoff a dry today would trigger "Rain expected this afternoon" for
+     *  an event more than a day away. */
+    function _conditionNotificationCutoffMs(nowMs) {
+        var d = new Date(nowMs);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() + 30 * 3600000; // today 00:00 + 30h = tomorrow 06:00
+    }
+
     function _processRainNotifications(now) {
         if (!Plasmoid.configuration.notificationRainEnabled)
             return;
@@ -1608,6 +1620,10 @@ PlasmoidItem {
         var nowMs = now.getTime();
         var startEv = _nextRainTransition(nowMs, true);
         var endEv = _nextRainTransition(nowMs, false);
+        // Events past today are tomorrow-outlook territory, not "expected soon".
+        var cutoffMs = _conditionNotificationCutoffMs(nowMs);
+        if (startEv && startEv.timeMs >= cutoffMs) startEv = null;
+        if (endEv && endEv.timeMs >= cutoffMs) endEv = null;
         if (startEv && (!endEv || startEv.timeMs <= endEv.timeMs)) {
             var label = _rainOrThunderLabel(startEv.code);
             var title = i18n("%1 expected", label);
@@ -1635,6 +1651,10 @@ PlasmoidItem {
         var nowMs = now.getTime();
         var startEv = _nextSnowTransition(nowMs, true);
         var endEv = _nextSnowTransition(nowMs, false);
+        // Events past today are tomorrow-outlook territory, not "expected soon".
+        var cutoffMs = _conditionNotificationCutoffMs(nowMs);
+        if (startEv && startEv.timeMs >= cutoffMs) startEv = null;
+        if (endEv && endEv.timeMs >= cutoffMs) endEv = null;
         if (startEv && (!endEv || startEv.timeMs <= endEv.timeMs)) {
             var title = i18n("Snow expected");
             var msg = i18n("Snow possible %1.", _dayPartLabel(startEv.timeMs, nowMs));

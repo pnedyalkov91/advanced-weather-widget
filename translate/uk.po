@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-03 15:22+0300\n"
 "PO-Revision-Date: 2026-05-26 16:39+0300\n"
 "Last-Translator: Oleksandr Afanasiev\n"
 "Language-Team: Ukrainian\n"
@@ -32,19 +32,19 @@ msgstr "%1 - Сьогодні"
 msgid "%1 - Tomorrow"
 msgstr "%1 - Завтра"
 
-#: contents/ui/main.qml:1619
+#: contents/ui/main.qml:1635
 msgid "%1 ending"
 msgstr "%1 закінчується"
 
-#: contents/ui/main.qml:1613
+#: contents/ui/main.qml:1629
 msgid "%1 expected"
 msgstr "Очікується %1"
 
-#: contents/ui/main.qml:1620
+#: contents/ui/main.qml:1636
 msgid "%1 expected to end %2."
 msgstr "Очікується, що %1 закінчиться %2."
 
-#: contents/ui/main.qml:1614
+#: contents/ui/main.qml:1630
 msgid "%1 possible %2."
 msgstr "Можливий %1 %2."
 
@@ -561,13 +561,13 @@ msgstr "Ясно (день)"
 msgid "Clear (night)"
 msgstr "Ясно (ніч)"
 
-#: contents/ui/main.qml:1826
+#: contents/ui/main.qml:1846
 msgid "Clear night"
 msgstr "Ясна ніч"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
-#: contents/ui/main.qml:1826
+#: contents/ui/main.qml:1846
 msgid "Clear sky"
 msgstr "Ясне небо"
 
@@ -899,7 +899,7 @@ msgid "Drag to reorder shown items"
 msgstr "Перетягніть, щоб змінити порядок показаних елементів"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:53
-#: contents/ui/main.qml:1840
+#: contents/ui/main.qml:1860
 msgid "Drizzle"
 msgstr "Мряка"
 
@@ -1097,7 +1097,7 @@ msgstr "Заповнити панель:"
 msgid "Find"
 msgstr "Знайти"
 
-#: contents/ui/main.qml:2003
+#: contents/ui/main.qml:2023
 msgid "First Quarter"
 msgstr "Перша чверть"
 
@@ -1124,7 +1124,7 @@ msgstr "Повінь"
 #: contents/ui/config/configNotifications.qml:43
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:52
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:678
-#: contents/ui/main.qml:943 contents/ui/main.qml:1834
+#: contents/ui/main.qml:943 contents/ui/main.qml:1854
 msgid "Fog"
 msgstr "Туман"
 
@@ -1172,7 +1172,7 @@ msgstr "Вільний код. Ключ API не потрібен. Рекоме�
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:54
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:686
-#: contents/ui/main.qml:1846
+#: contents/ui/main.qml:1866
 msgid "Freezing drizzle"
 msgstr "Крижана мряка"
 
@@ -1186,7 +1186,7 @@ msgstr "Крижана мряка (ніч)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:694
-#: contents/ui/main.qml:1856
+#: contents/ui/main.qml:1876
 msgid "Freezing rain"
 msgstr "Крижаний дощ"
 
@@ -1202,7 +1202,7 @@ msgstr "Крижаний дощ (ніч)"
 msgid "Friday"
 msgstr "П'ятниця"
 
-#: contents/ui/main.qml:2007
+#: contents/ui/main.qml:2027
 msgid "Full Moon"
 msgstr "Повний місяць"
 
@@ -1228,11 +1228,11 @@ msgstr "GeoClue2 недоступна, спроба отримати систе�
 msgid "Geomagnetic Storm"
 msgstr "Геомагнітна буря"
 
-#: contents/ui/config/configNotifications.qml:443 contents/ui/main.qml:1731
+#: contents/ui/config/configNotifications.qml:443 contents/ui/main.qml:1751
 msgid "Geomagnetic activity"
 msgstr "Геомагнітна активність"
 
-#: contents/ui/main.qml:1728
+#: contents/ui/main.qml:1748
 msgid "Geomagnetic activity will be %1 (Kp %2)"
 msgstr "Геомагнітна активність буде %1 (Kp %2)"
 
@@ -1254,20 +1254,20 @@ msgstr "Заголовок"
 msgid "Heavy"
 msgstr "Сильний"
 
-#: contents/ui/main.qml:1842
+#: contents/ui/main.qml:1862
 msgid "Heavy drizzle"
 msgstr "Сильна мряка"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:692
-#: contents/ui/main.qml:1852
+#: contents/ui/main.qml:1872
 msgid "Heavy rain"
 msgstr "Сильний дощ"
 
-#: contents/ui/main.qml:1870
+#: contents/ui/main.qml:1890
 msgid "Heavy showers"
 msgstr "Сильні зливи"
 
-#: contents/ui/main.qml:1862
+#: contents/ui/main.qml:1882
 msgid "Heavy snow"
 msgstr "Сильний сніг"
 
@@ -1279,7 +1279,7 @@ msgstr "Сильні снігові зливи"
 msgid "Heavy snowfall"
 msgstr "Сильний снігопад"
 
-#: contents/ui/main.qml:1880
+#: contents/ui/main.qml:1900
 msgid "Heavy thunderstorm with hail"
 msgstr "Сильна гроза з градом"
 
@@ -1529,7 +1529,7 @@ msgstr "Kp індекс"
 msgid "Kp index/G forecast:"
 msgstr "Прогноз індексу Kp/G:"
 
-#: contents/ui/main.qml:2011
+#: contents/ui/main.qml:2031
 msgid "Last Quarter"
 msgstr "Остання чверть"
 
@@ -1565,19 +1565,19 @@ msgid "Light"
 msgstr "Слабкий"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
-#: contents/ui/main.qml:1838
+#: contents/ui/main.qml:1858
 msgid "Light drizzle"
 msgstr "Слабка мряка"
 
-#: contents/ui/main.qml:1844
+#: contents/ui/main.qml:1864
 msgid "Light freezing drizzle"
 msgstr "Слабка крижана мряка"
 
-#: contents/ui/main.qml:1854
+#: contents/ui/main.qml:1874
 msgid "Light freezing rain"
 msgstr "Слабкий крижаний дощ"
 
-#: contents/ui/main.qml:1848
+#: contents/ui/main.qml:1868
 msgid "Light rain"
 msgstr "Слабкий дощ"
 
@@ -1589,11 +1589,11 @@ msgstr "Слабкий дощ / Мряка (день)"
 msgid "Light rain / Drizzle (night)"
 msgstr "Слабкий дощ / Мряка (ніч)"
 
-#: contents/ui/main.qml:1866
+#: contents/ui/main.qml:1886
 msgid "Light showers"
 msgstr "Слабкі зливи"
 
-#: contents/ui/main.qml:1858
+#: contents/ui/main.qml:1878
 msgid "Light snow"
 msgstr "Слабкий сніг"
 
@@ -1605,7 +1605,7 @@ msgstr "Слабкий сніг (день)"
 msgid "Light snow (night)"
 msgstr "Слабкий сніг (ніч)"
 
-#: contents/ui/main.qml:1872
+#: contents/ui/main.qml:1892
 msgid "Light snow showers"
 msgstr "Слабкі снігові зливи"
 
@@ -1730,7 +1730,7 @@ msgstr "Стиль головного значка:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:49
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:672
-#: contents/ui/main.qml:1828
+#: contents/ui/main.qml:1848
 msgid "Mainly clear"
 msgstr "Переважно ясно"
 
@@ -1961,7 +1961,7 @@ msgstr "Потрібні координати місця? Ви можете зн
 msgid "Network error"
 msgstr "Помилка мережі"
 
-#: contents/ui/main.qml:1999
+#: contents/ui/main.qml:2019
 msgid "New Moon"
 msgstr "Молодик"
 
@@ -2126,7 +2126,7 @@ msgstr "Оранжевий"
 #: contents/ui/config/configAppearance.qml:242
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:676
-#: contents/ui/main.qml:1832
+#: contents/ui/main.qml:1852
 msgid "Overcast"
 msgstr "Хмарно"
 
@@ -2181,7 +2181,7 @@ msgstr "Тверді частинки (PM2.5)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:674
-#: contents/ui/main.qml:1830 contents/ui/main.qml:1882
+#: contents/ui/main.qml:1850 contents/ui/main.qml:1902
 msgid "Partly cloudy"
 msgstr "Мінлива хмарність"
 
@@ -2422,7 +2422,7 @@ msgstr "Амброзія"
 #: contents/ui/components/RadarWebEngineView.qml:73
 #: contents/ui/config/configNotifications.qml:49
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:949 contents/ui/main.qml:1587 contents/ui/main.qml:1850
+#: contents/ui/main.qml:949 contents/ui/main.qml:1587 contents/ui/main.qml:1870
 msgid "Rain"
 msgstr "Дощ"
 
@@ -2540,7 +2540,7 @@ msgstr "Скинути все до типових"
 msgid "Reset to default"
 msgstr "Скинути до типового"
 
-#: contents/ui/main.qml:1836
+#: contents/ui/main.qml:1856
 msgid "Rime fog"
 msgstr "Крижаний туман"
 
@@ -2719,7 +2719,7 @@ msgstr "Показати/приховати ключ"
 msgid "Show:"
 msgstr "Показувати:"
 
-#: contents/ui/main.qml:1868
+#: contents/ui/main.qml:1888
 msgid "Showers"
 msgstr "Зливи"
 
@@ -2801,7 +2801,7 @@ msgstr "Мале коло  ⚬"
 
 #: contents/ui/config/configNotifications.qml:409
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
-#: contents/ui/main.qml:1860
+#: contents/ui/main.qml:1880
 msgid "Snow"
 msgstr "Сніг"
 
@@ -2830,30 +2830,30 @@ msgstr "Сніговий покрив:"
 msgid "Snow depth (cm/in)"
 msgstr "Глибина снігу (см/дюйм)"
 
-#: contents/ui/main.qml:1644
+#: contents/ui/main.qml:1664
 msgid "Snow ending"
 msgstr "Сніг закінчується"
 
-#: contents/ui/main.qml:1639
+#: contents/ui/main.qml:1659
 msgid "Snow expected"
 msgstr "Очікується сніг"
 
-#: contents/ui/main.qml:1645
+#: contents/ui/main.qml:1665
 msgid "Snow expected to end %1."
 msgstr "Очікується, що сніг закінчиться %1."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:702
-#: contents/ui/main.qml:1864
+#: contents/ui/main.qml:1884
 msgid "Snow grains"
 msgstr "Снігова крупа"
 
-#: contents/ui/main.qml:1640
+#: contents/ui/main.qml:1660
 msgid "Snow possible %1."
 msgstr "Можливий сніг %1."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
-#: contents/ui/main.qml:1874
+#: contents/ui/main.qml:1894
 msgid "Snow showers"
 msgstr "Снігові зливи"
 
@@ -3147,7 +3147,7 @@ msgstr "Це розташування вже у вашому збережено�
 #: contents/ui/config/configNotifications.qml:42
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:714
-#: contents/ui/main.qml:942 contents/ui/main.qml:1876
+#: contents/ui/main.qml:942 contents/ui/main.qml:1896
 msgid "Thunderstorm"
 msgstr "Гроза"
 
@@ -3161,7 +3161,7 @@ msgstr "Гроза (ніч)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:716
-#: contents/ui/main.qml:1878
+#: contents/ui/main.qml:1898
 msgid "Thunderstorm with hail"
 msgstr "Гроза з градом"
 
@@ -3308,7 +3308,7 @@ msgstr "УФ-індекс"
 msgid "UV Index:"
 msgstr "УФ-індекс:"
 
-#: contents/ui/config/configNotifications.qml:423 contents/ui/main.qml:1691
+#: contents/ui/config/configNotifications.qml:423 contents/ui/main.qml:1711
 msgid "UV index"
 msgstr "УФ-індекс"
 
@@ -3317,7 +3317,7 @@ msgstr "УФ-індекс"
 msgid "UV index forecast:"
 msgstr "Прогноз УФ-індексу:"
 
-#: contents/ui/main.qml:1688
+#: contents/ui/main.qml:1708
 msgid "UV will be %1 (%2)"
 msgstr "УФ-індекс буде %1 (%2)"
 
@@ -3464,19 +3464,19 @@ msgstr "Visual Crossing (Потрібен ключ)"
 msgid "Visual Crossing API Key:"
 msgstr "Ключ API Visual Crossing:"
 
-#: contents/ui/main.qml:2013
+#: contents/ui/main.qml:2033
 msgid "Waning Crescent"
 msgstr "Спадаючий серп"
 
-#: contents/ui/main.qml:2009
+#: contents/ui/main.qml:2029
 msgid "Waning Gibbous"
 msgstr "Спадаючий місяць"
 
-#: contents/ui/main.qml:2001
+#: contents/ui/main.qml:2021
 msgid "Waxing Crescent"
 msgstr "Зростаючий серп"
 
-#: contents/ui/main.qml:2005
+#: contents/ui/main.qml:2025
 msgid "Waxing Gibbous"
 msgstr "Зростаючий місяць"
 
@@ -3626,7 +3626,7 @@ msgstr "Збільшити"
 msgid "Zoom out"
 msgstr "Зменшити"
 
-#: contents/ui/main.qml:1661
+#: contents/ui/main.qml:1681
 msgid "a decrease from yesterday"
 msgstr "зменшення порівняно з учорашнім днем"
 
@@ -3634,7 +3634,7 @@ msgstr "зменшення порівняно з учорашнім днем"
 msgid "a few clouds"
 msgstr "невелика хмарність"
 
-#: contents/ui/main.qml:1660
+#: contents/ui/main.qml:1680
 msgid "an increase from yesterday"
 msgstr "збільшення порівняно з учорашнім днем"
 
@@ -3654,7 +3654,7 @@ msgstr "невеликий дощ"
 msgid "e.g. Sofia, Bulgaria"
 msgstr "напр. Софія, Болгарія"
 
-#: contents/ui/main.qml:1670 contents/ui/main.qml:1713
+#: contents/ui/main.qml:1690 contents/ui/main.qml:1733
 msgid "extreme"
 msgstr "екстремальний"
 
@@ -3678,7 +3678,7 @@ msgstr "від %1"
 msgid "ft"
 msgstr "фут"
 
-#: contents/ui/main.qml:1668
+#: contents/ui/main.qml:1688
 msgid "high"
 msgstr "високий"
 
@@ -3690,7 +3690,7 @@ msgstr "у найближчі години"
 msgid "left"
 msgstr "залишилось"
 
-#: contents/ui/main.qml:1666
+#: contents/ui/main.qml:1686
 msgid "low"
 msgstr "низький"
 
@@ -3706,7 +3706,7 @@ msgstr "met.no (безкоштовно)"
 msgid "meters"
 msgstr "метри"
 
-#: contents/ui/main.qml:1709
+#: contents/ui/main.qml:1729
 msgid "minor"
 msgstr "незначна"
 
@@ -3715,7 +3715,7 @@ msgstr "незначна"
 msgid "minutes"
 msgstr "хвилини"
 
-#: contents/ui/main.qml:1667 contents/ui/main.qml:1710
+#: contents/ui/main.qml:1687 contents/ui/main.qml:1730
 msgid "moderate"
 msgstr "помірний"
 
@@ -3737,7 +3737,7 @@ msgstr "px висота"
 msgid "px width"
 msgstr "px ширина"
 
-#: contents/ui/main.qml:1708
+#: contents/ui/main.qml:1728
 msgid "quiet"
 msgstr "спокійна"
 
@@ -3745,7 +3745,7 @@ msgstr "спокійна"
 msgid "rain"
 msgstr "дощ"
 
-#: contents/ui/main.qml:1712
+#: contents/ui/main.qml:1732
 msgid "severe"
 msgstr "сильна"
 
@@ -3757,7 +3757,7 @@ msgstr "зливи"
 msgid "showers and thunderstorms"
 msgstr "зливи з грозами"
 
-#: contents/ui/main.qml:1662
+#: contents/ui/main.qml:1682
 msgid "similar to yesterday"
 msgstr "подібно до вчорашнього дня"
 
@@ -3769,7 +3769,7 @@ msgstr "сніг"
 msgid "snow showers"
 msgstr "снігові зливи"
 
-#: contents/ui/main.qml:1711
+#: contents/ui/main.qml:1731
 msgid "strong"
 msgstr "сильна"
 
@@ -3801,7 +3801,7 @@ msgstr "до %1"
 msgid "until dawn"
 msgstr "до світанку"
 
-#: contents/ui/main.qml:1669
+#: contents/ui/main.qml:1689
 msgid "very high"
 msgstr "дуже високий"
 

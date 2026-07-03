@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-03 15:22+0300\n"
 "PO-Revision-Date: 2026-06-22 00:00+0900\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
@@ -32,19 +32,19 @@ msgstr "%1 - 今日"
 msgid "%1 - Tomorrow"
 msgstr "%1 - 明日"
 
-#: contents/ui/main.qml:1619
+#: contents/ui/main.qml:1635
 msgid "%1 ending"
 msgstr "%1 終了予定"
 
-#: contents/ui/main.qml:1613
+#: contents/ui/main.qml:1629
 msgid "%1 expected"
 msgstr "%1 予想"
 
-#: contents/ui/main.qml:1620
+#: contents/ui/main.qml:1636
 msgid "%1 expected to end %2."
 msgstr "%1 は %2 に終了予定。"
 
-#: contents/ui/main.qml:1614
+#: contents/ui/main.qml:1630
 msgid "%1 possible %2."
 msgstr "%1 の可能性あり %2。"
 
@@ -561,13 +561,13 @@ msgstr "晴れ（昼）"
 msgid "Clear (night)"
 msgstr "晴れ（夜）"
 
-#: contents/ui/main.qml:1826
+#: contents/ui/main.qml:1846
 msgid "Clear night"
 msgstr "晴れた夜"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
-#: contents/ui/main.qml:1826
+#: contents/ui/main.qml:1846
 msgid "Clear sky"
 msgstr "快晴"
 
@@ -899,7 +899,7 @@ msgid "Drag to reorder shown items"
 msgstr "ドラッグして表示項目を並べ替え"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:53
-#: contents/ui/main.qml:1840
+#: contents/ui/main.qml:1860
 msgid "Drizzle"
 msgstr "霧雨"
 
@@ -1097,7 +1097,7 @@ msgstr "パネルを埋める:"
 msgid "Find"
 msgstr "検索"
 
-#: contents/ui/main.qml:2003
+#: contents/ui/main.qml:2023
 msgid "First Quarter"
 msgstr "上弦の月"
 
@@ -1124,7 +1124,7 @@ msgstr "洪水"
 #: contents/ui/config/configNotifications.qml:43
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:52
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:678
-#: contents/ui/main.qml:943 contents/ui/main.qml:1834
+#: contents/ui/main.qml:943 contents/ui/main.qml:1854
 msgid "Fog"
 msgstr "霧"
 
@@ -1172,7 +1172,7 @@ msgstr "無料でオープンソース。API キーは不要です。推奨。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:54
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:686
-#: contents/ui/main.qml:1846
+#: contents/ui/main.qml:1866
 msgid "Freezing drizzle"
 msgstr "着氷性の霧雨"
 
@@ -1186,7 +1186,7 @@ msgstr "着氷性の霧雨（夜）"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:694
-#: contents/ui/main.qml:1856
+#: contents/ui/main.qml:1876
 msgid "Freezing rain"
 msgstr "着氷性の雨"
 
@@ -1202,7 +1202,7 @@ msgstr "着氷性の雨（夜）"
 msgid "Friday"
 msgstr "金曜日"
 
-#: contents/ui/main.qml:2007
+#: contents/ui/main.qml:2027
 msgid "Full Moon"
 msgstr "満月"
 
@@ -1228,11 +1228,11 @@ msgstr "GeoClue2 が利用できません。システム位置を試行中…"
 msgid "Geomagnetic Storm"
 msgstr "地磁気嵐"
 
-#: contents/ui/config/configNotifications.qml:443 contents/ui/main.qml:1731
+#: contents/ui/config/configNotifications.qml:443 contents/ui/main.qml:1751
 msgid "Geomagnetic activity"
 msgstr "地磁気活動"
 
-#: contents/ui/main.qml:1728
+#: contents/ui/main.qml:1748
 msgid "Geomagnetic activity will be %1 (Kp %2)"
 msgstr "地磁気活動は %1（Kp %2）になる予想"
 
@@ -1254,20 +1254,20 @@ msgstr "見出し"
 msgid "Heavy"
 msgstr "強い"
 
-#: contents/ui/main.qml:1842
+#: contents/ui/main.qml:1862
 msgid "Heavy drizzle"
 msgstr "強い霧雨"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:692
-#: contents/ui/main.qml:1852
+#: contents/ui/main.qml:1872
 msgid "Heavy rain"
 msgstr "大雨"
 
-#: contents/ui/main.qml:1870
+#: contents/ui/main.qml:1890
 msgid "Heavy showers"
 msgstr "強いにわか雨"
 
-#: contents/ui/main.qml:1862
+#: contents/ui/main.qml:1882
 msgid "Heavy snow"
 msgstr "大雪"
 
@@ -1279,7 +1279,7 @@ msgstr "強いにわか雪"
 msgid "Heavy snowfall"
 msgstr "大雪"
 
-#: contents/ui/main.qml:1880
+#: contents/ui/main.qml:1900
 msgid "Heavy thunderstorm with hail"
 msgstr "ひょうを伴う激しい雷雨"
 
@@ -1529,7 +1529,7 @@ msgstr "Kp 指数"
 msgid "Kp index/G forecast:"
 msgstr "Kp 指数 / G 予報:"
 
-#: contents/ui/main.qml:2011
+#: contents/ui/main.qml:2031
 msgid "Last Quarter"
 msgstr "下弦の月"
 
@@ -1565,19 +1565,19 @@ msgid "Light"
 msgstr "弱い"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
-#: contents/ui/main.qml:1838
+#: contents/ui/main.qml:1858
 msgid "Light drizzle"
 msgstr "弱い霧雨"
 
-#: contents/ui/main.qml:1844
+#: contents/ui/main.qml:1864
 msgid "Light freezing drizzle"
 msgstr "弱い着氷性の霧雨"
 
-#: contents/ui/main.qml:1854
+#: contents/ui/main.qml:1874
 msgid "Light freezing rain"
 msgstr "弱い着氷性の雨"
 
-#: contents/ui/main.qml:1848
+#: contents/ui/main.qml:1868
 msgid "Light rain"
 msgstr "小雨"
 
@@ -1589,11 +1589,11 @@ msgstr "小雨 / 霧雨（昼）"
 msgid "Light rain / Drizzle (night)"
 msgstr "小雨 / 霧雨（夜）"
 
-#: contents/ui/main.qml:1866
+#: contents/ui/main.qml:1886
 msgid "Light showers"
 msgstr "弱いにわか雨"
 
-#: contents/ui/main.qml:1858
+#: contents/ui/main.qml:1878
 msgid "Light snow"
 msgstr "小雪"
 
@@ -1605,7 +1605,7 @@ msgstr "小雪（昼）"
 msgid "Light snow (night)"
 msgstr "小雪（夜）"
 
-#: contents/ui/main.qml:1872
+#: contents/ui/main.qml:1892
 msgid "Light snow showers"
 msgstr "弱いにわか雪"
 
@@ -1730,7 +1730,7 @@ msgstr "メインアイコンのスタイル:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:49
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:672
-#: contents/ui/main.qml:1828
+#: contents/ui/main.qml:1848
 msgid "Mainly clear"
 msgstr "概ね晴れ"
 
@@ -1961,7 +1961,7 @@ msgstr "場所の座標が必要ですか?<a href=\"https://www.mapcoordinates.n
 msgid "Network error"
 msgstr "ネットワークエラー"
 
-#: contents/ui/main.qml:1999
+#: contents/ui/main.qml:2019
 msgid "New Moon"
 msgstr "新月"
 
@@ -2126,7 +2126,7 @@ msgstr "オレンジ"
 #: contents/ui/config/configAppearance.qml:242
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:676
-#: contents/ui/main.qml:1832
+#: contents/ui/main.qml:1852
 msgid "Overcast"
 msgstr "曇り"
 
@@ -2181,7 +2181,7 @@ msgstr "粒子状物質（PM2.5）"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:674
-#: contents/ui/main.qml:1830 contents/ui/main.qml:1882
+#: contents/ui/main.qml:1850 contents/ui/main.qml:1902
 msgid "Partly cloudy"
 msgstr "一部曇り"
 
@@ -2422,7 +2422,7 @@ msgstr "ブタクサ"
 #: contents/ui/components/RadarWebEngineView.qml:73
 #: contents/ui/config/configNotifications.qml:49
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:949 contents/ui/main.qml:1587 contents/ui/main.qml:1850
+#: contents/ui/main.qml:949 contents/ui/main.qml:1587 contents/ui/main.qml:1870
 msgid "Rain"
 msgstr "雨"
 
@@ -2540,7 +2540,7 @@ msgstr "すべてデフォルトにリセット"
 msgid "Reset to default"
 msgstr "デフォルトにリセット"
 
-#: contents/ui/main.qml:1836
+#: contents/ui/main.qml:1856
 msgid "Rime fog"
 msgstr "着氷霧"
 
@@ -2719,7 +2719,7 @@ msgstr "キーを表示 / 非表示"
 msgid "Show:"
 msgstr "表示:"
 
-#: contents/ui/main.qml:1868
+#: contents/ui/main.qml:1888
 msgid "Showers"
 msgstr "にわか雨"
 
@@ -2801,7 +2801,7 @@ msgstr "小さな丸  ⚬"
 
 #: contents/ui/config/configNotifications.qml:409
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
-#: contents/ui/main.qml:1860
+#: contents/ui/main.qml:1880
 msgid "Snow"
 msgstr "雪"
 
@@ -2830,30 +2830,30 @@ msgstr "積雪:"
 msgid "Snow depth (cm/in)"
 msgstr "積雪深（cm / in）"
 
-#: contents/ui/main.qml:1644
+#: contents/ui/main.qml:1664
 msgid "Snow ending"
 msgstr "雪 終了予定"
 
-#: contents/ui/main.qml:1639
+#: contents/ui/main.qml:1659
 msgid "Snow expected"
 msgstr "雪 予想"
 
-#: contents/ui/main.qml:1645
+#: contents/ui/main.qml:1665
 msgid "Snow expected to end %1."
 msgstr "雪は %1 に終了予定。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:702
-#: contents/ui/main.qml:1864
+#: contents/ui/main.qml:1884
 msgid "Snow grains"
 msgstr "細氷"
 
-#: contents/ui/main.qml:1640
+#: contents/ui/main.qml:1660
 msgid "Snow possible %1."
 msgstr "雪の可能性あり %1。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
-#: contents/ui/main.qml:1874
+#: contents/ui/main.qml:1894
 msgid "Snow showers"
 msgstr "にわか雪"
 
@@ -3147,7 +3147,7 @@ msgstr "この位置は既に保存リストにあります。"
 #: contents/ui/config/configNotifications.qml:42
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:714
-#: contents/ui/main.qml:942 contents/ui/main.qml:1876
+#: contents/ui/main.qml:942 contents/ui/main.qml:1896
 msgid "Thunderstorm"
 msgstr "雷雨"
 
@@ -3161,7 +3161,7 @@ msgstr "雷雨（夜）"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:716
-#: contents/ui/main.qml:1878
+#: contents/ui/main.qml:1898
 msgid "Thunderstorm with hail"
 msgstr "ひょうを伴う雷雨"
 
@@ -3308,7 +3308,7 @@ msgstr "UV 指数"
 msgid "UV Index:"
 msgstr "UV 指数:"
 
-#: contents/ui/config/configNotifications.qml:423 contents/ui/main.qml:1691
+#: contents/ui/config/configNotifications.qml:423 contents/ui/main.qml:1711
 msgid "UV index"
 msgstr "UV 指数"
 
@@ -3317,7 +3317,7 @@ msgstr "UV 指数"
 msgid "UV index forecast:"
 msgstr "UV 指数予報:"
 
-#: contents/ui/main.qml:1688
+#: contents/ui/main.qml:1708
 msgid "UV will be %1 (%2)"
 msgstr "UV は %1（%2）の予想"
 
@@ -3464,19 +3464,19 @@ msgstr "Visual Crossing（キー必須）"
 msgid "Visual Crossing API Key:"
 msgstr "Visual Crossing API キー:"
 
-#: contents/ui/main.qml:2013
+#: contents/ui/main.qml:2033
 msgid "Waning Crescent"
 msgstr "有明月"
 
-#: contents/ui/main.qml:2009
+#: contents/ui/main.qml:2029
 msgid "Waning Gibbous"
 msgstr "居待月"
 
-#: contents/ui/main.qml:2001
+#: contents/ui/main.qml:2021
 msgid "Waxing Crescent"
 msgstr "三日月"
 
-#: contents/ui/main.qml:2005
+#: contents/ui/main.qml:2025
 msgid "Waxing Gibbous"
 msgstr "十三夜月"
 
@@ -3626,7 +3626,7 @@ msgstr "拡大"
 msgid "Zoom out"
 msgstr "縮小"
 
-#: contents/ui/main.qml:1661
+#: contents/ui/main.qml:1681
 msgid "a decrease from yesterday"
 msgstr "昨日から減少"
 
@@ -3634,7 +3634,7 @@ msgstr "昨日から減少"
 msgid "a few clouds"
 msgstr "多少の雲"
 
-#: contents/ui/main.qml:1660
+#: contents/ui/main.qml:1680
 msgid "an increase from yesterday"
 msgstr "昨日から増加"
 
@@ -3654,7 +3654,7 @@ msgstr "霧雨"
 msgid "e.g. Sofia, Bulgaria"
 msgstr "例: ソフィア、ブルガリア"
 
-#: contents/ui/main.qml:1670 contents/ui/main.qml:1713
+#: contents/ui/main.qml:1690 contents/ui/main.qml:1733
 msgid "extreme"
 msgstr "極端"
 
@@ -3678,7 +3678,7 @@ msgstr "%1 から"
 msgid "ft"
 msgstr "ft"
 
-#: contents/ui/main.qml:1668
+#: contents/ui/main.qml:1688
 msgid "high"
 msgstr "高い"
 
@@ -3690,7 +3690,7 @@ msgstr "これからの数時間で"
 msgid "left"
 msgstr "残り"
 
-#: contents/ui/main.qml:1666
+#: contents/ui/main.qml:1686
 msgid "low"
 msgstr "低い"
 
@@ -3706,7 +3706,7 @@ msgstr "met.no（無料）"
 msgid "meters"
 msgstr "メートル"
 
-#: contents/ui/main.qml:1709
+#: contents/ui/main.qml:1729
 msgid "minor"
 msgstr "弱い"
 
@@ -3715,7 +3715,7 @@ msgstr "弱い"
 msgid "minutes"
 msgstr "分"
 
-#: contents/ui/main.qml:1667 contents/ui/main.qml:1710
+#: contents/ui/main.qml:1687 contents/ui/main.qml:1730
 msgid "moderate"
 msgstr "中程度"
 
@@ -3737,7 +3737,7 @@ msgstr "px 高さ"
 msgid "px width"
 msgstr "px 幅"
 
-#: contents/ui/main.qml:1708
+#: contents/ui/main.qml:1728
 msgid "quiet"
 msgstr "静穏"
 
@@ -3745,7 +3745,7 @@ msgstr "静穏"
 msgid "rain"
 msgstr "雨"
 
-#: contents/ui/main.qml:1712
+#: contents/ui/main.qml:1732
 msgid "severe"
 msgstr "激しい"
 
@@ -3757,7 +3757,7 @@ msgstr "にわか雨"
 msgid "showers and thunderstorms"
 msgstr "にわか雨と雷雨"
 
-#: contents/ui/main.qml:1662
+#: contents/ui/main.qml:1682
 msgid "similar to yesterday"
 msgstr "昨日と同様"
 
@@ -3769,7 +3769,7 @@ msgstr "雪"
 msgid "snow showers"
 msgstr "にわか雪"
 
-#: contents/ui/main.qml:1711
+#: contents/ui/main.qml:1731
 msgid "strong"
 msgstr "強い"
 
@@ -3801,7 +3801,7 @@ msgstr "%1 まで"
 msgid "until dawn"
 msgstr "夜明けまで"
 
-#: contents/ui/main.qml:1669
+#: contents/ui/main.qml:1689
 msgid "very high"
 msgstr "非常に高い"
 
