@@ -334,7 +334,7 @@ Item {
         case "dewpoint":
             return weatherRoot.tempValue(weatherRoot.dewPointC);
         case "visibility":
-            return isNaN(weatherRoot.visibilityKm) ? "--" : weatherRoot.visibilityKm.toFixed(1) + " km";
+            return isNaN(weatherRoot.visibilityKm) ? "--" : weatherRoot.visibilityKm.toFixed(1) + " " + i18n("km");
         case "condition":
             return weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime());
         case "preciprate":
@@ -383,7 +383,7 @@ Item {
     readonly property string _dvHumidity: weatherRoot && !isNaN(weatherRoot.humidityPercent) ? Math.round(weatherRoot.humidityPercent) + "%" : "--"
     readonly property string _dvPressure: weatherRoot ? weatherRoot.pressureValue(weatherRoot.pressureHpa) : "--"
     readonly property string _dvDewpoint: weatherRoot ? weatherRoot.tempValue(weatherRoot.dewPointC) : "--"
-    readonly property string _dvVisibility: weatherRoot && !isNaN(weatherRoot.visibilityKm) ? weatherRoot.visibilityKm.toFixed(1) + " km" : "--"
+    readonly property string _dvVisibility: weatherRoot && !isNaN(weatherRoot.visibilityKm) ? weatherRoot.visibilityKm.toFixed(1) + " " + i18n("km") : "--"
     readonly property string _dvCondition: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : "--"
     readonly property string _dvPreciprate: weatherRoot ? weatherRoot.precipValue(weatherRoot.precipMmh) : "--"
     readonly property string _dvPrecipsum: weatherRoot ? weatherRoot.precipSumText(weatherRoot.precipSumMm) : "--"
@@ -1256,7 +1256,7 @@ Item {
                                                             }
                                                             // Concentration value
                                                             Label {
-                                                                text: isNaN(modelData.value) ? "--" : modelData.value.toFixed(1) + " " + AQI.unitFor(modelData.key)
+                                                                text: isNaN(modelData.value) ? "--" : modelData.value.toFixed(1) + " " + i18n(AQI.unitFor(modelData.key))
                                                                 font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                                 color: Kirigami.Theme.textColor
                                                                 opacity: 0.8
@@ -1457,7 +1457,7 @@ Item {
                                             if (!pollenCard.dominant)
                                                 return "--";
                                             var d = pollenCard.dominant;
-                                            return pollenCard.pollenName(d.key) + ": " + i18n(Pollen.labelForValue(d.value)) + " (" + d.value.toFixed(1) + " grains/m³)";
+                                            return pollenCard.pollenName(d.key) + ": " + i18n(Pollen.labelForValue(d.value)) + " (" + d.value.toFixed(1) + " " + i18n("grains/m³") + ")";
                                         }
                                         color: pollenCard.dominant ? root.bandTextColor(Pollen.bandForValue(pollenCard.dominant.value)) : root.valueColor
                                         font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({
@@ -1590,7 +1590,7 @@ Item {
                                                             opacity: 0.6
                                                         }
                                                         Label {
-                                                            text: modelData.value.toFixed(1) + " grains/m³"
+                                                            text: modelData.value.toFixed(1) + " " + i18n("grains/m³")
                                                             font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
                                                                 bold: true
                                                             })
@@ -1901,7 +1901,7 @@ Item {
                                                                 opacity: 0.6
                                                             }
                                                             Label {
-                                                                text: ((swCard.sw && !isNaN(swCard.sw.solarWind)) ? Math.round(swCard.sw.solarWind) + " km/s" : "--") + " (" + i18n(SW.solarWindTextLevel(parent.parent.windSpeed)) + ")"
+                                                                text: ((swCard.sw && !isNaN(swCard.sw.solarWind)) ? Math.round(swCard.sw.solarWind) + " " + i18n("km/s") : "--") + " (" + i18n(SW.solarWindTextLevel(parent.parent.windSpeed)) + ")"
                                                                 font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
                                                                     bold: true
                                                                 })

@@ -536,19 +536,19 @@ loadApi();\
                 var imp = isImperial;
                 console.log("[Advanced Weather Widget Radar/WebEngine] generating labels for layer:", layer);
                 if (layer === "rainviewer")        return [i18n("None"), i18n("Light"), i18n("Mod"), i18n("Heavy"), i18n("Storm")];
-                if (layer === "precipitation_new") return imp ? ["0","0.04","0.4","5.5 in/h"] : ["0","1","25","100 mm/h"];
+                if (layer === "precipitation_new") return imp ? ["0","0.04","0.4","5.5 " + i18n("in/h")] : ["0","1","25","100 " + i18n("mm/h")];
                 if (layer === "clouds_new")        return ["0%","40%","60%","80%","100%"];
                 if (layer === "temp_new")          return imp ? ["-40°","-4°","32°","50°","68°","86°F"] : ["-40°","-20°","0°","10°","20°","30°C"];
                 if (layer === "wind_new") {
-                    if (wu === "mph")  return ["0","11","34","56","112","224 mph"];
-                    if (wu === "kmh")  return ["0","18","54","90","180","360 km/h"];
-                    if (wu === "kn")   return ["0","10","29","49","97","194 kn"];
-                    return ["0","5","15","25","50","100 m/s"];
+                    if (wu === "mph")  return ["0","11","34","56","112","224 " + i18n("mph")];
+                    if (wu === "kmh")  return ["0","18","54","90","180","360 " + i18n("km/h")];
+                    if (wu === "kn")   return ["0","10","29","49","97","194 " + i18n("kn")];
+                    return ["0","5","15","25","50","100 " + i18n("m/s")];
                 }
                 if (layer === "pressure_new") {
-                    if (pu2 === "inHg") return ["27.8","28.4","29.0","29.5","29.8","30.1","30.7","31.3","31.9 inHg"];
-                    if (pu2 === "mmHg") return ["705","720","735","750","758","765","780","795","810 mmHg"];
-                    return ["940","960","980","1000","1010","1020","1040","1060","1080 hPa"];
+                    if (pu2 === "inHg") return ["27.8","28.4","29.0","29.5","29.8","30.1","30.7","31.3","31.9 " + i18n("inHg")];
+                    if (pu2 === "mmHg") return ["705","720","735","750","758","765","780","795","810 " + i18n("mmHg")];
+                    return ["940","960","980","1000","1010","1020","1040","1060","1080 " + i18n("hPa")];
                 }
                 return [];
             }

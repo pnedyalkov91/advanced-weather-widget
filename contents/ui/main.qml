@@ -756,7 +756,9 @@ PlasmoidItem {
         return Plasmoid.configuration.windSpeedUnit || "kmh";
     }
     function windValue(kmh) {
-        return W.formatWind(kmh, _windUnit());
+        if (isNaN(kmh) || kmh === null || kmh === undefined) return "--";
+        var unit = _windUnit();
+        return W.formatWindValue(kmh, unit) + " " + i18n(W.windUnitLabel(unit));
     }
 
     function _pressureUnit() {
@@ -765,7 +767,9 @@ PlasmoidItem {
         return Plasmoid.configuration.pressureUnit || "hPa";
     }
     function pressureValue(hpa) {
-        return W.formatPressure(hpa, _pressureUnit());
+        if (isNaN(hpa) || hpa === null || hpa === undefined) return "--";
+        var unit = _pressureUnit();
+        return W.formatPressureValue(hpa, unit) + " " + i18n(W.pressureUnitLabel(unit));
     }
 
     function _isImperial() {
@@ -777,22 +781,22 @@ PlasmoidItem {
     function precipValue(mmh) {
         if (isNaN(mmh)) return "--";
         if (_isImperial())
-            return (mmh / 25.4).toFixed(2) + " in/h";
-        return mmh.toFixed(1) + " mm/h";
+            return (mmh / 25.4).toFixed(2) + " " + i18n("in/h");
+        return mmh.toFixed(1) + " " + i18n("mm/h");
     }
 
     function precipSumText(mm) {
         if (isNaN(mm)) return "--";
         if (_isImperial())
-            return (mm / 25.4).toFixed(2) + " in";
-        return mm.toFixed(1) + " mm";
+            return (mm / 25.4).toFixed(2) + " " + i18n("in");
+        return mm.toFixed(1) + " " + i18n("mm");
     }
 
     function visibilityValue(km) {
         if (isNaN(km)) return "--";
         if (_isImperial())
-            return (km * 0.621371).toFixed(1) + " mi";
-        return km.toFixed(1) + " km";
+            return (km * 0.621371).toFixed(1) + " " + i18n("mi");
+        return km.toFixed(1) + " " + i18n("km");
     }
 
     /** {kp, gScale} for the given dateStr from the ~3-day NOAA Kp forecast, or null. */
@@ -892,8 +896,8 @@ PlasmoidItem {
     function snowDepthText(cm) {
         if (isNaN(cm)) return "--";
         if (_isImperial())
-            return (cm / 2.54).toFixed(1) + " in";
-        return cm.toFixed(1) + " cm";
+            return (cm / 2.54).toFixed(1) + " " + i18n("in");
+        return cm.toFixed(1) + " " + i18n("cm");
     }
 
     /** Returns a numeric priority for an alert color — higher = more severe. */

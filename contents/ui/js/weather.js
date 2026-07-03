@@ -21,8 +21,14 @@
  * .pragma library: No Qt APIs, no i18n, no QML-specific globals.
  * All functions take explicit parameters so callers remain in full control.
  * Import via: import "js/weather.js" as W
+ *
+ * Unit strings (km/h, hPa, ...) are marked with I18N_NOOP so xgettext extracts
+ * them; formatWind()/formatPressure() return the English key, and the QML
+ * caller is responsible for wrapping it in i18n() before display.
  */
 .pragma library
+
+function I18N_NOOP(s) { return s; }
 
 // ── Wind direction ──────────────────────────────────────────────────────────
 
@@ -285,29 +291,54 @@ function hourlyPrecipProbText(precipProb, code) {
     return pct + "%";
 }
 
+/** English unit-label keys for wind speed; wrap in i18n() before display. */
+var WIND_UNIT_LABELS = {
+    mph: I18N_NOOP("mph"),
+    ms:  I18N_NOOP("m/s"),
+    kn:  I18N_NOOP("kn"),
+    kmh: I18N_NOOP("km/h")
+};
+
+/** English unit-label keys for pressure; wrap in i18n() before display. */
+var PRESSURE_UNIT_LABELS = {
+    mmHg: I18N_NOOP("mmHg"),
+    inHg: I18N_NOOP("inHg"),
+    hPa:  I18N_NOOP("hPa")
+};
+
 /**
- * Formats a wind speed value.
+ * Formats a wind speed value's number only (no unit suffix).
  * @param {number} kmh   Speed in km/h
  * @param {string} unit  "kmh" | "mph" | "ms" | "kn"
  */
-function formatWind(kmh, unit) {
+function formatWindValue(kmh, unit) {
     if (isNaN(kmh) || kmh === null || kmh === undefined) return "--";
-    if (unit === "mph") return (kmh * 0.621371).toFixed(1) + " mph";
-    if (unit === "ms")  return (kmh / 3.6).toFixed(1) + " m/s";
-    if (unit === "kn")  return (kmh * 0.539957).toFixed(1) + " kn";
-    return Math.round(kmh) + " km/h";
+    if (unit === "mph") return (kmh * 0.621371).toFixed(1);
+    if (unit === "ms")  return (kmh / 3.6).toFixed(1);
+    if (unit === "kn")  return (kmh * 0.539957).toFixed(1);
+    return String(Math.round(kmh));
+}
+
+/** Returns the English unit-label key for the given wind unit; wrap in i18n(). */
+function windUnitLabel(unit) {
+    return WIND_UNIT_LABELS[unit] || WIND_UNIT_LABELS.kmh;
 }
 
 /**
- * Formats a pressure value.
+ * Formats a pressure value's number only (no unit suffix).
  * @param {number} hpa   Pressure in hPa
  * @param {string} unit  "hPa" | "mmHg" | "inHg"
  */
-function formatPressure(hpa, unit) {
+function formatPressureValue(hpa, unit) {
     if (isNaN(hpa) || hpa === null || hpa === undefined) return "--";
-    if (unit === "mmHg") return (hpa * 0.750062).toFixed(0) + " mmHg";
-    if (unit === "inHg") return (hpa * 0.02953).toFixed(2) + " inHg";
-    return Math.round(hpa) + " hPa";
+    if (unit === "mmHg") return (hpa * 0.750062).toFixed(0);
+    if (unit === "inHg") return (hpa * 0.02953).toFixed(2);
+    return String(Math.round(hpa));
+}
+
+/** Returns the English unit-label key for the given pressure unit; wrap in i18n(). */
+function pressureUnitLabel(unit) {
+    return PRESSURE_UNIT_LABELS[unit] || PRESSURE_UNIT_LABELS.hPa;
 }
 
 // windDirSvgFilename() removed — was a duplicate of windDirectionSvgStem().
