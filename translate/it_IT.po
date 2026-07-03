@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-24 15:31+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
+"POT-Creation-Date: 2026-07-03 14:55+0300\n"
 "PO-Revision-Date: 2026-06-28 10:01+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
@@ -141,18 +141,8 @@ msgid "<b>Severity:</b> %1%2"
 msgstr "<b>Gravità:</b> %1%2"
 
 #: contents/ui/config/configGeneral.qml:745
-msgid ""
-"<b>Why OWM layers may not match RainViewer radar</b><br/>"
-"<br/>"
-"OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/>"
-"<br/>"
-"RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
-msgstr ""
-"<b>Perché i livelli OWM potrebbero non corrispondere al radar RainViewer</b><br/>"
-"<br/>"
-"I livelli di precipitazione/nuvole OWM sono <b>tile di modello statici</b> - mostrano un output NWP (Numerical Weather Prediction) smussato, non ritorni radar reali. Rappresentano dove il modello <i>pensa</i> stia piovendo in base all'interpolazione tra stazioni meteorologiche e esecuzioni del modello.<br/>"
-"<br/>"
-"RainViewer utilizza <b>compositi radar meteorologici reali</b> da stazioni radar - riflettività effettivamente misurata aggiornata ogni 2–10 minuti. Questa discrepanza è prevista e nota."
+msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
+msgstr "<b>Perché i livelli OWM potrebbero non corrispondere al radar RainViewer</b><br/><br/>I livelli di precipitazione/nuvole OWM sono <b>tile di modello statici</b> - mostrano un output NWP (Numerical Weather Prediction) smussato, non ritorni radar reali. Rappresentano dove il modello <i>pensa</i> stia piovendo in base all'interpolazione tra stazioni meteorologiche e esecuzioni del modello.<br/><br/>RainViewer utilizza <b>compositi radar meteorologici reali</b> da stazioni radar - riflettività effettivamente misurata aggiornata ogni 2–10 minuti. Questa discrepanza è prevista e nota."
 
 #: contents/ui/config/configGeneral.qml:450
 msgid "AI-powered weather intelligence. API key required below."
@@ -562,7 +552,6 @@ msgid "City / location name"
 msgstr "Nome città / posizione"
 
 #: contents/ui/config/configGeneral.qml:601
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 msgid "Clear"
 msgstr "Cancella"
 
@@ -578,6 +567,7 @@ msgstr "Sereno (notte)"
 msgid "Clear night"
 msgstr "Notte serena"
 
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
 #: contents/ui/main.qml:1826
 msgid "Clear sky"
@@ -2419,18 +2409,8 @@ msgid "Radar only"
 msgstr "Solo radar"
 
 #: contents/ui/config/configGeneral.qml:728
-msgid ""
-"Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/>"
-"<br/>"
-"The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/>"
-"<br/>"
-"Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
-msgstr ""
-"Fornitore radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/>"
-"<br/>"
-"Il widget utilizza l'API gratuita di RainViewer, che fornisce i dati radar meteo delle ultime 2 ore a intervalli di 10 minuti. Le previsioni radar non sono supportate.<br/>"
-"<br/>"
-"Rain Viewer non garantisce la disponibilità dei dati radar. Non stipulano contratti con i proprietari di questi dati. Il motivo è che i proprietari possono chiedere loro di rimuovere i propri dati da Rain Viewer, modificarne il formato o interrompere la condivisione. Cercano di mantenere i dati radar il più a lungo possibile, ma a volte i proprietari smettono semplicemente di fornire le immagini."
+msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+msgstr "Fornitore radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Il widget utilizza l'API gratuita di RainViewer, che fornisce i dati radar meteo delle ultime 2 ore a intervalli di 10 minuti. Le previsioni radar non sono supportate.<br/><br/>Rain Viewer non garantisce la disponibilità dei dati radar. Non stipulano contratti con i proprietari di questi dati. Il motivo è che i proprietari possono chiedere loro di rimuovere i propri dati da Rain Viewer, modificarne il formato o interrompere la condivisione. Cercano di mantenere i dati radar il più a lungo possibile, ma a volte i proprietari smettono semplicemente di fornire le immagini."
 
 #: contents/ui/FullView.qml:719
 msgid "Radar:"
@@ -3838,19 +3818,5 @@ msgstr "la tua posizione"
 #~ msgid "this night"
 #~ msgstr "questa notte"
 
-#~ msgid ""
-#~ "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/"
-#~ "><br/>Rain Viewer does not guarantee the availability of radar data. They "
-#~ "do not conclude contracts with owners of this data. The reason is that "
-#~ "the owners can ask them to remove their data from Rain Viewer, change the "
-#~ "format, or stop sharing the data. They are trying to keep radar data for "
-#~ "as long as possible, but sometimes the owners just stop providing the "
-#~ "images."
-#~ msgstr ""
-#~ "Fornitore radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/"
-#~ "><br/>Rain Viewer non garantisce la disponibilità dei dati radar perché "
-#~ "non hanno contratti con i proprietari di questi dati e i proprietari "
-#~ "possono chiedere loro di rimuovere questi dati da Rain Viewer, modificare "
-#~ "il formato o interrompere la condivisione dei dati. Rain Viewer cerca di "
-#~ "mantenere i dati radar il più a lungo possibile, ma può succedere che i "
-#~ "proprietari smettano di fornire le immagini."
+#~ msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+#~ msgstr "Fornitore radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Rain Viewer non garantisce la disponibilità dei dati radar perché non hanno contratti con i proprietari di questi dati e i proprietari possono chiedere loro di rimuovere questi dati da Rain Viewer, modificare il formato o interrompere la condivisione dei dati. Rain Viewer cerca di mantenere i dati radar il più a lungo possibile, ma può succedere che i proprietari smettano di fornire le immagini."

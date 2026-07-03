@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TRANSLATE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PACKAGE_ROOT="$(cd "$TRANSLATE_DIR/.." && pwd)"
-DOMAIN="plasma_applet_org.kde.plasma.advanced-weather-widget"
+DOMAIN="plasma_applet_org.kde.plasma.sports-widget-for-plasma"
 
 for POFILE in "$TRANSLATE_DIR"/*.po; do
   [ -f "$POFILE" ] || continue

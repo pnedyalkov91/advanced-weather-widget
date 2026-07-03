@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-24 15:24+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
+"POT-Creation-Date: 2026-07-03 14:55+0300\n"
 "PO-Revision-Date: 2026-04-26 00:00+0800\n"
 "Last-Translator: kang guo\n"
 "Language-Team: Chinese (Simplified)\n"
@@ -550,7 +550,6 @@ msgid "City / location name"
 msgstr "城市 / 位置名称"
 
 #: contents/ui/config/configGeneral.qml:601
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 msgid "Clear"
 msgstr "清除"
 
@@ -566,6 +565,7 @@ msgstr "晴朗（夜间）"
 msgid "Clear night"
 msgstr "晴朗夜晚"
 
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
 #: contents/ui/main.qml:1826
 msgid "Clear sky"

@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: advanced-weather-widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-24 15:24+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
+"POT-Creation-Date: 2026-07-03 14:55+0300\n"
 "PO-Revision-Date: 2026-06-19 17:05+0300\n"
 "Last-Translator: Petar Nedyalkov <petar.nedyalkov91@gmail.com>\n"
 "Language-Team: Bulgarian <kde-i18n-doc@kde.org>\n"
@@ -53,7 +53,7 @@ msgstr "Възможен %1 %2."
 
 #: contents/ui/main.qml:1422
 msgid "%1 will be %2 with a low of %3 and a high of %4."
-msgstr "%1 ще бъде %2 с минимална температура %3 и максимална %4."
+msgstr "%1 ще има %2 с минимална температура %3 и максимална %4."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1049
 msgctxt "@info %1 size %2 family"
@@ -553,7 +553,6 @@ msgid "City / location name"
 msgstr "Име на град / местоположение"
 
 #: contents/ui/config/configGeneral.qml:601
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 msgid "Clear"
 msgstr "Изчистване"
 
@@ -569,6 +568,7 @@ msgstr "Ясно (нощ)"
 msgid "Clear night"
 msgstr "Ясна нощ"
 
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
 #: contents/ui/main.qml:1826
 msgid "Clear sky"
@@ -3806,7 +3806,7 @@ msgstr "до зазоряване"
 
 #: contents/ui/main.qml:1669
 msgid "very high"
-msgstr "много висока"
+msgstr "много висок"
 
 #: contents/ui/main.qml:1154 contents/ui/main.qml:1434
 #: contents/ui/main.qml:1507
