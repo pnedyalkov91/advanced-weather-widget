@@ -26,13 +26,14 @@
  */
 
 // Helper copied inline (cannot import .pragma from non-pragma)
+// Thresholds at n − 1/3 to match NOAA's thirds rounding (see js/spaceWeather.js).
 function _kpToGScale(kp) {
     if (isNaN(kp) || kp === null) return "G0";
-    if (kp >= 9) return "G5";
-    if (kp >= 8) return "G4";
-    if (kp >= 7) return "G3";
-    if (kp >= 6) return "G2";
-    if (kp >= 5) return "G1";
+    if (kp >= 9)    return "G5";
+    if (kp >= 7.67) return "G4";
+    if (kp >= 6.67) return "G3";
+    if (kp >= 5.67) return "G2";
+    if (kp >= 4.67) return "G1";
     return "G0";
 }
 
@@ -126,22 +127,43 @@ function fetchSpaceWeather(service) {
         r.spaceWeather = data;
     }
 
-    // ── 1) Kp index ───────────────────────────────────────────────────────
-    _get("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json",
+    // ── 1) Kp index — 1-minute real-time nowcast. The finalized 3-hourly
+    // feed lags up to 3 h behind (a storm onset wouldn't show until the
+    // period closes), so it is only used as a fallback. ──────────────────
+    function _fetchKp3hFallback() {
+        _get("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json",
+            function(text) {
+                try {
+                    var arr = JSON.parse(text);
+                    // Array of objects {time_tag, Kp, ...}; take the last valid entry
+                    var kp = NaN;
+                    for (var i = arr.length - 1; i >= 0; i--) {
+                        var v = parseFloat(arr[i].Kp);
+                        if (!isNaN(v)) { kp = v; break; }
+                    }
+                    state.kp = kp;
+                } catch(e) { state.kp = NaN; }
+                _tryAssemble();
+            },
+            function() { state.kp = NaN; _tryAssemble(); }
+        );
+    }
+    _get("https://services.swpc.noaa.gov/json/planetary_k_index_1m.json",
         function(text) {
+            var kp = NaN;
             try {
                 var arr = JSON.parse(text);
-                // Array of objects {time_tag, Kp, ...}; take the last valid entry
-                var kp = NaN;
+                // Array of objects {time_tag, estimated_kp, ...}; take the last valid entry
                 for (var i = arr.length - 1; i >= 0; i--) {
-                    var v = parseFloat(arr[i].Kp);
+                    var v = parseFloat(arr[i].estimated_kp);
                     if (!isNaN(v)) { kp = v; break; }
                 }
-                state.kp = kp;
-            } catch(e) { state.kp = NaN; }
+            } catch(e) { kp = NaN; }
+            if (isNaN(kp)) { _fetchKp3hFallback(); return; }
+            state.kp = kp;
             _tryAssemble();
         },
-        function() { state.kp = NaN; _tryAssemble(); }
+        _fetchKp3hFallback
     );
 
     // ── 2) Solar wind speed ───────────────────────────────────────────────
@@ -204,6 +226,7 @@ function fetchSpaceWeather(service) {
         function(text) {
             if (service._refreshGen !== gen) return;
             var byDate = {};
+            var periods = [];
             try {
                 var arr = JSON.parse(text);
                 for (var i = 0; i < arr.length; i++) {
@@ -211,12 +234,19 @@ function fetchSpaceWeather(service) {
                     var tag = entry.time_tag;
                     var kp = parseFloat(entry.kp);
                     if (!tag || isNaN(kp)) continue;
+                    var gScale = entry.noaa_scale || _kpToGScale(kp);
                     var dateStr = tag.substring(0, 10);
                     if (!byDate[dateStr] || kp > byDate[dateStr].kp)
-                        byDate[dateStr] = { kp: kp, gScale: entry.noaa_scale || _kpToGScale(kp) };
+                        byDate[dateStr] = { kp: kp, gScale: gScale };
+                    // time_tag is UTC without a zone suffix
+                    var startMs = Date.parse(tag.indexOf("Z") >= 0 ? tag : tag + "Z");
+                    if (!isNaN(startMs))
+                        periods.push({ startMs: startMs, kp: kp, gScale: gScale });
                 }
-            } catch(e) { byDate = {}; }
+                periods.sort(function(a, b) { return a.startMs - b.startMs; });
+            } catch(e) { byDate = {}; periods = []; }
             r.spaceWeatherDailyForecast = byDate;
+            r.spaceWeatherForecastPeriods = periods;
         },
         function() {}
     );

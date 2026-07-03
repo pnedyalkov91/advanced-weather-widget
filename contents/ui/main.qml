@@ -165,6 +165,7 @@ PlasmoidItem {
     onPollenDataStagedChanged: Qt.callLater(_applyPollenData)
     property var spaceWeather: null         // NOAA SWPC data object
     property var spaceWeatherDailyForecast: ({}) // dateStr -> {kp, gScale}, ~3 days ahead
+    property var spaceWeatherForecastPeriods: [] // sorted [{startMs, kp, gScale}], 3-hour UTC periods
     property string moonriseTimeText: "--"
     property string moonsetTimeText: "--"
     property var hourlyData: []
@@ -311,7 +312,7 @@ PlasmoidItem {
             icon.name: "view-refresh-symbolic"
             priority: PlasmaCore.Action.HighPriority
             enabled: !root.loading
-            onTriggered: refreshWeather()
+            onTriggered: refreshWeather(true)
         }
     ]
 
@@ -692,10 +693,11 @@ PlasmoidItem {
         _locPersistTimer.restart();
     }
 
-    /** Refresh current weather + forecast (called by button, timers, config changes) */
-    function refreshWeather() {
+    /** Refresh current weather + forecast (called by button, timers, config changes).
+     *  force=true (manual refresh button) also bypasses the space weather throttle. */
+    function refreshWeather(force) {
         refreshDebounce.stop();
-        weatherService.refreshNow();
+        weatherService.refreshNow(force === true);
     }
 
     /** Fetch hourly data for a specific date — called by FullView */
@@ -797,6 +799,20 @@ PlasmoidItem {
     function kpForecastForDate(dateStr) {
         var m = spaceWeatherDailyForecast || {};
         return m[dateStr] || null;
+    }
+
+    /** {kp, gScale} for the 3-hour NOAA Kp forecast period covering the given
+     *  local dateStr + "HH:MM" sample, or null when outside the forecast range. */
+    function kpForecastForHour(dateStr, hhmm) {
+        var arr = spaceWeatherForecastPeriods || [];
+        var t = _hourSampleEpoch(dateStr, hhmm);
+        if (isNaN(t)) return null;
+        for (var i = arr.length - 1; i >= 0; i--) {
+            var p = arr[i];
+            if (p.startMs <= t)
+                return (t < p.startMs + 3 * 3600000) ? p : null;
+        }
+        return null;
     }
 
     function uvIndexText(uv) {
@@ -1740,12 +1756,17 @@ PlasmoidItem {
         if (!_dailyTimeAllows(Plasmoid.configuration.notificationSpaceWeatherTime, now))
             return;
         var sw = spaceWeather;
-        if (!sw || isNaN(sw.kp))
-            return;
         var todayStr = Qt.formatDate(now, "yyyy-MM-dd");
-        var trend = _trendText(sw.kp, Plasmoid.configuration.notificationSpaceWeatherLastKp,
+        // "Will be" = today's outlook, so prefer the NOAA daily forecast max;
+        // the current observed Kp is only a fallback when the forecast feed failed.
+        var fc = kpForecastForDate(todayStr);
+        var kpVal = (fc && !isNaN(fc.kp)) ? fc.kp : (sw && !isNaN(sw.kp) ? sw.kp : NaN);
+        var gVal = (fc && fc.gScale) ? fc.gScale : ((sw && sw.gScale) ? sw.gScale : "G0");
+        if (isNaN(kpVal))
+            return;
+        var trend = _trendText(kpVal, Plasmoid.configuration.notificationSpaceWeatherLastKp,
             Plasmoid.configuration.notificationSpaceWeatherLastDate, todayStr);
-        var msg = i18n("Geomagnetic activity will be %1 (Kp %2)", _kpLevelText(sw.gScale), sw.kp.toFixed(1));
+        var msg = i18n("Geomagnetic activity will be %1 (Kp %2)", _kpLevelText(gVal), kpVal.toFixed(1));
         if (trend.length > 0) msg = msg + ", " + trend;
         msg = msg + ".";
         var title = i18n("Geomagnetic activity");
@@ -1753,7 +1774,7 @@ PlasmoidItem {
             msg, Notification.NormalUrgency, "weather-clear-night");
         if (fired) {
             Plasmoid.configuration.notificationSpaceWeatherLastDate = todayStr;
-            Plasmoid.configuration.notificationSpaceWeatherLastKp = sw.kp;
+            Plasmoid.configuration.notificationSpaceWeatherLastKp = kpVal;
         }
     }
 

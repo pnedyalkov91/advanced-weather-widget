@@ -1251,7 +1251,10 @@ Item {
                                                     Label {
                                                         visible: !parent._isSun
                                                         text: {
-                                                            var e = weatherRoot ? weatherRoot.kpForecastForDate(weatherRoot.dailyData[dataIndex].dateStr || "") : null;
+                                                            if (!weatherRoot) return i18n("No info");
+                                                            var d = weatherRoot.dailyData[dataIndex].dateStr || "";
+                                                            var e = weatherRoot.kpForecastForHour(d, modelData.hour || "")
+                                                                    || weatherRoot.kpForecastForDate(d);
                                                             if (!e || isNaN(e.kp)) return i18n("No info");
                                                             return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
                                                         }
@@ -1700,7 +1703,10 @@ Item {
                                                         }
                                                         Label {
                                                             text: {
-                                                                var e = weatherRoot ? weatherRoot.kpForecastForDate(weatherRoot.dailyData[dataIndex].dateStr || "") : null;
+                                                                if (!weatherRoot) return i18n("No info");
+                                                                var d = weatherRoot.dailyData[dataIndex].dateStr || "";
+                                                                var e = weatherRoot.kpForecastForHour(d, modelData.hour || "")
+                                                                        || weatherRoot.kpForecastForDate(d);
                                                                 if (!e || isNaN(e.kp)) return i18n("No info");
                                                                 return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
                                                             }

@@ -1812,16 +1812,8 @@ Item {
                                                                 font: weatherRoot ? weatherRoot.wf(8, true) : Qt.font({
                                                                     bold: true
                                                                 })
-                                                                color: "white"
-                                                            }
-                                                            DropShadow {
-                                                                anchors.fill: gScaleText
-                                                                source: gScaleText
-                                                                radius: 3
-                                                                samples: 16
-                                                                spread: 0.8
-                                                                color: Kirigami.Theme.backgroundColor
-                                                                cached: true
+                                                                // Dark text on bright badges (G1 yellow, G2 orange), white otherwise
+                                                                color: (0.299 * swCard.gColorVivid.r + 0.587 * swCard.gColorVivid.g + 0.114 * swCard.gColorVivid.b) > 0.6 ? "#212121" : "white"
                                                             }
                                                         }
                                                         ColumnLayout {
@@ -2032,16 +2024,8 @@ Item {
                                                                 font: weatherRoot ? weatherRoot.wf(8, true) : Qt.font({
                                                                     bold: true
                                                                 })
-                                                                color: "white"
-                                                            }
-                                                            DropShadow {
-                                                                anchors.fill: xrayText
-                                                                source: xrayText
-                                                                radius: 3
-                                                                samples: 16
-                                                                spread: 0.8
-                                                                color: Kirigami.Theme.backgroundColor
-                                                                cached: true
+                                                                // Dark text on bright badges (B/C yellow-green), white otherwise
+                                                                color: (0.299 * parent.parent.xColorVivid.r + 0.587 * parent.parent.xColorVivid.g + 0.114 * parent.parent.xColorVivid.b) > 0.6 ? "#212121" : "white"
                                                             }
                                                         }
                                                         ColumnLayout {
