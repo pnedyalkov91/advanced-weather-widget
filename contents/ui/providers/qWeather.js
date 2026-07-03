@@ -103,6 +103,14 @@ function _calcDewPoint(T, rh) {
     return Math.round((c * gamma) / (b - gamma) * 10) / 10;
 }
 
+function _forecastSpans(days) {
+    if (days <= 3) return [3];
+    if (days <= 7) return [7];
+    if (days <= 10) return [10, 7, 3];
+    if (days <= 15) return [15, 10, 7, 3];
+    return [30, 15, 10, 7, 3];
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -164,9 +172,13 @@ function fetchCurrent(service, W, chain, idx) {
 }
 
 function _fetchDaily(service, W, key, loc, gen, base) {
+    _fetchDailyAttempt(service, W, key, loc, gen, base, _forecastSpans(service.forecastDays), 0);
+}
+
+function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
     var r = service.weatherRoot;
-    var days = Math.min(service.forecastDays, 7);
-    var url = base + "/v7/weather/" + days + "d?location=" + encodeURIComponent(loc)
+    var span = spans[spanIdx];
+    var url = base + "/v7/weather/" + span + "d?location=" + encodeURIComponent(loc)
         + "&unit=m";
 
     var req = new XMLHttpRequest();
@@ -190,18 +202,28 @@ function _fetchDaily(service, W, key, loc, gen, base) {
                         code: _qwCodeToWmo(day.iconDay),
                         precipMm: parseFloat(day.precip) || 0,
                         snowCm: 0, // not separated in QWeather daily
+                        uvMax: (day.uvIndex !== undefined) ? parseFloat(day.uvIndex) : NaN,
                         precipProb: (day.pop !== undefined) ? parseFloat(day.pop) : NaN,
                         windKmh: (day.windSpeed !== undefined) ? parseFloat(day.windSpeed) : NaN,
                         windDir: (day.wind360 !== undefined) ? parseFloat(day.wind360) : NaN
                     });
                 }
                 if (d.daily.length > 0) {
+                    if (d.daily[0].uvIndex !== undefined)
+                        service._qw_cur.uvIndex = parseFloat(d.daily[0].uvIndex);
                     if (d.daily[0].sunrise)
                         service._qw_cur.sunriseTimeText = d.daily[0].sunrise;
                     if (d.daily[0].sunset)
                         service._qw_cur.sunsetTimeText = d.daily[0].sunset;
                 }
             }
+        } else if (spanIdx + 1 < spans.length) {
+            _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx + 1);
+            return;
+        }
+        if (nd.length === 0 && spanIdx + 1 < spans.length) {
+            _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx + 1);
+            return;
         }
         service._qw_cur.dailyData = nd;
         var r = service.weatherRoot;
