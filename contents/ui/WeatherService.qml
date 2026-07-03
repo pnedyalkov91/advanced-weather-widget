@@ -116,6 +116,12 @@ QtObject {
     // We intentionally do NOT call abort() on old XHRs — Qt QML's
     // XMLHttpRequest.abort() can block the JS thread on some platforms.
     property int _refreshGen: 0
+    // Provider-side staging buffers used across multi-request fetch flows.
+    // These must exist as declared QML properties because JS providers cannot
+    // assign arbitrary new properties onto the WeatherService object.
+    property var _tio_cur: null
+    property var _wb_cur: null
+    property var _qw_cur: null
     // True once the current provider has written native alerts for this
     // refresh generation — lets _fetchAlertsIfNeeded() decide whether to
     // fall back to AlertsJS without having to blank weatherRoot.weatherAlerts
