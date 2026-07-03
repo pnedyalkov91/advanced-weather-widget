@@ -31,6 +31,13 @@ import "components"
 
 Item {
     id: forecastRoot
+
+    // Cached theme colors — a single PlasmaTheme attachment on the view root
+    // instead of one per item: every Kirigami.Theme attachment re-syncs
+    // (connect+disconnect on the window object) on each window expose, which
+    // froze popup opening while hundreds of delegate items were alive.
+    readonly property color themeTextColor: Kirigami.Theme.textColor
+    readonly property color themeBackgroundColor: Kirigami.Theme.backgroundColor
     property var weatherRoot
     property var verticalScrollView
     property int expandedIndex: -1
@@ -357,7 +364,7 @@ Item {
         anchors.centerIn: parent
         visible: !weatherRoot || weatherRoot.dailyData.length === 0
         text: (weatherRoot && weatherRoot.loading) ? i18n("Loading forecast…") : i18n("No forecast data")
-        color: Kirigami.Theme.textColor
+        color: forecastRoot.themeTextColor
         font: weatherRoot ? weatherRoot.wf(12, false) : Qt.font({})
     }
 
@@ -440,7 +447,7 @@ Item {
                         id: dayRow
                         width: parent.width
                         height: Math.max(52, rowLayoutInner.implicitHeight + 12)
-                        color: (rowMouse.containsMouse || (forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08) : "transparent"
+                        color: (rowMouse.containsMouse || (forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08) : "transparent"
                         Behavior on color {
                             ColorAnimation {
                                 duration: 120
@@ -496,7 +503,7 @@ Item {
                                         var d = new Date(parts[0], parts[1] - 1, parts[2]);
                                         return Qt.locale().dayName(d.getDay(), Locale.LongFormat);
                                     }
-                                    color: Kirigami.Theme.textColor
+                                    color: forecastRoot.themeTextColor
                                     font: weatherRoot.wf(12, true)
                                 }
                                 Label {
@@ -508,7 +515,7 @@ Item {
                                         var fmt = Qt.locale().dateFormat(Locale.ShortFormat);
                                         return Qt.formatDate(d, fmt);
                                     }
-                                    color: Kirigami.Theme.textColor
+                                    color: forecastRoot.themeTextColor
                                     font: weatherRoot.wf(9, false)
                                 }
                             }
@@ -527,7 +534,7 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 text: weatherRoot.weatherCodeToText(weatherRoot.dailyData[dataIndex].code)
-                                color: Kirigami.Theme.textColor
+                                color: forecastRoot.themeTextColor
                                 font: weatherRoot.wf(11, false)
                                 wrapMode: Text.WordWrap
                             }
@@ -557,7 +564,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: W.windDirectionGlyph(weatherRoot.dailyData[dataIndex].windDir)
-                                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                        color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                         font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                         font.pixelSize: forecastRoot.iconSz
                                     }
@@ -565,7 +572,7 @@ Item {
 
                                 Label {
                                     text: weatherRoot.windValue(weatherRoot.dailyData[dataIndex].windKmh)
-                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                     font: weatherRoot.wf(10, false)
                                     elide: Text.ElideRight
                                 }
@@ -580,7 +587,7 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
                                 text: "•"
-                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                                color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
                             }
 
@@ -598,7 +605,7 @@ Item {
                                 }
                                 Label {
                                     text: weatherRoot.pressureValue(weatherRoot.dailyData[dataIndex].pressureHpa)
-                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                     font: weatherRoot.wf(10, false)
                                 }
                             }
@@ -608,7 +615,7 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
                                 text: "•"
-                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                                color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
                             }
 
@@ -630,7 +637,7 @@ Item {
                                         if (!e || isNaN(e.kp)) return i18n("No information");
                                         return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
                                     }
-                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                     font: weatherRoot.wf(10, false)
                                 }
                             }
@@ -640,7 +647,7 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
                                 text: "•"
-                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                                color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
                             }
 
@@ -661,7 +668,7 @@ Item {
                                         var uv = weatherRoot.dailyData[dataIndex].uvMax;
                                         return isNaN(uv) ? "--" : "UV " + uv.toFixed(1);
                                     }
-                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                     font: weatherRoot.wf(10, false)
                                 }
                             }
@@ -671,7 +678,7 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
                                 text: "•"
-                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                                color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
                             }
 
@@ -689,7 +696,7 @@ Item {
                                 }
                                 Label {
                                     text: weatherRoot.precipSumText(weatherRoot.dailyData[dataIndex].precipMm)
-                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                     font: weatherRoot.wf(10, false)
                                 }
                             }
@@ -699,7 +706,7 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.leftMargin: 6
                                 text: "•"
-                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                                color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
                             }
 
@@ -717,7 +724,7 @@ Item {
                                 }
                                 Label {
                                     text: weatherRoot.visibilityValue(weatherRoot.dailyData[dataIndex].visibilityKm)
-                                    color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.72)
+                                    color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.72)
                                     font: weatherRoot.wf(10, false)
                                 }
                             }
@@ -728,7 +735,7 @@ Item {
                                 Layout.leftMargin: 6
                                 Layout.rightMargin: 6
                                 text: "•"
-                                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.4)
+                                color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.4)
                                 font: weatherRoot.wf(10, false)
                             }
 
@@ -748,7 +755,7 @@ Item {
                                 }
                                 Label {
                                     text: "/"
-                                    color: Kirigami.Theme.textColor
+                                    color: forecastRoot.themeTextColor
                                     font: weatherRoot.wf(12, false)
                                 }
                                 Label {
@@ -797,7 +804,7 @@ Item {
                         height: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? (forecastRoot.hourlyLayout === "strip" ? forecastRoot._hourlyStripHeight : forecastRoot._hourlyCardHeight + 40) : 0
                         visible: height > 0
                         clip: true
-                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.04)
+                        color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.04)
                         Behavior on height {
                             NumberAnimation {
                                 duration: 200
@@ -955,7 +962,7 @@ Item {
                                                             d.setHours(parseInt(parts[0],10), parseInt(parts[1],10), 0, 0);
                                                             return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
                                                         }
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(9, modelData.isSunrise || modelData.isSunset) : Qt.font({})
                                                         opacity: (modelData.isSunrise || modelData.isSunset) ? 0.9 : 0.7
                                                     }
@@ -999,7 +1006,7 @@ Item {
                                                             return forecastRoot.resolveConditionIcon(modelData.code||0, isNight, forecastRoot.iconSz);
                                                         }
                                                         iconSize: 44
-                                                        iconColor: Kirigami.Theme.textColor
+                                                        iconColor: forecastRoot.themeTextColor
                                                     }
                                                 }
                                             }
@@ -1017,7 +1024,7 @@ Item {
 
                                             // Detect light theme by background luminance
                                             readonly property bool darkTheme: {
-                                                var bg = Kirigami.Theme.backgroundColor;
+                                                var bg = forecastRoot.themeBackgroundColor;
                                                 return (0.299*bg.r + 0.587*bg.g + 0.114*bg.b) < 0.5;
                                             }
                                             onDarkThemeChanged: requestPaint()
@@ -1114,7 +1121,7 @@ Item {
                                                         anchors.centerIn: parent
                                                         text: (modelData.isSunrise || modelData.isSunset) ? i18n(modelData.isSunrise ? "Sunrise" : "Sunset")
                                                               : (weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--")
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, !(modelData.isSunrise || modelData.isSunset)) : Qt.font({})
                                                         opacity: (modelData.isSunrise || modelData.isSunset) ? 0.75 : 1.0
                                                     }
@@ -1154,7 +1161,7 @@ Item {
                                                             var h = modelData.humidity;
                                                             return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
                                                         }
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1184,7 +1191,7 @@ Item {
                                                         Label {
                                                             visible: !parent.parent._isSun
                                                             text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
-                                                            color: Kirigami.Theme.textColor
+                                                            color: forecastRoot.themeTextColor
                                                             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                                                             opacity: 0.7
                                                         }
@@ -1193,7 +1200,7 @@ Item {
                                                             text: W.windDirectionGlyph(modelData.windDeg)
                                                             font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
                                                             font.pixelSize: 24
-                                                            color: Kirigami.Theme.textColor
+                                                            color: forecastRoot.themeTextColor
                                                             opacity: 0.7
                                                         }
                                                     }
@@ -1220,14 +1227,14 @@ Item {
                                                         visible: !parent._isSun
                                                         iconInfo: IconResolver.resolve("pressure", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                         iconSize: 16
-                                                        iconColor: Kirigami.Theme.textColor
+                                                        iconColor: forecastRoot.themeTextColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.pressureValue(modelData.pressureHpa) : "--"
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1256,7 +1263,7 @@ Item {
                                                         visible: !parent._isSun
                                                         iconInfo: IconResolver.resolve("spaceweather", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                         iconSize: 16
-                                                        iconColor: Kirigami.Theme.textColor
+                                                        iconColor: forecastRoot.themeTextColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1270,7 +1277,7 @@ Item {
                                                             if (!e || isNaN(e.kp)) return i18n("No info");
                                                             return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
                                                         }
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1299,7 +1306,7 @@ Item {
                                                         visible: !parent._isSun
                                                         iconInfo: IconResolver.resolve("uvindex", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                         iconSize: 16
-                                                        iconColor: Kirigami.Theme.textColor
+                                                        iconColor: forecastRoot.themeTextColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
@@ -1309,7 +1316,7 @@ Item {
                                                             var uv = modelData.uvIndex;
                                                             return (uv === undefined || isNaN(uv)) ? "--" : "UV " + uv.toFixed(1);
                                                         }
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1338,14 +1345,14 @@ Item {
                                                         visible: !parent._isSun
                                                         iconInfo: IconResolver.resolve("precipsum", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                         iconSize: 16
-                                                        iconColor: Kirigami.Theme.textColor
+                                                        iconColor: forecastRoot.themeTextColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.precipSumText(modelData.precipMm) : "--"
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1374,14 +1381,14 @@ Item {
                                                         visible: !parent._isSun
                                                         iconInfo: IconResolver.resolve("visibility", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                         iconSize: 16
-                                                        iconColor: Kirigami.Theme.textColor
+                                                        iconColor: forecastRoot.themeTextColor
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
-                                                        color: Kirigami.Theme.textColor
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
                                                         Layout.alignment: Qt.AlignVCenter
@@ -1575,258 +1582,277 @@ Item {
                                                 height: forecastRoot._hourlyCardHeight
                                                 radius: 8
                                                 color: (modelData.isSunrise || modelData.isSunset)
-                                                    ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.04)
-                                                    : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08)
-                                                border.color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.12)
+                                                    ? Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.04)
+                                                    : Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)
+                                                border.color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.12)
                                                 border.width: 1
 
+                                                // Only the branch this card needs is instantiated — a dormant
+                                                // twin layout used to double every card's item and icon count.
+                                                Loader {
+                                                    anchors.fill: parent
+                                                    sourceComponent: (modelData.isSunrise === true || modelData.isSunset === true) ? sunCardComp : hourCardComp
+                                                }
+
                                                 // ── Sunrise / Sunset card ─────────────────────────────
-                                                ColumnLayout {
-                                                    visible: modelData.isSunrise === true || modelData.isSunset === true
-                                                    anchors.centerIn: parent
-                                                    spacing: 6
-                                                    WeatherIcon {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        iconInfo: IconResolver.resolve(
-                                                            modelData.isSunrise ? "sunrise" : "sunset",
-                                                            32,
-                                                            forecastRoot.iconsBaseDir,
-                                                            forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                            (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                        iconSize: 32
-                                                        iconColor: Kirigami.Theme.textColor
-                                                    }
-                                                    Label {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        text: weatherRoot ? weatherRoot.formatTimeForDisplay(modelData.time) : "--"
-                                                        color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(10, true) : Qt.font({ bold: true })
+                                                Component {
+                                                    id: sunCardComp
+                                                    Item {
+                                                        ColumnLayout {
+                                                            anchors.centerIn: parent
+                                                            spacing: 6
+                                                            WeatherIcon {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                iconInfo: IconResolver.resolve(
+                                                                    modelData.isSunrise ? "sunrise" : "sunset",
+                                                                    32,
+                                                                    forecastRoot.iconsBaseDir,
+                                                                    forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
+                                                                    (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                                iconSize: 32
+                                                                iconColor: forecastRoot.themeTextColor
+                                                            }
+                                                            Label {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                text: weatherRoot ? weatherRoot.formatTimeForDisplay(modelData.time) : "--"
+                                                                color: forecastRoot.themeTextColor
+                                                                font: weatherRoot ? weatherRoot.wf(10, true) : Qt.font({ bold: true })
+                                                            }
+                                                        }
                                                     }
                                                 }
 
                                                 // ── Regular hourly card ───────────────────────────────
-                                                ColumnLayout {
-                                                    visible: !(modelData.isSunrise === true || modelData.isSunset === true)
-                                                    anchors {
-                                                        fill: parent
-                                                        margins: 6
-                                                    }
-                                                    spacing: 4
+                                                Component {
+                                                    id: hourCardComp
+                                                    Item {
+                                                        ColumnLayout {
+                                                            anchors {
+                                                                fill: parent
+                                                                margins: 6
+                                                            }
+                                                            spacing: 4
 
-                                                    Label {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        text: {
-                                                            if (!modelData.hour || modelData.hour === "--")
-                                                                return "--";
-                                                            var parts = modelData.hour.split(":");
-                                                            if (parts.length < 2)
-                                                                return modelData.hour;
-                                                            var h = parseInt(parts[0], 10);
-                                                            var m = parseInt(parts[1], 10);
-                                                            if (isNaN(h) || isNaN(m))
-                                                                return modelData.hour;
-                                                            var d = new Date();
-                                                            d.setHours(h, m, 0, 0);
-                                                            return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
-                                                        }
-                                                        color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                    }
+                                                            Label {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                text: {
+                                                                    if (!modelData.hour || modelData.hour === "--")
+                                                                        return "--";
+                                                                    var parts = modelData.hour.split(":");
+                                                                    if (parts.length < 2)
+                                                                        return modelData.hour;
+                                                                    var h = parseInt(parts[0], 10);
+                                                                    var m = parseInt(parts[1], 10);
+                                                                    if (isNaN(h) || isNaN(m))
+                                                                        return modelData.hour;
+                                                                    var d = new Date();
+                                                                    d.setHours(h, m, 0, 0);
+                                                                    return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
+                                                                }
+                                                                color: forecastRoot.themeTextColor
+                                                                font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                            }
 
-                                                    WeatherIcon {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        iconInfo: {
-                                                            // Derive night flag from the hour vs sunrise/sunset
-                                                            var isNight = false;
-                                                            if (modelData.hour && modelData.hour !== "--") {
-                                                                var parts = modelData.hour.split(":");
-                                                                if (parts.length >= 2) {
-                                                                    var hMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-                                                                    function parseSunMins(t) {
-                                                                        if (!t || t === "--") return -1;
-                                                                        var p = t.split(":");
-                                                                        return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+                                                            WeatherIcon {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                iconInfo: {
+                                                                    // Derive night flag from the hour vs sunrise/sunset
+                                                                    var isNight = false;
+                                                                    if (modelData.hour && modelData.hour !== "--") {
+                                                                        var parts = modelData.hour.split(":");
+                                                                        if (parts.length >= 2) {
+                                                                            var hMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                                                                            function parseSunMins(t) {
+                                                                                if (!t || t === "--") return -1;
+                                                                                var p = t.split(":");
+                                                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+                                                                            }
+                                                                            var rise = parseSunMins(weatherRoot ? weatherRoot.sunriseTimeText : "--");
+                                                                            var set_ = parseSunMins(weatherRoot ? weatherRoot.sunsetTimeText : "--");
+                                                                            if (rise >= 0 && set_ >= 0)
+                                                                                isNight = hMins < rise || hMins >= set_;
+                                                                        }
                                                                     }
                                                                     var rise = parseSunMins(_daySunriseText);
                                                                     var set_ = parseSunMins(_daySunsetText);
                                                                     if (rise >= 0 && set_ >= 0)
                                                                         isNight = hMins < rise || hMins >= set_;
+                                                                    return forecastRoot.resolveConditionIcon(
+                                                                        modelData.code || 0, isNight,
+                                                                        forecastRoot.iconSz);
+                                                                }
+                                                                iconSize: 48
+                                                            }
+
+                                                            Label {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                text: weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--"
+                                                                color: forecastRoot.themeTextColor
+                                                                font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
+                                                            }
+
+                                                            RowLayout {
+                                                                visible: forecastRoot._hourlyShowWind
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 4
+                                                                Label {
+                                                                    text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
+                                                                Text {
+                                                                    visible: weatherRoot && !isNaN(modelData.windDeg)
+                                                                    text: W.windDirectionGlyph(modelData.windDeg)
+                                                                    font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
+                                                                    font.pixelSize: 20
+                                                                    color: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
                                                                 }
                                                             }
-                                                            return forecastRoot.resolveConditionIcon(
-                                                                modelData.code || 0, isNight,
-                                                                forecastRoot.iconSz);
-                                                        }
-                                                        iconSize: 48
-                                                    }
 
-                                                    Label {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        text: weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--"
-                                                        color: Kirigami.Theme.textColor
-                                                        font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
-                                                    }
-
-                                                    RowLayout {
-                                                        visible: forecastRoot._hourlyShowWind
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 4
-                                                        Label {
-                                                            text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                        Text {
-                                                            visible: weatherRoot && !isNaN(modelData.windDeg)
-                                                            text: W.windDirectionGlyph(modelData.windDeg)
-                                                            font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
-                                                            font.pixelSize: 20
-                                                            color: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                    }
-
-                                                    RowLayout {
-                                                        visible: forecastRoot._hourlyShowPressure
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 3
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("pressure", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                            iconSize: 24
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: weatherRoot ? weatherRoot.pressureValue(modelData.pressureHpa) : "--"
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                    }
-
-                                                    RowLayout {
-                                                        visible: forecastRoot._hourlyShowKpIndex
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 3
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("spaceweather", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                            iconSize: 24
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: {
-                                                                if (!weatherRoot) return i18n("No info");
-                                                                var d = weatherRoot.dailyData[dataIndex].dateStr || "";
-                                                                var e = weatherRoot.kpForecastForHour(d, modelData.hour || "")
-                                                                        || weatherRoot.kpForecastForDate(d);
-                                                                if (!e || isNaN(e.kp)) return i18n("No info");
-                                                                return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
+                                                            RowLayout {
+                                                                visible: forecastRoot._hourlyShowPressure
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 3
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("pressure", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                                    iconSize: 24
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: weatherRoot ? weatherRoot.pressureValue(modelData.pressureHpa) : "--"
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
                                                             }
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                    }
 
-                                                    RowLayout {
-                                                        visible: forecastRoot._hourlyShowUvIndex
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 3
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("uvindex", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                            iconSize: 24
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: {
-                                                                var uv = modelData.uvIndex;
-                                                                return (uv === undefined || isNaN(uv)) ? "--" : "UV " + uv.toFixed(1);
+                                                            RowLayout {
+                                                                visible: forecastRoot._hourlyShowKpIndex
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 3
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("spaceweather", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                                    iconSize: 24
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: {
+                                                                        if (!weatherRoot) return i18n("No info");
+                                                                        var d = weatherRoot.dailyData[dataIndex].dateStr || "";
+                                                                        var e = weatherRoot.kpForecastForHour(d, modelData.hour || "")
+                                                                                || weatherRoot.kpForecastForDate(d);
+                                                                        if (!e || isNaN(e.kp)) return i18n("No info");
+                                                                        return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
+                                                                    }
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
                                                             }
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                    }
 
-                                                    RowLayout {
-                                                        visible: forecastRoot._hourlyShowPrecipSum
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 3
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("precipsum", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                            iconSize: 24
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: weatherRoot ? weatherRoot.precipSumText(modelData.precipMm) : "--"
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                    }
-
-                                                    RowLayout {
-                                                        visible: forecastRoot._hourlyShowVisibility
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 3
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("visibility", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                            iconSize: 24
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                    }
-
-                                                    RowLayout {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: 3
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("umbrella", 32, forecastRoot.iconsBaseDir,
-                                                                forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                            iconSize: 32
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: {
-                                                                var ppText = W.hourlyPrecipProbText(modelData.precipProb, modelData.code);
-                                                                if (ppText !== null) return ppText;
-                                                                var h = modelData.humidity;
-                                                                return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
+                                                            RowLayout {
+                                                                visible: forecastRoot._hourlyShowUvIndex
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 3
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("uvindex", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                                    iconSize: 24
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: {
+                                                                        var uv = modelData.uvIndex;
+                                                                        return (uv === undefined || isNaN(uv)) ? "--" : "UV " + uv.toFixed(1);
+                                                                    }
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
                                                             }
-                                                            color: Kirigami.Theme.textColor
-                                                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                        }
-                                                    }
 
-                                                    RowLayout {
-                                                        Layout.alignment: Qt.AlignHCenter
-                                                        spacing: -5
-                                                        // Open-Meteo can report a trace precip amount (e.g. 0.1 mm)
-                                                        // for an hour whose weather code and probability are dry.
-                                                        // Only show the rate when the code itself implies precipitation,
-                                                        // so it doesn't contradict a clear/sunny icon at 0% probability.
-                                                        visible: modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
-                                                                 && modelData.precipMm > 0 && W.isPrecipCode(modelData.code)
-                                                        WeatherIcon {
-                                                            iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir,
-                                                                forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                            iconSize: 32
-                                                            iconColor: Kirigami.Theme.textColor
-                                                            opacity: 0.6
-                                                            Layout.alignment: Qt.AlignVCenter
-                                                        }
-                                                        Label {
-                                                            text: weatherRoot ? weatherRoot.precipValue(modelData.precipMm) : "--"
-                                                            color: Kirigami.Theme.textColor
-                                                            opacity: 0.6
-                                                            font: weatherRoot ? weatherRoot.wf(8, false) : Qt.font({})
+                                                            RowLayout {
+                                                                visible: forecastRoot._hourlyShowPrecipSum
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 3
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("precipsum", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                                    iconSize: 24
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: weatherRoot ? weatherRoot.precipSumText(modelData.precipMm) : "--"
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
+                                                            }
+
+                                                            RowLayout {
+                                                                visible: forecastRoot._hourlyShowVisibility
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 3
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("visibility", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                                    iconSize: 24
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
+                                                            }
+
+                                                            RowLayout {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: 3
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("umbrella", 32, forecastRoot.iconsBaseDir,
+                                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
+                                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                                    iconSize: 32
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: {
+                                                                        var ppText = W.hourlyPrecipProbText(modelData.precipProb, modelData.code);
+                                                                        if (ppText !== null) return ppText;
+                                                                        var h = modelData.humidity;
+                                                                        return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
+                                                                    }
+                                                                    color: forecastRoot.themeTextColor
+                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                                                }
+                                                            }
+
+                                                            RowLayout {
+                                                                Layout.alignment: Qt.AlignHCenter
+                                                                spacing: -5
+                                                                // Open-Meteo can report a trace precip amount (e.g. 0.1 mm)
+                                                                // for an hour whose weather code and probability are dry.
+                                                                // Only show the rate when the code itself implies precipitation,
+                                                                // so it doesn't contradict a clear/sunny icon at 0% probability.
+                                                                visible: modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
+                                                                         && modelData.precipMm > 0 && W.isPrecipCode(modelData.code)
+                                                                WeatherIcon {
+                                                                    iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir,
+                                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
+                                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                                    iconSize: 32
+                                                                    iconColor: forecastRoot.themeTextColor
+                                                                    opacity: 0.6
+                                                                    Layout.alignment: Qt.AlignVCenter
+                                                                }
+                                                                Label {
+                                                                    text: weatherRoot ? weatherRoot.precipValue(modelData.precipMm) : "--"
+                                                                    color: forecastRoot.themeTextColor
+                                                                    opacity: 0.6
+                                                                    font: weatherRoot ? weatherRoot.wf(8, false) : Qt.font({})
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -1868,7 +1894,7 @@ Item {
                     Rectangle {
                         width: parent.width
                         height: 1
-                        color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.08)
+                        color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)
                     }
                 }
             }
