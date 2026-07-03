@@ -186,6 +186,18 @@ Item {
                 forecastRoot._perDayHourlyData = {};
                 forecastRoot._loadingDays      = {};
                 forecastRoot._startExpandAll();
+            } else if (forecastRoot.expandedIndex >= 0) {
+                // A day is already expanded (auto-opened or clicked) — re-fetch
+                // its hourly data so the panel doesn't keep showing the forecast
+                // from before the refresh. Keep the old data on screen while the
+                // fetch is in flight to avoid a collapse/flash.
+                var dataIndex = forecastRoot.showToday
+                    ? forecastRoot.expandedIndex
+                    : forecastRoot.expandedIndex + 1;
+                if (dataIndex < weatherRoot.dailyData.length)
+                    weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "");
+                else
+                    forecastRoot.expandedIndex = -1;
             } else {
                 forecastRoot._doAutoOpen();
             }
