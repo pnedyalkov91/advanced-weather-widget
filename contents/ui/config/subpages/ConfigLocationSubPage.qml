@@ -45,7 +45,7 @@ ColumnLayout {
 
     function _weatherCodeDescription(code) {
         // WMO weather interpretation codes (Open-Meteo)
-        if (code === 0)  return i18n("Clear");
+        if (code === 0)  return i18n("Clear sky");
         if (code === 1)  return i18n("Mainly clear");
         if (code === 2)  return i18n("Partly cloudy");
         if (code === 3)  return i18n("Overcast");

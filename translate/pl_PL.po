@@ -147,8 +147,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-06-28 18:40+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
+"POT-Creation-Date: 2026-07-03 14:55+0300\n"
 "PO-Revision-Date: 2026-06-25 20:44+0200\n"
 "Last-Translator: Konrad Lemanowski <lokalize@ajnulo.ovh>\n"
 "Language-Team: Polish <kde-i18n-doc@kde.org>\n"
@@ -693,7 +693,6 @@ msgid "City / location name"
 msgstr "Nazwa miasta / lokalizacji"
 
 #: contents/ui/config/configGeneral.qml:601
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 msgid "Clear"
 msgstr "Bezchmurnie"
 
@@ -709,6 +708,7 @@ msgstr "Bezchmurnie (noc)"
 msgid "Clear night"
 msgstr "Bezchmurna noc"
 
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
 #: contents/ui/main.qml:1826
 msgid "Clear sky"
