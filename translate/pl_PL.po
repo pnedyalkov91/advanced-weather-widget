@@ -148,7 +148,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-04 11:58+0300\n"
 "PO-Revision-Date: 2026-06-25 20:44+0200\n"
 "Last-Translator: Konrad Lemanowski <lokalize@ajnulo.ovh>\n"
 "Language-Team: Polish <kde-i18n-doc@kde.org>\n"
@@ -1201,11 +1201,11 @@ msgstr "Bardzo zła"
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: contents/ui/WeatherService.qml:728
+#: contents/ui/WeatherService.qml:753
 msgid "Failed to load weather providers"
 msgstr "Nie udało się załadować dostawców danych pogodowych"
 
-#: contents/ui/WeatherService.qml:716
+#: contents/ui/WeatherService.qml:741
 msgid "Failed: %1"
 msgstr "Nie powiodło się: %1"
 
@@ -1768,7 +1768,7 @@ msgstr "Ładuję szczegóły..."
 msgid "Loading forecast…"
 msgstr "Ładuję prognozę..."
 
-#: contents/ui/ForecastView.qml:775
+#: contents/ui/ForecastView.qml:810
 msgid "Loading hourly data…"
 msgstr "Ładuję dane godzinowe..."
 
@@ -2132,11 +2132,11 @@ msgstr "Brak danych prognostycznych"
 msgid "No geomagnetic storm activity."
 msgstr "Brak aktywności geomagnetycznej"
 
-#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
+#: contents/ui/ForecastView.qml:1255 contents/ui/ForecastView.qml:1704
 msgid "No info"
 msgstr "Brak informacji"
 
-#: contents/ui/ForecastView.qml:586
+#: contents/ui/ForecastView.qml:618
 msgid "No information"
 msgstr "Brak informacji"
 
@@ -2526,6 +2526,10 @@ msgstr "Klucz API QWeather:"
 #: contents/ui/config/configGeneral.qml:260
 msgid "QWeather error (code %1). Check your API key."
 msgstr "BłądQWeather (kod %1). Sprawdź swój klucz API."
+
+#: contents/ui/ForecastView.qml:809
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -3089,7 +3093,7 @@ msgstr "Niedziela"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1066
+#: contents/ui/ForecastView.qml:1103
 msgid "Sunrise"
 msgstr "Wschód słońca"
 
@@ -3352,7 +3356,7 @@ msgstr "Strefa czasowa:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "Aby odblokować dodatkowe warstwy mapowe (Deszcz, Chmury, Temperatura, Wiatr, Ciśnienie): wyłącz tryb adaptacyjny, wybierz OpenWeatherMap jako swojego dostawcę pogody i wpisz klucz API powyżej. Kiedy będziesz gotowy, możesz włączyć tryb Adaptacyjny ponownie."
 
-#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1436
+#: contents/ui/ForecastView.qml:477 contents/ui/main.qml:1436
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Dzisiaj"
@@ -3518,11 +3522,11 @@ msgstr "Nadchodzący (następny wschód lub zachód)"
 msgid "Upcoming rise/set only"
 msgstr "Tylko najbliższy wschód/zachód"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "Aktualizacja przekroczyła limit czasu. Kliknij aby ponowić."
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Updated %1"
 msgstr "Zaktualizowano o %1"
 
@@ -3666,7 +3670,7 @@ msgstr "Styl ikony pogody:"
 msgid "Weather icon theme:"
 msgstr "Motyw ikon pogody:"
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Weather provider:"
 msgstr "Dostawca pogody:"
 

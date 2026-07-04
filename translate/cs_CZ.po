@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-04 11:58+0300\n"
 "PO-Revision-Date: 2026-05-06 16:31+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1060,11 +1060,11 @@ msgstr "Extrémně špatná"
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: contents/ui/WeatherService.qml:728
+#: contents/ui/WeatherService.qml:753
 msgid "Failed to load weather providers"
 msgstr "Nepodařilo se načíst poskytovatele počasí"
 
-#: contents/ui/WeatherService.qml:716
+#: contents/ui/WeatherService.qml:741
 msgid "Failed: %1"
 msgstr "Selhalo: %1"
 
@@ -1627,7 +1627,7 @@ msgstr "Načítání podrobností…"
 msgid "Loading forecast…"
 msgstr "Načítání předpovědi…"
 
-#: contents/ui/ForecastView.qml:775
+#: contents/ui/ForecastView.qml:810
 msgid "Loading hourly data…"
 msgstr "Načítání hodinových dat…"
 
@@ -1991,11 +1991,11 @@ msgstr "Žádná předpověď"
 msgid "No geomagnetic storm activity."
 msgstr "Žádná aktivita geomagnetické bouře."
 
-#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
+#: contents/ui/ForecastView.qml:1255 contents/ui/ForecastView.qml:1704
 msgid "No info"
 msgstr "Žádné informace"
 
-#: contents/ui/ForecastView.qml:586
+#: contents/ui/ForecastView.qml:618
 msgid "No information"
 msgstr "Žádné informace"
 
@@ -2385,6 +2385,10 @@ msgstr "QWeather API klíč:"
 #: contents/ui/config/configGeneral.qml:260
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Chyba QWeather (kód %1). Zkontrolujte svůj klíč API."
+
+#: contents/ui/ForecastView.qml:809
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -2948,7 +2952,7 @@ msgstr "Neděle"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1066
+#: contents/ui/ForecastView.qml:1103
 msgid "Sunrise"
 msgstr "Východ slunce"
 
@@ -3211,7 +3215,7 @@ msgstr "Časové pásmo:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "Chcete-li odemknout další vrstvy mapy (déšť, oblačnost, teplota, vítr, tlak): vypněte adaptivní režim, vyberte OpenWeatherMap jako poskytovatele informací o počasí a zadejte výše svůj klíč API. Až budete připraveni, můžete adaptivní režim znovu povolit."
 
-#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1436
+#: contents/ui/ForecastView.qml:477 contents/ui/main.qml:1436
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Dnes"
@@ -3377,11 +3381,11 @@ msgstr "Nadcházející (příští východ nebo západ slunce)"
 msgid "Upcoming rise/set only"
 msgstr "Pouze nadcházející východ/západ"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "Časový limit aktualizace vypršel. Klepnutím to zkuste znovu."
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Updated %1"
 msgstr "Aktualizováno %1"
 
@@ -3525,7 +3529,7 @@ msgstr "Styl ikony počasí:"
 msgid "Weather icon theme:"
 msgstr "Motiv ikony počasí:"
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Weather provider:"
 msgstr "Poskytovatel počasí:"
 

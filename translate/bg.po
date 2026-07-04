@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: advanced-weather-widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-04 11:58+0300\n"
 "PO-Revision-Date: 2026-06-19 17:05+0300\n"
 "Last-Translator: Petar Nedyalkov <petar.nedyalkov91@gmail.com>\n"
 "Language-Team: Bulgarian <kde-i18n-doc@kde.org>\n"
@@ -1061,11 +1061,11 @@ msgstr "Изключително лошо"
 msgid "Fahrenheit (°F)"
 msgstr "Фаренхайт (°F)"
 
-#: contents/ui/WeatherService.qml:728
+#: contents/ui/WeatherService.qml:753
 msgid "Failed to load weather providers"
 msgstr "Неуспешно зареждане на доставчиците за времето"
 
-#: contents/ui/WeatherService.qml:716
+#: contents/ui/WeatherService.qml:741
 msgid "Failed: %1"
 msgstr "Неуспешно: %1"
 
@@ -1628,7 +1628,7 @@ msgstr "Зареждане на подробности…"
 msgid "Loading forecast…"
 msgstr "Зареждане на прогноза…"
 
-#: contents/ui/ForecastView.qml:775
+#: contents/ui/ForecastView.qml:810
 msgid "Loading hourly data…"
 msgstr "Зареждане на почасови данни…"
 
@@ -1992,11 +1992,11 @@ msgstr "Няма данни за прогноза"
 msgid "No geomagnetic storm activity."
 msgstr "Няма геомагнитна буря"
 
-#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
+#: contents/ui/ForecastView.qml:1255 contents/ui/ForecastView.qml:1704
 msgid "No info"
 msgstr "Няма информация"
 
-#: contents/ui/ForecastView.qml:586
+#: contents/ui/ForecastView.qml:618
 msgid "No information"
 msgstr "Няма информация"
 
@@ -2386,6 +2386,10 @@ msgstr "QWeather API ключ:"
 #: contents/ui/config/configGeneral.qml:260
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Грешка в QWeather (код %1). Проверете вашия API ключ."
+
+#: contents/ui/ForecastView.qml:809
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -2949,7 +2953,7 @@ msgstr "Неделя"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1066
+#: contents/ui/ForecastView.qml:1103
 msgid "Sunrise"
 msgstr "Изгрев"
 
@@ -3212,7 +3216,7 @@ msgstr "Часова зона:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "За да отключите допълнителни слоеве на картата (Дъжд, Облаци, Температура, Вятър, Налягане): деактивирайте Адаптивния режим, изберете OpenWeatherMap като ваш метеорологичен доставчик и въведете своя API ключ по-горе. Когато сте готови, можете отново да активирате Адаптивния режим."
 
-#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1436
+#: contents/ui/ForecastView.qml:477 contents/ui/main.qml:1436
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Днес"
@@ -3378,11 +3382,11 @@ msgstr "Предстоящ (следващ изгрев или залез)"
 msgid "Upcoming rise/set only"
 msgstr "Само предстоящ изгрев/залез"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "Обновяването изтече. Докоснете за повторен опит."
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Updated %1"
 msgstr "Обновено %1"
 
@@ -3526,7 +3530,7 @@ msgstr "Стил на иконата за времето:"
 msgid "Weather icon theme:"
 msgstr "Тема на иконите за времето:"
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Weather provider:"
 msgstr "Доставчик на времето:"
 

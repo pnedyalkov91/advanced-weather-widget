@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-04 11:58+0300\n"
 "PO-Revision-Date: 2026-06-23 12:41+0800\n"
 "Last-Translator: Yo\n"
 "Language-Team: \n"
@@ -1059,11 +1059,11 @@ msgstr "極差"
 msgid "Fahrenheit (°F)"
 msgstr "華氏（°F）"
 
-#: contents/ui/WeatherService.qml:728
+#: contents/ui/WeatherService.qml:753
 msgid "Failed to load weather providers"
 msgstr "無法載入天氣資料來源"
 
-#: contents/ui/WeatherService.qml:716
+#: contents/ui/WeatherService.qml:741
 msgid "Failed: %1"
 msgstr "失敗：%1"
 
@@ -1626,7 +1626,7 @@ msgstr "載入詳細資訊中⋯"
 msgid "Loading forecast…"
 msgstr "載入預報中⋯"
 
-#: contents/ui/ForecastView.qml:775
+#: contents/ui/ForecastView.qml:810
 msgid "Loading hourly data…"
 msgstr "載入逐時資料中⋯"
 
@@ -1990,11 +1990,11 @@ msgstr "無預報資料"
 msgid "No geomagnetic storm activity."
 msgstr "無地磁風暴活動。"
 
-#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
+#: contents/ui/ForecastView.qml:1255 contents/ui/ForecastView.qml:1704
 msgid "No info"
 msgstr "無資料"
 
-#: contents/ui/ForecastView.qml:586
+#: contents/ui/ForecastView.qml:618
 msgid "No information"
 msgstr "無資料"
 
@@ -2384,6 +2384,10 @@ msgstr "QWeather API 金鑰："
 #: contents/ui/config/configGeneral.qml:260
 msgid "QWeather error (code %1). Check your API key."
 msgstr "QWeather 錯誤（代碼 %1），請檢查您的 API 金鑰。"
+
+#: contents/ui/ForecastView.qml:809
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -2947,7 +2951,7 @@ msgstr "星期日"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1066
+#: contents/ui/ForecastView.qml:1103
 msgid "Sunrise"
 msgstr "日出"
 
@@ -3210,7 +3214,7 @@ msgstr "時區："
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "若要解鎖其他地圖圖層（雨量、雲層、溫度、風速、氣壓）：請停用自適應模式，選擇 OpenWeatherMap 作為天氣供應商，並在上方填入 API 金鑰。完成後可再次啟用自適應模式。"
 
-#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1436
+#: contents/ui/ForecastView.qml:477 contents/ui/main.qml:1436
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "今天"
@@ -3376,11 +3380,11 @@ msgstr "即將（下一次日出或日落）"
 msgid "Upcoming rise/set only"
 msgstr "僅顯示即將的升降"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "更新逾時，點擊重試。"
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Updated %1"
 msgstr "已於 %1 更新"
 
@@ -3524,7 +3528,7 @@ msgstr "天氣圖示樣式："
 msgid "Weather icon theme:"
 msgstr "天氣圖示主題："
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Weather provider:"
 msgstr "天氣供應商："
 

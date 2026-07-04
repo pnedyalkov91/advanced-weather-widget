@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 14:55+0300\n"
+"POT-Creation-Date: 2026-07-04 11:58+0300\n"
 "PO-Revision-Date: 2026-06-22 00:00+0900\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
@@ -1058,11 +1058,11 @@ msgstr "極めて悪い"
 msgid "Fahrenheit (°F)"
 msgstr "華氏（°F）"
 
-#: contents/ui/WeatherService.qml:728
+#: contents/ui/WeatherService.qml:753
 msgid "Failed to load weather providers"
 msgstr "気象プロバイダの読み込みに失敗しました"
 
-#: contents/ui/WeatherService.qml:716
+#: contents/ui/WeatherService.qml:741
 msgid "Failed: %1"
 msgstr "失敗: %1"
 
@@ -1625,7 +1625,7 @@ msgstr "詳細を読み込み中…"
 msgid "Loading forecast…"
 msgstr "予報を読み込み中…"
 
-#: contents/ui/ForecastView.qml:775
+#: contents/ui/ForecastView.qml:810
 msgid "Loading hourly data…"
 msgstr "時間別データを読み込み中…"
 
@@ -1989,11 +1989,11 @@ msgstr "予報データがありません"
 msgid "No geomagnetic storm activity."
 msgstr "地磁気嵐の活動はありません。"
 
-#: contents/ui/ForecastView.qml:1218 contents/ui/ForecastView.qml:1667
+#: contents/ui/ForecastView.qml:1255 contents/ui/ForecastView.qml:1704
 msgid "No info"
 msgstr "情報なし"
 
-#: contents/ui/ForecastView.qml:586
+#: contents/ui/ForecastView.qml:618
 msgid "No information"
 msgstr "情報なし"
 
@@ -2383,6 +2383,10 @@ msgstr "QWeather API キー:"
 #: contents/ui/config/configGeneral.qml:260
 msgid "QWeather error (code %1). Check your API key."
 msgstr "QWeather エラー（コード %1）。API キーを確認してください。"
+
+#: contents/ui/ForecastView.qml:809
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -2946,7 +2950,7 @@ msgstr "日曜日"
 
 #: contents/ui/DetailsView.qml:3208 contents/ui/DetailsView.qml:3212
 #: contents/ui/DetailsView.qml:3534 contents/ui/DetailsView.qml:3538
-#: contents/ui/ForecastView.qml:1066
+#: contents/ui/ForecastView.qml:1103
 msgid "Sunrise"
 msgstr "日の出"
 
@@ -3209,7 +3213,7 @@ msgstr "タイムゾーン:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "追加の地図レイヤー（雨、雲、気温、風、気圧）のロックを解除するには: アダプティブモードを無効化し、気象プロバイダとして OpenWeatherMap を選択して、上に API キーを入力してください。準備ができたら、再度アダプティブモードを有効化できます。"
 
-#: contents/ui/ForecastView.qml:445 contents/ui/main.qml:1436
+#: contents/ui/ForecastView.qml:477 contents/ui/main.qml:1436
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "今日"
@@ -3375,11 +3379,11 @@ msgstr "今後（次の日の出または日の入り）"
 msgid "Upcoming rise/set only"
 msgstr "今後の出入りのみ"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "更新がタイムアウトしました。タップして再試行。"
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Updated %1"
 msgstr "%1 に更新"
 
@@ -3523,7 +3527,7 @@ msgstr "天気アイコンのスタイル:"
 msgid "Weather icon theme:"
 msgstr "天気アイコンテーマ:"
 
-#: contents/ui/WeatherService.qml:681
+#: contents/ui/WeatherService.qml:706
 msgid "Weather provider:"
 msgstr "気象プロバイダ:"
 
