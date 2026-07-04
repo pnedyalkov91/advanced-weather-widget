@@ -656,12 +656,17 @@ Rectangle {
             // ── Forecast tab ──────────────────────────────────────────
             Item {
                 id: forecastTab
+                readonly property bool shouldPrewarm: !!(fullView.weatherRoot
+                    && fullView.weatherRoot.dailyData
+                    && fullView.weatherRoot.dailyData.length > 0
+                    && Plasmoid.configuration.forecastAutoOpen !== false
+                    && Plasmoid.configuration.forecastExpandAll !== true)
                 implicitHeight: forecastLoader.item ? forecastLoader.item.implicitHeight : 220
                 Loader {
                     id: forecastLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: forecastTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: forecastTab.StackLayout.isCurrentItem || forecastTab.shouldPrewarm || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: ForecastView {
                         id: forecastView
                         weatherRoot: fullView.weatherRoot

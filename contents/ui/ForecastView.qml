@@ -37,6 +37,7 @@ Item {
     property var verticalScrollView
     property int expandedIndex: -1
     property int _singleExpandFetchGeneration: 0
+    property bool _needsForecastReset: true
 
     // ── Auto-open: expand the first available day's hourly forecast ────────
     readonly property bool autoOpen: Plasmoid.configuration.forecastAutoOpen !== false
@@ -284,6 +285,23 @@ Item {
         return true;
     }
 
+    function _initialAutoOpenDateStr() {
+        if (!weatherRoot || weatherRoot.dailyData.length === 0 || expandAll || !autoOpen)
+            return "";
+        var firstDataIndex = forecastRoot.showToday ? 0 : 1;
+        if (firstDataIndex >= weatherRoot.dailyData.length)
+            return "";
+        return weatherRoot.dailyData[firstDataIndex].dateStr || "";
+    }
+
+    function _primeInitialExpandedState() {
+        var dateStr = _initialAutoOpenDateStr();
+        if (!dateStr)
+            return;
+        expandedIndex = 0;
+        _seedHourlyDataFromPrefetch(dateStr);
+    }
+
     function _loadSingleExpandHourly(dateStr) {
         if (!weatherRoot || !dateStr)
             return;
@@ -499,8 +517,16 @@ Item {
             _startExpandAll();
         } else {
             _cancelExpandAllFetch(false);
-            _doAutoOpen();
+            var dateStr = _initialAutoOpenDateStr();
+            if (expandedIndex === 0 && dateStr) {
+                _autoOpenDone = true;
+                _loadSingleExpandHourly(dateStr);
+                viewportPrefetchDebounce.restart();
+            } else {
+                _doAutoOpen();
+            }
         }
+        _needsForecastReset = false;
     }
 
     onExpandAllChanged: {
@@ -553,7 +579,11 @@ Item {
 
     onVisibleChanged: {
         if (visible) {
-            activateForecast();
+            if (_needsForecastReset) {
+                activateForecast();
+            } else if (!expandAll) {
+                viewportPrefetchDebounce.restart();
+            }
         } else {
             _cancelExpandAllFetch(false);
             _cancelViewportPrefetch();
@@ -563,9 +593,11 @@ Item {
     Connections {
         target: weatherRoot
         function onDailyDataChanged() {
+            forecastRoot._needsForecastReset = true;
             if (!forecastRoot.visible) {
                 forecastRoot._autoOpenDone = false;
                 forecastRoot._cancelExpandAllFetch(true);
+                forecastRoot._primeInitialExpandedState();
                 return;
             }
             if (forecastRoot.expandAll) {
@@ -586,6 +618,16 @@ Item {
                 forecastRoot._doAutoOpen();
             }
         }
+
+        function onPrefetchedHourlyByDateChanged() {
+            if (!forecastRoot.visible)
+                forecastRoot._primeInitialExpandedState();
+        }
+    }
+
+    Component.onCompleted: {
+        if (!visible)
+            _primeInitialExpandedState();
     }
 
     implicitHeight: parent ? parent.height : 220
