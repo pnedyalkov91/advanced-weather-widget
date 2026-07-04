@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
 "POT-Creation-Date: 2026-07-04 12:00+0300\n"
-"PO-Revision-Date: 2026-07-04 08:12+0200\n"
+"PO-Revision-Date: 2026-07-04 09:32+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -1099,11 +1099,11 @@ msgstr "Percepita: %1"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:261
 msgid "Fill panel"
-msgstr "Riempi pannello"
+msgstr "Riempi il pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:932
 msgid "Fill panel:"
-msgstr "Riempi pannello:"
+msgstr "Riempi il pannello:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:314
 msgid "Find"
@@ -2170,7 +2170,7 @@ msgstr "Elementi del pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:86
 msgid "Panel display settings"
-msgstr "Impostazioni visualizzazione pannello"
+msgstr "Impostazioni di visualizzazione del pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1002
 msgid "Panel font:"
@@ -2178,7 +2178,7 @@ msgstr "Font pannello:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:939
 msgid "Panel items settings"
-msgstr "Impostazioni elementi pannello"
+msgstr "Impostazioni degli elementi del pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1167
 msgid "Panel items:"
@@ -2790,7 +2790,7 @@ msgstr "Chip semplici:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:140
 msgid "Simple display mode settings"
-msgstr "Impostazioni modalità di visualizzazione semplice"
+msgstr "Impostazioni della modalità di visualizzazione semplice"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:96
 msgid "Single line (all items at once)"
@@ -3290,7 +3290,7 @@ msgstr "Elementi del tooltip"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:54
 msgid "Tooltip items settings"
-msgstr "Impostazioni elementi tooltip"
+msgstr "Impostazioni degli elementi del tooltip"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:301
 msgid "Tooltip items:"
