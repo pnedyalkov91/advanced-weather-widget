@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
 "POT-Creation-Date: 2026-07-04 12:00+0300\n"
-"PO-Revision-Date: 2026-06-27 16:54+0200\n"
+"PO-Revision-Date: 2026-07-04 12:03+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: \n"
 "Language: nl\n"
@@ -2389,7 +2389,7 @@ msgstr "QWeather-fout (code %1). Controleer de api-sleutel."
 
 #: contents/ui/ForecastView.qml:828
 msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
-msgstr ""
+msgstr "QWeather biedt weersvoorspelling per uur aan, tot wel 168 uur (7 dagen) tevoren. Er is een dagelijks weerbericht beschikbaar voor deze datum."
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -3655,7 +3655,7 @@ msgstr "bewolking"
 
 #: contents/ui/main.qml:900
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: contents/ui/main.qml:1481
 msgid "drizzle"
@@ -3691,12 +3691,12 @@ msgstr "ft"
 
 #: contents/ui/DetailsView.qml:1489 contents/ui/DetailsView.qml:1622
 msgid "grains/m³"
-msgstr ""
+msgstr "pollen/m³"
 
 #: contents/ui/components/RadarWebEngineView.qml:551
 #: contents/ui/config/tabs/ConfigMiscTab.qml:289 contents/ui/js/weather.js:306
 msgid "hPa"
-msgstr ""
+msgstr "hPa"
 
 #: contents/ui/main.qml:1708
 msgid "high"
@@ -3704,7 +3704,7 @@ msgstr "hoog"
 
 #: contents/ui/main.qml:791 contents/ui/main.qml:899
 msgid "in"
-msgstr ""
+msgstr "in"
 
 #: contents/ui/main.qml:1612
 msgid "in the next hours"
@@ -3712,32 +3712,32 @@ msgstr "in de komende uren"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:784
 msgid "in/h"
-msgstr ""
+msgstr "in/u"
 
 #: contents/ui/components/RadarWebEngineView.qml:549
 #: contents/ui/config/tabs/ConfigMiscTab.qml:297 contents/ui/js/weather.js:305
 msgid "inHg"
-msgstr ""
+msgstr "inHg"
 
 #: contents/ui/DetailsView.qml:347 contents/ui/DetailsView.qml:396
 #: contents/ui/main.qml:799 contents/ui/SimpleView.qml:281
 #: contents/ui/TooltipContent.qml:444
 msgid "km"
-msgstr ""
+msgstr "km"
 
 #: contents/ui/components/RadarWebEngineView.qml:544
 #: contents/ui/config/tabs/ConfigMiscTab.qml:254 contents/ui/js/weather.js:299
 msgid "km/h"
-msgstr ""
+msgstr "km/u"
 
 #: contents/ui/DetailsView.qml:1938
 msgid "km/s"
-msgstr ""
+msgstr "km/s"
 
 #: contents/ui/components/RadarWebEngineView.qml:545
 #: contents/ui/js/weather.js:298
 msgid "kn"
-msgstr ""
+msgstr "kn"
 
 #: contents/ui/DetailsView.qml:3482
 msgid "left"
@@ -3754,7 +3754,7 @@ msgstr "m"
 #: contents/ui/components/RadarWebEngineView.qml:546
 #: contents/ui/config/tabs/ConfigMiscTab.qml:262 contents/ui/js/weather.js:297
 msgid "m/s"
-msgstr ""
+msgstr "m/s"
 
 #: contents/ui/config/configGeneral.qml:291
 msgid "met.no (free)"
@@ -3766,11 +3766,11 @@ msgstr "meter"
 
 #: contents/ui/js/airQuality.js:155
 msgid "mg/m³"
-msgstr ""
+msgstr "mg/m³"
 
 #: contents/ui/main.qml:798
 msgid "mi"
-msgstr ""
+msgstr "mi"
 
 #: contents/ui/main.qml:1749
 msgid "minor"
@@ -3783,16 +3783,16 @@ msgstr "minuten"
 
 #: contents/ui/main.qml:792
 msgid "mm"
-msgstr ""
+msgstr "mm"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:785
 msgid "mm/h"
-msgstr ""
+msgstr "mm/u"
 
 #: contents/ui/components/RadarWebEngineView.qml:550
 #: contents/ui/config/tabs/ConfigMiscTab.qml:293 contents/ui/js/weather.js:304
 msgid "mmHg"
-msgstr ""
+msgstr "mmHg"
 
 #: contents/ui/main.qml:1707 contents/ui/main.qml:1750
 msgid "moderate"
@@ -3801,7 +3801,7 @@ msgstr "matig"
 #: contents/ui/components/RadarWebEngineView.qml:543
 #: contents/ui/config/tabs/ConfigMiscTab.qml:258 contents/ui/js/weather.js:296
 msgid "mph"
-msgstr ""
+msgstr "mpu"
 
 #: contents/ui/main.qml:1483
 msgid "overcast skies"
@@ -3896,7 +3896,7 @@ msgstr "je locatie"
 
 #: contents/ui/js/airQuality.js:156
 msgid "µg/m³"
-msgstr ""
+msgstr "µg/m³"
 
 #~ msgid "Postpone %1 min"
 #~ msgstr "%1 min. uitstellen"

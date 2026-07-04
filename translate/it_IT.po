@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
 "POT-Creation-Date: 2026-07-04 12:00+0300\n"
-"PO-Revision-Date: 2026-06-28 10:01+0200\n"
+"PO-Revision-Date: 2026-07-04 13:59+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 26.04.2\n"
+"X-Generator: Lokalize 26.04.3\n"
 
 #: contents/ui/DetailsView.qml:3476 contents/ui/DetailsView.qml:3478
 msgid " until dawn"
@@ -141,8 +141,18 @@ msgid "<b>Severity:</b> %1%2"
 msgstr "<b>Gravità:</b> %1%2"
 
 #: contents/ui/config/configGeneral.qml:745
-msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
-msgstr "<b>Perché i livelli OWM potrebbero non corrispondere al radar RainViewer</b><br/><br/>I livelli di precipitazione/nuvole OWM sono <b>tile di modello statici</b> - mostrano un output NWP (Numerical Weather Prediction) smussato, non ritorni radar reali. Rappresentano dove il modello <i>pensa</i> stia piovendo in base all'interpolazione tra stazioni meteorologiche e esecuzioni del modello.<br/><br/>RainViewer utilizza <b>compositi radar meteorologici reali</b> da stazioni radar - riflettività effettivamente misurata aggiornata ogni 2–10 minuti. Questa discrepanza è prevista e nota."
+msgid ""
+"<b>Why OWM layers may not match RainViewer radar</b><br/>"
+"<br/>"
+"OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/>"
+"<br/>"
+"RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
+msgstr ""
+"<b>Perché i livelli OWM potrebbero non corrispondere al radar RainViewer</b><br/>"
+"<br/>"
+"I livelli di precipitazione/nuvole OWM sono <b>tile di modello statici</b> - mostrano un output NWP (Numerical Weather Prediction) smussato, non ritorni radar reali. Rappresentano dove il modello <i>pensa</i> stia piovendo in base all'interpolazione tra stazioni meteorologiche e esecuzioni del modello.<br/>"
+"<br/>"
+"RainViewer utilizza <b>compositi radar meteorologici reali</b> da stazioni radar - riflettività effettivamente misurata aggiornata ogni 2–10 minuti. Questa discrepanza è prevista e nota."
 
 #: contents/ui/config/configGeneral.qml:450
 msgid "AI-powered weather intelligence. API key required below."
@@ -279,7 +289,7 @@ msgstr "Altitudine (%1):"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:480
 msgid "Altitude is optional, but strongly recommended for accurate forecasts. MET Norway (met.no) uses it to correct temperature and pressure for elevation; leaving it at 0 for a mountain location will return sea-level values."
-msgstr "L'altitudine è opzionale, ma fortemente consigliata per previsioni accurate. MET Norway (met.no) la utilizza per correggere temperatura e pressione in base all'elevazione; lasciarla a 0 per una località montuosa restituirà valori a livello del mare."
+msgstr "L'altitudine è opzionale, ma fortemente consigliata per previsioni accurate. MET Norway (met.no) la utilizza per correggere temperatura e pressione in base ad essa; lasciarla a 0 per una località montuosa restituirà valori a livello del mare."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:610
 msgid "Altitude:"
@@ -977,7 +987,7 @@ msgstr "Inserisci un nome posizione e coordinate valide, quindi fai clic sul pul
 
 #: contents/ui/config/configLocation.qml:1592
 msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
-msgstr "Inserisci latitudine, longitudine ed elevazione opzionale esatte per una previsione più locale. Puoi copiare le coordinate da OpenStreetMap, GeoNames o Google Maps."
+msgstr "Inserisci l'esatta latitudine e longitudine e, opzionalmente, l'altitudine per una previsione più locale. Puoi copiare le coordinate da OpenStreetMap, GeoNames o Google Maps."
 
 #: contents/ui/config/configLocation.qml:1179
 msgid "Enter manually"
@@ -1089,11 +1099,11 @@ msgstr "Percepita: %1"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:261
 msgid "Fill panel"
-msgstr "Riempi pannello"
+msgstr "Riempi il pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:932
 msgid "Fill panel:"
-msgstr "Riempi pannello:"
+msgstr "Riempi il pannello:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:314
 msgid "Find"
@@ -1324,7 +1334,7 @@ msgstr "Orizzontale"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:899
 msgid "Hourly Forecast Settings"
-msgstr "Impostazioni Previsioni Orarie"
+msgstr "Impostazioni delle previsioni orarie"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:909
 msgid "Hourly layout:"
@@ -1475,7 +1485,7 @@ msgstr "Larghezza elemento:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:220
 msgid "Items Order:"
-msgstr "Ordine Elementi:"
+msgstr "Ordine elementi:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1087
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:41
@@ -1529,7 +1539,7 @@ msgstr "Indice Kp"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:836
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:948
 msgid "Kp index/G forecast:"
-msgstr "Previsioni dell'indice Kp/G:"
+msgstr "Previsioni indice Kp/G:"
 
 #: contents/ui/main.qml:2056
 msgid "Last Quarter"
@@ -2063,7 +2073,7 @@ msgstr "Abilita la notifica delle previsioni di oggi"
 
 #: contents/ui/config/configNotifications.qml:446
 msgid "Notify with today's geomagnetic activity forecast"
-msgstr "Abilita la notifica le previsioni di oggi sull'attività geomagnetica"
+msgstr "Abilita la notifica delle previsioni di oggi sull'attività geomagnetica"
 
 #: contents/ui/config/configNotifications.qml:378
 msgid "Notify with tomorrow's forecast"
@@ -2160,7 +2170,7 @@ msgstr "Elementi del pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:86
 msgid "Panel display settings"
-msgstr "Impostazioni visualizzazione pannello"
+msgstr "Impostazioni di visualizzazione del pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1002
 msgid "Panel font:"
@@ -2168,7 +2178,7 @@ msgstr "Font pannello:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:939
 msgid "Panel items settings"
-msgstr "Impostazioni elementi pannello"
+msgstr "Impostazioni degli elementi del pannello"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1167
 msgid "Panel items:"
@@ -2389,7 +2399,7 @@ msgstr "Errore QWeather (codice %1). Controlla la tua chiave API."
 
 #: contents/ui/ForecastView.qml:828
 msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
-msgstr ""
+msgstr "QWeather fornisce previsioni orarie fino a 168 ore (7 giorni). Le previsioni giornaliere sono ancora disponibili per questa data."
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
@@ -2414,8 +2424,18 @@ msgid "Radar only"
 msgstr "Solo radar"
 
 #: contents/ui/config/configGeneral.qml:728
-msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
-msgstr "Fornitore radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Il widget utilizza l'API gratuita di RainViewer, che fornisce i dati radar meteo delle ultime 2 ore a intervalli di 10 minuti. Le previsioni radar non sono supportate.<br/><br/>Rain Viewer non garantisce la disponibilità dei dati radar. Non stipulano contratti con i proprietari di questi dati. Il motivo è che i proprietari possono chiedere loro di rimuovere i propri dati da Rain Viewer, modificarne il formato o interrompere la condivisione. Cercano di mantenere i dati radar il più a lungo possibile, ma a volte i proprietari smettono semplicemente di fornire le immagini."
+msgid ""
+"Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/>"
+"<br/>"
+"The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/>"
+"<br/>"
+"Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+msgstr ""
+"Fornitore radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/>"
+"<br/>"
+"Il widget utilizza l'API gratuita di RainViewer, che fornisce i dati radar meteo delle ultime 2 ore a intervalli di 10 minuti. Le previsioni radar non sono supportate.<br/>"
+"<br/>"
+"Rain Viewer non garantisce la disponibilità dei dati radar. Non stipulano contratti con i proprietari di questi dati. Il motivo è che i proprietari possono chiedere loro di rimuovere i propri dati da Rain Viewer, modificarne il formato o interrompere la condivisione. Cercano di mantenere i dati radar il più a lungo possibile, ma a volte i proprietari smettono semplicemente di fornire le immagini."
 
 #: contents/ui/FullView.qml:730
 msgid "Radar:"
@@ -2770,7 +2790,7 @@ msgstr "Chip semplici:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:140
 msgid "Simple display mode settings"
-msgstr "Impostazioni modalità di visualizzazione semplice"
+msgstr "Impostazioni della modalità di visualizzazione semplice"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:96
 msgid "Single line (all items at once)"
@@ -3074,7 +3094,7 @@ msgstr "Colore della temperatura"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:587
 msgid "Temperature badge"
-msgstr "Badge temperatura"
+msgstr "Badge della temperatura"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:472
 msgid "Temperature color:"
@@ -3258,7 +3278,7 @@ msgstr "Tooltip"
 
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:94
 msgid "Tooltip Items"
-msgstr "Elementi Tooltip"
+msgstr "Elementi del tooltip"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:135
 msgid "Tooltip height:"
@@ -3266,11 +3286,11 @@ msgstr "Altezza tooltip:"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:296
 msgid "Tooltip items"
-msgstr "Elementi tooltip"
+msgstr "Elementi del tooltip"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:54
 msgid "Tooltip items settings"
-msgstr "Impostazioni elementi tooltip"
+msgstr "Impostazioni degli elementi del tooltip"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:301
 msgid "Tooltip items:"
@@ -3322,7 +3342,7 @@ msgstr "Indice UV"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:851
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:964
 msgid "UV index forecast:"
-msgstr "Previsioni dell'indice UV:"
+msgstr "Previsioni indice UV:"
 
 #: contents/ui/main.qml:1728
 msgid "UV will be %1 (%2)"
@@ -3561,7 +3581,7 @@ msgstr "Widget"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:405
 msgid "Widget Size"
-msgstr "Dimensione Widget"
+msgstr "Dimensione del widget"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:249
 msgid "Widget panel area:"
@@ -3655,7 +3675,7 @@ msgstr "cielo nuvoloso"
 
 #: contents/ui/main.qml:900
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: contents/ui/main.qml:1481
 msgid "drizzle"
@@ -3691,12 +3711,12 @@ msgstr "ft"
 
 #: contents/ui/DetailsView.qml:1489 contents/ui/DetailsView.qml:1622
 msgid "grains/m³"
-msgstr ""
+msgstr "granuli/m³"
 
 #: contents/ui/components/RadarWebEngineView.qml:551
 #: contents/ui/config/tabs/ConfigMiscTab.qml:289 contents/ui/js/weather.js:306
 msgid "hPa"
-msgstr ""
+msgstr "hPa"
 
 #: contents/ui/main.qml:1708
 msgid "high"
@@ -3704,7 +3724,7 @@ msgstr "alto"
 
 #: contents/ui/main.qml:791 contents/ui/main.qml:899
 msgid "in"
-msgstr ""
+msgstr "in"
 
 #: contents/ui/main.qml:1612
 msgid "in the next hours"
@@ -3712,32 +3732,32 @@ msgstr "nelle prossime ore"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:784
 msgid "in/h"
-msgstr ""
+msgstr "in/h"
 
 #: contents/ui/components/RadarWebEngineView.qml:549
 #: contents/ui/config/tabs/ConfigMiscTab.qml:297 contents/ui/js/weather.js:305
 msgid "inHg"
-msgstr ""
+msgstr "inHg"
 
 #: contents/ui/DetailsView.qml:347 contents/ui/DetailsView.qml:396
 #: contents/ui/main.qml:799 contents/ui/SimpleView.qml:281
 #: contents/ui/TooltipContent.qml:444
 msgid "km"
-msgstr ""
+msgstr "km"
 
 #: contents/ui/components/RadarWebEngineView.qml:544
 #: contents/ui/config/tabs/ConfigMiscTab.qml:254 contents/ui/js/weather.js:299
 msgid "km/h"
-msgstr ""
+msgstr "km/h"
 
 #: contents/ui/DetailsView.qml:1938
 msgid "km/s"
-msgstr ""
+msgstr "km/s"
 
 #: contents/ui/components/RadarWebEngineView.qml:545
 #: contents/ui/js/weather.js:298
 msgid "kn"
-msgstr ""
+msgstr "kn"
 
 #: contents/ui/DetailsView.qml:3482
 msgid "left"
@@ -3754,7 +3774,7 @@ msgstr "m"
 #: contents/ui/components/RadarWebEngineView.qml:546
 #: contents/ui/config/tabs/ConfigMiscTab.qml:262 contents/ui/js/weather.js:297
 msgid "m/s"
-msgstr ""
+msgstr "m/s"
 
 #: contents/ui/config/configGeneral.qml:291
 msgid "met.no (free)"
@@ -3766,11 +3786,11 @@ msgstr "metri"
 
 #: contents/ui/js/airQuality.js:155
 msgid "mg/m³"
-msgstr ""
+msgstr "mg/m³"
 
 #: contents/ui/main.qml:798
 msgid "mi"
-msgstr ""
+msgstr "mi"
 
 #: contents/ui/main.qml:1749
 msgid "minor"
@@ -3783,16 +3803,16 @@ msgstr "minuti"
 
 #: contents/ui/main.qml:792
 msgid "mm"
-msgstr ""
+msgstr "mm"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:785
 msgid "mm/h"
-msgstr ""
+msgstr "mm/h"
 
 #: contents/ui/components/RadarWebEngineView.qml:550
 #: contents/ui/config/tabs/ConfigMiscTab.qml:293 contents/ui/js/weather.js:304
 msgid "mmHg"
-msgstr ""
+msgstr "mmHg"
 
 #: contents/ui/main.qml:1707 contents/ui/main.qml:1750
 msgid "moderate"
@@ -3801,7 +3821,7 @@ msgstr "moderato"
 #: contents/ui/components/RadarWebEngineView.qml:543
 #: contents/ui/config/tabs/ConfigMiscTab.qml:258 contents/ui/js/weather.js:296
 msgid "mph"
-msgstr ""
+msgstr "mph"
 
 #: contents/ui/main.qml:1483
 msgid "overcast skies"
@@ -3896,7 +3916,7 @@ msgstr "la tua posizione"
 
 #: contents/ui/js/airQuality.js:156
 msgid "µg/m³"
-msgstr ""
+msgstr "µg/m³"
 
 #~ msgid "Reload radar"
 #~ msgstr "Ricarica il radar"
