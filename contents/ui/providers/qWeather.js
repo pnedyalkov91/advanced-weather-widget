@@ -111,6 +111,26 @@ function _forecastSpans(days) {
     return [30, 15, 10, 7, 3];
 }
 
+function _hourlySpanHours(dateStr) {
+    if (!dateStr)
+        return 168;
+    var parts = dateStr.split("-");
+    if (parts.length < 3)
+        return 168;
+    var year = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10) - 1;
+    var day = parseInt(parts[2], 10);
+    if (isNaN(year) || isNaN(month) || isNaN(day))
+        return 168;
+    var targetEnd = new Date(year, month, day, 23, 59, 59, 999);
+    var diffHours = Math.ceil((targetEnd.getTime() - (new Date()).getTime()) / 3600000);
+    if (diffHours <= 24)
+        return 24;
+    if (diffHours <= 72)
+        return 72;
+    return 168;
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -205,7 +225,9 @@ function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
                         uvMax: (day.uvIndex !== undefined) ? parseFloat(day.uvIndex) : NaN,
                         precipProb: (day.pop !== undefined) ? parseFloat(day.pop) : NaN,
                         windKmh: (day.windSpeed !== undefined) ? parseFloat(day.windSpeed) : NaN,
-                        windDir: (day.wind360 !== undefined) ? parseFloat(day.wind360) : NaN
+                        windDir: (day.wind360 !== undefined) ? parseFloat(day.wind360) : NaN,
+                        sunriseTimeText: day.sunrise || "--",
+                        sunsetTimeText: day.sunset || "--"
                     });
                 }
                 if (d.daily.length > 0) {
@@ -292,7 +314,7 @@ function fetchHourly(service, W, dateStr) {
     }
     var base = service._qwHost();
     var loc = service.longitude.toFixed(2) + "," + service.latitude.toFixed(2);
-    var url = base + "/v7/weather/24h?location=" + encodeURIComponent(loc)
+    var url = base + "/v7/weather/" + _hourlySpanHours(dateStr) + "h?location=" + encodeURIComponent(loc)
         + "&unit=m";
 
     var req = new XMLHttpRequest();
@@ -316,10 +338,14 @@ function fetchHourly(service, W, dateStr) {
                         tempC: parseFloat(h.temp),
                         code: _qwCodeToWmo(h.icon),
                         windKmh: parseFloat(h.windSpeed),
+                        windDeg: parseFloat(h.wind360),
                         windDir: parseFloat(h.wind360),
+                        humidity: parseFloat(h.humidity),
                         humidityPercent: parseFloat(h.humidity),
                         pressureHpa: parseFloat(h.pressure),
+                        precipMm: parseFloat(h.precip) || 0,
                         precipMmh: parseFloat(h.precip) || 0,
+                        precipProb: (h.pop !== undefined && h.pop !== null) ? parseFloat(h.pop) : NaN,
                         pop: (h.pop !== undefined && h.pop !== null) ? parseFloat(h.pop) : NaN,
                         dewPointC: (h.dew !== undefined && h.dew !== null)
                             ? parseFloat(h.dew)
