@@ -441,7 +441,7 @@ Item {
             return [row("dewpoint", r.tempValue(r.dewPointC, "tooltip"), i18n("Dew point:") + " " + r.tempValue(r.dewPointC, "tooltip"))];
 
         if (tok === "visibility") {
-            var visTxt = isNaN(r.visibilityKm) ? "--" : r.visibilityKm.toFixed(1) + " km";
+            var visTxt = isNaN(r.visibilityKm) ? "--" : r.visibilityKm.toFixed(1) + " " + i18n("km");
             return [row("visibility", visTxt, i18n("Visibility:") + " " + visTxt)];
         }
 

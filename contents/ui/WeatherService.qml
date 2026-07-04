@@ -144,8 +144,9 @@ QtObject {
 
     // ── Public methods ────────────────────────────────────────────────────
 
-    /** Full weather refresh — current + daily forecast */
-    function refreshNow() {
+    /** Full weather refresh — current + daily forecast.
+     *  force=true bypasses the space weather fetch throttle (manual refresh). */
+    function refreshNow(force) {
         _refreshGen++;
         _safetyTimer.stop();
 
@@ -177,9 +178,10 @@ QtObject {
         // (independent of provider — always uses Open-Meteo air-quality API)
         _fetchAirQualityOpenMeteo();
         // Fetch NOAA space weather independently (location-independent)
-        // Skip if data was fetched recently (< 10 min) since it doesn't change with location
+        // Skip if data was fetched recently (< 10 min) since it doesn't change
+        // with location — unless this is a forced (manual) refresh
         var now = Date.now();
-        if (!_lastSpaceWeatherFetch || (now - _lastSpaceWeatherFetch) > 600000) {
+        if (force === true || !_lastSpaceWeatherFetch || (now - _lastSpaceWeatherFetch) > 600000) {
             _lastSpaceWeatherFetch = now;
             var _pSW = _providers();
             if (_pSW) _pSW.fetchSpaceWeather(service);

@@ -38,6 +38,8 @@
 
 .pragma library
 
+function I18N_NOOP(s) { return s; }
+
 // No-op marker so xgettext can extract these strings (translated at runtime in QML).
 function I18N_NOOP(s) { return s; }
 
@@ -147,11 +149,11 @@ function scalePercent(value, maxScale) {
 }
 
 /**
- * Returns the unit string for a pollutant key.
+ * Returns the English unit-label key for a pollutant key; wrap in i18n() before display.
  */
 function unitFor(pollutant) {
-    if (pollutant === "co") return "mg/m³";
-    return "µg/m³";
+    if (pollutant === "co") return I18N_NOOP("mg/m³");
+    return I18N_NOOP("µg/m³");
 }
 
 /**

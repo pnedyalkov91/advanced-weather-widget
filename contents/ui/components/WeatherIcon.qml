@@ -112,68 +112,68 @@ Item {
 
     visible: iconSource.length > 0
 
+    // ── Single loaded branch ──────────────────────────────────────────────
+    // Exactly one element is instantiated per icon (wi-font Text, or one
+    // Kirigami.Icon).  Every Kirigami.Icon carries a PlasmaTheme object that
+    // re-syncs on each window expose, and pays icon-theme lookups on polish —
+    // with hundreds of icons in the forecast/details delegates, keeping five
+    // dormant Icon siblings per WeatherIcon froze the GUI thread on popup
+    // open.  The bundled-SVG fallback is only created when the KDE theme
+    // lookup actually misses.
+    Loader {
+        anchors.fill: parent
+        sourceComponent: {
+            if (weatherIcon.iconType === "wi")
+                return weatherIcon.wiFontReady ? wiComp : null;
+            if ((weatherIcon.iconType === "kde" || weatherIcon.iconType === "svg")
+                    && weatherIcon.iconSource.length > 0)
+                return iconComp;
+            return null;
+        }
+    }
+
     // ── Wi-font glyph ─────────────────────────────────────────────────────
-    Text {
-        id: wiFontText
-        width: weatherIcon.iconSize
-        height: weatherIcon.iconSize
-        anchors.centerIn: parent
-        visible: weatherIcon.iconType === "wi" && weatherIcon.wiFontReady
-        text: weatherIcon.iconSource
-        font.family: weatherIcon.wiFontFamily
-        font.pixelSize: Math.round(weatherIcon.iconSize * 0.88)
-        color: weatherIcon.iconColor
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignHCenter
+    Component {
+        id: wiComp
+        Text {
+            text: weatherIcon.iconSource
+            font.family: weatherIcon.wiFontFamily
+            font.pixelSize: Math.round(weatherIcon.iconSize * 0.88)
+            color: weatherIcon.iconColor
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+        }
     }
 
-    // ── KDE system icon (colorful — no mask, no color override) ──────────
-    Kirigami.Icon {
-        id: kdeIcon
-        anchors.fill: parent
-        visible: weatherIcon.iconType === "kde" && weatherIcon.iconSource.length > 0 && !weatherIcon.isMask
-        source: weatherIcon.iconSource
-        fallback: weatherIcon.svgFallback.length > 0 ? "" : "dialog-question"
-    }
+    // ── KDE system icon or SVG file icon ──────────────────────────────────
+    Component {
+        id: iconComp
+        Kirigami.Icon {
+            id: primaryIcon
+            source: weatherIcon.iconSource
+            isMask: weatherIcon.isMask
+            color: weatherIcon.isMask ? weatherIcon.iconColor : "transparent"
+            fallback: weatherIcon.iconType === "kde"
+                ? (weatherIcon.svgFallback.length > 0 ? ""
+                   : (weatherIcon.isMask ? "dialog-question-symbolic" : "dialog-question"))
+                : "unknown"
 
-    // ── Bundled SVG fallback for colorful KDE icon ───────────────────────
-    Kirigami.Icon {
-        id: kdeFallbackSvg
-        anchors.fill: parent
-        visible: weatherIcon.iconType === "kde" && !weatherIcon.isMask
-                 && weatherIcon.svgFallback.length > 0 && !kdeIcon.valid
-        source: weatherIcon.svgFallback
-    }
-
-    // ── KDE system icon (symbolic — monochrome mask) ──────────────────────
-    Kirigami.Icon {
-        id: kdeSymbolicIcon
-        anchors.fill: parent
-        visible: weatherIcon.iconType === "kde" && weatherIcon.iconSource.length > 0 && weatherIcon.isMask
-        source: weatherIcon.iconSource
-        isMask: true
-        color: weatherIcon.iconColor
-        fallback: weatherIcon.svgFallback.length > 0 ? "" : "dialog-question-symbolic"
-    }
-
-    // ── Bundled SVG fallback for symbolic KDE icon ────────────────────────
-    Kirigami.Icon {
-        id: kdeSymbolicFallbackSvg
-        anchors.fill: parent
-        visible: weatherIcon.iconType === "kde" && weatherIcon.isMask
-                 && weatherIcon.svgFallback.length > 0 && !kdeSymbolicIcon.valid
-        source: weatherIcon.svgFallback
-        isMask: true
-        color: weatherIcon.iconColor
-    }
-
-    // ── SVG file icon ─────────────────────────────────────────────────────
-    Kirigami.Icon {
-        id: svgIcon
-        anchors.fill: parent
-        visible: weatherIcon.iconType === "svg" && weatherIcon.iconSource.length > 0
-        source: weatherIcon.iconSource
-        isMask: weatherIcon.isMask
-        color: weatherIcon.isMask ? weatherIcon.iconColor : "transparent"
+            // Bundled SVG fallback — only exists when the KDE icon is missing.
+            // Gate on status === Error, not !valid: a failed theme lookup still
+            // reports valid=true (placeholder machinery), and Error is only set
+            // after the lookup finishes, so no transient fallback gets built
+            // while the primary icon is still loading.
+            Loader {
+                anchors.fill: parent
+                active: weatherIcon.iconType === "kde"
+                        && weatherIcon.svgFallback.length > 0
+                        && primaryIcon.status === Kirigami.Icon.Error
+                sourceComponent: Kirigami.Icon {
+                    source: weatherIcon.svgFallback
+                    isMask: weatherIcon.isMask
+                    color: weatherIcon.isMask ? weatherIcon.iconColor : "transparent"
+                }
+            }
+        }
     }
 }

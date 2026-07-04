@@ -40,14 +40,18 @@ function I18N_NOOP(s) { return s; }
  * Converts a Kp index (0–9) to a NOAA G-scale string.
  *   Kp 5 → G1, 6 → G2, 7 → G3, 8 → G4, 9 → G5
  *   Below 5 → "G0" (no storm)
+ * Kp is reported in thirds (5− = 4.67, 5o = 5.0, 5+ = 5.33), and NOAA counts
+ * the "−" third toward the higher category (5.67 = 6− → G2), so thresholds
+ * sit at n − 1/3. This matches the noaa_scale values in SWPC feeds.
+ * Exception: G5 needs a full Kp 9 — a 9− (8.67) is still G4.
  */
 function kpToGScale(kp) {
     if (isNaN(kp) || kp === null) return "G0";
-    if (kp >= 9) return "G5";
-    if (kp >= 8) return "G4";
-    if (kp >= 7) return "G3";
-    if (kp >= 6) return "G2";
-    if (kp >= 5) return "G1";
+    if (kp >= 9)    return "G5";
+    if (kp >= 7.67) return "G4";
+    if (kp >= 6.67) return "G3";
+    if (kp >= 5.67) return "G2";
+    if (kp >= 4.67) return "G1";
     return "G0";
 }
 

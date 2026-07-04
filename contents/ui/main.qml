@@ -165,6 +165,7 @@ PlasmoidItem {
     onPollenDataStagedChanged: Qt.callLater(_applyPollenData)
     property var spaceWeather: null         // NOAA SWPC data object
     property var spaceWeatherDailyForecast: ({}) // dateStr -> {kp, gScale}, ~3 days ahead
+    property var spaceWeatherForecastPeriods: [] // sorted [{startMs, kp, gScale}], 3-hour UTC periods
     property string moonriseTimeText: "--"
     property string moonsetTimeText: "--"
     property var hourlyData: []
@@ -311,7 +312,7 @@ PlasmoidItem {
             icon.name: "view-refresh-symbolic"
             priority: PlasmaCore.Action.HighPriority
             enabled: !root.loading
-            onTriggered: refreshWeather()
+            onTriggered: refreshWeather(true)
         }
     ]
 
@@ -692,10 +693,11 @@ PlasmoidItem {
         _locPersistTimer.restart();
     }
 
-    /** Refresh current weather + forecast (called by button, timers, config changes) */
-    function refreshWeather() {
+    /** Refresh current weather + forecast (called by button, timers, config changes).
+     *  force=true (manual refresh button) also bypasses the space weather throttle. */
+    function refreshWeather(force) {
         refreshDebounce.stop();
-        weatherService.refreshNow();
+        weatherService.refreshNow(force === true);
     }
 
     /** Fetch hourly data for a specific date — called by FullView */
@@ -754,7 +756,9 @@ PlasmoidItem {
         return Plasmoid.configuration.windSpeedUnit || "kmh";
     }
     function windValue(kmh) {
-        return W.formatWind(kmh, _windUnit());
+        if (isNaN(kmh) || kmh === null || kmh === undefined) return "--";
+        var unit = _windUnit();
+        return W.formatWindValue(kmh, unit) + " " + i18n(W.windUnitLabel(unit));
     }
 
     function _pressureUnit() {
@@ -763,7 +767,9 @@ PlasmoidItem {
         return Plasmoid.configuration.pressureUnit || "hPa";
     }
     function pressureValue(hpa) {
-        return W.formatPressure(hpa, _pressureUnit());
+        if (isNaN(hpa) || hpa === null || hpa === undefined) return "--";
+        var unit = _pressureUnit();
+        return W.formatPressureValue(hpa, unit) + " " + i18n(W.pressureUnitLabel(unit));
     }
 
     function _isImperial() {
@@ -775,28 +781,42 @@ PlasmoidItem {
     function precipValue(mmh) {
         if (isNaN(mmh)) return "--";
         if (_isImperial())
-            return (mmh / 25.4).toFixed(2) + " in/h";
-        return mmh.toFixed(1) + " mm/h";
+            return (mmh / 25.4).toFixed(2) + " " + i18n("in/h");
+        return mmh.toFixed(1) + " " + i18n("mm/h");
     }
 
     function precipSumText(mm) {
         if (isNaN(mm)) return "--";
         if (_isImperial())
-            return (mm / 25.4).toFixed(2) + " in";
-        return mm.toFixed(1) + " mm";
+            return (mm / 25.4).toFixed(2) + " " + i18n("in");
+        return mm.toFixed(1) + " " + i18n("mm");
     }
 
     function visibilityValue(km) {
         if (isNaN(km)) return "--";
         if (_isImperial())
-            return (km * 0.621371).toFixed(1) + " mi";
-        return km.toFixed(1) + " km";
+            return (km * 0.621371).toFixed(1) + " " + i18n("mi");
+        return km.toFixed(1) + " " + i18n("km");
     }
 
     /** {kp, gScale} for the given dateStr from the ~3-day NOAA Kp forecast, or null. */
     function kpForecastForDate(dateStr) {
         var m = spaceWeatherDailyForecast || {};
         return m[dateStr] || null;
+    }
+
+    /** {kp, gScale} for the 3-hour NOAA Kp forecast period covering the given
+     *  local dateStr + "HH:MM" sample, or null when outside the forecast range. */
+    function kpForecastForHour(dateStr, hhmm) {
+        var arr = spaceWeatherForecastPeriods || [];
+        var t = _hourSampleEpoch(dateStr, hhmm);
+        if (isNaN(t)) return null;
+        for (var i = arr.length - 1; i >= 0; i--) {
+            var p = arr[i];
+            if (p.startMs <= t)
+                return (t < p.startMs + 3 * 3600000) ? p : null;
+        }
+        return null;
     }
 
     function uvIndexText(uv) {
@@ -876,8 +896,8 @@ PlasmoidItem {
     function snowDepthText(cm) {
         if (isNaN(cm)) return "--";
         if (_isImperial())
-            return (cm / 2.54).toFixed(1) + " in";
-        return cm.toFixed(1) + " cm";
+            return (cm / 2.54).toFixed(1) + " " + i18n("in");
+        return cm.toFixed(1) + " " + i18n("cm");
     }
 
     /** Returns a numeric priority for an alert color — higher = more severe. */
@@ -1596,6 +1616,18 @@ PlasmoidItem {
         return i18n("tonight");
     }
 
+    /** Rain/snow transitions are only notified when they happen "today": before
+     *  tomorrow 06:00, so late-night rain still counts as "tonight" but
+     *  _dayPartLabel's same-day wording stays truthful. The hourly window spans
+     *  today + tomorrow (the tomorrow-outlook notification needs it), so without
+     *  this cutoff a dry today would trigger "Rain expected this afternoon" for
+     *  an event more than a day away. */
+    function _conditionNotificationCutoffMs(nowMs) {
+        var d = new Date(nowMs);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() + 30 * 3600000; // today 00:00 + 30h = tomorrow 06:00
+    }
+
     function _processRainNotifications(now) {
         if (!Plasmoid.configuration.notificationRainEnabled)
             return;
@@ -1608,6 +1640,10 @@ PlasmoidItem {
         var nowMs = now.getTime();
         var startEv = _nextRainTransition(nowMs, true);
         var endEv = _nextRainTransition(nowMs, false);
+        // Events past today are tomorrow-outlook territory, not "expected soon".
+        var cutoffMs = _conditionNotificationCutoffMs(nowMs);
+        if (startEv && startEv.timeMs >= cutoffMs) startEv = null;
+        if (endEv && endEv.timeMs >= cutoffMs) endEv = null;
         if (startEv && (!endEv || startEv.timeMs <= endEv.timeMs)) {
             var label = _rainOrThunderLabel(startEv.code);
             var title = i18n("%1 expected", label);
@@ -1635,6 +1671,10 @@ PlasmoidItem {
         var nowMs = now.getTime();
         var startEv = _nextSnowTransition(nowMs, true);
         var endEv = _nextSnowTransition(nowMs, false);
+        // Events past today are tomorrow-outlook territory, not "expected soon".
+        var cutoffMs = _conditionNotificationCutoffMs(nowMs);
+        if (startEv && startEv.timeMs >= cutoffMs) startEv = null;
+        if (endEv && endEv.timeMs >= cutoffMs) endEv = null;
         if (startEv && (!endEv || startEv.timeMs <= endEv.timeMs)) {
             var title = i18n("Snow expected");
             var msg = i18n("Snow possible %1.", _dayPartLabel(startEv.timeMs, nowMs));
@@ -1720,12 +1760,17 @@ PlasmoidItem {
         if (!_dailyTimeAllows(Plasmoid.configuration.notificationSpaceWeatherTime, now))
             return;
         var sw = spaceWeather;
-        if (!sw || isNaN(sw.kp))
-            return;
         var todayStr = Qt.formatDate(now, "yyyy-MM-dd");
-        var trend = _trendText(sw.kp, Plasmoid.configuration.notificationSpaceWeatherLastKp,
+        // "Will be" = today's outlook, so prefer the NOAA daily forecast max;
+        // the current observed Kp is only a fallback when the forecast feed failed.
+        var fc = kpForecastForDate(todayStr);
+        var kpVal = (fc && !isNaN(fc.kp)) ? fc.kp : (sw && !isNaN(sw.kp) ? sw.kp : NaN);
+        var gVal = (fc && fc.gScale) ? fc.gScale : ((sw && sw.gScale) ? sw.gScale : "G0");
+        if (isNaN(kpVal))
+            return;
+        var trend = _trendText(kpVal, Plasmoid.configuration.notificationSpaceWeatherLastKp,
             Plasmoid.configuration.notificationSpaceWeatherLastDate, todayStr);
-        var msg = i18n("Geomagnetic activity will be %1 (Kp %2)", _kpLevelText(sw.gScale), sw.kp.toFixed(1));
+        var msg = i18n("Geomagnetic activity will be %1 (Kp %2)", _kpLevelText(gVal), kpVal.toFixed(1));
         if (trend.length > 0) msg = msg + ", " + trend;
         msg = msg + ".";
         var title = i18n("Geomagnetic activity");
@@ -1733,7 +1778,7 @@ PlasmoidItem {
             msg, Notification.NormalUrgency, "weather-clear-night");
         if (fired) {
             Plasmoid.configuration.notificationSpaceWeatherLastDate = todayStr;
-            Plasmoid.configuration.notificationSpaceWeatherLastKp = sw.kp;
+            Plasmoid.configuration.notificationSpaceWeatherLastKp = kpVal;
         }
     }
 

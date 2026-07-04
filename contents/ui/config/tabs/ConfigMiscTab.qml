@@ -251,15 +251,15 @@ Kirigami.FormLayout {
         Layout.preferredWidth: 200
         model: [
             {
-                text: "km/h",
+                text: i18n("km/h"),
                 value: "kmh"
             },
             {
-                text: "mph",
+                text: i18n("mph"),
                 value: "mph"
             },
             {
-                text: "m/s",
+                text: i18n("m/s"),
                 value: "ms"
             },
             {
@@ -286,15 +286,15 @@ Kirigami.FormLayout {
         Layout.preferredWidth: 200
         model: [
             {
-                text: "hPa",
+                text: i18n("hPa"),
                 value: "hPa"
             },
             {
-                text: "mmHg",
+                text: i18n("mmHg"),
                 value: "mmHg"
             },
             {
-                text: "inHg",
+                text: i18n("inHg"),
                 value: "inHg"
             }
         ]

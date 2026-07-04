@@ -278,7 +278,7 @@ ColumnLayout {
         case "humidity":     return isNaN(weatherRoot.humidityPercent) ? "--" : Math.round(weatherRoot.humidityPercent) + "%";
         case "pressure":     return weatherRoot.pressureValue(weatherRoot.pressureHpa);
         case "dewpoint":     return weatherRoot.tempValue(weatherRoot.dewPointC);
-        case "visibility":   return isNaN(weatherRoot.visibilityKm) ? "--" : weatherRoot.visibilityKm.toFixed(1) + " km";
+        case "visibility":   return isNaN(weatherRoot.visibilityKm) ? "--" : weatherRoot.visibilityKm.toFixed(1) + " " + i18n("km");
         case "preciprate":   return weatherRoot.precipValue(weatherRoot.precipMmh);
         case "precipsum":    return weatherRoot.precipSumText(weatherRoot.precipSumMm);
         case "uvindex":      return weatherRoot.uvIndexText(weatherRoot.uvIndex);

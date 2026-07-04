@@ -107,6 +107,10 @@ Rectangle {
         return want;
     }
 
+    // Whether not-currently-shown tabs stay instantiated. True while the
+    // popup is open and always on the desktop (Planar), which has no popup.
+    readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
+
     // Reset to the configured default tab every time the popup opens
     property int activeTab: _resolvedDefaultTab()
 
@@ -408,7 +412,7 @@ Rectangle {
                 ToolTip.text: i18n("Refresh")
                 onClicked: {
                     if (weatherRoot)
-                        weatherRoot.refreshWeather()
+                        weatherRoot.refreshWeather(true)
                     // On the Radar tab, also flush and reload the radar tiles so the
                     // Refresh button is consistent across all tabs.
                     if (fullView.activeTab === 2 && radarLoader.item)
@@ -639,7 +643,11 @@ Rectangle {
                     id: detailsLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: detailsTab.StackLayout.isCurrentItem || item !== null
+                    // Latch only while the popup is open (always on desktop, where
+                    // there is no popup): hidden tabs unload on close, so the
+                    // expose-time PlasmaTheme sync storm on reopen only covers
+                    // one tab's items instead of every tab ever visited.
+                    active: detailsTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: DetailsView {
                         weatherRoot: fullView.weatherRoot
                     }
@@ -659,7 +667,7 @@ Rectangle {
                     id: forecastLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: forecastTab.StackLayout.isCurrentItem || item !== null
+                    active: forecastTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: ScrollView {
                         id: forecastScrollView
                         clip: true
@@ -668,7 +676,10 @@ Rectangle {
                         ScrollBar.vertical.policy: ScrollBar.AsNeeded
                         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                         implicitHeight: forecastView.implicitHeight
-                        contentWidth: availableWidth
+                        // No contentWidth binding: availableWidth depends on the
+                        // scrollbar, which depends on implicitWidth, which depends
+                        // on contentWidth — a binding loop. ForecastView.width is
+                        // bound to availableWidth below, which is all we need.
 
                         ForecastView {
                             id: forecastView
@@ -693,7 +704,7 @@ Rectangle {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem || item !== null
+                    active: radarTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
                     }

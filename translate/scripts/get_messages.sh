@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$OUT_DIR/.." && pwd)"
 POT_FILE="$OUT_DIR/template.pot"
 TMP_FILES="$OUT_DIR/.i18n_files.txt"
 PACKAGE_NAME="Advanced Weather Widget"
-BUGS_URL="https://github.com/pnedyalkov91/sports-widget-for-plasma/issues"
+BUGS_URL="https://github.com/pnedyalkov91/advanced-weather-widget/issues"
 mkdir -p "$OUT_DIR"
 cd "$ROOT_DIR"
 command -v xgettext  >/dev/null 2>&1 || { echo "xgettext not found";  exit 1; }
