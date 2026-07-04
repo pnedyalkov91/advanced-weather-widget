@@ -270,8 +270,24 @@ Item {
         _hourlyDisplayCache = {};
     }
 
+    function _seedHourlyDataFromPrefetch(dateStr) {
+        if (!weatherRoot || !dateStr)
+            return false;
+        if (Object.prototype.hasOwnProperty.call(_perDayHourlyData, dateStr))
+            return true;
+        if (typeof weatherRoot.prefetchedHourlyForDate !== "function")
+            return false;
+        var prefetched = weatherRoot.prefetchedHourlyForDate(dateStr);
+        if (prefetched === null || prefetched === undefined)
+            return false;
+        _storeHourlyData(dateStr, prefetched);
+        return true;
+    }
+
     function _loadSingleExpandHourly(dateStr) {
         if (!weatherRoot || !dateStr)
+            return;
+        if (_seedHourlyDataFromPrefetch(dateStr))
             return;
         if (Object.prototype.hasOwnProperty.call(_perDayHourlyData, dateStr))
             return;

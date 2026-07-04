@@ -169,6 +169,9 @@ PlasmoidItem {
     property string moonriseTimeText: "--"
     property string moonsetTimeText: "--"
     property var hourlyData: []
+    property var prefetchedHourlyByDate: ({})
+    property var _prefetchedHourlyLoading: ({})
+    property int _prefetchedHourlyGeneration: 0
     property int panelScrollIndex: 0
     property string updateText: ""
 
@@ -697,6 +700,9 @@ PlasmoidItem {
      *  force=true (manual refresh button) also bypasses the space weather throttle. */
     function refreshWeather(force) {
         refreshDebounce.stop();
+        _prefetchedHourlyGeneration++;
+        prefetchedHourlyByDate = {};
+        _prefetchedHourlyLoading = {};
         weatherService.refreshNow(force === true);
     }
 
@@ -708,6 +714,38 @@ PlasmoidItem {
     /** Fetch hourly data without touching shared hourlyData — used by expand-all forecast */
     function fetchHourlyForDateDirect(dateStr, callback) {
         weatherService.fetchHourlyForDateDirect(dateStr, callback);
+    }
+
+    function prefetchedHourlyForDate(dateStr) {
+        if (!dateStr)
+            return null;
+        return Object.prototype.hasOwnProperty.call(prefetchedHourlyByDate, dateStr)
+            ? prefetchedHourlyByDate[dateStr]
+            : null;
+    }
+
+    function prefetchHourlyForDate(dateStr) {
+        if (!hasSelectedTown || !dateStr)
+            return;
+        if (Object.prototype.hasOwnProperty.call(prefetchedHourlyByDate, dateStr) || _prefetchedHourlyLoading[dateStr])
+            return;
+
+        var generation = _prefetchedHourlyGeneration;
+        var loading = Object.assign({}, _prefetchedHourlyLoading);
+        loading[dateStr] = true;
+        _prefetchedHourlyLoading = loading;
+
+        fetchHourlyForDateDirect(dateStr, function(rows) {
+            if (generation !== _prefetchedHourlyGeneration)
+                return;
+            var loadDone = Object.assign({}, _prefetchedHourlyLoading);
+            delete loadDone[dateStr];
+            _prefetchedHourlyLoading = loadDone;
+
+            var cached = Object.assign({}, prefetchedHourlyByDate);
+            cached[dateStr] = rows || [];
+            prefetchedHourlyByDate = cached;
+        });
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -2087,6 +2125,11 @@ PlasmoidItem {
             weatherService._safetyTimer.stop();
             if (weatherData && !isNaN(weatherData.temperatureC))
                 _computeMoonTimes();
+            if (dailyData && dailyData.length > 0) {
+                var firstForecastIndex = Plasmoid.configuration.forecastShowToday !== false ? 0 : 1;
+                if (firstForecastIndex >= 0 && firstForecastIndex < dailyData.length)
+                    prefetchHourlyForDate(dailyData[firstForecastIndex].dateStr || "");
+            }
             _refreshNotificationRainWindowIfNeeded(true);
             _evaluateNotifications();
         }
