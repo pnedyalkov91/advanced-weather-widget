@@ -827,7 +827,7 @@ Item {
                             text: _dayOutsideQWeatherHourlyRange
                                 ? i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.")
                                 : i18n("Loading hourly data…")
-                            color: Kirigami.Theme.textColor
+                            color: forecastRoot.themeTextColor
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                             wrapMode: Text.Wrap
                             horizontalAlignment: Text.AlignHCenter
@@ -1667,16 +1667,12 @@ Item {
                                                                                 var p = t.split(":");
                                                                                 return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
                                                                             }
-                                                                            var rise = parseSunMins(weatherRoot ? weatherRoot.sunriseTimeText : "--");
-                                                                            var set_ = parseSunMins(weatherRoot ? weatherRoot.sunsetTimeText : "--");
+                                                                            var rise = parseSunMins(_daySunriseText);
+                                                                            var set_ = parseSunMins(_daySunsetText);
                                                                             if (rise >= 0 && set_ >= 0)
                                                                                 isNight = hMins < rise || hMins >= set_;
                                                                         }
                                                                     }
-                                                                    var rise = parseSunMins(_daySunriseText);
-                                                                    var set_ = parseSunMins(_daySunsetText);
-                                                                    if (rise >= 0 && set_ >= 0)
-                                                                        isNight = hMins < rise || hMins >= set_;
                                                                     return forecastRoot.resolveConditionIcon(
                                                                         modelData.code || 0, isNight,
                                                                         forecastRoot.iconSz);
