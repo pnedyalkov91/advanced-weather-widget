@@ -3,3 +3,4 @@ TemperatureBadge 1.0 TemperatureBadge.qml
 CollapsibleCardHeader 1.0 CollapsibleCardHeader.qml
 ConfigLocationPositionSources 1.0 ConfigLocationPositionSources.qml
 RadarWebViewEngineView 1.0 RadarWebViewEngineView.qml
+HourlyCardsView 1.0 HourlyCardsView.qml

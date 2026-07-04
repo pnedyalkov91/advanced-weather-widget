@@ -31,16 +31,12 @@ import "components"
 
 Item {
     id: forecastRoot
-
-    // Cached theme colors — a single PlasmaTheme attachment on the view root
-    // instead of one per item: every Kirigami.Theme attachment re-syncs
-    // (connect+disconnect on the window object) on each window expose, which
-    // froze popup opening while hundreds of delegate items were alive.
     readonly property color themeTextColor: Kirigami.Theme.textColor
     readonly property color themeBackgroundColor: Kirigami.Theme.backgroundColor
     property var weatherRoot
     property var verticalScrollView
     property int expandedIndex: -1
+    property int _singleExpandFetchGeneration: 0
 
     // ── Auto-open: expand the first available day's hourly forecast ────────
     readonly property bool autoOpen: Plasmoid.configuration.forecastAutoOpen !== false
@@ -58,6 +54,12 @@ Item {
     property int _expandAllActiveFetches: 0
     property int _expandAllFetchGeneration: 0
     readonly property int _expandAllMaxConcurrentFetches: 1
+    property var _viewportPrefetchQueue: []
+    property bool _viewportPrefetchInFlight: false
+    property int _viewportPrefetchGeneration: 0
+    readonly property int _viewportPrefetchRadius: 2
+    property var _hourlyDataVersions: ({})
+    property var _hourlyDisplayCache: ({})
 
     function _cancelExpandAllFetch(clearData) {
         _expandAllFetchGeneration++;
@@ -65,8 +67,342 @@ Item {
         _expandAllActiveFetches = 0;
         expandAllFetchPump.stop();
         _loadingDays = {};
-        if (clearData)
+        if (clearData) {
             _perDayHourlyData = {};
+            _hourlyDataVersions = {};
+            _hourlyDisplayCache = {};
+        }
+    }
+
+    function _cancelViewportPrefetch() {
+        _viewportPrefetchGeneration++;
+        _viewportPrefetchQueue = [];
+        _viewportPrefetchInFlight = false;
+        viewportPrefetchPump.stop();
+        viewportPrefetchDebounce.stop();
+    }
+
+    function _activeHourlyProvider() {
+        var provider = Plasmoid.configuration.weatherProvider || "adaptive";
+        return provider === "adaptive" ? "openMeteo" : provider;
+    }
+
+    function _hourlyCoverageHours() {
+        var provider = _activeHourlyProvider();
+        if (provider === "qWeather")
+            return 168;
+        if (provider === "weatherbit")
+            return 48;
+        return 0;
+    }
+
+    function _isDateOutsideHourlyCoverage(dateStr) {
+        var hours = _hourlyCoverageHours();
+        if (hours <= 0 || !dateStr)
+            return false;
+        var targetStart = new Date(dateStr + "T00:00:00");
+        if (isNaN(targetStart.getTime()))
+            return false;
+        var horizon = new Date(Date.now() + hours * 60 * 60 * 1000);
+        return targetStart.getTime() > horizon.getTime();
+    }
+
+    function _emptyHourlyMessage(dateStr) {
+        if (_isDateOutsideHourlyCoverage(dateStr)) {
+            var provider = _activeHourlyProvider();
+            if (provider === "qWeather")
+                return i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.");
+            if (provider === "weatherbit")
+                return i18n("Weatherbit provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date.");
+        }
+        return i18n("No hourly data available");
+    }
+
+    function _forecastModelCount() {
+        if (!weatherRoot || weatherRoot.dailyData.length === 0)
+            return 0;
+        var total = Math.min(Plasmoid.configuration.forecastDays, weatherRoot.dailyData.length);
+        return showToday ? total : Math.max(0, total - 1);
+    }
+
+    function _viewIndexToDataIndex(viewIndex) {
+        return showToday ? viewIndex : viewIndex + 1;
+    }
+
+    function _dateStrForViewIndex(viewIndex) {
+        var dataIndex = _viewIndexToDataIndex(viewIndex);
+        if (!weatherRoot || !weatherRoot.dailyData[dataIndex])
+            return "";
+        return weatherRoot.dailyData[dataIndex].dateStr || "";
+    }
+
+    function _queueViewportPrefetch() {
+        if (expandAll || !visible || !weatherRoot)
+            return;
+
+        _cancelViewportPrefetch();
+
+        var modelCount = _forecastModelCount();
+        if (modelCount === 0)
+            return;
+
+        var firstVisible = 0;
+        var lastVisible = Math.min(modelCount - 1, 1);
+        if (forecastListView) {
+            firstVisible = forecastListView.indexAt(8, forecastListView.contentY + 1);
+            if (firstVisible < 0)
+                firstVisible = 0;
+            lastVisible = forecastListView.indexAt(8, forecastListView.contentY + forecastListView.height - 2);
+            if (lastVisible < 0)
+                lastVisible = Math.min(modelCount - 1, firstVisible + 2);
+        }
+
+        if (expandedIndex >= 0) {
+            firstVisible = Math.min(firstVisible, expandedIndex);
+            lastVisible = Math.max(lastVisible, expandedIndex);
+        }
+
+        firstVisible = Math.max(0, firstVisible - 1);
+        lastVisible = Math.min(modelCount - 1, lastVisible + _viewportPrefetchRadius);
+
+        var queue = [];
+        for (var viewIndex = firstVisible; viewIndex <= lastVisible; viewIndex++) {
+            var dateStr = _dateStrForViewIndex(viewIndex);
+            if (!dateStr)
+                continue;
+            if (_isDateOutsideHourlyCoverage(dateStr)) {
+                _storeHourlyData(dateStr, []);
+                continue;
+            }
+            if (Object.prototype.hasOwnProperty.call(_perDayHourlyData, dateStr) || _loadingDays[dateStr])
+                continue;
+            queue.push(dateStr);
+        }
+
+        if (queue.length === 0)
+            return;
+
+        _viewportPrefetchQueue = queue;
+        viewportPrefetchPump.restart();
+    }
+
+    function _pumpViewportPrefetchQueue() {
+        if (expandAll || !visible || !weatherRoot || _viewportPrefetchInFlight)
+            return;
+
+        var generation = _viewportPrefetchGeneration;
+        while (_viewportPrefetchQueue.length > 0) {
+            var dateStr = _viewportPrefetchQueue.shift();
+            if (!dateStr)
+                continue;
+            if (Object.prototype.hasOwnProperty.call(_perDayHourlyData, dateStr) || _loadingDays[dateStr])
+                continue;
+
+            _viewportPrefetchInFlight = true;
+            var loading = Object.assign({}, _loadingDays);
+            loading[dateStr] = true;
+            _loadingDays = loading;
+
+            (function(ds, gen) {
+                weatherRoot.fetchHourlyForDateDirect(ds, function(hourlyArr) {
+                    var loadDone = Object.assign({}, forecastRoot._loadingDays);
+                    delete loadDone[ds];
+                    forecastRoot._loadingDays = loadDone;
+                    forecastRoot._viewportPrefetchInFlight = false;
+                    if (gen !== forecastRoot._viewportPrefetchGeneration)
+                        return;
+                    forecastRoot._storeHourlyData(ds, hourlyArr);
+                    if (forecastRoot._viewportPrefetchQueue.length > 0)
+                        viewportPrefetchPump.restart();
+                });
+            })(dateStr, generation);
+            break;
+        }
+    }
+
+    function _timeToMinutes(timeText) {
+        if (!timeText || timeText === "--")
+            return -1;
+        var parts = timeText.split(":");
+        if (parts.length < 2)
+            return -1;
+        var hours = parseInt(parts[0], 10);
+        var minutes = parseInt(parts[1], 10);
+        if (isNaN(hours) || isNaN(minutes))
+            return -1;
+        return hours * 60 + minutes;
+    }
+
+    function _formatHourForDisplay(timeText) {
+        if (!timeText || timeText === "--")
+            return "--";
+        var parts = timeText.split(":");
+        if (parts.length < 2)
+            return timeText;
+        var hours = parseInt(parts[0], 10);
+        var minutes = parseInt(parts[1], 10);
+        if (isNaN(hours) || isNaN(minutes))
+            return timeText;
+        var date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        return Qt.formatTime(date, Qt.locale().timeFormat(Locale.ShortFormat));
+    }
+
+    function _sunTimeTextForDay(dayData, sunrise) {
+        if (!dayData)
+            return "--";
+        var daySpecific = sunrise ? dayData.sunriseTimeText : dayData.sunsetTimeText;
+        if (daySpecific && daySpecific !== "--")
+            return daySpecific;
+        if (!weatherRoot)
+            return "--";
+        return sunrise ? weatherRoot.sunriseTimeText : weatherRoot.sunsetTimeText;
+    }
+
+    function _storeHourlyData(dateStr, hourlyArr) {
+        var dataUpd = Object.assign({}, _perDayHourlyData);
+        dataUpd[dateStr] = hourlyArr || [];
+        _perDayHourlyData = dataUpd;
+
+        var versions = Object.assign({}, _hourlyDataVersions);
+        versions[dateStr] = (versions[dateStr] || 0) + 1;
+        _hourlyDataVersions = versions;
+        _hourlyDisplayCache = {};
+    }
+
+    function _loadSingleExpandHourly(dateStr) {
+        if (!weatherRoot || !dateStr)
+            return;
+        if (Object.prototype.hasOwnProperty.call(_perDayHourlyData, dateStr))
+            return;
+        if (_loadingDays[dateStr])
+            return;
+        if (_isDateOutsideHourlyCoverage(dateStr)) {
+            _storeHourlyData(dateStr, []);
+            return;
+        }
+
+        _singleExpandFetchGeneration++;
+        var generation = _singleExpandFetchGeneration;
+        var loading = Object.assign({}, _loadingDays);
+        loading[dateStr] = true;
+        _loadingDays = loading;
+
+        weatherRoot.fetchHourlyForDateDirect(dateStr, function(hourlyArr) {
+            var loadDone = Object.assign({}, forecastRoot._loadingDays);
+            delete loadDone[dateStr];
+            forecastRoot._loadingDays = loadDone;
+            if (generation !== forecastRoot._singleExpandFetchGeneration)
+                return;
+            forecastRoot._storeHourlyData(dateStr, hourlyArr);
+        });
+    }
+
+    function _hourlyDisplayItems(dayData, hourlyData, dataIndex) {
+        if (!dayData || !hourlyData || hourlyData.length === 0)
+            return [];
+
+        var dateStr = dayData.dateStr || "";
+        var sunriseText = _sunTimeTextForDay(dayData, true);
+        var sunsetText = _sunTimeTextForDay(dayData, false);
+        var cacheKey = [
+            dateStr,
+            _hourlyDataVersions[dateStr] || 0,
+            showSunEvents ? 1 : 0,
+            dataIndex === 0 ? 1 : 0,
+            sunriseText,
+            sunsetText
+        ].join("|");
+        if (Object.prototype.hasOwnProperty.call(_hourlyDisplayCache, cacheKey))
+            return _hourlyDisplayCache[cacheKey];
+
+        var nowMins = -1;
+        if (dataIndex === 0) {
+            var now = new Date();
+            nowMins = now.getHours() * 60 + now.getMinutes() - 60;
+        }
+
+        var sunriseMins = _timeToMinutes(sunriseText);
+        var sunsetMins = _timeToMinutes(sunsetText);
+
+        var source = [];
+        for (var index = 0; index < hourlyData.length; index++) {
+            var hourly = hourlyData[index];
+            var mins = _timeToMinutes(hourly.hour);
+            if (nowMins >= 0 && mins >= 0 && mins < nowMins)
+                continue;
+            source.push(hourly);
+        }
+
+        var items = [];
+        var riseInserted = !showSunEvents || sunriseMins < 0 || (nowMins >= 0 && sunriseMins < nowMins);
+        var setInserted = !showSunEvents || sunsetMins < 0 || (nowMins >= 0 && sunsetMins < nowMins);
+        var firstHourly = true;
+
+        function pushSunItem(isSunriseItem, timeText) {
+            items.push({
+                key: dateStr + "|" + (isSunriseItem ? "sunrise" : "sunset") + "|" + timeText,
+                isSunrise: isSunriseItem,
+                isSunset: !isSunriseItem,
+                time: timeText,
+                displayTime: weatherRoot ? weatherRoot.formatTimeForDisplay(timeText) : timeText,
+                autoScrollTarget: false
+            });
+        }
+
+        for (var sourceIndex = 0; sourceIndex < source.length; sourceIndex++) {
+            var sourceHourly = source[sourceIndex];
+            var hourMins = _timeToMinutes(sourceHourly.hour);
+            if (!riseInserted && hourMins >= 0 && hourMins > sunriseMins) {
+                pushSunItem(true, sunriseText);
+                riseInserted = true;
+            }
+            if (!setInserted && hourMins >= 0 && hourMins > sunsetMins) {
+                pushSunItem(false, sunsetText);
+                setInserted = true;
+            }
+
+            var item = {};
+            for (var key in sourceHourly)
+                item[key] = sourceHourly[key];
+            item.key = dateStr + "|hour|" + (sourceHourly.hour || sourceIndex);
+            item.isSunrise = false;
+            item.isSunset = false;
+            item.displayTime = _formatHourForDisplay(sourceHourly.hour);
+            item.isNight = hourMins >= 0 && sunriseMins >= 0 && sunsetMins >= 0
+                ? (hourMins < sunriseMins || hourMins >= sunsetMins)
+                : false;
+            item.tempText = weatherRoot ? weatherRoot.tempValue(sourceHourly.tempC) : "--";
+            item.windText = weatherRoot ? weatherRoot.windValue(sourceHourly.windKmh) : "--";
+            item.pressureText = weatherRoot ? weatherRoot.pressureValue(sourceHourly.pressureHpa) : "--";
+            var kpEntry = weatherRoot
+                ? (weatherRoot.kpForecastForHour(dateStr, sourceHourly.hour || "") || weatherRoot.kpForecastForDate(dateStr))
+                : null;
+            item.kpText = (!kpEntry || isNaN(kpEntry.kp))
+                ? i18n("No info")
+                : "Kp " + kpEntry.kp.toFixed(1) + " (" + (kpEntry.gScale || "G0") + ")";
+            item.uvText = (sourceHourly.uvIndex === undefined || isNaN(sourceHourly.uvIndex))
+                ? "--"
+                : "UV " + sourceHourly.uvIndex.toFixed(1);
+            item.precipText = weatherRoot ? weatherRoot.precipSumText(sourceHourly.precipMm) : "--";
+            item.visibilityText = weatherRoot ? weatherRoot.visibilityValue(sourceHourly.visibilityKm) : "--";
+            var precipProbText = W.hourlyPrecipProbText(sourceHourly.precipProb, sourceHourly.code);
+            var humidityText = (!isNaN(sourceHourly.humidity) && sourceHourly.humidity !== undefined)
+                ? Math.round(sourceHourly.humidity) + "%"
+                : "--";
+            item.precipDisplayText = precipProbText !== null ? precipProbText : humidityText;
+            item.precipRateVisible = sourceHourly.precipMm !== undefined
+                && !isNaN(sourceHourly.precipMm)
+                && sourceHourly.precipMm > 0
+                && W.isPrecipCode(sourceHourly.code);
+            item.precipRateText = weatherRoot ? weatherRoot.precipValue(sourceHourly.precipMm) : "--";
+            item.autoScrollTarget = firstHourly;
+            firstHourly = false;
+            items.push(item);
+        }
+
+        _hourlyDisplayCache[cacheKey] = items;
+        return items;
     }
 
     function _startExpandAll() {
@@ -81,6 +417,10 @@ Item {
         for (var di = startDi; di < total; di++) {
             var dateStr = weatherRoot.dailyData[di].dateStr || "";
             if (!dateStr) continue;
+            if (_isDateOutsideHourlyCoverage(dateStr)) {
+                _storeHourlyData(dateStr, []);
+                continue;
+            }
             _expandAllQueue.push(dateStr);
             loading[dateStr] = true;
         }
@@ -97,9 +437,7 @@ Item {
             (function(ds, gen) {
                 weatherRoot.fetchHourlyForDateDirect(ds, function(hourlyArr) {
                     if (gen !== forecastRoot._expandAllFetchGeneration) return;
-                    var dataUpd = Object.assign({}, forecastRoot._perDayHourlyData);
-                    dataUpd[ds] = hourlyArr || [];
-                    forecastRoot._perDayHourlyData = dataUpd;
+                    forecastRoot._storeHourlyData(ds, hourlyArr);
                     var loadDone = Object.assign({}, forecastRoot._loadingDays);
                     delete loadDone[ds];
                     forecastRoot._loadingDays = loadDone;
@@ -118,16 +456,33 @@ Item {
         onTriggered: forecastRoot._pumpExpandAllQueue()
     }
 
+    Timer {
+        id: viewportPrefetchPump
+        interval: 80
+        repeat: false
+        onTriggered: forecastRoot._pumpViewportPrefetchQueue()
+    }
+
+    Timer {
+        id: viewportPrefetchDebounce
+        interval: 120
+        repeat: false
+        onTriggered: forecastRoot._queueViewportPrefetch()
+    }
+
     function activateForecast() {
         _autoOpenDone = false;
         _collapsedDays = {};
         _loadingDays = {};
+        _cancelViewportPrefetch();
         if (expandAll) {
             _autoOpenDone = true;
             _perDayHourlyData = {};
+            _hourlyDataVersions = {};
+            _hourlyDisplayCache = {};
             _startExpandAll();
         } else {
-            _cancelExpandAllFetch(true);
+            _cancelExpandAllFetch(false);
             _doAutoOpen();
         }
     }
@@ -138,15 +493,24 @@ Item {
             _autoOpenDone = true;
             _collapsedDays = {};
             _loadingDays   = {};
+            _singleExpandFetchGeneration++;
+            _cancelViewportPrefetch();
             if (visible && weatherRoot && weatherRoot.dailyData.length > 0)
                 _startExpandAll();
         } else {
             _cancelExpandAllFetch(true);
             _collapsedDays = {};
             _autoOpenDone = false;
+            _singleExpandFetchGeneration++;
+            _cancelViewportPrefetch();
             if (visible)
                 _doAutoOpen();
         }
+    }
+
+    onExpandedIndexChanged: {
+        if (!expandAll && visible)
+            viewportPrefetchDebounce.restart();
     }
 
     onAutoOpenChanged: {
@@ -167,8 +531,8 @@ Item {
         var firstDataIndex = forecastRoot.showToday ? 0 : 1;
         if (firstDataIndex >= weatherRoot.dailyData.length) return;
         forecastRoot.expandedIndex = 0;
-        weatherRoot.hourlyData = [];
-        weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[firstDataIndex].dateStr || "");
+        forecastRoot._loadSingleExpandHourly(weatherRoot.dailyData[firstDataIndex].dateStr || "");
+        viewportPrefetchDebounce.restart();
     }
 
     onVisibleChanged: {
@@ -176,6 +540,7 @@ Item {
             activateForecast();
         } else {
             _cancelExpandAllFetch(false);
+            _cancelViewportPrefetch();
         }
     }
 
@@ -191,28 +556,23 @@ Item {
                 // expandAll always re-fetches when new data arrives —
                 // independent of autoOpen and _autoOpenDone.
                 forecastRoot._perDayHourlyData = {};
+                forecastRoot._hourlyDataVersions = {};
+                forecastRoot._hourlyDisplayCache = {};
                 forecastRoot._loadingDays      = {};
                 forecastRoot._startExpandAll();
-            } else if (forecastRoot.expandedIndex >= 0) {
-                // A day is already expanded (auto-opened or clicked) — re-fetch
-                // its hourly data so the panel doesn't keep showing the forecast
-                // from before the refresh. Keep the old data on screen while the
-                // fetch is in flight to avoid a collapse/flash.
-                var dataIndex = forecastRoot.showToday
-                    ? forecastRoot.expandedIndex
-                    : forecastRoot.expandedIndex + 1;
-                if (dataIndex < weatherRoot.dailyData.length)
-                    weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "");
-                else
-                    forecastRoot.expandedIndex = -1;
             } else {
+                forecastRoot._singleExpandFetchGeneration++;
+                forecastRoot._perDayHourlyData = {};
+                forecastRoot._hourlyDataVersions = {};
+                forecastRoot._hourlyDisplayCache = {};
+                forecastRoot._loadingDays = {};
+                forecastRoot._cancelViewportPrefetch();
                 forecastRoot._doAutoOpen();
             }
         }
     }
 
-    // Set implicit height based on content
-    implicitHeight: (weatherRoot && weatherRoot.dailyData.length > 0) ? forecastColumn.height : (emptyLabel.implicitHeight + 40)
+    implicitHeight: parent ? parent.height : 220
 
     // Font for weather icons (wind direction glyph)
     FontLoader {
@@ -315,7 +675,8 @@ Item {
     }
 
     function _scrollParentVertically(wheel) {
-        if (!verticalScrollView)
+        var scrollTarget = verticalScrollView ? verticalScrollView : forecastListView;
+        if (!scrollTarget)
             return false;
         var delta = _wheelDeltaY(wheel);
         if (delta === 0)
@@ -323,14 +684,14 @@ Item {
         var scale = wheel.pixelDelta.y !== 0 ? 1 : 0.5;
         var amount = delta * scale;
 
-        var flick = verticalScrollView.flickableItem || verticalScrollView.contentItem || verticalScrollView;
+        var flick = scrollTarget.flickableItem || scrollTarget.contentItem || scrollTarget;
         if (flick && flick.contentHeight !== undefined && flick.contentY !== undefined) {
             var maxY = Math.max(0, flick.contentHeight - flick.height);
             flick.contentY = Math.max(0, Math.min(maxY, flick.contentY - amount));
             return true;
         }
 
-        var bar = verticalScrollView.ScrollBar ? verticalScrollView.ScrollBar.vertical : null;
+        var bar = scrollTarget.ScrollBar ? scrollTarget.ScrollBar.vertical : null;
         if (bar) {
             var maxPos = Math.max(0, 1.0 - bar.size);
             bar.position = Math.max(0, Math.min(maxPos, bar.position - amount / 1200));
@@ -368,28 +729,35 @@ Item {
         font: weatherRoot ? weatherRoot.wf(12, false) : Qt.font({})
     }
 
-    Column {
-        id: forecastColumn
-        width: parent.width
-        spacing: 0
+    ListView {
+        id: forecastListView
+        anchors.fill: parent
+        clip: true
         visible: weatherRoot && weatherRoot.dailyData.length > 0
+        model: forecastRoot._forecastModelCount()
+        spacing: 0
+        reuseItems: true
+        cacheBuffer: height * 2
+        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AsNeeded
+        }
+        ScrollBar.horizontal: ScrollBar {
+            policy: ScrollBar.AlwaysOff
+        }
+        onContentYChanged: viewportPrefetchDebounce.restart()
+        onHeightChanged: viewportPrefetchDebounce.restart()
+        onModelChanged: viewportPrefetchDebounce.restart()
+        Component.onCompleted: viewportPrefetchDebounce.restart()
 
-            Repeater {
-                model: {
-                    if (!weatherRoot || weatherRoot.dailyData.length === 0) return 0;
-                    var total = Math.min(Plasmoid.configuration.forecastDays, weatherRoot.dailyData.length);
-                    return forecastRoot.showToday ? total : Math.max(0, total - 1);
-                }
-
-                delegate: Column {
+        delegate: Column {
                     required property int index
-                    readonly property int dataIndex: forecastRoot.showToday ? index : index + 1
-                    width: parent.width
+                    readonly property int dataIndex: forecastRoot._viewIndexToDataIndex(index)
+                    width: ListView.view ? ListView.view.width : forecastRoot.width
                     spacing: 0
 
                     // Per-delegate hourly data: in expandAll mode pulls from the
-                    // per-day cache; in single-expand mode uses weatherRoot.hourlyData
-                    // (only valid for the currently expanded day).
+                    // per-day cache; single-expand reuses the same date-keyed cache.
                     property var _dayHourlyData: {
                         var dateStr = (weatherRoot && weatherRoot.dailyData[dataIndex])
                             ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
@@ -397,47 +765,22 @@ Item {
                             if (forecastRoot._collapsedDays[dateStr]) return [];
                             return forecastRoot._perDayHourlyData[dateStr] || [];
                         }
-                        if (!forecastRoot.expandAll && forecastRoot.expandedIndex === index)
-                            return weatherRoot ? weatherRoot.hourlyData : [];
+                        if (!forecastRoot.expandAll && forecastRoot.expandedIndex === index && dateStr)
+                            return forecastRoot._perDayHourlyData[dateStr] || [];
                         return [];
                     }
 
-                    readonly property string _daySunriseText: {
-                        if (weatherRoot && weatherRoot.dailyData[dataIndex] && weatherRoot.dailyData[dataIndex].sunriseTimeText)
-                            return weatherRoot.dailyData[dataIndex].sunriseTimeText;
-                        return weatherRoot ? weatherRoot.sunriseTimeText : "--";
-                    }
-
-                    readonly property string _daySunsetText: {
-                        if (weatherRoot && weatherRoot.dailyData[dataIndex] && weatherRoot.dailyData[dataIndex].sunsetTimeText)
-                            return weatherRoot.dailyData[dataIndex].sunsetTimeText;
-                        return weatherRoot ? weatherRoot.sunsetTimeText : "--";
-                    }
-
-                    readonly property bool _dayOutsideQWeatherHourlyRange: {
-                        if ((Plasmoid.configuration.weatherProvider || "adaptive") !== "qWeather")
-                            return false;
-                        var ds = (weatherRoot && weatherRoot.dailyData[dataIndex])
-                            ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
-                        if (!ds)
-                            return false;
-                        var parts = ds.split("-");
-                        if (parts.length < 3)
-                            return false;
-                        var year = parseInt(parts[0], 10);
-                        var month = parseInt(parts[1], 10) - 1;
-                        var day = parseInt(parts[2], 10);
-                        if (isNaN(year) || isNaN(month) || isNaN(day))
-                            return false;
-                        var dayStartMs = new Date(year, month, day, 0, 0, 0, 0).getTime();
-                        var hourlyLimitMs = (new Date()).getTime() + 168 * 3600 * 1000;
-                        return dayStartMs >= hourlyLimitMs;
-                    }
+                    property var _dayDisplayItems: forecastRoot._hourlyDisplayItems(
+                        weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex] : null,
+                        _dayHourlyData,
+                        dataIndex)
 
                     readonly property bool _dayIsLoading: {
                         var dateStr = (weatherRoot && weatherRoot.dailyData[dataIndex])
                             ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
                         if (forecastRoot.expandAll && dateStr && !forecastRoot._collapsedDays[dateStr])
+                            return !!forecastRoot._loadingDays[dateStr];
+                        if (!forecastRoot.expandAll && forecastRoot.expandedIndex === index && dateStr)
                             return !!forecastRoot._loadingDays[dateStr];
                         return false;
                     }
@@ -787,10 +1130,7 @@ Item {
                                         forecastRoot.expandedIndex = -1;
                                     } else {
                                         forecastRoot.expandedIndex = index;
-                                        if (weatherRoot) {
-                                            weatherRoot.hourlyData = [];
-                                            weatherRoot.fetchHourlyForDate(dateStr);
-                                        }
+                                        forecastRoot._loadSingleExpandHourly(dateStr);
                                     }
                                 }
                             }
@@ -822,15 +1162,13 @@ Item {
                         // Plain loading text for single-expand mode
                         Label {
                             anchors.centerIn: parent
-                            width: parent.width - 24
                             visible: !_dayIsLoading && ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && _dayHourlyData.length === 0
-                            text: _dayOutsideQWeatherHourlyRange
-                                ? i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.")
-                                : i18n("Loading hourly data…")
+                            text: forecastRoot._emptyHourlyMessage(weatherRoot.dailyData[dataIndex].dateStr || "")
                             color: forecastRoot.themeTextColor
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
-                            wrapMode: Text.Wrap
+                            wrapMode: Text.WordWrap
                             horizontalAlignment: Text.AlignHCenter
+                            width: Math.max(0, parent.width - 24)
                         }
 
                         // Only instantiate the heavy hourly UI for the expanded day.
@@ -881,43 +1219,7 @@ Item {
                                     }
 
                                     // Build combined model same as cards (with sun events)
-                                    property var _hourlyWithSun: {
-                                        if (!_dayHourlyData || !_dayHourlyData.length) return [];
-                                        function toMins(t) {
-                                            if (!t || t === "--") return -1;
-                                            var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
-                                        }
-                                        // For today (index 0) filter out past hours; keep 1 hour buffer so current hour stays visible
-                                        var nowMins = -1;
-                                        if (index === 0) {
-                                            var _now = new Date();
-                                            nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
-                                        }
-                                        var source = nowMins >= 0
-                                            ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
-                                            : _dayHourlyData;
-                                        if (!forecastRoot.showSunEvents)
-                                            return source;
-                                        var rise = toMins(_daySunriseText);
-                                        var set_ = toMins(_daySunsetText);
-                                        // Only insert sun markers if they are still in the future (for today)
-                                        var riseInserted = rise < 0 || (nowMins >= 0 && rise < nowMins);
-                                        var setInserted  = set_  < 0 || (nowMins >= 0 && set_  < nowMins);
-                                        var result = [];
-                                        source.forEach(function(h) {
-                                            var hm = toMins(h.hour);
-                                            if (!riseInserted && hm >= 0 && hm > rise) {
-                                                result.push({ isSunrise: true, isSunset: false, time: _daySunriseText });
-                                                riseInserted = true;
-                                            }
-                                            if (!setInserted && hm >= 0 && hm > set_) {
-                                                result.push({ isSunrise: false, isSunset: true, time: _daySunsetText });
-                                                setInserted = true;
-                                            }
-                                            result.push(h);
-                                        });
-                                        return result;
-                                    }
+                                    property var _hourlyWithSun: _dayDisplayItems
 
                                     readonly property int colW: 100
                                     readonly property int colSpacing: 0
@@ -952,16 +1254,7 @@ Item {
                                                     height: 18
                                                     Label {
                                                         anchors.centerIn: parent
-                                                        text: {
-                                                            if (modelData.isSunrise || modelData.isSunset)
-                                                                return weatherRoot ? weatherRoot.formatTimeForDisplay(modelData.time) : "--";
-                                                            if (!modelData.hour || modelData.hour === "--") return "--";
-                                                            var parts = modelData.hour.split(":");
-                                                            if (parts.length < 2) return modelData.hour;
-                                                            var d = new Date();
-                                                            d.setHours(parseInt(parts[0],10), parseInt(parts[1],10), 0, 0);
-                                                            return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
-                                                        }
+                                                        text: modelData.displayTime || "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(9, modelData.isSunrise || modelData.isSunset) : Qt.font({})
                                                         opacity: (modelData.isSunrise || modelData.isSunset) ? 0.9 : 0.7
@@ -992,18 +1285,7 @@ Item {
                                                                 return IconResolver.resolve("sunset", 32, forecastRoot.iconsBaseDir,
                                                                     forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
                                                                     (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom") ? "symbolic" : forecastRoot.widgetIconTheme);
-                                                            var isNight = false;
-                                                            if (modelData.hour && modelData.hour !== "--") {
-                                                                var p2 = modelData.hour.split(":");
-                                                                if (p2.length >= 2) {
-                                                                    var hm2 = parseInt(p2[0],10)*60+parseInt(p2[1],10);
-                                                                    function _sm(t) { if (!t||t==="--") return -1; var p=t.split(":"); return p.length<2?-1:parseInt(p[0],10)*60+parseInt(p[1],10); }
-                                                                    var rise2=_sm(_daySunriseText);
-                                                                    var set2=_sm(_daySunsetText);
-                                                                    if (rise2>=0&&set2>=0) isNight=hm2<rise2||hm2>=set2;
-                                                                }
-                                                            }
-                                                            return forecastRoot.resolveConditionIcon(modelData.code||0, isNight, forecastRoot.iconSz);
+                                                            return forecastRoot.resolveConditionIcon(modelData.code || 0, modelData.isNight === true, forecastRoot.iconSz);
                                                         }
                                                         iconSize: 44
                                                         iconColor: forecastRoot.themeTextColor
@@ -1120,7 +1402,7 @@ Item {
                                                     Label {
                                                         anchors.centerIn: parent
                                                         text: (modelData.isSunrise || modelData.isSunset) ? i18n(modelData.isSunrise ? "Sunrise" : "Sunset")
-                                                              : (weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--")
+                                                              : (modelData.tempText || "--")
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, !(modelData.isSunrise || modelData.isSunset)) : Qt.font({})
                                                         opacity: (modelData.isSunrise || modelData.isSunset) ? 0.75 : 1.0
@@ -1154,13 +1436,7 @@ Item {
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
-                                                        text: {
-                                                            if (parent._isSun) return "";
-                                                            var ppText = W.hourlyPrecipProbText(modelData.precipProb, modelData.code);
-                                                            if (ppText !== null) return ppText;
-                                                            var h = modelData.humidity;
-                                                            return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
-                                                        }
+                                                        text: modelData.precipDisplayText || "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
@@ -1190,7 +1466,7 @@ Item {
                                                         spacing: 2
                                                         Label {
                                                             visible: !parent.parent._isSun
-                                                            text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
+                                                            text: modelData.windText || "--"
                                                             color: forecastRoot.themeTextColor
                                                             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                                                             opacity: 0.7
@@ -1233,7 +1509,7 @@ Item {
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
-                                                        text: weatherRoot ? weatherRoot.pressureValue(modelData.pressureHpa) : "--"
+                                                        text: modelData.pressureText || "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
@@ -1269,14 +1545,7 @@ Item {
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
-                                                        text: {
-                                                            if (!weatherRoot) return i18n("No info");
-                                                            var d = weatherRoot.dailyData[dataIndex].dateStr || "";
-                                                            var e = weatherRoot.kpForecastForHour(d, modelData.hour || "")
-                                                                    || weatherRoot.kpForecastForDate(d);
-                                                            if (!e || isNaN(e.kp)) return i18n("No info");
-                                                            return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
-                                                        }
+                                                        text: modelData.kpText || i18n("No info")
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
@@ -1312,10 +1581,7 @@ Item {
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
-                                                        text: {
-                                                            var uv = modelData.uvIndex;
-                                                            return (uv === undefined || isNaN(uv)) ? "--" : "UV " + uv.toFixed(1);
-                                                        }
+                                                        text: modelData.uvText || "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
@@ -1351,7 +1617,7 @@ Item {
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
-                                                        text: weatherRoot ? weatherRoot.precipSumText(modelData.precipMm) : "--"
+                                                        text: modelData.precipText || "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
@@ -1387,7 +1653,7 @@ Item {
                                                     }
                                                     Label {
                                                         visible: !parent._isSun
-                                                        text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
+                                                        text: modelData.visibilityText || "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
@@ -1428,461 +1694,13 @@ Item {
 
                         Component {
                             id: cardsHourlyComponent
-                            Item {
+                            HourlyCardsView {
                                 anchors.fill: parent
-
-                                // ── CARDS LAYOUT ───────────────────────────────────
-                                ScrollView {
-                                    id: hourlyScrollView
-                                    anchors.fill: parent
-                                    anchors.margins: 8
-                                    clip: true
-                                    // ScrollView itself does not have flickableDirection.
-                                    // This property needs to be set on the internal flickableItem.
-                                    Component.onCompleted: {
-                                        if (hourlyScrollView.flickableItem) {
-                                            hourlyScrollView.flickableItem.flickableDirection = Flickable.HorizontalFlick;
-                                        }
-                                    }
-                                    contentWidth: hourlyRow.implicitWidth
-                                    ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-                                    ScrollBar.horizontal.policy: ScrollBar.AsNeeded
-
-                                    NumberAnimation {
-                                        id: hourlyWheelAnimation
-                                        target: hourlyScrollView.ScrollBar.horizontal
-                                        property: "position"
-                                        duration: 140
-                                        easing.type: Easing.OutCubic
-                                    }
-
-                                    // Auto-scroll to current hour for "Today" (index === 0)
-                                    Timer {
-                                        id: scrollTimer
-                                        interval: 150
-                                        onTriggered: {
-                                            if (index !== 0 || !_dayHourlyData.length) return;
-                                            var now = new Date();
-                                            var currentTotalMins = now.getHours() * 60 + now.getMinutes();
-                                            var closestIdx = 0;
-                                            var minDiff = 86400;
-                                            for (var i = 0; i < _dayHourlyData.length; i++) {
-                                                var h = _dayHourlyData[i].hour;
-                                                if (!h) continue;
-                                                var parts = h.split(":");
-                                                if (parts.length < 2) continue;
-                                                var hm = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-                                                var diff = Math.abs(hm - currentTotalMins);
-                                                if (diff < minDiff) {
-                                                    minDiff = diff;
-                                                    closestIdx = i;
-                                                }
-                                            }
-                                            if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
-                                                function toMins(t) {
-                                                    if (!t || t === "--") return -1;
-                                                    var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
-                                                }
-                                                var rise = toMins(_daySunriseText);
-                                                var set_ = toMins(_daySunsetText);
-                                                var targetMins = closestIdx < _dayHourlyData.length ? toMins(_dayHourlyData[closestIdx].hour) : -1;
-                                                if (rise >= 0 && targetMins >= 0 && rise < targetMins) closestIdx++;
-                                                if (set_ >= 0 && targetMins >= 0 && set_ < targetMins) closestIdx++;
-                                            }
-                                            var hourlyWidth = forecastRoot._hourlyCardWidth;
-                                            var sunWidth = 70;
-                                            var spacing = 6;
-                                            var scrollPos = 0;
-                                            if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
-                                                function toMins2(t) {
-                                                    if (!t || t === "--") return -1;
-                                                    var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
-                                                }
-                                                var rise2 = toMins2(_daySunriseText);
-                                                var set2 = toMins2(_daySunsetText);
-                                                for (var j = 0; j < closestIdx; j++) {
-                                                    var hm2 = toMins2(_dayHourlyData[j].hour);
-                                                    if (rise2 >= 0 && hm2 > rise2) { scrollPos += sunWidth + spacing; rise2 = -1; }
-                                                    if (set2 >= 0 && hm2 > set2) { scrollPos += sunWidth + spacing; set2 = -1; }
-                                                    scrollPos += hourlyWidth + spacing;
-                                                }
-                                            } else {
-                                                scrollPos = closestIdx * (hourlyWidth + spacing);
-                                            }
-                                            var bar = hourlyScrollView.ScrollBar.horizontal;
-                                            if (!bar) return;
-                                            var contentW = hourlyRow.implicitWidth || hourlyRow.width || (_dayHourlyData.length * (hourlyWidth + spacing));
-                                            var viewW = hourlyScrollView.width;
-                                            if (contentW > viewW) {
-                                                var maxPos = Math.max(0, contentW - viewW);
-                                                var targetPos = Math.min(scrollPos, maxPos);
-                                                bar.position = targetPos / contentW;
-                                            }
-                                        }
-                                    }
-                                    Connections {
-                                        target: weatherRoot
-                                        function onHourlyDataChanged() {
-                                            if (index !== 0 || !_dayHourlyData.length) return;
-                                            scrollTimer.start();
-                                        }
-                                    }
-
-                                    Row {
-                                        id: hourlyRow
-                                        spacing: 6
-                                        height: parent.height
-
-                                        // Build combined model: hourly entries + sunrise/sunset marker cards
-                                        // inserted between the hour that precedes each event.
-                                        property var _hourlyWithSun: {
-                                            if (!_dayHourlyData || !_dayHourlyData.length) return [];
-                                            function toMins(t) {
-                                                if (!t || t === "--") return -1;
-                                                var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
-                                            }
-                                            // For today (index 0) filter out past hours; keep 1 hour buffer
-                                            var nowMins = -1;
-                                            if (index === 0) {
-                                                var _now = new Date();
-                                                nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
-                                            }
-                                            var source = nowMins >= 0
-                                                ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
-                                                : _dayHourlyData;
-                                            if (!forecastRoot.showSunEvents)
-                                                return source;
-                                            var rise = toMins(_daySunriseText);
-                                            var set_ = toMins(_daySunsetText);
-                                            var riseInserted = rise < 0 || (nowMins >= 0 && rise < nowMins);
-                                            var setInserted  = set_  < 0 || (nowMins >= 0 && set_  < nowMins);
-                                            var result = [];
-                                            source.forEach(function(h) {
-                                                var hm = toMins(h.hour);
-                                                if (!riseInserted && hm >= 0 && hm > rise) {
-                                                    result.push({ isSunrise: true,  isSunset: false, time: _daySunriseText });
-                                                    riseInserted = true;
-                                                }
-                                                if (!setInserted && hm >= 0 && hm > set_) {
-                                                    result.push({ isSunset: true,  isSunrise: false, time: _daySunsetText });
-                                                    setInserted = true;
-                                                }
-                                                result.push(h);
-                                            });
-                                            return result;
-                                        }
-
-                                        Repeater {
-                                            model: parent._hourlyWithSun
-
-                                            delegate: Rectangle {
-                                                required property var modelData
-                                                // Sunrise/sunset cards are slim; hourly cards are full height
-                                                width: (modelData.isSunrise || modelData.isSunset) ? 70 : forecastRoot._hourlyCardWidth
-                                                height: forecastRoot._hourlyCardHeight
-                                                radius: 8
-                                                color: (modelData.isSunrise || modelData.isSunset)
-                                                    ? Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.04)
-                                                    : Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)
-                                                border.color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.12)
-                                                border.width: 1
-
-                                                // Only the branch this card needs is instantiated — a dormant
-                                                // twin layout used to double every card's item and icon count.
-                                                Loader {
-                                                    anchors.fill: parent
-                                                    sourceComponent: (modelData.isSunrise === true || modelData.isSunset === true) ? sunCardComp : hourCardComp
-                                                }
-
-                                                // ── Sunrise / Sunset card ─────────────────────────────
-                                                Component {
-                                                    id: sunCardComp
-                                                    Item {
-                                                        ColumnLayout {
-                                                            anchors.centerIn: parent
-                                                            spacing: 6
-                                                            WeatherIcon {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                iconInfo: IconResolver.resolve(
-                                                                    modelData.isSunrise ? "sunrise" : "sunset",
-                                                                    32,
-                                                                    forecastRoot.iconsBaseDir,
-                                                                    forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                    (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                                iconSize: 32
-                                                                iconColor: forecastRoot.themeTextColor
-                                                            }
-                                                            Label {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                text: weatherRoot ? weatherRoot.formatTimeForDisplay(modelData.time) : "--"
-                                                                color: forecastRoot.themeTextColor
-                                                                font: weatherRoot ? weatherRoot.wf(10, true) : Qt.font({ bold: true })
-                                                            }
-                                                        }
-                                                    }
-                                                }
-
-                                                // ── Regular hourly card ───────────────────────────────
-                                                Component {
-                                                    id: hourCardComp
-                                                    Item {
-                                                        ColumnLayout {
-                                                            anchors {
-                                                                fill: parent
-                                                                margins: 6
-                                                            }
-                                                            spacing: 4
-
-                                                            Label {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                text: {
-                                                                    if (!modelData.hour || modelData.hour === "--")
-                                                                        return "--";
-                                                                    var parts = modelData.hour.split(":");
-                                                                    if (parts.length < 2)
-                                                                        return modelData.hour;
-                                                                    var h = parseInt(parts[0], 10);
-                                                                    var m = parseInt(parts[1], 10);
-                                                                    if (isNaN(h) || isNaN(m))
-                                                                        return modelData.hour;
-                                                                    var d = new Date();
-                                                                    d.setHours(h, m, 0, 0);
-                                                                    return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
-                                                                }
-                                                                color: forecastRoot.themeTextColor
-                                                                font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                            }
-
-                                                            WeatherIcon {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                iconInfo: {
-                                                                    // Derive night flag from the hour vs sunrise/sunset
-                                                                    var isNight = false;
-                                                                    if (modelData.hour && modelData.hour !== "--") {
-                                                                        var parts = modelData.hour.split(":");
-                                                                        if (parts.length >= 2) {
-                                                                            var hMins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-                                                                            function parseSunMins(t) {
-                                                                                if (!t || t === "--") return -1;
-                                                                                var p = t.split(":");
-                                                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
-                                                                            }
-                                                                            var rise = parseSunMins(_daySunriseText);
-                                                                            var set_ = parseSunMins(_daySunsetText);
-                                                                            if (rise >= 0 && set_ >= 0)
-                                                                                isNight = hMins < rise || hMins >= set_;
-                                                                        }
-                                                                    }
-                                                                    return forecastRoot.resolveConditionIcon(
-                                                                        modelData.code || 0, isNight,
-                                                                        forecastRoot.iconSz);
-                                                                }
-                                                                iconSize: 48
-                                                            }
-
-                                                            Label {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                text: weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--"
-                                                                color: forecastRoot.themeTextColor
-                                                                font: weatherRoot ? weatherRoot.wf(11, true) : Qt.font({ bold: true })
-                                                            }
-
-                                                            RowLayout {
-                                                                visible: forecastRoot._hourlyShowWind
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 4
-                                                                Label {
-                                                                    text: weatherRoot && modelData.windKmh !== undefined ? weatherRoot.windValue(modelData.windKmh) : "--"
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                                Text {
-                                                                    visible: weatherRoot && !isNaN(modelData.windDeg)
-                                                                    text: W.windDirectionGlyph(modelData.windDeg)
-                                                                    font.family: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
-                                                                    font.pixelSize: 20
-                                                                    color: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                visible: forecastRoot._hourlyShowPressure
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 3
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("pressure", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                                    iconSize: 24
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: weatherRoot ? weatherRoot.pressureValue(modelData.pressureHpa) : "--"
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                visible: forecastRoot._hourlyShowKpIndex
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 3
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("spaceweather", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                                    iconSize: 24
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: {
-                                                                        if (!weatherRoot) return i18n("No info");
-                                                                        var d = weatherRoot.dailyData[dataIndex].dateStr || "";
-                                                                        var e = weatherRoot.kpForecastForHour(d, modelData.hour || "")
-                                                                                || weatherRoot.kpForecastForDate(d);
-                                                                        if (!e || isNaN(e.kp)) return i18n("No info");
-                                                                        return "Kp " + e.kp.toFixed(1) + " (" + (e.gScale || "G0") + ")";
-                                                                    }
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                visible: forecastRoot._hourlyShowUvIndex
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 3
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("uvindex", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                                    iconSize: 24
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: {
-                                                                        var uv = modelData.uvIndex;
-                                                                        return (uv === undefined || isNaN(uv)) ? "--" : "UV " + uv.toFixed(1);
-                                                                    }
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                visible: forecastRoot._hourlyShowPrecipSum
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 3
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("precipsum", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                                    iconSize: 24
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: weatherRoot ? weatherRoot.precipSumText(modelData.precipMm) : "--"
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                visible: forecastRoot._hourlyShowVisibility
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 3
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("visibility", 24, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
-                                                                    iconSize: 24
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: 3
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("umbrella", 32, forecastRoot.iconsBaseDir,
-                                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                                    iconSize: 32
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: {
-                                                                        var ppText = W.hourlyPrecipProbText(modelData.precipProb, modelData.code);
-                                                                        if (ppText !== null) return ppText;
-                                                                        var h = modelData.humidity;
-                                                                        return (!isNaN(h) && h !== undefined) ? Math.round(h) + "%" : "--";
-                                                                    }
-                                                                    color: forecastRoot.themeTextColor
-                                                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
-                                                                }
-                                                            }
-
-                                                            RowLayout {
-                                                                Layout.alignment: Qt.AlignHCenter
-                                                                spacing: -5
-                                                                // Open-Meteo can report a trace precip amount (e.g. 0.1 mm)
-                                                                // for an hour whose weather code and probability are dry.
-                                                                // Only show the rate when the code itself implies precipitation,
-                                                                // so it doesn't contradict a clear/sunny icon at 0% probability.
-                                                                visible: modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
-                                                                         && modelData.precipMm > 0 && W.isPrecipCode(modelData.code)
-                                                                WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir,
-                                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
-                                                                    iconSize: 32
-                                                                    iconColor: forecastRoot.themeTextColor
-                                                                    opacity: 0.6
-                                                                    Layout.alignment: Qt.AlignVCenter
-                                                                }
-                                                                Label {
-                                                                    text: weatherRoot ? weatherRoot.precipValue(modelData.precipMm) : "--"
-                                                                    color: forecastRoot.themeTextColor
-                                                                    opacity: 0.6
-                                                                    font: weatherRoot ? weatherRoot.wf(8, false) : Qt.font({})
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                MouseArea {
-                                    anchors.fill: hourlyScrollView
-                                    acceptedButtons: Qt.NoButton
-                                    onWheel: function(wheel) {
-                                        var bar = hourlyScrollView.ScrollBar.horizontal;
-                                        if (!bar)
-                                            return;
-                                        if (forecastRoot._hourlyWheelWantsHorizontal(wheel)) {
-                                            var delta = wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : forecastRoot._wheelDeltaX(wheel);
-                                            var pixelDelta = wheel.angleDelta.x === 0 && wheel.pixelDelta.x !== 0;
-                                            if (delta === 0) {
-                                                delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : forecastRoot._wheelDeltaY(wheel);
-                                                pixelDelta = wheel.angleDelta.y === 0 && wheel.pixelDelta.y !== 0;
-                                            }
-                                            var maxPos = Math.max(0, 1.0 - bar.size);
-                                            var targetPos = pixelDelta
-                                                ? Math.max(0, Math.min(maxPos, bar.position - delta / Math.max(1, hourlyRow.implicitWidth)))
-                                                : Math.max(0, Math.min(maxPos, bar.position - (delta / 120) * 0.15));
-                                            hourlyWheelAnimation.to = targetPos;
-                                            hourlyWheelAnimation.restart();
-                                            wheel.accepted = true;
-                                        } else {
-                                            wheel.accepted = forecastRoot._scrollParentVertically(wheel);
-                                        }
-                                    }
-                                }
+                                hostRoot: forecastRoot
+                                serviceRoot: weatherRoot
+                                wiFont: wiFont
+                                hourlyItems: _dayDisplayItems
+                                autoScrollToCurrent: dataIndex === 0
                             }
                         }
                     }
@@ -1893,6 +1711,5 @@ Item {
                         color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)
                     }
                 }
-            }
         }
     }

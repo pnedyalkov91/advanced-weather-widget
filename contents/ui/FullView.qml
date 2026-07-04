@@ -107,8 +107,6 @@ Rectangle {
         return want;
     }
 
-    // Whether not-currently-shown tabs stay instantiated. True while the
-    // popup is open and always on the desktop (Planar), which has no popup.
     readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
 
     // Reset to the configured default tab every time the popup opens
@@ -624,7 +622,7 @@ Rectangle {
             implicitHeight: (children && children[currentIndex]) ? children[currentIndex].implicitHeight : 0
 
             // Reach the (lazily-loaded) ForecastView for external activation.
-            readonly property var forecastViewItem: forecastLoader.item ? forecastLoader.item.forecastViewItem : null
+            readonly property var forecastViewItem: forecastLoader.item || null
 
             onCurrentIndexChanged: {
                 // ForecastView.onVisibleChanged already triggers activateForecast()
@@ -643,10 +641,6 @@ Rectangle {
                     id: detailsLoader
                     anchors.fill: parent
                     asynchronous: true
-                    // Latch only while the popup is open (always on desktop, where
-                    // there is no popup): hidden tabs unload on close, so the
-                    // expose-time PlasmaTheme sync storm on reopen only covers
-                    // one tab's items instead of every tab ever visited.
                     active: detailsTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: DetailsView {
                         weatherRoot: fullView.weatherRoot
@@ -668,25 +662,10 @@ Rectangle {
                     anchors.fill: parent
                     asynchronous: true
                     active: forecastTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
-                    sourceComponent: ScrollView {
-                        id: forecastScrollView
-                        clip: true
-                        // Expose the inner ForecastView for external activation
-                        property alias forecastViewItem: forecastView
-                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        implicitHeight: forecastView.implicitHeight
-                        // No contentWidth binding: availableWidth depends on the
-                        // scrollbar, which depends on implicitWidth, which depends
-                        // on contentWidth — a binding loop. ForecastView.width is
-                        // bound to availableWidth below, which is all we need.
-
-                        ForecastView {
-                            id: forecastView
-                            weatherRoot: fullView.weatherRoot
-                            verticalScrollView: forecastScrollView.contentItem
-                            width: forecastScrollView.availableWidth
-                        }
+                    sourceComponent: ForecastView {
+                        id: forecastView
+                        weatherRoot: fullView.weatherRoot
+                        verticalScrollView: forecastView
                     }
                 }
                 BusyIndicator {
