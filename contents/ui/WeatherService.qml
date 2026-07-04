@@ -581,7 +581,26 @@ QtObject {
             var key = service._qwKey(); if (!key) { callback([]); return; }
             var base = service._qwHost();
             var loc  = lon.toFixed(2) + "," + lat.toFixed(2);
-            var url  = base + "/v7/weather/24h?location=" + encodeURIComponent(loc) + "&unit=m";
+            function _qwHourlySpanHours(ds) {
+                if (!ds)
+                    return 168;
+                var parts = ds.split("-");
+                if (parts.length < 3)
+                    return 168;
+                var year = parseInt(parts[0], 10);
+                var month = parseInt(parts[1], 10) - 1;
+                var day = parseInt(parts[2], 10);
+                if (isNaN(year) || isNaN(month) || isNaN(day))
+                    return 168;
+                var targetEnd = new Date(year, month, day, 23, 59, 59, 999);
+                var diffHours = Math.ceil((targetEnd.getTime() - (new Date()).getTime()) / 3600000);
+                if (diffHours <= 24)
+                    return 24;
+                if (diffHours <= 72)
+                    return 72;
+                return 168;
+            }
+            var url  = base + "/v7/weather/" + _qwHourlySpanHours(dateStr) + "h?location=" + encodeURIComponent(loc) + "&unit=m";
             var xhr = new XMLHttpRequest(); xhr.open("GET", url);
             xhr.setRequestHeader("X-QW-Api-Key", key);
             xhr.onreadystatechange = function() {
@@ -617,7 +636,7 @@ QtObject {
                             windDeg:    parseFloat(h.wind360),
                             humidity:   parseFloat(h.humidity),
                             precipProb: h.pop !== undefined && h.pop !== null ? parseFloat(h.pop) : NaN,
-                            precipMm:   parseFloat(h.precip) || NaN
+                            precipMm:   h.precip !== undefined && h.precip !== null ? parseFloat(h.precip) : NaN
                         });
                     });
                     callback(arr);

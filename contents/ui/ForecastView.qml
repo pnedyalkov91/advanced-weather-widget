@@ -383,6 +383,38 @@ Item {
                         return [];
                     }
 
+                    readonly property string _daySunriseText: {
+                        if (weatherRoot && weatherRoot.dailyData[dataIndex] && weatherRoot.dailyData[dataIndex].sunriseTimeText)
+                            return weatherRoot.dailyData[dataIndex].sunriseTimeText;
+                        return weatherRoot ? weatherRoot.sunriseTimeText : "--";
+                    }
+
+                    readonly property string _daySunsetText: {
+                        if (weatherRoot && weatherRoot.dailyData[dataIndex] && weatherRoot.dailyData[dataIndex].sunsetTimeText)
+                            return weatherRoot.dailyData[dataIndex].sunsetTimeText;
+                        return weatherRoot ? weatherRoot.sunsetTimeText : "--";
+                    }
+
+                    readonly property bool _dayOutsideQWeatherHourlyRange: {
+                        if ((Plasmoid.configuration.weatherProvider || "adaptive") !== "qWeather")
+                            return false;
+                        var ds = (weatherRoot && weatherRoot.dailyData[dataIndex])
+                            ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
+                        if (!ds)
+                            return false;
+                        var parts = ds.split("-");
+                        if (parts.length < 3)
+                            return false;
+                        var year = parseInt(parts[0], 10);
+                        var month = parseInt(parts[1], 10) - 1;
+                        var day = parseInt(parts[2], 10);
+                        if (isNaN(year) || isNaN(month) || isNaN(day))
+                            return false;
+                        var dayStartMs = new Date(year, month, day, 0, 0, 0, 0).getTime();
+                        var hourlyLimitMs = (new Date()).getTime() + 168 * 3600 * 1000;
+                        return dayStartMs >= hourlyLimitMs;
+                    }
+
                     readonly property bool _dayIsLoading: {
                         var dateStr = (weatherRoot && weatherRoot.dailyData[dataIndex])
                             ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
@@ -771,10 +803,15 @@ Item {
                         // Plain loading text for single-expand mode
                         Label {
                             anchors.centerIn: parent
+                            width: parent.width - 24
                             visible: !_dayIsLoading && ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && _dayHourlyData.length === 0
-                            text: i18n("Loading hourly data…")
+                            text: _dayOutsideQWeatherHourlyRange
+                                ? i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.")
+                                : i18n("Loading hourly data…")
                             color: Kirigami.Theme.textColor
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                            wrapMode: Text.Wrap
+                            horizontalAlignment: Text.AlignHCenter
                         }
 
                         // Only instantiate the heavy hourly UI for the expanded day.
@@ -842,8 +879,8 @@ Item {
                                             : _dayHourlyData;
                                         if (!forecastRoot.showSunEvents)
                                             return source;
-                                        var rise = toMins(weatherRoot.sunriseTimeText);
-                                        var set_ = toMins(weatherRoot.sunsetTimeText);
+                                        var rise = toMins(_daySunriseText);
+                                        var set_ = toMins(_daySunsetText);
                                         // Only insert sun markers if they are still in the future (for today)
                                         var riseInserted = rise < 0 || (nowMins >= 0 && rise < nowMins);
                                         var setInserted  = set_  < 0 || (nowMins >= 0 && set_  < nowMins);
@@ -851,11 +888,11 @@ Item {
                                         source.forEach(function(h) {
                                             var hm = toMins(h.hour);
                                             if (!riseInserted && hm >= 0 && hm > rise) {
-                                                result.push({ isSunrise: true, isSunset: false, time: weatherRoot.sunriseTimeText });
+                                                result.push({ isSunrise: true, isSunset: false, time: _daySunriseText });
                                                 riseInserted = true;
                                             }
                                             if (!setInserted && hm >= 0 && hm > set_) {
-                                                result.push({ isSunrise: false, isSunset: true, time: weatherRoot.sunsetTimeText });
+                                                result.push({ isSunrise: false, isSunset: true, time: _daySunsetText });
                                                 setInserted = true;
                                             }
                                             result.push(h);
@@ -942,8 +979,8 @@ Item {
                                                                 if (p2.length >= 2) {
                                                                     var hm2 = parseInt(p2[0],10)*60+parseInt(p2[1],10);
                                                                     function _sm(t) { if (!t||t==="--") return -1; var p=t.split(":"); return p.length<2?-1:parseInt(p[0],10)*60+parseInt(p[1],10); }
-                                                                    var rise2=_sm(weatherRoot?weatherRoot.sunriseTimeText:"--");
-                                                                    var set2=_sm(weatherRoot?weatherRoot.sunsetTimeText:"--");
+                                                                    var rise2=_sm(_daySunriseText);
+                                                                    var set2=_sm(_daySunsetText);
                                                                     if (rise2>=0&&set2>=0) isNight=hm2<rise2||hm2>=set2;
                                                                 }
                                                             }
@@ -1419,13 +1456,13 @@ Item {
                                                     closestIdx = i;
                                                 }
                                             }
-                                            if (forecastRoot.showSunEvents && weatherRoot.sunriseTimeText && weatherRoot.sunsetTimeText) {
+                                            if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
                                                 function toMins(t) {
                                                     if (!t || t === "--") return -1;
                                                     var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
                                                 }
-                                                var rise = toMins(weatherRoot.sunriseTimeText);
-                                                var set_ = toMins(weatherRoot.sunsetTimeText);
+                                                var rise = toMins(_daySunriseText);
+                                                var set_ = toMins(_daySunsetText);
                                                 var targetMins = closestIdx < _dayHourlyData.length ? toMins(_dayHourlyData[closestIdx].hour) : -1;
                                                 if (rise >= 0 && targetMins >= 0 && rise < targetMins) closestIdx++;
                                                 if (set_ >= 0 && targetMins >= 0 && set_ < targetMins) closestIdx++;
@@ -1434,13 +1471,13 @@ Item {
                                             var sunWidth = 70;
                                             var spacing = 6;
                                             var scrollPos = 0;
-                                            if (forecastRoot.showSunEvents && weatherRoot.sunriseTimeText && weatherRoot.sunsetTimeText) {
+                                            if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
                                                 function toMins2(t) {
                                                     if (!t || t === "--") return -1;
                                                     var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
                                                 }
-                                                var rise2 = toMins2(weatherRoot.sunriseTimeText);
-                                                var set2 = toMins2(weatherRoot.sunsetTimeText);
+                                                var rise2 = toMins2(_daySunriseText);
+                                                var set2 = toMins2(_daySunsetText);
                                                 for (var j = 0; j < closestIdx; j++) {
                                                     var hm2 = toMins2(_dayHourlyData[j].hour);
                                                     if (rise2 >= 0 && hm2 > rise2) { scrollPos += sunWidth + spacing; rise2 = -1; }
@@ -1493,19 +1530,19 @@ Item {
                                                 : _dayHourlyData;
                                             if (!forecastRoot.showSunEvents)
                                                 return source;
-                                            var rise = toMins(weatherRoot.sunriseTimeText);
-                                            var set_ = toMins(weatherRoot.sunsetTimeText);
+                                            var rise = toMins(_daySunriseText);
+                                            var set_ = toMins(_daySunsetText);
                                             var riseInserted = rise < 0 || (nowMins >= 0 && rise < nowMins);
                                             var setInserted  = set_  < 0 || (nowMins >= 0 && set_  < nowMins);
                                             var result = [];
                                             source.forEach(function(h) {
                                                 var hm = toMins(h.hour);
                                                 if (!riseInserted && hm >= 0 && hm > rise) {
-                                                    result.push({ isSunrise: true,  isSunset: false, time: weatherRoot.sunriseTimeText });
+                                                    result.push({ isSunrise: true,  isSunset: false, time: _daySunriseText });
                                                     riseInserted = true;
                                                 }
                                                 if (!setInserted && hm >= 0 && hm > set_) {
-                                                    result.push({ isSunset: true,  isSunrise: false, time: weatherRoot.sunsetTimeText });
+                                                    result.push({ isSunset: true,  isSunrise: false, time: _daySunsetText });
                                                     setInserted = true;
                                                 }
                                                 result.push(h);
@@ -1595,8 +1632,8 @@ Item {
                                                                         var p = t.split(":");
                                                                         return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
                                                                     }
-                                                                    var rise = parseSunMins(weatherRoot ? weatherRoot.sunriseTimeText : "--");
-                                                                    var set_ = parseSunMins(weatherRoot ? weatherRoot.sunsetTimeText : "--");
+                                                                    var rise = parseSunMins(_daySunriseText);
+                                                                    var set_ = parseSunMins(_daySunsetText);
                                                                     if (rise >= 0 && set_ >= 0)
                                                                         isNight = hMins < rise || hMins >= set_;
                                                                 }
