@@ -105,7 +105,7 @@ function _calcDewPoint(T, rh) {
 
 function _forecastSpans(days) {
     if (days <= 3) return [3];
-    if (days <= 7) return [7];
+    if (days <= 7) return [7, 3];
     if (days <= 10) return [10, 7, 3];
     if (days <= 15) return [15, 10, 7, 3];
     return [30, 15, 10, 7, 3];
@@ -220,7 +220,7 @@ function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
                         maxC: parseFloat(day.tempMax),
                         minC: parseFloat(day.tempMin),
                         code: _qwCodeToWmo(day.iconDay),
-                        precipMm: parseFloat(day.precip) || 0,
+                        precipMm: (day.precip !== undefined && day.precip !== null) ? parseFloat(day.precip) : NaN,
                         snowCm: 0, // not separated in QWeather daily
                         uvMax: (day.uvIndex !== undefined) ? parseFloat(day.uvIndex) : NaN,
                         precipProb: (day.pop !== undefined) ? parseFloat(day.pop) : NaN,
@@ -343,8 +343,8 @@ function fetchHourly(service, W, dateStr) {
                         humidity: parseFloat(h.humidity),
                         humidityPercent: parseFloat(h.humidity),
                         pressureHpa: parseFloat(h.pressure),
-                        precipMm: parseFloat(h.precip) || 0,
-                        precipMmh: parseFloat(h.precip) || 0,
+                        precipMm: (h.precip !== undefined && h.precip !== null) ? parseFloat(h.precip) : NaN,
+                        precipMmh: (h.precip !== undefined && h.precip !== null) ? parseFloat(h.precip) : NaN,
                         precipProb: (h.pop !== undefined && h.pop !== null) ? parseFloat(h.pop) : NaN,
                         pop: (h.pop !== undefined && h.pop !== null) ? parseFloat(h.pop) : NaN,
                         dewPointC: (h.dew !== undefined && h.dew !== null)
