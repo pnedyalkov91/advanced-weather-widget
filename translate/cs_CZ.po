@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 16:50+0300\n"
+"POT-Creation-Date: 2026-07-04 12:00+0300\n"
 "PO-Revision-Date: 2026-05-06 16:31+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.9\n"
 
-#: contents/ui/DetailsView.qml:3427 contents/ui/DetailsView.qml:3429
+#: contents/ui/DetailsView.qml:3476 contents/ui/DetailsView.qml:3478
 msgid " until dawn"
 msgstr " do svítání"
 
@@ -152,15 +152,15 @@ msgstr "Informace o počasí poháněné umělou inteligencí. Níže je vyžado
 msgid "API key is empty."
 msgstr "Klíč API je prázdný."
 
-#: contents/ui/DetailsView.qml:1088 contents/ui/main.qml:852
+#: contents/ui/DetailsView.qml:1112 contents/ui/main.qml:852
 msgid "AQHI"
 msgstr "AQHI"
 
-#: contents/ui/DetailsView.qml:1088 contents/ui/main.qml:852
+#: contents/ui/DetailsView.qml:1112 contents/ui/main.qml:852
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:1987 contents/ui/js/spaceWeather.js:175
+#: contents/ui/DetailsView.qml:2021 contents/ui/js/spaceWeather.js:175
 msgid "Active"
 msgstr "Aktivní"
 
@@ -190,7 +190,7 @@ msgstr "Odpoledne"
 
 #: contents/ui/config/configAppearance.qml:1399
 #: contents/ui/config/configAppearance.qml:1522
-#: contents/ui/config/configAppearance.qml:1645 contents/ui/DetailsView.qml:316
+#: contents/ui/config/configAppearance.qml:1645 contents/ui/DetailsView.qml:326
 #: contents/ui/SimpleView.qml:266
 msgid "Air Quality"
 msgstr "Kvalita ovzduší"
@@ -234,13 +234,13 @@ msgid "Air quality options"
 msgstr "Možnosti kvality ovzduší"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:653
-#: contents/ui/DetailsView.qml:1402 contents/ui/main.qml:875
+#: contents/ui/DetailsView.qml:1431 contents/ui/main.qml:875
 msgid "Alder"
 msgstr "Olše"
 
 #: contents/ui/config/configAppearance.qml:1420
 #: contents/ui/config/configAppearance.qml:1543
-#: contents/ui/config/configAppearance.qml:1666 contents/ui/DetailsView.qml:319
+#: contents/ui/config/configAppearance.qml:1666 contents/ui/DetailsView.qml:329
 #: contents/ui/SimpleView.qml:269
 msgid "Alerts"
 msgstr "Upozornění"
@@ -321,7 +321,7 @@ msgstr "Použít zjištěnou polohu"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Jste si jistý? Toto je vaše poslední uložená poloha. Pokud ji odstraníte, widget již nebude zobrazovat informace o počasí."
 
-#: contents/ui/DetailsView.qml:3429
+#: contents/ui/DetailsView.qml:3478
 msgid "Around midnight — "
 msgstr "Kolem půlnoci — "
 
@@ -332,7 +332,7 @@ msgid "Atmospheric pressure"
 msgstr "Atmosférický tlak"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:720
-#: contents/ui/DetailsView.qml:1937
+#: contents/ui/DetailsView.qml:1971
 msgid "Aurora Visibility"
 msgstr "Viditelnost polární záře"
 
@@ -421,7 +421,7 @@ msgid "Behavior"
 msgstr "Chování"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:654
-#: contents/ui/DetailsView.qml:1404 contents/ui/main.qml:876
+#: contents/ui/DetailsView.qml:1433 contents/ui/main.qml:876
 msgid "Birch"
 msgstr "Bříza"
 
@@ -466,7 +466,7 @@ msgstr "Odrážka  •"
 msgid "Button guide"
 msgstr "Nápověda tlačítek"
 
-#: contents/ui/DetailsView.qml:1976
+#: contents/ui/DetailsView.qml:2010
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (magnetické pole)"
 
@@ -486,7 +486,7 @@ msgstr "Zrušit"
 msgid "Cancel rename"
 msgstr "Zrušit přejmenování"
 
-#: contents/ui/DetailsView.qml:1213
+#: contents/ui/DetailsView.qml:1237
 msgid "Carbon Monoxide (CO)"
 msgstr "Oxid uhelnatý (CO)"
 
@@ -612,7 +612,7 @@ msgid "Compressed"
 msgstr "Kompaktní"
 
 #: contents/ui/config/configAppearance.qml:1314
-#: contents/ui/config/configAppearance.qml:1575 contents/ui/DetailsView.qml:312
+#: contents/ui/config/configAppearance.qml:1575 contents/ui/DetailsView.qml:322
 msgid "Condition"
 msgstr "Podmínky"
 
@@ -738,7 +738,7 @@ msgstr "Aktualizace dat"
 
 #: contents/ui/config/configAppearance.qml:1434
 #: contents/ui/config/configAppearance.qml:1557
-#: contents/ui/config/configAppearance.qml:1680 contents/ui/DetailsView.qml:321
+#: contents/ui/config/configAppearance.qml:1680 contents/ui/DetailsView.qml:331
 msgid "Date / Time"
 msgstr "Datum / Čas"
 
@@ -766,15 +766,15 @@ msgstr "Datum/Čas:"
 msgid "Date:"
 msgstr "Datum:"
 
-#: contents/ui/DetailsView.qml:3425
+#: contents/ui/DetailsView.qml:3474
 msgid "Dawn approaching — "
 msgstr "Blíží se svítání — "
 
-#: contents/ui/DetailsView.qml:3405
+#: contents/ui/DetailsView.qml:3454
 msgid "Day"
 msgstr "Den"
 
-#: contents/ui/DetailsView.qml:3433
+#: contents/ui/DetailsView.qml:3482
 msgid "Daylight over"
 msgstr "Denní světlo skončilo"
 
@@ -795,12 +795,12 @@ msgstr "Výchozí karta:"
 msgid "Dense drizzle"
 msgstr "Husté mrholení"
 
-#: contents/ui/DetailsView.qml:2287 contents/ui/DetailsView.qml:2289
+#: contents/ui/DetailsView.qml:2326 contents/ui/DetailsView.qml:2328
 msgid "Description"
 msgstr "Popis"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:80
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:560
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:564
 msgid "Details"
 msgstr "Podrobnosti"
 
@@ -825,7 +825,7 @@ msgstr "Pouze podrobnosti"
 msgid "Detect / change location"
 msgstr "Zjistit / změnit polohu"
 
-#: contents/ui/FullView.qml:385
+#: contents/ui/FullView.qml:389
 msgid "Detect / change location…"
 msgstr "Zjistit / změnit polohu…"
 
@@ -833,7 +833,7 @@ msgstr "Zjistit / změnit polohu…"
 msgid "Detecting…"
 msgstr "Detekuje se…"
 
-#: contents/ui/config/configAppearance.qml:1480 contents/ui/DetailsView.qml:309
+#: contents/ui/config/configAppearance.qml:1480 contents/ui/DetailsView.qml:319
 #: contents/ui/SimpleView.qml:261
 msgid "Dew Point"
 msgstr "Rosný bod"
@@ -929,7 +929,7 @@ msgstr "Upravit uloženou polohu"
 msgid "Edit location details"
 msgstr "Upravit podrobnosti o lokalitě"
 
-#: contents/ui/DetailsView.qml:2292
+#: contents/ui/DetailsView.qml:2331
 msgid "Effective"
 msgstr "Účinnost"
 
@@ -1019,7 +1019,7 @@ msgstr "Zadejte svůj Weatherbit API klíč"
 msgid "Error (code %1)"
 msgstr "Chyba (kód %1)"
 
-#: contents/ui/DetailsView.qml:3427
+#: contents/ui/DetailsView.qml:3476
 msgid "Evening — "
 msgstr "Večer — "
 
@@ -1039,7 +1039,7 @@ msgstr "Rozbalte widget pro vyplnění dostupného místa na panelu"
 msgid "Expanded cards height:"
 msgstr "Výška rozbalených karet:"
 
-#: contents/ui/DetailsView.qml:2294
+#: contents/ui/DetailsView.qml:2333
 msgid "Expires"
 msgstr "Vyprší"
 
@@ -1060,11 +1060,11 @@ msgstr "Extrémně špatná"
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: contents/ui/WeatherService.qml:730
+#: contents/ui/WeatherService.qml:755
 msgid "Failed to load weather providers"
 msgstr "Nepodařilo se načíst poskytovatele počasí"
 
-#: contents/ui/WeatherService.qml:718
+#: contents/ui/WeatherService.qml:743
 msgid "Failed: %1"
 msgstr "Selhalo: %1"
 
@@ -1074,7 +1074,7 @@ msgstr "Přiměřená"
 
 #: contents/ui/config/configAppearance.qml:1343
 #: contents/ui/config/configAppearance.qml:1445
-#: contents/ui/config/configAppearance.qml:1582 contents/ui/DetailsView.qml:304
+#: contents/ui/config/configAppearance.qml:1582 contents/ui/DetailsView.qml:314
 #: contents/ui/SimpleView.qml:258
 msgid "Feels Like"
 msgstr "Pocitová"
@@ -1107,7 +1107,7 @@ msgstr "První čtvrť"
 msgid "First day of week:"
 msgstr "První den v týdnu:"
 
-#: contents/ui/DetailsView.qml:2044
+#: contents/ui/DetailsView.qml:2078
 msgid "Flare Warning"
 msgstr "Varování před sluneční erupcí"
 
@@ -1144,7 +1144,7 @@ msgid "Footer:"
 msgstr "Zápatí:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:84
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:561
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:565
 msgid "Forecast"
 msgstr "Předpověď"
 
@@ -1208,7 +1208,7 @@ msgstr "Pátek"
 msgid "Full Moon"
 msgstr "Úplněk"
 
-#: contents/ui/DetailsView.qml:2677
+#: contents/ui/DetailsView.qml:2716
 msgid "Future alerts"
 msgstr "Budoucí upozornění"
 
@@ -1226,7 +1226,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 není k dispozici, zkouším systémovou polohu…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:717
-#: contents/ui/DetailsView.qml:1823
+#: contents/ui/DetailsView.qml:1857
 msgid "Geomagnetic Storm"
 msgstr "Solární bouře"
 
@@ -1243,11 +1243,11 @@ msgid "Good"
 msgstr "Dobrá"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:655
-#: contents/ui/DetailsView.qml:1406 contents/ui/main.qml:877
+#: contents/ui/DetailsView.qml:1435 contents/ui/main.qml:877
 msgid "Grass"
 msgstr "Tráva"
 
-#: contents/ui/DetailsView.qml:2284
+#: contents/ui/DetailsView.qml:2323
 msgid "Headline"
 msgstr "Titulek"
 
@@ -1299,7 +1299,7 @@ msgstr "Skrýt v podrobnostech"
 msgid "Hide prefix icon"
 msgstr "Skrýt ikonu"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:499
+#: contents/ui/DetailsView.qml:1047 contents/ui/FullView.qml:503
 #: contents/ui/js/pollen.js:44 contents/ui/js/spaceWeather.js:187
 #: contents/ui/js/spaceWeather.js:199 contents/ui/main.qml:827
 #: contents/ui/main.qml:871
@@ -1336,7 +1336,7 @@ msgstr "Jak často se řádky posouvají, aby se zobrazila další položka"
 
 #: contents/ui/config/configAppearance.qml:1350
 #: contents/ui/config/configAppearance.qml:1452
-#: contents/ui/config/configAppearance.qml:1596 contents/ui/DetailsView.qml:305
+#: contents/ui/config/configAppearance.qml:1596 contents/ui/DetailsView.qml:315
 #: contents/ui/SimpleView.qml:259
 msgid "Humidity"
 msgstr "Vlhkost"
@@ -1441,7 +1441,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2296
+#: contents/ui/DetailsView.qml:2335
 msgid "Instruction"
 msgstr "Instrukce"
 
@@ -1513,7 +1513,7 @@ msgstr "Ponechat změny provedené v položkách panelu?"
 msgid "Keep the changes you made to Tooltip Items?"
 msgstr "Ponechat změny provedené v položkách tooltipu?"
 
-#: contents/ui/FullView.qml:371
+#: contents/ui/FullView.qml:375
 msgid "Keep widget open"
 msgstr "Ponechat widget otevřený"
 
@@ -1522,7 +1522,7 @@ msgid "Knots (kn)"
 msgstr "Uzly (kn)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:718
-#: contents/ui/DetailsView.qml:1858
+#: contents/ui/DetailsView.qml:1892
 msgid "Kp Index"
 msgstr "Kp index"
 
@@ -1619,15 +1619,15 @@ msgstr "Řádky:"
 msgid "List"
 msgstr "Seznam"
 
-#: contents/ui/DetailsView.qml:543
+#: contents/ui/DetailsView.qml:553
 msgid "Loading details…"
 msgstr "Načítání podrobností…"
 
-#: contents/ui/ForecastView.qml:359
+#: contents/ui/ForecastView.qml:366
 msgid "Loading forecast…"
 msgstr "Načítání předpovědi…"
 
-#: contents/ui/ForecastView.qml:787
+#: contents/ui/ForecastView.qml:829
 msgid "Loading hourly data…"
 msgstr "Načítání hodinových dat…"
 
@@ -1711,7 +1711,7 @@ msgstr "Zeměpisná délka:"
 msgid "Looking up location…"
 msgstr "Hledám polohu…"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:519
+#: contents/ui/DetailsView.qml:1047 contents/ui/FullView.qml:523
 #: contents/ui/js/pollen.js:42 contents/ui/js/spaceWeather.js:189
 #: contents/ui/js/spaceWeather.js:201 contents/ui/main.qml:825
 #: contents/ui/main.qml:869
@@ -1828,7 +1828,7 @@ msgstr "Mírné sněžení"
 msgid "Monday"
 msgstr "Pondělí"
 
-#: contents/ui/DetailsView.qml:311
+#: contents/ui/DetailsView.qml:321
 msgid "Moon"
 msgstr "Měsíc"
 
@@ -1873,8 +1873,8 @@ msgstr "Fáze měsíce, východ a západ měsíce"
 msgid "Moon:"
 msgstr "Měsíc:"
 
-#: contents/ui/DetailsView.qml:3637 contents/ui/DetailsView.qml:3642
-#: contents/ui/DetailsView.qml:3959 contents/ui/DetailsView.qml:3964
+#: contents/ui/DetailsView.qml:3691 contents/ui/DetailsView.qml:3696
+#: contents/ui/DetailsView.qml:4014 contents/ui/DetailsView.qml:4019
 msgid "Moonrise"
 msgstr "Východ měsíce"
 
@@ -1896,7 +1896,7 @@ msgstr "Ikona východu měsíce:"
 msgid "Moonrise only"
 msgstr "Pouze východ měsíce"
 
-#: contents/ui/DetailsView.qml:3635 contents/ui/DetailsView.qml:3957
+#: contents/ui/DetailsView.qml:3689 contents/ui/DetailsView.qml:4012
 msgid "Moonrise/Moonset"
 msgstr "Východ/západ měsíce"
 
@@ -1906,8 +1906,8 @@ msgstr "Východ/západ měsíce"
 msgid "Moonrise:"
 msgstr "Východ měsíce:"
 
-#: contents/ui/DetailsView.qml:3639 contents/ui/DetailsView.qml:3642
-#: contents/ui/DetailsView.qml:3961 contents/ui/DetailsView.qml:3964
+#: contents/ui/DetailsView.qml:3693 contents/ui/DetailsView.qml:3696
+#: contents/ui/DetailsView.qml:4016 contents/ui/DetailsView.qml:4019
 msgid "Moonset"
 msgstr "Západ měsíce"
 
@@ -1937,7 +1937,7 @@ msgid "Most allergy sufferers will experience discomfort."
 msgstr "Většina alergiků pocítí nepohodlí."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:656
-#: contents/ui/DetailsView.qml:1408 contents/ui/main.qml:878
+#: contents/ui/DetailsView.qml:1437 contents/ui/main.qml:878
 msgid "Mugwort"
 msgstr "Pelyněk"
 
@@ -1967,11 +1967,11 @@ msgstr "Chyba sítě"
 msgid "New Moon"
 msgstr "Nov"
 
-#: contents/ui/DetailsView.qml:3402
+#: contents/ui/DetailsView.qml:3451
 msgid "Night"
 msgstr "Noc"
 
-#: contents/ui/DetailsView.qml:1207
+#: contents/ui/DetailsView.qml:1231
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Oxid dusičitý (NO₂)"
 
@@ -1979,11 +1979,11 @@ msgstr "Oxid dusičitý (NO₂)"
 msgid "No"
 msgstr "Ne"
 
-#: contents/ui/DetailsView.qml:543
+#: contents/ui/DetailsView.qml:553
 msgid "No details data"
 msgstr "Žádné podrobnosti"
 
-#: contents/ui/ForecastView.qml:359
+#: contents/ui/ForecastView.qml:366
 msgid "No forecast data"
 msgstr "Žádná předpověď"
 
@@ -1991,16 +1991,16 @@ msgstr "Žádná předpověď"
 msgid "No geomagnetic storm activity."
 msgstr "Žádná aktivita geomagnetické bouře."
 
-#: contents/ui/ForecastView.qml:1229 contents/ui/ForecastView.qml:1233
-#: contents/ui/ForecastView.qml:1681 contents/ui/ForecastView.qml:1685
+#: contents/ui/ForecastView.qml:1273 contents/ui/ForecastView.qml:1277
+#: contents/ui/ForecastView.qml:1738 contents/ui/ForecastView.qml:1742
 msgid "No info"
 msgstr "Žádné informace"
 
-#: contents/ui/ForecastView.qml:598
+#: contents/ui/ForecastView.qml:637
 msgid "No information"
 msgstr "Žádné informace"
 
-#: contents/ui/FullView.qml:212
+#: contents/ui/FullView.qml:216
 msgid "No location set"
 msgstr "Není nastavena poloha"
 
@@ -2025,7 +2025,7 @@ msgstr "Žádné"
 msgid "None Selected"
 msgstr "Žádné vybrané"
 
-#: contents/ui/DetailsView.qml:1028
+#: contents/ui/DetailsView.qml:1047
 msgid "Normal"
 msgstr "Normální"
 
@@ -2083,7 +2083,7 @@ msgid "OK"
 msgstr "OK"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
-#: contents/ui/DetailsView.qml:1410 contents/ui/main.qml:879
+#: contents/ui/DetailsView.qml:1439 contents/ui/main.qml:879
 msgid "Olive"
 msgstr "Olivovník"
 
@@ -2133,7 +2133,7 @@ msgstr "Oranžová"
 msgid "Overcast"
 msgstr "Zataženo"
 
-#: contents/ui/DetailsView.qml:1209
+#: contents/ui/DetailsView.qml:1233
 msgid "Ozone (O₃)"
 msgstr "Ozón (O₃)"
 
@@ -2174,11 +2174,11 @@ msgstr "Nastavení položek panelu"
 msgid "Panel items:"
 msgstr "Položky panelu:"
 
-#: contents/ui/DetailsView.qml:1205
+#: contents/ui/DetailsView.qml:1229
 msgid "Particulate Matter (PM10)"
 msgstr "Částice (PM10)"
 
-#: contents/ui/DetailsView.qml:1203
+#: contents/ui/DetailsView.qml:1227
 msgid "Particulate Matter (PM2.5)"
 msgstr "Částice (PM2.5)"
 
@@ -2240,12 +2240,12 @@ msgstr "Přehrát"
 
 #: contents/ui/config/configAppearance.qml:1406
 #: contents/ui/config/configAppearance.qml:1529
-#: contents/ui/config/configAppearance.qml:1652 contents/ui/DetailsView.qml:317
+#: contents/ui/config/configAppearance.qml:1652 contents/ui/DetailsView.qml:327
 #: contents/ui/SimpleView.qml:267
 msgid "Pollen"
 msgstr "Pyl"
 
-#: contents/ui/DetailsView.qml:1555
+#: contents/ui/DetailsView.qml:1584
 msgid "Pollen data not available for this location."
 msgstr "Pylová data nejsou dostupná pro toto místo."
 
@@ -2280,14 +2280,14 @@ msgstr "Úhrn srážek:"
 
 #: contents/ui/config/configAppearance.qml:1378
 #: contents/ui/config/configAppearance.qml:1501
-#: contents/ui/config/configAppearance.qml:1624 contents/ui/DetailsView.qml:313
+#: contents/ui/config/configAppearance.qml:1624 contents/ui/DetailsView.qml:323
 #: contents/ui/SimpleView.qml:263
 msgid "Precipitation"
 msgstr "Srážky"
 
 #: contents/ui/config/configAppearance.qml:1385
 #: contents/ui/config/configAppearance.qml:1508
-#: contents/ui/config/configAppearance.qml:1631 contents/ui/DetailsView.qml:314
+#: contents/ui/config/configAppearance.qml:1631 contents/ui/DetailsView.qml:324
 msgid "Precipitation Sum"
 msgstr "Úhrn srážek"
 
@@ -2308,7 +2308,7 @@ msgstr "Styl předpony:"
 #: contents/ui/components/RadarWebEngineView.qml:77
 #: contents/ui/config/configAppearance.qml:1357
 #: contents/ui/config/configAppearance.qml:1459
-#: contents/ui/config/configAppearance.qml:1603 contents/ui/DetailsView.qml:306
+#: contents/ui/config/configAppearance.qml:1603 contents/ui/DetailsView.qml:316
 #: contents/ui/SimpleView.qml:260
 msgid "Pressure"
 msgstr "Tlak"
@@ -2331,7 +2331,7 @@ msgstr "Náhled: 20°C"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Primární jednotka zobrazená jako první (např. °C / °F)"
 
-#: contents/ui/DetailsView.qml:2298
+#: contents/ui/DetailsView.qml:2337
 msgid "Provider"
 msgstr "Poskytovatel"
 
@@ -2352,8 +2352,8 @@ msgstr "Dostupnost poskytovatele"
 msgid "Provider website:"
 msgstr "Webová stránka poskytovatele:"
 
-#: contents/ui/config/configGeneral.qml:413 contents/ui/DetailsView.qml:2062
-#: contents/ui/DetailsView.qml:2776
+#: contents/ui/config/configGeneral.qml:413 contents/ui/DetailsView.qml:2096
+#: contents/ui/DetailsView.qml:2815
 msgid "Provider:"
 msgstr "Poskytovatel:"
 
@@ -2387,6 +2387,10 @@ msgstr "QWeather API klíč:"
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Chyba QWeather (kód %1). Zkontrolujte svůj klíč API."
 
+#: contents/ui/ForecastView.qml:828
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
+
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
 msgstr "QtLocation a QtPositioning nejsou nainstalovány"
@@ -2401,7 +2405,7 @@ msgstr "Tiché"
 
 #: contents/ui/components/RadarWebEngineView.qml:72
 #: contents/ui/config/configGeneral.qml:706
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:562
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:566
 msgid "Radar"
 msgstr "Radar"
 
@@ -2413,12 +2417,12 @@ msgstr "Pouze radar"
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "Poskytovatel radaru: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Widget využívá bezplatné API RainViewer, které poskytuje radarová data počasí za poslední 2 hodiny v 10minutových intervalech. Předpověď radaru není podporována.<br/><br/>Rain Viewer nezaručuje dostupnost radarových dat. S vlastníky těchto dat neuzavírá smlouvy. Důvodem je, že vlastníci mohou požádat o odstranění svých dat z Rain Vieweru, změnu formátu nebo zastavení sdílení dat. Snaží se radarová data uchovávat co nejdéle, ale někdy vlastníci jednoduše přestanou poskytovat snímky."
 
-#: contents/ui/FullView.qml:719
+#: contents/ui/FullView.qml:730
 msgid "Radar:"
 msgstr "Radar:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:658
-#: contents/ui/DetailsView.qml:1412 contents/ui/main.qml:880
+#: contents/ui/DetailsView.qml:1441 contents/ui/main.qml:880
 msgid "Ragweed"
 msgstr "Ambrozie"
 
@@ -2461,7 +2465,7 @@ msgstr "Doporučeno — např. 560"
 msgid "Red"
 msgstr "Červená"
 
-#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:408
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:412
 #: contents/ui/main.qml:311
 msgid "Refresh"
 msgstr "Obnovit"
@@ -2613,7 +2617,7 @@ msgstr "Vážné riziko; vyhněte se venkovním aktivitám."
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Nastavit <b>%1</b> jako výchozí místo?"
 
-#: contents/ui/FullView.qml:221
+#: contents/ui/FullView.qml:225
 msgid "Set Location…"
 msgstr "Nastavit místo…"
 
@@ -2818,7 +2822,7 @@ msgstr "Sníh (noc)"
 
 #: contents/ui/config/configAppearance.qml:1427
 #: contents/ui/config/configAppearance.qml:1550
-#: contents/ui/config/configAppearance.qml:1673 contents/ui/DetailsView.qml:320
+#: contents/ui/config/configAppearance.qml:1673 contents/ui/DetailsView.qml:330
 #: contents/ui/SimpleView.qml:270
 msgid "Snow Cover"
 msgstr "Sněhová pokrývka"
@@ -2865,7 +2869,7 @@ msgid "Snow/Ice"
 msgstr "Sníh/Led"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:719
-#: contents/ui/DetailsView.qml:1898
+#: contents/ui/DetailsView.qml:1932
 msgid "Solar Wind"
 msgstr "Solární vítr"
 
@@ -2875,7 +2879,7 @@ msgstr "Vesmír"
 
 #: contents/ui/config/configAppearance.qml:1413
 #: contents/ui/config/configAppearance.qml:1536
-#: contents/ui/config/configAppearance.qml:1659 contents/ui/DetailsView.qml:318
+#: contents/ui/config/configAppearance.qml:1659 contents/ui/DetailsView.qml:328
 #: contents/ui/SimpleView.qml:268
 msgid "Space Weather"
 msgstr "Vesmírné počasí"
@@ -2922,7 +2926,7 @@ msgstr "Silné"
 msgid "Strong geomagnetic storm."
 msgstr "Silná geomagnetická bouře."
 
-#: contents/ui/DetailsView.qml:1211
+#: contents/ui/DetailsView.qml:1235
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "Oxid siřičitý (SO₂)"
 
@@ -2947,9 +2951,9 @@ msgstr "Možnosti slunečních časů"
 msgid "Sunday"
 msgstr "Neděle"
 
-#: contents/ui/DetailsView.qml:3192 contents/ui/DetailsView.qml:3196
-#: contents/ui/DetailsView.qml:3518 contents/ui/DetailsView.qml:3522
-#: contents/ui/ForecastView.qml:1078
+#: contents/ui/DetailsView.qml:3241 contents/ui/DetailsView.qml:3245
+#: contents/ui/DetailsView.qml:3568 contents/ui/DetailsView.qml:3572
+#: contents/ui/ForecastView.qml:1122
 msgid "Sunrise"
 msgstr "Východ slunce"
 
@@ -2977,7 +2981,7 @@ msgstr "Pouze východ slunce 07:17"
 
 #: contents/ui/config/configAppearance.qml:1328
 #: contents/ui/config/configAppearance.qml:1473
-#: contents/ui/config/configAppearance.qml:1610 contents/ui/DetailsView.qml:308
+#: contents/ui/config/configAppearance.qml:1610 contents/ui/DetailsView.qml:318
 msgid "Sunrise/Sunset"
 msgstr "Východ/Západ slunce"
 
@@ -2990,8 +2994,8 @@ msgstr "Značky východu/západu slunce:"
 msgid "Sunrise:"
 msgstr "Východ slunce:"
 
-#: contents/ui/DetailsView.qml:3194 contents/ui/DetailsView.qml:3196
-#: contents/ui/DetailsView.qml:3520 contents/ui/DetailsView.qml:3522
+#: contents/ui/DetailsView.qml:3243 contents/ui/DetailsView.qml:3245
+#: contents/ui/DetailsView.qml:3570 contents/ui/DetailsView.qml:3572
 msgid "Sunset"
 msgstr "Západ slunce"
 
@@ -3018,7 +3022,7 @@ msgstr "Západ slunce:"
 msgid "Swap order:"
 msgstr "Prohodit pořadí:"
 
-#: contents/ui/FullView.qml:324
+#: contents/ui/FullView.qml:328
 msgid "Switch location"
 msgstr "Umístění přepínače"
 
@@ -3212,7 +3216,7 @@ msgstr "Časové pásmo:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "Chcete-li odemknout další vrstvy mapy (déšť, oblačnost, teplota, vítr, tlak): vypněte adaptivní režim, vyberte OpenWeatherMap jako poskytovatele informací o počasí a zadejte výše svůj klíč API. Až budete připraveni, můžete adaptivní režim znovu povolit."
 
-#: contents/ui/ForecastView.qml:457 contents/ui/main.qml:1456
+#: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1456
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Dnes"
@@ -3302,7 +3306,7 @@ msgstr "Zkrátit (jeden řádek)"
 
 #: contents/ui/config/configAppearance.qml:1392
 #: contents/ui/config/configAppearance.qml:1515
-#: contents/ui/config/configAppearance.qml:1638 contents/ui/DetailsView.qml:315
+#: contents/ui/config/configAppearance.qml:1638 contents/ui/DetailsView.qml:325
 #: contents/ui/SimpleView.qml:265
 msgid "UV Index"
 msgstr "UV index"
@@ -3345,7 +3349,7 @@ msgstr "Jednotky"
 
 #: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
-#: contents/ui/FullView.qml:348
+#: contents/ui/FullView.qml:352
 msgid "Unknown"
 msgstr "Neznámá"
 
@@ -3353,7 +3357,7 @@ msgstr "Neznámá"
 msgid "Unknown location"
 msgstr "Neznámá poloha"
 
-#: contents/ui/FullView.qml:371
+#: contents/ui/FullView.qml:375
 msgid "Unpin widget"
 msgstr "Odepnout widget"
 
@@ -3378,15 +3382,15 @@ msgstr "Nadcházející (příští východ nebo západ slunce)"
 msgid "Upcoming rise/set only"
 msgstr "Pouze nadcházející východ/západ"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "Časový limit aktualizace vypršel. Klepnutím to zkuste znovu."
 
-#: contents/ui/WeatherService.qml:683
+#: contents/ui/WeatherService.qml:708
 msgid "Updated %1"
 msgstr "Aktualizováno %1"
 
-#: contents/ui/FullView.qml:392
+#: contents/ui/FullView.qml:396
 msgid "Updating…"
 msgstr "Aktualizuje se…"
 
@@ -3440,7 +3444,7 @@ msgstr "Velmi špatná"
 msgid "Violent rain showers"
 msgstr "Prudké dešťové přeháňky"
 
-#: contents/ui/config/configAppearance.qml:1487 contents/ui/DetailsView.qml:310
+#: contents/ui/config/configAppearance.qml:1487 contents/ui/DetailsView.qml:320
 #: contents/ui/SimpleView.qml:262
 msgid "Visibility"
 msgstr "Dohlednost"
@@ -3526,7 +3530,7 @@ msgstr "Styl ikony počasí:"
 msgid "Weather icon theme:"
 msgstr "Motiv ikony počasí:"
 
-#: contents/ui/WeatherService.qml:683
+#: contents/ui/WeatherService.qml:708
 msgid "Weather provider:"
 msgstr "Poskytovatel počasí:"
 
@@ -3546,7 +3550,7 @@ msgstr "Weatherbit (Vyžadován klíč)"
 msgid "Weatherbit API Key:"
 msgstr "Klíč API Weatherbit:"
 
-#: contents/ui/DetailsView.qml:2300
+#: contents/ui/DetailsView.qml:2339
 msgid "Website"
 msgstr "Webové stránky"
 
@@ -3568,7 +3572,7 @@ msgstr "Oblast panelu widgetu:"
 #: contents/ui/config/configAppearance.qml:1466
 #: contents/ui/config/configAppearance.qml:1589
 #: contents/ui/config/configNotifications.qml:40
-#: contents/ui/DetailsView.qml:307 contents/ui/main.qml:960
+#: contents/ui/DetailsView.qml:317 contents/ui/main.qml:960
 msgid "Wind"
 msgstr "Vítr"
 
@@ -3596,7 +3600,7 @@ msgid "Wrap to next line"
 msgstr "Zalomit na další řádek"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:722
-#: contents/ui/DetailsView.qml:2035
+#: contents/ui/DetailsView.qml:2069
 msgid "X-ray Flare Class"
 msgstr "Třída rentgenové sluneční erupce"
 
@@ -3685,7 +3689,7 @@ msgstr "od %1"
 msgid "ft"
 msgstr "ft"
 
-#: contents/ui/DetailsView.qml:1460 contents/ui/DetailsView.qml:1593
+#: contents/ui/DetailsView.qml:1489 contents/ui/DetailsView.qml:1622
 msgid "grains/m³"
 msgstr ""
 
@@ -3715,7 +3719,7 @@ msgstr ""
 msgid "inHg"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:337 contents/ui/DetailsView.qml:386
+#: contents/ui/DetailsView.qml:347 contents/ui/DetailsView.qml:396
 #: contents/ui/main.qml:799 contents/ui/SimpleView.qml:281
 #: contents/ui/TooltipContent.qml:444
 msgid "km"
@@ -3726,7 +3730,7 @@ msgstr ""
 msgid "km/h"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1904
+#: contents/ui/DetailsView.qml:1938
 msgid "km/s"
 msgstr ""
 
@@ -3735,7 +3739,7 @@ msgstr ""
 msgid "kn"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3433
+#: contents/ui/DetailsView.qml:3482
 msgid "left"
 msgstr "zbývá"
 
@@ -3877,7 +3881,7 @@ msgstr "dnes večer"
 msgid "until %1"
 msgstr "do %1"
 
-#: contents/ui/DetailsView.qml:3430
+#: contents/ui/DetailsView.qml:3479
 msgid "until dawn"
 msgstr "do úsvitu"
 

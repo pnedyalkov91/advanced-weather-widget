@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-03 16:50+0300\n"
+"POT-Creation-Date: 2026-07-04 12:00+0300\n"
 "PO-Revision-Date: 2026-05-26 16:39+0300\n"
 "Last-Translator: Oleksandr Afanasiev\n"
 "Language-Team: Ukrainian\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: contents/ui/DetailsView.qml:3427 contents/ui/DetailsView.qml:3429
+#: contents/ui/DetailsView.qml:3476 contents/ui/DetailsView.qml:3478
 msgid " until dawn"
 msgstr " до світанку"
 
@@ -150,15 +150,15 @@ msgstr "Прогноз погоди на базі ШІ. Нижче потріб�
 msgid "API key is empty."
 msgstr "Ключ API порожній."
 
-#: contents/ui/DetailsView.qml:1088 contents/ui/main.qml:852
+#: contents/ui/DetailsView.qml:1112 contents/ui/main.qml:852
 msgid "AQHI"
 msgstr "AQHI"
 
-#: contents/ui/DetailsView.qml:1088 contents/ui/main.qml:852
+#: contents/ui/DetailsView.qml:1112 contents/ui/main.qml:852
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:1987 contents/ui/js/spaceWeather.js:175
+#: contents/ui/DetailsView.qml:2021 contents/ui/js/spaceWeather.js:175
 msgid "Active"
 msgstr "Активно"
 
@@ -188,7 +188,7 @@ msgstr "День"
 
 #: contents/ui/config/configAppearance.qml:1399
 #: contents/ui/config/configAppearance.qml:1522
-#: contents/ui/config/configAppearance.qml:1645 contents/ui/DetailsView.qml:316
+#: contents/ui/config/configAppearance.qml:1645 contents/ui/DetailsView.qml:326
 #: contents/ui/SimpleView.qml:266
 msgid "Air Quality"
 msgstr "Якість повітря"
@@ -232,13 +232,13 @@ msgid "Air quality options"
 msgstr "Налаштування якості повітря"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:653
-#: contents/ui/DetailsView.qml:1402 contents/ui/main.qml:875
+#: contents/ui/DetailsView.qml:1431 contents/ui/main.qml:875
 msgid "Alder"
 msgstr "Вільха"
 
 #: contents/ui/config/configAppearance.qml:1420
 #: contents/ui/config/configAppearance.qml:1543
-#: contents/ui/config/configAppearance.qml:1666 contents/ui/DetailsView.qml:319
+#: contents/ui/config/configAppearance.qml:1666 contents/ui/DetailsView.qml:329
 #: contents/ui/SimpleView.qml:269
 msgid "Alerts"
 msgstr "Попередження"
@@ -319,7 +319,7 @@ msgstr "Застосувати виявлене розташування"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Ви впевнені? Це ваше останнє збережене розташування. Якщо ви видалите його, віджет більше не показуватиме інформацію про погоду."
 
-#: contents/ui/DetailsView.qml:3429
+#: contents/ui/DetailsView.qml:3478
 msgid "Around midnight — "
 msgstr "Близько півночі — "
 
@@ -330,7 +330,7 @@ msgid "Atmospheric pressure"
 msgstr "Атмосферний тиск"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:720
-#: contents/ui/DetailsView.qml:1937
+#: contents/ui/DetailsView.qml:1971
 msgid "Aurora Visibility"
 msgstr "Видимість полярного сяйва"
 
@@ -419,7 +419,7 @@ msgid "Behavior"
 msgstr "Поведінка"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:654
-#: contents/ui/DetailsView.qml:1404 contents/ui/main.qml:876
+#: contents/ui/DetailsView.qml:1433 contents/ui/main.qml:876
 msgid "Birch"
 msgstr "Береза"
 
@@ -464,7 +464,7 @@ msgstr "Маркер  •"
 msgid "Button guide"
 msgstr "Підказки кнопок"
 
-#: contents/ui/DetailsView.qml:1976
+#: contents/ui/DetailsView.qml:2010
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (Магнітне поле)"
 
@@ -484,7 +484,7 @@ msgstr "Скасувати"
 msgid "Cancel rename"
 msgstr "Скасувати перейменування"
 
-#: contents/ui/DetailsView.qml:1213
+#: contents/ui/DetailsView.qml:1237
 msgid "Carbon Monoxide (CO)"
 msgstr "Чаадний газ (CO)"
 
@@ -610,7 +610,7 @@ msgid "Compressed"
 msgstr "Стиснутий"
 
 #: contents/ui/config/configAppearance.qml:1314
-#: contents/ui/config/configAppearance.qml:1575 contents/ui/DetailsView.qml:312
+#: contents/ui/config/configAppearance.qml:1575 contents/ui/DetailsView.qml:322
 msgid "Condition"
 msgstr "Умови"
 
@@ -736,7 +736,7 @@ msgstr "Оновлення даних"
 
 #: contents/ui/config/configAppearance.qml:1434
 #: contents/ui/config/configAppearance.qml:1557
-#: contents/ui/config/configAppearance.qml:1680 contents/ui/DetailsView.qml:321
+#: contents/ui/config/configAppearance.qml:1680 contents/ui/DetailsView.qml:331
 msgid "Date / Time"
 msgstr "Дата / Час"
 
@@ -764,15 +764,15 @@ msgstr "Дата/Час:"
 msgid "Date:"
 msgstr "Дата:"
 
-#: contents/ui/DetailsView.qml:3425
+#: contents/ui/DetailsView.qml:3474
 msgid "Dawn approaching — "
 msgstr "Наближається світанок — "
 
-#: contents/ui/DetailsView.qml:3405
+#: contents/ui/DetailsView.qml:3454
 msgid "Day"
 msgstr "День"
 
-#: contents/ui/DetailsView.qml:3433
+#: contents/ui/DetailsView.qml:3482
 msgid "Daylight over"
 msgstr "Світловий день завершився"
 
@@ -793,12 +793,12 @@ msgstr "Типова вкладка:"
 msgid "Dense drizzle"
 msgstr "Густа мряка"
 
-#: contents/ui/DetailsView.qml:2287 contents/ui/DetailsView.qml:2289
+#: contents/ui/DetailsView.qml:2326 contents/ui/DetailsView.qml:2328
 msgid "Description"
 msgstr "Опис"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:80
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:560
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:174 contents/ui/FullView.qml:564
 msgid "Details"
 msgstr "Деталі"
 
@@ -823,7 +823,7 @@ msgstr "Тільки деталі"
 msgid "Detect / change location"
 msgstr "Визначити / змінити розташування"
 
-#: contents/ui/FullView.qml:385
+#: contents/ui/FullView.qml:389
 msgid "Detect / change location…"
 msgstr "Визначити / змінити розташування…"
 
@@ -831,7 +831,7 @@ msgstr "Визначити / змінити розташування…"
 msgid "Detecting…"
 msgstr "Визначення…"
 
-#: contents/ui/config/configAppearance.qml:1480 contents/ui/DetailsView.qml:309
+#: contents/ui/config/configAppearance.qml:1480 contents/ui/DetailsView.qml:319
 #: contents/ui/SimpleView.qml:261
 msgid "Dew Point"
 msgstr "Точка роси"
@@ -927,7 +927,7 @@ msgstr "Редагувати збережене розташування"
 msgid "Edit location details"
 msgstr "Редагувати деталі розташування"
 
-#: contents/ui/DetailsView.qml:2292
+#: contents/ui/DetailsView.qml:2331
 msgid "Effective"
 msgstr "Набирає чинності"
 
@@ -1017,7 +1017,7 @@ msgstr "Введіть ваш ключ API Weatherbit"
 msgid "Error (code %1)"
 msgstr "Помилка (код %1)"
 
-#: contents/ui/DetailsView.qml:3427
+#: contents/ui/DetailsView.qml:3476
 msgid "Evening — "
 msgstr "Вечір — "
 
@@ -1037,7 +1037,7 @@ msgstr "Розширити віджет, щоб заповнити доступ�
 msgid "Expanded cards height:"
 msgstr "Висота розгорнутих карток:"
 
-#: contents/ui/DetailsView.qml:2294
+#: contents/ui/DetailsView.qml:2333
 msgid "Expires"
 msgstr "Закінчується"
 
@@ -1058,11 +1058,11 @@ msgstr "Вкрай погана"
 msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
 
-#: contents/ui/WeatherService.qml:730
+#: contents/ui/WeatherService.qml:755
 msgid "Failed to load weather providers"
 msgstr "Не вдалося завантажити постачальників погоди"
 
-#: contents/ui/WeatherService.qml:718
+#: contents/ui/WeatherService.qml:743
 msgid "Failed: %1"
 msgstr "Помилка: %1"
 
@@ -1072,7 +1072,7 @@ msgstr "Справедлива"
 
 #: contents/ui/config/configAppearance.qml:1343
 #: contents/ui/config/configAppearance.qml:1445
-#: contents/ui/config/configAppearance.qml:1582 contents/ui/DetailsView.qml:304
+#: contents/ui/config/configAppearance.qml:1582 contents/ui/DetailsView.qml:314
 #: contents/ui/SimpleView.qml:258
 msgid "Feels Like"
 msgstr "Відчувається як"
@@ -1105,7 +1105,7 @@ msgstr "Перша чверть"
 msgid "First day of week:"
 msgstr "Перший день тижня:"
 
-#: contents/ui/DetailsView.qml:2044
+#: contents/ui/DetailsView.qml:2078
 msgid "Flare Warning"
 msgstr "Попередження про спалахи"
 
@@ -1142,7 +1142,7 @@ msgid "Footer:"
 msgstr "Нижній колонтитул:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:84
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:561
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:565
 msgid "Forecast"
 msgstr "Прогноз"
 
@@ -1206,7 +1206,7 @@ msgstr "П'ятниця"
 msgid "Full Moon"
 msgstr "Повний місяць"
 
-#: contents/ui/DetailsView.qml:2677
+#: contents/ui/DetailsView.qml:2716
 msgid "Future alerts"
 msgstr "Майбутні попередження"
 
@@ -1224,7 +1224,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 недоступна, спроба отримати системне розташування…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:717
-#: contents/ui/DetailsView.qml:1823
+#: contents/ui/DetailsView.qml:1857
 msgid "Geomagnetic Storm"
 msgstr "Геомагнітна буря"
 
@@ -1241,11 +1241,11 @@ msgid "Good"
 msgstr "Добра"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:655
-#: contents/ui/DetailsView.qml:1406 contents/ui/main.qml:877
+#: contents/ui/DetailsView.qml:1435 contents/ui/main.qml:877
 msgid "Grass"
 msgstr "Трава"
 
-#: contents/ui/DetailsView.qml:2284
+#: contents/ui/DetailsView.qml:2323
 msgid "Headline"
 msgstr "Заголовок"
 
@@ -1297,7 +1297,7 @@ msgstr "Приховати з деталей"
 msgid "Hide prefix icon"
 msgstr "Приховати значок префікса"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:499
+#: contents/ui/DetailsView.qml:1047 contents/ui/FullView.qml:503
 #: contents/ui/js/pollen.js:44 contents/ui/js/spaceWeather.js:187
 #: contents/ui/js/spaceWeather.js:199 contents/ui/main.qml:827
 #: contents/ui/main.qml:871
@@ -1334,7 +1334,7 @@ msgstr "Як часто прокручуються рядки для відоб�
 
 #: contents/ui/config/configAppearance.qml:1350
 #: contents/ui/config/configAppearance.qml:1452
-#: contents/ui/config/configAppearance.qml:1596 contents/ui/DetailsView.qml:305
+#: contents/ui/config/configAppearance.qml:1596 contents/ui/DetailsView.qml:315
 #: contents/ui/SimpleView.qml:259
 msgid "Humidity"
 msgstr "Вологість"
@@ -1439,7 +1439,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2296
+#: contents/ui/DetailsView.qml:2335
 msgid "Instruction"
 msgstr "Інструкція"
 
@@ -1511,7 +1511,7 @@ msgstr "Зберегти зміни, внесені до Елементів па
 msgid "Keep the changes you made to Tooltip Items?"
 msgstr "Зберегти зміни, внесені до Елементів підказки?"
 
-#: contents/ui/FullView.qml:371
+#: contents/ui/FullView.qml:375
 msgid "Keep widget open"
 msgstr "Тримати віджет відкритим"
 
@@ -1520,7 +1520,7 @@ msgid "Knots (kn)"
 msgstr "Вузли (вуз)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:718
-#: contents/ui/DetailsView.qml:1858
+#: contents/ui/DetailsView.qml:1892
 msgid "Kp Index"
 msgstr "Kp індекс"
 
@@ -1617,15 +1617,15 @@ msgstr "Рядки:"
 msgid "List"
 msgstr "Список"
 
-#: contents/ui/DetailsView.qml:543
+#: contents/ui/DetailsView.qml:553
 msgid "Loading details…"
 msgstr "Завантаження деталей…"
 
-#: contents/ui/ForecastView.qml:359
+#: contents/ui/ForecastView.qml:366
 msgid "Loading forecast…"
 msgstr "Завантаження прогнозу…"
 
-#: contents/ui/ForecastView.qml:787
+#: contents/ui/ForecastView.qml:829
 msgid "Loading hourly data…"
 msgstr "Завантаження погодинних даних…"
 
@@ -1709,7 +1709,7 @@ msgstr "Довгота:"
 msgid "Looking up location…"
 msgstr "Пошук розташування…"
 
-#: contents/ui/DetailsView.qml:1028 contents/ui/FullView.qml:519
+#: contents/ui/DetailsView.qml:1047 contents/ui/FullView.qml:523
 #: contents/ui/js/pollen.js:42 contents/ui/js/spaceWeather.js:189
 #: contents/ui/js/spaceWeather.js:201 contents/ui/main.qml:825
 #: contents/ui/main.qml:869
@@ -1826,7 +1826,7 @@ msgstr "Помірний снігопад"
 msgid "Monday"
 msgstr "Понеділок"
 
-#: contents/ui/DetailsView.qml:311
+#: contents/ui/DetailsView.qml:321
 msgid "Moon"
 msgstr "Місяць"
 
@@ -1871,8 +1871,8 @@ msgstr "Фаза місяця, схід і захід місяця"
 msgid "Moon:"
 msgstr "Місяць:"
 
-#: contents/ui/DetailsView.qml:3637 contents/ui/DetailsView.qml:3642
-#: contents/ui/DetailsView.qml:3959 contents/ui/DetailsView.qml:3964
+#: contents/ui/DetailsView.qml:3691 contents/ui/DetailsView.qml:3696
+#: contents/ui/DetailsView.qml:4014 contents/ui/DetailsView.qml:4019
 msgid "Moonrise"
 msgstr "Схід місяця"
 
@@ -1894,7 +1894,7 @@ msgstr "Значок сходу місяця:"
 msgid "Moonrise only"
 msgstr "Лише схід місяця"
 
-#: contents/ui/DetailsView.qml:3635 contents/ui/DetailsView.qml:3957
+#: contents/ui/DetailsView.qml:3689 contents/ui/DetailsView.qml:4012
 msgid "Moonrise/Moonset"
 msgstr "Схід/Захід місяця"
 
@@ -1904,8 +1904,8 @@ msgstr "Схід/Захід місяця"
 msgid "Moonrise:"
 msgstr "Схід місяця:"
 
-#: contents/ui/DetailsView.qml:3639 contents/ui/DetailsView.qml:3642
-#: contents/ui/DetailsView.qml:3961 contents/ui/DetailsView.qml:3964
+#: contents/ui/DetailsView.qml:3693 contents/ui/DetailsView.qml:3696
+#: contents/ui/DetailsView.qml:4016 contents/ui/DetailsView.qml:4019
 msgid "Moonset"
 msgstr "Захід місяця"
 
@@ -1935,7 +1935,7 @@ msgid "Most allergy sufferers will experience discomfort."
 msgstr "Більшість алергіків відчуватиме дискомфорт."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:656
-#: contents/ui/DetailsView.qml:1408 contents/ui/main.qml:878
+#: contents/ui/DetailsView.qml:1437 contents/ui/main.qml:878
 msgid "Mugwort"
 msgstr "Полин"
 
@@ -1965,11 +1965,11 @@ msgstr "Помилка мережі"
 msgid "New Moon"
 msgstr "Молодик"
 
-#: contents/ui/DetailsView.qml:3402
+#: contents/ui/DetailsView.qml:3451
 msgid "Night"
 msgstr "Ніч"
 
-#: contents/ui/DetailsView.qml:1207
+#: contents/ui/DetailsView.qml:1231
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Діоксид азоту (NO₂)"
 
@@ -1977,11 +1977,11 @@ msgstr "Діоксид азоту (NO₂)"
 msgid "No"
 msgstr "Ні"
 
-#: contents/ui/DetailsView.qml:543
+#: contents/ui/DetailsView.qml:553
 msgid "No details data"
 msgstr "Немає даних деталей"
 
-#: contents/ui/ForecastView.qml:359
+#: contents/ui/ForecastView.qml:366
 msgid "No forecast data"
 msgstr "Немає даних прогнозу"
 
@@ -1989,16 +1989,16 @@ msgstr "Немає даних прогнозу"
 msgid "No geomagnetic storm activity."
 msgstr "Немає активності геомагнітних бур."
 
-#: contents/ui/ForecastView.qml:1229 contents/ui/ForecastView.qml:1233
-#: contents/ui/ForecastView.qml:1681 contents/ui/ForecastView.qml:1685
+#: contents/ui/ForecastView.qml:1273 contents/ui/ForecastView.qml:1277
+#: contents/ui/ForecastView.qml:1738 contents/ui/ForecastView.qml:1742
 msgid "No info"
 msgstr "Немає інформації"
 
-#: contents/ui/ForecastView.qml:598
+#: contents/ui/ForecastView.qml:637
 msgid "No information"
 msgstr "Немає інформації"
 
-#: contents/ui/FullView.qml:212
+#: contents/ui/FullView.qml:216
 msgid "No location set"
 msgstr "Розташування не встановлено"
 
@@ -2023,7 +2023,7 @@ msgstr "Немає"
 msgid "None Selected"
 msgstr "Нічого не вибрано"
 
-#: contents/ui/DetailsView.qml:1028
+#: contents/ui/DetailsView.qml:1047
 msgid "Normal"
 msgstr "Нормальна"
 
@@ -2081,7 +2081,7 @@ msgid "OK"
 msgstr "ОК"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
-#: contents/ui/DetailsView.qml:1410 contents/ui/main.qml:879
+#: contents/ui/DetailsView.qml:1439 contents/ui/main.qml:879
 msgid "Olive"
 msgstr "Олива"
 
@@ -2131,7 +2131,7 @@ msgstr "Оранжевий"
 msgid "Overcast"
 msgstr "Хмарно"
 
-#: contents/ui/DetailsView.qml:1209
+#: contents/ui/DetailsView.qml:1233
 msgid "Ozone (O₃)"
 msgstr "Озон (O₃)"
 
@@ -2172,11 +2172,11 @@ msgstr "Налаштування елементів панелі"
 msgid "Panel items:"
 msgstr "Елементи панелі:"
 
-#: contents/ui/DetailsView.qml:1205
+#: contents/ui/DetailsView.qml:1229
 msgid "Particulate Matter (PM10)"
 msgstr "Тверді частинки (PM10)"
 
-#: contents/ui/DetailsView.qml:1203
+#: contents/ui/DetailsView.qml:1227
 msgid "Particulate Matter (PM2.5)"
 msgstr "Тверді частинки (PM2.5)"
 
@@ -2238,12 +2238,12 @@ msgstr "Відтворити"
 
 #: contents/ui/config/configAppearance.qml:1406
 #: contents/ui/config/configAppearance.qml:1529
-#: contents/ui/config/configAppearance.qml:1652 contents/ui/DetailsView.qml:317
+#: contents/ui/config/configAppearance.qml:1652 contents/ui/DetailsView.qml:327
 #: contents/ui/SimpleView.qml:267
 msgid "Pollen"
 msgstr "Пилок"
 
-#: contents/ui/DetailsView.qml:1555
+#: contents/ui/DetailsView.qml:1584
 msgid "Pollen data not available for this location."
 msgstr "Дані про пилок недоступні для цього розташування."
 
@@ -2278,14 +2278,14 @@ msgstr "Сума опадів:"
 
 #: contents/ui/config/configAppearance.qml:1378
 #: contents/ui/config/configAppearance.qml:1501
-#: contents/ui/config/configAppearance.qml:1624 contents/ui/DetailsView.qml:313
+#: contents/ui/config/configAppearance.qml:1624 contents/ui/DetailsView.qml:323
 #: contents/ui/SimpleView.qml:263
 msgid "Precipitation"
 msgstr "Опади"
 
 #: contents/ui/config/configAppearance.qml:1385
 #: contents/ui/config/configAppearance.qml:1508
-#: contents/ui/config/configAppearance.qml:1631 contents/ui/DetailsView.qml:314
+#: contents/ui/config/configAppearance.qml:1631 contents/ui/DetailsView.qml:324
 msgid "Precipitation Sum"
 msgstr "Кількість опадів"
 
@@ -2306,7 +2306,7 @@ msgstr "Стиль префікса:"
 #: contents/ui/components/RadarWebEngineView.qml:77
 #: contents/ui/config/configAppearance.qml:1357
 #: contents/ui/config/configAppearance.qml:1459
-#: contents/ui/config/configAppearance.qml:1603 contents/ui/DetailsView.qml:306
+#: contents/ui/config/configAppearance.qml:1603 contents/ui/DetailsView.qml:316
 #: contents/ui/SimpleView.qml:260
 msgid "Pressure"
 msgstr "Тиск"
@@ -2329,7 +2329,7 @@ msgstr "Попередній перегляд: 20°C"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Спочатку основна одиниця (напр. °C / °F)"
 
-#: contents/ui/DetailsView.qml:2298
+#: contents/ui/DetailsView.qml:2337
 msgid "Provider"
 msgstr "Провайдер"
 
@@ -2350,8 +2350,8 @@ msgstr "Доступність провайдера"
 msgid "Provider website:"
 msgstr "Сайт провайдера:"
 
-#: contents/ui/config/configGeneral.qml:413 contents/ui/DetailsView.qml:2062
-#: contents/ui/DetailsView.qml:2776
+#: contents/ui/config/configGeneral.qml:413 contents/ui/DetailsView.qml:2096
+#: contents/ui/DetailsView.qml:2815
 msgid "Provider:"
 msgstr "Провайдер:"
 
@@ -2385,6 +2385,10 @@ msgstr "Ключ API QWeather:"
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Помилка QWeather (код %1). Перевірте ваш ключ API."
 
+#: contents/ui/ForecastView.qml:828
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr ""
+
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
 msgstr "QtLocation та QtPositioning не встановлено"
@@ -2399,7 +2403,7 @@ msgstr "Спокійно"
 
 #: contents/ui/components/RadarWebEngineView.qml:72
 #: contents/ui/config/configGeneral.qml:706
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:562
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:566
 msgid "Radar"
 msgstr "Радар"
 
@@ -2411,12 +2415,12 @@ msgstr "Лише радар"
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "Провайдер радара: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Віджет використовує безкоштовний API RainViewer, який надає дані погодного радара за останні 2 години з 10-хвилинними інтервалами. Прогноз радара не підтримується.<br/><br/>Rain Viewer не гарантує доступність даних радара. Вони не укладають контракти з власниками цих даних. Причина в тому, що власники можуть попросити їх видалити дані з Rain Viewer, змінити формат або припинити їх обмін. Вони намагаються зберігати дані радара якомога довше, але іноді власники просто припиняють надання зображень."
 
-#: contents/ui/FullView.qml:719
+#: contents/ui/FullView.qml:730
 msgid "Radar:"
 msgstr "Радар:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:658
-#: contents/ui/DetailsView.qml:1412 contents/ui/main.qml:880
+#: contents/ui/DetailsView.qml:1441 contents/ui/main.qml:880
 msgid "Ragweed"
 msgstr "Амброзія"
 
@@ -2459,7 +2463,7 @@ msgstr "Рекомендовано — напр. 560"
 msgid "Red"
 msgstr "Червоний"
 
-#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:408
+#: contents/ui/config/configLocation.qml:1533 contents/ui/FullView.qml:412
 #: contents/ui/main.qml:311
 msgid "Refresh"
 msgstr "Оновити"
@@ -2611,7 +2615,7 @@ msgstr "Серйозний ризик; уникайте діяльності н�
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Встановити <b>%1</b> як ваше типове розташування?"
 
-#: contents/ui/FullView.qml:221
+#: contents/ui/FullView.qml:225
 msgid "Set Location…"
 msgstr "Встановити розташування…"
 
@@ -2816,7 +2820,7 @@ msgstr "Сніг (ніч)"
 
 #: contents/ui/config/configAppearance.qml:1427
 #: contents/ui/config/configAppearance.qml:1550
-#: contents/ui/config/configAppearance.qml:1673 contents/ui/DetailsView.qml:320
+#: contents/ui/config/configAppearance.qml:1673 contents/ui/DetailsView.qml:330
 #: contents/ui/SimpleView.qml:270
 msgid "Snow Cover"
 msgstr "Сніговий покрив"
@@ -2863,7 +2867,7 @@ msgid "Snow/Ice"
 msgstr "Сніг/Лід"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:719
-#: contents/ui/DetailsView.qml:1898
+#: contents/ui/DetailsView.qml:1932
 msgid "Solar Wind"
 msgstr "Сонячний вітер"
 
@@ -2873,7 +2877,7 @@ msgstr "Пробіл"
 
 #: contents/ui/config/configAppearance.qml:1413
 #: contents/ui/config/configAppearance.qml:1536
-#: contents/ui/config/configAppearance.qml:1659 contents/ui/DetailsView.qml:318
+#: contents/ui/config/configAppearance.qml:1659 contents/ui/DetailsView.qml:328
 #: contents/ui/SimpleView.qml:268
 msgid "Space Weather"
 msgstr "Космічна погода"
@@ -2920,7 +2924,7 @@ msgstr "Сильний"
 msgid "Strong geomagnetic storm."
 msgstr "Сильна геомагнітна буря."
 
-#: contents/ui/DetailsView.qml:1211
+#: contents/ui/DetailsView.qml:1235
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "Діоксид сірки (SO₂)"
 
@@ -2945,9 +2949,9 @@ msgstr "Налаштування часу сонця"
 msgid "Sunday"
 msgstr "Неділя"
 
-#: contents/ui/DetailsView.qml:3192 contents/ui/DetailsView.qml:3196
-#: contents/ui/DetailsView.qml:3518 contents/ui/DetailsView.qml:3522
-#: contents/ui/ForecastView.qml:1078
+#: contents/ui/DetailsView.qml:3241 contents/ui/DetailsView.qml:3245
+#: contents/ui/DetailsView.qml:3568 contents/ui/DetailsView.qml:3572
+#: contents/ui/ForecastView.qml:1122
 msgid "Sunrise"
 msgstr "Схід"
 
@@ -2975,7 +2979,7 @@ msgstr "Лише схід  07:17"
 
 #: contents/ui/config/configAppearance.qml:1328
 #: contents/ui/config/configAppearance.qml:1473
-#: contents/ui/config/configAppearance.qml:1610 contents/ui/DetailsView.qml:308
+#: contents/ui/config/configAppearance.qml:1610 contents/ui/DetailsView.qml:318
 msgid "Sunrise/Sunset"
 msgstr "Схід/Захід"
 
@@ -2988,8 +2992,8 @@ msgstr "Маркери сходу/заходу:"
 msgid "Sunrise:"
 msgstr "Схід сонця:"
 
-#: contents/ui/DetailsView.qml:3194 contents/ui/DetailsView.qml:3196
-#: contents/ui/DetailsView.qml:3520 contents/ui/DetailsView.qml:3522
+#: contents/ui/DetailsView.qml:3243 contents/ui/DetailsView.qml:3245
+#: contents/ui/DetailsView.qml:3570 contents/ui/DetailsView.qml:3572
 msgid "Sunset"
 msgstr "Захід"
 
@@ -3016,7 +3020,7 @@ msgstr "Захід сонця:"
 msgid "Swap order:"
 msgstr "Поміняти місцями:"
 
-#: contents/ui/FullView.qml:324
+#: contents/ui/FullView.qml:328
 msgid "Switch location"
 msgstr "Змінити розташування"
 
@@ -3210,7 +3214,7 @@ msgstr "Часовий пояс:"
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "Щоб розблокувати додаткові шари карти (Дощ, Хмари, Температура, Вітер, Тиск): вимкніть Адаптивний режим, виберіть OpenWeatherMap своїм провайдером погоди і введіть ключ API вище. Коли будете готові, можете знову увімкнути Адаптивний режим."
 
-#: contents/ui/ForecastView.qml:457 contents/ui/main.qml:1456
+#: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1456
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Сьогодні"
@@ -3300,7 +3304,7 @@ msgstr "Обрізати (один рядок)"
 
 #: contents/ui/config/configAppearance.qml:1392
 #: contents/ui/config/configAppearance.qml:1515
-#: contents/ui/config/configAppearance.qml:1638 contents/ui/DetailsView.qml:315
+#: contents/ui/config/configAppearance.qml:1638 contents/ui/DetailsView.qml:325
 #: contents/ui/SimpleView.qml:265
 msgid "UV Index"
 msgstr "УФ-індекс"
@@ -3343,7 +3347,7 @@ msgstr "Одиниці"
 
 #: contents/ui/config/configLocation.qml:1753
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
-#: contents/ui/FullView.qml:348
+#: contents/ui/FullView.qml:352
 msgid "Unknown"
 msgstr "Невідомо"
 
@@ -3351,7 +3355,7 @@ msgstr "Невідомо"
 msgid "Unknown location"
 msgstr "Невідоме розташування"
 
-#: contents/ui/FullView.qml:371
+#: contents/ui/FullView.qml:375
 msgid "Unpin widget"
 msgstr "Відкріпити віджет"
 
@@ -3376,15 +3380,15 @@ msgstr "Майбутнє (наступний схід або захід)"
 msgid "Upcoming rise/set only"
 msgstr "Лише майбутній схід/захід"
 
-#: contents/ui/WeatherService.qml:134
+#: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
 msgstr "Час оновлення вийшов. Натисніть, щоб повторити."
 
-#: contents/ui/WeatherService.qml:683
+#: contents/ui/WeatherService.qml:708
 msgid "Updated %1"
 msgstr "Оновлено %1"
 
-#: contents/ui/FullView.qml:392
+#: contents/ui/FullView.qml:396
 msgid "Updating…"
 msgstr "Оновлення…"
 
@@ -3438,7 +3442,7 @@ msgstr "Дуже погана"
 msgid "Violent rain showers"
 msgstr "Сильні дощові зливи"
 
-#: contents/ui/config/configAppearance.qml:1487 contents/ui/DetailsView.qml:310
+#: contents/ui/config/configAppearance.qml:1487 contents/ui/DetailsView.qml:320
 #: contents/ui/SimpleView.qml:262
 msgid "Visibility"
 msgstr "Видимість"
@@ -3524,7 +3528,7 @@ msgstr "Стиль значка погоди:"
 msgid "Weather icon theme:"
 msgstr "Тема значків погоди:"
 
-#: contents/ui/WeatherService.qml:683
+#: contents/ui/WeatherService.qml:708
 msgid "Weather provider:"
 msgstr "Провайдер погоди:"
 
@@ -3544,7 +3548,7 @@ msgstr "Weatherbit (Потрібен ключ)"
 msgid "Weatherbit API Key:"
 msgstr "Ключ API Weatherbit:"
 
-#: contents/ui/DetailsView.qml:2300
+#: contents/ui/DetailsView.qml:2339
 msgid "Website"
 msgstr "Сайт"
 
@@ -3566,7 +3570,7 @@ msgstr "Область панелі віджета:"
 #: contents/ui/config/configAppearance.qml:1466
 #: contents/ui/config/configAppearance.qml:1589
 #: contents/ui/config/configNotifications.qml:40
-#: contents/ui/DetailsView.qml:307 contents/ui/main.qml:960
+#: contents/ui/DetailsView.qml:317 contents/ui/main.qml:960
 msgid "Wind"
 msgstr "Вітер"
 
@@ -3594,7 +3598,7 @@ msgid "Wrap to next line"
 msgstr "Перенести на наступний рядок"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:722
-#: contents/ui/DetailsView.qml:2035
+#: contents/ui/DetailsView.qml:2069
 msgid "X-ray Flare Class"
 msgstr "Клас рентгенівського спалаху"
 
@@ -3683,7 +3687,7 @@ msgstr "від %1"
 msgid "ft"
 msgstr "фут"
 
-#: contents/ui/DetailsView.qml:1460 contents/ui/DetailsView.qml:1593
+#: contents/ui/DetailsView.qml:1489 contents/ui/DetailsView.qml:1622
 msgid "grains/m³"
 msgstr ""
 
@@ -3713,7 +3717,7 @@ msgstr ""
 msgid "inHg"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:337 contents/ui/DetailsView.qml:386
+#: contents/ui/DetailsView.qml:347 contents/ui/DetailsView.qml:396
 #: contents/ui/main.qml:799 contents/ui/SimpleView.qml:281
 #: contents/ui/TooltipContent.qml:444
 msgid "km"
@@ -3724,7 +3728,7 @@ msgstr ""
 msgid "km/h"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1904
+#: contents/ui/DetailsView.qml:1938
 msgid "km/s"
 msgstr ""
 
@@ -3733,7 +3737,7 @@ msgstr ""
 msgid "kn"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3433
+#: contents/ui/DetailsView.qml:3482
 msgid "left"
 msgstr "залишилось"
 
@@ -3875,7 +3879,7 @@ msgstr "сьогодні вночі"
 msgid "until %1"
 msgstr "до %1"
 
-#: contents/ui/DetailsView.qml:3430
+#: contents/ui/DetailsView.qml:3479
 msgid "until dawn"
 msgstr "до світанку"
 
