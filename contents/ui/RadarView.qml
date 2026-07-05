@@ -28,7 +28,10 @@ Item {
 
     readonly property double lat: Plasmoid.configuration.latitude || 0
     readonly property double lon: Plasmoid.configuration.longitude || 0
+    readonly property string radarProvider: Plasmoid.configuration.radarProvider || "rainviewer"
     readonly property string externalRadarUrl: {
+        if (radarProvider === "librewxr")
+            return "https://librewxr.net/examples/";
         if (!lat || !lon)
             return "https://www.rainviewer.com/map.html";
         return "https://www.rainviewer.com/map.html?loc=" + lat + "," + lon + "," + (Plasmoid.configuration.radarZoom || 9);
@@ -71,7 +74,9 @@ Item {
         id: radarLoader
         anchors.fill: parent
         active: radarRoot.visible && radarRoot.loadEmbeddedRadar
-        source: Qt.resolvedUrl("components/RadarWebEngineView.qml")
+        source: radarRoot.radarProvider === "librewxr"
+            ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml")
+            : Qt.resolvedUrl("components/RadarWebEngineView.qml")
         // Load synchronously: QtWebEngine has GUI-thread requirements during
         // init and is historically fragile when created via an async Loader,
         // so for this crash-sensitive component we prefer the conventional

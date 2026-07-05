@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LibreWXR Radar</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <!--
+      Adapted from the official LibreWXR Leaflet example
+      (https://librewxr.net/examples/leaflet) for the Advanced Weather Widget.
+      Configuration is passed via URL query parameters; the QML side drives
+      layer mode / color scheme / arrows / theme through window.* functions.
+    -->
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        /* === THEME VARIABLES === */
+        [data-theme="dark"] {
+            --bg: #0f1117;
+            --replayer-bg: #1a1c28;
+            --toolbar-border: #2a2d3a;
+            --text: #e0e0e0;
+            --text-secondary: #9ca3af;
+            --text-dim: #6b7280;
+            --accent: #4ea8de;
+            --accent-hover: #5bb8ee;
+            --scrubber-rail: #3a3d4a;
+            --scrubber-nowcast: repeating-linear-gradient(90deg, #2a5a7a 0px, #2a5a7a 4px, #1a3a4a 4px, #1a3a4a 8px);
+            --btn-bg: rgba(22,24,34,0.92);
+            --btn-border: #2a2d3a;
+            --btn-hover: #2a2d3a;
+        }
+        [data-theme="light"] {
+            --bg: #f0f2f5;
+            --replayer-bg: #f8f9fa;
+            --toolbar-border: #e0e0e0;
+            --text: #333;
+            --text-secondary: #666;
+            --text-dim: #999;
+            --accent: #0077cc;
+            --accent-hover: #0088dd;
+            --scrubber-rail: #d0d0d0;
+            --scrubber-nowcast: repeating-linear-gradient(90deg, #a0c4e0 0px, #a0c4e0 4px, #c0d8ec 4px, #c0d8ec 8px);
+            --btn-bg: rgba(255,255,255,0.92);
+            --btn-border: #ccc;
+            --btn-hover: #e8e8e8;
+        }
+
+        /* === BASE STYLES === */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* === MAP === */
+        #mapid {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        .leaflet-container img.leaflet-tile {
+            mix-blend-mode: plus-lighter;
+        }
+        .leaflet-tile.radar-tile {
+            image-rendering: pixelated;
+            width: 256px !important;
+            height: 256px !important;
+        }
+        .leaflet-control-attribution { font-size: 9px !important; }
+
+        /* === PRELOAD INDICATOR === */
+        .preload-indicator {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            z-index: 1000;
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .preload-indicator.visible {
+            opacity: 1;
+        }
+        .preload-bar {
+            height: 3px;
+            background: var(--scrubber-rail);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .preload-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.2s ease;
+            width: 0%;
+        }
+
+        /* === LOCATE BUTTON === */
+        .locate-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            width: 34px;
+            height: 34px;
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .locate-btn:hover {
+            background: var(--btn-hover);
+        }
+        .locate-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: var(--text-secondary);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* === REPLAYER / SCRUBBER === */
+        .replayer {
+            background: var(--replayer-bg);
+            border-top: 1px solid var(--toolbar-border);
+            padding: 8px 12px 6px;
+            z-index: 1000;
+            flex-shrink: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .replayer-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .play-btn:hover {
+            background: var(--accent-hover);
+        }
+        .play-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: #fff;
+        }
+
+        /* Scrubber track */
+        .scrubber-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .scrubber-track {
+            position: relative;
+            height: 26px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .scrubber-rail {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            display: flex;
+        }
+        .rail-past {
+            background: var(--scrubber-rail);
+            height: 100%;
+        }
+        .rail-divider {
+            width: 2px;
+            height: 100%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+        .rail-nowcast {
+            background: var(--scrubber-nowcast);
+            height: 100%;
+            flex: 1;
+        }
+        .scrubber-thumb {
+            position: absolute;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+            transition: left 0.15s ease;
+        }
+        .scrubber-thumb.dragging {
+            transition: none;
+            cursor: grabbing;
+        }
+
+        /* "Now" marker: current wall-clock time on the timeline */
+        .now-line {
+            position: absolute;
+            top: 12px;
+            bottom: 2px;
+            width: 2px;
+            border-radius: 1px;
+            background: #e05c5c;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .now-label {
+            position: absolute;
+            top: -1px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #e05c5c;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Tick labels */
+        .scrubber-ticks {
+            display: flex;
+            position: relative;
+            height: 16px;
+            margin-top: 2px;
+        }
+        .tick-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            position: absolute;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+        .tick-label.nowcast-tick {
+            color: var(--accent);
+        }
+        .tick-label.active-tick {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .tick-divider {
+            position: absolute;
+            font-size: 10px;
+            color: var(--accent);
+            transform: translateX(-50%);
+            font-weight: 700;
+        }
+
+        /* Timestamp display */
+        .timestamp-display {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            min-width: 70px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .timestamp-display .forecast-label {
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--accent);
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+<!-- Map -->
+<div id="mapid">
+    <div class="preload-indicator" id="preloadIndicator">
+        <span id="preloadText"></span>
+        <div class="preload-bar"><div class="preload-fill" id="preloadFill"></div></div>
+    </div>
+    <button class="locate-btn" id="locateBtn">
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="6" y2="12"/>
+            <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>
+    </button>
+</div>
+
+<!-- Replayer / Scrubber -->
+<div class="replayer">
+    <div class="replayer-top">
+        <button class="play-btn" id="playBtn" onclick="playStop()">
+            <svg id="playIcon" viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14"/></svg>
+            <svg id="pauseIcon" viewBox="0 0 16 16" style="display:none"><rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/></svg>
+        </button>
+        <div class="scrubber-wrap" id="scrubberWrap">
+            <div class="scrubber-track" id="scrubberTrack">
+                <div class="scrubber-rail" id="scrubberRail">
+                    <div class="rail-past" id="railPast"></div>
+                    <div class="rail-divider" id="railDivider" style="display:none"></div>
+                    <div class="rail-nowcast" id="railNowcast" style="display:none"></div>
+                </div>
+                <div class="scrubber-thumb" id="scrubberThumb" style="left:0%"></div>
+                <div class="now-line" id="nowLine" style="display:none"></div>
+                <div class="now-label" id="nowLabel" style="display:none"></div>
+            </div>
+            <div class="scrubber-ticks" id="scrubberTicks"></div>
+        </div>
+        <div class="timestamp-display" id="timestampDisplay">…</div>
+    </div>
+</div>
+
+<script>
+// === QUERY PARAMETERS (from QML) ===
+var PARAMS = new URLSearchParams(window.location.search);
+function paramNum(name, fallback) {
+    var v = parseFloat(PARAMS.get(name));
+    return isNaN(v) ? fallback : v;
+}
+var LAT = paramNum('lat', 0);
+var LON = paramNum('lon', 0);
+var INIT_ZOOM = Math.max(3, Math.min(12, paramNum('zoom', 7)));
+var API_BASE = PARAMS.get('server') || 'https://api.librewxr.net';
+var HOUR12 = PARAMS.get('hour12') === '1';
+var SYS_LOCALE = PARAMS.get('locale') || undefined;
+var STRINGS = {};
+try { STRINGS = JSON.parse(PARAMS.get('strings') || '{}'); } catch (e) {}
+function tr(key, fallback) { return STRINGS[key] || fallback; }
+
+// === CONFIGURATION ===
+var TILE_SIZE = 512;
+var RADAR_OPACITY = 0.8;
+var SATELLITE_OPACITY = 0.8;
+var RADAR_ANIMATION_DELAY = 500;
+var RADAR_ANIMATION_PAUSE = 1500;
+var SAT_ANIMATION_DELAY = 800;
+var SAT_ANIMATION_PAUSE = 2000;
+var AUTO_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
+
+// === STATE ===
+var apiData = {};
+var mapFrames = [];
+var nowcastStartIndex = -1;
+var animationPosition = 0;
+var animationTimer = null;
+var isPlaying = false;
+var currentLayer = null;
+var isLoading = false;
+var layerCache = {};
+var currentColorScheme = Math.round(paramNum('color', 2));
+var arrowsOn = PARAMS.get('arrows') === '1';
+var activeLayer = PARAMS.get('layer') || 'radar'; // 'radar' | 'satellite' | 'both'
+var activeTheme = PARAMS.get('theme') === 'light' ? 'light' : 'dark';
+var satelliteBgLayer = null;
+var satelliteBgTimestamp = null;
+var preloadAbort = false;
+var preloadCallback = null;
+var autoRefreshTimer = null;
+var isDragging = false;
+
+// Arrows follow the map theme: light arrows on the dark map, dark arrows on
+// the light map.
+function arrowsMode() {
+    if (!arrowsOn) return '';
+    return activeTheme === 'dark' ? 'light' : 'dark';
+}
+
+// === MAP SETUP ===
+document.body.setAttribute('data-theme', activeTheme);
+var map = L.map('mapid', { maxZoom: 12, zoomControl: true }).setView([LAT, LON], INIT_ZOOM);
+
+// Report zoom changes to QML via the page title
+map.on('zoomend', function() { document.title = 'zoom:' + map.getZoom(); });
+
+// Create custom panes for z-ordering
+map.createPane('satellite-pane');
+map.getPane('satellite-pane').style.zIndex = 350;
+map.createPane('radar-pane');
+map.getPane('radar-pane').style.zIndex = 450;
+
+var baseMaps = {
+    dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a> | <a href="https://librewxr.net/">LibreWXR</a>'
+    }),
+    light: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | <a href="https://librewxr.net/">LibreWXR</a>'
+    })
+};
+var currentBaseMap = null;
+
+function setBaseMap(theme) {
+    if (currentBaseMap) map.removeLayer(currentBaseMap);
+    currentBaseMap = baseMaps[theme];
+    currentBaseMap.addTo(map);
+    currentBaseMap.bringToBack();
+}
+
+setBaseMap(activeTheme);
+
+L.marker([LAT, LON]).addTo(map);
+
+// === API ===
+function getApiUrl() {
+    return API_BASE + '/public/weather-maps.json';
+}
+
+function getHost() {
+    return apiData.host || API_BASE;
+}
+
+// === QML-FACING API ===
+window.setLayerMode = function(mode) {
+    activeLayer = mode;
+    reinitialize();
+};
+
+window.setColorScheme = function(id) {
+    currentColorScheme = id;
+    clearAllLayers();
+    showFrame(animationPosition);
+};
+
+window.setArrows = function(on) {
+    arrowsOn = !!on;
+    clearAllLayers();
+    showFrame(animationPosition);
+};
+
+window.setTheme = function(theme) {
+    if (theme !== 'light' && theme !== 'dark') return;
+    if (theme === activeTheme) return;
+    activeTheme = theme;
+    document.body.setAttribute('data-theme', activeTheme);
+    setBaseMap(activeTheme);
+    // Arrow color follows the map theme, so radar tiles must be re-fetched
+    if (arrowsOn && activeLayer !== 'satellite') {
+        clearAllLayers();
+        showFrame(animationPosition);
+    }
+};
+
+// === UTILITIES ===
+function clampPosition(position) {
+    if (mapFrames.length === 0) return 0;
+    while (position >= mapFrames.length) position -= mapFrames.length;
+    while (position < 0) position += mapFrames.length;
+    return position;
+}
+
+function formatTime(timestamp) {
+    return new Date(timestamp * 1000).toLocaleTimeString(SYS_LOCALE, { hour: 'numeric', minute: '2-digit', hour12: HOUR12 });
+}
+
+function isNowcastFrame(position) {
+    return nowcastStartIndex >= 0 && position >= nowcastStartIndex;
+}
+
+function getAnimationDelay() {
+    return activeLayer === 'satellite' ? SAT_ANIMATION_DELAY : RADAR_ANIMATION_DELAY;
+}
+
+function getAnimationPause() {
+    return activeLayer === 'satellite' ? SAT_ANIMATION_PAUSE : RADAR_ANIMATION_PAUSE;
+}
+
+function getFrameDelay(position) {
+    // Pause at past/nowcast boundary and at end of loop
+    if (nowcastStartIndex >= 0 && position === nowcastStartIndex - 1) return getAnimationPause();
+    if (position === mapFrames.length - 1) return getAnimationPause();
+    return getAnimationDelay();
+}
+
+// === TILE LAYERS ===
+function createRadarLayer(frame, pane) {
+    var am = arrowsMode();
+    var arrowsParam = am ? '?arrows=' + am : '';
+    var url = getHost() + frame.path + '/' + TILE_SIZE + '/{z}/{x}/{y}/' + currentColorScheme + '/1_1.webp' + arrowsParam;
+    var layer = new L.TileLayer(url, {
+        tileSize: 256,
+        opacity: 0.001,
+        maxZoom: 12,
+        pane: pane || 'radar-pane'
+    });
+    layer.createTile = function(coords, done) {
+        var tile = document.createElement('img');
+        tile.className = 'radar-tile';
+        tile.addEventListener('load', function() {
+            tile.style.width = '256px';
+            tile.style.height = '256px';
+            if (done) done(null, tile);
+        });
+        tile.onerror = function() {
+            if (done) done(new Error('Tile load failed'), tile);
+        };
+        tile.src = this.getTileUrl(coords);
+        return tile;
+    };
+    return layer;
+}
+
+function createSatelliteLayer(frame, pane) {
+    // Satellite imagery is coarse (~4 km, native detail up to ~z6). Cap the
+    // native zoom and let Leaflet/the browser upscale the tiles with smooth
+    // bilinear filtering instead of requesting server-upscaled blocky tiles.
+    var url = getHost() + frame.path + '/' + TILE_SIZE + '/{z}/{x}/{y}/0/0_0.webp';
+    return new L.TileLayer(url, {
+        tileSize: 256,
+        opacity: 0.001,
+        maxNativeZoom: 6,
+        maxZoom: 12,
+        pane: pane || 'satellite-pane',
+        className: 'satellite-tile'
+    });
+}
+
+// === LAYER CACHE ===
+function clearLayerCache() {
+    for (var pos in layerCache) {
+        if (parseInt(pos) !== animationPosition) {
+            map.removeLayer(layerCache[pos]);
+            delete layerCache[pos];
+        }
+    }
+}
+
+function clearAllLayers() {
+    stopAnimation();
+    isLoading = false;
+    for (var pos in layerCache) {
+        map.removeLayer(layerCache[pos]);
+        delete layerCache[pos];
+    }
+    currentLayer = null;
+}
+
+function removeSatelliteBackground() {
+    if (satelliteBgLayer) {
+        map.removeLayer(satelliteBgLayer);
+        satelliteBgLayer = null;
+        satelliteBgTimestamp = null;
+    }
+}
+
+// === SATELLITE BACKGROUND (for "both" mode) ===
+function updateSatelliteBackground() {
+    if (activeLayer !== 'both') {
+        removeSatelliteBackground();
+        return;
+    }
+    if (!apiData.satellite || !apiData.satellite.infrared || apiData.satellite.infrared.length === 0) return;
+
+    // Use the latest satellite frame
+    var latestSat = apiData.satellite.infrared[apiData.satellite.infrared.length - 1];
+    if (satelliteBgTimestamp === latestSat.time) return; // Already showing this one
+
+    removeSatelliteBackground();
+    satelliteBgLayer = createSatelliteLayer(latestSat, 'satellite-pane');
+    satelliteBgLayer.setOpacity(SATELLITE_OPACITY);
+    satelliteBgLayer.addTo(map);
+    satelliteBgTimestamp = latestSat.time;
+}
+
+// === ANIMATION ===
+function stopAnimation() {
+    if (animationTimer) {
+        clearTimeout(animationTimer);
+        animationTimer = null;
+    }
+    preloadAbort = true;
+    preloadCallback = null;
+    if (isPlaying) {
+        isPlaying = false;
+        document.getElementById('playIcon').style.display = '';
+        document.getElementById('pauseIcon').style.display = 'none';
+    }
+}
+
+function startAnimation() {
+    isPlaying = true;
+    document.getElementById('playIcon').style.display = 'none';
+    document.getElementById('pauseIcon').style.display = '';
+    showFrame(animationPosition + 1);
+}
+
+function playStop() {
+    if (isPlaying) {
+        // Stop: reset to latest past frame
+        stopAnimation();
+        var resetPos = nowcastStartIndex >= 0 ? nowcastStartIndex - 1 : mapFrames.length - 1;
+        showFrame(resetPos);
+    } else {
+        // Preload all frames, then start animation
+        startPreloading(function() {
+            startAnimation();
+        });
+        // Show play intent immediately
+        isPlaying = true;
+        document.getElementById('playIcon').style.display = 'none';
+        document.getElementById('pauseIcon').style.display = '';
+    }
+}
+
+// === SCRUBBER ===
+function buildScrubber() {
+    var ticksEl = document.getElementById('scrubberTicks');
+    ticksEl.innerHTML = '';
+
+    if (mapFrames.length === 0) return;
+
+    // Determine which ticks to show (skip some if too many)
+    var total = mapFrames.length;
+    var step = 1;
+    if (total > 20) step = 3;
+    else if (total > 12) step = 2;
+
+    // Set rail proportions
+    var pastCount = nowcastStartIndex >= 0 ? nowcastStartIndex : total;
+    var pastPct = (pastCount / total) * 100;
+
+    document.getElementById('railPast').style.width = pastPct + '%';
+    if (nowcastStartIndex >= 0) {
+        document.getElementById('railDivider').style.display = '';
+        document.getElementById('railNowcast').style.display = '';
+    } else {
+        document.getElementById('railDivider').style.display = 'none';
+        document.getElementById('railNowcast').style.display = 'none';
+    }
+
+    // Add tick divider between past and nowcast
+    if (nowcastStartIndex >= 0) {
+        var divEl = document.createElement('span');
+        divEl.className = 'tick-divider';
+        divEl.style.left = pastPct + '%';
+        divEl.textContent = '|';
+        ticksEl.appendChild(divEl);
+    }
+
+    // Add tick labels
+    for (var i = 0; i < total; i += step) {
+        var pct = (i / (total - 1)) * 100;
+        var tick = document.createElement('span');
+        tick.className = 'tick-label';
+        if (isNowcastFrame(i)) tick.classList.add('nowcast-tick');
+        tick.style.left = pct + '%';
+        tick.textContent = formatTime(mapFrames[i].time);
+        tick.setAttribute('data-index', i);
+        ticksEl.appendChild(tick);
+    }
+
+    // Always show last tick if not already shown
+    var lastShown = total - 1 - ((total - 1) % step);
+    if (lastShown !== total - 1) {
+        var lastTick = document.createElement('span');
+        lastTick.className = 'tick-label';
+        if (isNowcastFrame(total - 1)) lastTick.classList.add('nowcast-tick');
+        lastTick.style.left = '100%';
+        lastTick.textContent = formatTime(mapFrames[total - 1].time);
+        lastTick.setAttribute('data-index', total - 1);
+        ticksEl.appendChild(lastTick);
+    }
+
+    updateScrubberPosition();
+    updateNowMarker();
+}
+
+// Red marker showing the actual current time on the timeline, between the
+// last observed radar frame and the nowcast. Hidden when "now" falls outside
+// the loaded frame range (e.g. satellite mode, whose frames are all past).
+function updateNowMarker() {
+    var line = document.getElementById('nowLine');
+    var label = document.getElementById('nowLabel');
+    var nowSec = Date.now() / 1000;
+    if (mapFrames.length < 2 || nowSec <= mapFrames[0].time || nowSec >= mapFrames[mapFrames.length - 1].time) {
+        line.style.display = 'none';
+        label.style.display = 'none';
+        return;
+    }
+    var t0 = mapFrames[0].time;
+    var tN = mapFrames[mapFrames.length - 1].time;
+    var pct = ((nowSec - t0) / (tN - t0)) * 100;
+    line.style.display = '';
+    line.style.left = pct + '%';
+    label.style.display = '';
+    label.style.left = pct + '%';
+    label.textContent = formatTime(nowSec);
+}
+
+setInterval(updateNowMarker, 30000);
+
+function updateScrubberPosition() {
+    if (mapFrames.length <= 1) {
+        document.getElementById('scrubberThumb').style.left = '0%';
+        return;
+    }
+    var pct = (animationPosition / (mapFrames.length - 1)) * 100;
+    document.getElementById('scrubberThumb').style.left = pct + '%';
+
+    // Highlight active tick
+    var ticks = document.querySelectorAll('.tick-label');
+    for (var i = 0; i < ticks.length; i++) {
+        var idx = parseInt(ticks[i].getAttribute('data-index'));
+        if (idx === animationPosition) {
+            ticks[i].classList.add('active-tick');
+        } else {
+            ticks[i].classList.remove('active-tick');
+        }
+    }
+}
+
+function positionFromScrubber(clientX) {
+    var track = document.getElementById('scrubberTrack');
+    var rect = track.getBoundingClientRect();
+    var pct = (clientX - rect.left) / rect.width;
+    pct = Math.max(0, Math.min(1, pct));
+    return Math.round(pct * (mapFrames.length - 1));
+}
+
+// Scrubber drag events
+(function initScrubberDrag() {
+    var track = document.getElementById('scrubberTrack');
+    var thumb = document.getElementById('scrubberThumb');
+
+    function onDragStart(e) {
+        e.preventDefault();
+        isDragging = true;
+        thumb.classList.add('dragging');
+        stopAnimation();
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var pos = positionFromScrubber(clientX);
+        showFrame(pos);
+    }
+
+    function onDragMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var pos = positionFromScrubber(clientX);
+        showFrame(pos);
+    }
+
+    function onDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        thumb.classList.remove('dragging');
+    }
+
+    track.addEventListener('mousedown', onDragStart);
+    track.addEventListener('touchstart', onDragStart, { passive: false });
+
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('touchmove', onDragMove, { passive: false });
+    document.addEventListener('mouseup', onDragEnd);
+    document.addEventListener('touchend', onDragEnd);
+})();
+
+// === FRAME DISPLAY ===
+function updateTimestamp(frame, position) {
+    var el = document.getElementById('timestampDisplay');
+    var timeStr = formatTime(frame.time);
+    if (isNowcastFrame(position)) {
+        el.innerHTML = timeStr + '<span class="forecast-label">' + tr('forecast', 'Forecast') + '</span>';
+    } else {
+        el.textContent = timeStr;
+    }
+}
+
+function showFrame(position) {
+    if (isLoading || mapFrames.length === 0) return;
+
+    position = clampPosition(position);
+    var frame = mapFrames[position];
+
+    updateTimestamp(frame, position);
+    animationPosition = position;
+    updateScrubberPosition();
+
+    var oldLayer = currentLayer;
+
+    // Check cache
+    if (layerCache[position]) {
+        if (oldLayer && oldLayer !== layerCache[position]) {
+            oldLayer.setOpacity(0);
+        }
+        var opacity = (activeLayer === 'satellite') ? SATELLITE_OPACITY : RADAR_OPACITY;
+        layerCache[position].setOpacity(opacity);
+        currentLayer = layerCache[position];
+
+        if (isPlaying) {
+            animationTimer = setTimeout(function() { showFrame(position + 1); }, getFrameDelay(position));
+        }
+        return;
+    }
+
+    isLoading = true;
+    showLoadingIndicator();
+
+    var newLayer;
+    var targetOpacity;
+    if (activeLayer === 'satellite') {
+        newLayer = createSatelliteLayer(frame, 'satellite-pane');
+        targetOpacity = SATELLITE_OPACITY;
+    } else {
+        // 'radar' or 'both'
+        newLayer = createRadarLayer(frame, 'radar-pane');
+        targetOpacity = RADAR_OPACITY;
+    }
+
+    // .once so the handler doesn't re-fire on subsequent pan/zoom tile
+    // reloads — Leaflet fires `load` every time all visible tiles for a
+    // layer finish requesting, and a cached layer still attached to the
+    // map with opacity 0 keeps requesting tiles when the viewport changes.
+    newLayer.once('load', function() {
+        newLayer.setOpacity(targetOpacity);
+        if (oldLayer && oldLayer !== newLayer) {
+            oldLayer.setOpacity(0);
+        }
+        layerCache[position] = newLayer;
+        currentLayer = newLayer;
+        isLoading = false;
+        hideLoadingIndicator();
+
+        if (isPlaying) {
+            animationTimer = setTimeout(function() { showFrame(position + 1); }, getFrameDelay(position));
+        }
+    });
+
+    newLayer.addTo(map);
+}
+
+// === LOADING INDICATOR (single frame) ===
+function showLoadingIndicator() {
+    var el = document.getElementById('preloadIndicator');
+    var text = document.getElementById('preloadText');
+    var fill = document.getElementById('preloadFill');
+    text.textContent = tr('loadingFrame', 'Loading frame…');
+    fill.style.width = '0%';
+    el.classList.add('visible');
+}
+
+function hideLoadingIndicator() {
+    // Don't hide if a bulk preload is in progress (it manages its own indicator)
+    if (!preloadAbort && preloadCallback) return;
+    document.getElementById('preloadIndicator').classList.remove('visible');
+}
+
+// === PRELOADING ===
+function showPreloadIndicator(loaded, total) {
+    var el = document.getElementById('preloadIndicator');
+    var text = document.getElementById('preloadText');
+    var fill = document.getElementById('preloadFill');
+    text.textContent = tr('loadingFrames', 'Loading frames') + ' ' + loaded + '/' + total;
+    fill.style.width = (total > 0 ? (loaded / total) * 100 : 0) + '%';
+    el.classList.add('visible');
+}
+
+function hidePreloadIndicator() {
+    document.getElementById('preloadIndicator').classList.remove('visible');
+}
+
+function startPreloading(onComplete) {
+    preloadAbort = true; // Cancel any in-progress preload
+    preloadCallback = onComplete || null;
+    setTimeout(function() {
+        preloadAbort = false;
+        doPreload();
+    }, 50);
+}
+
+function doPreload() {
+    if (mapFrames.length === 0) return;
+
+    var toLoad = [];
+    for (var i = 0; i < mapFrames.length; i++) {
+        if (!layerCache[i]) toLoad.push(i);
+    }
+
+    if (toLoad.length === 0) {
+        hidePreloadIndicator();
+        if (preloadCallback) { preloadCallback(); preloadCallback = null; }
+        return;
+    }
+
+    var total = toLoad.length;
+    var loaded = 0;
+    showPreloadIndicator(loaded, total);
+
+    function loadNext(idx) {
+        if (preloadAbort || idx >= toLoad.length) {
+            hidePreloadIndicator();
+            if (!preloadAbort && idx >= toLoad.length && preloadCallback) {
+                preloadCallback();
+                preloadCallback = null;
+            }
+            return;
+        }
+
+        var pos = toLoad[idx];
+        if (layerCache[pos]) {
+            loaded++;
+            showPreloadIndicator(loaded, total);
+            loadNext(idx + 1);
+            return;
+        }
+
+        var frame = mapFrames[pos];
+        var layer;
+        if (activeLayer === 'satellite') {
+            layer = createSatelliteLayer(frame, 'satellite-pane');
+        } else {
+            layer = createRadarLayer(frame, 'radar-pane');
+        }
+
+        // Use .once + an "advanced" flag so the load counter only increments
+        // once per layer: Leaflet's `load` re-fires on pan/zoom for cached
+        // layers still attached to the map, and `load`/`tileerror` can both
+        // fire for the same layer when some tiles error and others succeed.
+        var advanced = false;
+        layer.once('load', function() {
+            if (advanced) return;
+            advanced = true;
+            if (preloadAbort) {
+                map.removeLayer(layer);
+                hidePreloadIndicator();
+                return;
+            }
+            layer.setOpacity(0);
+            layerCache[pos] = layer;
+            loaded++;
+            showPreloadIndicator(loaded, total);
+            loadNext(idx + 1);
+        });
+
+        layer.once('tileerror', function() {
+            if (advanced) return;
+            advanced = true;
+            loaded++;
+            showPreloadIndicator(loaded, total);
+            loadNext(idx + 1);
+        });
+
+        layer.addTo(map);
+    }
+
+    loadNext(0);
+}
+
+// === INITIALIZATION ===
+function reinitialize() {
+    clearAllLayers();
+    removeSatelliteBackground();
+    mapFrames = [];
+    nowcastStartIndex = -1;
+    animationPosition = 0;
+
+    if (!apiData || !apiData.radar) {
+        document.getElementById('timestampDisplay').textContent = tr('noData', 'No data');
+        buildScrubber();
+        return;
+    }
+
+    if (activeLayer === 'satellite') {
+        // Satellite mode: use satellite.infrared frames
+        if (!apiData.satellite || !apiData.satellite.infrared || apiData.satellite.infrared.length === 0) {
+            document.getElementById('timestampDisplay').textContent = tr('noSatData', 'No satellite data');
+            buildScrubber();
+            return;
+        }
+        mapFrames = apiData.satellite.infrared.slice();
+        nowcastStartIndex = -1;
+    } else {
+        // Radar or Both: use radar.past + radar.nowcast
+        if (!apiData.radar.past || apiData.radar.past.length === 0) {
+            document.getElementById('timestampDisplay').textContent = tr('noRadarData', 'No radar data');
+            buildScrubber();
+            return;
+        }
+        mapFrames = apiData.radar.past.slice();
+        if (apiData.radar.nowcast && apiData.radar.nowcast.length > 0) {
+            nowcastStartIndex = mapFrames.length;
+            mapFrames = mapFrames.concat(apiData.radar.nowcast);
+        }
+    }
+
+    buildScrubber();
+
+    // For "both" mode, set up satellite background
+    if (activeLayer === 'both') {
+        updateSatelliteBackground();
+    }
+
+    // Start on the last past frame
+    var startPos;
+    if (activeLayer === 'satellite') {
+        startPos = mapFrames.length - 1;
+    } else {
+        startPos = nowcastStartIndex >= 0 ? nowcastStartIndex - 1 : mapFrames.length - 1;
+    }
+
+    showFrame(startPos);
+    maybeRetryNowcast();
+}
+
+function loadApiData() {
+    stopAnimation();
+    document.getElementById('timestampDisplay').textContent = tr('loading', 'Loading…');
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', getApiUrl(), true);
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            apiData = JSON.parse(xhr.responseText);
+            reinitialize();
+        } else {
+            document.getElementById('timestampDisplay').textContent = tr('apiError', 'API error');
+        }
+    };
+    xhr.onerror = function() {
+        document.getElementById('timestampDisplay').textContent = tr('connFailed', 'Connection failed');
+    };
+    xhr.send();
+}
+
+// === MAP CONTROLS ===
+// The widget already knows the configured location, so "locate" recenters
+// there instead of using browser geolocation (unavailable in QtWebEngine
+// without a permission handler).
+document.getElementById('locateBtn').addEventListener('click', function() {
+    map.setView([LAT, LON], map.getZoom());
+});
+
+// Clean up on pan/zoom
+map.on('movestart', function() {
+    preloadAbort = true;
+    clearLayerCache();
+});
+
+map.on('moveend', function() {
+    // Re-add satellite background if needed
+    if (activeLayer === 'both' && satelliteBgLayer) {
+        satelliteBgLayer.setOpacity(SATELLITE_OPACITY);
+    }
+});
+
+// === AUTO-REFRESH ===
+function framesKey(data) {
+    var past = data.radar && data.radar.past ? data.radar.past : [];
+    var nowc = data.radar && data.radar.nowcast ? data.radar.nowcast : [];
+    return (past.length > 0 ? past[past.length - 1].time : 0) + ':'
+         + (nowc.length > 0 ? nowc[nowc.length - 1].time : 0);
+}
+
+function checkForUpdates() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', getApiUrl(), true);
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            var newData = JSON.parse(xhr.responseText);
+            // Re-init when either the observed frames or the nowcast changed
+            if (framesKey(newData) !== framesKey(apiData)) {
+                var wasPlaying = isPlaying;
+                apiData = newData;
+                reinitialize();
+                if (wasPlaying) {
+                    playStop(); // Resume: preload then animate
+                }
+            }
+        }
+    };
+    xhr.send();
+}
+
+// The nowcast is regenerated every cycle and can be briefly empty; if radar
+// data arrived without it, poll again shortly instead of waiting the full
+// auto-refresh interval.
+var nowcastRetryCount = 0;
+function maybeRetryNowcast() {
+    if (activeLayer === 'satellite') return;
+    var past = apiData.radar && apiData.radar.past ? apiData.radar.past : [];
+    var nowc = apiData.radar && apiData.radar.nowcast ? apiData.radar.nowcast : [];
+    if (nowc.length > 0) {
+        nowcastRetryCount = 0;
+        return;
+    }
+    if (past.length > 0 && nowcastRetryCount < 5) {
+        nowcastRetryCount++;
+        setTimeout(checkForUpdates, 60 * 1000);
+    }
+}
+
+function startAutoRefresh() {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(checkForUpdates, AUTO_REFRESH_MS);
+}
+
+// === VIEWPORT FIX ===
+// After a (re)load inside the plasmoid's WebEngineView, the map can come up
+// glitched (stale size or a partially composited surface) until the user
+// pans it. Reproduce that cure programmatically: recalculate the container
+// size and do an invisible 1 px pan-and-back, which forces Leaflet to reset
+// its view and Chromium to repaint the damaged area.
+window.fixViewport = function() {
+    map.invalidateSize(false);
+    map.panBy([1, 0], { animate: false });
+    map.panBy([-1, 0], { animate: false });
+};
+
+// Track container size changes directly (widget resizes, popup layout
+// settling after reopen) — more reliable than window resize events alone.
+if (typeof ResizeObserver !== 'undefined') {
+    var _roTimer = null;
+    new ResizeObserver(function() {
+        if (_roTimer) clearTimeout(_roTimer);
+        _roTimer = setTimeout(window.fixViewport, 120);
+    }).observe(document.getElementById('mapid'));
+}
+
+window.addEventListener('load', function() {
+    setTimeout(window.fixViewport, 250);
+    setTimeout(window.fixViewport, 1200);
+});
+
+// Also run the fix once the base map tiles have actually arrived — the
+// compositing artifact appears when tiles finish loading after the initial
+// paint.
+currentBaseMap.once('load', function() {
+    setTimeout(window.fixViewport, 100);
+});
+
+// === START ===
+loadApiData();
+startAutoRefresh();
+</script>
+
+</body>
+</html>

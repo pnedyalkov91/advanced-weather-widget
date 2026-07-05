@@ -37,6 +37,7 @@ KCM.SimpleKCM {
     property string cfg_qwApiKey: ""
     property string cfg_qwApiHost: ""
     property bool cfg_radarEnabled: true
+    property string cfg_radarProvider: "rainviewer"
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
@@ -720,12 +721,41 @@ KCM.SimpleKCM {
                 onToggled: root.cfg_radarEnabled = checked
             }
 
+            RowLayout {
+                spacing: 8
+                visible: root.cfg_radarEnabled
+
+                Label {
+                    text: i18n("Radar provider:")
+                }
+                ComboBox {
+                    id: radarProviderCombo
+                    Layout.preferredWidth: 280
+                    model: [
+                        { text: i18n("Rain Viewer"), value: "rainviewer" },
+                        { text: i18n("LibreWXR"),    value: "librewxr" }
+                    ]
+                    textRole: "text"
+                    currentIndex: root.cfg_radarProvider === "librewxr" ? 1 : 0
+                    onActivated: root.cfg_radarProvider = model[currentIndex].value
+                }
+            }
+
             Kirigami.InlineMessage {
                 Layout.fillWidth: true
-                visible: root.cfg_radarEnabled
+                visible: root.cfg_radarEnabled && root.cfg_radarProvider !== "librewxr"
                 showCloseButton: true
                 type: Kirigami.MessageType.Information
                 text: i18n("Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>" + "The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>" + "Rain Viewer does not guarantee the availability of radar data. " + "They do not conclude contracts with owners of this data. " + "The reason is that the owners can ask them to remove their data from Rain Viewer, " + "change the format, or stop sharing the data. " + "They are trying to keep radar data for as long as possible, " + "but sometimes the owners just stop providing the images.")
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: root.cfg_radarEnabled && root.cfg_radarProvider === "librewxr"
+                showCloseButton: true
+                type: Kirigami.MessageType.Information
+                text: i18n("Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>" + "LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>" + "Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically.")
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 

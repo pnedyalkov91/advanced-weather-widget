@@ -157,8 +157,14 @@
     <entry name="widgetSimpleDetailsOrder" type="String"><default>humidity;pressure;preciprate;precipsum</default></entry>
     <entry name="widgetSimpleDetailsItemIcons" type="String"><default>humidity=1;pressure=1;preciprate=1;precipsum=1</default></entry>
     <entry name="radarEnabled"          type="Bool"><default>true</default></entry>
+    <entry name="radarProvider"         type="String"><default>rainviewer</default></entry>
     <entry name="radarLayer"            type="String"><default>rainviewer</default></entry>
     <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
+    <entry name="librewxrLayer"         type="String"><default>radar</default></entry>
+    <entry name="librewxrColorScheme"   type="Int"><default>2</default><min>0</min><max>12</max></entry>
+    <entry name="librewxrArrows"        type="Bool"><default>false</default></entry>
+    <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
+    <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
 
     <!-- ── Widget — details view ──────────────────────────────────────── -->
     <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>

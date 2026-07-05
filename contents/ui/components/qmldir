@@ -2,4 +2,5 @@ WeatherIcon 1.0 WeatherIcon.qml
 TemperatureBadge 1.0 TemperatureBadge.qml
 CollapsibleCardHeader 1.0 CollapsibleCardHeader.qml
 ConfigLocationPositionSources 1.0 ConfigLocationPositionSources.qml
-RadarWebViewEngineView 1.0 RadarWebViewEngineView.qml
+RadarWebEngineView 1.0 RadarWebEngineView.qml
+RadarWebEngineViewLibreWXR 1.0 RadarWebEngineViewLibreWXR.qml
