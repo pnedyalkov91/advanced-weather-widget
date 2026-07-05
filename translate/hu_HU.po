@@ -2388,7 +2388,7 @@ msgstr "QWeather hiba (kód: %1). Ellenőrizze az API-kulcsát."
 
 #: contents/ui/ForecastView.qml:828
 msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
-msgstr "A QWeather legfeljebb 168 órára (7 napra) ad órás előrejelzést. A napi előrejelzések továbbra is elérhetők."
+msgstr "A QWeather legfeljebb 168 órára (7 napra) szolgáltat óránkénti előrejelzést. A napi előrejelzések továbbra is elérhetők."
 
 #: contents/ui/config/configLocation.qml:1059
 msgid "QtLocation and QtPositioning are not installed"
