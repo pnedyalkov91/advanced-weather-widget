@@ -1,7 +1,8 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import org.kde.kirigami as Kirigami
 
 import "../js/iconResolver.js" as IconResolver
 import "../js/weather.js" as W
@@ -51,6 +52,7 @@ Item {
         Component.onCompleted: scrollTimer.restart()
 
         delegate: Rectangle {
+            id: cardDelegate
             required property var modelData
             readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
 
@@ -64,14 +66,14 @@ Item {
             border.width: 1
 
             ColumnLayout {
-                visible: parent._isSun
+                visible: cardDelegate._isSun
                 anchors.centerIn: parent
                 spacing: 6
 
                 WeatherIcon {
                     Layout.alignment: Qt.AlignHCenter
                     iconInfo: IconResolver.resolve(
-                        modelData.isSunrise ? "sunrise" : "sunset",
+                        cardDelegate.modelData.isSunrise ? "sunrise" : "sunset",
                         32,
                         root.hostRoot.iconsBaseDir,
                         root.hostRoot.widgetIconTheme === "kde" ? "flat-color" :
@@ -82,34 +84,34 @@ Item {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    text: modelData.displayTime || "--"
+                    text: cardDelegate.modelData.displayTime || "--"
                     color: root.hostRoot.themeTextColor
                     font: root.serviceRoot ? root.serviceRoot.wf(10, true) : Qt.font({ bold: true })
                 }
             }
 
             ColumnLayout {
-                visible: !parent._isSun
+                visible: !cardDelegate._isSun
                 anchors.fill: parent
                 anchors.margins: 6
                 spacing: 4
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    text: modelData.displayTime || "--"
+                    text: cardDelegate.modelData.displayTime || "--"
                     color: root.hostRoot.themeTextColor
                     font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                 }
 
                 WeatherIcon {
                     Layout.alignment: Qt.AlignHCenter
-                    iconInfo: root.hostRoot.resolveConditionIcon(modelData.code || 0, modelData.isNight === true, root.hostRoot.iconSz)
+                    iconInfo: root.hostRoot.resolveConditionIcon(cardDelegate.modelData.code || 0, cardDelegate.modelData.isNight === true, root.hostRoot.iconSz)
                     iconSize: 48
                 }
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    text: modelData.tempText || "--"
+                    text: cardDelegate.modelData.tempText || "--"
                     color: root.hostRoot.themeTextColor
                     font: root.serviceRoot ? root.serviceRoot.wf(11, true) : Qt.font({ bold: true })
                 }
@@ -120,14 +122,14 @@ Item {
                     spacing: 4
 
                     Label {
-                        text: modelData.windText || "--"
+                        text: cardDelegate.modelData.windText || "--"
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
 
                     Text {
-                        visible: !isNaN(modelData.windDeg)
-                        text: W.windDirectionGlyph(modelData.windDeg)
+                        visible: !isNaN(cardDelegate.modelData.windDeg)
+                        text: W.windDirectionGlyph(cardDelegate.modelData.windDeg)
                         font.family: root.wiFont && root.wiFont.status === FontLoader.Ready ? root.wiFont.font.family : ""
                         font.pixelSize: 20
                         color: root.hostRoot.themeTextColor
@@ -148,7 +150,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.pressureText || "--"
+                        text: cardDelegate.modelData.pressureText || "--"
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
@@ -167,7 +169,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.kpText || i18n("No info")
+                        text: cardDelegate.modelData.kpText || qsTr("No info")
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
@@ -186,7 +188,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.uvText || "--"
+                        text: cardDelegate.modelData.uvText || "--"
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
@@ -205,7 +207,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.precipText || "--"
+                        text: cardDelegate.modelData.precipText || "--"
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
@@ -224,7 +226,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.visibilityText || "--"
+                        text: cardDelegate.modelData.visibilityText || "--"
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
@@ -244,7 +246,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.precipDisplayText || "--"
+                        text: cardDelegate.modelData.precipDisplayText || "--"
                         color: root.hostRoot.themeTextColor
                         font: root.serviceRoot ? root.serviceRoot.wf(9, false) : Qt.font({})
                     }
@@ -253,7 +255,7 @@ Item {
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: -5
-                    visible: modelData.precipRateVisible === true
+                    visible: cardDelegate.modelData.precipRateVisible === true
 
                     WeatherIcon {
                         iconInfo: IconResolver.resolve("preciprate", 32, root.hostRoot.iconsBaseDir,
@@ -266,7 +268,7 @@ Item {
                     }
 
                     Label {
-                        text: modelData.precipRateText || "--"
+                        text: cardDelegate.modelData.precipRateText || "--"
                         color: root.hostRoot.themeTextColor
                         opacity: 0.6
                         font: root.serviceRoot ? root.serviceRoot.wf(8, false) : Qt.font({})

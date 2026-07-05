@@ -666,11 +666,12 @@ Rectangle {
                     id: forecastLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: forecastTab.StackLayout.isCurrentItem || forecastTab.shouldPrewarm || (item !== null && fullView._keepHiddenTabs)
+                    active: forecastTab.StackLayout.isCurrentItem
+                        || (forecastTab.shouldPrewarm && !forecastLoader.item)
+                        || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: ForecastView {
                         id: forecastView
                         weatherRoot: fullView.weatherRoot
-                        verticalScrollView: forecastView
                     }
                 }
                 BusyIndicator {

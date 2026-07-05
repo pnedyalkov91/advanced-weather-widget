@@ -724,6 +724,10 @@ PlasmoidItem {
             : null;
     }
 
+    function isHourlyPrefetchInFlight(dateStr) {
+        return !!(dateStr && _prefetchedHourlyLoading[dateStr]);
+    }
+
     function prefetchHourlyForDate(dateStr) {
         if (!hasSelectedTown || !dateStr)
             return;

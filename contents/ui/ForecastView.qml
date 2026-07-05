@@ -57,6 +57,7 @@ Item {
     readonly property int _expandAllMaxConcurrentFetches: 1
     property var _viewportPrefetchQueue: []
     property bool _viewportPrefetchInFlight: false
+    property string _viewportPrefetchActiveDate: ""
     property int _viewportPrefetchGeneration: 0
     readonly property int _viewportPrefetchRadius: 2
     property var _hourlyDataVersions: ({})
@@ -78,7 +79,11 @@ Item {
     function _cancelViewportPrefetch() {
         _viewportPrefetchGeneration++;
         _viewportPrefetchQueue = [];
-        _viewportPrefetchInFlight = false;
+        if (_viewportPrefetchActiveDate) {
+            var loadDone = Object.assign({}, _loadingDays);
+            delete loadDone[_viewportPrefetchActiveDate];
+            _loadingDays = loadDone;
+        }
         viewportPrefetchPump.stop();
         viewportPrefetchDebounce.stop();
     }
@@ -200,6 +205,7 @@ Item {
                 continue;
 
             _viewportPrefetchInFlight = true;
+            _viewportPrefetchActiveDate = dateStr;
             var loading = Object.assign({}, _loadingDays);
             loading[dateStr] = true;
             _loadingDays = loading;
@@ -209,9 +215,14 @@ Item {
                     var loadDone = Object.assign({}, forecastRoot._loadingDays);
                     delete loadDone[ds];
                     forecastRoot._loadingDays = loadDone;
+                    if (forecastRoot._viewportPrefetchActiveDate === ds)
+                        forecastRoot._viewportPrefetchActiveDate = "";
                     forecastRoot._viewportPrefetchInFlight = false;
-                    if (gen !== forecastRoot._viewportPrefetchGeneration)
+                    if (gen !== forecastRoot._viewportPrefetchGeneration) {
+                        if (forecastRoot._viewportPrefetchQueue.length > 0)
+                            viewportPrefetchPump.restart();
                         return;
+                    }
                     forecastRoot._storeHourlyData(ds, hourlyArr);
                     if (forecastRoot._viewportPrefetchQueue.length > 0)
                         viewportPrefetchPump.restart();
@@ -307,6 +318,13 @@ Item {
             return;
         if (_seedHourlyDataFromPrefetch(dateStr))
             return;
+        if (typeof weatherRoot.isHourlyPrefetchInFlight === "function"
+                && weatherRoot.isHourlyPrefetchInFlight(dateStr)) {
+            var prefetchedLoading = Object.assign({}, _loadingDays);
+            prefetchedLoading[dateStr] = true;
+            _loadingDays = prefetchedLoading;
+            return;
+        }
         if (Object.prototype.hasOwnProperty.call(_perDayHourlyData, dateStr))
             return;
         if (_loadingDays[dateStr])
@@ -596,6 +614,7 @@ Item {
             forecastRoot._needsForecastReset = true;
             if (!forecastRoot.visible) {
                 forecastRoot._autoOpenDone = false;
+                forecastRoot._singleExpandFetchGeneration++;
                 forecastRoot._cancelExpandAllFetch(true);
                 forecastRoot._primeInitialExpandedState();
                 return;
@@ -615,13 +634,42 @@ Item {
                 forecastRoot._hourlyDisplayCache = {};
                 forecastRoot._loadingDays = {};
                 forecastRoot._cancelViewportPrefetch();
-                forecastRoot._doAutoOpen();
+                var dataIndex = forecastRoot.showToday
+                    ? forecastRoot.expandedIndex
+                    : forecastRoot.expandedIndex + 1;
+                if (forecastRoot.expandedIndex >= 0 && dataIndex >= 0 && dataIndex < weatherRoot.dailyData.length) {
+                    forecastRoot._autoOpenDone = true;
+                    forecastRoot._loadSingleExpandHourly(weatherRoot.dailyData[dataIndex].dateStr || "");
+                    viewportPrefetchDebounce.restart();
+                } else {
+                    forecastRoot.expandedIndex = -1;
+                    forecastRoot._autoOpenDone = false;
+                    forecastRoot._doAutoOpen();
+                }
             }
         }
 
         function onPrefetchedHourlyByDateChanged() {
-            if (!forecastRoot.visible)
+            if (!forecastRoot.visible) {
                 forecastRoot._primeInitialExpandedState();
+                return;
+            }
+            if (forecastRoot.expandAll || forecastRoot.expandedIndex < 0)
+                return;
+
+            var dataIndex = forecastRoot.showToday
+                ? forecastRoot.expandedIndex
+                : forecastRoot.expandedIndex + 1;
+            if (dataIndex < 0 || dataIndex >= weatherRoot.dailyData.length)
+                return;
+
+            var dateStr = weatherRoot.dailyData[dataIndex].dateStr || "";
+            if (!forecastRoot._seedHourlyDataFromPrefetch(dateStr))
+                return;
+
+            var loadDone = Object.assign({}, forecastRoot._loadingDays);
+            delete loadDone[dateStr];
+            forecastRoot._loadingDays = loadDone;
         }
     }
 
