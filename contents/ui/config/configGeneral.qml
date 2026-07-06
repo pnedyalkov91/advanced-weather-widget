@@ -851,28 +851,8 @@ KCM.SimpleKCM {
                 visible: root.cfg_alertsProvider === "foss"
                 showCloseButton: true
                 type: Kirigami.MessageType.Information
-                text: i18n("Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>" + "KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider. You can point the widget at your own self-hosted instance below.")
+                text: i18n("Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>" + "KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider.")
                 onLinkActivated: Qt.openUrlExternally(link)
-            }
-
-            RowLayout {
-                spacing: 8
-                visible: root.cfg_alertsProvider === "foss"
-
-                Label {
-                    text: i18n("Server URL:")
-                }
-                TextField {
-                    Layout.preferredWidth: 320
-                    placeholderText: "https://alerts.kde.org"
-                    text: root.cfg_fossAlertUrl
-                    onTextChanged: root.cfg_fossAlertUrl = text
-                }
-                Button {
-                    icon.name: "edit-undo"
-                    text: i18n("Default")
-                    onClicked: root.cfg_fossAlertUrl = "https://alerts.kde.org"
-                }
             }
         }
 
