@@ -39,6 +39,8 @@ import "providers/stormGlass.js" as StormGlassJS
 import "providers/weatherbit.js" as WeatherbitJS
 import "providers/qWeather.js" as QWeatherJS
 import "providers/alerts.js" as AlertsJS
+import "providers/librewxrAlerts.js" as LibreWxrAlertsJS
+import "providers/fossAlerts.js" as FossAlertsJS
 import "providers/spaceWeather_provider.js" as SpaceWeatherJS
 
 QtObject {
@@ -75,6 +77,8 @@ QtObject {
         }
     }
 
-    function fetchAlerts(service)       { AlertsJS.fetchAlerts(service); }
+    function fetchAlerts(service)         { AlertsJS.fetchAlerts(service); }
+    function fetchAlertsLibreWxr(service) { LibreWxrAlertsJS.fetchAlerts(service); }
+    function fetchAlertsFoss(service)      { FossAlertsJS.fetchAlerts(service); }
     function fetchSpaceWeather(service) { SpaceWeatherJS.fetchSpaceWeather(service); }
 }

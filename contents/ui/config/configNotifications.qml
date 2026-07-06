@@ -28,6 +28,7 @@ KCM.SimpleKCM {
     property bool cfg_alertNotificationsYellowEnabled: false
     property bool cfg_alertNotificationsOrangeEnabled: true
     property bool cfg_alertNotificationsRedEnabled: true
+    property bool cfg_alertNotificationsPurpleEnabled: true
     property bool cfg_alertNotificationsCriticalEnabled: true
     property bool cfg_alertNotificationsRepeatEnabled: true
     property string cfg_alertNotificationsTypeSettings: "{}"
@@ -265,6 +266,24 @@ KCM.SimpleKCM {
                     text: i18n("Red")
                     checked: root.cfg_alertNotificationsRedEnabled
                     onToggled: root.cfg_alertNotificationsRedEnabled = checked
+                }
+                Switch {
+                    text: i18n("Purple")
+                    checked: root.cfg_alertNotificationsPurpleEnabled
+                    onToggled: root.cfg_alertNotificationsPurpleEnabled = checked
+                }
+
+                // Info button — explains what each severity color means.
+                Kirigami.Icon {
+                    source: "help-about"
+                    implicitWidth: Kirigami.Units.iconSizes.small
+                    implicitHeight: Kirigami.Units.iconSizes.small
+                    opacity: severityInfoHover.hovered ? 1.0 : 0.7
+
+                    HoverHandler { id: severityInfoHover }
+
+                    ToolTip.visible: severityInfoHover.hovered
+                    ToolTip.text: i18n("Weather-alert severity levels, from lowest to highest:\n\n🟡 Yellow — Minor: be aware of the conditions.\n🟠 Orange — Moderate: be prepared.\n🔴 Red — Severe: take action.\n🟣 Purple — Extreme: extraordinarily dangerous, take action immediately.\n\nTurn a level off to stop receiving notifications for alerts of that severity.")
                 }
             }
 

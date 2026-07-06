@@ -38,6 +38,8 @@ KCM.SimpleKCM {
     property string cfg_qwApiHost: ""
     property bool cfg_radarEnabled: true
     property string cfg_radarProvider: "rainviewer"
+    property string cfg_alertsProvider: "native"
+    property string cfg_fossAlertUrl: "https://alerts.kde.org"
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
@@ -773,6 +775,104 @@ KCM.SimpleKCM {
                 visible: root.cfg_radarEnabled && (root.cfg_owApiKey || "").trim() !== ""
                 type: Kirigami.MessageType.Warning
                 text: i18n("<b>Why OWM layers may not match RainViewer radar</b><br/><br/>" + "OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. " + "They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>" + "RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. " + "This discrepancy is expected and known.")
+            }
+        }
+
+        Item {
+            Layout.preferredHeight: 8
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // SECTION: Weather Alerts
+        // ══════════════════════════════════════════════════════════════
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            RowLayout {
+                Layout.fillWidth: true
+                Kirigami.Heading {
+                    text: i18n("Weather Alerts")
+                    level: 4
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: Kirigami.Theme.textColor
+                    opacity: 0.5
+                }
+            }
+
+            RowLayout {
+                spacing: 8
+
+                Label {
+                    text: i18n("Alerts provider:")
+                }
+                ComboBox {
+                    id: alertsProviderCombo
+                    Layout.preferredWidth: 280
+                    model: [
+                        { text: i18n("MeteoAlarm + NOAA NWS (Native)"), value: "native" },
+                        { text: i18n("LibreWXR"),                       value: "librewxr" },
+                        { text: i18n("FOSS Public Alert Server"),       value: "foss" }
+                    ]
+                    textRole: "text"
+                    currentIndex: {
+                        for (var i = 0; i < model.length; i++)
+                            if (model[i].value === root.cfg_alertsProvider)
+                                return i;
+                        return 0;
+                    }
+                    onActivated: root.cfg_alertsProvider = model[currentIndex].value
+                }
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: root.cfg_alertsProvider === "native"
+                showCloseButton: true
+                type: Kirigami.MessageType.Information
+                text: i18n("Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>" + "European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly.")
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: root.cfg_alertsProvider === "librewxr"
+                showCloseButton: true
+                type: Kirigami.MessageType.Information
+                text: i18n("Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>" + "LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider.")
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: root.cfg_alertsProvider === "foss"
+                showCloseButton: true
+                type: Kirigami.MessageType.Information
+                text: i18n("Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>" + "KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider. You can point the widget at your own self-hosted instance below.")
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
+            RowLayout {
+                spacing: 8
+                visible: root.cfg_alertsProvider === "foss"
+
+                Label {
+                    text: i18n("Server URL:")
+                }
+                TextField {
+                    Layout.preferredWidth: 320
+                    placeholderText: "https://alerts.kde.org"
+                    text: root.cfg_fossAlertUrl
+                    onTextChanged: root.cfg_fossAlertUrl = text
+                }
+                Button {
+                    icon.name: "edit-undo"
+                    text: i18n("Default")
+                    onClicked: root.cfg_fossAlertUrl = "https://alerts.kde.org"
+                }
             }
         }
 

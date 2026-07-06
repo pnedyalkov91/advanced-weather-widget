@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-04 12:00+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+"POT-Creation-Date: 2026-07-06 10:40+0300\n"
 "PO-Revision-Date: 2026-06-22 00:00+0900\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
@@ -16,39 +16,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: contents/ui/DetailsView.qml:3476 contents/ui/DetailsView.qml:3478
+#: contents/ui/DetailsView.qml:3483 contents/ui/DetailsView.qml:3485
 msgid " until dawn"
 msgstr " 夜明けまで"
 
-#: contents/ui/main.qml:1513
+#: contents/ui/main.qml:1541
 msgid "%1 %2"
 msgstr "%1 %2"
 
-#: contents/ui/main.qml:1457
+#: contents/ui/main.qml:1485
 msgid "%1 - Today"
 msgstr "%1 - 今日"
 
-#: contents/ui/main.qml:1530
+#: contents/ui/main.qml:1558
 msgid "%1 - Tomorrow"
 msgstr "%1 - 明日"
 
-#: contents/ui/main.qml:1655
+#: contents/ui/main.qml:1683
 msgid "%1 ending"
 msgstr "%1 終了予定"
 
-#: contents/ui/main.qml:1649
+#: contents/ui/main.qml:1677
 msgid "%1 expected"
 msgstr "%1 予想"
 
-#: contents/ui/main.qml:1656
+#: contents/ui/main.qml:1684
 msgid "%1 expected to end %2."
 msgstr "%1 は %2 に終了予定。"
 
-#: contents/ui/main.qml:1650
+#: contents/ui/main.qml:1678
 msgid "%1 possible %2."
 msgstr "%1 の可能性あり %2。"
 
-#: contents/ui/main.qml:1442
+#: contents/ui/main.qml:1470
 msgid "%1 will be %2 with a low of %3 and a high of %4."
 msgstr "%1 は %2、最低 %3、最高 %4。"
 
@@ -117,36 +117,40 @@ msgstr "3D Oxygen（同梱）"
 msgid "68°F"
 msgstr "68°F"
 
-#: contents/ui/main.qml:1207
+#: contents/ui/main.qml:1235
 msgid "<b>Effective:</b> %1"
 msgstr "<b>発効:</b> %1"
 
-#: contents/ui/main.qml:1204
+#: contents/ui/main.qml:1232
 msgid "<b>Headline:</b> %1"
 msgstr "<b>見出し:</b> %1"
 
-#: contents/ui/main.qml:1210
+#: contents/ui/main.qml:1238
 msgid "<b>Instruction:</b> %1"
 msgstr "<b>指示:</b> %1"
 
-#: contents/ui/main.qml:1213
+#: contents/ui/main.qml:1241
 msgid "<b>Provider:</b> %1"
 msgstr "<b>プロバイダ:</b> %1"
 
-#: contents/ui/main.qml:1202
+#: contents/ui/main.qml:1230
 #, javascript-format
 msgid "<b>Severity:</b> %1%2"
 msgstr "<b>深刻度:</b> %1%2"
 
-#: contents/ui/config/configGeneral.qml:745
+#: contents/ui/config/configGeneral.qml:777
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
 msgstr "<b>OWM のレイヤーが RainViewer レーダーと一致しない理由</b><br/><br/>OWM の降水・雲レイヤーは<b>静的なモデルタイル</b>であり、実際のレーダー観測ではなく、平滑化された NWP（数値予報）の出力を表示します。気象観測所とモデル実行の間の補間に基づいて、モデルが雨が降っていると<i>推定</i>している場所を表しています。<br/><br/>RainViewer はレーダー観測所からの<b>実際の気象レーダー合成画像</b>を使用し、2〜10 分ごとに更新される実際の観測反射強度を表示します。この差異は想定されており、既知の現象です。"
 
-#: contents/ui/config/configGeneral.qml:450
+#: contents/ui/config/configGeneral.qml:453
 msgid "AI-powered weather intelligence. API key required below."
 msgstr "AI 搭載の気象情報サービス。下に API キーが必要です。"
 
-#: contents/ui/config/configGeneral.qml:211
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:162
+msgid "API error"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:214
 msgid "API key is empty."
 msgstr "API キーが空です。"
 
@@ -166,7 +170,7 @@ msgstr "活動中"
 msgid "Adaptive (Open-Meteo)"
 msgstr "アダプティブ（Open-Meteo）"
 
-#: contents/ui/config/configGeneral.qml:383
+#: contents/ui/config/configGeneral.qml:386
 msgid "Adaptive (auto-fallback)"
 msgstr "アダプティブ（自動フォールバック）"
 
@@ -182,7 +186,7 @@ msgstr "位置を追加"
 msgid "Advanced (all tabs)"
 msgstr "詳細（すべてのタブ）"
 
-#: contents/ui/main.qml:1493
+#: contents/ui/main.qml:1521
 msgid "Afternoon"
 msgstr "午後"
 
@@ -243,6 +247,22 @@ msgstr "ヤナギ"
 msgid "Alerts"
 msgstr "アラート"
 
+#: contents/ui/config/configGeneral.qml:810
+msgid "Alerts provider:"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:854
+msgid "Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider. You can point the widget at your own self-hosted instance below."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:845
+msgid "Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:836
+msgid "Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
+msgstr ""
+
 #: contents/ui/TooltipContent.qml:480
 msgid "Alerts:"
 msgstr "アラート:"
@@ -267,7 +287,7 @@ msgstr "標高: %1 %2"
 msgid "Alt: %1 m"
 msgstr "標高: %1 m"
 
-#: contents/ui/config/configGeneral.qml:444
+#: contents/ui/config/configGeneral.qml:447
 msgid "Alternative provider. API key required below."
 msgstr "代替プロバイダ。下に API キーが必要です。"
 
@@ -283,7 +303,7 @@ msgstr "標高は省略可能ですが、正確な予報のためには強く推
 msgid "Altitude:"
 msgstr "標高:"
 
-#: contents/ui/config/configGeneral.qml:640
+#: contents/ui/config/configGeneral.qml:643
 msgid "An API key is required for %1. Weather data cannot be retrieved without it."
 msgstr "%1 には API キーが必要です。API キーがないと気象データを取得できません。"
 
@@ -319,9 +339,13 @@ msgstr "検出した位置を適用"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "本当によろしいですか? これは最後に保存した位置です。削除すると、ウィジェットは気象情報を表示しなくなります。"
 
-#: contents/ui/DetailsView.qml:3478
+#: contents/ui/DetailsView.qml:3485
 msgid "Around midnight — "
 msgstr "真夜中頃 — "
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:301
+msgid "Arrows"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:1358
 #: contents/ui/config/configAppearance.qml:1460
@@ -381,7 +405,7 @@ msgstr "位置を自動検出"
 msgid "Available"
 msgstr "利用可能"
 
-#: contents/ui/config/configNotifications.qml:48 contents/ui/main.qml:968
+#: contents/ui/config/configNotifications.qml:49 contents/ui/main.qml:968
 msgid "Avalanche"
 msgstr "雪崩"
 
@@ -422,6 +446,10 @@ msgstr "動作"
 #: contents/ui/DetailsView.qml:1433 contents/ui/main.qml:876
 msgid "Birch"
 msgstr "カバ"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:150
+msgid "Black and White"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:732
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:536
@@ -508,12 +536,12 @@ msgstr "摂氏（°C）"
 msgid "Changes staged. Click the main Apply button to save."
 msgstr "変更がステージングされました。メインの適用ボタンをクリックして保存してください。"
 
-#: contents/ui/config/configGeneral.qml:88
+#: contents/ui/config/configGeneral.qml:91
 #: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr "位置の利用可能性を確認中…"
 
-#: contents/ui/config/configGeneral.qml:456
+#: contents/ui/config/configGeneral.qml:459
 msgid "Chinese weather provider with global coverage. API key required below."
 msgstr "グローバルカバレッジの中国気象プロバイダ。下に API キーが必要です。"
 
@@ -549,7 +577,7 @@ msgstr "地図上で選択"
 msgid "City / location name"
 msgstr "都市 / 位置名"
 
-#: contents/ui/config/configGeneral.qml:601
+#: contents/ui/config/configGeneral.qml:604
 msgid "Clear"
 msgstr "クリア"
 
@@ -561,13 +589,13 @@ msgstr "晴れ（昼）"
 msgid "Clear (night)"
 msgstr "晴れ（夜）"
 
-#: contents/ui/main.qml:1871
+#: contents/ui/main.qml:1899
 msgid "Clear night"
 msgstr "晴れた夜"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
-#: contents/ui/main.qml:1871
+#: contents/ui/main.qml:1899
 msgid "Clear sky"
 msgstr "快晴"
 
@@ -587,7 +615,7 @@ msgstr "クリックして位置を設定"
 msgid "Clouds"
 msgstr "雲"
 
-#: contents/ui/config/configNotifications.qml:46 contents/ui/main.qml:966
+#: contents/ui/config/configNotifications.qml:47 contents/ui/main.qml:966
 msgid "Coastal event"
 msgstr "沿岸現象"
 
@@ -660,11 +688,15 @@ msgstr "名前変更を確定"
 msgid "Confirm your location"
 msgstr "位置を確認"
 
-#: contents/ui/config/configGeneral.qml:278
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:163
+msgid "Connection failed"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:281
 msgid "Connection failed (HTTP %1)."
 msgstr "接続に失敗しました（HTTP %1）。"
 
-#: contents/ui/config/configGeneral.qml:271
+#: contents/ui/config/configGeneral.qml:274
 msgid "Connection successful! %1 key is valid."
 msgstr "接続に成功しました! %1 のキーは有効です。"
 
@@ -672,7 +704,7 @@ msgstr "接続に成功しました! %1 のキーは有効です。"
 msgid "Coordinates"
 msgstr "座標"
 
-#: contents/ui/config/configNotifications.qml:284
+#: contents/ui/config/configNotifications.qml:303
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
 msgstr "重要な通知は、Do Not Disturb が有効でも、ゲーム中や全画面動画視聴中でも表示されます（システム設定 → 通知でそのオプションが有効な場合）。"
 
@@ -722,15 +754,19 @@ msgstr "カスタム…"
 msgid "Daily Forecast Settings"
 msgstr "日別予報設定"
 
-#: contents/ui/config/configGeneral.qml:446
+#: contents/ui/config/configGeneral.qml:449
 msgid "Dark Sky-compatible API with US alerts. API key required below."
 msgstr "Dark Sky 互換 API（米国アラート対応）。下に API キーが必要です。"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:314
+msgid "Dark map"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:873
 msgid "Dash  –"
 msgstr "ダッシュ  –"
 
-#: contents/ui/config/configGeneral.qml:763
+#: contents/ui/config/configGeneral.qml:893
 msgid "Data Refresh"
 msgstr "データ更新"
 
@@ -764,18 +800,19 @@ msgstr "日付/時刻:"
 msgid "Date:"
 msgstr "日付:"
 
-#: contents/ui/DetailsView.qml:3474
+#: contents/ui/DetailsView.qml:3481
 msgid "Dawn approaching — "
 msgstr "夜明けが近づいています — "
 
-#: contents/ui/DetailsView.qml:3454
+#: contents/ui/DetailsView.qml:3461
 msgid "Day"
 msgstr "昼"
 
-#: contents/ui/DetailsView.qml:3482
+#: contents/ui/DetailsView.qml:3489
 msgid "Daylight over"
 msgstr "昼光が終了"
 
+#: contents/ui/config/configGeneral.qml:873
 #: contents/ui/config/tabs/ConfigPanelTab.qml:495
 #: contents/ui/config/tabs/ConfigPanelTab.qml:569
 msgid "Default"
@@ -793,7 +830,7 @@ msgstr "デフォルトタブ:"
 msgid "Dense drizzle"
 msgstr "濃い霧雨"
 
-#: contents/ui/DetailsView.qml:2326 contents/ui/DetailsView.qml:2328
+#: contents/ui/DetailsView.qml:2330 contents/ui/DetailsView.qml:2332
 msgid "Description"
 msgstr "説明"
 
@@ -844,7 +881,7 @@ msgstr "露点温度"
 msgid "Dew point:"
 msgstr "露点:"
 
-#: contents/ui/config/configNotifications.qml:317
+#: contents/ui/config/configNotifications.qml:336
 msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
 msgstr "種類を無効にすると通知を停止できます。または独自の繰り返し間隔を設定できます。この間隔は「閉じるまでリマインダーを繰り返す」がオンの場合にのみ使用されます。"
 
@@ -899,7 +936,7 @@ msgid "Drag to reorder shown items"
 msgstr "ドラッグして表示項目を並べ替え"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:53
-#: contents/ui/main.qml:1885
+#: contents/ui/main.qml:1913
 msgid "Drizzle"
 msgstr "霧雨"
 
@@ -907,15 +944,20 @@ msgstr "霧雨"
 msgid "Dual temperature"
 msgstr "二重温度表示"
 
-#: contents/ui/config/configGeneral.qml:682
+#: contents/ui/main.qml:1213
+msgctxt "Alert severity"
+msgid "EXTREME"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:685
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
 msgstr "各 QWeather プロジェクトには固有の API ホストがあります。console.qweather.com のプロジェクト設定で確認してください。"
 
-#: contents/ui/config/configNotifications.qml:300
+#: contents/ui/config/configNotifications.qml:319
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
 msgstr "各警報は「閉じる」「延期」ボタンなしで一度だけ表示されます。"
 
-#: contents/ui/config/configNotifications.qml:232
+#: contents/ui/config/configNotifications.qml:233
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "各通知タイプは個別に有効化でき、該当する場合は毎日の時刻も設定できます。"
 
@@ -927,11 +969,11 @@ msgstr "保存した位置を編集"
 msgid "Edit location details"
 msgstr "位置の詳細を編集"
 
-#: contents/ui/DetailsView.qml:2331
+#: contents/ui/DetailsView.qml:2335
 msgid "Effective"
 msgstr "発効"
 
-#: contents/ui/config/configNotifications.qml:243
+#: contents/ui/config/configNotifications.qml:244
 msgid "Enable alert notifications"
 msgstr "アラート通知を有効化"
 
@@ -981,35 +1023,35 @@ msgstr "よりローカルな予報のため、正確な緯度、経度、およ
 msgid "Enter manually"
 msgstr "手動で入力"
 
-#: contents/ui/config/configGeneral.qml:519
+#: contents/ui/config/configGeneral.qml:522
 msgid "Enter your OpenWeatherMap API key"
 msgstr "OpenWeatherMap API キーを入力"
 
-#: contents/ui/config/configGeneral.qml:521
+#: contents/ui/config/configGeneral.qml:524
 msgid "Enter your Pirate Weather API key"
 msgstr "Pirate Weather API キーを入力"
 
-#: contents/ui/config/configGeneral.qml:531
+#: contents/ui/config/configGeneral.qml:534
 msgid "Enter your QWeather API key"
 msgstr "QWeather API キーを入力"
 
-#: contents/ui/config/configGeneral.qml:527
+#: contents/ui/config/configGeneral.qml:530
 msgid "Enter your StormGlass API key"
 msgstr "StormGlass API キーを入力"
 
-#: contents/ui/config/configGeneral.qml:525
+#: contents/ui/config/configGeneral.qml:528
 msgid "Enter your Tomorrow.io API key"
 msgstr "Tomorrow.io API キーを入力"
 
-#: contents/ui/config/configGeneral.qml:523
+#: contents/ui/config/configGeneral.qml:526
 msgid "Enter your Visual Crossing API key"
 msgstr "Visual Crossing API キーを入力"
 
-#: contents/ui/config/configGeneral.qml:532
+#: contents/ui/config/configGeneral.qml:535
 msgid "Enter your WeatherAPI.com key"
 msgstr "WeatherAPI.com キーを入力"
 
-#: contents/ui/config/configGeneral.qml:529
+#: contents/ui/config/configGeneral.qml:532
 msgid "Enter your Weatherbit API key"
 msgstr "Weatherbit API キーを入力"
 
@@ -1017,7 +1059,7 @@ msgstr "Weatherbit API キーを入力"
 msgid "Error (code %1)"
 msgstr "エラー（コード %1）"
 
-#: contents/ui/DetailsView.qml:3476
+#: contents/ui/DetailsView.qml:3483
 msgid "Evening — "
 msgstr "夕方 — "
 
@@ -1037,7 +1079,7 @@ msgstr "ウィジェットを展開して利用可能なパネル領域を埋め
 msgid "Expanded cards height:"
 msgstr "展開カードの高さ:"
 
-#: contents/ui/DetailsView.qml:2333
+#: contents/ui/DetailsView.qml:2337
 msgid "Expires"
 msgstr "失効"
 
@@ -1054,15 +1096,19 @@ msgstr "極度の地磁気嵐。"
 msgid "Extremely Poor"
 msgstr "極めて悪い"
 
+#: contents/ui/config/configGeneral.qml:818
+msgid "FOSS Public Alert Server"
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigMiscTab.qml:231
 msgid "Fahrenheit (°F)"
 msgstr "華氏（°F）"
 
-#: contents/ui/WeatherService.qml:755
+#: contents/ui/WeatherService.qml:787
 msgid "Failed to load weather providers"
 msgstr "気象プロバイダの読み込みに失敗しました"
 
-#: contents/ui/WeatherService.qml:743
+#: contents/ui/WeatherService.qml:775
 msgid "Failed: %1"
 msgstr "失敗: %1"
 
@@ -1097,7 +1143,7 @@ msgstr "パネルを埋める:"
 msgid "Find"
 msgstr "検索"
 
-#: contents/ui/main.qml:2048
+#: contents/ui/main.qml:2076
 msgid "First Quarter"
 msgstr "上弦の月"
 
@@ -1116,15 +1162,15 @@ msgstr "フレア警報"
 msgid "Flat Color (Bundled)"
 msgstr "フラットカラー（同梱）"
 
-#: contents/ui/config/configNotifications.qml:50 contents/ui/main.qml:970
+#: contents/ui/config/configNotifications.qml:51 contents/ui/main.qml:970
 msgid "Flood"
 msgstr "洪水"
 
 #: contents/ui/config/configAppearance.qml:248
-#: contents/ui/config/configNotifications.qml:43
+#: contents/ui/config/configNotifications.qml:44
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:52
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:678
-#: contents/ui/main.qml:963 contents/ui/main.qml:1879
+#: contents/ui/main.qml:963 contents/ui/main.qml:1907
 msgid "Fog"
 msgstr "霧"
 
@@ -1141,6 +1187,7 @@ msgstr "フォントサイズ:"
 msgid "Footer:"
 msgstr "フッター:"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:155
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:84
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:565
 msgid "Forecast"
@@ -1158,21 +1205,21 @@ msgstr "予報のみ"
 msgid "Forecast:"
 msgstr "予報:"
 
-#: contents/ui/config/configNotifications.qml:47 contents/ui/main.qml:967
+#: contents/ui/config/configNotifications.qml:48 contents/ui/main.qml:967
 msgid "Forest fire"
 msgstr "森林火災"
 
-#: contents/ui/config/configGeneral.qml:458
+#: contents/ui/config/configGeneral.qml:461
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
 msgstr "ノルウェー気象研究所の無料サービス。API キーは不要です。"
 
-#: contents/ui/config/configGeneral.qml:459
+#: contents/ui/config/configGeneral.qml:462
 msgid "Free and open-source. No API key needed. Recommended."
 msgstr "無料でオープンソース。API キーは不要です。推奨。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:54
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:686
-#: contents/ui/main.qml:1891
+#: contents/ui/main.qml:1919
 msgid "Freezing drizzle"
 msgstr "着氷性の霧雨"
 
@@ -1186,7 +1233,7 @@ msgstr "着氷性の霧雨（夜）"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:694
-#: contents/ui/main.qml:1901
+#: contents/ui/main.qml:1929
 msgid "Freezing rain"
 msgstr "着氷性の雨"
 
@@ -1202,11 +1249,11 @@ msgstr "着氷性の雨（夜）"
 msgid "Friday"
 msgstr "金曜日"
 
-#: contents/ui/main.qml:2052
+#: contents/ui/main.qml:2080
 msgid "Full Moon"
 msgstr "満月"
 
-#: contents/ui/DetailsView.qml:2716
+#: contents/ui/DetailsView.qml:2722
 msgid "Future alerts"
 msgstr "将来のアラート"
 
@@ -1228,11 +1275,11 @@ msgstr "GeoClue2 が利用できません。システム位置を試行中…"
 msgid "Geomagnetic Storm"
 msgstr "地磁気嵐"
 
-#: contents/ui/config/configNotifications.qml:443 contents/ui/main.qml:1776
+#: contents/ui/config/configNotifications.qml:462 contents/ui/main.qml:1804
 msgid "Geomagnetic activity"
 msgstr "地磁気活動"
 
-#: contents/ui/main.qml:1773
+#: contents/ui/main.qml:1801
 msgid "Geomagnetic activity will be %1 (Kp %2)"
 msgstr "地磁気活動は %1（Kp %2）になる予想"
 
@@ -1245,7 +1292,7 @@ msgstr "良好"
 msgid "Grass"
 msgstr "イネ科"
 
-#: contents/ui/DetailsView.qml:2323
+#: contents/ui/DetailsView.qml:2327
 msgid "Headline"
 msgstr "見出し"
 
@@ -1254,20 +1301,20 @@ msgstr "見出し"
 msgid "Heavy"
 msgstr "強い"
 
-#: contents/ui/main.qml:1887
+#: contents/ui/main.qml:1915
 msgid "Heavy drizzle"
 msgstr "強い霧雨"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:692
-#: contents/ui/main.qml:1897
+#: contents/ui/main.qml:1925
 msgid "Heavy rain"
 msgstr "大雨"
 
-#: contents/ui/main.qml:1915
+#: contents/ui/main.qml:1943
 msgid "Heavy showers"
 msgstr "強いにわか雨"
 
-#: contents/ui/main.qml:1907
+#: contents/ui/main.qml:1935
 msgid "Heavy snow"
 msgstr "大雪"
 
@@ -1279,7 +1326,7 @@ msgstr "強いにわか雪"
 msgid "Heavy snowfall"
 msgstr "大雪"
 
-#: contents/ui/main.qml:1925
+#: contents/ui/main.qml:1953
 msgid "Heavy thunderstorm with hail"
 msgstr "ひょうを伴う激しい雷雨"
 
@@ -1304,15 +1351,15 @@ msgstr "接頭アイコンを非表示"
 msgid "High"
 msgstr "高"
 
-#: contents/ui/config/configGeneral.qml:454
+#: contents/ui/config/configGeneral.qml:457
 msgid "High precision forecast provider. API key required below."
 msgstr "高精度予報プロバイダ。下に API キーが必要です。"
 
-#: contents/ui/config/configNotifications.qml:44 contents/ui/main.qml:964
+#: contents/ui/config/configNotifications.qml:45 contents/ui/main.qml:964
 msgid "High temperature"
 msgstr "高温"
 
-#: contents/ui/config/configGeneral.qml:448
+#: contents/ui/config/configGeneral.qml:451
 msgid "Historical and forecast data provider. API key required below."
 msgstr "過去と予報データプロバイダ。下に API キーが必要です。"
 
@@ -1387,7 +1434,7 @@ msgstr "アイコン"
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "正しい場合は適用してください。そうでない場合は、位置を手動で選択してください。"
 
-#: contents/ui/config/configGeneral.qml:664
+#: contents/ui/config/configGeneral.qml:667
 msgid "If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately."
 msgstr "新しく OpenWeatherMap API キーを登録したばかりの場合、有効になるまで最大 2 時間かかることがあります。すぐに動作しない場合は、後でもう一度お試しください。"
 
@@ -1427,7 +1474,7 @@ msgstr ""
 "\n"
 "位置の検索や座標の手動入力は引き続き可能です。自動検出は IP フォールバックで引き続き動作しますが、精度が低く、移動時にリアルタイムで更新されません。"
 
-#: contents/ui/RadarView.qml:176
+#: contents/ui/RadarView.qml:181
 msgid ""
 "Install it for your distribution:\n"
 "- Fedora / RHEL: qt6-qtwebengine\n"
@@ -1439,11 +1486,11 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2335
+#: contents/ui/DetailsView.qml:2339
 msgid "Instruction"
 msgstr "指示"
 
-#: contents/ui/config/configGeneral.qml:790
+#: contents/ui/config/configGeneral.qml:920
 msgid "Interval:"
 msgstr "間隔:"
 
@@ -1451,7 +1498,7 @@ msgstr "間隔:"
 msgid "Invalid API key (HTTP %1)"
 msgstr "無効な API キー（HTTP %1）"
 
-#: contents/ui/config/configGeneral.qml:275
+#: contents/ui/config/configGeneral.qml:278
 msgid "Invalid API key. Please check and try again."
 msgstr "無効な API キーです。確認して再試行してください。"
 
@@ -1459,7 +1506,7 @@ msgstr "無効な API キーです。確認して再試行してください。"
 msgid "Invalid response"
 msgstr "無効なレスポンス"
 
-#: contents/ui/config/configGeneral.qml:265
+#: contents/ui/config/configGeneral.qml:268
 msgid "Invalid response from QWeather."
 msgstr "QWeather からのレスポンスが無効です。"
 
@@ -1529,7 +1576,7 @@ msgstr "Kp 指数"
 msgid "Kp index/G forecast:"
 msgstr "Kp 指数 / G 予報:"
 
-#: contents/ui/main.qml:2056
+#: contents/ui/main.qml:2084
 msgid "Last Quarter"
 msgstr "下弦の月"
 
@@ -1559,25 +1606,30 @@ msgstr "レイアウト"
 msgid "Layout type:"
 msgstr "レイアウトタイプ:"
 
+#: contents/ui/config/configGeneral.qml:738
+#: contents/ui/config/configGeneral.qml:817
+msgid "LibreWXR"
+msgstr ""
+
 #: contents/ui/components/RadarWebEngineView.qml:91
 #: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Light"
 msgstr "弱い"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
-#: contents/ui/main.qml:1883
+#: contents/ui/main.qml:1911
 msgid "Light drizzle"
 msgstr "弱い霧雨"
 
-#: contents/ui/main.qml:1889
+#: contents/ui/main.qml:1917
 msgid "Light freezing drizzle"
 msgstr "弱い着氷性の霧雨"
 
-#: contents/ui/main.qml:1899
+#: contents/ui/main.qml:1927
 msgid "Light freezing rain"
 msgstr "弱い着氷性の雨"
 
-#: contents/ui/main.qml:1893
+#: contents/ui/main.qml:1921
 msgid "Light rain"
 msgstr "小雨"
 
@@ -1589,11 +1641,11 @@ msgstr "小雨 / 霧雨（昼）"
 msgid "Light rain / Drizzle (night)"
 msgstr "小雨 / 霧雨（夜）"
 
-#: contents/ui/main.qml:1911
+#: contents/ui/main.qml:1939
 msgid "Light showers"
 msgstr "弱いにわか雨"
 
-#: contents/ui/main.qml:1903
+#: contents/ui/main.qml:1931
 msgid "Light snow"
 msgstr "小雪"
 
@@ -1605,7 +1657,7 @@ msgstr "小雪（昼）"
 msgid "Light snow (night)"
 msgstr "小雪（夜）"
 
-#: contents/ui/main.qml:1917
+#: contents/ui/main.qml:1945
 msgid "Light snow showers"
 msgstr "弱いにわか雪"
 
@@ -1625,6 +1677,14 @@ msgstr "詳細を読み込み中…"
 msgid "Loading forecast…"
 msgstr "予報を読み込み中…"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:158
+msgid "Loading frames"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:157
+msgid "Loading frame…"
+msgstr ""
+
 #: contents/ui/ForecastView.qml:829
 msgid "Loading hourly data…"
 msgstr "時間別データを読み込み中…"
@@ -1633,9 +1693,13 @@ msgstr "時間別データを読み込み中…"
 msgid "Loading locations…"
 msgstr "位置を読み込み中…"
 
-#: contents/ui/RadarView.qml:116
+#: contents/ui/RadarView.qml:121
 msgid "Loading radar…"
 msgstr "レーダーを読み込み中…"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:156
+msgid "Loading…"
+msgstr ""
 
 #: contents/config/config.qml:47
 msgid "Location"
@@ -1658,12 +1722,12 @@ msgstr "位置を自動検出しました。"
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "位置検出はシステム設定と権限に依存します。"
 
-#: contents/ui/config/configGeneral.qml:174
+#: contents/ui/config/configGeneral.qml:177
 #: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr "位置は %1 で利用可能です。"
 
-#: contents/ui/config/configGeneral.qml:177
+#: contents/ui/config/configGeneral.qml:180
 #: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "位置は %1 で利用できません（HTTP %2）。別のプロバイダまたは位置をお試しください。"
@@ -1716,9 +1780,24 @@ msgstr "位置を検索中…"
 msgid "Low"
 msgstr "低"
 
-#: contents/ui/config/configNotifications.qml:45 contents/ui/main.qml:965
+#: contents/ui/config/configNotifications.qml:46 contents/ui/main.qml:965
 msgid "Low temperature"
 msgstr "低温"
+
+#: contents/ui/main.qml:1218
+msgctxt "Alert severity"
+msgid "MINIMAL"
+msgstr ""
+
+#: contents/ui/main.qml:1216
+msgctxt "Alert severity"
+msgid "MINOR"
+msgstr ""
+
+#: contents/ui/main.qml:1215
+msgctxt "Alert severity"
+msgid "MODERATE"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
 msgid "Magnetic Field (Bz)"
@@ -1730,7 +1809,7 @@ msgstr "メインアイコンのスタイル:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:49
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:672
-#: contents/ui/main.qml:1873
+#: contents/ui/main.qml:1901
 msgid "Mainly clear"
 msgstr "概ね晴れ"
 
@@ -1755,9 +1834,13 @@ msgstr "概ね晴れ（夜）"
 msgid "Manual"
 msgstr "手動"
 
-#: contents/ui/config/configGeneral.qml:452
+#: contents/ui/config/configGeneral.qml:455
 msgid "Marine and weather data provider. API key required below."
 msgstr "海洋・気象データプロバイダ。下に API キーが必要です。"
+
+#: contents/ui/config/configGeneral.qml:816
+msgid "MeteoAlarm + NOAA NWS (Native)"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:153
 msgid "Metric (°C, km/h, hPa, mm)"
@@ -1871,8 +1954,8 @@ msgstr "月相、月の出 & 月の入り"
 msgid "Moon:"
 msgstr "月:"
 
-#: contents/ui/DetailsView.qml:3691 contents/ui/DetailsView.qml:3696
-#: contents/ui/DetailsView.qml:4014 contents/ui/DetailsView.qml:4019
+#: contents/ui/DetailsView.qml:3698 contents/ui/DetailsView.qml:3703
+#: contents/ui/DetailsView.qml:4021 contents/ui/DetailsView.qml:4026
 msgid "Moonrise"
 msgstr "月の出"
 
@@ -1894,7 +1977,7 @@ msgstr "月の出のアイコン:"
 msgid "Moonrise only"
 msgstr "月の出のみ"
 
-#: contents/ui/DetailsView.qml:3689 contents/ui/DetailsView.qml:4012
+#: contents/ui/DetailsView.qml:3696 contents/ui/DetailsView.qml:4019
 msgid "Moonrise/Moonset"
 msgstr "月の出 / 月の入り"
 
@@ -1904,8 +1987,8 @@ msgstr "月の出 / 月の入り"
 msgid "Moonrise:"
 msgstr "月の出:"
 
-#: contents/ui/DetailsView.qml:3693 contents/ui/DetailsView.qml:3696
-#: contents/ui/DetailsView.qml:4016 contents/ui/DetailsView.qml:4019
+#: contents/ui/DetailsView.qml:3700 contents/ui/DetailsView.qml:3703
+#: contents/ui/DetailsView.qml:4023 contents/ui/DetailsView.qml:4026
 msgid "Moonset"
 msgstr "月の入り"
 
@@ -1926,7 +2009,7 @@ msgstr "月の入りのみ"
 msgid "Moonset:"
 msgstr "月の入り:"
 
-#: contents/ui/main.qml:1492
+#: contents/ui/main.qml:1520
 msgid "Morning"
 msgstr "午前"
 
@@ -1961,11 +2044,11 @@ msgstr "場所の座標が必要ですか?<a href=\"https://www.mapcoordinates.n
 msgid "Network error"
 msgstr "ネットワークエラー"
 
-#: contents/ui/main.qml:2044
+#: contents/ui/main.qml:2072
 msgid "New Moon"
 msgstr "新月"
 
-#: contents/ui/DetailsView.qml:3451
+#: contents/ui/DetailsView.qml:3458
 msgid "Night"
 msgstr "夜"
 
@@ -1976,6 +2059,10 @@ msgstr "二酸化窒素（NO₂）"
 #: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr "いいえ"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:159
+msgid "No data"
+msgstr ""
 
 #: contents/ui/DetailsView.qml:553
 msgid "No details data"
@@ -2001,6 +2088,14 @@ msgstr "情報なし"
 #: contents/ui/FullView.qml:216
 msgid "No location set"
 msgstr "位置が設定されていません"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:160
+msgid "No radar data"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:161
+msgid "No satellite data"
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
@@ -2039,31 +2134,31 @@ msgstr "未テスト"
 msgid "Note: size may be reduced if the panel is not thick enough."
 msgstr "注意: パネルが十分な厚さでない場合、サイズが縮小されることがあります。"
 
-#: contents/config/config.qml:62 contents/ui/config/configNotifications.qml:223
+#: contents/config/config.qml:62 contents/ui/config/configNotifications.qml:224
 msgid "Notifications"
 msgstr "通知"
 
-#: contents/ui/config/configNotifications.qml:398
+#: contents/ui/config/configNotifications.qml:417
 msgid "Notify about upcoming rain/storms"
 msgstr "今後の雨 / 嵐を通知"
 
-#: contents/ui/config/configNotifications.qml:412
+#: contents/ui/config/configNotifications.qml:431
 msgid "Notify about upcoming snow"
 msgstr "降雪が予想される場合に通知する"
 
-#: contents/ui/config/configNotifications.qml:426
+#: contents/ui/config/configNotifications.qml:445
 msgid "Notify with today's UV forecast"
 msgstr "本日の UV 予報を通知"
 
-#: contents/ui/config/configNotifications.qml:358
+#: contents/ui/config/configNotifications.qml:377
 msgid "Notify with today's forecast"
 msgstr "本日の予報を通知"
 
-#: contents/ui/config/configNotifications.qml:446
+#: contents/ui/config/configNotifications.qml:465
 msgid "Notify with today's geomagnetic activity forecast"
 msgstr "本日の地磁気活動予報を通知"
 
-#: contents/ui/config/configNotifications.qml:378
+#: contents/ui/config/configNotifications.qml:397
 msgid "Notify with tomorrow's forecast"
 msgstr "明日の予報を通知"
 
@@ -2090,23 +2185,23 @@ msgid "Only the clicked day expands"
 msgstr "クリックした日のみ展開"
 
 #: contents/ui/config/configLocation.qml:1106
-#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:191
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:196
 msgid "Open install guide"
 msgstr "インストールガイドを開く"
 
-#: contents/ui/RadarView.qml:198
+#: contents/ui/RadarView.qml:203
 msgid "Open radar in browser"
 msgstr "ブラウザでレーダーを開く"
 
-#: contents/ui/config/configGeneral.qml:287
+#: contents/ui/config/configGeneral.qml:290
 msgid "Open-Meteo (recommended, free)"
 msgstr "Open-Meteo（推奨、無料）"
 
-#: contents/ui/config/configGeneral.qml:295
+#: contents/ui/config/configGeneral.qml:298
 msgid "OpenWeatherMap (Key Required)"
 msgstr "OpenWeatherMap（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:492
+#: contents/ui/config/configGeneral.qml:495
 msgid "OpenWeatherMap API Key:"
 msgstr "OpenWeatherMap API キー:"
 
@@ -2120,14 +2215,14 @@ msgstr "本日の時間別予報を自動的に開く（または次に利用可
 msgid "Options"
 msgstr "オプション"
 
-#: contents/ui/config/configNotifications.qml:260
+#: contents/ui/config/configNotifications.qml:261
 msgid "Orange"
 msgstr "オレンジ"
 
 #: contents/ui/config/configAppearance.qml:242
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:676
-#: contents/ui/main.qml:1877
+#: contents/ui/main.qml:1905
 msgid "Overcast"
 msgstr "曇り"
 
@@ -2182,7 +2277,7 @@ msgstr "粒子状物質（PM2.5）"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:674
-#: contents/ui/main.qml:1875 contents/ui/main.qml:1927
+#: contents/ui/main.qml:1903 contents/ui/main.qml:1955
 msgid "Partly cloudy"
 msgstr "一部曇り"
 
@@ -2198,7 +2293,7 @@ msgstr "一部曇り（夜）"
 msgid "Pause"
 msgstr "一時停止"
 
-#: contents/ui/config/configNotifications.qml:308
+#: contents/ui/config/configNotifications.qml:327
 msgid "Per alert type:"
 msgstr "警報の種類ごと:"
 
@@ -2224,11 +2319,11 @@ msgstr "近隣の街区や特定のランドマークなど、よりローカル
 msgid "Pipe  |"
 msgstr "パイプ  |"
 
-#: contents/ui/config/configGeneral.qml:303
+#: contents/ui/config/configGeneral.qml:306
 msgid "Pirate Weather (Key Required)"
 msgstr "Pirate Weather（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:494
+#: contents/ui/config/configGeneral.qml:497
 msgid "Pirate Weather API Key:"
 msgstr "Pirate Weather API キー:"
 
@@ -2329,7 +2424,7 @@ msgstr "プレビュー: 20°C"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "主単位を先に表示（例: °C / °F）"
 
-#: contents/ui/DetailsView.qml:2337
+#: contents/ui/DetailsView.qml:2341
 msgid "Provider"
 msgstr "プロバイダ"
 
@@ -2337,21 +2432,21 @@ msgstr "プロバイダ"
 msgid "Provider availability"
 msgstr "プロバイダの可用性"
 
-#: contents/ui/config/configGeneral.qml:442
-#: contents/ui/config/configGeneral.qml:444
-#: contents/ui/config/configGeneral.qml:446
-#: contents/ui/config/configGeneral.qml:448
-#: contents/ui/config/configGeneral.qml:450
-#: contents/ui/config/configGeneral.qml:452
-#: contents/ui/config/configGeneral.qml:454
-#: contents/ui/config/configGeneral.qml:456
-#: contents/ui/config/configGeneral.qml:458
+#: contents/ui/config/configGeneral.qml:445
+#: contents/ui/config/configGeneral.qml:447
+#: contents/ui/config/configGeneral.qml:449
+#: contents/ui/config/configGeneral.qml:451
+#: contents/ui/config/configGeneral.qml:453
+#: contents/ui/config/configGeneral.qml:455
+#: contents/ui/config/configGeneral.qml:457
 #: contents/ui/config/configGeneral.qml:459
+#: contents/ui/config/configGeneral.qml:461
+#: contents/ui/config/configGeneral.qml:462
 msgid "Provider website:"
 msgstr "プロバイダのウェブサイト:"
 
-#: contents/ui/config/configGeneral.qml:413 contents/ui/DetailsView.qml:2096
-#: contents/ui/DetailsView.qml:2815
+#: contents/ui/config/configGeneral.qml:416 contents/ui/DetailsView.qml:2096
+#: contents/ui/DetailsView.qml:2822
 msgid "Provider:"
 msgstr "プロバイダ:"
 
@@ -2359,7 +2454,7 @@ msgstr "プロバイダ:"
 msgid "Provider: %1"
 msgstr "プロバイダ: %1"
 
-#: contents/ui/config/configGeneral.qml:399
+#: contents/ui/config/configGeneral.qml:402
 msgid ""
 "Providers are tried in order until one succeeds:\n"
 "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
@@ -2369,19 +2464,23 @@ msgstr ""
 "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 "Open-Meteo は常に最初に試行されます - 無料で API キーが不要です。"
 
-#: contents/ui/config/configGeneral.qml:323
+#: contents/ui/config/configNotifications.qml:271
+msgid "Purple"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:326
 msgid "QWeather (Key Required)"
 msgstr "QWeather（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:675
+#: contents/ui/config/configGeneral.qml:678
 msgid "QWeather API Host:"
 msgstr "QWeather API ホスト:"
 
-#: contents/ui/config/configGeneral.qml:504
+#: contents/ui/config/configGeneral.qml:507
 msgid "QWeather API Key:"
 msgstr "QWeather API キー:"
 
-#: contents/ui/config/configGeneral.qml:260
+#: contents/ui/config/configGeneral.qml:263
 msgid "QWeather error (code %1). Check your API key."
 msgstr "QWeather エラー（コード %1）。API キーを確認してください。"
 
@@ -2393,7 +2492,7 @@ msgstr ""
 msgid "QtLocation and QtPositioning are not installed"
 msgstr "QtLocation と QtPositioning がインストールされていません"
 
-#: contents/ui/RadarView.qml:151
+#: contents/ui/RadarView.qml:156
 msgid "QtWebEngine is not installed"
 msgstr "QtWebEngine がインストールされていません"
 
@@ -2401,21 +2500,38 @@ msgstr "QtWebEngine がインストールされていません"
 msgid "Quiet"
 msgstr "静穏"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:134
 #: contents/ui/components/RadarWebEngineView.qml:72
-#: contents/ui/config/configGeneral.qml:706
+#: contents/ui/config/configGeneral.qml:709
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:566
 msgid "Radar"
 msgstr "レーダー"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:144
+msgid "Radar + Satellite"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:276
+msgid "Radar color scheme:"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:199
 msgid "Radar only"
 msgstr "レーダーのみ"
 
-#: contents/ui/config/configGeneral.qml:728
+#: contents/ui/config/configGeneral.qml:731
+msgid "Radar provider:"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:760
+msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:751
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "レーダープロバイダ: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>ウィジェットは無料の RainViewer API を使用しており、過去 2 時間の気象レーダーデータを 10 分間隔で提供します。レーダー予報には対応していません。<br/><br/>Rain Viewer はレーダーデータの可用性を保証していません。データの所有者との間で契約を結んでいません。その理由は、所有者が Rain Viewer からのデータ削除を求めたり、形式を変更したり、データの共有を停止する可能性があるためです。レーダーデータは可能な限り長く保持するよう努めていますが、所有者が画像の提供を停止することもあります。"
 
-#: contents/ui/FullView.qml:730
+#: contents/ui/FullView.qml:731 contents/ui/FullView.qml:733
 msgid "Radar:"
 msgstr "レーダー:"
 
@@ -2425,9 +2541,9 @@ msgid "Ragweed"
 msgstr "ブタクサ"
 
 #: contents/ui/components/RadarWebEngineView.qml:73
-#: contents/ui/config/configNotifications.qml:49
+#: contents/ui/config/configNotifications.qml:50
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:969 contents/ui/main.qml:1607 contents/ui/main.qml:1895
+#: contents/ui/main.qml:969 contents/ui/main.qml:1635 contents/ui/main.qml:1923
 msgid "Rain"
 msgstr "雨"
 
@@ -2439,11 +2555,15 @@ msgstr "雨（昼）"
 msgid "Rain (night)"
 msgstr "雨（夜）"
 
+#: contents/ui/config/configGeneral.qml:737
+msgid "Rain Viewer"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:59
 msgid "Rain showers"
 msgstr "にわか雨"
 
-#: contents/ui/config/configNotifications.qml:395
+#: contents/ui/config/configNotifications.qml:414
 msgid "Rain/Storm"
 msgstr "雨 / 嵐"
 
@@ -2459,7 +2579,7 @@ msgstr "最近"
 msgid "Recommended — e.g. 560"
 msgstr "推奨 — 例: 560"
 
-#: contents/ui/config/configNotifications.qml:265
+#: contents/ui/config/configNotifications.qml:266
 msgid "Red"
 msgstr "赤"
 
@@ -2468,7 +2588,7 @@ msgstr "赤"
 msgid "Refresh"
 msgstr "更新"
 
-#: contents/ui/config/configGeneral.qml:779
+#: contents/ui/config/configGeneral.qml:909
 msgid "Refresh weather automatically"
 msgstr "天気を自動的に更新"
 
@@ -2514,7 +2634,7 @@ msgstr "保存した位置を削除"
 msgid "Rename location"
 msgstr "位置の名前を変更"
 
-#: contents/ui/config/configNotifications.qml:290
+#: contents/ui/config/configNotifications.qml:309
 msgid "Repeat reminder until dismissed"
 msgstr "閉じるまでリマインダーを繰り返す"
 
@@ -2545,7 +2665,7 @@ msgstr "すべてデフォルトにリセット"
 msgid "Reset to default"
 msgstr "デフォルトにリセット"
 
-#: contents/ui/main.qml:1881
+#: contents/ui/main.qml:1909
 msgid "Rime fog"
 msgstr "着氷霧"
 
@@ -2553,9 +2673,18 @@ msgstr "着氷霧"
 msgid "Round values:"
 msgstr "値の丸め:"
 
+#: contents/ui/main.qml:1214
+msgctxt "Alert severity"
+msgid "SEVERE"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:593
 msgid "SO₂"
 msgstr "SO₂"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:139
+msgid "Satellite"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:906
 msgid "Saturday"
@@ -2611,6 +2740,10 @@ msgstr "区切り:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr "深刻なリスク。屋外活動を避けてください。"
 
+#: contents/ui/config/configGeneral.qml:863
+msgid "Server URL:"
+msgstr ""
+
 #: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr "<b>%1</b> をデフォルト位置に設定しますか?"
@@ -2637,7 +2770,7 @@ msgstr "独自のアイコンを設定…"
 msgid "Severe geomagnetic storm."
 msgstr "強い地磁気嵐。"
 
-#: contents/ui/config/configNotifications.qml:253
+#: contents/ui/config/configNotifications.qml:254
 msgid "Severities:"
 msgstr "深刻度:"
 
@@ -2662,7 +2795,7 @@ msgstr "接頭アイコンの表示 / 非表示"
 msgid "Show / hide the prefix icon on the panel"
 msgstr "パネルの接頭アイコンを表示 / 非表示"
 
-#: contents/ui/config/configGeneral.qml:718
+#: contents/ui/config/configGeneral.qml:721
 msgid "Show Radar tab in widget"
 msgstr "ウィジェットにレーダータブを表示"
 
@@ -2698,6 +2831,10 @@ msgstr "展開ビューに花粉の種類を表示:"
 msgid "Show pollutants in expanded view:"
 msgstr "展開ビューに汚染物質を表示:"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:309
+msgid "Show precipitation motion arrows"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:407
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:476
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:471
@@ -2716,7 +2853,7 @@ msgstr "気温の単位を表示:"
 msgid "Show update time and provider"
 msgstr "更新時刻とプロバイダを表示"
 
-#: contents/ui/config/configGeneral.qml:596
+#: contents/ui/config/configGeneral.qml:599
 msgid "Show/hide key"
 msgstr "キーを表示 / 非表示"
 
@@ -2724,7 +2861,7 @@ msgstr "キーを表示 / 非表示"
 msgid "Show:"
 msgstr "表示:"
 
-#: contents/ui/main.qml:1913
+#: contents/ui/main.qml:1941
 msgid "Showers"
 msgstr "にわか雨"
 
@@ -2804,9 +2941,9 @@ msgstr "弱い降雪"
 msgid "Small circle  ⚬"
 msgstr "小さな丸  ⚬"
 
-#: contents/ui/config/configNotifications.qml:409
+#: contents/ui/config/configNotifications.qml:428
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
-#: contents/ui/main.qml:1905
+#: contents/ui/main.qml:1933
 msgid "Snow"
 msgstr "雪"
 
@@ -2835,34 +2972,34 @@ msgstr "積雪:"
 msgid "Snow depth (cm/in)"
 msgstr "積雪深（cm / in）"
 
-#: contents/ui/main.qml:1684
+#: contents/ui/main.qml:1712
 msgid "Snow ending"
 msgstr "雪 終了予定"
 
-#: contents/ui/main.qml:1679
+#: contents/ui/main.qml:1707
 msgid "Snow expected"
 msgstr "雪 予想"
 
-#: contents/ui/main.qml:1685
+#: contents/ui/main.qml:1713
 msgid "Snow expected to end %1."
 msgstr "雪は %1 に終了予定。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:702
-#: contents/ui/main.qml:1909
+#: contents/ui/main.qml:1937
 msgid "Snow grains"
 msgstr "細氷"
 
-#: contents/ui/main.qml:1680
+#: contents/ui/main.qml:1708
 msgid "Snow possible %1."
 msgstr "雪の可能性あり %1。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
-#: contents/ui/main.qml:1919
+#: contents/ui/main.qml:1947
 msgid "Snow showers"
 msgstr "にわか雪"
 
-#: contents/ui/config/configNotifications.qml:41 contents/ui/main.qml:961
+#: contents/ui/config/configNotifications.qml:42 contents/ui/main.qml:961
 msgid "Snow/Ice"
 msgstr "雪/氷"
 
@@ -2890,7 +3027,7 @@ msgstr "宇宙天気:"
 msgid "Space weather options"
 msgstr "宇宙天気オプション"
 
-#: contents/ui/config/configGeneral.qml:442
+#: contents/ui/config/configGeneral.qml:445
 msgid "Standard provider. API key required below."
 msgstr "標準プロバイダ。下に API キーが必要です。"
 
@@ -2904,11 +3041,11 @@ msgstr "統計項目:"
 msgid "Storm"
 msgstr "嵐"
 
-#: contents/ui/config/configGeneral.qml:315
+#: contents/ui/config/configGeneral.qml:318
 msgid "StormGlass (Key Required)"
 msgstr "StormGlass（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:500
+#: contents/ui/config/configGeneral.qml:503
 msgid "StormGlass API Key:"
 msgstr "StormGlass API キー:"
 
@@ -2949,8 +3086,8 @@ msgstr "太陽時刻オプション"
 msgid "Sunday"
 msgstr "日曜日"
 
-#: contents/ui/DetailsView.qml:3241 contents/ui/DetailsView.qml:3245
-#: contents/ui/DetailsView.qml:3568 contents/ui/DetailsView.qml:3572
+#: contents/ui/DetailsView.qml:3248 contents/ui/DetailsView.qml:3252
+#: contents/ui/DetailsView.qml:3575 contents/ui/DetailsView.qml:3579
 #: contents/ui/ForecastView.qml:1122
 msgid "Sunrise"
 msgstr "日の出"
@@ -2992,8 +3129,8 @@ msgstr "日の出 / 日の入りのマーカー:"
 msgid "Sunrise:"
 msgstr "日の出:"
 
-#: contents/ui/DetailsView.qml:3243 contents/ui/DetailsView.qml:3245
-#: contents/ui/DetailsView.qml:3570 contents/ui/DetailsView.qml:3572
+#: contents/ui/DetailsView.qml:3250 contents/ui/DetailsView.qml:3252
+#: contents/ui/DetailsView.qml:3577 contents/ui/DetailsView.qml:3579
 msgid "Sunset"
 msgstr "日の入り"
 
@@ -3019,6 +3156,10 @@ msgstr "日の入り:"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Swap order:"
 msgstr "順序を入れ替え:"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:324
+msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
+msgstr ""
 
 #: contents/ui/FullView.qml:328
 msgid "Switch location"
@@ -3095,7 +3236,7 @@ msgstr "気温の影:"
 msgid "Temperature:"
 msgstr "気温:"
 
-#: contents/ui/config/configGeneral.qml:627
+#: contents/ui/config/configGeneral.qml:630
 msgid "Test API Key"
 msgstr "API キーをテスト"
 
@@ -3103,11 +3244,11 @@ msgstr "API キーをテスト"
 msgid "Test across providers"
 msgstr "プロバイダ横断テスト"
 
-#: contents/ui/config/configGeneral.qml:215
+#: contents/ui/config/configGeneral.qml:218
 msgid "Testing connection…"
 msgstr "接続をテスト中…"
 
-#: contents/ui/config/configGeneral.qml:627
+#: contents/ui/config/configGeneral.qml:630
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:219
 msgid "Testing…"
 msgstr "テスト中…"
@@ -3120,7 +3261,7 @@ msgstr "テキストラベル（気温、風…）"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "テキストはシステムフォントに従い、利用可能な領域を埋めるよう拡張されます。"
 
-#: contents/ui/RadarView.qml:161
+#: contents/ui/RadarView.qml:166
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
 msgstr "レーダータブには QtWebEngine パッケージが必要ですが、このシステムにはインストールされていません。"
 
@@ -3149,10 +3290,10 @@ msgstr "テーマのデフォルト"
 msgid "This location is already in your saved list."
 msgstr "この位置は既に保存リストにあります。"
 
-#: contents/ui/config/configNotifications.qml:42
+#: contents/ui/config/configNotifications.qml:43
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:714
-#: contents/ui/main.qml:962 contents/ui/main.qml:1921
+#: contents/ui/main.qml:962 contents/ui/main.qml:1949
 msgid "Thunderstorm"
 msgstr "雷雨"
 
@@ -3166,7 +3307,7 @@ msgstr "雷雨（夜）"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:716
-#: contents/ui/main.qml:1923
+#: contents/ui/main.qml:1951
 msgid "Thunderstorm with hail"
 msgstr "ひょうを伴う雷雨"
 
@@ -3186,7 +3327,7 @@ msgstr "雷雨、激しいひょう（昼）"
 msgid "Thunderstorm, heavy hail (night)"
 msgstr "雷雨、激しいひょう（夜）"
 
-#: contents/ui/main.qml:1607
+#: contents/ui/main.qml:1635
 msgid "Thunderstorms"
 msgstr "雷雨"
 
@@ -3194,7 +3335,7 @@ msgstr "雷雨"
 msgid "Time format:"
 msgstr "時刻形式:"
 
-#: contents/ui/config/configNotifications.qml:170
+#: contents/ui/config/configNotifications.qml:171
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:826
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:700
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:694
@@ -3210,11 +3351,11 @@ msgstr "タイムアウト"
 msgid "Timezone:"
 msgstr "タイムゾーン:"
 
-#: contents/ui/config/configGeneral.qml:737
+#: contents/ui/config/configGeneral.qml:769
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "追加の地図レイヤー（雨、雲、気温、風、気圧）のロックを解除するには: アダプティブモードを無効化し、気象プロバイダとして OpenWeatherMap を選択して、上に API キーを入力してください。準備ができたら、再度アダプティブモードを有効化できます。"
 
-#: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1456
+#: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1484
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "今日"
@@ -3225,27 +3366,27 @@ msgstr "今日"
 msgid "Today's total precipitation (mm/in)"
 msgstr "本日の総降水量（mm / in）"
 
-#: contents/ui/config/configNotifications.qml:355
+#: contents/ui/config/configNotifications.qml:374
 msgid "Today's weather"
 msgstr "本日の天気"
 
-#: contents/ui/main.qml:1529
+#: contents/ui/main.qml:1557
 msgid "Tomorrow"
 msgstr "明日"
 
-#: contents/ui/config/configNotifications.qml:375
+#: contents/ui/config/configNotifications.qml:394
 msgid "Tomorrow forecast"
 msgstr "明日の予報"
 
-#: contents/ui/config/configGeneral.qml:311
+#: contents/ui/config/configGeneral.qml:314
 msgid "Tomorrow.io (Key Required)"
 msgstr "Tomorrow.io（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:498
+#: contents/ui/config/configGeneral.qml:501
 msgid "Tomorrow.io API Key:"
 msgstr "Tomorrow.io API キー:"
 
-#: contents/ui/main.qml:1494
+#: contents/ui/main.qml:1522
 msgid "Tonight"
 msgstr "今夜"
 
@@ -3294,13 +3435,18 @@ msgstr "左上"
 msgid "Top Right"
 msgstr "右上"
 
-#: contents/ui/config/configNotifications.qml:274
+#: contents/ui/config/configNotifications.qml:293
 msgid "Treat alert notifications as critical"
 msgstr "アラート通知を重要として扱う"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:68
 msgid "Truncate (single line)"
 msgstr "切り詰め（1 行）"
+
+#: contents/ui/main.qml:1217
+msgctxt "Alert severity"
+msgid "UNKNOWN"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:1392
 #: contents/ui/config/configAppearance.qml:1515
@@ -3313,7 +3459,7 @@ msgstr "UV 指数"
 msgid "UV Index:"
 msgstr "UV 指数:"
 
-#: contents/ui/config/configNotifications.qml:423 contents/ui/main.qml:1731
+#: contents/ui/config/configNotifications.qml:442 contents/ui/main.qml:1759
 msgid "UV index"
 msgstr "UV 指数"
 
@@ -3322,7 +3468,7 @@ msgstr "UV 指数"
 msgid "UV index forecast:"
 msgstr "UV 指数予報:"
 
-#: contents/ui/main.qml:1728
+#: contents/ui/main.qml:1756
 msgid "UV will be %1 (%2)"
 msgstr "UV は %1（%2）の予想"
 
@@ -3380,11 +3526,11 @@ msgstr "今後（次の日の出または日の入り）"
 msgid "Upcoming rise/set only"
 msgstr "今後の出入りのみ"
 
-#: contents/ui/WeatherService.qml:140
+#: contents/ui/WeatherService.qml:157
 msgid "Update timed out. Tap to retry."
 msgstr "更新がタイムアウトしました。タップして再試行。"
 
-#: contents/ui/WeatherService.qml:708
+#: contents/ui/WeatherService.qml:740
 msgid "Updated %1"
 msgstr "%1 に更新"
 
@@ -3461,27 +3607,27 @@ msgstr "視程:"
 msgid "Visible tabs:"
 msgstr "表示タブ:"
 
-#: contents/ui/config/configGeneral.qml:307
+#: contents/ui/config/configGeneral.qml:310
 msgid "Visual Crossing (Key Required)"
 msgstr "Visual Crossing（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:496
+#: contents/ui/config/configGeneral.qml:499
 msgid "Visual Crossing API Key:"
 msgstr "Visual Crossing API キー:"
 
-#: contents/ui/main.qml:2058
+#: contents/ui/main.qml:2086
 msgid "Waning Crescent"
 msgstr "有明月"
 
-#: contents/ui/main.qml:2054
+#: contents/ui/main.qml:2082
 msgid "Waning Gibbous"
 msgstr "居待月"
 
-#: contents/ui/main.qml:2046
+#: contents/ui/main.qml:2074
 msgid "Waxing Crescent"
 msgstr "三日月"
 
-#: contents/ui/main.qml:2050
+#: contents/ui/main.qml:2078
 msgid "Waxing Gibbous"
 msgstr "十三夜月"
 
@@ -3493,7 +3639,11 @@ msgstr "座標を検出しました: <b>%1°, %2°</b>。"
 msgid "We detected your location as: <b>%1</b>."
 msgstr "位置を検出しました: <b>%1</b>。"
 
-#: contents/ui/config/configGeneral.qml:350
+#: contents/ui/config/configGeneral.qml:795
+msgid "Weather Alerts"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:353
 msgid "Weather Provider"
 msgstr "気象プロバイダ"
 
@@ -3501,14 +3651,14 @@ msgstr "気象プロバイダ"
 msgid "Weather Widget"
 msgstr "天気ウィジェット"
 
-#: contents/ui/main.qml:1204
+#: contents/ui/main.qml:1232
 msgid "Weather alert"
 msgstr "天気アラート"
 
 #: contents/ui/config/configAppearance.qml:1421
 #: contents/ui/config/configAppearance.qml:1544
 #: contents/ui/config/configAppearance.qml:1667
-#: contents/ui/config/configNotifications.qml:240
+#: contents/ui/config/configNotifications.qml:241
 msgid "Weather alerts"
 msgstr "天気アラート"
 
@@ -3528,27 +3678,39 @@ msgstr "天気アイコンのスタイル:"
 msgid "Weather icon theme:"
 msgstr "天気アイコンテーマ:"
 
-#: contents/ui/WeatherService.qml:708
+#: contents/ui/WeatherService.qml:740
 msgid "Weather provider:"
 msgstr "気象プロバイダ:"
 
-#: contents/ui/config/configGeneral.qml:299
+#: contents/ui/config/configNotifications.qml:286
+msgid ""
+"Weather-alert severity levels, from lowest to highest:\n"
+"\n"
+"🟡 Yellow — Minor: be aware of the conditions.\n"
+"🟠 Orange — Moderate: be prepared.\n"
+"🔴 Red — Severe: take action.\n"
+"🟣 Purple — Extreme: extraordinarily dangerous, take action immediately.\n"
+"\n"
+"Turn a level off to stop receiving notifications for alerts of that severity."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:302
 msgid "WeatherAPI.com (Key Required)"
 msgstr "WeatherAPI.com（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:505
+#: contents/ui/config/configGeneral.qml:508
 msgid "WeatherAPI.com API Key:"
 msgstr "WeatherAPI.com API キー:"
 
-#: contents/ui/config/configGeneral.qml:319
+#: contents/ui/config/configGeneral.qml:322
 msgid "Weatherbit (Key Required)"
 msgstr "Weatherbit（キー必須）"
 
-#: contents/ui/config/configGeneral.qml:502
+#: contents/ui/config/configGeneral.qml:505
 msgid "Weatherbit API Key:"
 msgstr "Weatherbit API キー:"
 
-#: contents/ui/DetailsView.qml:2339
+#: contents/ui/DetailsView.qml:2343
 msgid "Website"
 msgstr "ウェブサイト"
 
@@ -3569,7 +3731,7 @@ msgstr "ウィジェットのパネル領域:"
 #: contents/ui/config/configAppearance.qml:1335
 #: contents/ui/config/configAppearance.qml:1466
 #: contents/ui/config/configAppearance.qml:1589
-#: contents/ui/config/configNotifications.qml:40
+#: contents/ui/config/configNotifications.qml:41
 #: contents/ui/DetailsView.qml:317 contents/ui/main.qml:960
 msgid "Wind"
 msgstr "風"
@@ -3602,7 +3764,7 @@ msgstr "次の行に折り返す"
 msgid "X-ray Flare Class"
 msgstr "X 線フレアクラス"
 
-#: contents/ui/config/configNotifications.qml:255
+#: contents/ui/config/configNotifications.qml:256
 msgid "Yellow"
 msgstr "黄"
 
@@ -3631,23 +3793,23 @@ msgstr "拡大"
 msgid "Zoom out"
 msgstr "縮小"
 
-#: contents/ui/main.qml:1701
+#: contents/ui/main.qml:1729
 msgid "a decrease from yesterday"
 msgstr "昨日から減少"
 
-#: contents/ui/main.qml:1485
+#: contents/ui/main.qml:1513
 msgid "a few clouds"
 msgstr "多少の雲"
 
-#: contents/ui/main.qml:1700
+#: contents/ui/main.qml:1728
 msgid "an increase from yesterday"
 msgstr "昨日から増加"
 
-#: contents/ui/main.qml:1486
+#: contents/ui/main.qml:1514
 msgid "clear skies"
 msgstr "快晴"
 
-#: contents/ui/main.qml:1484
+#: contents/ui/main.qml:1512
 msgid "cloudy skies"
 msgstr "曇り空"
 
@@ -3655,7 +3817,7 @@ msgstr "曇り空"
 msgid "cm"
 msgstr ""
 
-#: contents/ui/main.qml:1481
+#: contents/ui/main.qml:1509
 msgid "drizzle"
 msgstr "霧雨"
 
@@ -3663,7 +3825,7 @@ msgstr "霧雨"
 msgid "e.g. Sofia, Bulgaria"
 msgstr "例: ソフィア、ブルガリア"
 
-#: contents/ui/main.qml:1710 contents/ui/main.qml:1753
+#: contents/ui/main.qml:1738 contents/ui/main.qml:1781
 msgid "extreme"
 msgstr "極端"
 
@@ -3671,15 +3833,15 @@ msgstr "極端"
 msgid "feet"
 msgstr "フィート"
 
-#: contents/ui/main.qml:1482
+#: contents/ui/main.qml:1510
 msgid "fog"
 msgstr "霧"
 
-#: contents/ui/main.qml:1479
+#: contents/ui/main.qml:1507
 msgid "freezing rain"
 msgstr "着氷性の雨"
 
-#: contents/ui/main.qml:1166
+#: contents/ui/main.qml:1173
 msgid "from %1"
 msgstr "%1 から"
 
@@ -3696,7 +3858,7 @@ msgstr ""
 msgid "hPa"
 msgstr ""
 
-#: contents/ui/main.qml:1708
+#: contents/ui/main.qml:1736
 msgid "high"
 msgstr "高い"
 
@@ -3704,7 +3866,7 @@ msgstr "高い"
 msgid "in"
 msgstr ""
 
-#: contents/ui/main.qml:1612
+#: contents/ui/main.qml:1640
 msgid "in the next hours"
 msgstr "これからの数時間で"
 
@@ -3737,11 +3899,11 @@ msgstr ""
 msgid "kn"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3482
+#: contents/ui/DetailsView.qml:3489
 msgid "left"
 msgstr "残り"
 
-#: contents/ui/main.qml:1706
+#: contents/ui/main.qml:1734
 msgid "low"
 msgstr "低い"
 
@@ -3754,7 +3916,7 @@ msgstr "m"
 msgid "m/s"
 msgstr ""
 
-#: contents/ui/config/configGeneral.qml:291
+#: contents/ui/config/configGeneral.qml:294
 msgid "met.no (free)"
 msgstr "met.no（無料）"
 
@@ -3770,12 +3932,12 @@ msgstr ""
 msgid "mi"
 msgstr ""
 
-#: contents/ui/main.qml:1749
+#: contents/ui/main.qml:1777
 msgid "minor"
 msgstr "弱い"
 
-#: contents/ui/config/configGeneral.qml:799
-#: contents/ui/config/configNotifications.qml:345
+#: contents/ui/config/configGeneral.qml:929
+#: contents/ui/config/configNotifications.qml:364
 msgid "minutes"
 msgstr "分"
 
@@ -3792,7 +3954,7 @@ msgstr ""
 msgid "mmHg"
 msgstr ""
 
-#: contents/ui/main.qml:1707 contents/ui/main.qml:1750
+#: contents/ui/main.qml:1735 contents/ui/main.qml:1778
 msgid "moderate"
 msgstr "中程度"
 
@@ -3801,7 +3963,7 @@ msgstr "中程度"
 msgid "mph"
 msgstr ""
 
-#: contents/ui/main.qml:1483
+#: contents/ui/main.qml:1511
 msgid "overcast skies"
 msgstr "曇り空"
 
@@ -3819,39 +3981,39 @@ msgstr "px 高さ"
 msgid "px width"
 msgstr "px 幅"
 
-#: contents/ui/main.qml:1748
+#: contents/ui/main.qml:1776
 msgid "quiet"
 msgstr "静穏"
 
-#: contents/ui/main.qml:1480
+#: contents/ui/main.qml:1508
 msgid "rain"
 msgstr "雨"
 
-#: contents/ui/main.qml:1752
+#: contents/ui/main.qml:1780
 msgid "severe"
 msgstr "激しい"
 
-#: contents/ui/main.qml:1478
+#: contents/ui/main.qml:1506
 msgid "showers"
 msgstr "にわか雨"
 
-#: contents/ui/main.qml:1474
+#: contents/ui/main.qml:1502
 msgid "showers and thunderstorms"
 msgstr "にわか雨と雷雨"
 
-#: contents/ui/main.qml:1702
+#: contents/ui/main.qml:1730
 msgid "similar to yesterday"
 msgstr "昨日と同様"
 
-#: contents/ui/main.qml:1477
+#: contents/ui/main.qml:1505
 msgid "snow"
 msgstr "雪"
 
-#: contents/ui/main.qml:1476
+#: contents/ui/main.qml:1504
 msgid "snow showers"
 msgstr "にわか雪"
 
-#: contents/ui/main.qml:1751
+#: contents/ui/main.qml:1779
 msgid "strong"
 msgstr "強い"
 
@@ -3859,36 +4021,36 @@ msgstr "強い"
 msgid "system location"
 msgstr "システム位置"
 
-#: contents/ui/main.qml:1615
+#: contents/ui/main.qml:1643
 msgid "this afternoon"
 msgstr "今日の午後"
 
-#: contents/ui/main.qml:1614
+#: contents/ui/main.qml:1642
 msgid "this morning"
 msgstr "今日の午前"
 
-#: contents/ui/main.qml:1475
+#: contents/ui/main.qml:1503
 msgid "thunderstorms"
 msgstr "雷雨"
 
-#: contents/ui/main.qml:1616
+#: contents/ui/main.qml:1644
 msgid "tonight"
 msgstr "今夜"
 
-#: contents/ui/main.qml:1167
+#: contents/ui/main.qml:1174
 msgid "until %1"
 msgstr "%1 まで"
 
-#: contents/ui/DetailsView.qml:3479
+#: contents/ui/DetailsView.qml:3486
 msgid "until dawn"
 msgstr "夜明けまで"
 
-#: contents/ui/main.qml:1709
+#: contents/ui/main.qml:1737
 msgid "very high"
 msgstr "非常に高い"
 
-#: contents/ui/main.qml:1174 contents/ui/main.qml:1454
-#: contents/ui/main.qml:1527
+#: contents/ui/main.qml:1181 contents/ui/main.qml:1482
+#: contents/ui/main.qml:1555
 msgid "your location"
 msgstr "あなたの位置"
 

@@ -298,7 +298,7 @@ Item {
 
             PlasmaComponents.Switch {
                 visible: radarRoot.activeLayer !== "satellite"
-                text: i18n("Arrows")
+                text: i18n("Wind arrows")
                 checked: radarRoot.arrowsOn
                 onToggled: {
                     Plasmoid.configuration.librewxrArrows = checked;

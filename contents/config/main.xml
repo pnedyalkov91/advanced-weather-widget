@@ -284,11 +284,21 @@
     <entry name="autoRefresh"            type="Bool"><default>true</default></entry>
     <entry name="showUpdateText"         type="Bool"><default>true</default></entry>
 
+    <!-- ── Weather alerts ────────────────────────────────────────────── -->
+    <!-- Alert source: "native" = MeteoAlarm (Europe) + NOAA NWS (US) with
+         met.no fallback; "librewxr" = LibreWXR worldwide CAP alerts API;
+         "foss" = KDE FOSS Public Alert Server (worldwide CAP alerts). -->
+    <entry name="alertsProvider" type="String"><default>native</default></entry>
+    <!-- Base URL of the FOSS Public Alert Server (self-hostable; default is
+         KDE's public instance). -->
+    <entry name="fossAlertUrl"   type="String"><default>https://alerts.kde.org</default></entry>
+
     <!-- ── Notifications ─────────────────────────────────────────────── -->
     <entry name="alertNotificationsEnabled" type="Bool"><default>true</default></entry>
     <entry name="alertNotificationsYellowEnabled" type="Bool"><default>true</default></entry>
     <entry name="alertNotificationsOrangeEnabled" type="Bool"><default>true</default></entry>
     <entry name="alertNotificationsRedEnabled"    type="Bool"><default>true</default></entry>
+    <entry name="alertNotificationsPurpleEnabled" type="Bool"><default>true</default></entry>
     <entry name="alertNotificationsCriticalEnabled" type="Bool"><default>true</default></entry>
     <!-- When false, each alert is shown only once (no repeat, no Dismiss/Postpone actions). -->
     <entry name="alertNotificationsRepeatEnabled" type="Bool"><default>true</default></entry>

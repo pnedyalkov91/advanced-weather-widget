@@ -73,6 +73,23 @@ QtObject {
     readonly property real altitude:       Plasmoid.configuration.altitude
     readonly property string countryCode:  (Plasmoid.configuration.countryCode || "").toUpperCase()
     readonly property string locationName: Plasmoid.configuration.locationName || ""
+    // Alerts source: "native" (provider alerts + MeteoAlarm/NWS fallback),
+    // "librewxr" (LibreWXR worldwide CAP alerts API), or "foss" (KDE FOSS
+    // Public Alert Server — worldwide CAP alerts).
+    readonly property string alertsProvider: Plasmoid.configuration.alertsProvider || "native"
+    // Base URL shared with the LibreWXR radar view (librewxrUrl config entry)
+    readonly property string librewxrBaseUrl: {
+        var u = (Plasmoid.configuration.librewxrUrl || "https://api.librewxr.net").trim();
+        u = u.replace(/\/+$/, "");
+        return u || "https://api.librewxr.net";
+    }
+    // Base URL for the FOSS Public Alert Server (self-hostable; default is
+    // KDE's public instance at https://alerts.kde.org).
+    readonly property string fossBaseUrl: {
+        var u = (Plasmoid.configuration.fossAlertUrl || "https://alerts.kde.org").trim();
+        u = u.replace(/\/+$/, "");
+        return u || "https://alerts.kde.org";
+    }
 
     // ── Private: API key helpers ─────────────────────────────────────────
     function _owKey() {
@@ -657,11 +674,26 @@ QtObject {
 
     /**
      * Called by each provider after setting r.loading = false.
-     * If the provider already populated weatherAlerts (native alerts),
-     * this is a no-op.  Otherwise it falls back to MeteoAlarm / NWS.
+     * With the LibreWXR alerts provider selected, alerts always come from
+     * LibreWXR (overwriting any provider-native alerts on success).
+     * Otherwise (native mode): if the provider already populated
+     * weatherAlerts (native alerts), this is a no-op — else it falls
+     * back to MeteoAlarm / NWS.
      */
     function _fetchAlertsIfNeeded() {
         var r = weatherRoot;
+        if (alertsProvider === "librewxr") {
+            console.log("[WeatherService] Alerts provider = LibreWXR → fetching " + librewxrBaseUrl);
+            var _pL = _providers();
+            if (_pL) _pL.fetchAlertsLibreWxr(service);
+            return;
+        }
+        if (alertsProvider === "foss") {
+            console.log("[WeatherService] Alerts provider = FOSS Public Alert Server → fetching " + fossBaseUrl);
+            var _pF = _providers();
+            if (_pF) _pF.fetchAlertsFoss(service);
+            return;
+        }
         if (!_nativeAlertsSetThisGen) {
             console.log("[WeatherService] No native alerts → fetching via AlertsJS (countryCode=" + countryCode + ")");
             var _pA = _providers();

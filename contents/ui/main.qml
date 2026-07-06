@@ -1067,8 +1067,9 @@ PlasmoidItem {
         return nowM >= t;
     }
 
-    function _alertColorAllowed(color) {
+    function _alertColorAllowed(color, severity) {
         var c = (color || "").toLowerCase();
+        var s = (severity || "").toLowerCase();
         // Backward-compatible fallback to old minSeverity if new switches are absent.
         var hasSwitches = (Plasmoid.configuration.alertNotificationsYellowEnabled !== undefined)
             && (Plasmoid.configuration.alertNotificationsOrangeEnabled !== undefined)
@@ -1082,6 +1083,12 @@ PlasmoidItem {
                 return p >= 1;
             return p >= 2;
         }
+        // Extreme is its own "purple" tier — the parsers map it to color "red",
+        // so distinguish it by severity here. When the purple switch is absent
+        // (older config), fall through to the red switch so extreme alerts are
+        // never silently dropped.
+        if (s === "extreme" && Plasmoid.configuration.alertNotificationsPurpleEnabled !== undefined)
+            return Plasmoid.configuration.alertNotificationsPurpleEnabled === true;
         if (c === "red")
             return Plasmoid.configuration.alertNotificationsRedEnabled === true;
         if (c === "orange")
@@ -1182,9 +1189,13 @@ PlasmoidItem {
         return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    /** Maps an alert severity color to a colored-circle emoji — KDE notification
-     *  bodies strip <font color>, but emoji glyphs keep their own color. */
-    function _alertSeverityEmoji(color) {
+    /** Maps an alert severity/color to a colored-circle emoji — KDE notification
+     *  bodies strip <font color>, but emoji glyphs keep their own color.
+     *  Extreme gets its own purple marker so it's visually distinct from
+     *  Severe (both of which the parsers map to color "red"). */
+    function _alertSeverityEmoji(color, severity) {
+        var s = (severity || "").toLowerCase();
+        if (s === "extreme") return "🟣"; // 🟣 purple — Extreme
         var c = (color || "").toLowerCase();
         if (c === "red")    return "🔴"; // 🔴
         if (c === "orange") return "🟠"; // 🟠
@@ -1192,14 +1203,31 @@ PlasmoidItem {
         return "";
     }
 
+    /** Translatable, uppercased severity label. Maps the CAP severity enum
+     *  (Extreme/Severe/Moderate/Minor/Unknown) and the color fallbacks
+     *  (red/orange/yellow/green) to localized strings; unknown values fall
+     *  back to the raw string, uppercased. */
+    function _alertSeverityLabel(severity) {
+        var s = (severity || "").trim().toLowerCase();
+        switch (s) {
+        case "extreme":              return i18nc("Alert severity", "EXTREME");
+        case "severe":  case "red":  return i18nc("Alert severity", "SEVERE");
+        case "moderate": case "orange": return i18nc("Alert severity", "MODERATE");
+        case "minor":   case "yellow": return i18nc("Alert severity", "MINOR");
+        case "unknown":              return i18nc("Alert severity", "UNKNOWN");
+        case "green":                return i18nc("Alert severity", "MINIMAL");
+        }
+        return (severity || "").toUpperCase();
+    }
+
     /** Notification body: severity, headline, effective range, instruction, provider. */
     function _alertNotificationBody(a) {
         var lines = [];
-        var emoji = _alertSeverityEmoji(a.color);
         var severity = (a.severity || a.color || "").trim();
+        var emoji = _alertSeverityEmoji(a.color, a.severity);
         if (severity.length > 0) {
             var marker = emoji.length > 0 ? (emoji + " ") : "";
-            lines.push(i18n("<b>Severity:</b> %1%2", marker, _escapeHtml(severity.toUpperCase())));
+            lines.push(i18n("<b>Severity:</b> %1%2", marker, _escapeHtml(_alertSeverityLabel(severity))));
         }
         lines.push(i18n("<b>Headline:</b> %1", _escapeHtml(a.displayName || a.headline || i18n("Weather alert"))));
         var range = _alertEffectiveRangeText(a);
@@ -1377,7 +1405,7 @@ PlasmoidItem {
             var a = alerts[i];
             if (!_isAlertActiveNow(a, now))
                 continue;
-            if (!_alertColorAllowed(a.color))
+            if (!_alertColorAllowed(a.color, a.severity))
                 continue;
             if (!_alertTypeEnabled(a.awarenessType))
                 continue;

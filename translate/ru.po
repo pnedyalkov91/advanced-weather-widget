@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
-"POT-Creation-Date: 2026-07-04 12:00+0300\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+"POT-Creation-Date: 2026-07-06 10:40+0300\n"
 "PO-Revision-Date: 2026-06-27 03:37+0300\n"
 "Last-Translator: Polyakov Dmitry <dmitrypolyakov1337@gmail.com>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -17,39 +17,39 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Lokalize 25.12.3\n"
 
-#: contents/ui/DetailsView.qml:3476 contents/ui/DetailsView.qml:3478
+#: contents/ui/DetailsView.qml:3483 contents/ui/DetailsView.qml:3485
 msgid " until dawn"
 msgstr " до рассвета"
 
-#: contents/ui/main.qml:1513
+#: contents/ui/main.qml:1541
 msgid "%1 %2"
 msgstr "%1 %2"
 
-#: contents/ui/main.qml:1457
+#: contents/ui/main.qml:1485
 msgid "%1 - Today"
 msgstr "%1 - Сегодня"
 
-#: contents/ui/main.qml:1530
+#: contents/ui/main.qml:1558
 msgid "%1 - Tomorrow"
 msgstr "%1 - Завтра"
 
-#: contents/ui/main.qml:1655
+#: contents/ui/main.qml:1683
 msgid "%1 ending"
 msgstr "%1 заканчивается"
 
-#: contents/ui/main.qml:1649
+#: contents/ui/main.qml:1677
 msgid "%1 expected"
 msgstr "Ожидается %1"
 
-#: contents/ui/main.qml:1656
+#: contents/ui/main.qml:1684
 msgid "%1 expected to end %2."
 msgstr "Ожидается, что %1 закончится %2."
 
-#: contents/ui/main.qml:1650
+#: contents/ui/main.qml:1678
 msgid "%1 possible %2."
 msgstr "Возможно %1 %2."
 
-#: contents/ui/main.qml:1442
+#: contents/ui/main.qml:1470
 msgid "%1 will be %2 with a low of %3 and a high of %4."
 msgstr "%1 будет %2, мин. температура: %3, максимальная: %4."
 
@@ -118,36 +118,40 @@ msgstr "3D Oxygen (Встроено)"
 msgid "68°F"
 msgstr "68°F"
 
-#: contents/ui/main.qml:1207
+#: contents/ui/main.qml:1235
 msgid "<b>Effective:</b> %1"
 msgstr "<b>Effective:</b> %1"
 
-#: contents/ui/main.qml:1204
+#: contents/ui/main.qml:1232
 msgid "<b>Headline:</b> %1"
 msgstr "<b>Заголовок:</b> %1"
 
-#: contents/ui/main.qml:1210
+#: contents/ui/main.qml:1238
 msgid "<b>Instruction:</b> %1"
 msgstr "<b>Инструкция:</b> %1"
 
-#: contents/ui/main.qml:1213
+#: contents/ui/main.qml:1241
 msgid "<b>Provider:</b> %1"
 msgstr "<b>Провайдер:</b> %1"
 
-#: contents/ui/main.qml:1202
+#: contents/ui/main.qml:1230
 #, javascript-format
 msgid "<b>Severity:</b> %1%2"
 msgstr "<b>Серьёзность:</b> %1%2"
 
-#: contents/ui/config/configGeneral.qml:745
+#: contents/ui/config/configGeneral.qml:777
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
 msgstr "<b>Почему слои OWM могут не совпадать с данными радара RainViewer</b><br/><br/>Слои осадков/облаков OWM - это <b> статические фрагменты модели</b> - они отображают сглаженный NWP (числовой прогноз погоды), а не фактические данные радара. Они отображают, где, <i>по мнению</i> модели, идет дождь, на основе интерполяции между метеостанциями и прогонами модели.<br/><br/>RainViewer использует <b> композитные радары реальной погоды</b> - фактическая измеренная отражательная способность обновляется каждые 2-10 минут. Это расхождение ожидаемо и известно."
 
-#: contents/ui/config/configGeneral.qml:450
+#: contents/ui/config/configGeneral.qml:453
 msgid "AI-powered weather intelligence. API key required below."
 msgstr "Прогноз погоды на базе ИИ. Ниже нужно указать ключ API."
 
-#: contents/ui/config/configGeneral.qml:211
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:162
+msgid "API error"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:214
 msgid "API key is empty."
 msgstr "Ключ для API не указан"
 
@@ -167,7 +171,7 @@ msgstr "Активно"
 msgid "Adaptive (Open-Meteo)"
 msgstr "Адаптивный (Open-Meteo)"
 
-#: contents/ui/config/configGeneral.qml:383
+#: contents/ui/config/configGeneral.qml:386
 msgid "Adaptive (auto-fallback)"
 msgstr "Адаптивный (автозамена)"
 
@@ -183,7 +187,7 @@ msgstr "Добавить местоположение"
 msgid "Advanced (all tabs)"
 msgstr "Расширенный (все вкладки)"
 
-#: contents/ui/main.qml:1493
+#: contents/ui/main.qml:1521
 msgid "Afternoon"
 msgstr "День"
 
@@ -244,6 +248,22 @@ msgstr "Ольха"
 msgid "Alerts"
 msgstr "Предупреждения"
 
+#: contents/ui/config/configGeneral.qml:810
+msgid "Alerts provider:"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:854
+msgid "Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider. You can point the widget at your own self-hosted instance below."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:845
+msgid "Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:836
+msgid "Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
+msgstr ""
+
 #: contents/ui/TooltipContent.qml:480
 msgid "Alerts:"
 msgstr "Предупреждения:"
@@ -268,7 +288,7 @@ msgstr "Выс: %1 %2"
 msgid "Alt: %1 m"
 msgstr "Выс: %1 м"
 
-#: contents/ui/config/configGeneral.qml:444
+#: contents/ui/config/configGeneral.qml:447
 msgid "Alternative provider. API key required below."
 msgstr "Альтернативный провайдер. Требуется ключ API (ниже)."
 
@@ -284,7 +304,7 @@ msgstr "Высота над уровнем моря не является обя
 msgid "Altitude:"
 msgstr "Высота над уровнем моря:"
 
-#: contents/ui/config/configGeneral.qml:640
+#: contents/ui/config/configGeneral.qml:643
 msgid "An API key is required for %1. Weather data cannot be retrieved without it."
 msgstr "Для %1 требуется ключ API. Без него невозможно получить данные о погоде."
 
@@ -320,9 +340,13 @@ msgstr "Применить обнаруженное местоположение
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Вы уверены? Это ваше последнее сохраненное местоположение. Если вы удалите его, виджет больше не будет отображать информацию о погоде."
 
-#: contents/ui/DetailsView.qml:3478
+#: contents/ui/DetailsView.qml:3485
 msgid "Around midnight — "
 msgstr "Около полуночи — "
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:301
+msgid "Arrows"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:1358
 #: contents/ui/config/configAppearance.qml:1460
@@ -382,7 +406,7 @@ msgstr "Автоматически определять местоположен
 msgid "Available"
 msgstr "Доступно"
 
-#: contents/ui/config/configNotifications.qml:48 contents/ui/main.qml:968
+#: contents/ui/config/configNotifications.qml:49 contents/ui/main.qml:968
 msgid "Avalanche"
 msgstr "Лавина"
 
@@ -423,6 +447,10 @@ msgstr "Поведение"
 #: contents/ui/DetailsView.qml:1433 contents/ui/main.qml:876
 msgid "Birch"
 msgstr "Берёза"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:150
+msgid "Black and White"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:732
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:536
@@ -509,12 +537,12 @@ msgstr "Цельсий (°C)"
 msgid "Changes staged. Click the main Apply button to save."
 msgstr "Настройки изменены. Нажмите кнопку Применить, чтобы сохранить изменения."
 
-#: contents/ui/config/configGeneral.qml:88
+#: contents/ui/config/configGeneral.qml:91
 #: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
 msgstr "Проверка доступности местоположения..."
 
-#: contents/ui/config/configGeneral.qml:456
+#: contents/ui/config/configGeneral.qml:459
 msgid "Chinese weather provider with global coverage. API key required below."
 msgstr "Китайский погодный провайдер с глобальным покрытием. Нужен ключ API."
 
@@ -550,7 +578,7 @@ msgstr "Выбрать на карте"
 msgid "City / location name"
 msgstr "Название города / местоположения"
 
-#: contents/ui/config/configGeneral.qml:601
+#: contents/ui/config/configGeneral.qml:604
 msgid "Clear"
 msgstr "Ясно"
 
@@ -562,13 +590,13 @@ msgstr "Ясно (днём)"
 msgid "Clear (night)"
 msgstr "Ясно (ночью)"
 
-#: contents/ui/main.qml:1871
+#: contents/ui/main.qml:1899
 msgid "Clear night"
 msgstr "Ясная ночь"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:670
-#: contents/ui/main.qml:1871
+#: contents/ui/main.qml:1899
 msgid "Clear sky"
 msgstr "Ясное небо"
 
@@ -588,7 +616,7 @@ msgstr "Нажмите, чтобы настроить местоположени
 msgid "Clouds"
 msgstr "Облачно"
 
-#: contents/ui/config/configNotifications.qml:46 contents/ui/main.qml:966
+#: contents/ui/config/configNotifications.qml:47 contents/ui/main.qml:966
 msgid "Coastal event"
 msgstr "Прибрежное явление"
 
@@ -661,11 +689,15 @@ msgstr "Подтвердить переименование"
 msgid "Confirm your location"
 msgstr "Подтвердите ваше местоположение"
 
-#: contents/ui/config/configGeneral.qml:278
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:163
+msgid "Connection failed"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:281
 msgid "Connection failed (HTTP %1)."
 msgstr "Соединение прервано (HTTP %1)."
 
-#: contents/ui/config/configGeneral.qml:271
+#: contents/ui/config/configGeneral.qml:274
 msgid "Connection successful! %1 key is valid."
 msgstr "Успешное соединение! Ключ %1 действителен."
 
@@ -673,7 +705,7 @@ msgstr "Успешное соединение! Ключ %1 действител�
 msgid "Coordinates"
 msgstr "Координаты"
 
-#: contents/ui/config/configNotifications.qml:284
+#: contents/ui/config/configNotifications.qml:303
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
 msgstr "Важные уведомления по-прежнему отображаются, даже если включена функция \"Не беспокоить\", а также во время игры или просмотра полноэкранного видео (если эти параметры включены в системных настройках → Уведомления)."
 
@@ -723,15 +755,19 @@ msgstr "Кастомизация…"
 msgid "Daily Forecast Settings"
 msgstr "Настройки ежедневного прогноза погоды"
 
-#: contents/ui/config/configGeneral.qml:446
+#: contents/ui/config/configGeneral.qml:449
 msgid "Dark Sky-compatible API with US alerts. API key required below."
 msgstr "API, совместимый с Dark Sky для оповещений США. Нужен ключ API снизу."
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:314
+msgid "Dark map"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:873
 msgid "Dash  –"
 msgstr "Тире  –"
 
-#: contents/ui/config/configGeneral.qml:763
+#: contents/ui/config/configGeneral.qml:893
 msgid "Data Refresh"
 msgstr "Обновление данных"
 
@@ -765,18 +801,19 @@ msgstr "Дата/Время:"
 msgid "Date:"
 msgstr "Дата:"
 
-#: contents/ui/DetailsView.qml:3474
+#: contents/ui/DetailsView.qml:3481
 msgid "Dawn approaching — "
 msgstr "Приближается рассвет — "
 
-#: contents/ui/DetailsView.qml:3454
+#: contents/ui/DetailsView.qml:3461
 msgid "Day"
 msgstr "День"
 
-#: contents/ui/DetailsView.qml:3482
+#: contents/ui/DetailsView.qml:3489
 msgid "Daylight over"
 msgstr "Световой день завершился"
 
+#: contents/ui/config/configGeneral.qml:873
 #: contents/ui/config/tabs/ConfigPanelTab.qml:495
 #: contents/ui/config/tabs/ConfigPanelTab.qml:569
 msgid "Default"
@@ -794,7 +831,7 @@ msgstr "Вкладка по умолчанию:"
 msgid "Dense drizzle"
 msgstr "Густая изморось"
 
-#: contents/ui/DetailsView.qml:2326 contents/ui/DetailsView.qml:2328
+#: contents/ui/DetailsView.qml:2330 contents/ui/DetailsView.qml:2332
 msgid "Description"
 msgstr "Описание"
 
@@ -845,7 +882,7 @@ msgstr "Температура точки росы"
 msgid "Dew point:"
 msgstr "Точка росы:"
 
-#: contents/ui/config/configNotifications.qml:317
+#: contents/ui/config/configNotifications.qml:336
 msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
 msgstr "Отключите тип, чтобы заглушить его, или задайте ему собственный интервал повторения. Интервалиспользуется только в том случае, если включено \"Повторять напоминание до тех пор, пока оно не будет убрано\"."
 
@@ -900,7 +937,7 @@ msgid "Drag to reorder shown items"
 msgstr "Перетащите, чтобы изменить порядок отображаемых элементов"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:53
-#: contents/ui/main.qml:1885
+#: contents/ui/main.qml:1913
 msgid "Drizzle"
 msgstr "Изморось"
 
@@ -908,15 +945,20 @@ msgstr "Изморось"
 msgid "Dual temperature"
 msgstr "Двойная температура"
 
-#: contents/ui/config/configGeneral.qml:682
+#: contents/ui/main.qml:1213
+msgctxt "Alert severity"
+msgid "EXTREME"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:685
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
 msgstr "У каждого проекта QWeather есть уникальный хост API. Найдите свой собственный в console.qweather.com и выберите его в настройках вашего проекта."
 
-#: contents/ui/config/configNotifications.qml:300
+#: contents/ui/config/configNotifications.qml:319
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
 msgstr "Каждое уведомление показывается только один раз, без кнопок Отклонить и Отложить."
 
-#: contents/ui/config/configNotifications.qml:232
+#: contents/ui/config/configNotifications.qml:233
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "Каждый тип уведомления может быть включён раздельно, со своим собственным временем, где это возможно."
 
@@ -928,11 +970,11 @@ msgstr "Редактировать местоположение"
 msgid "Edit location details"
 msgstr "Редактировать подробности местоположения"
 
-#: contents/ui/DetailsView.qml:2331
+#: contents/ui/DetailsView.qml:2335
 msgid "Effective"
 msgstr "Эффективный"
 
-#: contents/ui/config/configNotifications.qml:243
+#: contents/ui/config/configNotifications.qml:244
 msgid "Enable alert notifications"
 msgstr "Включить уведомления о предупреждениях"
 
@@ -982,35 +1024,35 @@ msgstr "Введите точную широту, долготу и (необя�
 msgid "Enter manually"
 msgstr "Ввести вручную"
 
-#: contents/ui/config/configGeneral.qml:519
+#: contents/ui/config/configGeneral.qml:522
 msgid "Enter your OpenWeatherMap API key"
 msgstr "Введите ваш ключ API OpenWeatherMap"
 
-#: contents/ui/config/configGeneral.qml:521
+#: contents/ui/config/configGeneral.qml:524
 msgid "Enter your Pirate Weather API key"
 msgstr "Введите ваш ключ API Pirate Weather"
 
-#: contents/ui/config/configGeneral.qml:531
+#: contents/ui/config/configGeneral.qml:534
 msgid "Enter your QWeather API key"
 msgstr "Введите ваш ключ API QWeather"
 
-#: contents/ui/config/configGeneral.qml:527
+#: contents/ui/config/configGeneral.qml:530
 msgid "Enter your StormGlass API key"
 msgstr "Введите ваш ключ API StormGlass"
 
-#: contents/ui/config/configGeneral.qml:525
+#: contents/ui/config/configGeneral.qml:528
 msgid "Enter your Tomorrow.io API key"
 msgstr "Введите ваш ключ API Tomorrow.io"
 
-#: contents/ui/config/configGeneral.qml:523
+#: contents/ui/config/configGeneral.qml:526
 msgid "Enter your Visual Crossing API key"
 msgstr "Введите ваш ключ API Visual Crossing"
 
-#: contents/ui/config/configGeneral.qml:532
+#: contents/ui/config/configGeneral.qml:535
 msgid "Enter your WeatherAPI.com key"
 msgstr "Введите ваш ключ API WeatherAPI.com"
 
-#: contents/ui/config/configGeneral.qml:529
+#: contents/ui/config/configGeneral.qml:532
 msgid "Enter your Weatherbit API key"
 msgstr "Введите ваш ключ API Weatherbit"
 
@@ -1018,7 +1060,7 @@ msgstr "Введите ваш ключ API Weatherbit"
 msgid "Error (code %1)"
 msgstr "Ошибка (код %1)"
 
-#: contents/ui/DetailsView.qml:3476
+#: contents/ui/DetailsView.qml:3483
 msgid "Evening — "
 msgstr "Вечер — "
 
@@ -1038,7 +1080,7 @@ msgstr "Расширить виджет, чтобы заполнить дост�
 msgid "Expanded cards height:"
 msgstr "Высота развернутой карточки:"
 
-#: contents/ui/DetailsView.qml:2333
+#: contents/ui/DetailsView.qml:2337
 msgid "Expires"
 msgstr "Заканчивается"
 
@@ -1055,15 +1097,19 @@ msgstr "Чрезвычайная магнитная буря."
 msgid "Extremely Poor"
 msgstr "Крайне плохо"
 
+#: contents/ui/config/configGeneral.qml:818
+msgid "FOSS Public Alert Server"
+msgstr ""
+
 #: contents/ui/config/tabs/ConfigMiscTab.qml:231
 msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
 
-#: contents/ui/WeatherService.qml:755
+#: contents/ui/WeatherService.qml:787
 msgid "Failed to load weather providers"
 msgstr "Не удалось загрузить провайдеров данных"
 
-#: contents/ui/WeatherService.qml:743
+#: contents/ui/WeatherService.qml:775
 msgid "Failed: %1"
 msgstr "Ошибка: %1"
 
@@ -1098,7 +1144,7 @@ msgstr "Заполнять панель:"
 msgid "Find"
 msgstr "Найти"
 
-#: contents/ui/main.qml:2048
+#: contents/ui/main.qml:2076
 msgid "First Quarter"
 msgstr "Первая четверть"
 
@@ -1117,15 +1163,15 @@ msgstr "Возможны солнечные вспышки"
 msgid "Flat Color (Bundled)"
 msgstr "Сплошной цвет (Встроено)"
 
-#: contents/ui/config/configNotifications.qml:50 contents/ui/main.qml:970
+#: contents/ui/config/configNotifications.qml:51 contents/ui/main.qml:970
 msgid "Flood"
 msgstr "Потоп"
 
 #: contents/ui/config/configAppearance.qml:248
-#: contents/ui/config/configNotifications.qml:43
+#: contents/ui/config/configNotifications.qml:44
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:52
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:678
-#: contents/ui/main.qml:963 contents/ui/main.qml:1879
+#: contents/ui/main.qml:963 contents/ui/main.qml:1907
 msgid "Fog"
 msgstr "Туман"
 
@@ -1142,6 +1188,7 @@ msgstr "Размер шрифта:"
 msgid "Footer:"
 msgstr "Нижний колонтитул:"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:155
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:84
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:175 contents/ui/FullView.qml:565
 msgid "Forecast"
@@ -1159,21 +1206,21 @@ msgstr "Только прогноз"
 msgid "Forecast:"
 msgstr "Прогноз:"
 
-#: contents/ui/config/configNotifications.qml:47 contents/ui/main.qml:967
+#: contents/ui/config/configNotifications.qml:48 contents/ui/main.qml:967
 msgid "Forest fire"
 msgstr "Лесной пожар"
 
-#: contents/ui/config/configGeneral.qml:458
+#: contents/ui/config/configGeneral.qml:461
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
 msgstr "Бесплатный сервис Норвежского метеорологического института. Ключ API не требуется."
 
-#: contents/ui/config/configGeneral.qml:459
+#: contents/ui/config/configGeneral.qml:462
 msgid "Free and open-source. No API key needed. Recommended."
 msgstr "Бесплатный и открытый. Ключ API не требуется. Рекомендуется."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:54
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:686
-#: contents/ui/main.qml:1891
+#: contents/ui/main.qml:1919
 msgid "Freezing drizzle"
 msgstr "Ледяная изморось"
 
@@ -1187,7 +1234,7 @@ msgstr "Ледяная изморось (ночью)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:694
-#: contents/ui/main.qml:1901
+#: contents/ui/main.qml:1929
 msgid "Freezing rain"
 msgstr "Ледяной дождь"
 
@@ -1203,11 +1250,11 @@ msgstr "Ледяной дождь (ночью)"
 msgid "Friday"
 msgstr "Пятница"
 
-#: contents/ui/main.qml:2052
+#: contents/ui/main.qml:2080
 msgid "Full Moon"
 msgstr "Полнолуние"
 
-#: contents/ui/DetailsView.qml:2716
+#: contents/ui/DetailsView.qml:2722
 msgid "Future alerts"
 msgstr "Будущие предупреждения"
 
@@ -1229,11 +1276,11 @@ msgstr "GeoClue2 недоступен, пробуем системное мес�
 msgid "Geomagnetic Storm"
 msgstr "Магнитная буря"
 
-#: contents/ui/config/configNotifications.qml:443 contents/ui/main.qml:1776
+#: contents/ui/config/configNotifications.qml:462 contents/ui/main.qml:1804
 msgid "Geomagnetic activity"
 msgstr "Геомагнитная активность"
 
-#: contents/ui/main.qml:1773
+#: contents/ui/main.qml:1801
 msgid "Geomagnetic activity will be %1 (Kp %2)"
 msgstr "Геомагнитная активность — %1 (Kp %2)"
 
@@ -1246,7 +1293,7 @@ msgstr "Хорошо"
 msgid "Grass"
 msgstr "Трава"
 
-#: contents/ui/DetailsView.qml:2323
+#: contents/ui/DetailsView.qml:2327
 msgid "Headline"
 msgstr "Заголовок"
 
@@ -1255,20 +1302,20 @@ msgstr "Заголовок"
 msgid "Heavy"
 msgstr "Сильный"
 
-#: contents/ui/main.qml:1887
+#: contents/ui/main.qml:1915
 msgid "Heavy drizzle"
 msgstr "Сильная изморось"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:692
-#: contents/ui/main.qml:1897
+#: contents/ui/main.qml:1925
 msgid "Heavy rain"
 msgstr "Сильный дождь"
 
-#: contents/ui/main.qml:1915
+#: contents/ui/main.qml:1943
 msgid "Heavy showers"
 msgstr "Сильные ливни"
 
-#: contents/ui/main.qml:1907
+#: contents/ui/main.qml:1935
 msgid "Heavy snow"
 msgstr "Сильный снег"
 
@@ -1280,7 +1327,7 @@ msgstr "Сильные снежные ливни"
 msgid "Heavy snowfall"
 msgstr "Сильный снегопад"
 
-#: contents/ui/main.qml:1925
+#: contents/ui/main.qml:1953
 msgid "Heavy thunderstorm with hail"
 msgstr "Сильная гроза с градом"
 
@@ -1305,15 +1352,15 @@ msgstr "Скрыть значок-префикс"
 msgid "High"
 msgstr "Высок."
 
-#: contents/ui/config/configGeneral.qml:454
+#: contents/ui/config/configGeneral.qml:457
 msgid "High precision forecast provider. API key required below."
 msgstr "Поставщик высокоточных прогнозов. Ниже требуется ключ API."
 
-#: contents/ui/config/configNotifications.qml:44 contents/ui/main.qml:964
+#: contents/ui/config/configNotifications.qml:45 contents/ui/main.qml:964
 msgid "High temperature"
 msgstr "Высокая температура"
 
-#: contents/ui/config/configGeneral.qml:448
+#: contents/ui/config/configGeneral.qml:451
 msgid "Historical and forecast data provider. API key required below."
 msgstr "Поставщик исторических и прогнозных данных. Ниже требуется ключ API."
 
@@ -1388,7 +1435,7 @@ msgstr "Значки"
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "Если это верно, примените. В противном случае выберите местоположение вручную."
 
-#: contents/ui/config/configGeneral.qml:664
+#: contents/ui/config/configGeneral.qml:667
 msgid "If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately."
 msgstr "Если вы только что зарегистрировали новый API-ключ OpenWeatherMap, его активация может занять до 2 часов. Пожалуйста, повторите попытку позже, если это не сработает сразу."
 
@@ -1427,7 +1474,7 @@ msgstr ""
 "  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
 "Вы можете все еще искать или вводить координаты местоположений вручную. Обратите внимание, что автоматическое определение будет продолжать работать с использованием резервного IP-адреса, но оно может быть менее точным и не будет обновляться в режиме реального времени по мере вашего перемещения."
 
-#: contents/ui/RadarView.qml:176
+#: contents/ui/RadarView.qml:181
 msgid ""
 "Install it for your distribution:\n"
 "- Fedora / RHEL: qt6-qtwebengine\n"
@@ -1439,11 +1486,11 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2335
+#: contents/ui/DetailsView.qml:2339
 msgid "Instruction"
 msgstr "Инструкция"
 
-#: contents/ui/config/configGeneral.qml:790
+#: contents/ui/config/configGeneral.qml:920
 msgid "Interval:"
 msgstr "Интервал:"
 
@@ -1451,7 +1498,7 @@ msgstr "Интервал:"
 msgid "Invalid API key (HTTP %1)"
 msgstr "Неверный ключ API (HTTP %1)"
 
-#: contents/ui/config/configGeneral.qml:275
+#: contents/ui/config/configGeneral.qml:278
 msgid "Invalid API key. Please check and try again."
 msgstr "Неверный ключ API. Пожалуйста, проверьте и повторите попытку."
 
@@ -1459,7 +1506,7 @@ msgstr "Неверный ключ API. Пожалуйста, проверьте 
 msgid "Invalid response"
 msgstr "Недействительный ответ"
 
-#: contents/ui/config/configGeneral.qml:265
+#: contents/ui/config/configGeneral.qml:268
 msgid "Invalid response from QWeather."
 msgstr "Недействительный ответ от QWeather"
 
@@ -1529,7 +1576,7 @@ msgstr "Kp-индекс"
 msgid "Kp index/G forecast:"
 msgstr "Прогноз Kp-индекса/G"
 
-#: contents/ui/main.qml:2056
+#: contents/ui/main.qml:2084
 msgid "Last Quarter"
 msgstr "Последняя четверть"
 
@@ -1559,25 +1606,30 @@ msgstr "Макет"
 msgid "Layout type:"
 msgstr "Тип макета:"
 
+#: contents/ui/config/configGeneral.qml:738
+#: contents/ui/config/configGeneral.qml:817
+msgid "LibreWXR"
+msgstr ""
+
 #: contents/ui/components/RadarWebEngineView.qml:91
 #: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Light"
 msgstr "Легкий"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
-#: contents/ui/main.qml:1883
+#: contents/ui/main.qml:1911
 msgid "Light drizzle"
 msgstr "Легкая изморось"
 
-#: contents/ui/main.qml:1889
+#: contents/ui/main.qml:1917
 msgid "Light freezing drizzle"
 msgstr "Легкая ледяная изморось"
 
-#: contents/ui/main.qml:1899
+#: contents/ui/main.qml:1927
 msgid "Light freezing rain"
 msgstr "Небольшой ледяной дождь"
 
-#: contents/ui/main.qml:1893
+#: contents/ui/main.qml:1921
 msgid "Light rain"
 msgstr "Небольшой дождь"
 
@@ -1589,11 +1641,11 @@ msgstr "Легкий дождь / изморось (днём)"
 msgid "Light rain / Drizzle (night)"
 msgstr "Легкий дождь / изморось (ночью)"
 
-#: contents/ui/main.qml:1911
+#: contents/ui/main.qml:1939
 msgid "Light showers"
 msgstr "Легкие ливни"
 
-#: contents/ui/main.qml:1903
+#: contents/ui/main.qml:1931
 msgid "Light snow"
 msgstr "Небольшой снег"
 
@@ -1605,7 +1657,7 @@ msgstr "Небольшой снег (днём)"
 msgid "Light snow (night)"
 msgstr "Небольшой снег (ночью)"
 
-#: contents/ui/main.qml:1917
+#: contents/ui/main.qml:1945
 msgid "Light snow showers"
 msgstr "Небольшой снегопад"
 
@@ -1625,6 +1677,14 @@ msgstr "Загрузка подробностей…"
 msgid "Loading forecast…"
 msgstr "Загрузка прогноза…"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:158
+msgid "Loading frames"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:157
+msgid "Loading frame…"
+msgstr ""
+
 #: contents/ui/ForecastView.qml:829
 msgid "Loading hourly data…"
 msgstr "Загрузка почасовых данных…"
@@ -1633,9 +1693,13 @@ msgstr "Загрузка почасовых данных…"
 msgid "Loading locations…"
 msgstr "Загрузка местоположений…"
 
-#: contents/ui/RadarView.qml:116
+#: contents/ui/RadarView.qml:121
 msgid "Loading radar…"
 msgstr "Загрузка радара..."
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:156
+msgid "Loading…"
+msgstr ""
 
 #: contents/config/config.qml:47
 msgid "Location"
@@ -1658,12 +1722,12 @@ msgstr "Местоположение было определено автома�
 msgid "Location detection is depending on system configuration and permissions."
 msgstr "Определение местоположения зависит от конфигурации системы и разрешений."
 
-#: contents/ui/config/configGeneral.qml:174
+#: contents/ui/config/configGeneral.qml:177
 #: contents/ui/config/configLocation.qml:536
 msgid "Location is available on %1."
 msgstr "Местоположение доступно для %1."
 
-#: contents/ui/config/configGeneral.qml:177
+#: contents/ui/config/configGeneral.qml:180
 #: contents/ui/config/configLocation.qml:539
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "Местоположение недоступно для %1 (HTTP %2). Попробуйте другого провайдера данных или другое местоположение."
@@ -1716,9 +1780,24 @@ msgstr "Поиск местоположения..."
 msgid "Low"
 msgstr "Низк."
 
-#: contents/ui/config/configNotifications.qml:45 contents/ui/main.qml:965
+#: contents/ui/config/configNotifications.qml:46 contents/ui/main.qml:965
 msgid "Low temperature"
 msgstr "Низкая температура"
+
+#: contents/ui/main.qml:1218
+msgctxt "Alert severity"
+msgid "MINIMAL"
+msgstr ""
+
+#: contents/ui/main.qml:1216
+msgctxt "Alert severity"
+msgid "MINOR"
+msgstr ""
+
+#: contents/ui/main.qml:1215
+msgctxt "Alert severity"
+msgid "MODERATE"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
 msgid "Magnetic Field (Bz)"
@@ -1730,7 +1809,7 @@ msgstr "Стиль основного значка:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:49
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:672
-#: contents/ui/main.qml:1873
+#: contents/ui/main.qml:1901
 msgid "Mainly clear"
 msgstr "Преимущественно ясно"
 
@@ -1755,9 +1834,13 @@ msgstr "Преимущественно ясно (ночью)"
 msgid "Manual"
 msgstr "Вручную"
 
-#: contents/ui/config/configGeneral.qml:452
+#: contents/ui/config/configGeneral.qml:455
 msgid "Marine and weather data provider. API key required below."
 msgstr "Провайдер морских и погодных данных. Нужен ключ API снизу."
+
+#: contents/ui/config/configGeneral.qml:816
+msgid "MeteoAlarm + NOAA NWS (Native)"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:153
 msgid "Metric (°C, km/h, hPa, mm)"
@@ -1871,8 +1954,8 @@ msgstr "Фаза луны, восход и заход луны"
 msgid "Moon:"
 msgstr "Луна:"
 
-#: contents/ui/DetailsView.qml:3691 contents/ui/DetailsView.qml:3696
-#: contents/ui/DetailsView.qml:4014 contents/ui/DetailsView.qml:4019
+#: contents/ui/DetailsView.qml:3698 contents/ui/DetailsView.qml:3703
+#: contents/ui/DetailsView.qml:4021 contents/ui/DetailsView.qml:4026
 msgid "Moonrise"
 msgstr "Восход луны"
 
@@ -1894,7 +1977,7 @@ msgstr "Значок восхода луны"
 msgid "Moonrise only"
 msgstr "Только восход луны"
 
-#: contents/ui/DetailsView.qml:3689 contents/ui/DetailsView.qml:4012
+#: contents/ui/DetailsView.qml:3696 contents/ui/DetailsView.qml:4019
 msgid "Moonrise/Moonset"
 msgstr "Восход/заход луны"
 
@@ -1904,8 +1987,8 @@ msgstr "Восход/заход луны"
 msgid "Moonrise:"
 msgstr "Восход луны"
 
-#: contents/ui/DetailsView.qml:3693 contents/ui/DetailsView.qml:3696
-#: contents/ui/DetailsView.qml:4016 contents/ui/DetailsView.qml:4019
+#: contents/ui/DetailsView.qml:3700 contents/ui/DetailsView.qml:3703
+#: contents/ui/DetailsView.qml:4023 contents/ui/DetailsView.qml:4026
 msgid "Moonset"
 msgstr "Заход луны"
 
@@ -1926,7 +2009,7 @@ msgstr "Только заход луны"
 msgid "Moonset:"
 msgstr "Заход луны:"
 
-#: contents/ui/main.qml:1492
+#: contents/ui/main.qml:1520
 msgid "Morning"
 msgstr "Утро"
 
@@ -1961,11 +2044,11 @@ msgstr "Нужны координаты места? Вы можете их на�
 msgid "Network error"
 msgstr "Ошибка соединения"
 
-#: contents/ui/main.qml:2044
+#: contents/ui/main.qml:2072
 msgid "New Moon"
 msgstr "Новолуние"
 
-#: contents/ui/DetailsView.qml:3451
+#: contents/ui/DetailsView.qml:3458
 msgid "Night"
 msgstr "Ночь"
 
@@ -1976,6 +2059,10 @@ msgstr "Диоксид азота (NO₂)"
 #: contents/ui/config/configLocation.qml:1301
 msgid "No"
 msgstr "Нет"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:159
+msgid "No data"
+msgstr ""
 
 #: contents/ui/DetailsView.qml:553
 msgid "No details data"
@@ -2001,6 +2088,14 @@ msgstr "Нет информации"
 #: contents/ui/FullView.qml:216
 msgid "No location set"
 msgstr "Местоположение не задано"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:160
+msgid "No radar data"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:161
+msgid "No satellite data"
+msgstr ""
 
 #: contents/ui/config/configLocation.qml:1621
 msgid "No saved locations. Save the current location to quickly switch between places."
@@ -2039,31 +2134,31 @@ msgstr "Не проверен"
 msgid "Note: size may be reduced if the panel is not thick enough."
 msgstr "Примечание: размер может быть уменьшен, если панель недостаточно толстая."
 
-#: contents/config/config.qml:62 contents/ui/config/configNotifications.qml:223
+#: contents/config/config.qml:62 contents/ui/config/configNotifications.qml:224
 msgid "Notifications"
 msgstr "Уведомления"
 
-#: contents/ui/config/configNotifications.qml:398
+#: contents/ui/config/configNotifications.qml:417
 msgid "Notify about upcoming rain/storms"
 msgstr "Сообщать о надвигающемся дожде/грозе"
 
-#: contents/ui/config/configNotifications.qml:412
+#: contents/ui/config/configNotifications.qml:431
 msgid "Notify about upcoming snow"
 msgstr "Сообщать о надвигающемся снеге"
 
-#: contents/ui/config/configNotifications.qml:426
+#: contents/ui/config/configNotifications.qml:445
 msgid "Notify with today's UV forecast"
 msgstr "Сообщать о сегодняшнем УФ-прогнозе"
 
-#: contents/ui/config/configNotifications.qml:358
+#: contents/ui/config/configNotifications.qml:377
 msgid "Notify with today's forecast"
 msgstr "Сообщать о сегодняшнем прогнозе"
 
-#: contents/ui/config/configNotifications.qml:446
+#: contents/ui/config/configNotifications.qml:465
 msgid "Notify with today's geomagnetic activity forecast"
 msgstr "Сообщать о сегодняшней геомагнитной активности"
 
-#: contents/ui/config/configNotifications.qml:378
+#: contents/ui/config/configNotifications.qml:397
 msgid "Notify with tomorrow's forecast"
 msgstr "Сообщать о завтрашнем прогнозе"
 
@@ -2090,23 +2185,23 @@ msgid "Only the clicked day expands"
 msgstr "Только кликнутый день развернут"
 
 #: contents/ui/config/configLocation.qml:1106
-#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:191
+#: contents/ui/config/configLocation.qml:1483 contents/ui/RadarView.qml:196
 msgid "Open install guide"
 msgstr "Открыть гайд по установке"
 
-#: contents/ui/RadarView.qml:198
+#: contents/ui/RadarView.qml:203
 msgid "Open radar in browser"
 msgstr "Открыть радар в браузере"
 
-#: contents/ui/config/configGeneral.qml:287
+#: contents/ui/config/configGeneral.qml:290
 msgid "Open-Meteo (recommended, free)"
 msgstr "Open-Meteo (рекомендуется, бесплатно)"
 
-#: contents/ui/config/configGeneral.qml:295
+#: contents/ui/config/configGeneral.qml:298
 msgid "OpenWeatherMap (Key Required)"
 msgstr "OpenWeatherMap (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:492
+#: contents/ui/config/configGeneral.qml:495
 msgid "OpenWeatherMap API Key:"
 msgstr "Ключ API OpenWeatherMap:"
 
@@ -2120,14 +2215,14 @@ msgstr "Автоматически открывает сегодняшний п�
 msgid "Options"
 msgstr "Настройки"
 
-#: contents/ui/config/configNotifications.qml:260
+#: contents/ui/config/configNotifications.qml:261
 msgid "Orange"
 msgstr "Оранжевый"
 
 #: contents/ui/config/configAppearance.qml:242
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:676
-#: contents/ui/main.qml:1877
+#: contents/ui/main.qml:1905
 msgid "Overcast"
 msgstr "Пасмурно"
 
@@ -2182,7 +2277,7 @@ msgstr "Взвешенные частицы (PM2.5)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:674
-#: contents/ui/main.qml:1875 contents/ui/main.qml:1927
+#: contents/ui/main.qml:1903 contents/ui/main.qml:1955
 msgid "Partly cloudy"
 msgstr "Переменная облачность"
 
@@ -2198,7 +2293,7 @@ msgstr "Переменная облачность (ночь)"
 msgid "Pause"
 msgstr "Пауза"
 
-#: contents/ui/config/configNotifications.qml:308
+#: contents/ui/config/configNotifications.qml:327
 msgid "Per alert type:"
 msgstr "Для каждого типа оповещения:"
 
@@ -2224,11 +2319,11 @@ msgstr "Выберите точное место на карте для боле
 msgid "Pipe  |"
 msgstr "Вертикальная черта  |"
 
-#: contents/ui/config/configGeneral.qml:303
+#: contents/ui/config/configGeneral.qml:306
 msgid "Pirate Weather (Key Required)"
 msgstr "Pirate Weather (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:494
+#: contents/ui/config/configGeneral.qml:497
 msgid "Pirate Weather API Key:"
 msgstr "Ключ API Pirate Weather:"
 
@@ -2329,7 +2424,7 @@ msgstr "Предпросмотр:  20°C"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Сначала основная единица (напр. °C / °F)"
 
-#: contents/ui/DetailsView.qml:2337
+#: contents/ui/DetailsView.qml:2341
 msgid "Provider"
 msgstr "Провайдер"
 
@@ -2337,21 +2432,21 @@ msgstr "Провайдер"
 msgid "Provider availability"
 msgstr "Доступность провайдера"
 
-#: contents/ui/config/configGeneral.qml:442
-#: contents/ui/config/configGeneral.qml:444
-#: contents/ui/config/configGeneral.qml:446
-#: contents/ui/config/configGeneral.qml:448
-#: contents/ui/config/configGeneral.qml:450
-#: contents/ui/config/configGeneral.qml:452
-#: contents/ui/config/configGeneral.qml:454
-#: contents/ui/config/configGeneral.qml:456
-#: contents/ui/config/configGeneral.qml:458
+#: contents/ui/config/configGeneral.qml:445
+#: contents/ui/config/configGeneral.qml:447
+#: contents/ui/config/configGeneral.qml:449
+#: contents/ui/config/configGeneral.qml:451
+#: contents/ui/config/configGeneral.qml:453
+#: contents/ui/config/configGeneral.qml:455
+#: contents/ui/config/configGeneral.qml:457
 #: contents/ui/config/configGeneral.qml:459
+#: contents/ui/config/configGeneral.qml:461
+#: contents/ui/config/configGeneral.qml:462
 msgid "Provider website:"
 msgstr "Сайт провайдера:"
 
-#: contents/ui/config/configGeneral.qml:413 contents/ui/DetailsView.qml:2096
-#: contents/ui/DetailsView.qml:2815
+#: contents/ui/config/configGeneral.qml:416 contents/ui/DetailsView.qml:2096
+#: contents/ui/DetailsView.qml:2822
 msgid "Provider:"
 msgstr "Провайдер:"
 
@@ -2359,7 +2454,7 @@ msgstr "Провайдер:"
 msgid "Provider: %1"
 msgstr "Провайдер: %1"
 
-#: contents/ui/config/configGeneral.qml:399
+#: contents/ui/config/configGeneral.qml:402
 msgid ""
 "Providers are tried in order until one succeeds:\n"
 "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
@@ -2369,19 +2464,23 @@ msgstr ""
 "Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 "Open-Meteo всегда проверяется первым - он бесплатный и не требует ключ API."
 
-#: contents/ui/config/configGeneral.qml:323
+#: contents/ui/config/configNotifications.qml:271
+msgid "Purple"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:326
 msgid "QWeather (Key Required)"
 msgstr "QWeather (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:675
+#: contents/ui/config/configGeneral.qml:678
 msgid "QWeather API Host:"
 msgstr "QWeather API Хост:"
 
-#: contents/ui/config/configGeneral.qml:504
+#: contents/ui/config/configGeneral.qml:507
 msgid "QWeather API Key:"
 msgstr "Ключ API QWeather:"
 
-#: contents/ui/config/configGeneral.qml:260
+#: contents/ui/config/configGeneral.qml:263
 msgid "QWeather error (code %1). Check your API key."
 msgstr "Ошибка QWeather (код %1). Проверьте ваш ключ API."
 
@@ -2393,7 +2492,7 @@ msgstr ""
 msgid "QtLocation and QtPositioning are not installed"
 msgstr "QtLocation и QtPositioning не установлены"
 
-#: contents/ui/RadarView.qml:151
+#: contents/ui/RadarView.qml:156
 msgid "QtWebEngine is not installed"
 msgstr "QtWebEngine не установлен"
 
@@ -2401,21 +2500,38 @@ msgstr "QtWebEngine не установлен"
 msgid "Quiet"
 msgstr "Спокойно"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:134
 #: contents/ui/components/RadarWebEngineView.qml:72
-#: contents/ui/config/configGeneral.qml:706
+#: contents/ui/config/configGeneral.qml:709
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:176 contents/ui/FullView.qml:566
 msgid "Radar"
 msgstr "Радар"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:144
+msgid "Radar + Satellite"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:276
+msgid "Radar color scheme:"
+msgstr ""
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:199
 msgid "Radar only"
 msgstr "Только радар"
 
-#: contents/ui/config/configGeneral.qml:728
+#: contents/ui/config/configGeneral.qml:731
+msgid "Radar provider:"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:760
+msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:751
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "Провайдер: <a href=\"https://www.rainviewer.com/\">Rain Viewer</a><br/><br/>Виджет использует бесплатный API RainViewer, который предоставляет данные о погодных радарах за последние 2 часа с интервалом в 10 минут. Радиолокационный прогноз не поддерживается.<br/><br/>Rain Viewer не гарантирует доступность радиолокационных данных. Они не заключают договоров с владельцами этих данных. Причина в том, что владельцы могут попросить их удалить свои данные из Rain Viewer, изменить формат или прекратить публикацию данных. Они пытаются сохранить данные радара как можно дольше, но иногда владельцы просто перестают предоставлять изображения."
 
-#: contents/ui/FullView.qml:730
+#: contents/ui/FullView.qml:731 contents/ui/FullView.qml:733
 msgid "Radar:"
 msgstr "Радар:"
 
@@ -2425,9 +2541,9 @@ msgid "Ragweed"
 msgstr "Амброзия"
 
 #: contents/ui/components/RadarWebEngineView.qml:73
-#: contents/ui/config/configNotifications.qml:49
+#: contents/ui/config/configNotifications.qml:50
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:55
-#: contents/ui/main.qml:969 contents/ui/main.qml:1607 contents/ui/main.qml:1895
+#: contents/ui/main.qml:969 contents/ui/main.qml:1635 contents/ui/main.qml:1923
 msgid "Rain"
 msgstr "Дождь"
 
@@ -2439,11 +2555,15 @@ msgstr "Дождь (днём)"
 msgid "Rain (night)"
 msgstr "Дождь (ночью)"
 
+#: contents/ui/config/configGeneral.qml:737
+msgid "Rain Viewer"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:59
 msgid "Rain showers"
 msgstr "Ливни"
 
-#: contents/ui/config/configNotifications.qml:395
+#: contents/ui/config/configNotifications.qml:414
 msgid "Rain/Storm"
 msgstr "Дождь/Гроза"
 
@@ -2459,7 +2579,7 @@ msgstr "Недавно"
 msgid "Recommended — e.g. 560"
 msgstr "Рекомендовано — напр. 560"
 
-#: contents/ui/config/configNotifications.qml:265
+#: contents/ui/config/configNotifications.qml:266
 msgid "Red"
 msgstr "Красный"
 
@@ -2468,7 +2588,7 @@ msgstr "Красный"
 msgid "Refresh"
 msgstr "Обновить"
 
-#: contents/ui/config/configGeneral.qml:779
+#: contents/ui/config/configGeneral.qml:909
 msgid "Refresh weather automatically"
 msgstr "Обновлять погоду автоматически"
 
@@ -2514,7 +2634,7 @@ msgstr "Удалить сохраненное местоположение"
 msgid "Rename location"
 msgstr "Переименовать местоположение"
 
-#: contents/ui/config/configNotifications.qml:290
+#: contents/ui/config/configNotifications.qml:309
 msgid "Repeat reminder until dismissed"
 msgstr "Повторять напоминание до закрытия"
 
@@ -2545,7 +2665,7 @@ msgstr "Сбросить всё к умолчанию"
 msgid "Reset to default"
 msgstr "Сбросить к умолчанию"
 
-#: contents/ui/main.qml:1881
+#: contents/ui/main.qml:1909
 msgid "Rime fog"
 msgstr "Ледяной туман"
 
@@ -2553,9 +2673,18 @@ msgstr "Ледяной туман"
 msgid "Round values:"
 msgstr "Округление значений:"
 
+#: contents/ui/main.qml:1214
+msgctxt "Alert severity"
+msgid "SEVERE"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:593
 msgid "SO₂"
 msgstr "SO₂"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:139
+msgid "Satellite"
+msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:906
 msgid "Saturday"
@@ -2611,6 +2740,10 @@ msgstr "Разделитель:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr "Серьёзный риск; Оставайтесь дома."
 
+#: contents/ui/config/configGeneral.qml:863
+msgid "Server URL:"
+msgstr ""
+
 #: contents/ui/config/configLocation.qml:1246
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Установить <b>%1</b> как ваше местоположение по умолчанию?"
@@ -2637,7 +2770,7 @@ msgstr "Задать свои значки…"
 msgid "Severe geomagnetic storm."
 msgstr "Сильная магнитная буря."
 
-#: contents/ui/config/configNotifications.qml:253
+#: contents/ui/config/configNotifications.qml:254
 msgid "Severities:"
 msgstr "Уровни серьёзности:"
 
@@ -2662,7 +2795,7 @@ msgstr "Показать / скрыть значок-префикс"
 msgid "Show / hide the prefix icon on the panel"
 msgstr "Показать / скрыть значок-префикс на панели"
 
-#: contents/ui/config/configGeneral.qml:718
+#: contents/ui/config/configGeneral.qml:721
 msgid "Show Radar tab in widget"
 msgstr "Показывать вкладку Радара в виджете"
 
@@ -2698,6 +2831,10 @@ msgstr "Показывать типы пыльцы в развернутом в�
 msgid "Show pollutants in expanded view:"
 msgstr "Отображение загрязняющих веществ в развернутом виде:"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:309
+msgid "Show precipitation motion arrows"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:407
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:476
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:471
@@ -2716,7 +2853,7 @@ msgstr "Показывать единицу температуры:"
 msgid "Show update time and provider"
 msgstr "Показывать время обновления и провайдера"
 
-#: contents/ui/config/configGeneral.qml:596
+#: contents/ui/config/configGeneral.qml:599
 msgid "Show/hide key"
 msgstr "Показать/скрыть ключ"
 
@@ -2724,7 +2861,7 @@ msgstr "Показать/скрыть ключ"
 msgid "Show:"
 msgstr "Показывать:"
 
-#: contents/ui/main.qml:1913
+#: contents/ui/main.qml:1941
 msgid "Showers"
 msgstr "Ливни"
 
@@ -2804,9 +2941,9 @@ msgstr "Легкий снегопад"
 msgid "Small circle  ⚬"
 msgstr "Маленький круг  ⚬"
 
-#: contents/ui/config/configNotifications.qml:409
+#: contents/ui/config/configNotifications.qml:428
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
-#: contents/ui/main.qml:1905
+#: contents/ui/main.qml:1933
 msgid "Snow"
 msgstr "Снег"
 
@@ -2835,34 +2972,34 @@ msgstr "Снежный покров:"
 msgid "Snow depth (cm/in)"
 msgstr "Глубина снега (см/дюйм)"
 
-#: contents/ui/main.qml:1684
+#: contents/ui/main.qml:1712
 msgid "Snow ending"
 msgstr "Снег заканчивается"
 
-#: contents/ui/main.qml:1679
+#: contents/ui/main.qml:1707
 msgid "Snow expected"
 msgstr "Ожидается снег"
 
-#: contents/ui/main.qml:1685
+#: contents/ui/main.qml:1713
 msgid "Snow expected to end %1."
 msgstr "Ожидается, что снег закончится %1."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:702
-#: contents/ui/main.qml:1909
+#: contents/ui/main.qml:1937
 msgid "Snow grains"
 msgstr "Снежные зёрна"
 
-#: contents/ui/main.qml:1680
+#: contents/ui/main.qml:1708
 msgid "Snow possible %1."
 msgstr "Возможен снег %1."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
-#: contents/ui/main.qml:1919
+#: contents/ui/main.qml:1947
 msgid "Snow showers"
 msgstr "Снегопады"
 
-#: contents/ui/config/configNotifications.qml:41 contents/ui/main.qml:961
+#: contents/ui/config/configNotifications.qml:42 contents/ui/main.qml:961
 msgid "Snow/Ice"
 msgstr "Снег/Лёд"
 
@@ -2890,7 +3027,7 @@ msgstr "Погода в космосе:"
 msgid "Space weather options"
 msgstr "Настройки погоды в космосе"
 
-#: contents/ui/config/configGeneral.qml:442
+#: contents/ui/config/configGeneral.qml:445
 msgid "Standard provider. API key required below."
 msgstr "Стандартный провайдер. Требуется ключ API (ниже)."
 
@@ -2904,11 +3041,11 @@ msgstr "Элементы статистики:"
 msgid "Storm"
 msgstr "Шторм"
 
-#: contents/ui/config/configGeneral.qml:315
+#: contents/ui/config/configGeneral.qml:318
 msgid "StormGlass (Key Required)"
 msgstr "StormGlass (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:500
+#: contents/ui/config/configGeneral.qml:503
 msgid "StormGlass API Key:"
 msgstr "Ключ API StormGlass:"
 
@@ -2949,8 +3086,8 @@ msgstr "Параметры времени солнца"
 msgid "Sunday"
 msgstr "Воскресенье"
 
-#: contents/ui/DetailsView.qml:3241 contents/ui/DetailsView.qml:3245
-#: contents/ui/DetailsView.qml:3568 contents/ui/DetailsView.qml:3572
+#: contents/ui/DetailsView.qml:3248 contents/ui/DetailsView.qml:3252
+#: contents/ui/DetailsView.qml:3575 contents/ui/DetailsView.qml:3579
 #: contents/ui/ForecastView.qml:1122
 msgid "Sunrise"
 msgstr "Восход"
@@ -2992,8 +3129,8 @@ msgstr "Маркеры восхода/заката:"
 msgid "Sunrise:"
 msgstr "Восход:"
 
-#: contents/ui/DetailsView.qml:3243 contents/ui/DetailsView.qml:3245
-#: contents/ui/DetailsView.qml:3570 contents/ui/DetailsView.qml:3572
+#: contents/ui/DetailsView.qml:3250 contents/ui/DetailsView.qml:3252
+#: contents/ui/DetailsView.qml:3577 contents/ui/DetailsView.qml:3579
 msgid "Sunset"
 msgstr "Закат"
 
@@ -3019,6 +3156,10 @@ msgstr "Закат:"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Swap order:"
 msgstr "Поменять местами:"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:324
+msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
+msgstr ""
 
 #: contents/ui/FullView.qml:328
 msgid "Switch location"
@@ -3095,7 +3236,7 @@ msgstr "Тень температуры:"
 msgid "Temperature:"
 msgstr "Температура:"
 
-#: contents/ui/config/configGeneral.qml:627
+#: contents/ui/config/configGeneral.qml:630
 msgid "Test API Key"
 msgstr "Проверить ключ API"
 
@@ -3103,11 +3244,11 @@ msgstr "Проверить ключ API"
 msgid "Test across providers"
 msgstr "Проверить по всем провайдерам"
 
-#: contents/ui/config/configGeneral.qml:215
+#: contents/ui/config/configGeneral.qml:218
 msgid "Testing connection…"
 msgstr "Проверка соединения..."
 
-#: contents/ui/config/configGeneral.qml:627
+#: contents/ui/config/configGeneral.qml:630
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:219
 msgid "Testing…"
 msgstr "Тестирование..."
@@ -3120,7 +3261,7 @@ msgstr "Текстовые метки (Температура, Ветер…)"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Текст будет следовать системному шрифту и расширяться, чтобы заполнить доступное пространство."
 
-#: contents/ui/RadarView.qml:161
+#: contents/ui/RadarView.qml:166
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
 msgstr "Для отображения вкладки Радар требуется пакет QtWebEngine, который не установлен в вашей системе."
 
@@ -3149,10 +3290,10 @@ msgstr "Цвет темы"
 msgid "This location is already in your saved list."
 msgstr "Это местоположение уже есть в вашем списке."
 
-#: contents/ui/config/configNotifications.qml:42
+#: contents/ui/config/configNotifications.qml:43
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:714
-#: contents/ui/main.qml:962 contents/ui/main.qml:1921
+#: contents/ui/main.qml:962 contents/ui/main.qml:1949
 msgid "Thunderstorm"
 msgstr "Гроза"
 
@@ -3166,7 +3307,7 @@ msgstr "Гроза (ночью)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:716
-#: contents/ui/main.qml:1923
+#: contents/ui/main.qml:1951
 msgid "Thunderstorm with hail"
 msgstr "Гроза с градом"
 
@@ -3186,7 +3327,7 @@ msgstr "Гроза, сильный град (днём)"
 msgid "Thunderstorm, heavy hail (night)"
 msgstr "Гроза, сильный град (ночью)"
 
-#: contents/ui/main.qml:1607
+#: contents/ui/main.qml:1635
 msgid "Thunderstorms"
 msgstr "Грозы"
 
@@ -3194,7 +3335,7 @@ msgstr "Грозы"
 msgid "Time format:"
 msgstr "Формат времени:"
 
-#: contents/ui/config/configNotifications.qml:170
+#: contents/ui/config/configNotifications.qml:171
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:826
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:700
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:694
@@ -3210,11 +3351,11 @@ msgstr "Превышено время ожидания"
 msgid "Timezone:"
 msgstr "Часовой пояс:"
 
-#: contents/ui/config/configGeneral.qml:737
+#: contents/ui/config/configGeneral.qml:769
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "Для разблокировки дополнительных слоев карты (дождь, облака, температура, ветер, давление):  отключите Адаптивный режим, выберите OpenWeatherMap в качестве провайдера данных и введите ключ API сверху. Когда все сделаете, включите Адаптивный режим снова."
 
-#: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1456
+#: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1484
 #: contents/ui/SimpleView.qml:423
 msgid "Today"
 msgstr "Сегодня"
@@ -3225,27 +3366,27 @@ msgstr "Сегодня"
 msgid "Today's total precipitation (mm/in)"
 msgstr "Осадки сегодня (мм/дюйм)"
 
-#: contents/ui/config/configNotifications.qml:355
+#: contents/ui/config/configNotifications.qml:374
 msgid "Today's weather"
 msgstr "Погода сегодня"
 
-#: contents/ui/main.qml:1529
+#: contents/ui/main.qml:1557
 msgid "Tomorrow"
 msgstr "Завтра"
 
-#: contents/ui/config/configNotifications.qml:375
+#: contents/ui/config/configNotifications.qml:394
 msgid "Tomorrow forecast"
 msgstr "Прогноз на завтра"
 
-#: contents/ui/config/configGeneral.qml:311
+#: contents/ui/config/configGeneral.qml:314
 msgid "Tomorrow.io (Key Required)"
 msgstr "Tomorrow.io (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:498
+#: contents/ui/config/configGeneral.qml:501
 msgid "Tomorrow.io API Key:"
 msgstr "Ключ API Tomorrow.io:"
 
-#: contents/ui/main.qml:1494
+#: contents/ui/main.qml:1522
 msgid "Tonight"
 msgstr "Этой ночью"
 
@@ -3294,13 +3435,18 @@ msgstr "Слева вверху"
 msgid "Top Right"
 msgstr "Справа вверху"
 
-#: contents/ui/config/configNotifications.qml:274
+#: contents/ui/config/configNotifications.qml:293
 msgid "Treat alert notifications as critical"
 msgstr "Отметить как важное"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:68
 msgid "Truncate (single line)"
 msgstr "Обрезать (одна строка)"
+
+#: contents/ui/main.qml:1217
+msgctxt "Alert severity"
+msgid "UNKNOWN"
+msgstr ""
 
 #: contents/ui/config/configAppearance.qml:1392
 #: contents/ui/config/configAppearance.qml:1515
@@ -3313,7 +3459,7 @@ msgstr "УФ-индекс"
 msgid "UV Index:"
 msgstr "УФ-индекс:"
 
-#: contents/ui/config/configNotifications.qml:423 contents/ui/main.qml:1731
+#: contents/ui/config/configNotifications.qml:442 contents/ui/main.qml:1759
 msgid "UV index"
 msgstr "УФ-индекс"
 
@@ -3322,7 +3468,7 @@ msgstr "УФ-индекс"
 msgid "UV index forecast:"
 msgstr "Прогноз УФ-индекса:"
 
-#: contents/ui/main.qml:1728
+#: contents/ui/main.qml:1756
 msgid "UV will be %1 (%2)"
 msgstr "УФ-индекс — %1 (%2)"
 
@@ -3380,11 +3526,11 @@ msgstr "Будущее (след. восход или закат)"
 msgid "Upcoming rise/set only"
 msgstr "Только след. восход/закат"
 
-#: contents/ui/WeatherService.qml:140
+#: contents/ui/WeatherService.qml:157
 msgid "Update timed out. Tap to retry."
 msgstr "Ошибка обновления, Нажмите, чтобы повторить"
 
-#: contents/ui/WeatherService.qml:708
+#: contents/ui/WeatherService.qml:740
 msgid "Updated %1"
 msgstr "Обновлено %1"
 
@@ -3461,27 +3607,27 @@ msgstr "Видимость:"
 msgid "Visible tabs:"
 msgstr "Видимые вкладки:"
 
-#: contents/ui/config/configGeneral.qml:307
+#: contents/ui/config/configGeneral.qml:310
 msgid "Visual Crossing (Key Required)"
 msgstr "Visual Crossing (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:496
+#: contents/ui/config/configGeneral.qml:499
 msgid "Visual Crossing API Key:"
 msgstr "Ключ для API Visual Crossing:"
 
-#: contents/ui/main.qml:2058
+#: contents/ui/main.qml:2086
 msgid "Waning Crescent"
 msgstr "Стареющая Луна"
 
-#: contents/ui/main.qml:2054
+#: contents/ui/main.qml:2082
 msgid "Waning Gibbous"
 msgstr "Убывающая Выпуклая Луна"
 
-#: contents/ui/main.qml:2046
+#: contents/ui/main.qml:2074
 msgid "Waxing Crescent"
 msgstr "Молодая Луна"
 
-#: contents/ui/main.qml:2050
+#: contents/ui/main.qml:2078
 msgid "Waxing Gibbous"
 msgstr "Растущая Луна"
 
@@ -3493,7 +3639,11 @@ msgstr "Координаты определены как: <b>%1°, %2°</b>."
 msgid "We detected your location as: <b>%1</b>."
 msgstr "Локация определена как: <b>%1</b>."
 
-#: contents/ui/config/configGeneral.qml:350
+#: contents/ui/config/configGeneral.qml:795
+msgid "Weather Alerts"
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:353
 msgid "Weather Provider"
 msgstr "Провайдер Данных"
 
@@ -3501,14 +3651,14 @@ msgstr "Провайдер Данных"
 msgid "Weather Widget"
 msgstr "Виджет погоды"
 
-#: contents/ui/main.qml:1204
+#: contents/ui/main.qml:1232
 msgid "Weather alert"
 msgstr "Предупреждение о погоде"
 
 #: contents/ui/config/configAppearance.qml:1421
 #: contents/ui/config/configAppearance.qml:1544
 #: contents/ui/config/configAppearance.qml:1667
-#: contents/ui/config/configNotifications.qml:240
+#: contents/ui/config/configNotifications.qml:241
 msgid "Weather alerts"
 msgstr "Предупреждения о погоде"
 
@@ -3528,27 +3678,39 @@ msgstr "Стиль иконок погоды:"
 msgid "Weather icon theme:"
 msgstr "Стиль значков погоды:"
 
-#: contents/ui/WeatherService.qml:708
+#: contents/ui/WeatherService.qml:740
 msgid "Weather provider:"
 msgstr "Провайдер данных:"
 
-#: contents/ui/config/configGeneral.qml:299
+#: contents/ui/config/configNotifications.qml:286
+msgid ""
+"Weather-alert severity levels, from lowest to highest:\n"
+"\n"
+"🟡 Yellow — Minor: be aware of the conditions.\n"
+"🟠 Orange — Moderate: be prepared.\n"
+"🔴 Red — Severe: take action.\n"
+"🟣 Purple — Extreme: extraordinarily dangerous, take action immediately.\n"
+"\n"
+"Turn a level off to stop receiving notifications for alerts of that severity."
+msgstr ""
+
+#: contents/ui/config/configGeneral.qml:302
 msgid "WeatherAPI.com (Key Required)"
 msgstr "WeatherAPI.com (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:505
+#: contents/ui/config/configGeneral.qml:508
 msgid "WeatherAPI.com API Key:"
 msgstr "Ключ для WeatherAPI.com:"
 
-#: contents/ui/config/configGeneral.qml:319
+#: contents/ui/config/configGeneral.qml:322
 msgid "Weatherbit (Key Required)"
 msgstr "Weatherbit (Нужен ключ)"
 
-#: contents/ui/config/configGeneral.qml:502
+#: contents/ui/config/configGeneral.qml:505
 msgid "Weatherbit API Key:"
 msgstr "Ключ для Weatherbit API:"
 
-#: contents/ui/DetailsView.qml:2339
+#: contents/ui/DetailsView.qml:2343
 msgid "Website"
 msgstr "Веб-сайт"
 
@@ -3569,7 +3731,7 @@ msgstr "Область панели виджета:"
 #: contents/ui/config/configAppearance.qml:1335
 #: contents/ui/config/configAppearance.qml:1466
 #: contents/ui/config/configAppearance.qml:1589
-#: contents/ui/config/configNotifications.qml:40
+#: contents/ui/config/configNotifications.qml:41
 #: contents/ui/DetailsView.qml:317 contents/ui/main.qml:960
 msgid "Wind"
 msgstr "Ветер"
@@ -3602,7 +3764,7 @@ msgstr "Переносить на след. строку"
 msgid "X-ray Flare Class"
 msgstr "Класс солнечной вспышки"
 
-#: contents/ui/config/configNotifications.qml:255
+#: contents/ui/config/configNotifications.qml:256
 msgid "Yellow"
 msgstr "Жёлтый"
 
@@ -3631,23 +3793,23 @@ msgstr "Увеличить"
 msgid "Zoom out"
 msgstr "Уменьшить"
 
-#: contents/ui/main.qml:1701
+#: contents/ui/main.qml:1729
 msgid "a decrease from yesterday"
 msgstr "уменьшение по сравнению со вчерашним днем"
 
-#: contents/ui/main.qml:1485
+#: contents/ui/main.qml:1513
 msgid "a few clouds"
 msgstr "пару облачков"
 
-#: contents/ui/main.qml:1700
+#: contents/ui/main.qml:1728
 msgid "an increase from yesterday"
 msgstr "увеличение по сравнению со вчерашним днем"
 
-#: contents/ui/main.qml:1486
+#: contents/ui/main.qml:1514
 msgid "clear skies"
 msgstr "чистое небо"
 
-#: contents/ui/main.qml:1484
+#: contents/ui/main.qml:1512
 msgid "cloudy skies"
 msgstr "облачное небо"
 
@@ -3655,7 +3817,7 @@ msgstr "облачное небо"
 msgid "cm"
 msgstr ""
 
-#: contents/ui/main.qml:1481
+#: contents/ui/main.qml:1509
 msgid "drizzle"
 msgstr "мелкий дождь"
 
@@ -3663,7 +3825,7 @@ msgstr "мелкий дождь"
 msgid "e.g. Sofia, Bulgaria"
 msgstr "например: Москва, Россия"
 
-#: contents/ui/main.qml:1710 contents/ui/main.qml:1753
+#: contents/ui/main.qml:1738 contents/ui/main.qml:1781
 msgid "extreme"
 msgstr "экстремальный"
 
@@ -3671,15 +3833,15 @@ msgstr "экстремальный"
 msgid "feet"
 msgstr "фут."
 
-#: contents/ui/main.qml:1482
+#: contents/ui/main.qml:1510
 msgid "fog"
 msgstr "туман"
 
-#: contents/ui/main.qml:1479
+#: contents/ui/main.qml:1507
 msgid "freezing rain"
 msgstr "ледяной дождь"
 
-#: contents/ui/main.qml:1166
+#: contents/ui/main.qml:1173
 msgid "from %1"
 msgstr "от %1"
 
@@ -3696,7 +3858,7 @@ msgstr ""
 msgid "hPa"
 msgstr ""
 
-#: contents/ui/main.qml:1708
+#: contents/ui/main.qml:1736
 msgid "high"
 msgstr "высокий"
 
@@ -3704,7 +3866,7 @@ msgstr "высокий"
 msgid "in"
 msgstr ""
 
-#: contents/ui/main.qml:1612
+#: contents/ui/main.qml:1640
 msgid "in the next hours"
 msgstr "в след. часы"
 
@@ -3737,11 +3899,11 @@ msgstr ""
 msgid "kn"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3482
+#: contents/ui/DetailsView.qml:3489
 msgid "left"
 msgstr "осталось"
 
-#: contents/ui/main.qml:1706
+#: contents/ui/main.qml:1734
 msgid "low"
 msgstr "низкий"
 
@@ -3754,7 +3916,7 @@ msgstr "м"
 msgid "m/s"
 msgstr ""
 
-#: contents/ui/config/configGeneral.qml:291
+#: contents/ui/config/configGeneral.qml:294
 msgid "met.no (free)"
 msgstr "met.no (бесплатно)"
 
@@ -3770,12 +3932,12 @@ msgstr ""
 msgid "mi"
 msgstr ""
 
-#: contents/ui/main.qml:1749
+#: contents/ui/main.qml:1777
 msgid "minor"
 msgstr "мелкий"
 
-#: contents/ui/config/configGeneral.qml:799
-#: contents/ui/config/configNotifications.qml:345
+#: contents/ui/config/configGeneral.qml:929
+#: contents/ui/config/configNotifications.qml:364
 msgid "minutes"
 msgstr "минут"
 
@@ -3792,7 +3954,7 @@ msgstr ""
 msgid "mmHg"
 msgstr ""
 
-#: contents/ui/main.qml:1707 contents/ui/main.qml:1750
+#: contents/ui/main.qml:1735 contents/ui/main.qml:1778
 msgid "moderate"
 msgstr "умеренный"
 
@@ -3801,7 +3963,7 @@ msgstr "умеренный"
 msgid "mph"
 msgstr ""
 
-#: contents/ui/main.qml:1483
+#: contents/ui/main.qml:1511
 msgid "overcast skies"
 msgstr "пасмурное небо"
 
@@ -3819,39 +3981,39 @@ msgstr "пкс высота"
 msgid "px width"
 msgstr "пкс ширина"
 
-#: contents/ui/main.qml:1748
+#: contents/ui/main.qml:1776
 msgid "quiet"
 msgstr "тишина"
 
-#: contents/ui/main.qml:1480
+#: contents/ui/main.qml:1508
 msgid "rain"
 msgstr "дождь"
 
-#: contents/ui/main.qml:1752
+#: contents/ui/main.qml:1780
 msgid "severe"
 msgstr "сильный"
 
-#: contents/ui/main.qml:1478
+#: contents/ui/main.qml:1506
 msgid "showers"
 msgstr "ливни"
 
-#: contents/ui/main.qml:1474
+#: contents/ui/main.qml:1502
 msgid "showers and thunderstorms"
 msgstr "ливни и грозы"
 
-#: contents/ui/main.qml:1702
+#: contents/ui/main.qml:1730
 msgid "similar to yesterday"
 msgstr "то же, что и вчера"
 
-#: contents/ui/main.qml:1477
+#: contents/ui/main.qml:1505
 msgid "snow"
 msgstr "снег"
 
-#: contents/ui/main.qml:1476
+#: contents/ui/main.qml:1504
 msgid "snow showers"
 msgstr "ливневый снег"
 
-#: contents/ui/main.qml:1751
+#: contents/ui/main.qml:1779
 msgid "strong"
 msgstr "сильный"
 
@@ -3859,36 +4021,36 @@ msgstr "сильный"
 msgid "system location"
 msgstr "системное местоположение"
 
-#: contents/ui/main.qml:1615
+#: contents/ui/main.qml:1643
 msgid "this afternoon"
 msgstr "этим днём"
 
-#: contents/ui/main.qml:1614
+#: contents/ui/main.qml:1642
 msgid "this morning"
 msgstr "этим утром"
 
-#: contents/ui/main.qml:1475
+#: contents/ui/main.qml:1503
 msgid "thunderstorms"
 msgstr "грозы"
 
-#: contents/ui/main.qml:1616
+#: contents/ui/main.qml:1644
 msgid "tonight"
 msgstr "этой ночью"
 
-#: contents/ui/main.qml:1167
+#: contents/ui/main.qml:1174
 msgid "until %1"
 msgstr "до %1"
 
-#: contents/ui/DetailsView.qml:3479
+#: contents/ui/DetailsView.qml:3486
 msgid "until dawn"
 msgstr "до рассвета"
 
-#: contents/ui/main.qml:1709
+#: contents/ui/main.qml:1737
 msgid "very high"
 msgstr "оч. высокий"
 
-#: contents/ui/main.qml:1174 contents/ui/main.qml:1454
-#: contents/ui/main.qml:1527
+#: contents/ui/main.qml:1181 contents/ui/main.qml:1482
+#: contents/ui/main.qml:1555
 msgid "your location"
 msgstr "ваше местоположение"
 

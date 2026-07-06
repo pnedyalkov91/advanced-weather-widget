@@ -2256,6 +2256,10 @@ Item {
                                                 return "<a href='https://www.visualcrossing.com/'>Visual Crossing</a>";
                                             if (src === "WeatherAPI")
                                                 return "<a href='https://www.weatherapi.com/'>WeatherAPI.com</a>";
+                                            if (src === "LibreWXR")
+                                                return "<a href='https://librewxr.net/'>LibreWXR</a>";
+                                            if (src === "FOSS Public Alert Server")
+                                                return "<a href='https://alerts.kde.org/'>FOSS Public Alert Server</a>";
                                             // Unknown source — show as plain text
                                             if (src.length > 0)
                                                 return src;
@@ -2525,7 +2529,7 @@ Item {
                                                             var a = alertsCard.todayAlerts[alertsCard.safeIndex];
                                                             return alertsCard.alertTooltipTitle(a);
                                                         }
-                                                        font.bold: true
+                                                        font: weatherRoot ? weatherRoot.wf(12, true) : Qt.font({ bold: true })
                                                         wrapMode: Text.Wrap
                                                         width: parent.width
                                                         Layout.fillWidth: true
@@ -2535,6 +2539,7 @@ Item {
                                                             var a = alertsCard.todayAlerts[alertsCard.safeIndex];
                                                             return a ? alertsCard.alertTooltipSub(a) : "";
                                                         }
+                                                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                                                         textFormat: Text.RichText
                                                         wrapMode: Text.Wrap
                                                         width: parent.width
@@ -2675,13 +2680,14 @@ Item {
                                                                     spacing: 6
                                                                     Label {
                                                                         text: alertsCard.alertTooltipTitle(modelData)
-                                                                        font.bold: true
+                                                                        font: weatherRoot ? weatherRoot.wf(12, true) : Qt.font({ bold: true })
                                                                         wrapMode: Text.Wrap
                                                                         width: parent.width
                                                                         Layout.fillWidth: true
                                                                     }
                                                                     Label {
                                                                         text: alertsCard.alertTooltipSub(modelData)
+                                                                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                                                                         textFormat: Text.RichText
                                                                         wrapMode: Text.Wrap
                                                                         width: parent.width
@@ -2771,13 +2777,14 @@ Item {
                                                                     spacing: 6
                                                                     Label {
                                                                         text: alertsCard.alertTooltipTitle(modelData)
-                                                                        font.bold: true
+                                                                        font: weatherRoot ? weatherRoot.wf(12, true) : Qt.font({ bold: true })
                                                                         wrapMode: Text.Wrap
                                                                         width: parent.width
                                                                         Layout.fillWidth: true
                                                                     }
                                                                     Label {
                                                                         text: alertsCard.alertTooltipSub(modelData)
+                                                                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                                                                         textFormat: Text.RichText
                                                                         wrapMode: Text.Wrap
                                                                         width: parent.width
