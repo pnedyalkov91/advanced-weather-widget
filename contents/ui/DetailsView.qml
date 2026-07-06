@@ -1494,6 +1494,8 @@ Item {
                                                 })
                                                 elide: Text.ElideRight
                                                 Layout.alignment: Qt.AlignVCenter
+                                                Layout.fillWidth: true
+                                                horizontalAlignment: Text.AlignRight
                                             }
 
                                             // Expand chevron
@@ -2385,6 +2387,8 @@ Item {
                                                 })
                                                 elide: Text.ElideRight
                                                 Layout.alignment: Qt.AlignVCenter
+                                                Layout.fillWidth: true
+                                                horizontalAlignment: Text.AlignRight
                                             }
                                             PlasmaCore.ToolTipArea {
                                                 Layout.preferredWidth: 26
@@ -2891,7 +2895,10 @@ Item {
                                                 font: weatherRoot ? weatherRoot.wf(12, true) : Qt.font({
                                                     bold: true
                                                 })
+                                                elide: Text.ElideRight
                                                 Layout.alignment: Qt.AlignVCenter
+                                                Layout.fillWidth: true
+                                                horizontalAlignment: Text.AlignRight
                                             }
                                             Item {
                                                 implicitWidth: 14
@@ -3149,7 +3156,10 @@ Item {
                                     font: weatherRoot ? weatherRoot.wf(13, true) : Qt.font({
                                         bold: true
                                     })
+                                    elide: Text.ElideRight
                                     Layout.alignment: Qt.AlignVCenter
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignRight
                                 }
                             }
 
