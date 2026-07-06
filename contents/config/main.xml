@@ -40,6 +40,12 @@
          Written atomically by applyLocation() to avoid 6 separate config-change signals. -->
     <entry name="activeLocation"     type="String"><default>{}</default></entry>
     <entry name="weatherProvider"    type="String"><default>adaptive</default></entry>
+    <!-- Open-Meteo forecast model selection (only used when weatherProvider is
+         "adaptive"/"openMeteo"). "auto" picks the official national high-res
+         model by country (DWD/AROME/UKMO/HRRR/…), falling back to the global
+         best_match where no national model is available. "default" forces the
+         global best_match. Any other value is a literal Open-Meteo models= id. -->
+    <entry name="openMeteoModel"     type="String"><default>auto</default></entry>
     <!-- Saved locations: JSON array of {name, lat, lon, altitude, timezone, countryCode} -->
     <entry name="savedLocations"     type="String"><default>[]</default></entry>
     <!-- User API keys -->

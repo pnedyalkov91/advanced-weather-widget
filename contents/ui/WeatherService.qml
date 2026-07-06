@@ -72,6 +72,9 @@ QtObject {
     readonly property int forecastDays:    Plasmoid.configuration.forecastDays
     readonly property real altitude:       Plasmoid.configuration.altitude
     readonly property string countryCode:  (Plasmoid.configuration.countryCode || "").toUpperCase()
+    // Open-Meteo model selection ("auto" = official national high-res model by
+    // country; "default" = global best_match; otherwise a literal models= id).
+    readonly property string openMeteoModel: Plasmoid.configuration.openMeteoModel || "auto"
     readonly property string locationName: Plasmoid.configuration.locationName || ""
     // Alerts source: "native" (provider alerts + MeteoAlarm/NWS fallback),
     // "librewxr" (LibreWXR worldwide CAP alerts API), or "foss" (KDE FOSS
@@ -242,7 +245,8 @@ QtObject {
                 + "precipitation_probability,precipitation"
                 + "&start_date=" + encodeURIComponent(dateStr)
                 + "&end_date="   + encodeURIComponent(dateStr)
-                + "&wind_speed_unit=kmh";
+                + "&wind_speed_unit=kmh"
+                + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url);
             xhr.onreadystatechange = function() {

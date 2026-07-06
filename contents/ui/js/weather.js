@@ -30,6 +30,101 @@
 
 function I18N_NOOP(s) { return s; }
 
+// ── Open-Meteo national high-resolution models ───────────────────────────────
+//
+// Open-Meteo re-hosts the official national weather models. Passing the right
+// `models=` value to the SAME forecast endpoint yields the official per-country
+// high-resolution forecast (e.g. DWD ICON for Germany, Météo-France AROME for
+// France) — same JSON shape, so no parsing changes are needed.
+//
+// Every value below was verified against the live API to return a non-null
+// `current` block (temperature_2m + weather_code + wind + humidity) AND a
+// multi-day `daily.temperature_2m_max`. Where a `_seamless` variant exists it is
+// preferred: it blends the high-res short-range model (best near-term accuracy)
+// with the provider's global model for the long tail, giving both accuracy and
+// the full forecast horizon.
+//
+// Countries whose national model does NOT return usable `current` data
+// (Australia's ACCESS, Korea's LDPS/GDPS/KMA-seamless all come back null via
+// Open-Meteo) are intentionally omitted → they fall back to Open-Meteo's
+// default global "best_match", i.e. the widget's previous behaviour.
+//
+// Keyed by ISO 3166-1 alpha-2 country code (uppercase).
+var OPEN_METEO_COUNTRY_MODELS = {
+    // DWD ICON — Germany + immediate Central-European neighbours the 2km
+    // ICON-D2 domain covers well (Austria, Switzerland handled separately below).
+    "DE": "dwd_icon_seamless",
+    "AT": "dwd_icon_seamless",   // GeoSphere Austria has no usable OM current model; ICON-D2 covers Austria
+    "PL": "dwd_icon_seamless",
+    "CZ": "dwd_icon_seamless",
+    "BE": "dwd_icon_seamless",
+    "LU": "dwd_icon_seamless",
+
+    // Météo-France AROME/ARPEGE
+    "FR": "meteofrance_seamless",
+
+    // UK Met Office (UKV 2km near-term)
+    "GB": "ukmo_seamless",
+    "IE": "ukmo_seamless",
+
+    // NOAA — GFS seamless includes HRRR (3km CONUS) in the near term
+    "US": "gfs_seamless",
+
+    // MeteoSwiss ICON-CH (1–2km, Alpine)
+    "CH": "meteoswiss_icon_seamless",
+    "LI": "meteoswiss_icon_seamless",
+
+    // MET Norway Nordic (1km) — covers the Nordics + Baltic
+    "NO": "metno_seamless",
+    "SE": "metno_seamless",
+    "FI": "metno_seamless",
+
+    // Environment Canada GEM HRDPS (2.5km)
+    "CA": "gem_seamless",
+
+    // CMA GRAPES (China) — no seamless variant; direct global model returns data
+    "CN": "cma_grapes_global",
+
+    // JMA MSM (Japan, 5km)
+    "JP": "jma_seamless",
+
+    // KNMI HARMONIE-AROME (Netherlands, 2km)
+    "NL": "knmi_seamless",
+
+    // DMI HARMONIE-AROME (Denmark + surrounding Europe, 2km)
+    "DK": "dmi_seamless",
+
+    // ItaliaMeteo ARPAE ICON-2I (Italy, 2km) — no seamless variant
+    "IT": "italia_meteo_arpae_icon_2i"
+};
+
+/**
+ * Resolves the Open-Meteo `models=` value to use for a given config setting and
+ * location country.
+ *
+ * @param {string} setting     The `openMeteoModel` config value:
+ *                             "auto"    → pick the national model by country;
+ *                             "default" → force the global best_match;
+ *                             "<id>"    → force a specific model id.
+ * @param {string} countryCode ISO-3166 alpha-2 (any case); used only for "auto".
+ * @returns {string} A model id, or "" meaning "add no models= param" (best_match).
+ */
+function resolveOpenMeteoModel(setting, countryCode) {
+    var s = (setting || "auto").trim();
+    if (s === "default" || s === "best_match")
+        return "";                       // no models= param → global best_match
+    if (s !== "auto" && s.length > 0)
+        return s;                        // explicit user override
+    var cc = (countryCode || "").toUpperCase();
+    return OPEN_METEO_COUNTRY_MODELS[cc] || "";   // "" → fall back to best_match
+}
+
+/** Builds the "&models=<id>" URL fragment, or "" when best_match should be used. */
+function openMeteoModelParam(setting, countryCode) {
+    var m = resolveOpenMeteoModel(setting, countryCode);
+    return m ? "&models=" + m : "";
+}
+
 // ── Wind direction ──────────────────────────────────────────────────────────
 
 /**

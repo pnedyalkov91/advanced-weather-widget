@@ -22,6 +22,8 @@
  * Qt global is available; Plasmoid/i18n/Locale are NOT (use service instead).
  */
 
+.import "../js/weather.js" as W
+
 function fetchCurrent(service, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -36,7 +38,8 @@ function fetchCurrent(service, chain, idx) {
         + "dew_point_2m,visibility,is_day,precipitation,uv_index,snow_depth"
         + "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,"
         + "precipitation_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,"
-        + "uv_index_max,pressure_msl_mean,visibility_mean";
+        + "uv_index_max,pressure_msl_mean,visibility_mean"
+        + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
 
     var req = new XMLHttpRequest();
     req.open("GET", url);
@@ -172,7 +175,8 @@ function fetchHourly(service, dateStr) {
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
         + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
-        + "&start_date=" + dateStr + "&end_date=" + dateStr;
+        + "&start_date=" + dateStr + "&end_date=" + dateStr
+        + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
     var req = new XMLHttpRequest();
     req.open("GET", url);
     req.onreadystatechange = function () {
