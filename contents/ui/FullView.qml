@@ -717,7 +717,7 @@ Rectangle {
             }
         }
 
-        // ── Footer: "Updated HH:mm · Weather provider: <link>" ─────────
+        // ── Footer: "Updated X ago · Weather provider: <link>" ─────────
         Item {
             Layout.preferredHeight: 6
         }
