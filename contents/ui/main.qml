@@ -50,8 +50,29 @@ PlasmoidItem {
     // hints — they confuse Plasma's tray popup manager and cause a rapid
     // expanded toggling loop.  -1 lets Plasma use its own defaults.
     readonly property bool _isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
-    implicitWidth: inTray ? -1 : (_isSimpleMode ? 800 : 540)
-    implicitHeight: inTray ? -1 : 550
+
+    function _configInt(key) {
+        var value = Plasmoid.configuration[key];
+        var parsed = parseInt(value, 10);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    readonly property int _defaultPopupWidth: _isSimpleMode ? 800 : 540
+    readonly property int _defaultPopupHeight: 550
+    readonly property int _configuredPopupWidth: _configInt("widgetWidth")
+    readonly property int _configuredPopupHeight: _configInt("widgetHeight")
+    readonly property int _preferredPopupWidth: _configuredPopupWidth > 0 ? _configuredPopupWidth : _defaultPopupWidth
+    readonly property int _preferredPopupHeight: _configuredPopupHeight > 0 ? _configuredPopupHeight : _defaultPopupHeight
+    readonly property real _layoutDevicePixelRatio: {
+        if (typeof PlasmaCore !== "undefined" && PlasmaCore.Units && PlasmaCore.Units.devicePixelRatio)
+            return PlasmaCore.Units.devicePixelRatio;
+        return 1;
+    }
+    readonly property int _layoutPreferredPopupWidth: Math.round(_preferredPopupWidth * _layoutDevicePixelRatio)
+    readonly property int _layoutPreferredPopupHeight: Math.round(_preferredPopupHeight * _layoutDevicePixelRatio)
+
+    implicitWidth: inTray ? -1 : _preferredPopupWidth
+    implicitHeight: inTray ? -1 : _preferredPopupHeight
     switchWidth: inTray ? -1 : 200
     switchHeight: inTray ? -1 : 100
 
@@ -277,6 +298,8 @@ PlasmoidItem {
         // so Plasma can actually show the popup in the constrained tray area.
         // In the panel, enforce minimums as configured.
 
+        Layout.preferredWidth: root.inTray ? 0 : root._layoutPreferredPopupWidth
+        Layout.preferredHeight: root.inTray ? 0 : root._layoutPreferredPopupHeight
         Layout.minimumWidth: {
             if (root.inTray) return 0;
             if (!root.hasSelectedTown) return 280;

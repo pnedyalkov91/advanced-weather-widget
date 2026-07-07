@@ -37,18 +37,24 @@ Rectangle {
     property var weatherRoot
     property bool inSystemTray: false
 
-    // Layout.preferred* is what Plasma reads to size the panel popup window.
-    // width/height are used when the widget sits on the desktop.
+    // Layout.preferred* is provided by the fullRepresentation instance in main.qml.
+    // Keep implicit sizes here as defaults without fighting Plasma's popup sizing.
     // Compact size when no location is set to avoid overlapping other widgets.
     readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
     readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
     readonly property bool isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
+    readonly property int _configuredPopupWidth: parseInt(Plasmoid.configuration.widgetWidth || 0, 10) || 0
+    readonly property int _configuredPopupHeight: parseInt(Plasmoid.configuration.widgetHeight || 0, 10) || 0
+    readonly property int _defaultPopupWidth: isSimpleMode ? 800 : 540
+    readonly property int _defaultPopupHeight: _isRadarTab ? 680 : 550
+    readonly property int _preferredPopupWidth: _hasLocation ? (_configuredPopupWidth > 0 ? _configuredPopupWidth : _defaultPopupWidth) : 280
+    readonly property int _preferredPopupHeight: _hasLocation ? (_configuredPopupHeight > 0 ? _configuredPopupHeight : _defaultPopupHeight) : 220
     Layout.minimumWidth:    _hasLocation ? (isSimpleMode ? 900 : 540) : 280
     Layout.minimumHeight:   _hasLocation ? (isSimpleMode ? 550 : 380) : 220
-    Layout.preferredWidth:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
-    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
-    width:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
-    height: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
+    Layout.preferredWidth:  _preferredPopupWidth
+    Layout.preferredHeight: _preferredPopupHeight
+    implicitWidth:  _preferredPopupWidth
+    implicitHeight: _preferredPopupHeight
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -618,6 +624,9 @@ Rectangle {
         StackLayout {
             id: tabContent
             Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredHeight: 0
+            Layout.minimumHeight: 0
             visible: !fullView.isSimpleMode && fullView.showAnyTab
             currentIndex: fullView.activeTab
             // Explicitly follow the current child's implicitHeight
