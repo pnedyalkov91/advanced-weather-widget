@@ -59,7 +59,9 @@ pragma ComponentBehavior: Bound
  */
 
 import QtQuick
+import QtQuick.Effects
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasmoid
 
 Item {
     id: weatherIcon
@@ -96,6 +98,17 @@ Item {
     /** Optional icon colour override (defaults to theme text colour) */
     property color iconColor: Kirigami.Theme.textColor
 
+    /** Static (non-animated) glow behind the icon — a blurred copy of the
+      * icon in its own colours.  Follows the global config toggle by
+      * default; can be overridden per instance. */
+    property bool glowEnabled: Plasmoid.configuration
+                               && Plasmoid.configuration.iconGlowEnabled === true
+
+    /** Glow strength 0.1–1.0 — drives the halo's opacity and brightness. */
+    property real glowIntensity: (Plasmoid.configuration
+                                  && Plasmoid.configuration.iconGlowIntensity !== undefined)
+                                 ? Plasmoid.configuration.iconGlowIntensity : 0.85
+
     // ── Wi-font specific (only needed for "wi" type) ──────────────────────
     /** The loaded wi-font family name (from FontLoader.font.family) */
     property string wiFontFamily: ""
@@ -108,7 +121,8 @@ Item {
     implicitHeight: iconSize
     width: iconSize
     height: iconSize
-    clip: iconType !== "wi"
+    // The glow spreads past the icon bounds, so clipping must be off for it.
+    clip: iconType !== "wi" && !glowEnabled
 
     visible: iconSource.length > 0
 
@@ -121,6 +135,7 @@ Item {
     // open.  The bundled-SVG fallback is only created when the KDE theme
     // lookup actually misses.
     Loader {
+        id: iconLoader
         anchors.fill: parent
         sourceComponent: {
             if (weatherIcon.iconType === "wi")
@@ -129,6 +144,27 @@ Item {
                     && weatherIcon.iconSource.length > 0)
                 return iconComp;
             return null;
+        }
+    }
+
+    // ── Static glow ───────────────────────────────────────────────────────
+    // A blurred, slightly brightened copy of the icon drawn behind it.
+    // Purely static — no animation.  The MultiEffect (and its offscreen
+    // texture) only exists while the option is enabled, so the default
+    // configuration pays nothing.
+    Loader {
+        anchors.fill: iconLoader
+        z: -1
+        active: weatherIcon.glowEnabled && iconLoader.item !== null
+        sourceComponent: MultiEffect {
+            source: iconLoader
+            autoPaddingEnabled: true
+            blurEnabled: true
+            blur: 1.0
+            blurMax: Math.max(12, Math.round(weatherIcon.iconSize * 0.6))
+            brightness: 0.3 * weatherIcon.glowIntensity
+            saturation: 0.4
+            opacity: weatherIcon.glowIntensity
         }
     }
 

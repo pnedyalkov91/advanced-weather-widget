@@ -62,6 +62,11 @@
     <!-- ── Behaviour ─────────────────────────────────────────────────── -->
     <entry name="keepOpen"           type="Bool"><default>false</default></entry>
 
+    <!-- ── Visual effects ────────────────────────────────────────────── -->
+    <!-- Static (non-animated) glow rendered behind weather icons. -->
+    <entry name="iconGlowEnabled"    type="Bool"><default>false</default></entry>
+    <entry name="iconGlowIntensity"  type="Double"><default>0.85</default><min>0.1</min><max>1.0</max></entry>
+
     <!-- ── Units ─────────────────────────────────────────────────────── -->
     <!-- unitsMode: "metric" | "imperial" | "kde" | "custom" -->
     <entry name="unitsMode"               type="String"><default>kde</default></entry>

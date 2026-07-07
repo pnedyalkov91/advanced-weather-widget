@@ -15,6 +15,7 @@ A modern, highly customizable weather widget built specifically for KDE Plasma 6
   - [🛠 Manual Installation](#-manual-installation-development)
 - [🖼️ Screenshots](#-screenshots)
 - [✨ Detailed Features](#-detailed-features)
+- [💻 Code Contributors](#-code-contributors)
 - [🌐 Translation](#-translation)
 - [📚 External Resources](#external-resources)
 - [🔑 Entering API Keys](#-entering-api-keys)
@@ -111,8 +112,9 @@ systemctl --user restart plasma-plasmashell
 - **Smart Data:** Automatic timezone, altitude detection, and localized city names.
 
 ### 🌦 Weather Providers & Adaptive Mode
-- Choose from **10 different providers**.
+- Choose from **11 different providers**, including free options (Open-Meteo, BBC Weather, met.no) and Key-required providers.
 - **Adaptive Failover:** Automatically cycles through providers if one goes offline, ensuring you never have a widget without data.
+- **National High-Res Models:** When using Open-Meteo, the widget automatically prefers your country's official high-resolution model (e.g. DWD ICON for Germany/Austria, Météo-France AROME, UK Met Office, NOAA GFS/HRRR, MeteoSwiss ICON-CH, MET Norway, Environment Canada GEM, JMA, KNMI, DMI, ItaliaMeteo ARPAE, CMA) for more precise local forecasts.
 
 ### 🔑 Entering API Keys
 For providers that require an API key, you can enter it in the widget's settings:
@@ -138,16 +140,22 @@ For providers that require an API key, you can enter it in the widget's settings
 - **Core:** Temp (Current/Apparent/Dew), Wind (Speed/Direction), Humidity, Pressure, Visibility.
 - **Environment:** UV Index, Air Quality (CAQI), Pollen (Universal Index), Space Weather (Kp index, G-index, aurora probability).
 - **Astronomy:** Configurable Sun Arc (Sunrise/Set) and Moon Path (Phases/Rise/Set).
-- **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, and provider-specific sources.
+- **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, LibreWXR, KDE's FOSS Public Alert Server, and provider-specific sources, including a dedicated "Purple" tier for extreme-severity alerts.
 
 ### 🖥 Customization
 - **Dual Temperature:** Option to display two different temperature metrics simultaneously (e.g., Actual + Apparent).
 - **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
 - **Widget Layouts:** Advanced (Details, Forecast and Radar tabs) and Simple (no tabs)
-- **Themes:** 6 icon themes (Symbolic, Font, Flat, 3D, KDE) plus a custom per-item picker.
-- **Visuals:** Fully interactive Radar Map (RainViewer), 16-day daily forecast, and hourly weather forecast.
+- **Themes:** 6 icon themes (Symbolic, Font, Flat, 3D, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
+- **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, and hourly weather forecast.
 
 ---
+
+## 💻 Code Contributors
+
+Thank you to everyone who has contributed code to this project ❤️
+
+- **[Mizu Ikki](https://github.com/mizuikki)** - QWeather provider fixes (refresh handling, forecast display, precipitation fallback)
 
 ## 🌐 Translation
 

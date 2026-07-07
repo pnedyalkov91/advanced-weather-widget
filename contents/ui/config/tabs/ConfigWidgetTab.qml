@@ -152,6 +152,41 @@ ColumnLayout {
                 onClicked: widgetTab.configRoot.conditionIconDialog.openWithContext("widget")
             }
 
+            RowLayout {
+                Kirigami.FormData.label: i18n("Icon glow:")
+                spacing: Kirigami.Units.largeSpacing
+                Switch {
+                    checked: widgetTab.configRoot.cfg_iconGlowEnabled
+                    onToggled: widgetTab.configRoot.cfg_iconGlowEnabled = checked
+                }
+                Label {
+                    text: widgetTab.configRoot.cfg_iconGlowEnabled ? i18n("Enabled") : i18n("Disabled")
+                    opacity: 0.8
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: widgetTab.configRoot.cfg_iconGlowEnabled = !widgetTab.configRoot.cfg_iconGlowEnabled
+                    }
+                }
+            }
+            RowLayout {
+                visible: widgetTab.configRoot.cfg_iconGlowEnabled
+                Kirigami.FormData.label: i18n("Glow intensity:")
+                spacing: Kirigami.Units.largeSpacing
+                Slider {
+                    Layout.preferredWidth: 160
+                    from: 0.1
+                    to: 1.0
+                    stepSize: 0.05
+                    value: widgetTab.configRoot.cfg_iconGlowIntensity
+                    onMoved: widgetTab.configRoot.cfg_iconGlowIntensity = value
+                }
+                Label {
+                    text: Math.round(widgetTab.configRoot.cfg_iconGlowIntensity * 100) + "%"
+                    opacity: 0.65
+                    Layout.preferredWidth: 40
+                }
+            }
+
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Behavior
             // ═══════════════════════════════════════════════════════════════

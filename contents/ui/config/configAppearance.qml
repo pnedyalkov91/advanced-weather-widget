@@ -1117,6 +1117,8 @@ KCM.AbstractKCM {
     property string cfg_widgetIconTheme: "symbolic"   // "kde" | "wi-font" | "flat-color" | "symbolic" | "3d-oxygen"
     property string cfg_conditionIconTheme: "kde"      // controls main hero condition icon in widget popup
     property string cfg_widgetConditionCustomIcons: ""   // custom per-condition icons for the widget popup
+    property bool cfg_iconGlowEnabled: false           // static glow behind weather icons
+    property double cfg_iconGlowIntensity: 0.85        // glow strength 0.1–1.0
     property string cfg_widgetLayoutMode: "advanced"  // "advanced" | "simple"
     property string cfg_widgetSimpleDetailsOrder: "humidity;pressure;preciprate;precipsum"
     property string cfg_widgetSimpleDetailsItemIcons: "humidity=1;pressure=1;preciprate=1;precipsum=1"
