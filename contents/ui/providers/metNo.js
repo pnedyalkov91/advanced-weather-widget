@@ -110,12 +110,16 @@ function fetchCurrent(service, W, chain, idx) {
             if (!det2)
                 return;
             if (!days[dk])
-                days[dk] = { maxC: -Infinity, minC: Infinity, bestHr: -1, bestCode: 0, precipMm: 0 };
+                days[dk] = { maxC: -Infinity, minC: Infinity, bestHr: -1, bestCode: 0, precipMm: 0, pressureHpa: NaN, uvMax: NaN };
             var day = days[dk];
             if (det2.air_temperature > day.maxC)
                 day.maxC = det2.air_temperature;
             if (det2.air_temperature < day.minC)
                 day.minC = det2.air_temperature;
+            if (isNaN(day.pressureHpa) && det2.air_pressure_at_sea_level !== undefined)
+                day.pressureHpa = det2.air_pressure_at_sea_level;
+            if (det2.ultraviolet_index_clear_sky !== undefined && !isNaN(det2.ultraviolet_index_clear_sky))
+                day.uvMax = isNaN(day.uvMax) ? det2.ultraviolet_index_clear_sky : Math.max(day.uvMax, det2.ultraviolet_index_clear_sky);
             // accumulate precipitation
             var p1h = (t2.data && t2.data.next_1_hours && t2.data.next_1_hours.details)
                 ? t2.data.next_1_hours.details : null;
@@ -142,6 +146,8 @@ function fetchCurrent(service, W, chain, idx) {
                 minC: day.minC,
                 code: day.bestCode,
                 precipMm: day.precipMm,
+                uvMax: day.uvMax,
+                pressureHpa: day.pressureHpa,
                 snowCm: NaN,
                 precipProb: NaN,
                 windKmh: NaN,
