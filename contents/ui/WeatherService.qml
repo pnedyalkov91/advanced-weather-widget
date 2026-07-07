@@ -142,6 +142,11 @@ QtObject {
     property var _tio_cur: null
     property var _wb_cur: null
     property var _qw_cur: null
+    // BBC Weather is keyed by a numeric location id (not lat/lon). We cache the
+    // id resolved from the locator service, keyed by rounded coordinates, so
+    // repeat refreshes for the same location skip the extra lookup request.
+    property string _bbcLocId: ""
+    property string _bbcLocKey: ""
     // True once the current provider has written native alerts for this
     // refresh generation — lets _fetchAlertsIfNeeded() decide whether to
     // fall back to AlertsJS without having to blank weatherRoot.weatherAlerts
@@ -190,7 +195,7 @@ QtObject {
         _nativeAlertsSetThisGen = false;
 
         var provider = Plasmoid.configuration.weatherProvider || "adaptive";
-        var chain = (provider === "adaptive") ? ["openMeteo", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "openWeather", "weatherApi"] : [provider];
+        var chain = (provider === "adaptive") ? ["openMeteo", "bbc", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "openWeather", "weatherApi"] : [provider];
         chain._gen = _refreshGen;
 
         _tryProvider(chain, 0);
@@ -233,6 +238,16 @@ QtObject {
         var lat = service.latitude;
         var lon = service.longitude;
         var tz  = service.timezone || "auto";
+
+        // ── BBC Weather ───────────────────────────────────────────────────────
+        // BBC's id resolution lives in its provider module, so delegate the
+        // whole parallel fetch there instead of inlining it here.
+        if (ap === "bbc") {
+            var _pB = _providers();
+            if (!_pB || !_pB.fetchHourlyDirect(ap, service, dateStr, callback))
+                callback([]);
+            return;
+        }
 
         // ── Open-Meteo ────────────────────────────────────────────────────────
         if (ap === "openMeteo") {
@@ -719,6 +734,9 @@ QtObject {
         } else if (p === "metno") {
             name = "MET Norway";
             url = "https://www.met.no";
+        } else if (p === "bbc") {
+            name = "BBC Weather";
+            url = "https://www.bbc.com/weather";
         } else if (p === "pirateWeather") {
             name = "Pirate Weather";
             url = "https://pirateweather.net";
@@ -745,7 +763,7 @@ QtObject {
         // When Open-Meteo is serving an official national high-resolution model,
         // credit the issuing weather service in parentheses, e.g.
         // "Open-Meteo (UK Met Office)".
-        if (p !== "openWeather" && p !== "weatherApi" && p !== "metno"
+        if (p !== "openWeather" && p !== "weatherApi" && p !== "metno" && p !== "bbc"
             && p !== "pirateWeather" && p !== "visualCrossing" && p !== "tomorrowIo"
             && p !== "stormGlass" && p !== "weatherbit" && p !== "qWeather") {
             var mi = W.openMeteoModelInfo(openMeteoModel, countryCode);
@@ -762,6 +780,8 @@ QtObject {
             return "WeatherAPI.com";
         if (p === "metno")
             return "met.no";
+        if (p === "bbc")
+            return "BBC Weather";
         if (p === "pirateWeather")
             return "Pirate Weather";
         if (p === "visualCrossing")

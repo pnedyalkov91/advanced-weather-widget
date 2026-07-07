@@ -143,6 +143,9 @@ KCM.SimpleKCM {
             url = "https://api.weatherbit.io/v2.0/current?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&key=" + encodeURIComponent(wbKey) + "&units=M";
         } else if (provider === "metno") {
             url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+        } else if (provider === "bbc") {
+            // BBC has no key; verify by resolving the nearest location id.
+            url = "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&format=json";
         } else if (provider === "qWeather") {
             var qwKey = (cfg_qwApiKey || "").trim();
             if (!qwKey) {
@@ -190,6 +193,8 @@ KCM.SimpleKCM {
             return "WeatherAPI.com";
         if (p === "metno")
             return "met.no";
+        if (p === "bbc")
+            return "BBC Weather";
         if (p === "pirateWeather")
             return "Pirate Weather";
         if (p === "visualCrossing")
@@ -293,6 +298,10 @@ KCM.SimpleKCM {
         {
             text: i18n("met.no (free)"),
             value: "metno"
+        },
+        {
+            text: i18n("BBC Weather (free)"),
+            value: "bbc"
         },
         {
             text: i18n("OpenWeatherMap (Key Required)"),
@@ -399,7 +408,7 @@ KCM.SimpleKCM {
                 Layout.topMargin: 4
                 visible: root.isAdaptive
                 type: Kirigami.MessageType.Information
-                text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key.")
+                text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key.")
             }
 
             Item {
@@ -459,6 +468,8 @@ KCM.SimpleKCM {
                             return i18n("Chinese weather provider with global coverage. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.qweather.com'>qweather.com</a>";
                         if (root.cfg_weatherProvider === "metno")
                             return i18n("Free Norwegian Meteorological Institute service. No API key needed.") + "<br/>" + i18n("Provider website:") + " <a href='https://met.no'>met.no</a>";
+                        if (root.cfg_weatherProvider === "bbc")
+                            return i18n("Free BBC Weather service (data from the Met Office). No API key needed.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.bbc.com/weather'>bbc.com/weather</a>";
                         return i18n("Free and open-source. No API key needed. Recommended.") + "<br/>" + i18n("Provider website:") + " <a href='https://open-meteo.com'>open-meteo.com</a>";
                     }
                     HoverHandler {

@@ -505,6 +505,8 @@ KCM.SimpleKCM {
             url = "https://api.pirateweather.net/forecast/" + encodeURIComponent(pwKey) + "/" + lat + "," + lon + "?units=ca&exclude=minutely,hourly,daily,alerts";
         } else if (provider === "metno") {
             url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
+        } else if (provider === "bbc") {
+            url = "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&format=json";
         } else if (provider === "qWeather") {
             var qwKey = (Plasmoid.configuration.qwApiKey || "").trim();
             if (!qwKey) {
@@ -549,6 +551,8 @@ KCM.SimpleKCM {
             return "WeatherAPI.com";
         if (p === "metno")
             return "met.no";
+        if (p === "bbc")
+            return "BBC Weather";
         if (p === "pirateWeather")
             return "Pirate Weather";
         if (p === "qWeather")
@@ -623,6 +627,8 @@ KCM.SimpleKCM {
             return "Pirate Weather";
         if (cfg_weatherProvider === "metno")
             return "met.no";
+        if (cfg_weatherProvider === "bbc")
+            return "BBC Weather";
         return "Open-Meteo";
     }
     function currentLocationDisplayName() {

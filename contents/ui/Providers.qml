@@ -18,7 +18,7 @@
 /**
  * Providers.qml — lazily-loaded weather-provider dispatcher.
  *
- * All 12 provider .js modules are imported here instead of in WeatherService.qml
+ * All provider .js modules are imported here instead of in WeatherService.qml
  * so they are NOT parsed/compiled during shell startup. WeatherService creates
  * this object on demand (first weather fetch, ~600 ms after the widget loads)
  * via Qt.createComponent, keeping ~3.7k lines of provider JS off the critical
@@ -32,6 +32,7 @@ import "providers/openMeteo.js" as OpenMeteoJS
 import "providers/openWeather.js" as OpenWeatherJS
 import "providers/weatherApi.js" as WeatherApiJS
 import "providers/metNo.js" as MetNoJS
+import "providers/bbcWeather.js" as BbcWeatherJS
 import "providers/pirateWeather.js" as PirateWeatherJS
 import "providers/visualCrossing.js" as VisualCrossingJS
 import "providers/tomorrowIo.js" as TomorrowIoJS
@@ -56,6 +57,7 @@ QtObject {
         case "openWeather":    OpenWeatherJS.fetchCurrent(service, W, chain, idx); return;
         case "weatherApi":     WeatherApiJS.fetchCurrent(service, W, chain, idx); return;
         case "metno":          MetNoJS.fetchCurrent(service, W, chain, idx); return;
+        case "bbc":            BbcWeatherJS.fetchCurrent(service, W, chain, idx); return;
         default:               OpenMeteoJS.fetchCurrent(service, chain, idx); return; // default = Open-Meteo
         }
     }
@@ -68,6 +70,7 @@ QtObject {
         case "openWeather":    OpenWeatherJS.fetchHourly(service, W, dateStr); return true;
         case "weatherApi":     WeatherApiJS.fetchHourly(service, W, dateStr); return true;
         case "metno":          MetNoJS.fetchHourly(service, W, dateStr); return true;
+        case "bbc":            BbcWeatherJS.fetchHourly(service, W, dateStr); return true;
         case "visualCrossing": VisualCrossingJS.fetchHourly(service, W, dateStr); return true;
         case "tomorrowIo":     TomorrowIoJS.fetchHourly(service, W, dateStr); return true;
         case "stormGlass":     StormGlassJS.fetchHourly(service, W, dateStr); return true;
@@ -75,6 +78,14 @@ QtObject {
         case "qWeather":       QWeatherJS.fetchHourly(service, W, dateStr); return true;
         default:               return false;
         }
+    }
+
+    /** Parallel-safe hourly fetch for providers that support it. Returns true
+     *  if handled (result delivered via callback), false to let the caller use
+     *  its inline path. Only BBC needs this (its id resolution lives in-module). */
+    function fetchHourlyDirect(ap, service, dateStr, callback) {
+        if (ap === "bbc") { BbcWeatherJS.fetchHourlyDirect(service, W, dateStr, callback); return true; }
+        return false;
     }
 
     function fetchAlerts(service)         { AlertsJS.fetchAlerts(service); }

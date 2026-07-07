@@ -120,6 +120,7 @@ ColumnLayout {
         return [
             { key: "openMeteo",      label: "Open-Meteo",       state: 0, message: "", needsKey: false },
             { key: "metno",          label: "met.no",           state: 0, message: "", needsKey: false },
+            { key: "bbc",            label: "BBC Weather",      state: 0, message: "", needsKey: false },
             { key: "openWeather",    label: "OpenWeatherMap",   state: 0, message: "", needsKey: true  },
             { key: "weatherApi",     label: "WeatherAPI.com",   state: 0, message: "", needsKey: true  },
             { key: "pirateWeather",  label: "Pirate Weather",   state: 0, message: "", needsKey: true  },
@@ -149,6 +150,8 @@ ColumnLayout {
             return { url: "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current=temperature_2m" };
         if (p === "metno")
             return { url: "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + lat + "&lon=" + lon };
+        if (p === "bbc")
+            return { url: "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + lat + "&longitude=" + lon + "&format=json" };
         if (p === "openWeather") {
             var ow = (cfg.owApiKey || "").trim();
             if (!ow) return { missingKey: true };
