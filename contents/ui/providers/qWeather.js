@@ -222,6 +222,8 @@ function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
                         code: _qwCodeToWmo(day.iconDay),
                         precipMm: (day.precip !== undefined && day.precip !== null) ? parseFloat(day.precip) : NaN,
                         snowCm: 0, // not separated in QWeather daily
+                        pressureHpa: (day.pressure !== undefined && day.pressure !== null) ? parseFloat(day.pressure) : NaN,
+                        visibilityKm: (day.vis !== undefined && day.vis !== null) ? parseFloat(day.vis) : NaN,
                         uvMax: (day.uvIndex !== undefined) ? parseFloat(day.uvIndex) : NaN,
                         precipProb: (day.pop !== undefined) ? parseFloat(day.pop) : NaN,
                         windKmh: (day.windSpeed !== undefined) ? parseFloat(day.windSpeed) : NaN,
