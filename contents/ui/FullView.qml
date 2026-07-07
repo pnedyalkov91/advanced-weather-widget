@@ -107,8 +107,6 @@ Rectangle {
         return want;
     }
 
-    // Whether not-currently-shown tabs stay instantiated. True while the
-    // popup is open and always on the desktop (Planar), which has no popup.
     readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
 
     // Reset to the configured default tab every time the popup opens
@@ -301,7 +299,7 @@ Rectangle {
                     running: headerDateTimeLabel.visible
                     triggeredOnStart: true
                     onTriggered: {
-                        var now = new Date();
+                        var now = weatherRoot ? weatherRoot.locationNowDate() : new Date();
                         var dateStr = headerDateTimeLabel._formatDate(now);
                         var timeStr = headerDateTimeLabel._formatTime(now);
                         var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
@@ -624,7 +622,7 @@ Rectangle {
             implicitHeight: (children && children[currentIndex]) ? children[currentIndex].implicitHeight : 0
 
             // Reach the (lazily-loaded) ForecastView for external activation.
-            readonly property var forecastViewItem: forecastLoader.item ? forecastLoader.item.forecastViewItem : null
+            readonly property var forecastViewItem: forecastScrollView.forecastViewItem
 
             onCurrentIndexChanged: {
                 // ForecastView.onVisibleChanged already triggers activateForecast()
@@ -638,73 +636,50 @@ Rectangle {
             // ── Details tab ───────────────────────────────────────────
             Item {
                 id: detailsTab
-                implicitHeight: detailsLoader.item ? detailsLoader.item.implicitHeight : 220
-                Loader {
-                    id: detailsLoader
+                implicitHeight: detailsView.implicitHeight
+                DetailsView {
+                    id: detailsView
                     anchors.fill: parent
-                    asynchronous: true
-                    // Latch only while the popup is open (always on desktop, where
-                    // there is no popup): hidden tabs unload on close, so the
-                    // expose-time PlasmaTheme sync storm on reopen only covers
-                    // one tab's items instead of every tab ever visited.
-                    active: detailsTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
-                    sourceComponent: DetailsView {
-                        weatherRoot: fullView.weatherRoot
-                    }
-                }
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: detailsLoader.status === Loader.Loading
-                    visible: running
+                    weatherRoot: fullView.weatherRoot
                 }
             }
 
             // ── Forecast tab ──────────────────────────────────────────
             Item {
                 id: forecastTab
-                implicitHeight: forecastLoader.item ? forecastLoader.item.implicitHeight : 220
-                Loader {
-                    id: forecastLoader
+                implicitHeight: forecastScrollView.implicitHeight
+                ScrollView {
+                    id: forecastScrollView
                     anchors.fill: parent
-                    asynchronous: true
-                    active: forecastTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
-                    sourceComponent: ScrollView {
-                        id: forecastScrollView
-                        clip: true
-                        // Expose the inner ForecastView for external activation
-                        property alias forecastViewItem: forecastView
-                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        implicitHeight: forecastView.implicitHeight
-                        // No contentWidth binding: availableWidth depends on the
-                        // scrollbar, which depends on implicitWidth, which depends
-                        // on contentWidth — a binding loop. ForecastView.width is
-                        // bound to availableWidth below, which is all we need.
+                    clip: true
+                    property alias forecastViewItem: forecastView
+                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    implicitHeight: forecastView.implicitHeight
 
-                        ForecastView {
-                            id: forecastView
-                            weatherRoot: fullView.weatherRoot
-                            verticalScrollView: forecastScrollView.contentItem
-                            width: forecastScrollView.availableWidth
-                        }
+                    ForecastView {
+                        id: forecastView
+                        weatherRoot: fullView.weatherRoot
+                        verticalScrollView: forecastScrollView.contentItem
+                        width: forecastScrollView.availableWidth
                     }
-                }
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: forecastLoader.status === Loader.Loading
-                    visible: running
                 }
             }
 
             // ── Radar tab ─────────────────────────────────────────────
             Item {
                 id: radarTab
+                property bool wasLoaded: false
                 implicitHeight: radarLoader.item ? radarLoader.item.implicitHeight : 380
                 Loader {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: radarTab.StackLayout.isCurrentItem || (radarTab.wasLoaded && fullView._keepHiddenTabs)
+                    onStatusChanged: {
+                        if (status === Loader.Ready)
+                            radarTab.wasLoaded = true;
+                    }
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
                     }
@@ -726,12 +701,8 @@ Rectangle {
             visible: Plasmoid.configuration.showUpdateText !== false && weatherRoot && !weatherRoot.loading && (weatherRoot.updateText || "").length > 0
             text: {
                 var t = weatherRoot ? weatherRoot.updateText : "";
-                if (fullView._isRadarTab) {
-                    if ((Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr")
-                        t += " · " + i18n("Radar:") + " <a href='https://librewxr.net/'>LibreWXR</a>";
-                    else if ((Plasmoid.configuration.radarLayer || "rainviewer") === "rainviewer")
-                        t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
-                }
+                if (fullView._isRadarTab && (Plasmoid.configuration.radarLayer || "rainviewer") === "rainviewer")
+                    t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
                 return t;
             }
             textFormat: Text.RichText

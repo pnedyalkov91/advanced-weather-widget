@@ -69,7 +69,7 @@ function _apiTimeTo24h(s) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._waKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -102,9 +102,9 @@ function fetchCurrent(service, W, chain, idx) {
         if (aq) {
             r.aqiDataStaged = { index: (epa !== undefined) ? epa : NaN, label: _waAqiLabel(epa) };
         } else {
-            r.aqiData = null;
+            r.aqiDataStaged = null;
         }
-        r.pollenData = [];
+        r.pollenDataStaged = [];
         var astro = (d.forecast && d.forecast.forecastday && d.forecast.forecastday.length > 0)
             ? d.forecast.forecastday[0].astro : null;
         var nd = [];
@@ -210,7 +210,7 @@ function _parseAlerts(r, alerts) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._waKey();
     if (!key) {
         r.hourlyData = [];

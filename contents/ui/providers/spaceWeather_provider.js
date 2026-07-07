@@ -87,7 +87,7 @@ function _auroraVisibilityPercent(kp, latitude) {
  */
 function fetchSpaceWeather(service) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
 
     // Collector — wait for all 5 fetches to complete before assembling
     var state = {

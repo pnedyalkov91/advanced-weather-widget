@@ -79,7 +79,7 @@ function _iconIsDay(icon) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._vcKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -153,8 +153,8 @@ function fetchCurrent(service, W, chain, idx) {
             sunsetTimeText:  c.sunset  ? c.sunset.substring(0, 5)  : "--",
             dailyData:       nd
         };
-        r.aqiData = null;
-        r.pollenData = [];
+        r.aqiDataStaged = null;
+        r.pollenDataStaged = [];
         r.loading = false;
         r.updateText = service._formatUpdateText("visualCrossing");
 
@@ -213,7 +213,7 @@ function _parseAlerts(r, alerts) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._vcKey();
     if (!key) {
         r.hourlyData = [];

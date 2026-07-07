@@ -133,7 +133,7 @@ function _hourlySpanHours(dateStr) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._qwKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -196,7 +196,7 @@ function _fetchDaily(service, W, key, loc, gen, base) {
 }
 
 function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
-    var r = service.weatherRoot;
+    var r = service;
     var span = spans[spanIdx];
     var url = base + "/v7/weather/" + span + "d?location=" + encodeURIComponent(loc)
         + "&unit=m";
@@ -248,7 +248,7 @@ function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
             return;
         }
         service._qw_cur.dailyData = nd;
-        var r = service.weatherRoot;
+        var r = service;
         r.weatherDataStaged = service._qw_cur;
         service._qw_cur = null;
         r.loading = false;
@@ -272,7 +272,7 @@ function _qwAqiLabel(category) {
 }
 
 function _fetchAirQuality(service, W, key, loc, gen, base) {
-    var r = service.weatherRoot;
+    var r = service;
     var url = base + "/airquality/v1/current?location=" + encodeURIComponent(loc);
 
     var req = new XMLHttpRequest();
@@ -282,14 +282,14 @@ function _fetchAirQuality(service, W, key, loc, gen, base) {
         if (req.readyState !== XMLHttpRequest.DONE) return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            r.aqiData = null;
-            r.pollenData = [];
+            r.aqiDataStaged = null;
+            r.pollenDataStaged = [];
             return;
         }
         var d;
         try { d = JSON.parse(req.responseText); } catch (e) {
-            r.aqiData = null;
-            r.pollenData = [];
+            r.aqiDataStaged = null;
+            r.pollenDataStaged = [];
             return;
         }
         if (d.code === "200" && d.indexes && d.indexes.length > 0) {
@@ -297,16 +297,16 @@ function _fetchAirQuality(service, W, key, loc, gen, base) {
             var aqi = parseFloat(idx.aqiDisplay) || NaN;
             r.aqiDataStaged = { index: aqi, label: _qwAqiLabel(parseInt(idx.category, 10)) };
         } else {
-            r.aqiData = null;
+            r.aqiDataStaged = null;
         }
-        r.pollenData = [];
+        r.pollenDataStaged = [];
     };
     req.send();
 }
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._qwKey();
     if (!key) {
         r.hourlyData = [];

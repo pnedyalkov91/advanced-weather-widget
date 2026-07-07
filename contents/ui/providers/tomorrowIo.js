@@ -58,7 +58,7 @@ function _codeToWmo(code) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._tioKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -113,8 +113,8 @@ function fetchCurrent(service, W, chain, idx) {
             sunsetTimeText:  "--",
             dailyData:       []
         };
-        r.aqiData = null;
-        r.pollenData = [];
+        r.aqiDataStaged = null;
+        r.pollenDataStaged = [];
         // Step 2: Fetch daily forecast for dailyData + sun times, then write r.weatherData
         _fetchForecast(service, W, gen);
     };
@@ -126,7 +126,7 @@ function fetchCurrent(service, W, chain, idx) {
  * Sets dailyData, sunriseTimeText, sunsetTimeText, and isDay.
  */
 function _fetchForecast(service, W, gen) {
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._tioKey();
 
     var url = "https://api.tomorrow.io/v4/weather/forecast"
@@ -208,7 +208,7 @@ function _fetchForecast(service, W, gen) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._tioKey();
     if (!key) {
         r.hourlyData = [];

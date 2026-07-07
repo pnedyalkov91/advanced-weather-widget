@@ -37,7 +37,7 @@ function _calcDewPoint(T, rh) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._owKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -162,10 +162,10 @@ function _owAqiLabel(aqi) {
 
 function _fetchAirQuality(service, W) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._owKey();
     if (!key) {
-        r.aqiData = null;
+        r.aqiDataStaged = null;
         return;
     }
     var url = "https://api.openweathermap.org/data/2.5/air_pollution?lat="
@@ -178,8 +178,8 @@ function _fetchAirQuality(service, W) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            r.aqiData = null;
-            r.pollenData = [];
+            r.aqiDataStaged = null;
+            r.pollenDataStaged = [];
             return;
         }
         var d = JSON.parse(req.responseText);
@@ -187,16 +187,16 @@ function _fetchAirQuality(service, W) {
             var aqi = d.list[0].main.aqi;
             r.aqiDataStaged = { index: aqi, label: _owAqiLabel(aqi) };
         } else {
-            r.aqiData = null;
+            r.aqiDataStaged = null;
         }
-        r.pollenData = []; // not available in OpenWeather free tier
+        r.pollenDataStaged = []; // not available in OpenWeather free tier
     };
     req.send();
 }
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._owKey();
     if (!key) {
         r.hourlyData = [];

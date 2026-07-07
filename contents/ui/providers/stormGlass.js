@@ -66,7 +66,7 @@ function _val(obj) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._sgKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -196,8 +196,8 @@ function fetchCurrent(service, W, chain, idx) {
         }
         _cur.dailyData = nd;
         r.weatherDataStaged = _cur;
-        r.aqiData = null;
-        r.pollenData = [];
+        r.aqiDataStaged = null;
+        r.pollenDataStaged = [];
         r.loading = false;
         r.updateText = service._formatUpdateText("stormGlass");
 
@@ -215,7 +215,7 @@ function fetchCurrent(service, W, chain, idx) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._sgKey();
     if (!key) {
         r.hourlyData = [];

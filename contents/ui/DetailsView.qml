@@ -2967,15 +2967,18 @@ Item {
                                                 // "Today" — always real today (for highlight)
                                                 readonly property int _todayDay: {
                                                     var _ = datetimeCard._tick;
-                                                    return new Date().getDate();
+                                                    var d = root.weatherRoot ? root.weatherRoot.locationNowDate() : new Date();
+                                                    return d.getDate();
                                                 }
                                                 readonly property int _todayMonth: {
                                                     var _ = datetimeCard._tick;
-                                                    return new Date().getMonth();
+                                                    var d = root.weatherRoot ? root.weatherRoot.locationNowDate() : new Date();
+                                                    return d.getMonth();
                                                 }
                                                 readonly property int _todayYear: {
                                                     var _ = datetimeCard._tick;
-                                                    return new Date().getFullYear();
+                                                    var d = root.weatherRoot ? root.weatherRoot.locationNowDate() : new Date();
+                                                    return d.getFullYear();
                                                 }
 
                                                 // "Viewed" month — today + offset
@@ -3282,7 +3285,7 @@ Item {
                                                     if (m === "sunset")
                                                         return r.formatTimeForDisplay(r.sunsetTimeText);
                                                     if (m === "upcoming") {
-                                                        var nowM = (new Date()).getHours() * 60 + (new Date()).getMinutes();
+                                                        var nowM = (typeof r.locationNowMins === "function") ? r.locationNowMins() : ((new Date()).getHours() * 60 + (new Date()).getMinutes());
                                                         var riseM = SunPath.parseMins(r.sunriseTimeText);
                                                         var setM = SunPath.parseMins(r.sunsetTimeText);
                                                         if (riseM >= 0 && nowM < riseM)

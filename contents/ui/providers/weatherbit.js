@@ -62,7 +62,7 @@ function _codeToWmo(code) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._wbKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -118,8 +118,8 @@ function fetchCurrent(service, W, chain, idx) {
             sunsetTimeText:  c.sunset  || "--",
             dailyData:       []
         };
-        r.aqiData = null;
-        r.pollenData = [];
+        r.aqiDataStaged = null;
+        r.pollenDataStaged = [];
         _fetchDailyForecast(service, W, gen);
     };
     req.send();
@@ -130,7 +130,7 @@ function fetchCurrent(service, W, chain, idx) {
  * Sets dailyData, then marks loading complete.
  */
 function _fetchDailyForecast(service, W, gen) {
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._wbKey();
 
     var url = "https://api.weatherbit.io/v2.0/forecast/daily"
@@ -190,7 +190,7 @@ function _fetchDailyForecast(service, W, gen) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._wbKey();
     if (!key) {
         r.hourlyData = [];

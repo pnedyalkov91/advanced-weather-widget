@@ -73,7 +73,7 @@ var _isoToSlug = {
  * Tries NWS for US, MeteoAlarm for Europe, falls back to met.no MetAlerts.
  */
 function fetchAlerts(service) {
-    var r = service.weatherRoot;
+    var r = service;
     var isoCode = (service.countryCode || "").toUpperCase();
 
     // US locations: use NWS alerts API
@@ -129,7 +129,7 @@ function _looksLikeUS(lat, lon) {
 
 function _resolveCountryThenFetch(service) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;  // FIX: r was undefined here, causing silent failure
+    var r = service;  // FIX: r was undefined here, causing silent failure
     var lat = service.latitude;
     var lon = service.longitude;
     if (!lat || !lon) return;
@@ -192,7 +192,7 @@ function _resolveCountryThenFetch(service) {
 
 function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var feedUrl = "https://feeds.meteoalarm.org/api/v1/warnings/feeds-" + slug;
 
     // Run feed fetch and local-name lookup in parallel
@@ -615,7 +615,7 @@ function _haversineKm(lat1, lon1, lat2, lon2) {
 
 function _fetchMetNo(service) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var url = "https://api.met.no/weatherapi/metalerts/2.0/current.json"
         + "?lat=" + service.latitude
         + "&lon=" + service.longitude
@@ -715,7 +715,7 @@ function _parseMetNoAlerts(data) {
  */
 function _fetchNws(service) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
     if (isNaN(lat) || isNaN(lon)) {

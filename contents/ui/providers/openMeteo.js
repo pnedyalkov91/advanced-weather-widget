@@ -26,7 +26,7 @@
 
 function fetchCurrent(service, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var tz = service.timezone;
     var url = "https://api.open-meteo.com/v1/forecast"
         + "?latitude=" + service.latitude
@@ -60,9 +60,13 @@ function fetchCurrent(service, chain, idx) {
         var nd = [];
         if (d.daily && d.daily.time) {
             var maxD = Math.min(service.forecastDays, d.daily.time.length);
-            for (var i = 0; i < maxD; ++i)
+            for (var i = 0; i < maxD; ++i) {
+                var parts = (d.daily.time[i] || "").split("-");
+                var dayDate = (parts.length === 3)
+                    ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0, 0)
+                    : new Date();
                 nd.push({
-                    day: Qt.formatDate(new Date(d.daily.time[i]), "ddd"),
+                    day: Qt.formatDate(dayDate, "ddd"),
                     dateStr: d.daily.time[i],
                     maxC: d.daily.temperature_2m_max[i],
                     minC: d.daily.temperature_2m_min[i],
@@ -74,8 +78,11 @@ function fetchCurrent(service, chain, idx) {
                     windDir: d.daily.wind_direction_10m_dominant ? d.daily.wind_direction_10m_dominant[i] : NaN,
                     uvMax: d.daily.uv_index_max ? d.daily.uv_index_max[i] : NaN,
                     pressureHpa: d.daily.pressure_msl_mean ? d.daily.pressure_msl_mean[i] : NaN,
-                    visibilityKm: d.daily.visibility_mean ? d.daily.visibility_mean[i] / 1000.0 : NaN
+                    visibilityKm: d.daily.visibility_mean ? d.daily.visibility_mean[i] / 1000.0 : NaN,
+                    sunriseTimeText: (d.daily.sunrise && d.daily.sunrise[i]) ? Qt.formatTime(new Date(d.daily.sunrise[i]), "HH:mm") : "--",
+                    sunsetTimeText: (d.daily.sunset && d.daily.sunset[i]) ? Qt.formatTime(new Date(d.daily.sunset[i]), "HH:mm") : "--"
                 });
+            }
         }
         r.weatherDataStaged = {
             temperatureC:        c.temperature_2m,
@@ -116,7 +123,7 @@ function _aqiLabel(aqi) {
 
 function _fetchAirQuality(service) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var tz = service.timezone;
     var url = "https://air-quality-api.open-meteo.com/v1/air-quality"
         + "?latitude=" + service.latitude
@@ -138,15 +145,16 @@ function _fetchAirQuality(service) {
         var d = JSON.parse(req.responseText);
         var c = d.current || {};
         var aqi = c.european_aqi;
+        var hasAqi = aqi !== undefined && aqi !== null && !isNaN(aqi);
         r.aqiDataStaged = {
-            index: (aqi !== undefined) ? aqi : NaN,
-            label: (aqi !== undefined) ? _aqiLabel(aqi) : "",
-            pm10:  (c.pm10            !== undefined) ? c.pm10            : NaN,
-            pm2_5: (c.pm2_5           !== undefined) ? c.pm2_5           : NaN,
-            no2:   (c.nitrogen_dioxide !== undefined) ? c.nitrogen_dioxide : NaN,
-            so2:   (c.sulphur_dioxide  !== undefined) ? c.sulphur_dioxide  : NaN,
-            o3:    (c.ozone            !== undefined) ? c.ozone            : NaN,
-            co:    (c.carbon_monoxide  !== undefined) ? c.carbon_monoxide / 1000.0 : NaN
+            index: hasAqi ? aqi : NaN,
+            label: hasAqi ? _aqiLabel(aqi) : "",
+            pm10:  (c.pm10             !== undefined && c.pm10             !== null && !isNaN(c.pm10))             ? c.pm10 : NaN,
+            pm2_5: (c.pm2_5            !== undefined && c.pm2_5            !== null && !isNaN(c.pm2_5))            ? c.pm2_5 : NaN,
+            no2:   (c.nitrogen_dioxide !== undefined && c.nitrogen_dioxide !== null && !isNaN(c.nitrogen_dioxide)) ? c.nitrogen_dioxide : NaN,
+            so2:   (c.sulphur_dioxide  !== undefined && c.sulphur_dioxide  !== null && !isNaN(c.sulphur_dioxide))  ? c.sulphur_dioxide : NaN,
+            o3:    (c.ozone            !== undefined && c.ozone            !== null && !isNaN(c.ozone))            ? c.ozone : NaN,
+            co:    (c.carbon_monoxide  !== undefined && c.carbon_monoxide  !== null && !isNaN(c.carbon_monoxide))  ? c.carbon_monoxide / 1000.0 : NaN
         };
         var pollenKeys = [
             { key: "alder",   field: "alder_pollen"   },
@@ -159,7 +167,8 @@ function _fetchAirQuality(service) {
         var pd = [];
         pollenKeys.forEach(function (p) {
             var v = c[p.field];
-            pd.push({ key: p.key, value: (v !== undefined && v !== null) ? v : NaN });
+            if (v !== undefined && v !== null && !isNaN(v))
+                pd.push({ key: p.key, value: v });
         });
         r.pollenDataStaged = pd;
     };
@@ -168,7 +177,7 @@ function _fetchAirQuality(service) {
 
 function fetchHourly(service, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var tz = service.timezone;
     var url = "https://api.open-meteo.com/v1/forecast?latitude="
         + service.latitude

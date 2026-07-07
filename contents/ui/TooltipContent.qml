@@ -510,7 +510,7 @@ Item {
                     var pts = s.split(":");
                     return parseInt(pts[0]) * 60 + parseInt(pts[1]);
                 }
-                var nowMM = (new Date()).getHours() * 60 + (new Date()).getMinutes();
+                var nowMM = (typeof r.locationNowMins === "function") ? r.locationNowMins() : ((new Date()).getHours() * 60 + (new Date()).getMinutes());
                 var riseMM = parseMoonMins(r.moonriseTimeText);
                 var setMM = parseMoonMins(r.moonsetTimeText);
                 var useSetM = riseMM >= 0 && nowMM >= riseMM && (setMM < 0 || nowMM < setMM);
@@ -541,7 +541,7 @@ Item {
                     var pts = s.split(":");
                     return parseInt(pts[0]) * 60 + parseInt(pts[1]);
                 }
-                var nowMM2 = (new Date()).getHours() * 60 + (new Date()).getMinutes();
+                var nowMM2 = (typeof r.locationNowMins === "function") ? r.locationNowMins() : ((new Date()).getHours() * 60 + (new Date()).getMinutes());
                 var riseMM2 = parseMoonMins2(r.moonriseTimeText);
                 var setMM2 = parseMoonMins2(r.moonsetTimeText);
                 var useSetM2 = riseMM2 >= 0 && nowMM2 >= riseMM2 && (setMM2 < 0 || nowMM2 < setMM2);
@@ -593,7 +593,7 @@ Item {
                     : [{ iconInfo: infoSet, showIcon: showIcon, text: setTime }];
             }
             if (mode === "upcoming") {
-                var nowM = (new Date()).getHours() * 60 + (new Date()).getMinutes();
+                var nowM = (typeof r.locationNowMins === "function") ? r.locationNowMins() : ((new Date()).getHours() * 60 + (new Date()).getMinutes());
                 var riseM = parseMins(r.sunriseTimeText);
                 var setM = parseMins(r.sunsetTimeText);
                 var useSet = riseM >= 0 && nowM >= riseM && (setM < 0 || nowM < setM);

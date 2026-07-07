@@ -37,7 +37,7 @@ function _calcDewPoint(T, rh) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var alt = service.altitude;
     var url = "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat="
         + encodeURIComponent(service.latitude)
@@ -161,7 +161,7 @@ function fetchCurrent(service, W, chain, idx) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var alt = service.altitude;
     var url = "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat="
         + encodeURIComponent(service.latitude)

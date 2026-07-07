@@ -97,7 +97,7 @@ function _iconIsDay(icon) {
 
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._pwKey();
     if (!key) {
         service._tryProvider(chain, idx + 1);
@@ -171,8 +171,8 @@ function fetchCurrent(service, W, chain, idx) {
             sunsetTimeText:  day0 && day0.sunsetTime  ? Qt.formatTime(new Date(day0.sunsetTime  * 1000), "HH:mm") : "--",
             dailyData:       nd
         };
-        r.aqiData = null;
-        r.pollenData = [];
+        r.aqiDataStaged = null;
+        r.pollenDataStaged = [];
         r.loading = false;
         r.updateText = service._formatUpdateText("pirateWeather");
 
@@ -242,7 +242,7 @@ function _parseAlerts(r, alerts) {
 
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
-    var r = service.weatherRoot;
+    var r = service;
     var key = service._pwKey();
     if (!key) {
         r.hourlyData = [];

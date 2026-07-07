@@ -389,17 +389,18 @@ ColumnLayout {
             Repeater {
                 model: {
                     if (!weatherRoot || !weatherRoot.dailyData) return 0;
-                    var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
-                    return simpleView.showToday ? total : Math.max(0, total - 1);
+                    return weatherRoot.forecastDisplayCount(simpleView.showToday, simpleView.forecastDays);
                 }
 
                 delegate: Rectangle {
                     required property int index
-                    readonly property int dataIndex: simpleView.showToday ? index : index + 1
+                    readonly property int dataIndex: weatherRoot ? (weatherRoot.firstForecastDataIndex(simpleView.showToday) + index) : index
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 8
-                    color: dataIndex === 0
+                    readonly property string dayDateStr: day && day.dateStr ? day.dateStr : ""
+                    readonly property bool isToday: weatherRoot && dayDateStr.length > 0 && dayDateStr === weatherRoot.locationDateString()
+                    color: isToday
                         ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.12)
                         : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.06)
 
@@ -420,15 +421,10 @@ ColumnLayout {
                             Layout.alignment: Qt.AlignHCenter
                             text: {
                                 if (!day) return "";
-                                if (dataIndex === 0) return i18n("Today");
                                 var ds = day.dateStr || "";
-                                if (ds) {
-                                    var parts = ds.split("-");
-                                    if (parts.length === 3) {
-                                        var dt = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-                                        return Qt.locale().dayName(dt.getDay(), Locale.LongFormat);
-                                    }
-                                }
+                                if (isToday) return i18n("Today");
+                                if (ds && weatherRoot)
+                                    return weatherRoot.dayNameForDateStr(ds, Locale.LongFormat);
                                 return new Date(day.time * 1000).toLocaleDateString(Qt.locale(), "dddd");
                             }
                             color: Kirigami.Theme.textColor
@@ -445,8 +441,9 @@ ColumnLayout {
                             text: {
                                 if (!day) return "";
                                 var ds = day.dateStr || "";
-                                var d2 = ds ? new Date(ds) : new Date(day.time * 1000);
-                                return Qt.formatDate(d2, Qt.locale().dateFormat(Locale.ShortFormat));
+                                if (ds && weatherRoot)
+                                    return weatherRoot.formatDateStrForDisplay(ds, Qt.locale().dateFormat(Locale.ShortFormat));
+                                return Qt.formatDate(new Date(day.time * 1000), Qt.locale().dateFormat(Locale.ShortFormat));
                             }
                             color: Kirigami.Theme.textColor
                             opacity: 0.5
