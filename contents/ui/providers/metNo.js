@@ -201,6 +201,10 @@ function fetchHourly(service, W, dateStr) {
                         windDeg: det.wind_from_direction !== undefined
                             ? det.wind_from_direction : NaN,
                         humidity: det.relative_humidity,
+                        pressureHpa: det.air_pressure_at_sea_level !== undefined
+                            ? det.air_pressure_at_sea_level : NaN,
+                        uvIndex: det.ultraviolet_index_clear_sky !== undefined
+                            ? det.ultraviolet_index_clear_sky : NaN,
                         precipProb: (ts.data && ts.data.next_1_hours
                             && ts.data.next_1_hours.details
                             && ts.data.next_1_hours.details.probability_of_precipitation !== undefined)
