@@ -24,6 +24,10 @@
 
 .import "../js/weather.js" as W
 
+function _metersToKmOrNaN(value) {
+    return (value !== undefined && value !== null && !isNaN(value)) ? (value / 1000.0) : NaN;
+}
+
 function fetchCurrent(service, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -74,7 +78,7 @@ function fetchCurrent(service, chain, idx) {
                     windDir: d.daily.wind_direction_10m_dominant ? d.daily.wind_direction_10m_dominant[i] : NaN,
                     uvMax: d.daily.uv_index_max ? d.daily.uv_index_max[i] : NaN,
                     pressureHpa: d.daily.pressure_msl_mean ? d.daily.pressure_msl_mean[i] : NaN,
-                    visibilityKm: d.daily.visibility_mean ? d.daily.visibility_mean[i] / 1000.0 : NaN
+                    visibilityKm: d.daily.visibility_mean ? _metersToKmOrNaN(d.daily.visibility_mean[i]) : NaN
                 });
         }
         r.weatherDataStaged = {
@@ -85,7 +89,7 @@ function fetchCurrent(service, chain, idx) {
             windDirection:       isNaN(c.wind_direction_10m) ? NaN : c.wind_direction_10m,
             pressureHpa:         c.pressure_msl,   // sea-level pressure (matches Foreca et al.)
             dewPointC:           c.dew_point_2m,
-            visibilityKm:        c.visibility / 1000.0,
+            visibilityKm:        _metersToKmOrNaN(c.visibility),
             weatherCode:         c.weather_code,
             isDay:               (c.is_day !== undefined) ? c.is_day : -1,
             precipMmh:           (c.precipitation !== undefined) ? c.precipitation : NaN,
@@ -201,7 +205,7 @@ function fetchHourly(service, dateStr) {
                     precipProb: d.hourly.precipitation_probability ? d.hourly.precipitation_probability[i] : NaN,
                     precipMm: d.hourly.precipitation ? d.hourly.precipitation[i] : NaN,
                     pressureHpa: d.hourly.pressure_msl ? d.hourly.pressure_msl[i] : NaN,
-                    visibilityKm: d.hourly.visibility ? d.hourly.visibility[i] / 1000.0 : NaN,
+                    visibilityKm: d.hourly.visibility ? _metersToKmOrNaN(d.hourly.visibility[i]) : NaN,
                     uvIndex: d.hourly.uv_index ? d.hourly.uv_index[i] : NaN
                 });
         r.hourlyData = arr;
