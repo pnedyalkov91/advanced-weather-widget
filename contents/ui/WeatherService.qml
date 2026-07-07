@@ -741,7 +741,18 @@ QtObject {
             name = "Open-Meteo";
             url = "https://open-meteo.com";
         }
-        return i18n("Updated %1", t) + " \u00B7 " + i18n("Weather provider:") + " <a href='" + url + "'>" + name + "</a>";
+        var providerLink = "<a href='" + url + "'>" + name + "</a>";
+        // When Open-Meteo is serving an official national high-resolution model,
+        // credit the issuing weather service in parentheses, e.g.
+        // "Open-Meteo (UK Met Office)".
+        if (p !== "openWeather" && p !== "weatherApi" && p !== "metno"
+            && p !== "pirateWeather" && p !== "visualCrossing" && p !== "tomorrowIo"
+            && p !== "stormGlass" && p !== "weatherbit" && p !== "qWeather") {
+            var mi = W.openMeteoModelInfo(openMeteoModel, countryCode);
+            if (mi)
+                providerLink += " (<a href='" + mi.url + "'>" + mi.name + "</a>)";
+        }
+        return i18n("Updated %1", t) + " \u00B7 " + i18n("Weather provider:") + " " + providerLink;
     }
 
     function _providerLabel(p) {
