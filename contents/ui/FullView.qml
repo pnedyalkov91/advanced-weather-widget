@@ -253,14 +253,50 @@ Rectangle {
                 Layout.alignment: Qt.AlignVCenter
             }
 
-            Label {
+            Item {
+                id: headerLocationInfo
                 Layout.fillWidth: !headerDateTimeLabel.visible
-                text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
-                // #2
-                color: Kirigami.Theme.textColor
-                font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
-                elide: Text.ElideRight
-                verticalAlignment: Text.AlignVCenter
+                implicitWidth: headerLocationContent.implicitWidth
+                implicitHeight: headerLocationContent.implicitHeight
+
+                Row {
+                    id: headerLocationContent
+                    width: parent.width
+                    height: Math.max(headerLocationNameLabel.implicitHeight, headerLocationTimeHintLabel.implicitHeight)
+                    spacing: 4
+
+                    Label {
+                        id: headerLocationNameLabel
+                        width: Math.max(0, Math.min(implicitWidth, headerLocationInfo.width - (headerLocationTimeHintLabel.visible ? headerLocationTimeHintLabel.implicitWidth + headerLocationContent.spacing : 0)))
+                        text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
+                        color: Kirigami.Theme.textColor
+                        font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Label {
+                        id: headerLocationTimeHintLabel
+                        visible: !headerDateTimeLabel.visible && weatherRoot && weatherRoot.shouldShowLocationTimeHint()
+                        color: Kirigami.Theme.disabledTextColor
+                        opacity: 0.9
+                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+                        verticalAlignment: Text.AlignVCenter
+                        text: {
+                            var _ = _tick;
+                            return weatherRoot ? "\u00B7 " + weatherRoot.locationTimeHintText() : "";
+                        }
+
+                        property int _tick: 0
+                        Timer {
+                            interval: 60000
+                            running: headerLocationTimeHintLabel.visible
+                            repeat: true
+                            triggeredOnStart: true
+                            onTriggered: headerLocationTimeHintLabel._tick++
+                        }
+                    }
+                }
             }
 
             // ── Header date / time ────────────────────────────────────────

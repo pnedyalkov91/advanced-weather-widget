@@ -641,6 +641,8 @@ QtObject {
                         patched.sunsetTimeText = Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm");
                     if (d.utc_offset_seconds !== undefined)
                         patched.locationUtcOffsetMins = Math.round(d.utc_offset_seconds / 60);
+                    if (d.timezone_abbreviation !== undefined && d.timezone_abbreviation !== null)
+                        patched.locationTimezoneAbbrev = "" + d.timezone_abbreviation;
                     r.weatherDataStaged = patched;
                 }
             } catch (e) {}

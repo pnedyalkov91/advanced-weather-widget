@@ -99,6 +99,7 @@ function fetchCurrent(service, chain, idx) {
             uvIndex:             (c.uv_index !== undefined) ? c.uv_index : NaN,
             snowDepthCm:         (c.snow_depth !== undefined && c.snow_depth !== null) ? c.snow_depth * 100 : NaN,
             locationUtcOffsetMins: (d.utc_offset_seconds !== undefined) ? Math.round(d.utc_offset_seconds / 60) : 0,
+            locationTimezoneAbbrev: (d.timezone_abbreviation !== undefined && d.timezone_abbreviation !== null) ? ("" + d.timezone_abbreviation) : "",
             sunriseTimeText:     (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0) ? Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm") : "--",
             sunsetTimeText:      (d.daily && d.daily.sunset  && d.daily.sunset.length  > 0) ? Qt.formatTime(new Date(d.daily.sunset[0]),  "HH:mm") : "--",
             dailyData:           nd

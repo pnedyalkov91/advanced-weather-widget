@@ -900,6 +900,155 @@ PlasmoidItem {
         return Qt.formatTime(dateAtUtcOffset(new Date(), utcOffsetMins), Qt.locale().timeFormat(Locale.ShortFormat));
     }
 
+    function _timezoneOffsetLabel(utcOffsetMins) {
+        var offset = _hasNumericValue(utcOffsetMins)
+            ? Math.round(utcOffsetMins)
+            : _displayOffsetFallbackMins(new Date());
+        var sign = offset >= 0 ? "+" : "-";
+        var absOffset = Math.abs(offset);
+        var hours = Math.floor(absOffset / 60);
+        var minutes = absOffset % 60;
+        var hourText = hours < 10 ? "0" + hours : "" + hours;
+        var minuteText = minutes < 10 ? "0" + minutes : "" + minutes;
+        return "UTC" + sign + hourText + ":" + minuteText;
+    }
+
+    function _timezoneOffsetMinsFromLabel(label) {
+        var text = (label || "").trim();
+        var match = /^(?:GMT|UTC)\s*([+-])\s*(\d{1,2})(?::?(\d{2}))?$/i.exec(text);
+        if (!match)
+            return NaN;
+        var sign = match[1] === "-" ? -1 : 1;
+        var hours = parseInt(match[2], 10);
+        var minutes = match[3] ? parseInt(match[3], 10) : 0;
+        if (isNaN(hours) || isNaN(minutes))
+            return NaN;
+        return sign * (hours * 60 + minutes);
+    }
+
+    function _timezoneIanaAbbrev(tzId, utcOffsetMins) {
+        var tz = (tzId || "").trim();
+        if (tz.length === 0)
+            return "";
+        var offset = _hasNumericValue(utcOffsetMins)
+            ? Math.round(utcOffsetMins)
+            : effectiveLocationUtcOffsetMins();
+
+        function inList(list) {
+            return list.indexOf(tz) >= 0;
+        }
+
+        if (inList([
+            "Europe/Amsterdam", "Europe/Andorra", "Europe/Belgrade", "Europe/Berlin", "Europe/Bratislava",
+            "Europe/Brussels", "Europe/Budapest", "Europe/Copenhagen", "Europe/Gibraltar", "Europe/Ljubljana",
+            "Europe/Luxembourg", "Europe/Madrid", "Europe/Malta", "Europe/Monaco", "Europe/Oslo",
+            "Europe/Paris", "Europe/Podgorica", "Europe/Prague", "Europe/Rome", "Europe/San_Marino",
+            "Europe/Sarajevo", "Europe/Skopje", "Europe/Stockholm", "Europe/Tirane", "Europe/Vaduz",
+            "Europe/Vatican", "Europe/Vienna", "Europe/Warsaw", "Europe/Zagreb", "Europe/Zurich"
+        ]))
+            return offset >= 120 ? "CEST" : "CET";
+
+        if (inList(["Europe/Athens", "Europe/Bucharest", "Europe/Helsinki", "Europe/Kiev", "Europe/Riga", "Europe/Sofia", "Europe/Tallinn", "Europe/Vilnius"]))
+            return offset >= 180 ? "EEST" : "EET";
+
+        if (tz === "Europe/London")
+            return offset >= 60 ? "BST" : "GMT";
+
+        if (inList(["America/Detroit", "America/Indiana/Indianapolis", "America/Kentucky/Louisville", "America/Montreal", "America/Nassau", "America/New_York", "America/Toronto"]))
+            return offset >= -240 ? "EDT" : "EST";
+
+        if (inList(["America/Chicago", "America/Indiana/Knox", "America/Managua", "America/Menominee", "America/Mexico_City", "America/Winnipeg"]))
+            return offset >= -300 ? "CDT" : "CST";
+
+        if (inList(["America/Boise", "America/Denver", "America/Edmonton"]))
+            return offset >= -360 ? "MDT" : "MST";
+
+        if (inList(["America/Los_Angeles", "America/Tijuana", "America/Vancouver"]))
+            return offset >= -420 ? "PDT" : "PST";
+
+        if (tz === "America/Anchorage")
+            return offset >= -480 ? "AKDT" : "AKST";
+
+        if (tz === "Pacific/Honolulu")
+            return "HST";
+
+        if (tz === "Asia/Tokyo")
+            return "JST";
+
+        if (tz === "Asia/Seoul")
+            return "KST";
+
+        if (tz === "Asia/Shanghai")
+            return "CST";
+
+        if (tz === "Asia/Hong_Kong")
+            return "HKT";
+
+        if (tz === "Asia/Singapore")
+            return "SGT";
+
+        if (tz === "Asia/Kolkata")
+            return "IST";
+
+        if (inList(["Australia/Canberra", "Australia/Hobart", "Australia/Melbourne", "Australia/Sydney"]))
+            return offset >= 660 ? "AEDT" : "AEST";
+
+        if (tz === "Australia/Adelaide")
+            return offset >= 630 ? "ACDT" : "ACST";
+
+        if (tz === "Australia/Perth")
+            return "AWST";
+
+        if (tz === "Pacific/Auckland")
+            return offset >= 780 ? "NZDT" : "NZST";
+
+        return "";
+    }
+
+    function _normalizedTimezoneShortLabel(rawLabel, utcOffsetMins) {
+        var raw = (rawLabel || "").trim();
+        var offset = _hasNumericValue(utcOffsetMins)
+            ? Math.round(utcOffsetMins)
+            : effectiveLocationUtcOffsetMins();
+        var tzId = (Plasmoid.configuration.timezone || _activeLocTz || "").trim();
+
+        if (raw.length > 0) {
+            if (/^[A-Za-z]{2,6}$/.test(raw))
+                return raw;
+            var parsedOffset = _timezoneOffsetMinsFromLabel(raw);
+            if (_hasNumericValue(parsedOffset)) {
+                var mapped = _timezoneIanaAbbrev(tzId, parsedOffset);
+                return mapped.length > 0 ? mapped : _timezoneOffsetLabel(parsedOffset);
+            }
+        }
+
+        var derived = _timezoneIanaAbbrev(tzId, offset);
+        if (derived.length > 0)
+            return derived;
+        return _timezoneOffsetLabel(offset);
+    }
+
+    function locationTimezoneShortLabel() {
+        var abbr = "";
+        if (weatherDataStaged && typeof weatherDataStaged.locationTimezoneAbbrev === "string")
+            abbr = weatherDataStaged.locationTimezoneAbbrev.trim();
+        else if (weatherData && typeof weatherData.locationTimezoneAbbrev === "string")
+            abbr = weatherData.locationTimezoneAbbrev.trim();
+        return _normalizedTimezoneShortLabel(abbr, effectiveLocationUtcOffsetMins());
+    }
+
+    function shouldShowLocationTimeHint() {
+        if (!hasSelectedTown)
+            return false;
+        return effectiveLocationUtcOffsetMins() !== _displayOffsetFallbackMins(new Date());
+    }
+
+    function locationTimeHintText() {
+        if (!shouldShowLocationTimeHint())
+            return "";
+        return formatNowTimeForOffset(effectiveLocationUtcOffsetMins()) + " " + locationTimezoneShortLabel();
+    }
+
     function locationDateString() {
         return Qt.formatDate(locationNowDate(), "yyyy-MM-dd");
     }
