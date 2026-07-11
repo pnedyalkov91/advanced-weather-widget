@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
 "POT-Creation-Date: 2026-07-04 12:00+0300\n"
-"PO-Revision-Date: 2026-07-11 10:19+0200\n"
+"PO-Revision-Date: 2026-07-11 16:05+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -113,7 +113,7 @@ msgstr "24h"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:44
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:53
 msgid "3D Oxygen (Bundled)"
-msgstr "3D Oxygen (Incluso)"
+msgstr "3D Oxygen (incluso)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:117
 msgid "68°F"
@@ -3056,7 +3056,7 @@ msgstr "Simbolico"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:42
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:51
 msgid "Symbolic (Bundled)"
-msgstr "Simbolico (Incluso)"
+msgstr "Simbolico (incluso)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:770
 msgid "Symbolic (follows theme colour)"
