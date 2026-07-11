@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/sports-widget-for-plasma/issues\n"
 "POT-Creation-Date: 2026-07-04 12:00+0300\n"
-"PO-Revision-Date: 2026-07-11 10:04+0200\n"
+"PO-Revision-Date: 2026-07-11 10:19+0200\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -2219,14 +2219,14 @@ msgstr "Per tipo di allerta:"
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:576
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:570
 msgid "Phase + moonrise & moonset"
-msgstr "Fase + salita e calata"
+msgstr "Fase + salita e calata della luna"
 
 #: contents/ui/config/configAppearance.qml:888
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:513
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:580
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:574
 msgid "Phase + upcoming rise/set"
-msgstr "Fase + prossima salita e calata"
+msgstr "Fase + prossima salita e calata della luna"
 
 #: contents/ui/config/configLocation.qml:1578
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
@@ -3400,7 +3400,7 @@ msgstr "Prossimo (prossima alba e tramonto)"
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:592
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:586
 msgid "Upcoming rise/set only"
-msgstr "Solo prossima salita e calata"
+msgstr "Solo prossima salita e calata della luna"
 
 #: contents/ui/WeatherService.qml:140
 msgid "Update timed out. Tap to retry."
