@@ -171,7 +171,9 @@ function fetchCurrent(service, W, chain, idx) {
             sunsetTimeText:  day0 && day0.sunsetTime  ? Qt.formatTime(new Date(day0.sunsetTime  * 1000), "HH:mm") : "--",
             dailyData:       nd
         };
-        r.aqiData = null;
+        // Air quality is now fetched natively — see fetchAirQuality() below.
+        // (Previously this line nulled r.aqiData out immediately, since PW
+        // had no AQI support and the shared/universal fetch owned this field.)
         r.pollenData = [];
         r.loading = false;
         r.updateText = service._formatUpdateText("pirateWeather");
@@ -292,6 +294,117 @@ function fetchHourly(service, W, dateStr) {
             });
         }
         r.hourlyData = arr;
+    };
+    req.send();
+}
+
+/**
+ * Converts a gas concentration from parts-per-billion to micrograms per
+ * cubic metre at 25°C / 1 atm (the conversion EPA/WHO use), so that
+ * o3/no2/so2/co line up with pm10/pm2_5, which PW already reports in µg/m³.
+ *   µg/m³ = ppb * molarMass / 24.45
+ */
+function _ppbToUgm3(ppb, molarMass) {
+    if (ppb === undefined || ppb === null || isNaN(ppb)) return NaN;
+    return ppb * molarMass / 24.45;
+}
+
+var _MOLAR_MASS = { o3: 48.00, no2: 46.01, so2: 64.07, co: 28.01 };
+
+/**
+ * Maps a EU-CAQI-scale index (0-25/50/75/100/150+, same bands main.qml's
+ * own airQualityText() uses) to one of the band keys AQI.infoForIndex()
+ * elsewhere in the app is expected to recognise. Left untranslated —
+ * this file can't call i18n() — QML does the actual label lookup.
+ */
+function _aqiBandKey(index) {
+    if (isNaN(index)) return "";
+    if (index < 25) return "good";
+    if (index < 50) return "fair";
+    if (index < 75) return "moderate";
+    if (index < 100) return "poor";
+    return "verypoor";
+}
+
+/**
+ * fetchAirQuality — native Pirate Weather air quality.
+ *
+ * IMPORTANT UNITS CAVEAT:
+ * The main fetchCurrent() request uses units=ca, but PW ties the AQI
+ * *scale* to the units param: ca -> ECCC AQHI (1-10ish), us/default ->
+ * US EPA AQI (0-500), si/uk -> EU CAQI (0-100+). This app's own index
+ * scale (see main.qml's airQualityText(): <25/<50/<75/<100/<150) matches
+ * EU CAQI, not AQHI — so reusing fetchCurrent's ca-units response would
+ * hand main.qml a badly-mismatched number.
+ *
+ * Rather than reimplement PW's CAQI breakpoint math locally (risking a
+ * different number than PW's own service would report), this issues one
+ * extra, deliberately small request with units=si to get PW's own
+ * authoritative EU CAQI value straight from the source. Pollutant
+ * concentrations (pm25/pm10 in µg/m³, the rest in ppb) don't change with
+ * units, so this request is intentionally scoped to `currently` only.
+ *
+ * Gas concentrations are converted ppb -> µg/m³ to match pm10/pm2_5 and
+ * (assumed) what AQI.js's per-pollutant bands expect — flag this if your
+ * AQI.js actually wants ppb or mg/m³ for CO, and the conversion can be
+ * dropped or adjusted.
+ */
+function fetchAirQuality(service, W) {
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._pwKey();
+    if (!key) {
+        service._fetchAqiIfNeeded();
+        return;
+    }
+
+    var url = "https://api.pirateweather.net/forecast/"
+        + encodeURIComponent(key) + "/"
+        + service.latitude + "," + service.longitude
+        + "?units=si&exclude=minutely,hourly,daily,alerts,summary"
+        + "&include=airqualitydetails&version=2";
+
+    var req = new XMLHttpRequest();
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (service._refreshGen !== gen) return;
+        if (req.status !== 200) {
+            service._fetchAqiIfNeeded();
+            return;
+        }
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            service._fetchAqiIfNeeded();
+            return;
+        }
+
+        var c = d.currently;
+        // -999 is PW's sentinel for "not available at this location/time"
+        if (!c || c.airQualityIndex === undefined || c.airQualityIndex === -999) {
+            service._fetchAqiIfNeeded();
+            return;
+        }
+
+        r.aqiDataStaged = {
+            index: c.airQualityIndex,
+            label: _aqiBandKey(c.airQualityIndex),
+            pm10:  (c.pm10 !== undefined) ? c.pm10 : NaN,
+            pm2_5: (c.pm25 !== undefined) ? c.pm25 : NaN,
+            o3:    _ppbToUgm3(c.ozoneConcentration, _MOLAR_MASS.o3),
+            no2:   _ppbToUgm3(c.no2Concentration, _MOLAR_MASS.no2),
+            so2:   _ppbToUgm3(c.so2Concentration, _MOLAR_MASS.so2),
+            co:    _ppbToUgm3(c.coConcentration, _MOLAR_MASS.co)
+        };
+
+        service._nativeAqiSetThisGen = true;
+
+        // Mirrors _fetchAlertsIfNeeded(): call unconditionally so the
+        // shared/universal AQI source only fills in when PW didn't
+        // deliver native data this generation.
+        service._fetchAqiIfNeeded();
     };
     req.send();
 }
