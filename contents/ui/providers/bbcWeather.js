@@ -221,6 +221,19 @@ function _fetchCurrentForId(service, W, chain, idx, gen, id) {
         // BBC exposes no CAP alerts — fall back to MeteoAlarm / NWS.
         service._fetchAlertsIfNeeded();
         // Air quality is fetched in parallel from WeatherService.refreshNow().
+
+        // BBC's own sunrise/sunset strings ARE already location-local
+        // "HH:mm", but the JSON gives us no numeric UTC-offset to pair with
+        // them (only an IANA timezone name via the locator, which Qt's V4
+        // engine can't resolve to an offset on its own — see suncalc/sunpath
+        // notes). Every "current position" calc in DetailsView.qml (sun arc
+        // progress, time-until-sunset, upcoming sunrise/sunset, moon arc)
+        // combines locationUtcOffsetMins with sunriseTimeText/sunsetTimeText,
+        // so leaving the offset at 0 silently breaks all of them for any
+        // location that isn't UTC+0. Same fallback used by met.no/tomorrow.io/
+        // stormGlass: patches locationUtcOffsetMins (and, as a side effect,
+        // sunrise/sunset) from Open-Meteo's utc_offset_seconds once it lands.
+        service._fetchSunTimesOpenMeteo();
     };
     req.send();
 }
