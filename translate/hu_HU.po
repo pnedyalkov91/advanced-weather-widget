@@ -2534,7 +2534,7 @@ msgstr "Radar és műhold"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:276
 msgid "Radar color scheme:"
-msgstr "Radar színvilága:"
+msgstr "Radar színsémája:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:234
 msgid "Radar only"
@@ -2546,7 +2546,7 @@ msgstr "Radarszolgáltató:"
 
 #: contents/ui/config/configGeneral.qml:771
 msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
-msgstr "Radarszolgáltató: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>A LibreWXR egy ingyenes, nyílt forráskódú időjárásiradar-API. Egyesíti a NOAA, valamint a kanadai és európai forrásokból származó valós radar-kompozitokat egy globális modell-tartalékkal, továbbá biztosítja az elmúlt 2 óra radaradatait és egy rövid távú előrejelzést. Emellett egy ingyenes műholdas (infravörös) réteget is kínál.<br/><br/>A rétegmód, a radar színvilága és a mozgásirányt jelző nyilak közvetlenül a radarlapon választhatók ki. A térkép automatikusan követi az Ön világos/sötét Plasma témáját."
+msgstr "Radarszolgáltató: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>A LibreWXR egy ingyenes, nyílt forráskódú időjárásiradar-API. Egyesíti a NOAA, valamint a kanadai és európai forrásokból származó valós radar-kompozitokat egy globális modell-tartalékkal, továbbá biztosítja az elmúlt 2 óra radaradatait és egy rövid távú előrejelzést. Emellett egy ingyenes műholdas (infravörös) réteget is kínál.<br/><br/>A rétegmód, a radar színsémája és a mozgásirányt jelző nyilak közvetlenül a radarlapon választhatók ki. A térkép automatikusan követi az Ön világos/sötét Plasma témáját."
 
 #: contents/ui/config/configGeneral.qml:762
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
