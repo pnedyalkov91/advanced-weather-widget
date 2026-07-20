@@ -168,8 +168,8 @@
     <entry name="widgetSimpleDetailsOrder" type="String"><default>humidity;pressure;preciprate;precipsum</default></entry>
     <entry name="widgetSimpleDetailsItemIcons" type="String"><default>humidity=1;pressure=1;preciprate=1;precipsum=1</default></entry>
     <entry name="radarEnabled"          type="Bool"><default>true</default></entry>
-    <entry name="radarProvider"         type="String"><default>rainviewer</default></entry>
-    <entry name="radarLayer"            type="String"><default>rainviewer</default></entry>
+    <entry name="radarProvider"         type="String"><default>librewxr</default></entry>
+    <entry name="radarLayer"            type="String"><default>librewxr</default></entry>
     <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
     <entry name="librewxrLayer"         type="String"><default>radar</default></entry>
     <entry name="librewxrColorScheme"   type="Int"><default>2</default><min>0</min><max>12</max></entry>
@@ -299,7 +299,7 @@
     <!-- Alert source: "native" = MeteoAlarm (Europe) + NOAA NWS (US) with
          met.no fallback; "librewxr" = LibreWXR worldwide CAP alerts API;
          "foss" = KDE FOSS Public Alert Server (worldwide CAP alerts). -->
-    <entry name="alertsProvider" type="String"><default>native</default></entry>
+    <entry name="alertsProvider" type="String"><default>foss</default></entry>
     <!-- Base URL of the FOSS Public Alert Server (self-hostable; default is
          KDE's public instance). -->
     <entry name="fossAlertUrl"   type="String"><default>https://alerts.kde.org</default></entry>
