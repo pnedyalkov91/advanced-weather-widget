@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-07-20 09:31+0300\n"
-"PO-Revision-Date: 2026-04-26 00:00+0800\n"
+"PO-Revision-Date: 2026-07-20 15:19+0800\n"
 "Last-Translator: kang guo\n"
 "Language-Team: Chinese (Simplified)\n"
 "Language: zh_CN\n"
@@ -148,7 +148,7 @@ msgstr "AI 驱动的天气智能。需要在下方填写 API 密钥。"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:162
 msgid "API error"
-msgstr ""
+msgstr "API 错误"
 
 #: contents/ui/config/configGeneral.qml:219
 msgid "API key is empty."
@@ -249,19 +249,19 @@ msgstr "警报"
 
 #: contents/ui/config/configGeneral.qml:821
 msgid "Alerts provider:"
-msgstr ""
+msgstr "警报数据源："
 
 #: contents/ui/config/configGeneral.qml:865
 msgid "Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider."
-msgstr ""
+msgstr "警报数据源：<a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE 的 FOSS Public Alert Server 会收集世界各地气象机构以 CAP 格式发布的官方严重天气警告，并将其匹配到你的精确位置。警报通知的工作方式与原生数据源相同。"
 
 #: contents/ui/config/configGeneral.qml:856
 msgid "Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
-msgstr ""
+msgstr "警报数据源：<a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR 是一个免费、开源的天气 API，会聚合全球官方 CAP 警报（WMO Severe Weather Information Centre、NOAA NWS 等），并将其匹配到你的精确位置。警报通知的工作方式与原生数据源相同。"
 
 #: contents/ui/config/configGeneral.qml:847
 msgid "Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
-msgstr ""
+msgstr "警报数据源：<a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>欧洲地区使用官方 MeteoAlarm 源（38 个国家），美国地区使用 NOAA National Weather Service 警报 API，并以 met.no MetAlerts 作为回退。如果你的天气数据源提供自己的警报（例如 WeatherAPI.com、Pirate Weather），则会直接使用这些警报。"
 
 #: contents/ui/TooltipContent.qml:480
 msgid "Alerts:"
@@ -407,7 +407,7 @@ msgstr "雪崩"
 
 #: contents/ui/config/configGeneral.qml:303
 msgid "BBC Weather (free)"
-msgstr ""
+msgstr "BBC Weather（免费）"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:100
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:374
@@ -449,7 +449,7 @@ msgstr "桦树"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:150
 msgid "Black and White"
-msgstr ""
+msgstr "黑白"
 
 #: contents/ui/config/configAppearance.qml:732
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:536
@@ -690,7 +690,7 @@ msgstr "确认您的位置"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:163
 msgid "Connection failed"
-msgstr ""
+msgstr "连接失败"
 
 #: contents/ui/config/configGeneral.qml:286
 msgid "Connection failed (HTTP %1)."
@@ -760,7 +760,7 @@ msgstr "兼容 Dark Sky 的 API，支持美国警报。需要在下方填写 API
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:314
 msgid "Dark map"
-msgstr ""
+msgstr "深色地图"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:873
 msgid "Dash  –"
@@ -947,7 +947,7 @@ msgstr "双温度显示"
 #: contents/ui/main.qml:1219
 msgctxt "Alert severity"
 msgid "EXTREME"
-msgstr ""
+msgstr "极端"
 
 #: contents/ui/config/configGeneral.qml:696
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
@@ -1099,7 +1099,7 @@ msgstr "极差"
 
 #: contents/ui/config/configGeneral.qml:829
 msgid "FOSS Public Alert Server"
-msgstr ""
+msgstr "FOSS Public Alert Server"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:231
 msgid "Fahrenheit (°F)"
@@ -1212,7 +1212,7 @@ msgstr "森林火灾"
 
 #: contents/ui/config/configGeneral.qml:472
 msgid "Free BBC Weather service (data from the Met Office). No API key needed."
-msgstr ""
+msgstr "免费的 BBC Weather 服务（数据来自 Met Office）。无需 API 密钥。"
 
 #: contents/ui/config/configGeneral.qml:470
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
@@ -1290,7 +1290,7 @@ msgstr "地磁活动将为 %1（Kp %2）"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:173
 msgid "Glow intensity:"
-msgstr ""
+msgstr "光晕强度："
 
 #: contents/ui/js/airQuality.js:49 contents/ui/main.qml:844
 msgid "Good"
@@ -1414,7 +1414,7 @@ msgstr "图标在前"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:156
 msgid "Icon glow:"
-msgstr ""
+msgstr "图标光晕："
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:203
 msgid "Icon only"
@@ -1479,7 +1479,7 @@ msgid ""
 "  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
 "\n"
 "You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
-msgstr "请根据你的发行版安装：\\n  • Fedora / RHEL / Arch：qt6-qtlocation\\n  • openSUSE：qt6-location\\n  • Debian / Kubuntu / KDE Neon：qml6-module-qtlocation 和 qml6-module-qtpositioning\\n\\n你仍然可以搜索位置或手动输入坐标。请注意，自动检测仍会通过 IP 回退方式工作，但准确性可能较低，并且在你移动时不会实时更新。"
+msgstr "请根据你的发行版安装：\n  • Fedora / RHEL / Arch：qt6-qtlocation\n  • openSUSE：qt6-location\n  • Debian / Kubuntu / KDE Neon：qml6-module-qtlocation 和 qml6-module-qtpositioning\n\n你仍然可以搜索位置或手动输入坐标。请注意，自动检测仍会通过 IP 回退方式工作，但准确性可能较低，并且在你移动时不会实时更新。"
 
 #: contents/ui/RadarView.qml:181
 msgid ""
@@ -1487,7 +1487,7 @@ msgid ""
 "- Fedora / RHEL: qt6-qtwebengine\n"
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
-msgstr "请根据你的发行版安装：\\n- Fedora / RHEL：qt6-qtwebengine\\n- openSUSE / Arch：qt6-webengine\\n- Debian / Kubuntu / KDE Neon：qml6-module-qtwebengine"
+msgstr "请根据你的发行版安装：\n- Fedora / RHEL：qt6-qtwebengine\n- openSUSE / Arch：qt6-webengine\n- Debian / Kubuntu / KDE Neon：qml6-module-qtwebengine"
 
 #: contents/ui/DetailsView.qml:2341
 msgid "Instruction"
@@ -1612,7 +1612,7 @@ msgstr "布局类型："
 #: contents/ui/config/configGeneral.qml:749
 #: contents/ui/config/configGeneral.qml:828
 msgid "LibreWXR"
-msgstr ""
+msgstr "LibreWXR"
 
 #: contents/ui/components/RadarWebEngineView.qml:91
 #: contents/ui/components/RadarWebEngineView.qml:538
@@ -1682,11 +1682,11 @@ msgstr "正在加载预报…"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:158
 msgid "Loading frames"
-msgstr ""
+msgstr "正在加载帧"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:157
 msgid "Loading frame…"
-msgstr ""
+msgstr "正在加载帧…"
 
 #: contents/ui/ForecastView.qml:829
 msgid "Loading hourly data…"
@@ -1702,7 +1702,7 @@ msgstr "正在加载雷达…"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:156
 msgid "Loading…"
-msgstr ""
+msgstr "正在加载…"
 
 #: contents/config/config.qml:47
 msgid "Location"
@@ -1790,17 +1790,17 @@ msgstr "低温"
 #: contents/ui/main.qml:1224
 msgctxt "Alert severity"
 msgid "MINIMAL"
-msgstr ""
+msgstr "最低"
 
 #: contents/ui/main.qml:1222
 msgctxt "Alert severity"
 msgid "MINOR"
-msgstr ""
+msgstr "轻微"
 
 #: contents/ui/main.qml:1221
 msgctxt "Alert severity"
 msgid "MODERATE"
-msgstr ""
+msgstr "中等"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
 msgid "Magnetic Field (Bz)"
@@ -1843,7 +1843,7 @@ msgstr "海洋和天气数据源。需要在下方填写 API 密钥。"
 
 #: contents/ui/config/configGeneral.qml:827
 msgid "MeteoAlarm + NOAA NWS (Native)"
-msgstr ""
+msgstr "MeteoAlarm + NOAA NWS（原生）"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:153
 msgid "Metric (°C, km/h, hPa, mm)"
@@ -2065,7 +2065,7 @@ msgstr "否"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:159
 msgid "No data"
-msgstr ""
+msgstr "无数据"
 
 #: contents/ui/DetailsView.qml:553
 msgid "No details data"
@@ -2094,11 +2094,11 @@ msgstr "未设置位置"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:160
 msgid "No radar data"
-msgstr ""
+msgstr "无雷达数据"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:161
 msgid "No satellite data"
-msgstr ""
+msgstr "无卫星数据"
 
 #: contents/ui/config/configLocation.qml:1627
 msgid "No saved locations. Save the current location to quickly switch between places."
@@ -2133,7 +2133,7 @@ msgstr "不可用（HTTP %1）"
 #: contents/ui/main.qml:738 contents/ui/main.qml:771 contents/ui/main.qml:784
 #: contents/ui/main.qml:792 contents/ui/main.qml:800 contents/ui/main.qml:828
 msgid "Not supported"
-msgstr ""
+msgstr "不支持"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:623
 msgid "Not tested"
@@ -2470,10 +2470,13 @@ msgid ""
 "Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 "Open-Meteo is always tried first - it is free and requires no API key."
 msgstr ""
+"将按顺序尝试各个数据源，直到其中一个成功：\n"
+"Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
+"Open-Meteo 始终会优先尝试——它免费且不需要 API 密钥。"
 
 #: contents/ui/config/configNotifications.qml:271
 msgid "Purple"
-msgstr ""
+msgstr "紫色"
 
 #: contents/ui/config/configGeneral.qml:335
 msgid "QWeather (Key Required)"
@@ -2493,7 +2496,7 @@ msgstr "QWeather 错误（代码 %1）。请检查您的 API 密钥。"
 
 #: contents/ui/ForecastView.qml:828
 msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
-msgstr ""
+msgstr "QWeather 最多提供未来 168 小时（7 天）的逐小时预报。该日期的每日预报仍然可用。"
 
 #: contents/ui/config/configLocation.qml:1065
 msgid "QtLocation and QtPositioning are not installed"
@@ -2516,11 +2519,11 @@ msgstr "雷达"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:144
 msgid "Radar + Satellite"
-msgstr ""
+msgstr "雷达 + 卫星"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:276
 msgid "Radar color scheme:"
-msgstr ""
+msgstr "雷达配色方案："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:234
 msgid "Radar only"
@@ -2528,11 +2531,11 @@ msgstr "仅雷达"
 
 #: contents/ui/config/configGeneral.qml:742
 msgid "Radar provider:"
-msgstr ""
+msgstr "雷达数据源："
 
 #: contents/ui/config/configGeneral.qml:771
 msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
-msgstr ""
+msgstr "雷达数据源：<a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR 是一个免费、开源的天气雷达 API。它结合来自 NOAA、加拿大和欧洲来源的真实雷达拼合图，并提供全球模式作为回退，可提供过去 2 小时的雷达数据以及短时临近预报。它还提供免费的卫星（红外）图层。<br/><br/>图层模式、雷达配色方案和运动箭头可直接在“雷达”标签页中选择。地图会自动跟随 Plasma 的浅色/深色主题。"
 
 #: contents/ui/config/configGeneral.qml:762
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
@@ -2564,7 +2567,7 @@ msgstr "雨（夜间）"
 
 #: contents/ui/config/configGeneral.qml:748
 msgid "Rain Viewer"
-msgstr ""
+msgstr "Rain Viewer"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:59
 msgid "Rain showers"
@@ -2683,7 +2686,7 @@ msgstr "舍入数值："
 #: contents/ui/main.qml:1220
 msgctxt "Alert severity"
 msgid "SEVERE"
-msgstr ""
+msgstr "严重"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:593
 msgid "SO₂"
@@ -2691,7 +2694,7 @@ msgstr "SO₂"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:139
 msgid "Satellite"
-msgstr ""
+msgstr "卫星"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:906
 msgid "Saturday"
@@ -2836,7 +2839,7 @@ msgstr "在展开视图中显示污染物："
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:309
 msgid "Show precipitation motion arrows"
-msgstr ""
+msgstr "显示降水运动箭头"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:407
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:476
@@ -3162,7 +3165,7 @@ msgstr "交换顺序："
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:324
 msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
-msgstr ""
+msgstr "在浅色和深色地图样式之间切换。首次手动切换前，地图会跟随 Plasma 主题。"
 
 #: contents/ui/FullView.qml:328
 msgid "Switch location"
@@ -3449,7 +3452,7 @@ msgstr "截断（单行）"
 #: contents/ui/main.qml:1223
 msgctxt "Alert severity"
 msgid "UNKNOWN"
-msgstr ""
+msgstr "未知"
 
 #: contents/ui/config/configAppearance.qml:1394
 #: contents/ui/config/configAppearance.qml:1517
@@ -3536,21 +3539,21 @@ msgstr "更新超时。点击重试。"
 #: contents/ui/WeatherService.qml:761
 msgid "Updated %1 day ago"
 msgid_plural "Updated %1 days ago"
-msgstr[0] ""
+msgstr[0] "%1 天前更新"
 
 #: contents/ui/WeatherService.qml:759
 msgid "Updated %1 hour ago"
 msgid_plural "Updated %1 hours ago"
-msgstr[0] ""
+msgstr[0] "%1 小时前更新"
 
 #: contents/ui/WeatherService.qml:756
 msgid "Updated %1 minute ago"
 msgid_plural "Updated %1 minutes ago"
-msgstr[0] ""
+msgstr[0] "%1 分钟前更新"
 
 #: contents/ui/WeatherService.qml:754
 msgid "Updated just now"
-msgstr ""
+msgstr "刚刚更新"
 
 #: contents/ui/FullView.qml:396
 msgid "Updating…"
@@ -3659,7 +3662,7 @@ msgstr "检测到您的位置为：<b>%1</b>。"
 
 #: contents/ui/config/configGeneral.qml:806
 msgid "Weather Alerts"
-msgstr ""
+msgstr "天气警报"
 
 #: contents/ui/config/configGeneral.qml:362
 msgid "Weather Provider"
@@ -3711,6 +3714,14 @@ msgid ""
 "\n"
 "Turn a level off to stop receiving notifications for alerts of that severity."
 msgstr ""
+"天气警报严重程度由低到高如下：\n"
+"\n"
+"🟡 黄色 — 轻微：请留意天气状况。\n"
+"🟠 橙色 — 中等：请做好准备。\n"
+"🔴 红色 — 严重：请采取行动。\n"
+"🟣 紫色 — 极端：情况极其危险，请立即采取行动。\n"
+"\n"
+"关闭某一级别后，将不再接收该严重程度的警报通知。"
 
 #: contents/ui/config/configGeneral.qml:311
 msgid "WeatherAPI.com (Key Required)"
@@ -3756,7 +3767,7 @@ msgstr "风"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:301
 msgid "Wind arrows"
-msgstr ""
+msgstr "风向箭头"
 
 #: contents/ui/config/configAppearance.qml:1469
 #: contents/ui/config/configAppearance.qml:1592
@@ -3837,7 +3848,7 @@ msgstr "多云"
 
 #: contents/ui/main.qml:906
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: contents/ui/main.qml:1515
 msgid "drizzle"
@@ -3873,12 +3884,12 @@ msgstr "ft"
 
 #: contents/ui/DetailsView.qml:1489 contents/ui/DetailsView.qml:1624
 msgid "grains/m³"
-msgstr ""
+msgstr "粒/m³"
 
 #: contents/ui/components/RadarWebEngineView.qml:551
 #: contents/ui/config/tabs/ConfigMiscTab.qml:289 contents/ui/js/weather.js:536
 msgid "hPa"
-msgstr ""
+msgstr "hPa"
 
 #: contents/ui/main.qml:1742
 msgid "high"
@@ -3886,7 +3897,7 @@ msgstr "高"
 
 #: contents/ui/main.qml:795 contents/ui/main.qml:905
 msgid "in"
-msgstr ""
+msgstr "in"
 
 #: contents/ui/main.qml:1646
 msgid "in the next hours"
@@ -3894,32 +3905,32 @@ msgstr "在接下来几小时内"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:787
 msgid "in/h"
-msgstr ""
+msgstr "in/h"
 
 #: contents/ui/components/RadarWebEngineView.qml:549
 #: contents/ui/config/tabs/ConfigMiscTab.qml:297 contents/ui/js/weather.js:535
 msgid "inHg"
-msgstr ""
+msgstr "inHg"
 
 #: contents/ui/DetailsView.qml:347 contents/ui/DetailsView.qml:396
 #: contents/ui/main.qml:804 contents/ui/SimpleView.qml:281
 #: contents/ui/TooltipContent.qml:444
 msgid "km"
-msgstr ""
+msgstr "km"
 
 #: contents/ui/components/RadarWebEngineView.qml:544
 #: contents/ui/config/tabs/ConfigMiscTab.qml:254 contents/ui/js/weather.js:529
 msgid "km/h"
-msgstr ""
+msgstr "km/h"
 
 #: contents/ui/DetailsView.qml:1940
 msgid "km/s"
-msgstr ""
+msgstr "km/s"
 
 #: contents/ui/components/RadarWebEngineView.qml:545
 #: contents/ui/js/weather.js:528
 msgid "kn"
-msgstr ""
+msgstr "kn"
 
 #: contents/ui/DetailsView.qml:3499
 msgid "left"
@@ -3936,7 +3947,7 @@ msgstr "m"
 #: contents/ui/components/RadarWebEngineView.qml:546
 #: contents/ui/config/tabs/ConfigMiscTab.qml:262 contents/ui/js/weather.js:527
 msgid "m/s"
-msgstr ""
+msgstr "m/s"
 
 #: contents/ui/config/configGeneral.qml:299
 msgid "met.no (free)"
@@ -3948,11 +3959,11 @@ msgstr "米"
 
 #: contents/ui/js/airQuality.js:155
 msgid "mg/m³"
-msgstr ""
+msgstr "mg/m³"
 
 #: contents/ui/main.qml:803
 msgid "mi"
-msgstr ""
+msgstr "mi"
 
 #: contents/ui/main.qml:1783
 msgid "minor"
@@ -3965,16 +3976,16 @@ msgstr "分钟"
 
 #: contents/ui/main.qml:796
 msgid "mm"
-msgstr ""
+msgstr "mm"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:788
 msgid "mm/h"
-msgstr ""
+msgstr "mm/h"
 
 #: contents/ui/components/RadarWebEngineView.qml:550
 #: contents/ui/config/tabs/ConfigMiscTab.qml:293 contents/ui/js/weather.js:534
 msgid "mmHg"
-msgstr ""
+msgstr "mmHg"
 
 #: contents/ui/main.qml:1741 contents/ui/main.qml:1784
 msgid "moderate"
@@ -3983,7 +3994,7 @@ msgstr "中等"
 #: contents/ui/components/RadarWebEngineView.qml:543
 #: contents/ui/config/tabs/ConfigMiscTab.qml:258 contents/ui/js/weather.js:526
 msgid "mph"
-msgstr ""
+msgstr "mph"
 
 #: contents/ui/main.qml:1517
 msgid "overcast skies"
@@ -4078,7 +4089,7 @@ msgstr "你的位置"
 
 #: contents/ui/js/airQuality.js:156
 msgid "µg/m³"
-msgstr ""
+msgstr "µg/m³"
 
 #~ msgid ""
 #~ "Providers are tried in order until one succeeds:\n"
