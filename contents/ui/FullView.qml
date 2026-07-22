@@ -729,7 +729,7 @@ Rectangle {
                 if (fullView._isRadarTab) {
                     if ((Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr")
                         t += " · " + i18n("Radar:") + " <a href='https://librewxr.net/'>LibreWXR</a>";
-                    else if ((Plasmoid.configuration.radarLayer || "rainviewer") === "rainviewer")
+                    else
                         t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
                 }
                 return t;
