@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the Advanced Weather Widget package.
-# herzane <trkaraca@proton.me>, YEAR.
+# herzane <herzane@proton.me>, YEAR.
 # Github: github.com/herzane52
 # Website: www.herzane.tr
 #
@@ -10,50 +10,55 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2026-07-20 09:31+0300\n"
+=======
+"POT-Creation-Date: 2026-07-21 01:59+0300\n"
+>>>>>>> origin/main
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: herzane <trkaraca@proton.me>\n"
+"Last-Translator: herzane <herzane@proton.me>\n"
 "Language-Team: Turkish\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: contents/ui/DetailsView.qml:3493 contents/ui/DetailsView.qml:3495
 msgid " until dawn"
-msgstr ""
+msgstr " şafağa kadar"
 
 #: contents/ui/main.qml:1547
 msgid "%1 %2"
-msgstr ""
+msgstr "%1 %2"
 
 #: contents/ui/main.qml:1491
 msgid "%1 - Today"
-msgstr ""
+msgstr "%1 - Bugün"
 
 #: contents/ui/main.qml:1564
 msgid "%1 - Tomorrow"
-msgstr ""
+msgstr "%1 - Yarın"
 
 #: contents/ui/main.qml:1689
 msgid "%1 ending"
-msgstr ""
+msgstr "%1 bitiyor"
 
 #: contents/ui/main.qml:1683
 msgid "%1 expected"
-msgstr ""
+msgstr "%1 bekleniyor"
 
 #: contents/ui/main.qml:1690
 msgid "%1 expected to end %2."
-msgstr ""
+msgstr "%1 %2'de bitmesi bekleniyor."
 
 #: contents/ui/main.qml:1684
 msgid "%1 possible %2."
-msgstr ""
+msgstr "%1 olasılığı %2."
 
 #: contents/ui/main.qml:1476
 msgid "%1 will be %2 with a low of %3 and a high of %4."
-msgstr ""
+msgstr "%1 durumu %2 olacak; en düşük %3, en yüksek %4."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1049
 msgctxt "@info %1 size %2 family"
@@ -63,15 +68,15 @@ msgstr "%1pt %2"
 #: contents/ui/js/spaceWeather.js:171 contents/ui/js/spaceWeather.js:185
 #: contents/ui/js/spaceWeather.js:197
 msgid "--"
-msgstr ""
+msgstr "--"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:452
 msgid "-180 to 180 (e.g. 23.3219)"
-msgstr ""
+msgstr "-180 ile 180 arası (örn. 23.3219)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:435
 msgid "-90 to 90 (e.g. 42.6977)"
-msgstr ""
+msgstr "-90 ile 90 arası (örn. 42.6977)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:848
 msgid "0 = auto (120 px per chip). Increase if values are truncated."
@@ -83,71 +88,71 @@ msgstr "0 = otomatik. Öğeler kesilirse artırın."
 
 #: contents/ui/main.qml:941
 msgid "1 Alert"
-msgstr ""
+msgstr "1 Uyarı"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:835
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:709
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:703
 msgid "12-hour format"
-msgstr ""
+msgstr "12 saat formatı"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:847
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:721
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:715
 msgid "12h"
-msgstr ""
+msgstr "12s"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:835
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:709
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:703
 msgid "24-hour format"
-msgstr ""
+msgstr "24 saat formatı"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:847
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:721
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:715
 msgid "24h"
-msgstr ""
+msgstr "24s"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1083
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:212
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:44
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:53
 msgid "3D Oxygen (Bundled)"
-msgstr ""
+msgstr "3D Oxygen (Paketli)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:117
 msgid "68°F"
-msgstr ""
+msgstr "68°F"
 
 #: contents/ui/main.qml:1241
 msgid "<b>Effective:</b> %1"
-msgstr ""
+msgstr "<b>Başlangıç:</b> %1"
 
 #: contents/ui/main.qml:1238
 msgid "<b>Headline:</b> %1"
-msgstr ""
+msgstr "<b>Başlık:</b> %1"
 
 #: contents/ui/main.qml:1244
 msgid "<b>Instruction:</b> %1"
-msgstr ""
+msgstr "<b>Talimat:</b> %1"
 
 #: contents/ui/main.qml:1247
 msgid "<b>Provider:</b> %1"
-msgstr ""
+msgstr "<b>Sağlayıcı:</b> %1"
 
 #: contents/ui/main.qml:1236
 #, javascript-format
 msgid "<b>Severity:</b> %1%2"
-msgstr ""
+msgstr "<b>Şiddet:</b> %1%2"
 
 #: contents/ui/config/configGeneral.qml:788
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2–10 minutes. This discrepancy is expected and known."
-msgstr ""
+msgstr "<b>OWM katmanları neden RainViewer radarıyla eşleşmeyebilir</b><br/><br/>OWM yağış/bulut katmanları <b>statik model karolarıdır</b> - gerçek radar verileri değil, düzleştirilmiş bir NWP (Sayısal Hava Tahmini) çıktısını gösterirler. Hava istasyonları ve model çalıştırmaları arasındaki enterpolasyona dayanarak modelin yağmur yağdığını <i>düşündüğü</i> yerleri temsil ederler.<br/><br/>RainViewer, radar istasyonlarından <b>gerçek hava radarı verilerini</b> kullanır - her 2–10 dakikada bir güncellenen gerçek ölçülmüş yansıtıcılık. Bu farklılık beklenen ve bilinen bir durumdur."
 
 #: contents/ui/config/configGeneral.qml:462
 msgid "AI-powered weather intelligence. API key required below."
-msgstr ""
+msgstr "Yapay zeka destekli hava tahmini. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:162
 msgid "API error"
@@ -155,23 +160,23 @@ msgstr ""
 
 #: contents/ui/config/configGeneral.qml:219
 msgid "API key is empty."
-msgstr ""
+msgstr "API anahtarı boş."
 
 #: contents/ui/DetailsView.qml:1112 contents/ui/main.qml:858
 msgid "AQHI"
-msgstr ""
+msgstr "AQHI"
 
 #: contents/ui/DetailsView.qml:1112 contents/ui/main.qml:858
 msgid "AQI"
-msgstr ""
+msgstr "AQI"
 
 #: contents/ui/DetailsView.qml:2023 contents/ui/js/spaceWeather.js:175
 msgid "Active"
-msgstr ""
+msgstr "Aktif"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:393
 msgid "Adaptive (Open-Meteo)"
-msgstr ""
+msgstr "Uyarlanabilir (Open-Meteo)"
 
 #: contents/ui/config/configGeneral.qml:395
 msgid "Adaptive (auto-fallback)"
@@ -179,7 +184,7 @@ msgstr "Uyarlanabilir (otomatik geri çekilme)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:387
 msgid "Add Location Manually"
-msgstr ""
+msgstr "Konumu Manuel Ekle"
 
 #: contents/ui/CompactView.qml:787 contents/ui/CompactView.qml:1123
 msgid "Add a location"
@@ -187,68 +192,68 @@ msgstr "Konum ekle"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:115
 msgid "Advanced (all tabs)"
-msgstr ""
+msgstr "Gelişmiş (tüm sekmeler)"
 
 #: contents/ui/main.qml:1527
 msgid "Afternoon"
-msgstr ""
+msgstr "Öğleden Sonra"
 
 #: contents/ui/config/configAppearance.qml:1401
 #: contents/ui/config/configAppearance.qml:1524
 #: contents/ui/config/configAppearance.qml:1647 contents/ui/DetailsView.qml:326
 #: contents/ui/SimpleView.qml:266
 msgid "Air Quality"
-msgstr ""
+msgstr "Hava Kalitesi"
 
 #: contents/ui/TooltipContent.qml:465
 msgid "Air Quality:"
-msgstr ""
+msgstr "Hava Kalitesi:"
 
 #: contents/ui/config/configAppearance.qml:1402
 #: contents/ui/config/configAppearance.qml:1525
 #: contents/ui/config/configAppearance.qml:1648
 msgid "Air quality index"
-msgstr ""
+msgstr "Hava kalite indeksi"
 
 #: contents/ui/js/airQuality.js:50
 msgid "Air quality is acceptable."
-msgstr ""
+msgstr "Hava kalitesi kabul edilebilir."
 
 #: contents/ui/js/airQuality.js:54
 msgid "Air quality is extremely poor."
-msgstr ""
+msgstr "Hava kalitesi son derece kötü."
 
 #: contents/ui/js/airQuality.js:51
 msgid "Air quality is fair."
-msgstr ""
+msgstr "Hava kalitesi iyi."
 
 #: contents/ui/js/airQuality.js:52
 msgid "Air quality is poor."
-msgstr ""
+msgstr "Hava kalitesi kötü."
 
 #: contents/ui/js/airQuality.js:49
 msgid "Air quality is satisfactory."
-msgstr ""
+msgstr "Hava kalitesi tatmin edici."
 
 #: contents/ui/js/airQuality.js:53
 msgid "Air quality is very poor."
-msgstr ""
+msgstr "Hava kalitesi çok kötü."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:351
 msgid "Air quality options"
-msgstr ""
+msgstr "Hava kalitesi seçenekleri"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:653
 #: contents/ui/DetailsView.qml:1431 contents/ui/main.qml:881
 msgid "Alder"
-msgstr ""
+msgstr "Kızılağaç"
 
 #: contents/ui/config/configAppearance.qml:1422
 #: contents/ui/config/configAppearance.qml:1545
 #: contents/ui/config/configAppearance.qml:1668 contents/ui/DetailsView.qml:329
 #: contents/ui/SimpleView.qml:269
 msgid "Alerts"
-msgstr ""
+msgstr "Uyarılar"
 
 #: contents/ui/config/configGeneral.qml:821
 msgid "Alerts provider:"
@@ -268,27 +273,27 @@ msgstr ""
 
 #: contents/ui/TooltipContent.qml:480
 msgid "Alerts:"
-msgstr ""
+msgstr "Uyarılar:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:845
 msgid "All days show hourly forecast when opening the tab"
-msgstr ""
+msgstr "Sekmeyi açtığınızda tüm günler saatlik tahmini gösterir"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:829
 msgid "All days start collapsed"
-msgstr ""
+msgstr "Tüm günler daraltılmış başlar"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:231
 msgid "All tabs"
-msgstr ""
+msgstr "Tüm sekmeler"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:371
 msgid "Alt: %1 %2"
-msgstr ""
+msgstr "Rakım: %1 %2"
 
 #: contents/ui/config/configLocation.qml:1783
 msgid "Alt: %1 m"
-msgstr ""
+msgstr "Rakım: %1 m"
 
 #: contents/ui/config/configGeneral.qml:456
 msgid "Alternative provider. API key required below."
@@ -296,11 +301,11 @@ msgstr "Alternatif sağlayıcı aşağıda. API anahtarı gereklidir."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:464
 msgid "Altitude (%1):"
-msgstr ""
+msgstr "Rakım (%1):"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:483
 msgid "Altitude is optional, but strongly recommended for accurate forecasts. MET Norway (met.no) uses it to correct temperature and pressure for elevation; leaving it at 0 for a mountain location will return sea-level values."
-msgstr ""
+msgstr "Rakım isteğe bağlıdır, ancak doğru tahminler için şiddetle tavsiye edilir. MET Norway (met.no) yüksekliğe göre sıcaklık ve basıncı düzeltmek için rakımı kullanır; dağlık bir konum için 0 bırakmak deniz seviyesi değerlerini döndürür."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:610
 msgid "Altitude:"
@@ -308,7 +313,7 @@ msgstr "Yükseklik:"
 
 #: contents/ui/config/configGeneral.qml:654
 msgid "An API key is required for %1. Weather data cannot be retrieved without it."
-msgstr ""
+msgstr "%1 için bir API anahtarı gereklidir. API anahtarı olmadan hava durumu verileri alınamaz."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:751
 msgid "Animate row scrolling"
@@ -340,11 +345,11 @@ msgstr "Algılanan konumu uygula"
 
 #: contents/ui/config/configLocation.qml:1380
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
-msgstr ""
+msgstr "Emin misiniz? Bu kaydettiğiniz son konum. Eğer kaldırırsanız, araç takımı artık hava durumu bilgilerini göstermeyecek."
 
 #: contents/ui/DetailsView.qml:3495
 msgid "Around midnight — "
-msgstr ""
+msgstr "Gece yarısına doğru — "
 
 #: contents/ui/config/configAppearance.qml:1360
 #: contents/ui/config/configAppearance.qml:1462
@@ -355,7 +360,7 @@ msgstr "Atmosfer basıncı"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:720
 #: contents/ui/DetailsView.qml:1973
 msgid "Aurora Visibility"
-msgstr ""
+msgstr "Kuzey Işıkları Görünürlüğü"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:257
 #: contents/ui/config/tabs/ConfigPanelTab.qml:352
@@ -372,15 +377,15 @@ msgstr "Otomatik"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:108
 msgid "Auto (detect on save)"
-msgstr ""
+msgstr "Otomatik (kaydederken algıla)"
 
 #: contents/ui/config/configLocation.qml:1524
 msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
-msgstr ""
+msgstr "Otomatik algılama ilk olarak mevcut konumunuz için sistem konum servisi GeoClue2'yi kullanır. Sistem konumu kullanılamıyorsa, araç takımı konumunuzu genellikle daha az kesin olan ve yalnızca algılama tekrar çalıştığında güncellenen genel IP adresinizden tahmin eder."
 
 #: contents/ui/config/configLocation.qml:1485
 msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
-msgstr ""
+msgstr "QtLocation ve QtPositioning olmadan otomatik algılama sınırlıdır. Daha az doğru olabilen ve siz hareket ettikçe gerçek zamanlı güncelleme yapmayan IP tabanlı algılamaya geri dönecektir. Otomatik algılama doğruluğunu artırmak istiyorsanız, lütfen dağıtımınız için gerekli paketleri kurun. Daha fazla ayrıntı için kurulum kılavuzuna bakın."
 
 #: contents/ui/config/configLocation.qml:753
 msgid "Auto-detection updated coordinates."
@@ -388,7 +393,7 @@ msgstr "Otomatik algılama güncellenmiş koordinatlar."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:819
 msgid "Auto-open hourly forecast:"
-msgstr ""
+msgstr "Saatlik tahmini otomatik aç:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1018
 msgid "Automatic"
@@ -406,7 +411,7 @@ msgstr "Kullanılabilir"
 
 #: contents/ui/config/configNotifications.qml:49 contents/ui/main.qml:974
 msgid "Avalanche"
-msgstr ""
+msgstr "Çığ"
 
 #: contents/ui/config/configGeneral.qml:303
 msgid "BBC Weather (free)"
@@ -423,32 +428,32 @@ msgstr "Geri"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:719
 msgid "Badge Background Color"
-msgstr ""
+msgstr "Rozet Arka Plan Rengi"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:655
 msgid "Badge background:"
-msgstr ""
+msgstr "Rozet arka planı:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:699
 msgid "Badge opacity:"
-msgstr ""
+msgstr "Rozet opaklığı:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:593
 msgid "Badge position:"
-msgstr ""
+msgstr "Rozet konumu:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:639
 msgid "Badge spacing:"
-msgstr ""
+msgstr "Rozet aralığı:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:195
 msgid "Behavior"
-msgstr ""
+msgstr "Davranış"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:654
 #: contents/ui/DetailsView.qml:1433 contents/ui/main.qml:882
 msgid "Birch"
-msgstr ""
+msgstr "Huş ağacı"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:150
 msgid "Black and White"
@@ -462,19 +467,19 @@ msgstr "İkisi  07:17 / 18:03"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:464
 msgid "Both (sunrise & sunset)"
-msgstr ""
+msgstr "İkisi de (gündoğumu ve günbatımı)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:617
 msgid "Bottom Center"
-msgstr ""
+msgstr "Alt Orta"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:605
 msgid "Bottom Left"
-msgstr ""
+msgstr "Alt Sol"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:601
 msgid "Bottom Right"
-msgstr ""
+msgstr "Alt Sağ"
 
 #: contents/ui/config/configAppearance.qml:528
 #: contents/ui/config/configAppearance.qml:680
@@ -497,11 +502,11 @@ msgstr "Düğme rehberi"
 
 #: contents/ui/DetailsView.qml:2012
 msgid "Bz (Magnetic Field)"
-msgstr ""
+msgstr "Bz (Manyetik Alan)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:594
 msgid "CO"
-msgstr ""
+msgstr "CO"
 
 #: contents/ui/config/configAppearance.qml:577
 #: contents/ui/config/configLocation.qml:1407
@@ -513,19 +518,19 @@ msgstr "İptal"
 
 #: contents/ui/config/configLocation.qml:1848
 msgid "Cancel rename"
-msgstr ""
+msgstr "Yeniden adlandırmayı iptal et"
 
 #: contents/ui/DetailsView.qml:1237
 msgid "Carbon Monoxide (CO)"
-msgstr ""
+msgstr "Karbon Monoksit (CO)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:948
 msgid "Cards"
-msgstr ""
+msgstr "Kartlar"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:601
 msgid "Cards (2 columns)"
-msgstr ""
+msgstr "Kartlar (2 sütun)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:612
 msgid "Cards height:"
@@ -537,20 +542,20 @@ msgstr "Santigrat (°C)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:543
 msgid "Changes staged. Click the main Apply button to save."
-msgstr ""
+msgstr "Değişiklikler hazırlandı. Kaydetmek için Uygula düğmesine tıklayın."
 
 #: contents/ui/config/configGeneral.qml:91
 #: contents/ui/config/configLocation.qml:481
 msgid "Checking location availability…"
-msgstr ""
+msgstr "Konum uygunluğu kontrol ediliyor…"
 
 #: contents/ui/config/configGeneral.qml:468
 msgid "Chinese weather provider with global coverage. API key required below."
-msgstr ""
+msgstr "Küresel kapsama alanına sahip Çinli hava durumu sağlayıcısı. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:945
 msgid "Choose Simple Mode Font"
-msgstr ""
+msgstr "Basit Mod Yazı Tipini Seçin"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1036
 msgctxt "@action:button"
@@ -570,11 +575,11 @@ msgstr "Bu öge için özel bir simge seçin"
 #: contents/ui/config/configLocation.qml:1580
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:256
 msgid "Choose on Map"
-msgstr ""
+msgstr "Haritadan Seç"
 
 #: contents/ui/config/configLocation.qml:1195
 msgid "Choose on map"
-msgstr ""
+msgstr "Haritadan seç"
 
 #: contents/ui/config/configAppearance.qml:1367
 msgid "City / location name"
@@ -604,11 +609,11 @@ msgstr "Açık gökyüzü"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:581
 msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
-msgstr ""
+msgstr "Koordinatların desteklenen her hava durumu sağlayıcısı tarafından kullanılabilir olup olmadığını kontrol etmek için \"Sağlayıcılar arasında test et\" seçeneğine tıklayın. Yapılandırılmamış API anahtarı gerektiren sağlayıcılar atlanacaktır."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:635
 msgid "Click on the map to select a location"
-msgstr ""
+msgstr "Konum seçmek için haritaya tıklayın"
 
 #: contents/ui/TooltipContent.qml:256
 msgid "Click to configure a location"
@@ -616,11 +621,11 @@ msgstr "Konumu yapılandırmak için tıklayın"
 
 #: contents/ui/components/RadarWebEngineView.qml:74
 msgid "Clouds"
-msgstr ""
+msgstr "Bulutlar"
 
 #: contents/ui/config/configNotifications.qml:47 contents/ui/main.qml:972
 msgid "Coastal event"
-msgstr ""
+msgstr "Kıyı olayı"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:303
 #: contents/ui/config/tabs/ConfigPanelTab.qml:312
@@ -633,7 +638,7 @@ msgstr "Renkli (KDE renkli simgeler)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1060
 msgid "Compass in forecast:"
-msgstr ""
+msgstr "Tahminde pusula:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:162
 #: contents/ui/config/tabs/ConfigPanelTab.qml:180
@@ -655,7 +660,7 @@ msgstr "Durum:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:991
 msgid "Configure display mode options"
-msgstr ""
+msgstr "Görünüm modu seçeneklerini yapılandır"
 
 #: contents/ui/config/configAppearance.qml:619
 msgid "Configure icon — %1"
@@ -673,7 +678,7 @@ msgstr "Simgeyi yapılandır…"
 #: contents/ui/config/tabs/ConfigPanelTab.qml:335
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:150
 msgid "Configure weather icons…"
-msgstr ""
+msgstr "Hava durumu simgelerini yapılandır…"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:789
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1202
@@ -685,7 +690,7 @@ msgstr "Yapılandır…"
 
 #: contents/ui/config/configLocation.qml:1840
 msgid "Confirm rename"
-msgstr ""
+msgstr "Yeniden adlandırmayı onayla"
 
 #: contents/ui/config/configLocation.qml:1125
 msgid "Confirm your location"
@@ -697,25 +702,25 @@ msgstr ""
 
 #: contents/ui/config/configGeneral.qml:286
 msgid "Connection failed (HTTP %1)."
-msgstr ""
+msgstr "Bağlantı başarısız oldu (HTTP %1)."
 
 #: contents/ui/config/configGeneral.qml:279
 msgid "Connection successful! %1 key is valid."
-msgstr ""
+msgstr "Bağlantı başarılı! %1 anahtarı geçerli."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:270
 msgid "Coordinates"
-msgstr ""
+msgstr "Koordinatlar"
 
 #: contents/ui/config/configNotifications.qml:303
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
-msgstr ""
+msgstr "Kritik bildirimler, Rahatsız Etmeyin modu etkin olduğunda veya bir oyun oynarken ya da tam ekran video izlerken bile gösterilir (bu seçenekler Sistem Ayarları → Bildirimler bölümünde etkinleştirilmişse)."
 
 #: contents/ui/config/configAppearance.qml:1437
 #: contents/ui/config/configAppearance.qml:1560
 #: contents/ui/config/configAppearance.qml:1683
 msgid "Current date and/or time"
-msgstr ""
+msgstr "Geçerli tarih ve/veya saat"
 
 #: contents/ui/config/configAppearance.qml:1374
 msgid "Current moon phase"
@@ -755,11 +760,11 @@ msgstr "Özel…"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:858
 msgid "Daily Forecast Settings"
-msgstr ""
+msgstr "Günlük Tahmin Ayarları"
 
 #: contents/ui/config/configGeneral.qml:458
 msgid "Dark Sky-compatible API with US alerts. API key required below."
-msgstr ""
+msgstr "ABD uyarıları içeren Dark Sky uyumlu API. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:314
 msgid "Dark map"
@@ -777,64 +782,64 @@ msgstr "Veri Yenileme"
 #: contents/ui/config/configAppearance.qml:1559
 #: contents/ui/config/configAppearance.qml:1682 contents/ui/DetailsView.qml:331
 msgid "Date / Time"
-msgstr ""
+msgstr "Tarih / Saat"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:354
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:419
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:414
 msgid "Date / Time options"
-msgstr ""
+msgstr "Tarih / Saat seçenekleri"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:275
 msgid "Date and time in header:"
-msgstr ""
+msgstr "Başlıkta tarih ve saat:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:284
 msgid "Date format:"
-msgstr ""
+msgstr "Tarih formatı:"
 
 #: contents/ui/TooltipContent.qml:620
 msgid "Date/Time:"
-msgstr ""
+msgstr "Tarih/Saat:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:766
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:640
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:634
 msgid "Date:"
-msgstr ""
+msgstr "Tarih:"
 
 #: contents/ui/DetailsView.qml:3491
 msgid "Dawn approaching — "
-msgstr ""
+msgstr "Şafak yaklaşıyor — "
 
 #: contents/ui/DetailsView.qml:3471
 msgid "Day"
-msgstr ""
+msgstr "Gündüz"
 
 #: contents/ui/DetailsView.qml:3499
 msgid "Daylight over"
-msgstr ""
+msgstr "Gün ışığı bitti"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:495
 #: contents/ui/config/tabs/ConfigPanelTab.qml:569
 msgid "Default"
-msgstr ""
+msgstr "Varsayılan"
 
 #: contents/ui/config/configLocation.qml:1815
 msgid "Default location (click to unset)"
-msgstr ""
+msgstr "Varsayılan konum (kaldırmak için tıklayın)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:201
 msgid "Default tab:"
-msgstr ""
+msgstr "Varsayılan sekme:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:684
 msgid "Dense drizzle"
-msgstr ""
+msgstr "Yoğun çisenti"
 
 #: contents/ui/DetailsView.qml:2332 contents/ui/DetailsView.qml:2334
 msgid "Description"
-msgstr ""
+msgstr "Açıklama"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:80
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:209 contents/ui/FullView.qml:564
@@ -852,15 +857,15 @@ msgstr "Öğeler:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:594
 msgid "Details layout:"
-msgstr ""
+msgstr "Detay düzeni:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:232
 msgid "Details only"
-msgstr ""
+msgstr "Sadece detaylar"
 
 #: contents/ui/main.qml:305
 msgid "Detect / change location"
-msgstr ""
+msgstr "Konumu algıla / değiştir"
 
 #: contents/ui/FullView.qml:389
 msgid "Detect / change location…"
@@ -885,7 +890,7 @@ msgstr "Çiy noktası:"
 
 #: contents/ui/config/configNotifications.qml:336
 msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
-msgstr ""
+msgstr "Bir türü susturmak için devre dışı bırakın veya ona kendi tekrar aralığını verin. Aralık yalnızca 'Kapatılana kadar hatırlatıcıyı tekrarla' açık olduğunda kullanılır."
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:488
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:483
@@ -906,7 +911,7 @@ msgstr "Vazgeç"
 
 #: contents/ui/main.qml:388
 msgid "Dismiss"
-msgstr ""
+msgstr "Kapat"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:43
 msgid "Display"
@@ -921,13 +926,13 @@ msgstr "Görünüm modu:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:86
 msgid "Displaying °C and °F together"
-msgstr ""
+msgstr "°C ve °F birlikte gösteriliyor"
 
 #: contents/ui/config/configAppearance.qml:1409
 #: contents/ui/config/configAppearance.qml:1532
 #: contents/ui/config/configAppearance.qml:1655
 msgid "Dominant pollen type and index"
-msgstr ""
+msgstr "Baskın polen türü ve indeksi"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:802
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:790
@@ -945,7 +950,7 @@ msgstr "Çisenti (Çiseleme)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:74
 msgid "Dual temperature"
-msgstr ""
+msgstr "Çift sıcaklık"
 
 #: contents/ui/main.qml:1219
 msgctxt "Alert severity"
@@ -954,37 +959,37 @@ msgstr ""
 
 #: contents/ui/config/configGeneral.qml:696
 msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
-msgstr ""
+msgstr "Her QWeather projesinin benzersiz bir API sunucusu vardır. Kendi sunucunuzu console.qweather.com adresindeki proje ayarlarınızdan bulun."
 
 #: contents/ui/config/configNotifications.qml:319
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
-msgstr ""
+msgstr "Her uyarı sadece bir kez gösterilir, Kapat ve Ertele düğmeleri olmadan."
 
 #: contents/ui/config/configNotifications.qml:233
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
-msgstr ""
+msgstr "Her bildirim türü, geçerli olduğu durumlarda kendi günlük saatiyle bağımsız olarak etkinleştirilebilir."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:386
 msgid "Edit Saved Location"
-msgstr ""
+msgstr "Kayıtlı Konumu Düzenle"
 
 #: contents/ui/config/configLocation.qml:1870
 msgid "Edit location details"
-msgstr ""
+msgstr "Konum detaylarını düzenle"
 
 #: contents/ui/DetailsView.qml:2337
 msgid "Effective"
-msgstr ""
+msgstr "Yürürlükte"
 
 #: contents/ui/config/configNotifications.qml:244
 msgid "Enable alert notifications"
-msgstr ""
+msgstr "Uyarı bildirimlerini etkinleştir"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:568
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:633
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:697
 msgid "Enable all"
-msgstr ""
+msgstr "Tümünü etkinleştir"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:488
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:483
@@ -1013,19 +1018,19 @@ msgstr "Konum Gir"
 
 #: contents/ui/config/configLocation.qml:1594
 msgid "Enter Manually"
-msgstr ""
+msgstr "Manuel Gir"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:545
 msgid "Enter a location name and valid coordinates, then click the main Apply button."
-msgstr ""
+msgstr "Bir konum adı ve geçerli koordinatlar girin, ardından ana Uygula düğmesine tıklayın."
 
 #: contents/ui/config/configLocation.qml:1598
 msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
-msgstr ""
+msgstr "Daha yerel bir tahmin için kesin enlem, boylam ve isteğe bağlı rakımı girin. Koordinatları OpenStreetMap, GeoNames veya Google Haritalar'dan kopyalayabilirsiniz."
 
 #: contents/ui/config/configLocation.qml:1185
 msgid "Enter manually"
-msgstr ""
+msgstr "Manuel gir"
 
 #: contents/ui/config/configGeneral.qml:533
 msgid "Enter your OpenWeatherMap API key"
@@ -1033,23 +1038,23 @@ msgstr "OpenWeatherMap API anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:535
 msgid "Enter your Pirate Weather API key"
-msgstr ""
+msgstr "Pirate Weather API anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:545
 msgid "Enter your QWeather API key"
-msgstr ""
+msgstr "QWeather API anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:541
 msgid "Enter your StormGlass API key"
-msgstr ""
+msgstr "StormGlass API anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:539
 msgid "Enter your Tomorrow.io API key"
-msgstr ""
+msgstr "Tomorrow.io API anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:537
 msgid "Enter your Visual Crossing API key"
-msgstr ""
+msgstr "Visual Crossing API anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:546
 msgid "Enter your WeatherAPI.com key"
@@ -1057,23 +1062,23 @@ msgstr "WeatherAPI.com anahtarınızı girin"
 
 #: contents/ui/config/configGeneral.qml:543
 msgid "Enter your Weatherbit API key"
-msgstr ""
+msgstr "Weatherbit API anahtarınızı girin"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:259
 msgid "Error (code %1)"
-msgstr ""
+msgstr "Hata (kod %1)"
 
 #: contents/ui/DetailsView.qml:3493
 msgid "Evening — "
-msgstr ""
+msgstr "Akşam — "
 
 #: contents/ui/js/spaceWeather.js:198
 msgid "Excellent"
-msgstr ""
+msgstr "Mükemmel"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:836
 msgid "Expand all days:"
-msgstr ""
+msgstr "Tüm günleri genişlet:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:933
 msgid "Expand widget to fill available panel space"
@@ -1081,24 +1086,24 @@ msgstr "Widget'ı kullanılabilir panel alanını dolduracak şekilde genişlet"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:646
 msgid "Expanded cards height:"
-msgstr ""
+msgstr "Genişletilmiş kartların yüksekliği:"
 
 #: contents/ui/DetailsView.qml:2339
 msgid "Expires"
-msgstr ""
+msgstr "Bitiş süresi"
 
 #: contents/ui/js/airQuality.js:54 contents/ui/js/spaceWeather.js:172
 #: contents/ui/js/spaceWeather.js:186 contents/ui/main.qml:835
 msgid "Extreme"
-msgstr ""
+msgstr "Aşırı"
 
 #: contents/ui/js/spaceWeather.js:91
 msgid "Extreme geomagnetic storm."
-msgstr ""
+msgstr "Aşırı jeomanyetik fırtına."
 
 #: contents/ui/js/airQuality.js:54 contents/ui/main.qml:849
 msgid "Extremely Poor"
-msgstr ""
+msgstr "Son Derece Kötü"
 
 #: contents/ui/config/configGeneral.qml:829
 msgid "FOSS Public Alert Server"
@@ -1110,7 +1115,7 @@ msgstr "Fahrenhayt (°F)"
 
 #: contents/ui/WeatherService.qml:883
 msgid "Failed to load weather providers"
-msgstr ""
+msgstr "Hava durumu sağlayıcıları yüklenemedi"
 
 #: contents/ui/WeatherService.qml:870
 msgid "Failed: %1"
@@ -1118,7 +1123,7 @@ msgstr "Başarısız: %1"
 
 #: contents/ui/js/airQuality.js:50 contents/ui/main.qml:845
 msgid "Fair"
-msgstr ""
+msgstr "İyi"
 
 #: contents/ui/config/configAppearance.qml:1345
 #: contents/ui/config/configAppearance.qml:1447
@@ -1137,7 +1142,7 @@ msgstr "Hissedilen: %1"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:261
 msgid "Fill panel"
-msgstr ""
+msgstr "Paneli doldur"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:932
 msgid "Fill panel:"
@@ -1145,7 +1150,7 @@ msgstr "Paneli doldur:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:314
 msgid "Find"
-msgstr ""
+msgstr "Bul"
 
 #: contents/ui/main.qml:2082
 msgid "First Quarter"
@@ -1153,22 +1158,22 @@ msgstr "İlk Dördün"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:893
 msgid "First day of week:"
-msgstr ""
+msgstr "Haftanın ilk günü:"
 
 #: contents/ui/DetailsView.qml:2080
 msgid "Flare Warning"
-msgstr ""
+msgstr "Parlama Uyarısı"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1079
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:208
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:43
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:52
 msgid "Flat Color (Bundled)"
-msgstr ""
+msgstr "Düz Renk (Paketli)"
 
 #: contents/ui/config/configNotifications.qml:51 contents/ui/main.qml:976
 msgid "Flood"
-msgstr ""
+msgstr "Sel"
 
 #: contents/ui/config/configAppearance.qml:248
 #: contents/ui/config/configNotifications.qml:44
@@ -1203,15 +1208,15 @@ msgstr "Tahmin günleri:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:233
 msgid "Forecast only"
-msgstr ""
+msgstr "Sadece tahmin"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1051
 msgid "Forecast:"
-msgstr ""
+msgstr "Tahmin:"
 
 #: contents/ui/config/configNotifications.qml:48 contents/ui/main.qml:973
 msgid "Forest fire"
-msgstr ""
+msgstr "Orman yangını"
 
 #: contents/ui/config/configGeneral.qml:472
 msgid "Free BBC Weather service (data from the Met Office). No API key needed."
@@ -1233,11 +1238,11 @@ msgstr "Dondurucu çisenti (Çiseleme)"
 
 #: contents/ui/config/configAppearance.qml:276
 msgid "Freezing drizzle (day)"
-msgstr ""
+msgstr "Dondurucu çisenti (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:281
 msgid "Freezing drizzle (night)"
-msgstr ""
+msgstr "Dondurucu çisenti (gece)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:694
@@ -1247,15 +1252,15 @@ msgstr "Dondurucu yağmur"
 
 #: contents/ui/config/configAppearance.qml:287
 msgid "Freezing rain (day)"
-msgstr ""
+msgstr "Dondurucu yağmur (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:292
 msgid "Freezing rain (night)"
-msgstr ""
+msgstr "Dondurucu yağmur (gece)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:905
 msgid "Friday"
-msgstr ""
+msgstr "Cuma"
 
 #: contents/ui/main.qml:2086
 msgid "Full Moon"
@@ -1263,11 +1268,11 @@ msgstr "Dolunay"
 
 #: contents/ui/DetailsView.qml:2726
 msgid "Future alerts"
-msgstr ""
+msgstr "Gelecek uyarıları"
 
 #: contents/ui/config/configLocation.qml:1536
 msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
-msgstr ""
+msgstr "GPS / GeoClue2 kullanılamıyor (en iyi doğruluk için qt6-qtlocation kurun). IP tabanlı algılama kullanılıyor."
 
 #: contents/config/config.qml:52 contents/ui/config/tabs/ConfigWidgetTab.qml:76
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:799
@@ -1276,20 +1281,20 @@ msgstr "Genel"
 
 #: contents/ui/config/configLocation.qml:819
 msgid "GeoClue2 unavailable, trying system location…"
-msgstr ""
+msgstr "GeoClue2 kullanılamıyor, sistem konumu deneniyor…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:717
 #: contents/ui/DetailsView.qml:1859
 msgid "Geomagnetic Storm"
-msgstr ""
+msgstr "Jeomanyetik Fırtına"
 
 #: contents/ui/config/configNotifications.qml:462 contents/ui/main.qml:1810
 msgid "Geomagnetic activity"
-msgstr ""
+msgstr "Jeomanyetik aktivite"
 
 #: contents/ui/main.qml:1807
 msgid "Geomagnetic activity will be %1 (Kp %2)"
-msgstr ""
+msgstr "Jeomanyetik aktivite %1 olacak (Kp %2)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:173
 msgid "Glow intensity:"
@@ -1297,21 +1302,21 @@ msgstr ""
 
 #: contents/ui/js/airQuality.js:49 contents/ui/main.qml:844
 msgid "Good"
-msgstr ""
+msgstr "İyi"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:655
 #: contents/ui/DetailsView.qml:1435 contents/ui/main.qml:883
 msgid "Grass"
-msgstr ""
+msgstr "Çimen"
 
 #: contents/ui/DetailsView.qml:2329
 msgid "Headline"
-msgstr ""
+msgstr "Başlık"
 
 #: contents/ui/components/RadarWebEngineView.qml:93
 #: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Heavy"
-msgstr ""
+msgstr "Yoğun"
 
 #: contents/ui/main.qml:1921
 msgid "Heavy drizzle"
@@ -1332,11 +1337,11 @@ msgstr "Yoğun kar yağışı"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:712
 msgid "Heavy snow showers"
-msgstr ""
+msgstr "Yoğun kar sağanakları"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:700
 msgid "Heavy snowfall"
-msgstr ""
+msgstr "Yoğun kar yağışı"
 
 #: contents/ui/main.qml:1959
 msgid "Heavy thunderstorm with hail"
@@ -1365,15 +1370,15 @@ msgstr "En yüksek"
 
 #: contents/ui/config/configGeneral.qml:466
 msgid "High precision forecast provider. API key required below."
-msgstr ""
+msgstr "Yüksek hassasiyetli tahmin sağlayıcısı. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/config/configNotifications.qml:45 contents/ui/main.qml:970
 msgid "High temperature"
-msgstr ""
+msgstr "Yüksek sıcaklık"
 
 #: contents/ui/config/configGeneral.qml:460
 msgid "Historical and forecast data provider. API key required below."
-msgstr ""
+msgstr "Geçmiş ve tahmin veri sağlayıcısı. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:154
 msgid "Horizontal"
@@ -1381,11 +1386,11 @@ msgstr "Yatay"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:934
 msgid "Hourly Forecast Settings"
-msgstr ""
+msgstr "Saatlik Tahmin Ayarları"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:944
 msgid "Hourly layout:"
-msgstr ""
+msgstr "Saatlik düzen:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:735
 msgid "How often the rows scroll to reveal the next item"
@@ -1405,7 +1410,7 @@ msgstr "Nem:"
 #: contents/ui/config/configLocation.qml:938
 #: contents/ui/config/configLocation.qml:969
 msgid "IP geolocation"
-msgstr ""
+msgstr "IP tabanlı konum"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:195
 msgid "Icon and temperature"
@@ -1452,7 +1457,7 @@ msgstr "Doğru görünüyorsa uygulayın. Aksi takdirde konumunuzu manuel seçin
 
 #: contents/ui/config/configGeneral.qml:678
 msgid "If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately."
-msgstr ""
+msgstr "Yeni bir OpenWeatherMap API anahtarı kaydettiyseniz, etkinleşmesi 2 saate kadar sürebilir. Hemen çalışmazsa lütfen daha sonra tekrar deneyin."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:157
 msgid "Imperial (°F, mph, inHg, in)"
@@ -1483,6 +1488,12 @@ msgid ""
 "\n"
 "You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
 msgstr ""
+"Dağıtımınız için kurun:\n"
+"  • Fedora / RHEL / Arch: qt6-qtlocation\n"
+"  • openSUSE: qt6-location\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation ve qml6-module-qtpositioning\n"
+"\n"
+"Yine de bir konum arayabilir veya koordinatları manuel girebilirsiniz. Otomatik algılama IP yedeği kullanarak çalışmaya devam edecektir ancak daha az doğru olabilir ve siz dolaştıkça gerçek zamanlı güncellenmez."
 
 #: contents/ui/RadarView.qml:181
 msgid ""
@@ -1491,10 +1502,14 @@ msgid ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 msgstr ""
+"Dağıtımınız için kurun:\n"
+"- Fedora / RHEL: qt6-qtwebengine\n"
+"- openSUSE / Arch: qt6-webengine\n"
+"- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
 #: contents/ui/DetailsView.qml:2341
 msgid "Instruction"
-msgstr ""
+msgstr "Talimat"
 
 #: contents/ui/config/configGeneral.qml:911
 msgid "Interval:"
@@ -1502,19 +1517,19 @@ msgstr "Sıklık:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:271
 msgid "Invalid API key (HTTP %1)"
-msgstr ""
+msgstr "Geçersiz API anahtarı (HTTP %1)"
 
 #: contents/ui/config/configGeneral.qml:283
 msgid "Invalid API key. Please check and try again."
-msgstr ""
+msgstr "Geçersiz API anahtarı. Lütfen kontrol edip tekrar deneyin."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:264
 msgid "Invalid response"
-msgstr ""
+msgstr "Geçersiz yanıt"
 
 #: contents/ui/config/configGeneral.qml:273
 msgid "Invalid response from QWeather."
-msgstr ""
+msgstr "QWeather'dan geçersiz yanıt."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:917
 msgid "Item spacing:"
@@ -1532,11 +1547,11 @@ msgstr "Öğe Sırası:"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:41
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:49
 msgid "KDE Icon Theme"
-msgstr ""
+msgstr "KDE Simge Teması"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:50
 msgid "KDE Symbolic"
-msgstr ""
+msgstr "KDE Sembolik"
 
 #: contents/ui/config/configAppearance.qml:446
 msgid "KDE System Icons (automatic, follows weather code)"
@@ -1544,7 +1559,7 @@ msgstr "KDE Sistem Simgeleri (otomatik, hava durumu koduna uyar)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:561
 msgid "KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\"."
-msgstr ""
+msgstr "KDE simge temaları birçok öğe simgesini tam olarak desteklemez. \"Kendi simgelerinizi ayarlayın\" seçeneğine tıklayarak kendi simgelerinizi belirleyebilirsiniz."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:61
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:50
@@ -1566,7 +1581,7 @@ msgstr "Önizleme Öğelerindeki değişiklikleri koruyacak mısınız?"
 
 #: contents/ui/FullView.qml:375
 msgid "Keep widget open"
-msgstr ""
+msgstr "Araç takımını açık tut"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:266
 msgid "Knots (kn)"
@@ -1575,12 +1590,12 @@ msgstr "Knots (kn)"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:718
 #: contents/ui/DetailsView.qml:1894
 msgid "Kp Index"
-msgstr ""
+msgstr "Kp İndeksi"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:871
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:983
 msgid "Kp index/G forecast:"
-msgstr ""
+msgstr "Kp indeksi/G tahmini:"
 
 #: contents/ui/main.qml:2090
 msgid "Last Quarter"
@@ -1588,15 +1603,15 @@ msgstr "Son Dördün"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:595
 msgid "Lat:"
-msgstr ""
+msgstr "Enlem:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:367
 msgid "Lat: %1°"
-msgstr ""
+msgstr "Enlem: %1°"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:293
 msgid "Latitude"
-msgstr ""
+msgstr "Enlem"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:432
 msgid "Latitude:"
@@ -1605,7 +1620,7 @@ msgstr "Enlem:"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:585
 msgid "Layout"
-msgstr ""
+msgstr "Düzen"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:146
 #: contents/ui/config/tabs/ConfigPanelTab.qml:179
@@ -1620,7 +1635,7 @@ msgstr ""
 #: contents/ui/components/RadarWebEngineView.qml:91
 #: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Light"
-msgstr ""
+msgstr "Hafif"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:680
 #: contents/ui/main.qml:1917
@@ -1641,11 +1656,11 @@ msgstr "Hafif yağmur"
 
 #: contents/ui/config/configAppearance.qml:254
 msgid "Light rain / Drizzle (day)"
-msgstr ""
+msgstr "Hafif yağmur / Çisenti (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:259
 msgid "Light rain / Drizzle (night)"
-msgstr ""
+msgstr "Hafif yağmur / Çisenti (gece)"
 
 #: contents/ui/main.qml:1945
 msgid "Light showers"
@@ -1657,11 +1672,11 @@ msgstr "Hafif kar yağışı"
 
 #: contents/ui/config/configAppearance.qml:298
 msgid "Light snow (day)"
-msgstr ""
+msgstr "Hafif kar (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:303
 msgid "Light snow (night)"
-msgstr ""
+msgstr "Hafif kar (gece)"
 
 #: contents/ui/main.qml:1951
 msgid "Light snow showers"
@@ -1673,7 +1688,7 @@ msgstr "Satırlar:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:602
 msgid "List"
-msgstr ""
+msgstr "Liste"
 
 #: contents/ui/DetailsView.qml:553
 msgid "Loading details…"
@@ -1701,7 +1716,7 @@ msgstr "Konumlar yükleniyor…"
 
 #: contents/ui/RadarView.qml:121
 msgid "Loading radar…"
-msgstr ""
+msgstr "Radar yükleniyor…"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:156
 msgid "Loading…"
@@ -1714,7 +1729,7 @@ msgstr "Konum"
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:513
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:92
 msgid "Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again."
-msgstr ""
+msgstr "'%1' konumu zaten kayıtlı listenizde. Seçilen konumu uygulayabilirsiniz ancak tekrar kaydedilmeyecektir."
 
 #: contents/ui/config/configAppearance.qml:1366
 msgid "Location Name"
@@ -1722,7 +1737,7 @@ msgstr "Konum Adı"
 
 #: contents/ui/config/configLocation.qml:751
 msgid "Location auto-detected."
-msgstr ""
+msgstr "Konum otomatik algılandı."
 
 #: contents/ui/config/configLocation.qml:1536
 msgid "Location detection is depending on system configuration and permissions."
@@ -1731,16 +1746,16 @@ msgstr "Konum tespiti sistem yapılandırmasına ve izinlere bağlıdır."
 #: contents/ui/config/configGeneral.qml:180
 #: contents/ui/config/configLocation.qml:538
 msgid "Location is available on %1."
-msgstr ""
+msgstr "Konum %1 üzerinde mevcut."
 
 #: contents/ui/config/configGeneral.qml:183
 #: contents/ui/config/configLocation.qml:541
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
-msgstr ""
+msgstr "Konum %1 üzerinde mevcut değil (HTTP %2). Farklı bir sağlayıcı veya konum deneyin."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:270
 msgid "Location name"
-msgstr ""
+msgstr "Konum adı"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:421
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:61
@@ -1749,11 +1764,11 @@ msgstr "Konum adı:"
 
 #: contents/ui/config/configLocation.qml:1521
 msgid "Location package notice"
-msgstr ""
+msgstr "Konum paketi uyarısı"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:544
 msgid "Location staged. Click the main Apply button to save."
-msgstr ""
+msgstr "Konum hazırlandı. Kaydetmek için Uygula düğmesine tıklayın."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:346
 msgid "Location:"
@@ -1761,15 +1776,15 @@ msgstr "Konum:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:602
 msgid "Lon:"
-msgstr ""
+msgstr "Boylam:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:368
 msgid "Lon: %1°"
-msgstr ""
+msgstr "Boylam: %1°"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:305
 msgid "Longitude"
-msgstr ""
+msgstr "Boylam"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:449
 msgid "Longitude:"
@@ -1777,7 +1792,7 @@ msgstr "Boylam:"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:561
 msgid "Looking up location…"
-msgstr ""
+msgstr "Konum aranıyor…"
 
 #: contents/ui/DetailsView.qml:1047 contents/ui/FullView.qml:523
 #: contents/ui/js/pollen.js:42 contents/ui/js/spaceWeather.js:189
@@ -1788,7 +1803,7 @@ msgstr "En düşük"
 
 #: contents/ui/config/configNotifications.qml:46 contents/ui/main.qml:971
 msgid "Low temperature"
-msgstr ""
+msgstr "Düşük sıcaklık"
 
 #: contents/ui/main.qml:1224
 msgctxt "Alert severity"
@@ -1807,7 +1822,7 @@ msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
 msgid "Magnetic Field (Bz)"
-msgstr ""
+msgstr "Manyetik Alan (Bz)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:757
 msgid "Main icon style:"
@@ -1821,11 +1836,11 @@ msgstr "Genellikle açık"
 
 #: contents/ui/config/configAppearance.qml:220
 msgid "Mainly clear (day)"
-msgstr ""
+msgstr "Çoğunlukla açık (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:225
 msgid "Mainly clear (night)"
-msgstr ""
+msgstr "Çoğunlukla açık (gece)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:265
 #: contents/ui/config/tabs/ConfigPanelTab.qml:356
@@ -1842,7 +1857,7 @@ msgstr "Manuel"
 
 #: contents/ui/config/configGeneral.qml:464
 msgid "Marine and weather data provider. API key required below."
-msgstr ""
+msgstr "Denizcilik ve hava durumu veri sağlayıcısı. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/config/configGeneral.qml:827
 msgid "MeteoAlarm + NOAA NWS (Native)"
@@ -1854,23 +1869,23 @@ msgstr "Metrik (°C, km/h, hPa, mm)"
 
 #: contents/ui/js/pollen.js:43
 msgid "Mild symptoms in highly sensitive individuals."
-msgstr ""
+msgstr "Son derece duyarlı bireylerde hafif semptomlar."
 
 #: contents/ui/js/pollen.js:42
 msgid "Minimal to no risk."
-msgstr ""
+msgstr "Minimum veya sıfır risk."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:475
 msgid "Minimum height:"
-msgstr ""
+msgstr "Minimum yükseklik:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:446
 msgid "Minimum width:"
-msgstr ""
+msgstr "Minimum genişlik:"
 
 #: contents/ui/js/spaceWeather.js:95
 msgid "Minor geomagnetic storm."
-msgstr ""
+msgstr "Hafif jeomanyetik fırtına."
 
 #: contents/ui/config/configAppearance.qml:1992
 msgid "Misc"
@@ -1878,46 +1893,46 @@ msgstr "Çeşitli"
 
 #: contents/ui/components/RadarWebEngineView.qml:538
 msgid "Mod"
-msgstr ""
+msgstr "Orta"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:108
 msgid "Mode:"
-msgstr ""
+msgstr "Mod:"
 
 #: contents/ui/components/RadarWebEngineView.qml:92
 #: contents/ui/js/airQuality.js:51 contents/ui/js/pollen.js:43
 #: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
 #: contents/ui/main.qml:832 contents/ui/main.qml:846 contents/ui/main.qml:876
 msgid "Moderate"
-msgstr ""
+msgstr "Orta"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:682
 msgid "Moderate drizzle"
-msgstr ""
+msgstr "Orta şiddetli çisenti"
 
 #: contents/ui/js/spaceWeather.js:94
 msgid "Moderate geomagnetic storm."
-msgstr ""
+msgstr "Orta jeomanyetik fırtına."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:690
 msgid "Moderate rain"
-msgstr ""
+msgstr "Orta şiddetli yağmur"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:706
 msgid "Moderate rain showers"
-msgstr ""
+msgstr "Orta şiddetli sağanak yağmur"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:698
 msgid "Moderate snowfall"
-msgstr ""
+msgstr "Orta şiddetli kar yağışı"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:904
 msgid "Monday"
-msgstr ""
+msgstr "Pazartesi"
 
 #: contents/ui/DetailsView.qml:321
 msgid "Moon"
-msgstr ""
+msgstr "Ay"
 
 #: contents/ui/config/configAppearance.qml:1373
 msgid "Moon Phase"
@@ -1925,35 +1940,35 @@ msgstr "Ay Evresi"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:500
 msgid "Moon mode:"
-msgstr ""
+msgstr "Ay modu:"
 
 #: contents/ui/config/configAppearance.qml:1496
 #: contents/ui/config/configAppearance.qml:1619
 msgid "Moon phase and moonrise/moonset"
-msgstr ""
+msgstr "Ay evresi ve ayın doğuşu/batışı"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:568
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:562
 msgid "Moon phase mode:"
-msgstr ""
+msgstr "Ay evresi modu:"
 
 #: contents/ui/config/configAppearance.qml:896
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:521
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:584
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:578
 msgid "Moon phase only"
-msgstr ""
+msgstr "Sadece ay evresi"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:350
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:418
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:413
 msgid "Moon phase options"
-msgstr ""
+msgstr "Ay evresi seçenekleri"
 
 #: contents/ui/config/configAppearance.qml:1497
 #: contents/ui/config/configAppearance.qml:1620
 msgid "Moon phase, moonrise & moonset"
-msgstr ""
+msgstr "Ay evresi, doğuşu ve batışı"
 
 #: contents/ui/TooltipContent.qml:496 contents/ui/TooltipContent.qml:538
 #: contents/ui/TooltipContent.qml:560
@@ -1963,70 +1978,70 @@ msgstr "Ay:"
 #: contents/ui/DetailsView.qml:3708 contents/ui/DetailsView.qml:3713
 #: contents/ui/DetailsView.qml:4031 contents/ui/DetailsView.qml:4036
 msgid "Moonrise"
-msgstr ""
+msgstr "Ayın doğuşu"
 
 #: contents/ui/config/configAppearance.qml:900
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:525
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:588
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:582
 msgid "Moonrise & moonset only"
-msgstr ""
+msgstr "Sadece ayın doğuşu ve batışı"
 
 #: contents/ui/config/configAppearance.qml:947
 msgid "Moonrise icon:"
-msgstr ""
+msgstr "Ayın doğuş simgesi:"
 
 #: contents/ui/config/configAppearance.qml:904
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:529
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:596
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:590
 msgid "Moonrise only"
-msgstr ""
+msgstr "Sadece ayın doğuşu"
 
 #: contents/ui/DetailsView.qml:3706 contents/ui/DetailsView.qml:4029
 msgid "Moonrise/Moonset"
-msgstr ""
+msgstr "Ayın Doğuşu/Batışı"
 
 #: contents/ui/TooltipContent.qml:499 contents/ui/TooltipContent.qml:521
 #: contents/ui/TooltipContent.qml:528 contents/ui/TooltipContent.qml:552
 #: contents/ui/TooltipContent.qml:561
 msgid "Moonrise:"
-msgstr ""
+msgstr "Ayın doğuşu:"
 
 #: contents/ui/DetailsView.qml:3710 contents/ui/DetailsView.qml:3713
 #: contents/ui/DetailsView.qml:4033 contents/ui/DetailsView.qml:4036
 msgid "Moonset"
-msgstr ""
+msgstr "Ayın batışı"
 
 #: contents/ui/config/configAppearance.qml:990
 msgid "Moonset icon:"
-msgstr ""
+msgstr "Ayın batış simgesi:"
 
 #: contents/ui/config/configAppearance.qml:908
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:533
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:600
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:594
 msgid "Moonset only"
-msgstr ""
+msgstr "Sadece ayın batışı"
 
 #: contents/ui/TooltipContent.qml:503 contents/ui/TooltipContent.qml:518
 #: contents/ui/TooltipContent.qml:528 contents/ui/TooltipContent.qml:549
 #: contents/ui/TooltipContent.qml:562
 msgid "Moonset:"
-msgstr ""
+msgstr "Ayın batışı:"
 
 #: contents/ui/main.qml:1526
 msgid "Morning"
-msgstr ""
+msgstr "Sabah"
 
 #: contents/ui/js/pollen.js:44
 msgid "Most allergy sufferers will experience discomfort."
-msgstr ""
+msgstr "Çoğu alerji hastası rahatsızlık hissedecektir."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:656
 #: contents/ui/DetailsView.qml:1437 contents/ui/main.qml:884
 msgid "Mugwort"
-msgstr ""
+msgstr "Pelin Otu"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:100
 msgid "Multiple lines (tall panel)"
@@ -2036,19 +2051,19 @@ msgstr "Çoklu satır (uzun panel)"
 #: contents/ui/config/configAppearance.qml:1539
 #: contents/ui/config/configAppearance.qml:1662
 msgid "NOAA Kp index and geomagnetic activity"
-msgstr ""
+msgstr "NOAA Kp indeksi ve jeomanyetik aktivite"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:591
 msgid "NO₂"
-msgstr ""
+msgstr "NO₂"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:410
 msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
-msgstr ""
+msgstr "Bir yerin koordinatlarına mı ihtiyacınız var? Onları <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a> adresinden bulabilirsiniz."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:273
 msgid "Network error"
-msgstr ""
+msgstr "Ağ hatası"
 
 #: contents/ui/main.qml:2078
 msgid "New Moon"
@@ -2056,15 +2071,15 @@ msgstr "Yeni Ay"
 
 #: contents/ui/DetailsView.qml:3468
 msgid "Night"
-msgstr ""
+msgstr "Gece"
 
 #: contents/ui/DetailsView.qml:1231
 msgid "Nitrogen Dioxide (NO₂)"
-msgstr ""
+msgstr "Azot Dioksit (NO₂)"
 
 #: contents/ui/config/configLocation.qml:1307
 msgid "No"
-msgstr ""
+msgstr "Hayır"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:159
 msgid "No data"
@@ -2080,16 +2095,16 @@ msgstr "Tahmin verisi yok"
 
 #: contents/ui/js/spaceWeather.js:96
 msgid "No geomagnetic storm activity."
-msgstr ""
+msgstr "Jeomanyetik fırtına aktivitesi yok."
 
 #: contents/ui/ForecastView.qml:1273 contents/ui/ForecastView.qml:1277
 #: contents/ui/ForecastView.qml:1739 contents/ui/ForecastView.qml:1743
 msgid "No info"
-msgstr ""
+msgstr "Bilgi yok"
 
 #: contents/ui/ForecastView.qml:637
 msgid "No information"
-msgstr ""
+msgstr "Bilgi yok"
 
 #: contents/ui/FullView.qml:216
 msgid "No location set"
@@ -2105,7 +2120,7 @@ msgstr ""
 
 #: contents/ui/config/configLocation.qml:1627
 msgid "No saved locations. Save the current location to quickly switch between places."
-msgstr ""
+msgstr "Kayıtlı konum yok. Yerler arasında hızlıca geçiş yapmak için mevcut konumu kaydedin."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:538
 msgid "No weather stations found for '%1'"
@@ -2118,7 +2133,7 @@ msgstr "'%1' için hava istasyonu bulunamadı"
 #: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:939
 #: contents/ui/main.qml:941
 msgid "None"
-msgstr ""
+msgstr "Yok"
 
 #: contents/ui/config/configLocation.qml:635
 msgid "None Selected"
@@ -2126,11 +2141,11 @@ msgstr "Hiçbiri Seçilmedi"
 
 #: contents/ui/DetailsView.qml:1047
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:275
 msgid "Not available (HTTP %1)"
-msgstr ""
+msgstr "Mevcut değil (HTTP %1)"
 
 #: contents/ui/ForecastView.qml:1317 contents/ui/ForecastView.qml:1764
 #: contents/ui/main.qml:738 contents/ui/main.qml:771 contents/ui/main.qml:784
@@ -2140,7 +2155,7 @@ msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:623
 msgid "Not tested"
-msgstr ""
+msgstr "Test edilmedi"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1053
 msgid "Note: size may be reduced if the panel is not thick enough."
@@ -2148,36 +2163,36 @@ msgstr "Not: Eğer panel yeterince kalın değilse boyut küçültülebilir."
 
 #: contents/config/config.qml:62 contents/ui/config/configNotifications.qml:224
 msgid "Notifications"
-msgstr ""
+msgstr "Bildirimler"
 
 #: contents/ui/config/configNotifications.qml:417
 msgid "Notify about upcoming rain/storms"
-msgstr ""
+msgstr "Yaklaşan yağmur/fırtına hakkında bildir"
 
 #: contents/ui/config/configNotifications.qml:431
 msgid "Notify about upcoming snow"
-msgstr ""
+msgstr "Yaklaşan kar hakkında bildir"
 
 #: contents/ui/config/configNotifications.qml:445
 msgid "Notify with today's UV forecast"
-msgstr ""
+msgstr "Bugünün UV tahminiyle bildir"
 
 #: contents/ui/config/configNotifications.qml:377
 msgid "Notify with today's forecast"
-msgstr ""
+msgstr "Bugünün tahminiyle bildir"
 
 #: contents/ui/config/configNotifications.qml:465
 msgid "Notify with today's geomagnetic activity forecast"
-msgstr ""
+msgstr "Bugünün jeomanyetik aktivite tahminiyle bildir"
 
 #: contents/ui/config/configNotifications.qml:397
 msgid "Notify with tomorrow's forecast"
-msgstr ""
+msgstr "Yarının tahminiyle bildir"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:398
 #, javascript-format
 msgid "Now: %1%2"
-msgstr ""
+msgstr "Şu an: %1%2"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:745
 msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
@@ -2190,20 +2205,20 @@ msgstr "TAMAM"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
 #: contents/ui/DetailsView.qml:1439 contents/ui/main.qml:885
 msgid "Olive"
-msgstr ""
+msgstr "Zeytin ağacı"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:846
 msgid "Only the clicked day expands"
-msgstr ""
+msgstr "Sadece tıklanan gün genişler"
 
 #: contents/ui/config/configLocation.qml:1112
 #: contents/ui/config/configLocation.qml:1489 contents/ui/RadarView.qml:196
 msgid "Open install guide"
-msgstr ""
+msgstr "Kurulum kılavuzunu aç"
 
 #: contents/ui/RadarView.qml:203
 msgid "Open radar in browser"
-msgstr ""
+msgstr "Radarı tarayıcıda aç"
 
 #: contents/ui/config/configGeneral.qml:295
 msgid "Open-Meteo (recommended, free)"
@@ -2219,17 +2234,17 @@ msgstr "OpenWeatherMap API Anahtarı:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:828
 msgid "Opens today's hourly forecast automatically (or the next available day)"
-msgstr ""
+msgstr "Bugünün saatlik tahminini otomatik olarak açar (veya bir sonraki mevcut günü)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:355
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:420
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:415
 msgid "Options"
-msgstr ""
+msgstr "Seçenekler"
 
 #: contents/ui/config/configNotifications.qml:261
 msgid "Orange"
-msgstr ""
+msgstr "Turuncu"
 
 #: contents/ui/config/configAppearance.qml:242
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
@@ -2240,19 +2255,19 @@ msgstr "Kapalı"
 
 #: contents/ui/DetailsView.qml:1233
 msgid "Ozone (O₃)"
-msgstr ""
+msgstr "Ozon (O₃)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:592
 msgid "O₃"
-msgstr ""
+msgstr "O₃"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:590
 msgid "PM10"
-msgstr ""
+msgstr "PM10"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:589
 msgid "PM2.5"
-msgstr ""
+msgstr "PM2.5"
 
 #: contents/ui/config/configAppearance.qml:1980
 #: contents/ui/config/tabs/ConfigMiscTab.qml:132
@@ -2281,11 +2296,11 @@ msgstr "Panel öğeleri:"
 
 #: contents/ui/DetailsView.qml:1229
 msgid "Particulate Matter (PM10)"
-msgstr ""
+msgstr "Partikül Madde (PM10)"
 
 #: contents/ui/DetailsView.qml:1227
 msgid "Particulate Matter (PM2.5)"
-msgstr ""
+msgstr "Partikül Madde (PM2.5)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:674
@@ -2303,29 +2318,29 @@ msgstr "Parçalı bulutlu (gece)"
 
 #: contents/ui/components/RadarWebEngineView.qml:87
 msgid "Pause"
-msgstr ""
+msgstr "Duraklat"
 
 #: contents/ui/config/configNotifications.qml:327
 msgid "Per alert type:"
-msgstr ""
+msgstr "Uyarı tipine göre:"
 
 #: contents/ui/config/configAppearance.qml:884
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:509
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:576
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:570
 msgid "Phase + moonrise & moonset"
-msgstr ""
+msgstr "Evre + doğuş ve batış"
 
 #: contents/ui/config/configAppearance.qml:888
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:513
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:580
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:574
 msgid "Phase + upcoming rise/set"
-msgstr ""
+msgstr "Evre + yaklaşan doğuş/batış"
 
 #: contents/ui/config/configLocation.qml:1584
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
-msgstr ""
+msgstr "Mahalleniz veya belirli bir dönüm noktası gibi daha yerel bir tahmin için haritadan kesin bir nokta seçin."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:869
 msgid "Pipe  |"
@@ -2333,78 +2348,78 @@ msgstr "Boru  |"
 
 #: contents/ui/config/configGeneral.qml:315
 msgid "Pirate Weather (Key Required)"
-msgstr ""
+msgstr "Pirate Weather (Anahtar Gerekli)"
 
 #: contents/ui/config/configGeneral.qml:508
 msgid "Pirate Weather API Key:"
-msgstr ""
+msgstr "Pirate Weather API Anahtarı:"
 
 #: contents/ui/components/RadarWebEngineView.qml:86
 msgid "Play"
-msgstr ""
+msgstr "Oynat"
 
 #: contents/ui/config/configAppearance.qml:1408
 #: contents/ui/config/configAppearance.qml:1531
 #: contents/ui/config/configAppearance.qml:1654 contents/ui/DetailsView.qml:327
 #: contents/ui/SimpleView.qml:267
 msgid "Pollen"
-msgstr ""
+msgstr "Polen"
 
 #: contents/ui/DetailsView.qml:1586
 msgid "Pollen data not available for this location."
-msgstr ""
+msgstr "Bu konum için polen verisi mevcut değil."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:352
 msgid "Pollen options"
-msgstr ""
+msgstr "Polen seçenekleri"
 
 #: contents/ui/TooltipContent.qml:470
 msgid "Pollen:"
-msgstr ""
+msgstr "Polen:"
 
 #: contents/ui/js/airQuality.js:52 contents/ui/main.qml:847
 msgid "Poor"
-msgstr ""
+msgstr "Kötü"
 
 #: contents/ui/main.qml:397
 msgid "Postpone"
-msgstr ""
+msgstr "Ertele"
 
 #: contents/ui/SimpleView.qml:264
 msgid "Precip Sum"
-msgstr ""
+msgstr "Toplam Yağış"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:893
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1007
 msgid "Precip sum:"
-msgstr ""
+msgstr "Toplam yağış:"
 
 #: contents/ui/TooltipContent.qml:455
 msgid "Precip. Sum:"
-msgstr ""
+msgstr "Toplam Yağış:"
 
 #: contents/ui/config/configAppearance.qml:1380
 #: contents/ui/config/configAppearance.qml:1503
 #: contents/ui/config/configAppearance.qml:1626 contents/ui/DetailsView.qml:323
 #: contents/ui/SimpleView.qml:263
 msgid "Precipitation"
-msgstr ""
+msgstr "Yağış"
 
 #: contents/ui/config/configAppearance.qml:1387
 #: contents/ui/config/configAppearance.qml:1510
 #: contents/ui/config/configAppearance.qml:1633 contents/ui/DetailsView.qml:324
 msgid "Precipitation Sum"
-msgstr ""
+msgstr "Toplam Yağış"
 
 #: contents/ui/config/configAppearance.qml:1381
 #: contents/ui/config/configAppearance.qml:1504
 #: contents/ui/config/configAppearance.qml:1627
 msgid "Precipitation rate (mm/h)"
-msgstr ""
+msgstr "Yağış oranı (mm/sa)"
 
 #: contents/ui/TooltipContent.qml:450
 msgid "Precipitation:"
-msgstr ""
+msgstr "Yağış:"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:176
 msgid "Prefix style:"
@@ -2421,7 +2436,7 @@ msgstr "Basınç"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:864
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:975
 msgid "Pressure forecast:"
-msgstr ""
+msgstr "Basınç tahmini:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:283
 #: contents/ui/TooltipContent.qml:438
@@ -2430,19 +2445,19 @@ msgstr "Basınç:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:117
 msgid "Preview: 20°C"
-msgstr ""
+msgstr "Önizleme: 20°C"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:101
 msgid "Primary unit shown first (e.g. °C / °F)"
-msgstr ""
+msgstr "Birincil birim önce gösterilir (örn. °C / °F)"
 
 #: contents/ui/DetailsView.qml:2343
 msgid "Provider"
-msgstr ""
+msgstr "Sağlayıcı"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:566
 msgid "Provider availability"
-msgstr ""
+msgstr "Sağlayıcı uygunluğu"
 
 #: contents/ui/config/configGeneral.qml:454
 #: contents/ui/config/configGeneral.qml:456
@@ -2456,7 +2471,7 @@ msgstr ""
 #: contents/ui/config/configGeneral.qml:472
 #: contents/ui/config/configGeneral.qml:473
 msgid "Provider website:"
-msgstr ""
+msgstr "Sağlayıcı web sitesi:"
 
 #: contents/ui/config/configGeneral.qml:425 contents/ui/DetailsView.qml:2098
 #: contents/ui/DetailsView.qml:2826
@@ -2465,7 +2480,7 @@ msgstr "Sağlayıcı:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:394
 msgid "Provider: %1"
-msgstr ""
+msgstr "Sağlayıcı: %1"
 
 #: contents/ui/config/configGeneral.qml:411
 msgid ""
@@ -2473,6 +2488,10 @@ msgid ""
 "Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 "Open-Meteo is always tried first - it is free and requires no API key."
 msgstr ""
+"Sağlayıcılar biri başarılı olana kadar sırayla denenir:\n"
+"Open-Meteo  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
+"Open-Meteo her zaman ilk olarak denenir - ücretsizdir ve API anahtarı gerektirmez."
+
 
 #: contents/ui/config/configNotifications.qml:271
 msgid "Purple"
@@ -2480,42 +2499,42 @@ msgstr ""
 
 #: contents/ui/config/configGeneral.qml:335
 msgid "QWeather (Key Required)"
-msgstr ""
+msgstr "QWeather (Anahtar Gerekli)"
 
 #: contents/ui/config/configGeneral.qml:689
 msgid "QWeather API Host:"
-msgstr ""
+msgstr "QWeather API Sunucusu:"
 
 #: contents/ui/config/configGeneral.qml:518
 msgid "QWeather API Key:"
-msgstr ""
+msgstr "QWeather API Anahtarı:"
 
 #: contents/ui/config/configGeneral.qml:268
 msgid "QWeather error (code %1). Check your API key."
-msgstr ""
+msgstr "QWeather hatası (kod %1). API anahtarınızı kontrol edin."
 
 #: contents/ui/ForecastView.qml:828
 msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
-msgstr ""
+msgstr "QWeather, 168 saate (7 gün) kadar saatlik tahminler sağlar. Bu tarih için günlük tahmin hala mevcuttur."
 
 #: contents/ui/config/configLocation.qml:1065
 msgid "QtLocation and QtPositioning are not installed"
-msgstr ""
+msgstr "QtLocation ve QtPositioning yüklü değil"
 
 #: contents/ui/RadarView.qml:156
 msgid "QtWebEngine is not installed"
-msgstr ""
+msgstr "QtWebEngine yüklü değil"
 
 #: contents/ui/js/spaceWeather.js:177
 msgid "Quiet"
-msgstr ""
+msgstr "Sakin"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:134
 #: contents/ui/components/RadarWebEngineView.qml:72
 #: contents/ui/config/configGeneral.qml:720
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:211 contents/ui/FullView.qml:566
 msgid "Radar"
-msgstr ""
+msgstr "Radar"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:144
 msgid "Radar + Satellite"
@@ -2527,7 +2546,7 @@ msgstr ""
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:234
 msgid "Radar only"
-msgstr ""
+msgstr "Sadece radar"
 
 #: contents/ui/config/configGeneral.qml:742
 msgid "Radar provider:"
@@ -2539,16 +2558,16 @@ msgstr ""
 
 #: contents/ui/config/configGeneral.qml:762
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
-msgstr ""
+msgstr "Radar sağlayıcısı: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Araç takımı, 10 dakikalık aralıklarla geçmiş 2 saatlik hava radarı verilerini sağlayan ücretsiz RainViewer API'sini kullanır. Radar tahmini desteklenmez.<br/><br/>Rain Viewer, radar verilerinin kullanılabilirliğini garanti etmez. Bu verilerin sahipleriyle sözleşme yapmazlar. Sahipler verilerini kaldırmalarını, formatı değiştirmelerini veya paylaşımı durdurmalarını isteyebilir. Radar verilerini olabildiğince uzun tutmaya çalışırlar ancak bazen sahipler görüntü sağlamayı durdurur."
 
 #: contents/ui/FullView.qml:731 contents/ui/FullView.qml:733
 msgid "Radar:"
-msgstr ""
+msgstr "Radar:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:658
 #: contents/ui/DetailsView.qml:1441 contents/ui/main.qml:886
 msgid "Ragweed"
-msgstr ""
+msgstr "Kanarya Otu"
 
 #: contents/ui/components/RadarWebEngineView.qml:73
 #: contents/ui/config/configNotifications.qml:50
@@ -2559,11 +2578,11 @@ msgstr "Yağmur"
 
 #: contents/ui/config/configAppearance.qml:265
 msgid "Rain (day)"
-msgstr ""
+msgstr "Yağmur (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:270
 msgid "Rain (night)"
-msgstr ""
+msgstr "Yağmur (gece)"
 
 #: contents/ui/config/configGeneral.qml:748
 msgid "Rain Viewer"
@@ -2571,27 +2590,27 @@ msgstr ""
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:59
 msgid "Rain showers"
-msgstr ""
+msgstr "Sağanak yağış"
 
 #: contents/ui/config/configNotifications.qml:414
 msgid "Rain/Storm"
-msgstr ""
+msgstr "Yağmur/Fırtına"
 
 #: contents/ui/components/RadarWebEngineView.qml:88
 msgid "Real-time"
-msgstr ""
+msgstr "Gerçek zamanlı"
 
 #: contents/ui/components/RadarWebEngineView.qml:85
 msgid "Recent"
-msgstr ""
+msgstr "Son arananlar"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:468
 msgid "Recommended — e.g. 560"
-msgstr ""
+msgstr "Önerilen — örn. 560"
 
 #: contents/ui/config/configNotifications.qml:266
 msgid "Red"
-msgstr ""
+msgstr "Kırmızı"
 
 #: contents/ui/config/configLocation.qml:1539 contents/ui/FullView.qml:412
 #: contents/ui/main.qml:311
@@ -2607,21 +2626,21 @@ msgstr "Hava durumunu otomatik yenile"
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:725
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:353
 msgid "Region default"
-msgstr ""
+msgstr "Bölge varsayılanı"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:777
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:651
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:645
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:292
 msgid "Region default (long)"
-msgstr ""
+msgstr "Bölge varsayılanı (uzun)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:776
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:650
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:644
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:293
 msgid "Region default (short)"
-msgstr ""
+msgstr "Bölge varsayılanı (kısa)"
 
 #: contents/ui/config/configAppearance.qml:1455
 #: contents/ui/config/configAppearance.qml:1599
@@ -2634,27 +2653,27 @@ msgstr "Bağıl nem yüzdesi"
 
 #: contents/ui/config/configLocation.qml:1355
 msgid "Remove last location?"
-msgstr ""
+msgstr "Son konumu kaldır?"
 
 #: contents/ui/config/configLocation.qml:1888
 msgid "Remove saved location"
-msgstr ""
+msgstr "Kayıtlı konumu kaldır"
 
 #: contents/ui/config/configLocation.qml:1857
 msgid "Rename location"
-msgstr ""
+msgstr "Konumu yeniden adlandır"
 
 #: contents/ui/config/configNotifications.qml:309
 msgid "Repeat reminder until dismissed"
-msgstr ""
+msgstr "Kapatılana kadar hatırlatıcıyı tekrarla"
 
 #: contents/ui/config/configLocation.qml:805
 msgid "Requesting location via GeoClue2…"
-msgstr ""
+msgstr "GeoClue2 ile konum isteniyor…"
 
 #: contents/ui/config/configLocation.qml:794
 msgid "Requesting location… (%1)"
-msgstr ""
+msgstr "Konum isteniyor… (%1)"
 
 #: contents/ui/config/configAppearance.qml:538
 #: contents/ui/config/configAppearance.qml:810
@@ -2690,7 +2709,7 @@ msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:593
 msgid "SO₂"
-msgstr ""
+msgstr "SO₂"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:139
 msgid "Satellite"
@@ -2698,11 +2717,11 @@ msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:906
 msgid "Saturday"
-msgstr ""
+msgstr "Cumartesi"
 
 #: contents/ui/config/configLocation.qml:1611
 msgid "Saved locations"
-msgstr ""
+msgstr "Kaydedilen konumlar"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:749
 msgid "Scroll animation:"
@@ -2715,7 +2734,7 @@ msgstr "Kaydırma sıklığı (sn):"
 #: contents/ui/config/configLocation.qml:1572
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
 msgid "Search Location"
-msgstr ""
+msgstr "Konum Ara"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:538
 msgid "Search a weather station to set your location"
@@ -2723,23 +2742,23 @@ msgstr "Konumunuzu ayarlamak için hava durumu istasyonu arayın"
 
 #: contents/ui/config/configLocation.qml:1576
 msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
-msgstr ""
+msgstr "Şehir veya yer ismine göre arayın. Sonuçlar konum adını, bölgeyi ve ülkeyi gösterir ve sokak seviyesinde yerleşim yerine genel şehir seviyesi tahminler için uygundur."
 
 #: contents/ui/config/configLocation.qml:1569
 msgid "Search for a location or choose it on the map."
-msgstr ""
+msgstr "Bir konum arayın veya haritadan seçin."
 
 #: contents/ui/config/configLocation.qml:1180
 msgid "Search location"
-msgstr ""
+msgstr "Konum ara"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:284
 msgid "Search location…"
-msgstr ""
+msgstr "Konum ara…"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:101
 msgid "Secondary unit shown first (e.g. °F / °C)"
-msgstr ""
+msgstr "İkincil birim önce gösterilir (örn. °F / °C)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:106
 #: contents/ui/config/tabs/ConfigPanelTab.qml:858
@@ -2748,11 +2767,11 @@ msgstr "Ayırıcı:"
 
 #: contents/ui/js/pollen.js:45
 msgid "Serious risk; avoid outdoor activities."
-msgstr ""
+msgstr "Ciddi risk; açık hava etkinliklerinden kaçının."
 
 #: contents/ui/config/configLocation.qml:1252
 msgid "Set <b>%1</b> as your default location?"
-msgstr ""
+msgstr "<b>%1</b> varsayılan konumunuz yapılsın mı?"
 
 #: contents/ui/FullView.qml:225
 msgid "Set Location…"
@@ -2760,11 +2779,11 @@ msgstr "Konum Ayarla…"
 
 #: contents/ui/config/configLocation.qml:1815
 msgid "Set as default location"
-msgstr ""
+msgstr "Varsayılan konum olarak ayarla"
 
 #: contents/ui/config/configLocation.qml:1225
 msgid "Set as default?"
-msgstr ""
+msgstr "Varsayılan yapılsın mı?"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1156
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:285
@@ -2774,23 +2793,23 @@ msgstr "Kendi simgelerinizi ayarlayın…"
 
 #: contents/ui/js/spaceWeather.js:92
 msgid "Severe geomagnetic storm."
-msgstr ""
+msgstr "Şiddetli jeomanyetik fırtına."
 
 #: contents/ui/config/configNotifications.qml:254
 msgid "Severities:"
-msgstr ""
+msgstr "Şiddet dereceleri:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:973
 msgid "Shadow Color"
-msgstr ""
+msgstr "Gölge Rengi"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:546
 msgid "Shadow color:"
-msgstr ""
+msgstr "Gölge rengi:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:526
 msgid "Shadow intensity:"
-msgstr ""
+msgstr "Gölge yoğunluğu:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:964
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:817
@@ -2803,15 +2822,15 @@ msgstr "Panelde önek simgesini göster / gizle"
 
 #: contents/ui/config/configGeneral.qml:732
 msgid "Show Radar tab in widget"
-msgstr ""
+msgstr "Araç takımında Radar sekmesini göster"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:812
 msgid "Show Today:"
-msgstr ""
+msgstr "Bugünü Göster:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:78
 msgid "Show both units:"
-msgstr ""
+msgstr "İki birimi de göster:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:419
 msgid "Show in details"
@@ -2819,11 +2838,11 @@ msgstr "Detaylarda göster"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:123
 msgid "Show in:"
-msgstr ""
+msgstr "Burada göster:"
 
 #: contents/ui/components/RadarWebEngineView.qml:89
 msgid "Show my location"
-msgstr ""
+msgstr "Konumumu göster"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:1004
 msgid "Show or hide this detail item"
@@ -2831,11 +2850,11 @@ msgstr "Bu detay öğesini göster veya gizle"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:626
 msgid "Show pollen types in expanded view:"
-msgstr ""
+msgstr "Genişletilmiş görünümde polen türlerini göster:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:561
 msgid "Show pollutants in expanded view:"
-msgstr ""
+msgstr "Genişletilmiş görünümde kirleticileri göster:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:309
 msgid "Show precipitation motion arrows"
@@ -2849,11 +2868,11 @@ msgstr "Önek simgesini göster"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:690
 msgid "Show space weather items in expanded view:"
-msgstr ""
+msgstr "Genişletilmiş görünümde uzay hava durumu öğelerini göster:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:60
 msgid "Show temperature unit:"
-msgstr ""
+msgstr "Sıcaklık birimini göster:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:256
 msgid "Show update time and provider"
@@ -2873,15 +2892,15 @@ msgstr "Sağanak yağış"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:86
 msgid "Showing primary unit only"
-msgstr ""
+msgstr "Sadece birincil birim gösteriliyor"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:68
 msgid "Showing ° only"
-msgstr ""
+msgstr "Sadece ° gösteriliyor"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:68
 msgid "Showing °C / °F after values"
-msgstr ""
+msgstr "Değerlerden sonra °C / °F gösteriliyor"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:144
 msgid "Shown"
@@ -2889,7 +2908,7 @@ msgstr "Gösterilen"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:116
 msgid "Simple"
-msgstr ""
+msgstr "Basit"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:104
 #: contents/ui/config/tabs/ConfigPanelTab.qml:122
@@ -2899,15 +2918,15 @@ msgstr "Basit (simge + sıcaklık)"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:114
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:688
 msgid "Simple Mode Items"
-msgstr ""
+msgstr "Basit Mod Öğeleri"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1041
 msgid "Simple Widget"
-msgstr ""
+msgstr "Basit Araç Takımı"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:739
 msgid "Simple chips:"
-msgstr ""
+msgstr "Basit etiketler:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:140
 msgid "Simple display mode settings"
@@ -2925,23 +2944,23 @@ msgstr "Boyut:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:218
 msgid "Skipped — API key not configured"
-msgstr ""
+msgstr "Atlandı — API anahtarı yapılandırılmadı"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:688
 msgid "Slight rain"
-msgstr ""
+msgstr "Hafif yağmur"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:704
 msgid "Slight rain showers"
-msgstr ""
+msgstr "Hafif sağanak yağmur"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:710
 msgid "Slight snow showers"
-msgstr ""
+msgstr "Hafif kar sağanağı"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:696
 msgid "Slight snowfall"
-msgstr ""
+msgstr "Hafif kar yağışı"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:881
 msgid "Small circle  ⚬"
@@ -2955,40 +2974,40 @@ msgstr "Kar"
 
 #: contents/ui/config/configAppearance.qml:309
 msgid "Snow (day)"
-msgstr ""
+msgstr "Kar (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:314
 msgid "Snow (night)"
-msgstr ""
+msgstr "Kar (gece)"
 
 #: contents/ui/config/configAppearance.qml:1429
 #: contents/ui/config/configAppearance.qml:1552
 #: contents/ui/config/configAppearance.qml:1675 contents/ui/DetailsView.qml:330
 #: contents/ui/SimpleView.qml:270
 msgid "Snow Cover"
-msgstr ""
+msgstr "Kar Örtüsü"
 
 #: contents/ui/TooltipContent.qml:485
 msgid "Snow Cover:"
-msgstr ""
+msgstr "Kar Örtüsü:"
 
 #: contents/ui/config/configAppearance.qml:1430
 #: contents/ui/config/configAppearance.qml:1553
 #: contents/ui/config/configAppearance.qml:1676
 msgid "Snow depth (cm/in)"
-msgstr ""
+msgstr "Kar kalınlığı (cm/inç)"
 
 #: contents/ui/main.qml:1718
 msgid "Snow ending"
-msgstr ""
+msgstr "Kar yağışı bitiyor"
 
 #: contents/ui/main.qml:1713
 msgid "Snow expected"
-msgstr ""
+msgstr "Kar yağışı bekleniyor"
 
 #: contents/ui/main.qml:1719
 msgid "Snow expected to end %1."
-msgstr ""
+msgstr "Kar yağışının %1'de bitmesi bekleniyor."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:702
@@ -2998,7 +3017,7 @@ msgstr "Kar tanecikleri"
 
 #: contents/ui/main.qml:1714
 msgid "Snow possible %1."
-msgstr ""
+msgstr "%1 kar yağışı ihtimali."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
 #: contents/ui/main.qml:1953
@@ -3007,12 +3026,12 @@ msgstr "Sağanak kar yağışı"
 
 #: contents/ui/config/configNotifications.qml:42 contents/ui/main.qml:967
 msgid "Snow/Ice"
-msgstr ""
+msgstr "Kar/Buz"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:719
 #: contents/ui/DetailsView.qml:1934
 msgid "Solar Wind"
-msgstr ""
+msgstr "Güneş Rüzgarı"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:877
 msgid "Space"
@@ -3023,15 +3042,15 @@ msgstr "Boşluk"
 #: contents/ui/config/configAppearance.qml:1661 contents/ui/DetailsView.qml:328
 #: contents/ui/SimpleView.qml:268
 msgid "Space Weather"
-msgstr ""
+msgstr "Uzay Hava Durumu"
 
 #: contents/ui/TooltipContent.qml:475
 msgid "Space Weather:"
-msgstr ""
+msgstr "Uzay Hava Durumu:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:353
 msgid "Space weather options"
-msgstr ""
+msgstr "Uzay hava durumu seçenekleri"
 
 #: contents/ui/config/configGeneral.qml:454
 msgid "Standard provider. API key required below."
@@ -3039,37 +3058,37 @@ msgstr "Standart sağlayıcı. Aşağıda API anahtarı gereklidir."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:783
 msgid "Stats items:"
-msgstr ""
+msgstr "İstatistik öğeleri:"
 
 #: contents/ui/components/RadarWebEngineView.qml:94
 #: contents/ui/components/RadarWebEngineView.qml:538
 #: contents/ui/js/spaceWeather.js:174
 msgid "Storm"
-msgstr ""
+msgstr "Fırtına"
 
 #: contents/ui/config/configGeneral.qml:327
 msgid "StormGlass (Key Required)"
-msgstr ""
+msgstr "StormGlass (Anahtar Gerekli)"
 
 #: contents/ui/config/configGeneral.qml:514
 msgid "StormGlass API Key:"
-msgstr ""
+msgstr "StormGlass API Anahtarı:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:949
 msgid "Strip"
-msgstr ""
+msgstr "Çizgi"
 
 #: contents/ui/js/spaceWeather.js:173
 msgid "Strong"
-msgstr ""
+msgstr "Güçlü"
 
 #: contents/ui/js/spaceWeather.js:93
 msgid "Strong geomagnetic storm."
-msgstr ""
+msgstr "Güçlü jeomanyetik fırtına."
 
 #: contents/ui/DetailsView.qml:1235
 msgid "Sulfur Dioxide (SO₂)"
-msgstr ""
+msgstr "Kükürt Dioksit (SO₂)"
 
 #: contents/ui/config/configAppearance.qml:1476
 #: contents/ui/config/configAppearance.qml:1613
@@ -3090,17 +3109,17 @@ msgstr "Güneş saatleri seçenekleri"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:903
 msgid "Sunday"
-msgstr ""
+msgstr "Pazar"
 
 #: contents/ui/DetailsView.qml:3258 contents/ui/DetailsView.qml:3262
 #: contents/ui/DetailsView.qml:3585 contents/ui/DetailsView.qml:3589
 #: contents/ui/ForecastView.qml:1122
 msgid "Sunrise"
-msgstr ""
+msgstr "Gündoğumu"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:266
 msgid "Sunrise / Sunset:"
-msgstr ""
+msgstr "Gündoğumu / Günbatımı:"
 
 #: contents/ui/config/configAppearance.qml:1331
 msgid "Sunrise and sunset times"
@@ -3112,7 +3131,7 @@ msgstr "Doğuş simgesi:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:468
 msgid "Sunrise only"
-msgstr ""
+msgstr "Sadece gündoğumu"
 
 #: contents/ui/config/configAppearance.qml:736
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:540
@@ -3128,7 +3147,7 @@ msgstr "Gündoğumu/Günbatımı"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:961
 msgid "Sunrise/sunset markers:"
-msgstr ""
+msgstr "Gündoğumu/günbatımı işaretleri:"
 
 #: contents/ui/TooltipContent.qml:588 contents/ui/TooltipContent.qml:604
 #: contents/ui/TooltipContent.qml:609
@@ -3138,7 +3157,7 @@ msgstr "Gündoğumu:"
 #: contents/ui/DetailsView.qml:3260 contents/ui/DetailsView.qml:3262
 #: contents/ui/DetailsView.qml:3587 contents/ui/DetailsView.qml:3589
 msgid "Sunset"
-msgstr ""
+msgstr "Günbatımı"
 
 #: contents/ui/config/configAppearance.qml:822
 msgid "Sunset icon:"
@@ -3146,7 +3165,7 @@ msgstr "Günbatımı simgesi:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:472
 msgid "Sunset only"
-msgstr ""
+msgstr "Sadece günbatımı"
 
 #: contents/ui/config/configAppearance.qml:740
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:544
@@ -3161,7 +3180,7 @@ msgstr "Günbatımı:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Swap order:"
-msgstr ""
+msgstr "Sırayı değiştir:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:324
 msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
@@ -3169,7 +3188,7 @@ msgstr ""
 
 #: contents/ui/FullView.qml:328
 msgid "Switch location"
-msgstr ""
+msgstr "Konumu değiştir"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:307
 #: contents/ui/config/tabs/ConfigPanelTab.qml:316
@@ -3181,7 +3200,7 @@ msgstr "Sembolik"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:42
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:51
 msgid "Symbolic (Bundled)"
-msgstr ""
+msgstr "Sembolik (Paketli)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:770
 msgid "Symbolic (follows theme colour)"
@@ -3189,23 +3208,23 @@ msgstr "Sembolik (tema rengini takip eder)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:719
 msgid "System Tray Badge Background Color"
-msgstr ""
+msgstr "Sistem Tepsisi Rozeti Arka Plan Rengi"
 
 #: contents/ui/config/configLocation.qml:832
 msgid "System location unavailable, trying IP geolocation…"
-msgstr ""
+msgstr "Sistem konumu kullanılamıyor, IP tabanlı konum deneniyor…"
 
 #: contents/ui/config/configAppearance.qml:1980
 msgid "System tray"
-msgstr ""
+msgstr "Sistem tepsisi"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:86
 msgid "System tray display settings"
-msgstr ""
+msgstr "Sistem tepsisi görünüm ayarları"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:140
 msgid "System tray icon settings"
-msgstr ""
+msgstr "Sistem tepsisi simge ayarları"
 
 #: contents/ui/components/RadarWebEngineView.qml:75
 #: contents/ui/config/configAppearance.qml:1323
@@ -3215,15 +3234,15 @@ msgstr "Sıcaklık"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:962
 msgid "Temperature Color"
-msgstr ""
+msgstr "Sıcaklık Rengi"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:587
 msgid "Temperature badge"
-msgstr ""
+msgstr "Sıcaklık rozeti"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:472
 msgid "Temperature color:"
-msgstr ""
+msgstr "Sıcaklık rengi:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:232
 msgid "Temperature first"
@@ -3235,7 +3254,7 @@ msgstr "Sadece sıcaklık"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:512
 msgid "Temperature shadow:"
-msgstr ""
+msgstr "Sıcaklık gölgesi:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:221
 #: contents/ui/TooltipContent.qml:411
@@ -3244,20 +3263,20 @@ msgstr "Sıcaklık:"
 
 #: contents/ui/config/configGeneral.qml:641
 msgid "Test API Key"
-msgstr ""
+msgstr "API Anahtarını Test Et"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:527
 msgid "Test across providers"
-msgstr ""
+msgstr "Sağlayıcılar arasında test et"
 
 #: contents/ui/config/configGeneral.qml:223
 msgid "Testing connection…"
-msgstr ""
+msgstr "Bağlantı test ediliyor…"
 
 #: contents/ui/config/configGeneral.qml:641
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:222
 msgid "Testing…"
-msgstr ""
+msgstr "Test ediliyor…"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:184
 msgid "Text labels (Temperature, Wind…)"
@@ -3269,11 +3288,11 @@ msgstr "Metin, sistem yazı tipine uyacak ve panel alanını dolduracaktır."
 
 #: contents/ui/RadarView.qml:166
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
-msgstr ""
+msgstr "Radar sekmesi, bu sistemde yüklü olmayan QtWebEngine paketini gerektirir."
 
 #: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
-msgstr ""
+msgstr "Otomatik algılanan konum zaten kayıtlı listenizde."
 
 #: contents/ui/config/configAppearance.qml:465
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
@@ -3282,19 +3301,19 @@ msgstr "Durum simgesi sistem KDE ikon temanıza göre hava durumuna uyum sağlar
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:879
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:992
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
-msgstr ""
+msgstr "Jeomanyetik (Kp/G) tahmini yalnızca 3 gün sonrasına kadar mevcuttur"
 
 #: contents/ui/config/configLocation.qml:1095
 msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
-msgstr ""
+msgstr "Harita seçici, bu sistemde yüklü olmayan QtLocation ve QtPositioning paketlerini gerektirir."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:682
 msgid "Theme default"
-msgstr ""
+msgstr "Tema varsayılanı"
 
 #: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
-msgstr ""
+msgstr "Bu konum zaten kayıtlı listenizde."
 
 #: contents/ui/config/configNotifications.qml:43
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
@@ -3305,11 +3324,11 @@ msgstr "Gök Gürültülü Fırtına"
 
 #: contents/ui/config/configAppearance.qml:320
 msgid "Thunderstorm (day)"
-msgstr ""
+msgstr "Gök gürültülü fırtına (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:325
 msgid "Thunderstorm (night)"
-msgstr ""
+msgstr "Gök gürültülü fırtına (gece)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:716
@@ -3319,38 +3338,38 @@ msgstr "Dolu ile Gök Gürültülü Fırtına"
 
 #: contents/ui/config/configAppearance.qml:331
 msgid "Thunderstorm with hail (day)"
-msgstr ""
+msgstr "Dolu yağışlı fırtına (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:336
 msgid "Thunderstorm with hail (night)"
-msgstr ""
+msgstr "Dolu yağışlı fırtına (gece)"
 
 #: contents/ui/config/configAppearance.qml:342
 msgid "Thunderstorm, heavy hail (day)"
-msgstr ""
+msgstr "Gök gürültülü fırtına, şiddetli dolu (gündüz)"
 
 #: contents/ui/config/configAppearance.qml:347
 msgid "Thunderstorm, heavy hail (night)"
-msgstr ""
+msgstr "Gök gürültülü fırtına, şiddetli dolu (gece)"
 
 #: contents/ui/main.qml:1641
 msgid "Thunderstorms"
-msgstr ""
+msgstr "Gök gürültülü fırtınalar"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:345
 msgid "Time format:"
-msgstr ""
+msgstr "Saat formatı:"
 
 #: contents/ui/config/configNotifications.qml:171
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:826
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:700
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:694
 msgid "Time:"
-msgstr ""
+msgstr "Saat:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:241
 msgid "Timed out"
-msgstr ""
+msgstr "Zaman aşımı"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:488
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:617
@@ -3359,7 +3378,7 @@ msgstr "Zaman dilimi:"
 
 #: contents/ui/config/configGeneral.qml:780
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
-msgstr ""
+msgstr "Ek harita katmanlarının (Yağmur, Bulutlar, Sıcaklık, Rüzgar, Basınç) kilidini açmak için: Uyarlanabilir modu devre dışı bırakın, hava durumu sağlayıcınız olarak OpenWeatherMap'i seçin ve yukarıya API anahtarınızı girin. Hazır olduğunuzda Uyarlanabilir modu tekrar etkinleştirebilirsiniz."
 
 #: contents/ui/ForecastView.qml:496 contents/ui/main.qml:1490
 #: contents/ui/SimpleView.qml:423
@@ -3370,31 +3389,31 @@ msgstr "Bugün"
 #: contents/ui/config/configAppearance.qml:1511
 #: contents/ui/config/configAppearance.qml:1634
 msgid "Today's total precipitation (mm/in)"
-msgstr ""
+msgstr "Bugünün toplam yağışı (mm/inç)"
 
 #: contents/ui/config/configNotifications.qml:374
 msgid "Today's weather"
-msgstr ""
+msgstr "Bugünün hava durumu"
 
 #: contents/ui/main.qml:1563
 msgid "Tomorrow"
-msgstr ""
+msgstr "Yarın"
 
 #: contents/ui/config/configNotifications.qml:394
 msgid "Tomorrow forecast"
-msgstr ""
+msgstr "Yarınki tahmin"
 
 #: contents/ui/config/configGeneral.qml:323
 msgid "Tomorrow.io (Key Required)"
-msgstr ""
+msgstr "Tomorrow.io (Anahtar Gerekli)"
 
 #: contents/ui/config/configGeneral.qml:512
 msgid "Tomorrow.io API Key:"
-msgstr ""
+msgstr "Tomorrow.io API Anahtarı:"
 
 #: contents/ui/main.qml:1528
 msgid "Tonight"
-msgstr ""
+msgstr "Bu Gece"
 
 #: contents/ui/config/configAppearance.qml:1988
 #: contents/ui/config/tabs/ConfigMiscTab.qml:137
@@ -3431,19 +3450,19 @@ msgstr "Önizleme:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:621
 msgid "Top Center"
-msgstr ""
+msgstr "Üst Orta"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:613
 msgid "Top Left"
-msgstr ""
+msgstr "Üst Sol"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:609
 msgid "Top Right"
-msgstr ""
+msgstr "Üst Sağ"
 
 #: contents/ui/config/configNotifications.qml:293
 msgid "Treat alert notifications as critical"
-msgstr ""
+msgstr "Uyarı bildirimlerini kritik olarak değerlendir"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:68
 msgid "Truncate (single line)"
@@ -3459,35 +3478,35 @@ msgstr ""
 #: contents/ui/config/configAppearance.qml:1640 contents/ui/DetailsView.qml:325
 #: contents/ui/SimpleView.qml:265
 msgid "UV Index"
-msgstr ""
+msgstr "UV İndeksi"
 
 #: contents/ui/TooltipContent.qml:460
 msgid "UV Index:"
-msgstr ""
+msgstr "UV İndeksi:"
 
 #: contents/ui/config/configNotifications.qml:442 contents/ui/main.qml:1765
 msgid "UV index"
-msgstr ""
+msgstr "UV indeksi"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:886
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:999
 msgid "UV index forecast:"
-msgstr ""
+msgstr "UV indeksi tahmini:"
 
 #: contents/ui/main.qml:1762
 msgid "UV will be %1 (%2)"
-msgstr ""
+msgstr "UV %1 olacak (%2)"
 
 #: contents/ui/config/configAppearance.qml:1395
 #: contents/ui/config/configAppearance.qml:1518
 #: contents/ui/config/configAppearance.qml:1641
 msgid "Ultraviolet index"
-msgstr ""
+msgstr "Ultraviyole indeksi"
 
 #: contents/ui/config/configLocation.qml:871
 #: contents/ui/config/configLocation.qml:978
 msgid "Unable to detect location. All methods failed."
-msgstr ""
+msgstr "Konum algılanamadı. Tüm yöntemler başarısız oldu."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:149
 msgid "Unit preset:"
@@ -3501,23 +3520,23 @@ msgstr "Birimler"
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:717
 #: contents/ui/FullView.qml:352
 msgid "Unknown"
-msgstr ""
+msgstr "Bilinmeyen"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:561
 msgid "Unknown location"
-msgstr ""
+msgstr "Bilinmeyen konum"
 
 #: contents/ui/FullView.qml:375
 msgid "Unpin widget"
-msgstr ""
+msgstr "Araç takımını sabitlemekten kaldır"
 
 #: contents/ui/js/spaceWeather.js:176
 msgid "Unsettled"
-msgstr ""
+msgstr "Kararsız"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:476
 msgid "Upcoming (auto)"
-msgstr ""
+msgstr "Yaklaşan (otomatik)"
 
 #: contents/ui/config/configAppearance.qml:728
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:532
@@ -3530,12 +3549,13 @@ msgstr "Yaklaşan (bir sonraki gündoğumu veya batımı)"
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:592
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:586
 msgid "Upcoming rise/set only"
-msgstr ""
+msgstr "Sadece yaklaşan doğuş/batış"
 
 #: contents/ui/WeatherService.qml:169
 msgid "Update timed out. Tap to retry."
-msgstr ""
+msgstr "Güncelleme zaman aşımına uğradı. Tekrar denemek için dokunun."
 
+<<<<<<< HEAD
 #: contents/ui/WeatherService.qml:761
 msgid "Updated %1 day ago"
 msgid_plural "Updated %1 days ago"
@@ -3557,6 +3577,11 @@ msgstr[1] ""
 #: contents/ui/WeatherService.qml:754
 msgid "Updated just now"
 msgstr ""
+=======
+#: contents/ui/WeatherService.qml:708
+msgid "Updated %1"
+msgstr "Güncellendi %1"
+>>>>>>> origin/main
 
 #: contents/ui/FullView.qml:396
 msgid "Updating…"
@@ -3564,7 +3589,7 @@ msgstr "Güncelleniyor…"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:393
 msgid "Use 24-hour format:"
-msgstr ""
+msgstr "24 saat formatını kullan:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:161
 msgid "Use KDE locale settings"
@@ -3576,7 +3601,7 @@ msgstr "Manuel konumu kullan"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:902
 msgid "Use region defaults"
-msgstr ""
+msgstr "Bölge varsayılanlarını kullan"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1148
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:277
@@ -3585,7 +3610,7 @@ msgstr "Varsayılan olarak KDE sistem simgelerini kullanır. Öğelerin ikonunu 
 
 #: contents/ui/js/airQuality.js:53
 msgid "V.Poor"
-msgstr ""
+msgstr "Ç.Kötü"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:55
 msgid "Values are rounded to whole numbers"
@@ -3602,15 +3627,15 @@ msgstr "Dikey"
 #: contents/ui/js/pollen.js:45 contents/ui/main.qml:834
 #: contents/ui/main.qml:878
 msgid "Very High"
-msgstr ""
+msgstr "Çok Yüksek"
 
 #: contents/ui/js/airQuality.js:53 contents/ui/main.qml:848
 msgid "Very Poor"
-msgstr ""
+msgstr "Çok Kötü"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:708
 msgid "Violent rain showers"
-msgstr ""
+msgstr "Şiddetli sağanak yağmur"
 
 #: contents/ui/config/configAppearance.qml:1489 contents/ui/DetailsView.qml:320
 #: contents/ui/SimpleView.qml:262
@@ -3629,15 +3654,15 @@ msgstr "Görüş:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:223
 msgid "Visible tabs:"
-msgstr ""
+msgstr "Görünür sekmeler:"
 
 #: contents/ui/config/configGeneral.qml:319
 msgid "Visual Crossing (Key Required)"
-msgstr ""
+msgstr "Visual Crossing (Anahtar Gerekli)"
 
 #: contents/ui/config/configGeneral.qml:510
 msgid "Visual Crossing API Key:"
-msgstr ""
+msgstr "Visual Crossing API Anahtarı:"
 
 #: contents/ui/main.qml:2092
 msgid "Waning Crescent"
@@ -3677,14 +3702,14 @@ msgstr "Hava Durumu Widget"
 
 #: contents/ui/main.qml:1238
 msgid "Weather alert"
-msgstr ""
+msgstr "Hava durumu uyarısı"
 
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1546
 #: contents/ui/config/configAppearance.qml:1669
 #: contents/ui/config/configNotifications.qml:241
 msgid "Weather alerts"
-msgstr ""
+msgstr "Hava durumu uyarıları"
 
 #: contents/ui/config/configAppearance.qml:1578
 msgid "Weather condition text"
@@ -3700,11 +3725,11 @@ msgstr "Hava durumu simgesi stili:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:136
 msgid "Weather icon theme:"
-msgstr ""
+msgstr "Hava durumu simge teması:"
 
 #: contents/ui/WeatherService.qml:824
 msgid "Weather provider:"
-msgstr ""
+msgstr "Hava durumu sağlayıcısı:"
 
 #: contents/ui/config/configNotifications.qml:286
 msgid ""
@@ -3728,15 +3753,15 @@ msgstr "WeatherAPI.com API Anahtarı:"
 
 #: contents/ui/config/configGeneral.qml:331
 msgid "Weatherbit (Key Required)"
-msgstr ""
+msgstr "Weatherbit (Anahtar Gerekli)"
 
 #: contents/ui/config/configGeneral.qml:516
 msgid "Weatherbit API Key:"
-msgstr ""
+msgstr "Weatherbit API Anahtarı:"
 
 #: contents/ui/DetailsView.qml:2345
 msgid "Website"
-msgstr ""
+msgstr "Web Sitesi"
 
 #: contents/ui/config/configAppearance.qml:1984
 #: contents/ui/config/tabs/ConfigMiscTab.qml:127
@@ -3745,11 +3770,11 @@ msgstr "Widget"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:440
 msgid "Widget Size"
-msgstr ""
+msgstr "Araç Takımı Boyutu"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:249
 msgid "Widget panel area:"
-msgstr ""
+msgstr "Araç takımı panel alanı:"
 
 #: contents/ui/components/RadarWebEngineView.qml:76
 #: contents/ui/config/configAppearance.qml:1337
@@ -3790,159 +3815,159 @@ msgstr "Sonraki satıra sar"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:722
 #: contents/ui/DetailsView.qml:2071
 msgid "X-ray Flare Class"
-msgstr ""
+msgstr "X-ışını Parlama Sınıfı"
 
 #: contents/ui/config/configNotifications.qml:256
 msgid "Yellow"
-msgstr ""
+msgstr "Sarı"
 
 #: contents/ui/config/configLocation.qml:1261
 msgid "Yes"
-msgstr ""
+msgstr "Evet"
 
 #: contents/ui/config/configLocation.qml:1389
 msgid "Yes, remove it"
-msgstr ""
+msgstr "Evet, kaldır"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:340
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:431
 msgid "You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>"
-msgstr ""
+msgstr "Tarih/saat format referansını şurada görebilirsiniz: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt belgelendirmesi</a>"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:926
 msgid "You may need to increase the widget's width to see all the selected information"
-msgstr ""
+msgstr "Seçilen tüm bilgileri görmek için araç takımının genişliğini artırmanız gerekebilir"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:490
 msgid "Zoom in"
-msgstr ""
+msgstr "Yakınlaştır"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:499
 msgid "Zoom out"
-msgstr ""
+msgstr "Uzaklaştır"
 
 #: contents/ui/main.qml:1735
 msgid "a decrease from yesterday"
-msgstr ""
+msgstr "düne göre bir düşüş"
 
 #: contents/ui/main.qml:1519
 msgid "a few clouds"
-msgstr ""
+msgstr "az bulutlu"
 
 #: contents/ui/main.qml:1734
 msgid "an increase from yesterday"
-msgstr ""
+msgstr "düne göre bir artış"
 
 #: contents/ui/main.qml:1520
 msgid "clear skies"
-msgstr ""
+msgstr "açık gökyüzü"
 
 #: contents/ui/main.qml:1518
 msgid "cloudy skies"
-msgstr ""
+msgstr "bulutlu gökyüzü"
 
 #: contents/ui/main.qml:906
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: contents/ui/main.qml:1515
 msgid "drizzle"
-msgstr ""
+msgstr "çisenti"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:424
 msgid "e.g. Sofia, Bulgaria"
-msgstr ""
+msgstr "örn. İstanbul, Türkiye"
 
 #: contents/ui/main.qml:1744 contents/ui/main.qml:1787
 msgid "extreme"
-msgstr ""
+msgstr "aşırı"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
 msgid "feet"
-msgstr ""
+msgstr "fit"
 
 #: contents/ui/main.qml:1516
 msgid "fog"
-msgstr ""
+msgstr "sis"
 
 #: contents/ui/main.qml:1513
 msgid "freezing rain"
-msgstr ""
+msgstr "dondurucu yağmur"
 
 #: contents/ui/main.qml:1179
 msgid "from %1"
-msgstr ""
+msgstr "başlangıç: %1"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:370
 msgid "ft"
-msgstr ""
+msgstr "ft"
 
 #: contents/ui/DetailsView.qml:1489 contents/ui/DetailsView.qml:1624
 msgid "grains/m³"
-msgstr ""
+msgstr "tane/m³"
 
 #: contents/ui/components/RadarWebEngineView.qml:551
 #: contents/ui/config/tabs/ConfigMiscTab.qml:289 contents/ui/js/weather.js:536
 msgid "hPa"
-msgstr ""
+msgstr "hPa"
 
 #: contents/ui/main.qml:1742
 msgid "high"
-msgstr ""
+msgstr "yüksek"
 
 #: contents/ui/main.qml:795 contents/ui/main.qml:905
 msgid "in"
-msgstr ""
+msgstr "inç"
 
 #: contents/ui/main.qml:1646
 msgid "in the next hours"
-msgstr ""
+msgstr "önümüzdeki saatlerde"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:787
 msgid "in/h"
-msgstr ""
+msgstr "inç/sa"
 
 #: contents/ui/components/RadarWebEngineView.qml:549
 #: contents/ui/config/tabs/ConfigMiscTab.qml:297 contents/ui/js/weather.js:535
 msgid "inHg"
-msgstr ""
+msgstr "inHg"
 
 #: contents/ui/DetailsView.qml:347 contents/ui/DetailsView.qml:396
 #: contents/ui/main.qml:804 contents/ui/SimpleView.qml:281
 #: contents/ui/TooltipContent.qml:444
 msgid "km"
-msgstr ""
+msgstr "km"
 
 #: contents/ui/components/RadarWebEngineView.qml:544
 #: contents/ui/config/tabs/ConfigMiscTab.qml:254 contents/ui/js/weather.js:529
 msgid "km/h"
-msgstr ""
+msgstr "km/sa"
 
 #: contents/ui/DetailsView.qml:1940
 msgid "km/s"
-msgstr ""
+msgstr "km/sn"
 
 #: contents/ui/components/RadarWebEngineView.qml:545
 #: contents/ui/js/weather.js:528
 msgid "kn"
-msgstr ""
+msgstr "kn"
 
 #: contents/ui/DetailsView.qml:3499
 msgid "left"
-msgstr ""
+msgstr "sol"
 
 #: contents/ui/main.qml:1740
 msgid "low"
-msgstr ""
+msgstr "düşük"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:370
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #: contents/ui/components/RadarWebEngineView.qml:546
 #: contents/ui/config/tabs/ConfigMiscTab.qml:262 contents/ui/js/weather.js:527
 msgid "m/s"
-msgstr ""
+msgstr "m/sn"
 
 #: contents/ui/config/configGeneral.qml:299
 msgid "met.no (free)"
@@ -3950,19 +3975,19 @@ msgstr "met.no (ücretsiz)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
 msgid "meters"
-msgstr ""
+msgstr "metre"
 
 #: contents/ui/js/airQuality.js:155
 msgid "mg/m³"
-msgstr ""
+msgstr "mg/m³"
 
 #: contents/ui/main.qml:803
 msgid "mi"
-msgstr ""
+msgstr "mil"
 
 #: contents/ui/main.qml:1783
 msgid "minor"
-msgstr ""
+msgstr "hafif"
 
 #: contents/ui/config/configGeneral.qml:920
 #: contents/ui/config/configNotifications.qml:364
@@ -3971,29 +3996,29 @@ msgstr "dakikalar"
 
 #: contents/ui/main.qml:796
 msgid "mm"
-msgstr ""
+msgstr "mm"
 
 #: contents/ui/components/RadarWebEngineView.qml:539 contents/ui/main.qml:788
 msgid "mm/h"
-msgstr ""
+msgstr "mm/sa"
 
 #: contents/ui/components/RadarWebEngineView.qml:550
 #: contents/ui/config/tabs/ConfigMiscTab.qml:293 contents/ui/js/weather.js:534
 msgid "mmHg"
-msgstr ""
+msgstr "mmHg"
 
 #: contents/ui/main.qml:1741 contents/ui/main.qml:1784
 msgid "moderate"
-msgstr ""
+msgstr "orta"
 
 #: contents/ui/components/RadarWebEngineView.qml:543
 #: contents/ui/config/tabs/ConfigMiscTab.qml:258 contents/ui/js/weather.js:526
 msgid "mph"
-msgstr ""
+msgstr "mil/sa"
 
 #: contents/ui/main.qml:1517
 msgid "overcast skies"
-msgstr ""
+msgstr "kapalı gökyüzü"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:844
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:127
@@ -4003,160 +4028,85 @@ msgstr "px"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:288
 msgid "px height"
-msgstr ""
+msgstr "pks yükseklik"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:288
 msgid "px width"
-msgstr ""
+msgstr "pks genişlik"
 
 #: contents/ui/main.qml:1782
 msgid "quiet"
-msgstr ""
+msgstr "sakin"
 
 #: contents/ui/main.qml:1514
 msgid "rain"
-msgstr ""
+msgstr "yağmur"
 
 #: contents/ui/main.qml:1786
 msgid "severe"
-msgstr ""
+msgstr "şiddetli"
 
 #: contents/ui/main.qml:1512
 msgid "showers"
-msgstr ""
+msgstr "sağanak"
 
 #: contents/ui/main.qml:1508
 msgid "showers and thunderstorms"
-msgstr ""
+msgstr "sağanak ve gök gürültülü fırtınalar"
 
 #: contents/ui/main.qml:1736
 msgid "similar to yesterday"
-msgstr ""
+msgstr "düne benzer"
 
 #: contents/ui/main.qml:1511
 msgid "snow"
-msgstr ""
+msgstr "kar"
 
 #: contents/ui/main.qml:1510
 msgid "snow showers"
-msgstr ""
+msgstr "kar sağanağı"
 
 #: contents/ui/main.qml:1785
 msgid "strong"
-msgstr ""
+msgstr "güçlü"
 
 #: contents/ui/config/configLocation.qml:906
 msgid "system location"
-msgstr ""
+msgstr "sistem konumu"
 
 #: contents/ui/main.qml:1649
 msgid "this afternoon"
-msgstr ""
+msgstr "bu öğleden sonra"
 
 #: contents/ui/main.qml:1648
 msgid "this morning"
-msgstr ""
+msgstr "bu sabah"
 
 #: contents/ui/main.qml:1509
 msgid "thunderstorms"
-msgstr ""
+msgstr "gök gürültülü fırtınalar"
 
 #: contents/ui/main.qml:1650
 msgid "tonight"
-msgstr ""
+msgstr "bu gece"
 
 #: contents/ui/main.qml:1180
 msgid "until %1"
-msgstr ""
+msgstr "bitiş: %1"
 
 #: contents/ui/DetailsView.qml:3496
 msgid "until dawn"
-msgstr ""
+msgstr "şafağa kadar"
 
 #: contents/ui/main.qml:1743
 msgid "very high"
-msgstr ""
+msgstr "çok yüksek"
 
 #: contents/ui/main.qml:1187 contents/ui/main.qml:1488
 #: contents/ui/main.qml:1561
 msgid "your location"
-msgstr ""
+msgstr "konumunuz"
 
 #: contents/ui/js/airQuality.js:156
 msgid "µg/m³"
-msgstr ""
-
-#~ msgid "Location information"
-#~ msgstr "Konum bilgisi"
-
-#~ msgid "Change Location"
-#~ msgstr "Konumu Değiştir"
-
-#~ msgid "Click 'Change Location' to search and set your location manually."
-#~ msgstr "Konumunuzu manuel ayarlamak ve aramak için 'Konumu Değiştir'e tıklayın."
-
-#~ msgid ""
-#~ "Providers are tried in order until one succeeds:\n"
-#~ "Open-Meteo  →  met.no  →  OpenWeatherMap  →  WeatherAPI.com\n"
-#~ "Open-Meteo is always tried first — it is free and requires no API key."
-#~ msgstr ""
-#~ "Sağlayıcılar başarılı olunana dek sırayla denenir:\n"
-#~ "Open-Meteo → met.no → OpenWeatherMap → WeatherAPI.com\n"
-#~ "Her zaman ilk denenen Open-Meteo'dur — ücretsizdir ve API gerektirmez."
-
-#~ msgid "Set manually"
-#~ msgstr "Manuel ayarla"
-
-#~ msgid "Auto-detected via GeoClue2."
-#~ msgstr "GeoClue2 ile otomatik algılandı."
-
-#~ msgid "GeoClue2 error while retrieving location."
-#~ msgstr "Konum alınırken GeoClue2 hatası."
-
-#~ msgid "GeoClue2 location unavailable on this system."
-#~ msgstr "Bu sistemde GeoClue2 konumu mevcut değil."
-
-#~ msgid "Requesting location from GeoClue2…"
-#~ msgstr "Konum GeoClue2 üzerinden talep ediliyor…"
-
-#~ msgid "Unable to get valid position from GeoClue2."
-#~ msgstr "GeoClue2 üzerinden geçerli pozisyon alınamadı."
-
-#~ msgid "3D Oxygen (SVG)"
-#~ msgstr "3D Oxygen (SVG)"
-
-#~ msgid "Flat Color (SVG)"
-#~ msgstr "Düz Renk (SVG)"
-
-#~ msgid "Icon size in px. 0 = auto."
-#~ msgstr "Simge boyutu (px). 0 = otomatik."
-
-#~ msgid "Storm / Thunderstorm"
-#~ msgstr "Fırtına / Gök Gürültülü Fırtına"
-
-#~ msgid "Symbolic (SVG)"
-#~ msgstr "Sembolik (SVG)"
-
-#~ msgid "Updated %1 (Open-Meteo)"
-#~ msgstr "Güncellendi %1 (Open-Meteo)"
-
-#~ msgid "Updated %1 (OpenWeather)"
-#~ msgstr "Güncellendi %1 (OpenWeather)"
-
-#~ msgid "Updated %1 (WeatherAPI.com)"
-#~ msgstr "Güncellendi %1 (WeatherAPI.com)"
-
-#~ msgid "Updated %1 (met.no)"
-#~ msgstr "Güncellendi %1 (met.no)"
-
-#~ msgid "Uses KDE system icons by default. Click the button to customise each item’s icon."
-#~ msgstr "Varsayılan olarak KDE sistem simgelerini kullanır. Öğelerin ikonunu özelleştirmek için tıklayın."
-
-#~ msgid "Widget items"
-#~ msgstr "Widget öğeleri"
-
-#~ msgid "Widget settings"
-#~ msgstr "Widget ayarları"
-
-#~ msgid "px  (auto)"
-#~ msgstr "px (otomatik)"
+msgstr "µg/m³"
