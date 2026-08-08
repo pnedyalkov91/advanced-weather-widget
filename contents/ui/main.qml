@@ -2054,11 +2054,12 @@ PlasmoidItem {
     }
 
     function isNightTime() {
-        // Prefer the API-reported is_day flag — accurate on first load
-        // before sunrise/sunset strings have been populated.
-        if (isDay >= 0)
-            return isDay === 0;
-        // Fallback: derive from stored sunrise/sunset times.
+        // Derive from sunrise/sunset first. This is what the forecast strip
+        // already does when it picks its own icons (ForecastView.qml), so
+        // going through the same route keeps the condition icon and the
+        // forecast below it in agreement. Trusting the provider's day/night
+        // flag ahead of these is what let BBC's `isNight` put a moon on a
+        // sunny afternoon while the forecast right underneath showed suns.
         var now = new Date();
         var nowMins = now.getHours() * 60 + now.getMinutes();
         function parseMins(t) {
@@ -2069,9 +2070,14 @@ PlasmoidItem {
         }
         var rise = parseMins(sunriseTimeText);
         var set_ = parseMins(sunsetTimeText);
-        if (rise < 0 || set_ < 0)
-            return false;
-        return nowMins < rise || nowMins >= set_;
+        if (rise >= 0 && set_ >= 0)
+            return nowMins < rise || nowMins >= set_;
+        // Fallback: the API-reported is_day flag, which is still the only
+        // thing available on first load, before the sunrise/sunset strings
+        // have been populated.
+        if (isDay >= 0)
+            return isDay === 0;
+        return false;
     }
 
     // ══════════════════════════════════════════════════════════════════════
