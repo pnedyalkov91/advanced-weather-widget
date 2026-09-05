@@ -1122,7 +1122,7 @@ KCM.AbstractKCM {
     property string cfg_widgetSunTimesMode: "both"   // "both" | "sunrise" | "sunset" | "upcoming"
     property string cfg_widgetMoonMode: "full"        // "full" | "upcoming" | "times"
     property int cfg_widgetIconSize: 16
-    property string cfg_widgetIconTheme: "symbolic"   // "kde" | "wi-font" | "flat-color" | "symbolic" | "3d-oxygen"
+    property string cfg_widgetIconTheme: "symbolic"   // "kde" | "wi-font" | "flat-color" | "symbolic" | "3d-oxygen" | "meteocons"
     property string cfg_conditionIconTheme: "kde"      // controls main hero condition icon in widget popup
     property string cfg_widgetConditionCustomIcons: ""   // custom per-condition icons for the widget popup
     property bool cfg_iconGlowEnabled: false           // static glow behind weather icons
@@ -1232,7 +1232,7 @@ KCM.AbstractKCM {
     property bool cfg_panelFontBold: false
 
     // ── Panel icon theme ("wi-font" | "symbolic" | "flat-color" |
-    //                     "3d-oxygen" | "3d-adwaita" | "kde") ─────
+    //                     "3d-oxygen" | "meteocons" | "3d-adwaita" | "kde") ─────
     property string cfg_panelIconTheme: "symbolic"
     property string cfg_panelSymbolicVariant: "dark"  // "dark" | "light" for symbolic SVG theme
     property string cfg_panelCustomIcons: ""      // "id=iconName;id=iconName;..." for custom theme

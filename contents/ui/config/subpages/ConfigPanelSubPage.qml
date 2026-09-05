@@ -178,7 +178,7 @@ ColumnLayout {
                                     visible: (configRoot.cfg_panelIconTheme === "wi-font" && (model.itemWiChar.length === 0 || !configRoot.wiFontReady)) || configRoot.cfg_panelIconTheme === "kde"
                                     // "custom" has its own preview block below
                                 }
-                                // SVG theme icon (symbolic / flat-color / 3d-oxygen)
+                                // SVG theme icon (symbolic / flat-color / 3d-oxygen / meteocons)
                                 Kirigami.Icon {
                                     anchors.fill: parent
                                     visible: configRoot.cfg_panelIconTheme !== "wi-font" && configRoot.cfg_panelIconTheme !== "kde" && configRoot.cfg_panelIconTheme !== "custom" && configRoot.cfg_panelIconTheme.length > 0

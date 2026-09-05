@@ -146,7 +146,7 @@
     <entry name="simplePanelIsVertical" type="Bool"><default>false</default></entry>
 
     <!-- ── Panel - icons and font ─────────────────────────────────────── -->
-    <!-- panelIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "3d-adwaita" | "kde" | "custom" -->
+    <!-- panelIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "meteocons" | "3d-adwaita" | "kde" | "custom" -->
     <entry name="panelIconTheme"       type="String"><default>symbolic</default></entry>
     <entry name="panelIconSize"        type="Int"><default>22</default></entry>
     <entry name="panelIconSizeMode"    type="String"><default>auto</default></entry>
@@ -221,9 +221,9 @@
     <entry name="widgetShowVisibility"  type="Bool"><default>true</default></entry>
 
     <!-- ── Widget - icons and font ────────────────────────────────────── -->
-    <!-- widgetIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "kde" -->
+    <!-- widgetIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" -->
     <entry name="widgetIconTheme" type="String"><default>symbolic</default></entry>
-    <!-- conditionIconTheme: "kde" | "kde-symbolic" | "symbolic" | "flat-color" | "3d-oxygen" | "custom" -->
+    <!-- conditionIconTheme: "kde" | "kde-symbolic" | "symbolic" | "flat-color" | "3d-oxygen" | "meteocons" | "custom" -->
     <entry name="conditionIconTheme" type="String"><default>kde</default></entry>
     <entry name="widgetConditionCustomIcons" type="String"><default></default></entry>
     <entry name="widgetIconSize"  type="Int"><default>32</default></entry>
@@ -297,7 +297,7 @@
     <entry name="tooltipItemIcons"  type="String"><default>temperature=1;condition=1;feelslike=1;wind=1;humidity=1;pressure=1;suntimes=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
     <entry name="tooltipSunTimesMode" type="String"><default>both</default></entry>
     <entry name="tooltipMoonPhaseMode" type="String"><default>full</default></entry>
-    <!-- tooltipIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "kde" | "custom" -->
+    <!-- tooltipIconTheme: "symbolic" | "wi-font" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" | "custom" -->
     <entry name="tooltipIconTheme"       type="String"><default>symbolic</default></entry>
     <entry name="tooltipIconSize"        type="Int"><default>22</default></entry>
     <entry name="tooltipSymbolicVariant" type="String"><default>dark</default></entry>

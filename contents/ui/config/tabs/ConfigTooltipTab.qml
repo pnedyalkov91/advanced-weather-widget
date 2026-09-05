@@ -213,6 +213,10 @@ Kirigami.FormLayout {
                     value: "3d-oxygen"
                 },
                 {
+                    text: i18n("Meteocons (Bundled)"),
+                    value: "meteocons"
+                },
+                {
                     text: i18n("Custom"),
                     value: "custom"
                 }

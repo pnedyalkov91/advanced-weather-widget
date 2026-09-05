@@ -41,7 +41,8 @@ ColumnLayout {
         { text: i18n("KDE Icon Theme"),        value: "kde"          },
         { text: i18n("Symbolic (Bundled)"),        value: "symbolic"     },
         { text: i18n("Flat Color (Bundled)"),      value: "flat-color"   },
-        { text: i18n("3D Oxygen (Bundled)"),       value: "3d-oxygen"    }
+        { text: i18n("3D Oxygen (Bundled)"),       value: "3d-oxygen"    },
+        { text: i18n("Meteocons (Bundled)"),       value: "meteocons"    }
     ]
 
     /** Condition icon theme choices - adds KDE Symbolic and Custom options */
@@ -51,6 +52,7 @@ ColumnLayout {
         { text: i18n("Symbolic (Bundled)"),        value: "symbolic"     },
         { text: i18n("Flat Color (Bundled)"),      value: "flat-color"   },
         { text: i18n("3D Oxygen (Bundled)"),       value: "3d-oxygen"    },
+        { text: i18n("Meteocons (Bundled)"),       value: "meteocons"    },
         { text: i18n("Custom\u2026"),          value: "custom"       }
     ]
 

@@ -21,7 +21,7 @@
  * Renders the rich tooltip with configurable icon themes + data values.
  * Receives weatherRoot to access live weather data and helper functions.
  * Supports the same icon themes as the Panel: wi-font, symbolic, flat-color,
- * 3d-oxygen, kde, and custom (user-picked KDE icons per item).
+ * 3d-oxygen, meteocons, kde, and custom (user-picked KDE icons per item).
  */
 
 import QtQuick

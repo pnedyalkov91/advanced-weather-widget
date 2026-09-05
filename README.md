@@ -156,7 +156,7 @@ For providers that require an API key, you can enter it in the widget's settings
 - **Dual Temperature:** Option to display two different temperature metrics simultaneously (e.g., Actual + Apparent).
 - **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
 - **Widget Layouts:** Advanced (Details, Forecast and Radar tabs) and Simple (no tabs)
-- **Themes:** 6 icon themes (Symbolic, Font, Flat, 3D, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
+- **Themes:** 7 icon themes (Symbolic, Font, Flat, 3D, Meteocons, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
 - **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, and hourly weather forecast.
 
 ---
@@ -247,6 +247,8 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
   https://github.com/erikflowers/weather-icons
 
   Licensed under the **SIL Open Font License 1.1 (OFL 1.1)**.
+
+- This project uses the **Meteocons** weather icons by **Bas Milius** (https://meteocons.com / https://bas.dev/work/meteocons), licensed under the **MIT License**, with a copy bundled at `contents/icons/meteocons/LICENSE`.
 
 - This project uses code from the **SunCalc** library:  
   https://github.com/mourner/suncalc

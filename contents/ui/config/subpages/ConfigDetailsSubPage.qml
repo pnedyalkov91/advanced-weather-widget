@@ -206,7 +206,7 @@ ColumnLayout {
                                     }
                                     color: Kirigami.Theme.textColor
                                 }
-                                // SVG theme icon (symbolic / flat-color / 3d-oxygen)
+                                // SVG theme icon (symbolic / flat-color / 3d-oxygen / meteocons)
                                 Kirigami.Icon {
                                     anchors.fill: parent
                                     visible: configRoot.cfg_widgetIconTheme !== "wi-font" && configRoot.cfg_widgetIconTheme !== "kde" && configRoot.cfg_widgetIconTheme.length > 0

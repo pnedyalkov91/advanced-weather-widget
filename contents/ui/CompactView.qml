@@ -102,6 +102,7 @@ PlasmaCore.ToolTipArea {
     readonly property bool simpleIconIsBundled: compactRoot.simpleIconStyle === "symbolic-bundled"
         || compactRoot.simpleIconStyle === "flat-color"
         || compactRoot.simpleIconStyle === "3d-oxygen"
+        || compactRoot.simpleIconStyle === "meteocons"
     readonly property string simpleClickAreaMode: Plasmoid.configuration.panelSimpleClickAreaMode || "auto"
     readonly property int simpleClickAreaSize: Math.max(20, Plasmoid.configuration.panelSimpleClickAreaSize || 96)
     readonly property bool simpleTempShadowEnabled: Plasmoid.configuration.panelSimpleTempShadowEnabled === true
