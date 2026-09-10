@@ -67,19 +67,48 @@ var WidgetLeafletAdapter = function () {
 
     createMap: function (containerId, view) {
       maxZoom = view.maxZoom;
-      map = L.map(containerId, { maxZoom: view.maxZoom, zoomControl: true })
-        .setView([view.lat, view.lon], view.zoom);
+      map = L.map(containerId, {
+        maxZoom: view.maxZoom,
+        zoomControl: true,
+        // WIDGET PATCH: map rotation (leaflet-rotate plugin, loaded in
+        // shell.html). rotateControl defaults to the 'topleft' corner, same
+        // as zoomControl above, so Leaflet stacks it directly below with no
+        // extra positioning needed. closeOnZeroBearing: false keeps the
+        // compass visible at all times, matching the always-on compass in
+        // the LibreWXR MapLibre example / Mapbox GL NavigationControl this
+        // was modeled on, rather than only appearing once rotated off
+        // north. Drag the compass icon, or hold Shift and drag the map
+        // (shiftKeyRotate, on by default once rotate: true), to rotate.
+        rotate: true,
+        rotateControl: { position: 'topleft', closeOnZeroBearing: false }
+      }).setView([view.lat, view.lon], view.zoom);
 
       // Widget location pin: marker for the location configured in the widget.
       L.marker([view.lat, view.lon], { interactive: false }).addTo(map);
 
       // Custom panes give deterministic z-ordering: satellite under alerts
       // under radar. Values mirror the --leaflet-z-* CSS tokens.
-      map.createPane('lv-satellite-pane');
+      //
+      // WIDGET PATCH: leaflet-rotate splits _mapPane into two children -
+      // _rotatePane (holds the stock tilePane/overlayPane, and gets the CSS
+      // rotate transform) and _norotatePane (markerPane/popupPane/etc, stay
+      // upright on purpose - a rotated marker icon or popup bubble would
+      // look wrong). Its own createPane() override that would default new
+      // panes into _rotatePane automatically is commented out upstream, so
+      // an unadorned map.createPane(name) falls through to stock Leaflet
+      // and attaches to _mapPane directly - a sibling of _rotatePane, which
+      // never receives the rotation transform. That was the whole bug:
+      // radar/satellite/alerts silently staying north-up while the base
+      // map (tilePane, correctly inside _rotatePane already) rotated under
+      // them. Passing map._rotatePane explicitly puts these three panes
+      // where the rotation transform actually applies; map._rotatePane
+      // falls back to undefined (Leaflet's own default: attach to
+      // _mapPane) if a future plugin version ever renames or drops it.
+      map.createPane('lv-satellite-pane', map._rotatePane);
       map.getPane('lv-satellite-pane').style.zIndex = paneZ('--leaflet-z-satellite', 350);
-      map.createPane('lv-alerts-pane');
+      map.createPane('lv-alerts-pane', map._rotatePane);
       map.getPane('lv-alerts-pane').style.zIndex = paneZ('--leaflet-z-alerts', 400);
-      map.createPane('lv-radar-pane');
+      map.createPane('lv-radar-pane', map._rotatePane);
       map.getPane('lv-radar-pane').style.zIndex = paneZ('--leaflet-z-radar', 450);
       return map;
     },

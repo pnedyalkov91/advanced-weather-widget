@@ -52,6 +52,19 @@ window.setAlerts = function (on) { viewer.setAlertsEnabled(!!on); };
 
 window.setTheme = function (theme) { viewer.setTheme(theme); };
 
+// WIDGET PATCH: live tile-options bridge for the Options panel (Smoothing /
+// Snow mask / Format / Tile size). The engine already exposes these on
+// `viewer` (see the createViewer return statement above) - only the
+// window.* facade for the QML side was missing the last four.
+window.setSmooth = function (on) { viewer.setSmooth(!!on); };
+
+window.setSnow = function (on) { viewer.setSnow(!!on); };
+
+window.setFormat = function (fmt) { viewer.setFormat(fmt); };
+
+window.setTileSize = function (size) { viewer.setTileSize(size); };
+// /WIDGET PATCH
+
 window.setBackground = function (id) {
   if (id !== 'auto') {
     var found = false;

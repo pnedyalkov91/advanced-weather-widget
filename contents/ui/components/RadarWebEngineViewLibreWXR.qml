@@ -23,6 +23,10 @@
  *   window.setArrows(true | false)        // boolean; the page derives arrow color from its theme
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
  *   window.setAlerts(true | false)        // WMO alerts overlay
+ *   window.setSmooth(true | false)        // radar tile edge smoothing
+ *   window.setSnow(true | false)          // radar snow/wintry-precip mask
+ *   window.setFormat("webp" | "png")      // tile image format
+ *   window.setTileSize("auto" | "256" | "512")   // tile pixel size ("auto" = device DPR)
  *   window.setTheme("light" | "dark")     // map + replayer theme
  *   window.setBackground(id)              // base map id, from backgroundChoices
  *   window.fixViewport()                  // post-load Leaflet viewport fix
@@ -32,6 +36,9 @@
  *   controls owned by this file; the base map is chosen via the in-map
  *   picker on the map page (reports "bg:" picks through document.title),
  *   with the configuration value seeding the initial state
+ * - Smoothing, snow mask, tile format and tile size live behind a
+ *   collapsible "Options" toggle (native controls, same as the row above);
+ *   collapsed state persists via librewxrOptionsExpanded
  * - "auto" base map follows the KDE Plasma light/dark theme; any explicit
  *   choice pins a fixed light/dark style and locks the Dark map switch
  * - The page reports only zoom ("zoom:") and in-map background picks
@@ -63,6 +70,7 @@ Item {
     readonly property bool snowOn: Plasmoid.configuration.librewxrSnow !== false
     readonly property string tileFormat: Plasmoid.configuration.librewxrFormat || "webp"
     readonly property string tileSizeChoice: Plasmoid.configuration.librewxrTileSize || "auto"
+    readonly property bool optionsExpanded: Plasmoid.configuration.librewxrOptionsExpanded === true
     readonly property string serverUrl: {
         var u = (Plasmoid.configuration.librewxrUrl || "https://api.librewxr.net").trim();
         while (u.length > 1 && u.charAt(u.length - 1) === "/")
@@ -207,6 +215,18 @@ Item {
     // LibreWXR radar color schemes (ids 0-12, from /public/weather-maps.json)
     readonly property var colorSchemes: [i18n("Black and White"), "Rain Viewer Original", "Universal Blue", "Titan", "The Weather Channel (TWC)", "Meteored", "NEXRAD Level III", "Rainbow @ Selex SI", "Dark Sky", "Datameteo Valerio", "Viper HD", "MRMS CREF", "33/40 Max Storm"]
 
+    // Tile image format and pixel size, per librewxr-map.html's state.format /
+    // state.tileSize (webp|png; auto|256|512 - "auto" follows devicePixelRatio)
+    readonly property var tileFormats: [
+        { id: "webp", label: "WebP" },
+        { id: "png", label: "PNG" }
+    ]
+    readonly property var tileSizes: [
+        { id: "auto", label: i18n("Auto (device)") },
+        { id: "256", label: i18n("256 px") },
+        { id: "512", label: i18n("512 px") }
+    ]
+
     // ── Page URL ─────────────────────────────────────────────────────────
     function _pageUrl() {
         var strings = {
@@ -335,6 +355,8 @@ Item {
                 color: Kirigami.Theme.textColor
                 opacity: 0.72
                 font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                height: schemeCombo.height
+                verticalAlignment: Text.AlignVCenter
             }
 
             PlasmaComponents.ComboBox {
@@ -407,6 +429,112 @@ Item {
                 PlasmaComponents.ToolTip.visible: hovered
                 PlasmaComponents.ToolTip.text: radarRoot.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
                 PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
+
+            PlasmaComponents.ToolButton {
+                icon.name: "configure"
+                text: i18n("Options")
+                checkable: true
+                checked: radarRoot.optionsExpanded
+                onToggled: Plasmoid.configuration.librewxrOptionsExpanded = checked
+
+                PlasmaComponents.ToolTip.visible: hovered
+                PlasmaComponents.ToolTip.text: i18n("Show tile options: smoothing, snow mask, format and tile size")
+                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
+        }
+
+        // -- Options panel: smoothing + snow mask (radar modes) + tile format + tile size --
+        // Revealed by the Options toggle above; smoothing/snow only affect radar
+        // tiles (see librewxr-map.html's buildTileUrl - the satellite branch
+        // never reads state.smooth/state.snow), so those two switches hide for
+        // the Satellite layer the same way the color scheme combo does above.
+        // Format and tile size apply to both radar and satellite tiles.
+        Flow {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing * 2
+            visible: radarRoot.optionsExpanded
+
+            PlasmaComponents.Switch {
+                visible: radarRoot.activeLayer !== "satellite"
+                text: i18n("Smoothing")
+                checked: radarRoot.smoothOn
+                onToggled: {
+                    Plasmoid.configuration.librewxrSmooth = checked;
+                    webView.runJavaScript("if (window.setSmooth) window.setSmooth(" + (checked ? "true" : "false") + ");");
+                }
+
+                PlasmaComponents.ToolTip.visible: hovered
+                PlasmaComponents.ToolTip.text: i18n("Smooth radar tile edges")
+                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
+
+            PlasmaComponents.Switch {
+                visible: radarRoot.activeLayer !== "satellite"
+                text: i18n("Snow mask")
+                checked: radarRoot.snowOn
+                onToggled: {
+                    Plasmoid.configuration.librewxrSnow = checked;
+                    webView.runJavaScript("if (window.setSnow) window.setSnow(" + (checked ? "true" : "false") + ");");
+                }
+
+                PlasmaComponents.ToolTip.visible: hovered
+                PlasmaComponents.ToolTip.text: i18n("Highlight snow and wintry precipitation with a distinct color")
+                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
+
+            Label {
+                text: i18n("Format:")
+                color: Kirigami.Theme.textColor
+                opacity: 0.72
+                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                height: formatCombo.height
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            PlasmaComponents.ComboBox {
+                id: formatCombo
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 7
+                model: radarRoot.tileFormats
+                textRole: "label"
+                currentIndex: {
+                    for (var i = 0; i < radarRoot.tileFormats.length; i++)
+                        if (radarRoot.tileFormats[i].id === radarRoot.tileFormat)
+                            return i;
+                    return 0;
+                }
+                onActivated: {
+                    var v = radarRoot.tileFormats[currentIndex].id;
+                    Plasmoid.configuration.librewxrFormat = v;
+                    webView.runJavaScript("if (window.setFormat) window.setFormat(" + JSON.stringify(v) + ");");
+                }
+            }
+
+            Label {
+                text: i18n("Tile size:")
+                color: Kirigami.Theme.textColor
+                opacity: 0.72
+                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                height: tileSizeCombo.height
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            PlasmaComponents.ComboBox {
+                id: tileSizeCombo
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 9
+                model: radarRoot.tileSizes
+                textRole: "label"
+                currentIndex: {
+                    for (var i = 0; i < radarRoot.tileSizes.length; i++)
+                        if (radarRoot.tileSizes[i].id === radarRoot.tileSizeChoice)
+                            return i;
+                    return 0;
+                }
+                onActivated: {
+                    var v = radarRoot.tileSizes[currentIndex].id;
+                    Plasmoid.configuration.librewxrTileSize = v;
+                    webView.runJavaScript("if (window.setTileSize) window.setTileSize(" + JSON.stringify(v) + ");");
+                }
             }
         }
 

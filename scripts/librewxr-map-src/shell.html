@@ -9,14 +9,19 @@
       Adapted from the official LibreWXR Leaflet example
       (https://librewxr.net/examples/leaflet) for the Advanced Weather Widget.
       Chrome-less build: this page is the map + replayer only. All radar
-      controls (layer mode, color scheme, arrows, cells, alerts, theme) live
-      in the QML side as native Plasma components. The base map is chosen with
-      the in-map picker, which reports picks via document.title; configuration
-      seeds the initial state. Initial state is seeded via URL query
-      parameters; live changes arrive through the
+      controls (layer mode, color scheme, arrows, cells, alerts, theme,
+      smoothing, snow mask, tile format, tile size) live in the QML side as
+      native Plasma components. The base map is chosen with the in-map
+      picker, which reports picks via document.title; configuration seeds
+      the initial state. Initial state is seeded via URL query parameters;
+      live changes arrive through the
       window.* functions (setLayerMode / setColorScheme / setArrows / setCells
-      / setAlerts / setTheme / setBackground / fixViewport). The QML side
-      keeps zoom in sync via document.title ("zoom:" reports).
+      / setAlerts / setTheme / setSmooth / setSnow / setFormat / setTileSize
+      / setBackground / fixViewport). The QML side keeps zoom in sync via
+      document.title ("zoom:" reports). Map rotation is in-map only (no QML
+      control): the leaflet-rotate plugin adds a compass control below the
+      zoom control, drag-to-rotate on that control or the map (Shift+drag),
+      no configuration or window.* bridge involved.
 
       SPDX-License-Identifier: GPL-2.0-or-later
       Copyright (C) 2026 Joshua Kimsey
@@ -47,6 +52,15 @@
       rel="stylesheet"
     />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!--
+      WIDGET PATCH: map rotation (leaflet-rotate, GPL-3.0, github.com/Raruto/leaflet-rotate).
+      Must load synchronously, right after leaflet.js and before any script
+      that calls L.map(...), since it patches L.Map/L.GridLayer via
+      L.Map.mergeOptions/addInitHook - those need to be registered on the
+      class before createMap() (glue-adapter.js) instantiates it. Pinned to
+      an exact version, same convention as the maplibre-gl CDN loads below.
+    -->
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
     <style>
 /*__VIEWER_CSS__*/
 /*__WIDGET_OVERRIDES_CSS__*/

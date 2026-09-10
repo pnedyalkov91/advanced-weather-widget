@@ -64,14 +64,14 @@
 
       /* Locate button: compact sizing (vendored look kept above). */
       .locate-btn {
-        width: 30px;
-        height: 30px;
+        width: 38px;
+        height: 38px;
         top: var(--space-2);
         right: var(--space-2);
       }
       .locate-btn svg {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
       }
 
       /* Leaflet zoom control: compact sizing. */
@@ -83,10 +83,10 @@
         box-shadow: none !important;
       }
       .leaflet-control-zoom a {
-        width: 24px !important;
-        height: 24px !important;
-        line-height: 24px !important;
-        font-size: 15px !important;
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        font-size: 19px !important;
         background: var(--btn-bg) !important;
         color: var(--text-secondary) !important;
         border: 1px solid var(--btn-border) !important;
@@ -95,10 +95,10 @@
         background: var(--btn-hover) !important;
       }
       .leaflet-control-zoom-in {
-        border-radius: 6px 6px 0 0 !important;
+        border-radius: 8px 8px 0 0 !important;
       }
       .leaflet-control-zoom-out {
-        border-radius: 0 0 6px 6px !important;
+        border-radius: 0 0 8px 8px !important;
         border-top: none !important;
       }
       .leaflet-control-zoom a.leaflet-disabled,
@@ -107,11 +107,53 @@
         background: var(--btn-bg) !important;
       }
 
-      /* Base-map picker: button stacks below the 30px locate button; the
+      /* Leaflet rotate control (leaflet-rotate plugin, loaded in shell.html):
+         compact sizing to match the zoom control above it. Both controls
+         default to the 'topleft' corner, so Leaflet stacks this one right
+         below the zoom control with no extra positioning here - only the
+         gap and the button's own look need matching. */
+      .leaflet-control-rotate {
+        margin-top: var(--space-1) !important;
+        margin-left: var(--space-2) !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .leaflet-control-rotate-toggle {
+        width: 32px !important;
+        height: 32px !important;
+        background: var(--btn-bg) !important;
+        border: 1px solid var(--btn-border) !important;
+        border-radius: var(--radius-sm) !important;
+      }
+      .leaflet-control-rotate-toggle:hover {
+        background: var(--btn-hover) !important;
+      }
+      /* WIDGET PATCH: leaflet-rotate's compass icon is a data-URI SVG with
+         colors hardcoded by the plugin (fill='#333' north half, '#ccc'
+         south half) for a light page background - a data URI can't read
+         our --btn-bg/--text-* custom properties, so it can't inherit the
+         widget's theme automatically. Against this widget's dark buttons
+         the dark north half all but disappears and only the light south
+         half reads, which looks exactly like "north is pointing south"
+         (that's the whole bug report: nothing about the rotation math is
+         wrong, only the icon's fixed colors were picked for the wrong
+         background). Recolored bright-on-dark for the dark theme (the
+         default - see <body data-theme="dark"> in the head above), with a
+         data-theme="light" override below that keeps the plugin's original
+         colors, which already read fine on a light background. */
+      .leaflet-control-rotate-arrow {
+        background-size: 18px 18px !important;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='29' height='29' viewBox='0 0 29 29' xmlns='http://www.w3.org/2000/svg' fill='%23f0f0f0'%3E%3Cpath d='M10.5 14l4-8 4 8h-8z'/%3E%3Cpath d='M10.5 16l4 8 4-8h-8z' fill='%235a5a5a'/%3E%3C/svg%3E") !important;
+      }
+      body[data-theme="light"] .leaflet-control-rotate-arrow {
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='29' height='29' viewBox='0 0 29 29' xmlns='http://www.w3.org/2000/svg' fill='%23333'%3E%3Cpath d='M10.5 14l4-8 4 8h-8z'/%3E%3Cpath d='M10.5 16l4 8 4-8h-8z' fill='%23ccc'/%3E%3C/svg%3E") !important;
+      }
+
+      /* Base-map picker: button stacks below the 38px locate button; the
          menu opens downward over the map. */
       .bg-picker {
         position: absolute;
-        top: calc(var(--space-2) + 30px + var(--space-1));
+        top: calc(var(--space-2) + 38px + var(--space-1));
         right: var(--space-2);
         z-index: 1000;
         display: flex;
@@ -120,8 +162,8 @@
         gap: 4px;
       }
       .bg-btn {
-        width: 30px;
-        height: 30px;
+        width: 38px;
+        height: 38px;
         background: var(--btn-bg);
         border: 1px solid var(--btn-border);
         border-radius: var(--radius-sm);
@@ -135,8 +177,8 @@
         background: var(--btn-hover);
       }
       .bg-btn svg {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
         fill: none;
         stroke: var(--text-secondary);
         stroke-width: 2;

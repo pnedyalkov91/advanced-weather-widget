@@ -192,6 +192,8 @@
     <entry name="librewxrSnow"          type="Bool"><default>true</default></entry>
     <entry name="librewxrFormat"        type="String"><default>webp</default></entry>
     <entry name="librewxrTileSize"      type="String"><default>auto</default></entry>
+    <!-- Whether the "Options" panel (smoothing/snow mask/format/tile size) is expanded -->
+    <entry name="librewxrOptionsExpanded" type="Bool"><default>false</default></entry>
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->
     <entry name="radarGpuWorkaround"    type="Bool"><default>false</default></entry>

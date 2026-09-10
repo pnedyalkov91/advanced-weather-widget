@@ -59,9 +59,9 @@ GENERATED_COMMENT = (
 
 def default_librewxr_dir():
     """Resolve the LibreWXR checkout path: $LIBREWXR_DIR, else the sibling
-    LibreWRX directory next to this repo."""
+    LibreWXR directory next to this repo."""
     return os.environ.get("LIBREWXR_DIR") or os.path.join(
-        os.path.dirname(REPO_ROOT), "LibreWRX"
+        os.path.dirname(REPO_ROOT), "LibreWXR"
     )
 
 
@@ -133,7 +133,7 @@ def main():
     parser.add_argument(
         "--librewxr",
         default=default_librewxr_dir(),
-        help="path to a LibreWXR checkout (default: $LIBREWXR_DIR, else the sibling LibreWRX directory)",
+        help="path to a LibreWXR checkout (default: $LIBREWXR_DIR, else the sibling LibreWXR directory)",
     )
     args = parser.parse_args()
     librewxr_dir = args.librewxr
@@ -141,7 +141,7 @@ def main():
     if not os.path.isdir(librewxr_dir):
         tried = [librewxr_dir]
         env_dir = os.environ.get("LIBREWXR_DIR")
-        sibling = os.path.join(os.path.dirname(REPO_ROOT), "LibreWRX")
+        sibling = os.path.join(os.path.dirname(REPO_ROOT), "LibreWXR")
         if env_dir and env_dir != librewxr_dir:
             tried.append(env_dir)
         if sibling != librewxr_dir:
