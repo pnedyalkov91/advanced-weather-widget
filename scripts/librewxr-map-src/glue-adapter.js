@@ -110,6 +110,10 @@ var WidgetLeafletAdapter = function () {
       map.getPane('lv-alerts-pane').style.zIndex = paneZ('--leaflet-z-alerts', 400);
       map.createPane('lv-radar-pane', map._rotatePane);
       map.getPane('lv-radar-pane').style.zIndex = paneZ('--leaflet-z-radar', 450);
+      // WIDGET PATCH: wind particles above the radar, below Leaflet's markers (600).
+      map.createPane('lv-wind-pane');
+      map.getPane('lv-wind-pane').style.zIndex = paneZ('--leaflet-z-wind', 460);
+      // /WIDGET PATCH
       return map;
     },
 

@@ -40,6 +40,7 @@ KCM.SimpleKCM {
     property bool cfg_radarEnabled: true
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
+    property string cfg_librewxrWindQuality: "balanced"
     property bool cfg_radarGpuWorkaround: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
@@ -886,6 +887,50 @@ KCM.SimpleKCM {
                     selectByMouse: true
                     onTextEdited: root.cfg_librewxrUrl = text
                     onEditingFinished: root.cfg_librewxrUrl = text.trim()
+                }
+            }
+
+            // The animated wind layer of the LibreWXR map. Its data comes from
+            // Open-Meteo, not from the LibreWXR server. It redraws the map at
+            // every frame, so the frame-rate budget is what the CPU cost
+            // depends on; the rate rises with the wind speed inside the range.
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 8
+                spacing: 8
+                visible: root.cfg_radarEnabled && root.cfg_radarProvider === "librewxr"
+
+                Label {
+                    text: i18n("Wind animation:")
+                    font.bold: true
+                }
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    opacity: 0.7
+                    text: i18n("The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky.")
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
+                ComboBox {
+                    id: windQualityCombo
+                    Layout.preferredWidth: 280
+                    model: [
+                        {
+                            text: i18n("Economy (8 to 10 fps)"),
+                            value: "economy"
+                        },
+                        {
+                            text: i18n("Balanced (10 to 20 fps)"),
+                            value: "balanced"
+                        },
+                        {
+                            text: i18n("Smooth (12 to 30 fps)"),
+                            value: "smooth"
+                        }
+                    ]
+                    textRole: "text"
+                    currentIndex: root.cfg_librewxrWindQuality === "economy" ? 0 : (root.cfg_librewxrWindQuality === "smooth" ? 2 : 1)
+                    onActivated: root.cfg_librewxrWindQuality = model[currentIndex].value
                 }
             }
 

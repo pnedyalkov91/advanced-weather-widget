@@ -6,7 +6,7 @@ Usage:
     python3 scripts/build_librewxr_map.py [--librewxr /path/to/LibreWXR]
 
 The KDE-widget glue fragments (shell.html, overrides.css, glue-config.js,
-glue-adapter.js, glue-controls.js) are vendored in this repository under
+glue-adapter.js, glue-wind.js, glue-controls.js) are vendored in this repository under
 scripts/librewxr-map-src/; the shared viewer engine (viewer-core.js) and
 stylesheet (viewer.css) come from the LibreWXR checkout given via
 --librewxr (or LIBREWXR_DIR). This script assembles them into the single
@@ -29,6 +29,7 @@ OVERRIDES_TOKEN = "/*__WIDGET_OVERRIDES_CSS__*/"
 CORE_TOKEN = "//__VIEWER_CORE__"
 GLUE_CONFIG_TOKEN = "/*@__WIDGET_GLUE_CONFIG__*/"
 GLUE_ADAPTER_TOKEN = "/*@__WIDGET_GLUE_ADAPTER__*/"
+GLUE_WIND_TOKEN = "/*@__WIDGET_GLUE_WIND__*/"
 GLUE_CONTROLS_TOKEN = "/*@__WIDGET_GLUE_CONTROLS__*/"
 
 # Vendored in this repository under scripts/librewxr-map-src/. shell.html is
@@ -39,6 +40,7 @@ LOCAL_SOURCES = [
     ("overrides.css", OVERRIDES_TOKEN),
     ("glue-config.js", GLUE_CONFIG_TOKEN),
     ("glue-adapter.js", GLUE_ADAPTER_TOKEN),
+    ("glue-wind.js", GLUE_WIND_TOKEN),
     ("glue-controls.js", GLUE_CONTROLS_TOKEN),
 ]
 
