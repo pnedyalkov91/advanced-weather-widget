@@ -534,6 +534,16 @@ PlasmaCore.ToolTipArea {
                     id: slRowItem
                     required property var modelData
                     spacing: 5
+                    // A separator whose configured text is blank (or trims to blank,
+                    // e.g. the "Space"/None preset, or a fully-hidden compound-item
+                    // joiner) contributes NOTHING visually of its own - the gap between
+                    // its neighbours should be exactly one compactRow.spacing, not two.
+                    // Items with visible:false are fully excluded from RowLayout sizing
+                    // and don't get spacing added around them, so this collapses the
+                    // redundant "spacing + baked-in padding + spacing" down to a single
+                    // spacing gap instead of special-casing item counts or positions.
+                    readonly property string _trimmedSepText: modelData.isSep ? modelData.text.trim() : ""
+                    visible: !modelData.isSep || _trimmedSepText.length > 0
 
                     WeatherIcon {
                         visible: slRowItem.modelData.iconVis
@@ -544,7 +554,11 @@ PlasmaCore.ToolTipArea {
                         Layout.alignment: Qt.AlignVCenter
                     }
                     Label {
-                        text: slRowItem.modelData.text
+                        // Separator glyphs are trimmed so their only surrounding space
+                        // comes from compactRow.spacing (applied once on each side by
+                        // the outer RowLayout) rather than also from leading/trailing
+                        // spaces baked into the configured separator string.
+                        text: slRowItem.modelData.isSep ? slRowItem._trimmedSepText : slRowItem.modelData.text
                         font: compactRoot.weatherRoot ? compactRoot.weatherRoot.wpf(compactRoot.panelFontPx, false) : Qt.font({
                             pixelSize: compactRoot.panelFontPx
                         })
@@ -1250,7 +1264,9 @@ PlasmaCore.ToolTipArea {
             ];
 
         var iconMap = r.parsePanelItemIcons();
-        var sep = Plasmoid.configuration.panelSeparator || " \u2022 ";
+        var sep = Plasmoid.configuration.panelSeparator;
+        if (sep === undefined || sep === null)
+            sep = "\u2022";
         var tokens = (Plasmoid.configuration.panelItemOrder || "condition;temperature").split(";").filter(function (t) {
             return t.trim().length > 0;
         });

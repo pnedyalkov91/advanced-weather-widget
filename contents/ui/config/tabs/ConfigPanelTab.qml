@@ -921,23 +921,23 @@ Kirigami.FormLayout {
             model: [
                 {
                     text: i18n("Bullet  \u2022"),
-                    value: " \u2022 "
+                    value: "\u2022"
                 },
                 {
                     text: i18n("Pipe  |"),
-                    value: " | "
+                    value: "|"
                 },
                 {
                     text: i18n("Dash  \u2013"),
-                    value: " \u2013 "
+                    value: "\u2013"
                 },
                 {
-                    text: i18n("Space"),
-                    value: "   "
+                    text: i18n("None"),
+                    value: ""
                 },
                 {
                     text: i18n("Small circle  \u26ac"),
-                    value: " \u26ac "
+                    value: "\u26ac"
                 },
                 {
                     text: i18n("Custom\u2026"),
@@ -975,7 +975,8 @@ Kirigami.FormLayout {
         Kirigami.FormData.label: i18n("Item spacing:")
         spacing: 8
         SpinBox {
-            from: 0
+            id: itemSpacingSpin
+            from: -16
             to: 32
             value: panelTab.configRoot.cfg_panelItemSpacing
             onValueModified: panelTab.configRoot.cfg_panelItemSpacing = value
@@ -984,6 +985,14 @@ Kirigami.FormLayout {
             text: "px"
             opacity: 0.65
         }
+    }
+    Kirigami.InlineMessage {
+        visible: panelTab._panelInfoMode !== "multiline" && panelTab._panelInfoMode !== "simple" && panelTab.configRoot.cfg_panelItemSpacing < 0
+        Layout.fillWidth: true
+        Layout.columnSpan: 2
+        type: Kirigami.MessageType.Warning
+        text: i18n("Negative spacing pulls panel items closer together than their natural gap and can make icons or text overlap.")
+        showCloseButton: false
     }
     CheckBox {
         visible: panelTab._panelInfoMode === "single"

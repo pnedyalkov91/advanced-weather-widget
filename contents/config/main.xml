@@ -84,8 +84,8 @@
     <entry name="panelInfoMode"    type="String"><default>simple</default></entry>
     <entry name="panelItemOrder"   type="String"><default>location;temperature;humidity</default></entry>
     <entry name="panelItemIcons"   type="String"><default>location=1;condition=1;temperature=1;suntimes=1;wind=1;feelslike=1;humidity=1;pressure=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;spaceweather=1;alerts=1;snowcover=1</default></entry>
-    <entry name="panelSeparator"   type="String"><default> • </default></entry>
-    <entry name="panelItemSpacing" type="Int"><default>5</default><min>0</min><max>32</max></entry>
+    <entry name="panelSeparator"   type="String"><default>•</default></entry>
+    <entry name="panelItemSpacing" type="Int"><default>5</default><min>-16</min><max>32</max></entry>
     <entry name="panelFillWidth"   type="Bool"><default>false</default></entry>
     <entry name="panelSunTimesMode" type="String"><default>upcoming</default></entry>
     <entry name="panelMoonPhaseMode" type="String"><default>full</default></entry>

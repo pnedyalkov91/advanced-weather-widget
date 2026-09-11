@@ -1050,7 +1050,7 @@ KCM.AbstractKCM {
     property bool cfg_singlePanelRow: true
     property string cfg_panelItemOrder: "location;temperature;humidity"
     property string cfg_panelItemIcons: "location=1;condition=1;temperature=1;suntimes=1;wind=1;feelslike=1;humidity=1;pressure=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;alerts=1;snowcover=1"
-    property string cfg_panelSeparator: " \u2022 "
+    property string cfg_panelSeparator: "\u2022"
     property string cfg_panelSunTimesMode: "upcoming"
     property string cfg_panelMoonPhaseMode: "full"   // "full" | "upcoming" | "upcoming-times" | "phase" | "times" | "moonrise" | "moonset"
     property int cfg_panelItemSpacing: 5
