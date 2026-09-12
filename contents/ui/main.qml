@@ -32,6 +32,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtPositioning
+import QtMultimedia
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.notification
@@ -439,6 +440,14 @@ PlasmoidItem {
             : (Notification.CloseOnTimeout | Notification.SkipGrouping | Notification.DefaultEvent)
 
         actions: root._alertNotificationRepeatEnabled() ? [dismissAlertAction, postponeAlertAction] : []
+
+        // Stop the alert sound whenever this notification goes away, no
+        // matter how: Dismiss, Postpone, the notification's own close (×)
+        // button, or - when repeat is disabled - CloseOnTimeout. Without
+        // this, a long custom sound file (a multi-minute song, say) just
+        // keeps playing after the notification itself is gone, since
+        // nothing was ever telling alertMediaPlayer to stop.
+        onClosed: alertMediaPlayer.stop()
     }
 
     // One-time, non-critical heads-up for an alert that hasn't started yet.
@@ -452,6 +461,30 @@ PlasmoidItem {
         eventId: "notification"
         iconName: _bundledAlertIcon("storm-warning")
         flags: Notification.CloseOnTimeout | Notification.SkipGrouping | Notification.DefaultEvent
+    }
+
+    // Plays the (optional, per-severity) alert sound. A dedicated player
+    // rather than relying on the desktop notification's own sound handling -
+    // componentName is deliberately the generic "plasma_workspace" above (see
+    // the comment further up), which has no per-severity concept, so a custom
+    // sound choice has to be played by the applet itself.
+    //
+    // MediaPlayer, not SoundEffect: QSoundEffect only decodes uncompressed
+    // WAV/PCM on Linux - mp3/ogg/etc. silently fail to play regardless of
+    // which Qt Multimedia backend is installed (this is a hard limitation of
+    // QSoundEffect itself, not a missing-codec/missing-package issue). Since
+    // users can pick literally any audio file in the config UI, MediaPlayer
+    // is the type that actually honours that - it decodes whatever the
+    // installed FFmpeg/GStreamer backend supports, which in practice is
+    // everything. `source` is set right before each play() call in
+    // _playAlertSound() rather than bound, since the user can change the
+    // sound file at any time in the config UI.
+    MediaPlayer {
+        id: alertMediaPlayer
+        audioOutput: AudioOutput {}
+        onErrorOccurred: (error, errorString) => {
+            console.warn("[AdvancedWeatherWidget] alert sound failed to play:", errorString);
+        }
     }
 
     NotificationAction {
@@ -1163,6 +1196,52 @@ PlasmoidItem {
         return true;
     }
 
+    /** Whether the given alert's severity has its sound switch on. Callers
+     *  are expected to have already run the alert through _alertColorAllowed()
+     *  (the notification-visibility gate) - this only adds the separate,
+     *  narrower "and also play a sound" gate on top, so it doesn't repeat
+     *  the legacy minSeverity fallback that function has. Extreme is
+     *  distinguished from Severe the same way as above: both map to color
+     *  "red", so severity (not color) decides the purple case. */
+    function _alertSoundAllowed(color, severity) {
+        var c = (color || "").toLowerCase();
+        var s = (severity || "").toLowerCase();
+        if (s === "extreme")
+            return Plasmoid.configuration.alertNotificationsSoundPurpleEnabled === true;
+        if (c === "red")
+            return Plasmoid.configuration.alertNotificationsSoundRedEnabled === true;
+        if (c === "orange")
+            return Plasmoid.configuration.alertNotificationsSoundOrangeEnabled === true;
+        if (c === "yellow")
+            return Plasmoid.configuration.alertNotificationsSoundYellowEnabled === true;
+        return false;
+    }
+
+    /** Fallback alert sound when the user hasn't chosen one: a short siren
+     *  bundled with the widget at contents/sounds/alert-default.ogg (a
+     *  sibling of contents/icons/ - same package layout _iconsBaseDir below
+     *  relies on), so it doesn't depend on any system sound theme being
+     *  installed. MediaPlayer (unlike SoundEffect) decodes Ogg fine - see
+     *  the MediaPlayer comment above. If this file is ever missing/
+     *  unreadable, playback just fails silently (see alertMediaPlayer's
+     *  onErrorOccurred) - the notification itself is unaffected either way,
+     *  since it's sent independently via KNotification. Keep this filename
+     *  in sync with defaultAlertSoundUrl in configNotifications.qml, which
+     *  uses the same bundled file for its "Test" button's fallback. */
+    function _defaultAlertSoundUrl() {
+        return Qt.resolvedUrl("../sounds/alert-default.ogg");
+    }
+
+    /** Plays the alert sound for a single alert, if its severity has sound
+     *  enabled. Only called for the main/active alert notification - the
+     *  "upcoming" heads-up is deliberately silent (see its own comment). */
+    function _playAlertSound(alert) {
+        if (!_alertSoundAllowed(alert.color, alert.severity))
+            return;
+        var file = Plasmoid.configuration.alertNotificationsSoundFile || "";
+        alertMediaPlayer.source = file.length > 0 ? file : _defaultAlertSoundUrl();
+        alertMediaPlayer.play();
+    }
 
     function _isAlertActiveNow(a, now) {
         var onset = a && a.onset ? new Date(a.onset) : null;
@@ -1339,7 +1418,8 @@ PlasmoidItem {
         return _bundledAlertIcon(stem);
     }
 
-    /** Sends (or refreshes) the persistent weather-alert notification for a single alert. */
+    /** Sends (or refreshes) the persistent weather-alert notification for a
+     *  single alert, and plays the alert sound if its severity has one enabled. */
     function _sendAlertNotification(alert) {
         var location = (_locName() || "").trim();
         _activeAlertNotificationFingerprint = _alertFingerprint(alert);
@@ -1355,6 +1435,7 @@ PlasmoidItem {
                 : Notification.LowUrgency;
         }
         weatherAlertNotification.sendEvent();
+        _playAlertSound(alert);
     }
 
     /** Body text for the upcoming-alert heads-up: same shape as

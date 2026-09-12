@@ -346,6 +346,18 @@
          to enabled=true and a 30-minute default interval. -->
     <entry name="alertNotificationsTypeSettings" type="String"><default>{}</default></entry>
 
+    <!-- Alert sounds: an independent per-severity toggle (mirrors the visual
+         severity switches above) plus a single user-chosen sound file played
+         whenever an alert of an enabled severity fires. An empty string falls
+         back to the bundled/system default alert sound - see
+         root._defaultAlertSoundUrl() in main.qml. Only the main (active) alert
+         notification plays ada sound; the "upcoming" heads-up never does. -->
+    <entry name="alertNotificationsSoundYellowEnabled" type="Bool"><default>false</default></entry>
+    <entry name="alertNotificationsSoundOrangeEnabled" type="Bool"><default>false</default></entry>
+    <entry name="alertNotificationsSoundRedEnabled"    type="Bool"><default>false</default></entry>
+    <entry name="alertNotificationsSoundPurpleEnabled" type="Bool"><default>true</default></entry>
+    <entry name="alertNotificationsSoundFile" type="String"><default></default></entry>
+
     <entry name="notificationTodayEnabled"   type="Bool"><default>true</default></entry>
     <entry name="notificationTodayTime"      type="String"><default>08:00</default></entry>
 

@@ -18,6 +18,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
+import QtMultimedia
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 
@@ -33,6 +35,36 @@ KCM.SimpleKCM {
     property bool cfg_alertNotificationsUpcomingEnabled: true
     property bool cfg_alertNotificationsRepeatEnabled: true
     property string cfg_alertNotificationsTypeSettings: "{}"
+
+    // Per-severity sound toggle, independent from the visual severity
+    // switches above (but only meaningful when the matching severity is
+    // also enabled - see the "Sounds:" row's per-switch enabled binding).
+    property bool cfg_alertNotificationsSoundYellowEnabled: false
+    property bool cfg_alertNotificationsSoundOrangeEnabled: false
+    property bool cfg_alertNotificationsSoundRedEnabled: true
+    property bool cfg_alertNotificationsSoundPurpleEnabled: true
+    // file:// URL of the user-chosen alert sound; empty means "use the
+    // bundled default siren" (defaultAlertSoundUrl below, same file
+    // main.qml's _defaultAlertSoundUrl() falls back to).
+    property string cfg_alertNotificationsSoundFile: ""
+
+    // contents/ui/config/configNotifications.qml → contents/sounds/ is two
+    // levels up. Keep in sync with main.qml's _defaultAlertSoundUrl(),
+    // which resolves the same file from contents/ui/main.qml (one level up).
+    readonly property string defaultAlertSoundUrl: Qt.resolvedUrl("../../sounds/alert-default.ogg")
+
+    /** Strips the file:// scheme (and percent-decodes) from a stored sound
+     *  file URL, for display in the read-only text field. Empty in ⇒ empty
+     *  out, which the field shows as its "Default (built-in siren)" placeholder. */
+    function soundFileDisplayPath(u) {
+        if (!u || u.length === 0)
+            return "";
+        try {
+            return decodeURIComponent(u.replace(/^file:\/\//, ""));
+        } catch (e) {
+            return u;
+        }
+    }
 
     // Parsed working copy of the per-type settings JSON map.
     property var alertTypeSettings: ({})
@@ -286,6 +318,121 @@ KCM.SimpleKCM {
                     ToolTip.visible: severityInfoHover.hovered
                     ToolTip.text: i18n("Weather-alert severity levels, from lowest to highest:\n\n🟡 Yellow - Minor: be aware of the conditions.\n🟠 Orange - Moderate: be prepared.\n🔴 Red - Severe: take action.\n🟣 Purple - Extreme: extraordinarily dangerous, take action immediately.\n\nTurn a level off to stop receiving notifications for alerts of that severity.")
                 }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                spacing: 10
+                Label { text: i18n("Sounds:") }
+                Switch {
+                    text: i18n("Yellow")
+                    enabled: root.cfg_alertNotificationsYellowEnabled
+                    opacity: enabled ? 1.0 : 0.5
+                    checked: root.cfg_alertNotificationsSoundYellowEnabled
+                    onToggled: root.cfg_alertNotificationsSoundYellowEnabled = checked
+                }
+                Switch {
+                    text: i18n("Orange")
+                    enabled: root.cfg_alertNotificationsOrangeEnabled
+                    opacity: enabled ? 1.0 : 0.5
+                    checked: root.cfg_alertNotificationsSoundOrangeEnabled
+                    onToggled: root.cfg_alertNotificationsSoundOrangeEnabled = checked
+                }
+                Switch {
+                    text: i18n("Red")
+                    enabled: root.cfg_alertNotificationsRedEnabled
+                    opacity: enabled ? 1.0 : 0.5
+                    checked: root.cfg_alertNotificationsSoundRedEnabled
+                    onToggled: root.cfg_alertNotificationsSoundRedEnabled = checked
+                }
+                Switch {
+                    text: i18n("Purple")
+                    enabled: root.cfg_alertNotificationsPurpleEnabled
+                    opacity: enabled ? 1.0 : 0.5
+                    checked: root.cfg_alertNotificationsSoundPurpleEnabled
+                    onToggled: root.cfg_alertNotificationsSoundPurpleEnabled = checked
+                }
+
+                // Info button - explains the sound switches and how they relate
+                // to the severity switches above.
+                Kirigami.Icon {
+                    source: "help-about"
+                    implicitWidth: Kirigami.Units.iconSizes.small
+                    implicitHeight: Kirigami.Units.iconSizes.small
+                    opacity: soundInfoHover.hovered ? 1.0 : 0.7
+
+                    HoverHandler { id: soundInfoHover }
+
+                    ToolTip.visible: soundInfoHover.hovered
+                    ToolTip.text: i18n("Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound.")
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                spacing: 6
+
+                Label { text: i18n("Alert sound:") }
+
+                TextField {
+                    id: soundFileField
+                    Layout.fillWidth: true
+                    readOnly: true
+                    placeholderText: i18n("Default (built-in siren)")
+                    text: root.soundFileDisplayPath(root.cfg_alertNotificationsSoundFile)
+                }
+
+                Button {
+                    text: i18n("Browse…")
+                    icon.name: "document-open"
+                    onClicked: soundFileDialog.open()
+                }
+
+                Button {
+                    text: i18n("Test")
+                    icon.name: "media-playback-start"
+                    onClicked: {
+                        testMediaPlayer.source = root.cfg_alertNotificationsSoundFile.length > 0
+                            ? root.cfg_alertNotificationsSoundFile
+                            : root.defaultAlertSoundUrl;
+                        testMediaPlayer.play();
+                    }
+                }
+
+                Button {
+                    text: i18n("Reset")
+                    icon.name: "edit-undo"
+                    enabled: root.cfg_alertNotificationsSoundFile.length > 0
+                    onClicked: root.cfg_alertNotificationsSoundFile = ""
+                }
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                type: Kirigami.MessageType.Warning
+                showCloseButton: false
+                visible: testMediaPlayer.error !== MediaPlayer.NoError
+                text: i18n("Couldn't play that sound file: %1", testMediaPlayer.errorString)
+            }
+
+            FileDialog {
+                id: soundFileDialog
+                title: i18n("Choose Alert Sound")
+                nameFilters: [i18n("Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"), i18n("All files (*)")]
+                onAccepted: root.cfg_alertNotificationsSoundFile = selectedFile.toString()
+            }
+
+            // Mirrors main.qml's alertMediaPlayer: MediaPlayer rather than
+            // SoundEffect, since SoundEffect only supports uncompressed WAV
+            // on Linux and this "Test" button needs to preview whatever
+            // format the user picked (mp3/ogg included).
+            MediaPlayer {
+                id: testMediaPlayer
+                audioOutput: AudioOutput {}
             }
 
             Switch {

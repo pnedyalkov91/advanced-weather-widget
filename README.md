@@ -50,6 +50,29 @@ For the full functionality of this widget, please ensure you have the following 
 | **Arch Linux** | `qt6-webengine` |
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtwebengine` |
 
+> Some users have reported that KDE Plasma crashes when opening the Radar tab or the map in the location selection dialog.  On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the entire Plasma shell the first time it renders, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside the browser view to prevent the crash.
+> The problem is not caused by the widget itself, but by certain versions of QtWebEngine.
+> To enable this workaround, go to the widget settings -> General -> Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL).
+> Only enable this option if you are actually experiencing this crash, as it may reduce rendering performance on the radar map.
+> You need to log out and log back in for this option to take effect, as the setting needs to be applied before Plasma starts. It also applies to the entire session, so any other application that embeds a Chromium-based browser view will use the same setting.
+> If you enable this option, the following file will be created:
+
+> ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh
+
+### 🔊 Alert Sounds
+*Required to play a sound alongside weather-alert notifications.*
+
+| Distribution | Package Name |
+|---|---|
+| **Fedora / RHEL** | `qt6-qtmultimedia` |
+| **openSUSE** | `qt6-multimedia` |
+| **Arch Linux** | `qt6-multimedia` `qt6-multimedia-ffmpeg` |
+| **Debian / Kubuntu / KDE Neon** | `qml6-module-qtmultimedia` |
+
+> The alert sounds support .wav, .ogg, and .mp3 formats. I haven’t tested other sound formats, but in theory, they should work as well. Please test your sound in the widget settings before applying it.
+
+> On Arch, `qt6-multimedia` alone has no playback backend - it needs either `qt6-multimedia-ffmpeg` (recommended) or `qt6-multimedia-gstreamer` alongside it.
+
 > **Note:** After installing these, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
 ## 🛍 Install from KDE Store (Recommended)
@@ -278,6 +301,12 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
   https://alerts.kde.org/
 
   Licensed under the **AGPL-3.0-or-later** license.
+
+- This project uses data from the NOAA Space Weather Prediction Center (SWPC) for space weather information: https://www.spaceweather.gov/
+NOAA/NWS data and products are in the public domain and are not subject to copyright protection within the United States.
+
+- **Alert Sound:** Sourced from Pixabay: https://pixabay.com (Licensed under the Pixabay License. Free for commercial and non-commercial use)
+
 
 
 
