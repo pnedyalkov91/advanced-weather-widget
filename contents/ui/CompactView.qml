@@ -65,7 +65,11 @@ import "components"
 
 PlasmaCore.ToolTipArea {
     id: compactRoot
+    // Inactive while the full view is open: this also cancels a pending
+    // show timer, so a quick hover-then-click does not pop the tooltip
+    // over the freshly opened popup.
     active: Plasmoid.configuration.tooltipEnabled !== false
+            && !(weatherRoot && weatherRoot.expanded)
 
     // ── Public interface - bound from main.qml ────────────────────────────
     property var weatherRoot
@@ -1241,8 +1245,12 @@ PlasmaCore.ToolTipArea {
     TapHandler {
         acceptedButtons: Qt.LeftButton
         grabPermissions: PointerHandler.CanTakeOverFromAnything
-        onTapped: if (compactRoot.weatherRoot)
-            compactRoot.weatherRoot.expanded = !compactRoot.weatherRoot.expanded
+        onTapped: {
+            if (!compactRoot.weatherRoot)
+                return;
+            compactRoot.hideImmediately();
+            compactRoot.weatherRoot.expanded = !compactRoot.weatherRoot.expanded;
+        }
     }
 
     // ── Private helpers ───────────────────────────────────────────────────
