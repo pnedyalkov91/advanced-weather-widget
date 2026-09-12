@@ -457,8 +457,6 @@ Item {
 
             Label {
                 visible: radarRoot.activeLayer !== "satellite"
-                height: 22
-                verticalAlignment: Text.AlignVCenter
                 text: i18n("Palette:")
                 color: Kirigami.Theme.textColor
                 opacity: 0.72
