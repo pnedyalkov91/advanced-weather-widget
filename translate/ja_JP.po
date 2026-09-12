@@ -1926,13 +1926,8 @@ msgid "Layout type:"
 msgstr "レイアウトタイプ:"
 
 #: contents/ui/config/configGeneral.qml:879
-msgid ""
-"Leave this empty to use the public server. Set it to your own address if you "
-"run a self-hosted LibreWXR instance."
-msgstr "空欄のままにすると公開サーバーを使用します。"
-"セルフホストの LibreWXR インスタンスを実行してい"
-"る場合は、ご自身のアドレスを設定してください"
-"。"
+msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
+msgstr "空欄のままにすると公開サーバーを使用します。セルフホストのLibreWXRインスタンスを実行している場合は、ご自身のアドレスを設定してください。"
 
 #: contents/ui/config/configGeneral.qml:835
 #: contents/ui/config/configGeneral.qml:1014
@@ -1941,7 +1936,7 @@ msgstr "LibreWXR"
 
 #: contents/ui/config/configGeneral.qml:872
 msgid "LibreWXR server:"
-msgstr "LibreWXR サーバー:"
+msgstr "LibreWXRサーバー:"
 
 #: contents/ui/components/RadarWebEngineView.qml:161
 #: contents/ui/components/RadarWebEngineView.qml:849
@@ -2043,8 +2038,8 @@ msgid ""
 "Location '%1' is already in your saved list. You can apply the selected "
 "location, but it will not be saved again."
 msgstr ""
-"位置 '%1' は既に保存リストにあります。選択した位置を適用できますが、再度保存"
-"されません。"
+"位置 '%1' は既に保存リストにあります。"
+"選択した位置を適用できますが、再度保存されません。"
 
 #: contents/ui/config/configAppearance.qml:1395
 msgid "Location Name"
@@ -2057,7 +2052,8 @@ msgstr "位置を自動検出しました。"
 #: contents/ui/config/configLocation.qml:1536
 msgid ""
 "Location detection is depending on system configuration and permissions."
-msgstr "位置検出はシステム設定と権限に依存します。"
+msgstr ""
+"位置検出はシステム設定と権限に依存します。"
 
 #: contents/ui/config/configGeneral.qml:262
 #: contents/ui/config/configLocation.qml:538
@@ -2088,9 +2084,7 @@ msgstr "位置パッケージの通知"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:544
 msgid "Location staged. Click the main Apply button to save."
-msgstr ""
-"位置がステージングされました。メインの適用ボタンをクリックして保存してくださ"
-"い。"
+msgstr "位置がステージングされました。メインの適用ボタンをクリックして保存してください。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:346
 msgid "Location:"
@@ -2197,9 +2191,9 @@ msgstr "海洋・気象データプロバイダ。下に APIキーが必要で�
 msgid ""
 "Members of sensitive groups may experience health effects; the general "
 "public is less likely to be affected."
-msgstr "敏感な集団では健康への影響が現れる可能性があ"
-"り、一般の人々が影響を受ける可能性は比較的低"
-"くなります。"
+msgstr ""
+"敏感な集団では健康への影響が現れる可能性があり、"
+"一般の人々が影響を受ける可能性は比較的低くなります。"
 
 #: contents/ui/config/configGeneral.qml:1010
 msgid "MeteoAlarm + NOAA NWS (Native)"
@@ -2480,8 +2474,8 @@ msgid ""
 "No saved locations. Save the current location to quickly switch between "
 "places."
 msgstr ""
-"保存された位置がありません。現在の位置を保存すると、場所をすばやく切り替えら"
-"れます。"
+"保存された位置がありません。"
+"現在の位置を保存すると、場所をすばやく切り替えられます。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:538
 msgid "No weather stations found for '%1'"
@@ -2512,8 +2506,7 @@ msgstr "利用できません（HTTP %1）"
 msgid ""
 "Not available: the selected base map already has a fixed light or dark style."
 msgstr ""
-"利用できません: 選択したベースマップには、固定のライトまたはダークスタイルが"
-"既に設定されています。"
+"利用できません: 選択したベースマップには、固定のライトまたはダークスタイルが既に設定されています。"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:623
 msgid "Not tested"
@@ -2565,8 +2558,8 @@ msgid ""
 "Number of item rows visible at once. Resize the panel height in KDE settings "
 "to match."
 msgstr ""
-"一度に表示される項目の行数。KDE設定でパネルの高さを一致するよう調整してくださ"
-"い。"
+"一度に表示される項目の行数"
+"KDE設定でパネルの高さを一致するよう調整してください。"
 
 #: contents/ui/config/configAppearance.qml:576
 msgid "OK"
@@ -3060,8 +3053,9 @@ msgstr "赤"
 msgid ""
 "Reduce or reschedule strenuous outdoor activities, especially if you "
 "experience symptoms."
-msgstr "特に症状がある場合は、激しい屋外活動を減らす"
-"か、時間をずらしてください。"
+msgstr ""
+"特に症状がある場合は、激しい屋外活動を減らすか、"
+"時間をずらしてください。"
 
 #: contents/ui/config/configLocation.qml:1539 contents/ui/FullView.qml:419
 #: contents/ui/main.qml:369
@@ -3176,9 +3170,7 @@ msgstr "保存した位置"
 
 #: contents/ui/config/configGeneral.qml:100
 msgid "Saved, but not active yet - log out and back in for it to take effect."
-msgstr ""
-"保存されましたが、まだ有効ではありません - 有効にするにはログアウトして再度ロ"
-"グインしてください。"
+msgstr "保存されましたが、まだ有効ではありません - 有効にするにはログアウトして再度ログインしてください。"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:803
 msgid "Scroll animation:"
@@ -3227,10 +3219,10 @@ msgid ""
 "Sends a single, low-priority heads-up as soon as a future alert is published "
 "(e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert "
 "notification above still fires separately once it actually becomes active."
-msgstr "将来のアラートが公開されるとすぐに、優先度の"
-"低いお知らせを一度だけ送ります（例:「熱波警報"
-"は明日11:00に開始」）。実際に発効した時点で、上"
-"記の通常のアラート通知が別途送られます。"
+msgstr ""
+"将来のアラートが公開されるとすぐに、優先度の低いお知らせを一度だけ送ります"
+"（例:「熱波警報は明日11:00に開始」）。実際に発効した時点で、"
+"上記の通常のアラート通知が別途送られます。"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:106
 #: contents/ui/config/tabs/ConfigPanelTab.qml:912
@@ -3815,8 +3807,8 @@ msgid ""
 "The workaround script wasn't found on disk. Try toggling the option off and "
 "on again."
 msgstr ""
-"回避策のスクリプトがディスク上に見つかりません。オプションを一度オフにしてか"
-"ら、再度オンにしてみてください。"
+"回避策のスクリプトがディスク上に見つかりません。オプションを一度オフにしてから、"
+"再度オンにしてみてください。"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:736
 msgid "Theme default"
@@ -3827,10 +3819,9 @@ msgstr "テーマのデフォルト"
 msgid ""
 "These settings only apply when the widget is placed in a panel or the system "
 "tray - they have no effect on the desktop."
-msgstr "これらの設定は、ウィジェットをパネルまたはシ"
-"ステムトレイに配置した場合にのみ適用されます"
-"。デスクトップに配置した場合には効果がありま"
-"せん。"
+msgstr ""
+"これらの設定は、ウィジェットをパネルまたはシステムトレイに配置した場合にのみ適用されます。"
+"デスクトップに配置した場合には効果がありません。"
 
 #: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
@@ -3904,10 +3895,9 @@ msgid ""
 "enter your API key above. When you are ready, you can enable Adaptive mode "
 "again."
 msgstr ""
-"追加の地図レイヤー（雨、雲、気温、風、気圧）のロックを解除するには: アダプ"
-"ティブモードを無効化し、気象プロバイダとしてOpenWeatherMapを選択して、上にAPI"
-"キーを入力してください。準備ができたら、再度アダプティブモードを有効化できま"
-"す。"
+"追加の地図レイヤー（雨、雲、気温、風、気圧）のロックを解除するには:"
+" アダプティブモードを無効化し、気象プロバイダとしてOpenWeatherMapを選択して、"
+"上にAPIキーを入力してください。準備ができたら、再度アダプティブモードを有効化できます。"
 
 #: contents/ui/ForecastView.qml:497 contents/ui/main.qml:1597
 #: contents/ui/SimpleView.qml:423
@@ -4000,15 +3990,15 @@ msgstr "切り詰め（1 行）"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:384
 msgid ""
 "Turn off all three switches above to pick a single standard here instead."
-msgstr "ここで単一の基準を選択するには、上の3つのスイ"
-"ッチをすべてオフにしてください。"
+msgstr ""
+"ここで単一の基準を選択するには、上の3つのスイッチをすべてオフにしてください。"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:348
 msgid ""
 "Turn on any combination to show them side by side instead of a single "
 "standard below."
-msgstr "組み合わせてオンにすると、下の単一の基準の代"
-"わりに並べて表示されます。"
+msgstr ""
+"組み合わせてオンにすると、下の単一の基準の代わりに並べて表示されます。"
 
 #: contents/ui/main.qml:1282
 msgctxt "Alert severity"
@@ -4163,8 +4153,8 @@ msgid ""
 "Uses KDE system icons by default. Click the button to customise each item's "
 "icon."
 msgstr ""
-"デフォルトでKDEシステムアイコンを使用します。ボタンをクリックして各項目のアイ"
-"コンをカスタマイズできます。"
+"デフォルトでKDEシステムアイコンを使用します。ボタンをクリックして各項目のアイコンを"
+"カスタマイズできます。"
 
 #: contents/ui/js/airQuality.js:123
 msgid "V.High"
@@ -4315,7 +4305,8 @@ msgid ""
 "🟣 Purple - Extreme: extraordinarily dangerous, take action immediately.\n"
 "\n"
 "Turn a level off to stop receiving notifications for alerts of that severity."
-msgstr "天気アラートの重要度レベル（低→高）:\n\n🟡 黄 "
+msgstr ""
+"天気アラートの重要度レベル（低→高）:\n\n🟡 黄 "
 "- 軽微: 状況に注意してください。\n🟠 オレンジ - "
 "中程度: 準備をしてください。\n🔴 赤 - 重大: 行動"
 "を起こしてください。\n🟣 紫 - 極端: 極めて危険"
@@ -4423,8 +4414,8 @@ msgid ""
 "You may need to increase the widget's width to see all the selected "
 "information"
 msgstr ""
-"選択した情報をすべて表示するには、ウィジェットの幅を広げる必要がある場合があ"
-"ります"
+"選択した情報をすべて表示するには、ウィジェットの幅を広げる必要がある場合が"
+"あります"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:490
 msgid "Zoom in"
