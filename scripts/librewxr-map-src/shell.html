@@ -17,8 +17,9 @@
       live changes arrive through the
       window.* functions (setLayerMode / setColorScheme / setArrows / setCells
       / setAlerts / setTheme / setSmooth / setSnow / setFormat / setTileSize
-      / setBackground / fixViewport). The QML side keeps zoom in sync via
-      document.title ("zoom:" reports). Map rotation is in-map only (no QML
+      / setBackground / fixViewport / setWind / setWindActive / setWindLevel
+      / setWindRate). The QML side keeps zoom in sync via document.title
+      ("zoom:" reports). Map rotation is in-map only (no QML
       control): the leaflet-rotate plugin adds a compass control below the
       zoom control, drag-to-rotate on that control or the map (Shift+drag),
       no configuration or window.* bridge involved.
@@ -123,6 +124,7 @@
 
     <script>
 /*@__WIDGET_GLUE_ADAPTER__*/
+/*@__WIDGET_GLUE_WIND__*/
 /*@__WIDGET_GLUE_CONTROLS__*/
 
     </script>

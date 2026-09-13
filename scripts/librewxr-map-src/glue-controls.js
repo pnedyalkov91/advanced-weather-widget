@@ -26,6 +26,7 @@ var config = {
     // The QML chrome only knows arrows on/off; the page derives the arrow
     // color from the map theme, so re-derive it whenever the theme moves.
     if (arrowsOn) viewer.setArrows(theme === 'dark' ? 'light' : 'dark');
+    if (windLayer) windLayer.setColor(windColor(theme));
   }
 };
 
@@ -94,6 +95,49 @@ window.fixViewport = function () {
   // which the cancelling 1px nudge (never a real view change) safely ignores.
   setTimeout(function () { m.invalidateSize(false); }, 400);
 };
+
+// === WIND LAYER (Open-Meteo particles, glue-wind.js) ===
+var WindLayerClass = WidgetWind.createWindLayer(L);
+var _windSource = new WidgetWind.WindSource({});
+var _windDem = new WidgetWind.DemTiles({});
+var windLayer = null;
+var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
+var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
+
+function windColor(theme) { return theme === 'dark' ? '#ffffff' : '#1a237e'; }
+
+window.setWind = function (on) {
+  var m = _widgetAdapter.getMap();
+  if (!m) return;
+  if (on && !windLayer) {
+    windLayer = new WindLayerClass(_windSource, _windDem, {
+      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, color: windColor(currentTheme()), level: windLevel
+    });
+    windLayer.addTo(m);
+  } else if (!on && windLayer) {
+    m.removeLayer(windLayer);
+    windLayer = null;
+  }
+};
+
+// Frame-rate budget chosen in the widget settings (economy / balanced / smooth).
+window.setWindRate = function (fps, maxFps) {
+  windFps = fps; windMaxFps = maxFps;
+  if (windLayer) windLayer.setRate(fps, maxFps);
+};
+
+// '10m' (surface, relief-aware) or '700hPa' (the flow that steers the rain).
+window.setWindLevel = function (level) {
+  windLevel = level === '700hPa' ? '700hPa' : '10m';
+  if (windLayer) windLayer.setLevel(windLevel);
+};
+
+// Popup collapsed/expanded: the page may not see a visibility change, so QML says it.
+window.setWindActive = function (active) {
+  if (windLayer) windLayer.setActive(!!active);
+};
+
+if (WIND_ON) window.setWind(true);
 
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');

@@ -224,3 +224,11 @@
         .base-inverted img {
           filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.8);
         }
+
+        /* Wind particles (glue-wind.js): one canvas in its own pane, never
+           catching pointer events so the map stays draggable through it. */
+        :root { --leaflet-z-wind: 460; }
+        .lv-wind-canvas {
+          position: absolute;
+          pointer-events: none;
+        }

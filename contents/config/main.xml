@@ -184,6 +184,13 @@
     <entry name="librewxrLayer"         type="String"><default>radar</default></entry>
     <entry name="librewxrColorScheme"   type="Int"><default>10</default><min>0</min><max>12</max></entry>
     <entry name="librewxrArrows"        type="Bool"><default>false</default></entry>
+    <entry name="librewxrWind"          type="Bool"><default>false</default></entry>
+    <!-- Wind level for the animated particles: "10m" (surface) or "700hPa" (aloft) -->
+    <entry name="librewxrWindLevel"     type="String"><default>10m</default></entry>
+    <!-- Frame-rate budget of the wind animation: "economy" (8-10 fps),
+         "balanced" (10-20 fps) or "smooth" (12-30 fps); the rate rises with
+         the wind speed inside that range -->
+    <entry name="librewxrWindQuality"   type="String"><default>balanced</default></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
     <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
     <entry name="librewxrCells"         type="String"><default></default></entry>
