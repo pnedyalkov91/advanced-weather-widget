@@ -430,6 +430,7 @@ var WidgetWind = (function () {
         this._entry = null;
         this._resetToken = 0;
         this._fps = this.options.fps;
+        this._loop = 0;
         this._velOpts = { k: this.options.speedScale, min: this.options.minPx, max: this.options.maxPx };
       },
 
@@ -495,6 +496,10 @@ var WidgetWind = (function () {
 
       _stop: function (clear) {
         this._running = false;
+        // Invalidate the chain: a rAF already requested by the old timer
+        // must neither draw nor reschedule once we restart (rotate/moveend
+        // can stop and start again before it runs).
+        this._loop = (this._loop || 0) + 1;
         if (this._timer) { clearTimeout(this._timer); this._timer = null; }
         if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
         if (this._retryTimer) { clearTimeout(this._retryTimer); this._retryTimer = null; }
@@ -587,12 +592,12 @@ var WidgetWind = (function () {
       // One frame every 1000/fps ms: a timer, then a single rAF to draw. Never
       // a free-running rAF loop (it alone costs ~9 % of a core in QtWebEngine).
       _schedule: function () {
-        var self = this;
+        var self = this, loop = this._loop || 0;
         this._timer = setTimeout(function () {
           self._timer = null;
-          if (!self._running) return;
+          if (!self._running || self._loop !== loop) return;
           requestAnimationFrame(function () {
-            if (!self._running) return;
+            if (!self._running || self._loop !== loop) return;
             self._frame();
             self._schedule();
           });

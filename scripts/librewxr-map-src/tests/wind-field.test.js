@@ -184,3 +184,42 @@ test('viewFrame: map turned 90 degrees clockwise, screen right is world north', 
   const e = WindField.worldToScreenVector(f, 3, 4);
   close(Math.hypot(e.dx, e.dy), 5);
 });
+
+// Animation loop: a timer, then one rAF per frame. Restarting the layer
+// (moveend, rotate...) while a rAF is still pending must not leave the old
+// chain alive next to the new one, or the particles run at 2x, 3x...
+test('layer loop: restart while a frame is pending keeps a single chain', () => {
+  const { createWindLayer } = require('../glue-wind.js');
+  const L = {
+    Layer: { extend: (proto) => { function C() {} C.prototype = proto; return C; } },
+    setOptions: (o, opts) => { o.options = Object.assign(Object.create(o.options || {}), opts || {}); }
+  };
+  const saved = { setTimeout, clearTimeout, requestAnimationFrame: global.requestAnimationFrame };
+  const timers = [], rafs = [];
+  global.setTimeout = (fn) => { timers.push(fn); return timers.length; };
+  global.clearTimeout = (id) => { timers[id - 1] = null; };
+  global.requestAnimationFrame = (fn) => { rafs.push(fn); return rafs.length; };
+  try {
+    const layer = new (createWindLayer(L))();
+    layer.initialize(null, null, {});
+    let frames = 0;
+    layer._frame = () => { frames++; };
+    const pending = () => timers.filter(Boolean).length;
+    const fire = (q) => { const fn = q.shift(); if (fn) fn(); };
+
+    layer._start();
+    assert.equal(pending(), 1);
+    fire(timers);                 // timer fired: one rAF pending, no timer
+    assert.equal(rafs.length, 1);
+    layer._stop(true);            // rotate event: stop...
+    layer._start();               // ...and restart before the rAF ran
+    assert.equal(pending(), 1);
+    fire(rafs);                   // the stale rAF must not draw nor reschedule
+    assert.equal(frames, 0);
+    assert.equal(pending(), 1);
+  } finally {
+    global.setTimeout = saved.setTimeout;
+    global.clearTimeout = saved.clearTimeout;
+    global.requestAnimationFrame = saved.requestAnimationFrame;
+  }
+});
