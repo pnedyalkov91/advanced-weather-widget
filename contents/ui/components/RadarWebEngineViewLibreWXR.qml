@@ -419,21 +419,6 @@ Item {
             }
 
             Switch {
-                visible: radarRoot.windOn
-                text: i18n("Aloft")
-                checked: radarRoot.windLevel === "700hPa"
-                onToggled: {
-                    var level = checked ? "700hPa" : "10m";
-                    Plasmoid.configuration.librewxrWindLevel = level;
-                    webView.runJavaScript("if (window.setWindLevel) window.setWindLevel(" + JSON.stringify(level) + ");");
-                }
-
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
-            }
-
-            Switch {
                 text: i18n("Storm cells")
                 checked: radarRoot.activeCells !== ""
                 onToggled: {
@@ -527,6 +512,21 @@ Item {
 
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Highlight snow and wintry precipitation with a distinct color")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
+
+            Switch {
+                visible: radarRoot.windOn
+                text: i18n("Wind aloft")
+                checked: radarRoot.windLevel === "700hPa"
+                onToggled: {
+                    var level = checked ? "700hPa" : "10m";
+                    Plasmoid.configuration.librewxrWindLevel = level;
+                    webView.runJavaScript("if (window.setWindLevel) window.setWindLevel(" + JSON.stringify(level) + ");");
+                }
+
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
                 ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
