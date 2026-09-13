@@ -74,8 +74,10 @@ Item {
     // raises the rate with the wind speed inside that range.
     readonly property var windRate: {
         var q = Plasmoid.configuration.librewxrWindQuality || "balanced";
-        if (q === "economy") return [8, 10];
-        if (q === "smooth") return [12, 30];
+        if (q === "economy")
+            return [8, 10];
+        if (q === "smooth")
+            return [12, 30];
         return [10, 20];
     }
     readonly property string activeCells: Plasmoid.configuration.librewxrCells || ""
@@ -210,6 +212,8 @@ Item {
     readonly property bool wiFontReady: wiFont.status === FontLoader.Ready
     readonly property string wiFontFamily: wiFontReady ? wiFont.font.family : ""
 
+    readonly property int miniControlHeight: 24
+
     // -- Layer modes (matching the LibreWXR example) -------------------------
     readonly property var layers: [
         {
@@ -235,13 +239,28 @@ Item {
     // Tile image format and pixel size, per librewxr-map.html's state.format /
     // state.tileSize (webp|png; auto|256|512 - "auto" follows devicePixelRatio)
     readonly property var tileFormats: [
-        { id: "webp", label: "WebP" },
-        { id: "png", label: "PNG" }
+        {
+            id: "webp",
+            label: "WebP"
+        },
+        {
+            id: "png",
+            label: "PNG"
+        }
     ]
     readonly property var tileSizes: [
-        { id: "auto", label: i18n("Auto (device)") },
-        { id: "256", label: i18n("256 px") },
-        { id: "512", label: i18n("512 px") }
+        {
+            id: "auto",
+            label: i18n("Auto (device)")
+        },
+        {
+            id: "256",
+            label: i18n("256 px")
+        },
+        {
+            id: "512",
+            label: i18n("512 px")
+        }
     ]
 
     // ── Page URL ─────────────────────────────────────────────────────────
@@ -399,7 +418,6 @@ Item {
                     Plasmoid.configuration.librewxrArrows = checked;
                     webView.runJavaScript("window.setArrows(" + (checked ? "true" : "false") + ");");
                 }
-
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Show motion arrows on the map")
                 ToolTip.delay: Kirigami.Units.toolTipDelay
@@ -468,6 +486,7 @@ Item {
                 text: i18n("Options")
                 checkable: true
                 checked: radarRoot.optionsExpanded
+                implicitHeight: radarRoot.miniControlHeight
                 onToggled: Plasmoid.configuration.librewxrOptionsExpanded = checked
 
                 PlasmaComponents.ToolTip.visible: hovered
@@ -486,6 +505,61 @@ Item {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing * 2
             visible: radarRoot.optionsExpanded
+
+            Label {
+                text: i18n("Format:")
+                color: Kirigami.Theme.textColor
+                opacity: 0.72
+                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                height: formatCombo.height
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            PlasmaComponents.ComboBox {
+                id: formatCombo
+                implicitHeight: 24
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 12
+                model: radarRoot.tileFormats
+                textRole: "label"
+                currentIndex: {
+                    for (var i = 0; i < radarRoot.tileFormats.length; i++)
+                        if (radarRoot.tileFormats[i].id === radarRoot.tileFormat)
+                            return i;
+                    return 0;
+                }
+                onActivated: {
+                    var v = radarRoot.tileFormats[currentIndex].id;
+                    Plasmoid.configuration.librewxrFormat = v;
+                    webView.runJavaScript("if (window.setFormat) window.setFormat(" + JSON.stringify(v) + ");");
+                }
+            }
+
+            Label {
+                text: i18n("Tile size:")
+                color: Kirigami.Theme.textColor
+                opacity: 0.72
+                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                height: tileSizeCombo.height
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            PlasmaComponents.ComboBox {
+                id: tileSizeCombo
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 9
+                model: radarRoot.tileSizes
+                textRole: "label"
+                currentIndex: {
+                    for (var i = 0; i < radarRoot.tileSizes.length; i++)
+                        if (radarRoot.tileSizes[i].id === radarRoot.tileSizeChoice)
+                            return i;
+                    return 0;
+                }
+                onActivated: {
+                    var v = radarRoot.tileSizes[currentIndex].id;
+                    Plasmoid.configuration.librewxrTileSize = v;
+                    webView.runJavaScript("if (window.setTileSize) window.setTileSize(" + JSON.stringify(v) + ");");
+                }
+            }
 
             Switch {
                 visible: radarRoot.activeLayer !== "satellite"
@@ -528,60 +602,6 @@ Item {
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
                 ToolTip.delay: Kirigami.Units.toolTipDelay
-            }
-
-            Label {
-                text: i18n("Format:")
-                color: Kirigami.Theme.textColor
-                opacity: 0.72
-                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
-                height: formatCombo.height
-                verticalAlignment: Text.AlignVCenter
-            }
-
-            PlasmaComponents.ComboBox {
-                id: formatCombo
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 7
-                model: radarRoot.tileFormats
-                textRole: "label"
-                currentIndex: {
-                    for (var i = 0; i < radarRoot.tileFormats.length; i++)
-                        if (radarRoot.tileFormats[i].id === radarRoot.tileFormat)
-                            return i;
-                    return 0;
-                }
-                onActivated: {
-                    var v = radarRoot.tileFormats[currentIndex].id;
-                    Plasmoid.configuration.librewxrFormat = v;
-                    webView.runJavaScript("if (window.setFormat) window.setFormat(" + JSON.stringify(v) + ");");
-                }
-            }
-
-            Label {
-                text: i18n("Tile size:")
-                color: Kirigami.Theme.textColor
-                opacity: 0.72
-                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
-                height: tileSizeCombo.height
-                verticalAlignment: Text.AlignVCenter
-            }
-
-            PlasmaComponents.ComboBox {
-                id: tileSizeCombo
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 9
-                model: radarRoot.tileSizes
-                textRole: "label"
-                currentIndex: {
-                    for (var i = 0; i < radarRoot.tileSizes.length; i++)
-                        if (radarRoot.tileSizes[i].id === radarRoot.tileSizeChoice)
-                            return i;
-                    return 0;
-                }
-                onActivated: {
-                    var v = radarRoot.tileSizes[currentIndex].id;
-                    Plasmoid.configuration.librewxrTileSize = v;
-                    webView.runJavaScript("if (window.setTileSize) window.setTileSize(" + JSON.stringify(v) + ");");
-                }
             }
         }
 
