@@ -159,3 +159,28 @@ test('terrariumMeters: (R*256 + G + B/256) - 32768', () => {
   assert.equal(WindField.terrariumMeters(128, 0, 0), 0);
   assert.equal(WindField.terrariumMeters(129, 148, 0), 404);
 });
+
+// Map rotation (leaflet-rotate): the canvas stays upright, so each screen
+// pixel is mapped to the world through an affine frame taken from Leaflet's
+// own conversions, and world velocities are turned back into screen ones.
+test('viewFrame: identity when the map is not rotated', () => {
+  const f = WindField.viewFrame({ x: 1000, y: 2000 }, { x: 1001, y: 2000 }, { x: 1000, y: 2001 });
+  const w = WindField.screenToWorld(f, 10, 20);
+  close(w.x, 1010); close(w.y, 2020);
+  const d = WindField.worldToScreenVector(f, 3, -4);
+  close(d.dx, 3); close(d.dy, -4);
+});
+
+test('viewFrame: map turned 90 degrees clockwise, screen right is world north', () => {
+  // With the world turned clockwise on screen, one screen pixel to the right
+  // goes one world pixel up (north), one pixel down goes one world pixel right.
+  const f = WindField.viewFrame({ x: 100, y: 100 }, { x: 100, y: 99 }, { x: 101, y: 100 });
+  const w = WindField.screenToWorld(f, 10, 0);
+  close(w.x, 100); close(w.y, 90);
+  // A wind blowing north (world dy < 0) must move the particle to the right.
+  const d = WindField.worldToScreenVector(f, 0, -5);
+  close(d.dx, 5); close(d.dy, 0);
+  // Round trip keeps the length (pure rotation).
+  const e = WindField.worldToScreenVector(f, 3, 4);
+  close(Math.hypot(e.dx, e.dy), 5);
+});
