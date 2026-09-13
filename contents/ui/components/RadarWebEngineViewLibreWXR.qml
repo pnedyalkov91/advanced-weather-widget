@@ -516,7 +516,7 @@ Item {
                 PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            PlasmaComponents.Switch {
+            Switch {
                 visible: radarRoot.activeLayer !== "satellite"
                 text: i18n("Snow mask")
                 checked: radarRoot.snowOn
@@ -525,9 +525,9 @@ Item {
                     webView.runJavaScript("if (window.setSnow) window.setSnow(" + (checked ? "true" : "false") + ");");
                 }
 
-                PlasmaComponents.ToolTip.visible: hovered
-                PlasmaComponents.ToolTip.text: i18n("Highlight snow and wintry precipitation with a distinct color")
-                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Highlight snow and wintry precipitation with a distinct color")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
             Label {
