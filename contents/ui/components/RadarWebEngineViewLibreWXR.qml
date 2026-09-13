@@ -54,7 +54,6 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtWebEngine
 import org.kde.kirigami as Kirigami
-import org.kde.ksvg as KSvg
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 
@@ -282,92 +281,6 @@ Item {
         onTriggered: radarRoot._loadPage("coalesced")
     }
 
-    // ── Mini switch ──────────────────────────────────────────────────────
-    // A small switch built from the Plasma theme's own switch SVG (26 x 14
-    // px track, sliding handle) with a small label: same look and colors as
-    // a Plasma Switch at half its height, so the option row above the map
-    // fits on one line at widget width.
-    component OptionChip: Item {
-        id: chip
-        property string text
-        property bool checked: false
-        property string tooltip
-        signal toggled(bool on)
-
-        height: 22
-        implicitWidth: track.width + 5 + chipLabel.implicitWidth + 4
-        opacity: enabled ? 1.0 : 0.4
-
-        // Same SVG pieces as Plasma's own SwitchIndicator (widgets/switch:
-        // inactive bar, active bar, handle), just drawn smaller, so the
-        // colors come from the Plasma theme exactly like the original.
-        KSvg.Svg {
-            id: switchSvg
-            imagePath: "widgets/switch"
-            colorSet: chip.Kirigami.Theme.colorSet
-        }
-
-        Item {
-            id: track
-            width: 26
-            height: 14
-            anchors.verticalCenter: parent.verticalCenter
-
-            KSvg.FrameSvgItem {
-                anchors.fill: parent
-                imagePath: "widgets/switch"
-                prefix: "inactive"
-            }
-            KSvg.FrameSvgItem {
-                visible: chip.checked
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.right: knob.right
-                imagePath: "widgets/switch"
-                prefix: "active"
-            }
-            KSvg.SvgItem {
-                id: knob
-                width: 14
-                height: 14
-                anchors.verticalCenter: parent.verticalCenter
-                x: chip.checked ? parent.width - width : 0
-                svg: switchSvg
-                elementId: chipMouse.containsMouse && chip.enabled ? "handle-hover" : (chip.checked && switchSvg.hasElement("handle-active") ? "handle-active" : "handle")
-                Behavior on x {
-                    NumberAnimation {
-                        duration: Kirigami.Units.shortDuration
-                        easing.type: Easing.InOutQuad
-                    }
-                }
-            }
-        }
-
-        Label {
-            id: chipLabel
-            anchors.left: track.right
-            anchors.leftMargin: 5
-            anchors.verticalCenter: parent.verticalCenter
-            text: chip.text
-            color: Kirigami.Theme.textColor
-            opacity: chip.checked ? 1.0 : 0.65
-            font: weatherRoot ? weatherRoot.wf(10, false) : Kirigami.Theme.smallFont
-        }
-
-        MouseArea {
-            id: chipMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: chip.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-            onClicked: if (chip.enabled) chip.toggled(!chip.checked)
-        }
-
-        PlasmaComponents.ToolTip.visible: chipMouse.containsMouse && chip.tooltip.length > 0
-        PlasmaComponents.ToolTip.text: chip.tooltip
-        PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
-    }
-
     // ── Main layout ──────────────────────────────────────────────────────
     ColumnLayout {
         anchors.fill: parent
@@ -448,9 +361,8 @@ Item {
             }
         }
 
-        // -- Options: color scheme + mini switches (arrows, wind, cells, alerts, map theme) --
-        // Hand-drawn mini switches instead of Plasma ones: half the height, so
-        // the row stays one line high above the map at widget width.
+        // -- Options: color scheme + switches (arrows, wind, cells, alerts, map theme) --
+        // row stays compact enough to fit one line above the map at widget width.
         Flow {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing * 2
@@ -479,73 +391,91 @@ Item {
                 }
             }
 
-            OptionChip {
+            Switch {
                 visible: radarRoot.activeLayer !== "satellite"
                 text: i18n("Arrows")
                 checked: radarRoot.arrowsOn
-                tooltip: i18n("Show motion arrows on the map")
-                onToggled: function (on) {
-                    Plasmoid.configuration.librewxrArrows = on;
-                    webView.runJavaScript("window.setArrows(" + (on ? "true" : "false") + ");");
+                onToggled: {
+                    Plasmoid.configuration.librewxrArrows = checked;
+                    webView.runJavaScript("window.setArrows(" + (checked ? "true" : "false") + ");");
                 }
+
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Show motion arrows on the map")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            OptionChip {
+            Switch {
                 text: i18n("Wind")
                 checked: radarRoot.windOn
-                tooltip: i18n("Animate the wind on the map (Open-Meteo)")
-                onToggled: function (on) {
-                    Plasmoid.configuration.librewxrWind = on;
-                    webView.runJavaScript("if (window.setWind) window.setWind(" + (on ? "true" : "false") + ");");
+                onToggled: {
+                    Plasmoid.configuration.librewxrWind = checked;
+                    webView.runJavaScript("if (window.setWind) window.setWind(" + (checked ? "true" : "false") + ");");
                 }
+
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Animate the wind on the map (Open-Meteo)")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            OptionChip {
+            Switch {
                 visible: radarRoot.windOn
                 text: i18n("Aloft")
                 checked: radarRoot.windLevel === "700hPa"
-                tooltip: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
-                onToggled: function (on) {
-                    var level = on ? "700hPa" : "10m";
+                onToggled: {
+                    var level = checked ? "700hPa" : "10m";
                     Plasmoid.configuration.librewxrWindLevel = level;
                     webView.runJavaScript("if (window.setWindLevel) window.setWindLevel(" + JSON.stringify(level) + ");");
                 }
+
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            OptionChip {
+            Switch {
                 text: i18n("Storm cells")
                 checked: radarRoot.activeCells !== ""
-                tooltip: i18n("Overlay detected storm cells on the map")
-                onToggled: function (on) {
+                onToggled: {
                     // The stored value is the storm-cell overlay theme; pick
                     // the opposite of the map theme so the cells stand out.
-                    var cells = on ? (radarRoot.mapTheme === "dark" ? "light" : "dark") : "";
+                    var cells = checked ? (radarRoot.mapTheme === "dark" ? "light" : "dark") : "";
                     Plasmoid.configuration.librewxrCells = cells;
                     webView.runJavaScript("if (window.setCells) window.setCells(" + JSON.stringify(cells) + ");");
                 }
+
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Overlay detected storm cells on the map")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            OptionChip {
+            Switch {
                 text: i18n("Alerts")
                 checked: radarRoot.alertsOn
-                tooltip: i18n("Show WMO alerts on the map")
-                onToggled: function (on) {
-                    Plasmoid.configuration.librewxrAlerts = on;
-                    webView.runJavaScript("if (window.setAlerts) window.setAlerts(" + (on ? "true" : "false") + ");");
+                onToggled: {
+                    Plasmoid.configuration.librewxrAlerts = checked;
+                    webView.runJavaScript("if (window.setAlerts) window.setAlerts(" + (checked ? "true" : "false") + ");");
                 }
+
+                ToolTip.visible: hovered
+                ToolTip.text: i18n("Show WMO alerts on the map")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            OptionChip {
+            Switch {
                 text: i18n("Dark map")
                 checked: radarRoot.mapTheme === "dark"
                 enabled: !radarRoot.darkMapLocked
-                tooltip: radarRoot.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
-                onToggled: function (on) {
+                onToggled: {
                     // Manual choice overrides following the Plasma theme
                     // until the Plasma theme itself changes (see onIsDarkChanged)
-                    Plasmoid.configuration.librewxrTheme = on ? "dark" : "light";
-                    webView.runJavaScript("window.setTheme(" + JSON.stringify(on ? "dark" : "light") + ");");
+                    Plasmoid.configuration.librewxrTheme = checked ? "dark" : "light";
+                    webView.runJavaScript("window.setTheme(" + JSON.stringify(checked ? "dark" : "light") + ");");
                 }
+
+                ToolTip.visible: hovered
+                ToolTip.text: radarRoot.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
             PlasmaComponents.ToolButton {
@@ -572,7 +502,7 @@ Item {
             spacing: Kirigami.Units.smallSpacing * 2
             visible: radarRoot.optionsExpanded
 
-            PlasmaComponents.Switch {
+            Switch {
                 visible: radarRoot.activeLayer !== "satellite"
                 text: i18n("Smoothing")
                 checked: radarRoot.smoothOn
