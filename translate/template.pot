@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-09-14 10:52+0200\n"
+"POT-Creation-Date: 2026-09-14 11:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4137,7 +4137,6 @@ msgstr ""
 msgid "Widget panel area:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:427
 #: contents/ui/components/RadarWebEngineView.qml:132
 #: contents/ui/config/configAppearance.qml:1366
 #: contents/ui/config/configAppearance.qml:1497
@@ -4145,10 +4144,6 @@ msgstr ""
 #: contents/ui/config/configNotifications.qml:74
 #: contents/ui/DetailsView.qml:334 contents/ui/main.qml:1058
 msgid "Wind"
-msgstr ""
-
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:594
-msgid "Wind aloft"
 msgstr ""
 
 #: contents/ui/config/configGeneral.qml:904
@@ -4172,6 +4167,14 @@ msgstr ""
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1031
 #: contents/ui/TooltipContent.qml:427
 msgid "Wind:"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:427
+msgid "Winds"
+msgstr ""
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:594
+msgid "Winds aloft"
 msgstr ""
 
 #: contents/ui/config/configGeneral.qml:959
