@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-09-13 11:28+0200\n"
+"POT-Creation-Date: 2026-09-14 10:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -108,7 +108,7 @@ msgstr ""
 msgid "24h"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:243
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:258
 msgid "256 px"
 msgstr ""
 
@@ -120,7 +120,7 @@ msgstr ""
 msgid "3D Oxygen (Bundled)"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:244
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:262
 msgid "512 px"
 msgstr ""
 
@@ -167,7 +167,7 @@ msgstr ""
 msgid "AI-powered weather intelligence. API key required below."
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:257
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:276
 msgid "API error"
 msgstr ""
 
@@ -282,7 +282,7 @@ msgstr ""
 msgid "Alert sound:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:438
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:456
 #: contents/ui/config/configAppearance.qml:1451
 #: contents/ui/config/configAppearance.qml:1574
 #: contents/ui/config/configAppearance.qml:1697 contents/ui/DetailsView.qml:346
@@ -358,7 +358,7 @@ msgstr ""
 msgid "Animate row scrolling"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:417
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:435
 msgid "Animate the wind on the map (Open-Meteo)"
 msgstr ""
 
@@ -394,7 +394,7 @@ msgstr ""
 msgid "Around midnight - "
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:396
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:415
 msgid "Arrows"
 msgstr ""
 
@@ -430,7 +430,7 @@ msgstr ""
 msgid "Auto (detect on save)"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:242
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:254
 msgid "Auto (device)"
 msgstr ""
 
@@ -527,7 +527,7 @@ msgstr ""
 msgid "Birch"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:233
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:237
 msgid "Black and White"
 msgstr ""
 
@@ -799,7 +799,7 @@ msgstr ""
 msgid "Confirm your location"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:258
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:277
 msgid "Connection failed"
 msgstr ""
 
@@ -881,7 +881,7 @@ msgstr ""
 msgid "Dark Sky-compatible API with US alerts. API key required below."
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:451
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:469
 msgid "Dark map"
 msgstr ""
 
@@ -1247,12 +1247,16 @@ msgstr ""
 msgid "Fahrenheit (°F)"
 msgstr ""
 
-#: contents/ui/WeatherService.qml:949
+#: contents/ui/WeatherService.qml:984
 msgid "Failed to load weather providers"
 msgstr ""
 
-#: contents/ui/WeatherService.qml:936
+#: contents/ui/WeatherService.qml:970
 msgid "Failed: %1"
+msgstr ""
+
+#: contents/ui/WeatherService.qml:968
+msgid "Failed: %1 — retrying…"
 msgstr ""
 
 #: contents/ui/js/airQuality.js:91
@@ -1331,7 +1335,7 @@ msgstr ""
 msgid "Footer:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:250
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:269
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:86
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:212 contents/ui/FullView.qml:572
 msgid "Forecast"
@@ -1353,7 +1357,7 @@ msgstr ""
 msgid "Forest fire"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:534
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:510
 msgid "Format:"
 msgstr ""
 
@@ -1531,7 +1535,7 @@ msgstr ""
 msgid "High temperature"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:514
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:588
 msgid "Highlight snow and wintry precipitation with a distinct color"
 msgstr ""
 
@@ -1866,11 +1870,11 @@ msgstr ""
 msgid "Loading forecast…"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:253
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:272
 msgid "Loading frames"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:252
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:271
 msgid "Loading frame…"
 msgstr ""
 
@@ -1886,7 +1890,7 @@ msgstr ""
 msgid "Loading radar…"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:251
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:270
 msgid "Loading…"
 msgstr ""
 
@@ -2288,7 +2292,7 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:254
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:273
 msgid "No data"
 msgstr ""
 
@@ -2317,11 +2321,11 @@ msgstr ""
 msgid "No location set"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:255
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:274
 msgid "No radar data"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:256
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:275
 msgid "No satellite data"
 msgstr ""
 
@@ -2355,7 +2359,7 @@ msgstr ""
 msgid "Not available (HTTP %1)"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:462
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:480
 msgid "Not available: the selected base map already has a fixed light or dark style."
 msgstr ""
 
@@ -2474,7 +2478,7 @@ msgstr ""
 msgid "Opens today's hourly forecast automatically (or the next available day)"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:468
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:486
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:355
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:420
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:415
@@ -2493,7 +2497,7 @@ msgstr ""
 msgid "Overcast"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:433
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:451
 msgid "Overlay detected storm cells on the map"
 msgstr ""
 
@@ -2513,7 +2517,7 @@ msgstr ""
 msgid "PM2.5"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:372
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:391
 msgid "Palette:"
 msgstr ""
 
@@ -2778,14 +2782,14 @@ msgstr ""
 msgid "Quiet"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:217
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:221
 #: contents/ui/components/RadarWebEngineView.qml:128
 #: contents/ui/config/configGeneral.qml:803
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:213 contents/ui/FullView.qml:573
 msgid "Radar"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:227
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:231
 msgid "Radar + Satellite"
 msgstr ""
 
@@ -2963,7 +2967,7 @@ msgstr ""
 msgid "SO₂"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:222
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:226
 msgid "Satellite"
 msgstr ""
 
@@ -3088,7 +3092,7 @@ msgstr ""
 msgid "Show Today:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:446
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:464
 msgid "Show WMO alerts on the map"
 msgstr ""
 
@@ -3108,7 +3112,7 @@ msgstr ""
 msgid "Show in:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:404
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:422
 msgid "Show motion arrows on the map"
 msgstr ""
 
@@ -3142,11 +3146,11 @@ msgstr ""
 msgid "Show temperature unit:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:529
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:603
 msgid "Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:474
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:493
 msgid "Show tile options: smoothing, snow mask, format and tile size"
 msgstr ""
 
@@ -3246,11 +3250,11 @@ msgstr ""
 msgid "Smooth (12 to 30 fps)"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:500
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:574
 msgid "Smooth radar tile edges"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:492
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:566
 msgid "Smoothing"
 msgstr ""
 
@@ -3307,7 +3311,7 @@ msgstr ""
 msgid "Snow is possible %1."
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:506
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:580
 msgid "Snow mask"
 msgstr ""
 
@@ -3358,7 +3362,7 @@ msgstr ""
 msgid "Storm"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:422
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:440
 msgid "Storm cells"
 msgstr ""
 
@@ -3478,7 +3482,7 @@ msgstr ""
 msgid "Swap order:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:462
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:480
 msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
 msgstr ""
 
@@ -3670,7 +3674,7 @@ msgstr ""
 msgid "Thunderstorms"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:561
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:538
 msgid "Tile size:"
 msgstr ""
 
@@ -3902,25 +3906,25 @@ msgstr ""
 msgid "Update timed out. Tap to retry."
 msgstr ""
 
-#: contents/ui/WeatherService.qml:827
+#: contents/ui/WeatherService.qml:855
 msgid "Updated %1 day ago"
 msgid_plural "Updated %1 days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: contents/ui/WeatherService.qml:825
+#: contents/ui/WeatherService.qml:853
 msgid "Updated %1 hour ago"
 msgid_plural "Updated %1 hours ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: contents/ui/WeatherService.qml:822
+#: contents/ui/WeatherService.qml:850
 msgid "Updated %1 minute ago"
 msgid_plural "Updated %1 minutes ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: contents/ui/WeatherService.qml:820
+#: contents/ui/WeatherService.qml:848
 msgid "Updated just now"
 msgstr ""
 
@@ -4084,7 +4088,7 @@ msgstr ""
 msgid "Weather icon theme:"
 msgstr ""
 
-#: contents/ui/WeatherService.qml:890
+#: contents/ui/WeatherService.qml:918
 msgid "Weather provider:"
 msgstr ""
 
@@ -4133,7 +4137,7 @@ msgstr ""
 msgid "Widget panel area:"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:409
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:427
 #: contents/ui/components/RadarWebEngineView.qml:132
 #: contents/ui/config/configAppearance.qml:1366
 #: contents/ui/config/configAppearance.qml:1497
@@ -4143,7 +4147,7 @@ msgstr ""
 msgid "Wind"
 msgstr ""
 
-#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:520
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:594
 msgid "Wind aloft"
 msgstr ""
 
