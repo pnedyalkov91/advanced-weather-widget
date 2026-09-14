@@ -424,7 +424,7 @@ Item {
             }
 
             Switch {
-                text: i18n("Wind")
+                text: i18n("Winds")
                 checked: radarRoot.windOn
                 onToggled: {
                     Plasmoid.configuration.librewxrWind = checked;
@@ -591,7 +591,7 @@ Item {
 
             Switch {
                 visible: radarRoot.windOn
-                text: i18n("Wind aloft")
+                text: i18n("Winds aloft")
                 checked: radarRoot.windLevel === "700hPa"
                 onToggled: {
                     var level = checked ? "700hPa" : "10m";
