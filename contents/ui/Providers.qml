@@ -29,6 +29,7 @@ import QtQuick
 
 import "js/weather.js" as W
 import "providers/openMeteo.js" as OpenMeteoJS
+import "providers/aemet.js" as AemetJS
 import "providers/openWeather.js" as OpenWeatherJS
 import "providers/weatherApi.js" as WeatherApiJS
 import "providers/metNo.js" as MetNoJS
@@ -48,6 +49,7 @@ QtObject {
     /** Current-weather fetch for provider `p` (mirrors the old _tryProvider tail). */
     function fetchCurrent(p, service, chain, idx) {
         switch (p) {
+        case "aemet":          AemetJS.fetchCurrent(service, W, chain, idx); return;
         case "pirateWeather":  PirateWeatherJS.fetchCurrent(service, W, chain, idx); return;
         case "visualCrossing": VisualCrossingJS.fetchCurrent(service, W, chain, idx); return;
         case "tomorrowIo":     TomorrowIoJS.fetchCurrent(service, W, chain, idx); return;
@@ -66,6 +68,7 @@ QtObject {
     function fetchHourly(ap, service, dateStr) {
         switch (ap) {
         case "openMeteo":      OpenMeteoJS.fetchHourly(service, dateStr); return true;
+        case "aemet":          AemetJS.fetchHourly(service, W, dateStr); return true;
         case "pirateWeather":  PirateWeatherJS.fetchHourly(service, W, dateStr); return true;
         case "openWeather":    OpenWeatherJS.fetchHourly(service, W, dateStr); return true;
         case "weatherApi":     WeatherApiJS.fetchHourly(service, W, dateStr); return true;
@@ -82,9 +85,11 @@ QtObject {
 
     /** Parallel-safe hourly fetch for providers that support it. Returns true
      *  if handled (result delivered via callback), false to let the caller use
-     *  its inline path. Only BBC needs this (its id resolution lives in-module). */
+     *  its inline path. Needed by BBC and AEMET, whose id/municipio
+     *  resolution is an async step that lives in-module. */
     function fetchHourlyDirect(ap, service, dateStr, callback) {
         if (ap === "bbc") { BbcWeatherJS.fetchHourlyDirect(service, W, dateStr, callback); return true; }
+        if (ap === "aemet") { AemetJS.fetchHourlyDirect(service, W, dateStr, callback); return true; }
         return false;
     }
 

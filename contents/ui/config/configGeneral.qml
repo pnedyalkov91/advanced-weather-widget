@@ -37,6 +37,7 @@ KCM.SimpleKCM {
     property string cfg_wbApiKey: ""
     property string cfg_qwApiKey: ""
     property string cfg_qwApiHost: ""
+    property string cfg_aemetApiKey: ""
     property bool cfg_radarEnabled: true
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
@@ -63,7 +64,8 @@ KCM.SimpleKCM {
     readonly property bool isStormGlass: cfg_weatherProvider === "stormGlass"
     readonly property bool isWeatherbit: cfg_weatherProvider === "weatherbit"
     readonly property bool isQWeather: cfg_weatherProvider === "qWeather"
-    readonly property bool needsKeyUi: isOpenWeather || isWeatherApi || isPirateWeather || isVisualCrossing || isTomorrowIo || isStormGlass || isWeatherbit || isQWeather
+    readonly property bool isAemet: cfg_weatherProvider === "aemet"
+    readonly property bool needsKeyUi: isOpenWeather || isWeatherApi || isPirateWeather || isVisualCrossing || isTomorrowIo || isStormGlass || isWeatherbit || isQWeather || isAemet
 
     // ── API key test state ────────────────────────────────────────────────
     // 0 = idle, 1 = testing, 2 = success, 3 = error
@@ -156,6 +158,25 @@ KCM.SimpleKCM {
     property string locationCheckMessage: ""
     property int _locGen: 0
 
+    // Mirrors WeatherService.qml's _isSpainLocation() - this config page runs
+    // in its own QML context with no access to the running WeatherService
+    // instance, so the same countryCode-with-bbox-fallback check is
+    // duplicated here rather than shared.
+    function _isSpainLocation() {
+        var cc = Plasmoid.configuration.countryCode || "";
+        if (cc.length > 0)
+            return cc === "ES";
+        var lat = Plasmoid.configuration.latitude;
+        var lon = Plasmoid.configuration.longitude;
+        if (isNaN(lat) || isNaN(lon))
+            return false;
+        if (lat >= 35.8 && lat <= 43.9 && lon >= -9.5 && lon <= 4.4)
+            return true;    // peninsula + Balearics
+        if (lat >= 27.5 && lat <= 29.5 && lon >= -18.3 && lon <= -13.3)
+            return true;    // Canary Islands
+        return false;
+    }
+
     function verifyProviderLocation() {
         _locGen++;
         var myGen = _locGen;
@@ -241,6 +262,23 @@ KCM.SimpleKCM {
             qwHost = qwHost.replace(/\/+$/, "");
             var qwLoc = encodeURIComponent(lon.toFixed(2) + "," + lat.toFixed(2));
             url = qwHost + "/v7/weather/now?location=" + qwLoc + "&unit=m";
+        } else if (provider === "aemet") {
+            var aeKey = (cfg_aemetApiKey || "").trim();
+            if (!aeKey) {
+                locationCheckState = 0;
+                return;
+            }
+            if (!root._isSpainLocation()) {
+                locationCheckState = 3;
+                locationCheckMessage = i18n("AEMET only covers Spain - this location has no coverage.");
+                return;
+            }
+            // AEMET has no lat/lon endpoint - only the first ("self-discovery")
+            // hop is checked here, against a fixed always-valid municipio
+            // (28079 = Madrid), just to confirm the key/connectivity work.
+            // The real per-location municipio resolution happens at refresh
+            // time in the widget itself.
+            url = "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/28079?api_key=" + encodeURIComponent(aeKey);
         } else {
             locationCheckState = 0;
             return;
@@ -258,6 +296,27 @@ KCM.SimpleKCM {
             if (_locGen !== myGen)
                 return;
             var pLabel = root.providerDisplayName(provider);
+            if (provider === "aemet") {
+                if (req.status === 200) {
+                    try {
+                        var aeBody = JSON.parse(req.responseText);
+                        if (aeBody.estado === 200) {
+                            locationCheckState = 2;
+                            locationCheckMessage = i18n("Location is available on %1.", pLabel);
+                        } else {
+                            locationCheckState = 3;
+                            locationCheckMessage = i18n("AEMET error (code %1). Check your API key.", aeBody.estado);
+                        }
+                    } catch (e) {
+                        locationCheckState = 3;
+                        locationCheckMessage = i18n("Invalid response from AEMET.");
+                    }
+                } else {
+                    locationCheckState = 3;
+                    locationCheckMessage = i18n("Location is not available on %1 (HTTP %2). Try a different provider or location.", pLabel, req.status);
+                }
+                return;
+            }
             if (req.status === 200) {
                 locationCheckState = 2;
                 locationCheckMessage = i18n("Location is available on %1.", pLabel);
@@ -290,6 +349,8 @@ KCM.SimpleKCM {
             return "Weatherbit";
         if (p === "qWeather")
             return "QWeather";
+        if (p === "aemet")
+            return "AEMET";
         return "Open-Meteo";
     }
 
@@ -328,6 +389,11 @@ KCM.SimpleKCM {
             qwHost = qwHost.replace(/\/+$/, "");
             url = qwHost + "/v7/weather/now?location=23.30,42.70&unit=m";
             useAuthHeader = true;
+        } else if (root.isAemet) {
+            // Same fixed-reference-point approach as the other branches
+            // above, adapted to AEMET's municipio-code addressing: 28079 is
+            // Madrid, always valid, so this purely tests the key/connectivity.
+            url = "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/28079?api_key=" + encodeURIComponent(key);
         } else {
             url = "https://api.weatherapi.com/v1/current.json?key=" + encodeURIComponent(key) + "&q=42.7,23.3";
         }
@@ -354,6 +420,19 @@ KCM.SimpleKCM {
                     } catch (e) {
                         apiTestState = 3;
                         apiTestMessage = i18n("Invalid response from QWeather.");
+                        return;
+                    }
+                } else if (root.isAemet) {
+                    try {
+                        var aeBody = JSON.parse(req.responseText);
+                        if (aeBody.estado !== 200) {
+                            apiTestState = 3;
+                            apiTestMessage = i18n("AEMET error (code %1). Check your API key.", aeBody.estado);
+                            return;
+                        }
+                    } catch (e) {
+                        apiTestState = 3;
+                        apiTestMessage = i18n("Invalid response from AEMET.");
                         return;
                     }
                 }
@@ -417,6 +496,10 @@ KCM.SimpleKCM {
         {
             text: i18n("QWeather (Key Required)"),
             value: "qWeather"
+        },
+        {
+            text: i18n("AEMET - Spain only (Key Required)"),
+            value: "aemet"
         }
     ]
 
@@ -491,7 +574,7 @@ KCM.SimpleKCM {
                 Layout.topMargin: 4
                 visible: root.isAdaptive
                 type: Kirigami.MessageType.Information
-                text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key.")
+                text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key. AEMET is intentionally not part of this list; select it directly if you want it.")
             }
 
             Item {
@@ -549,6 +632,8 @@ KCM.SimpleKCM {
                             return i18n("High precision forecast provider. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.weatherbit.io'>weatherbit.io</a>";
                         if (root.isQWeather)
                             return i18n("Chinese weather provider with global coverage. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.qweather.com'>qweather.com</a>";
+                        if (root.isAemet)
+                            return i18n("Official Spanish meteorological agency - Spain locations only, falls back to Open-Meteo elsewhere. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.aemet.es'>aemet.es</a>";
                         if (root.cfg_weatherProvider === "metno")
                             return i18n("Free Norwegian Meteorological Institute service. No API key needed.") + "<br/>" + i18n("Provider website:") + " <a href='https://met.no'>met.no</a>";
                         if (root.cfg_weatherProvider === "bbc")
@@ -599,6 +684,8 @@ KCM.SimpleKCM {
                             return i18n("Weatherbit API Key:");
                         if (root.isQWeather)
                             return i18n("QWeather API Key:");
+                        if (root.isAemet)
+                            return i18n("AEMET API Key:");
                         return i18n("WeatherAPI.com API Key:");
                     }
                     font.bold: true
@@ -626,6 +713,8 @@ KCM.SimpleKCM {
                                 return i18n("Enter your Weatherbit API key");
                             if (root.isQWeather)
                                 return i18n("Enter your QWeather API key");
+                            if (root.isAemet)
+                                return i18n("Enter your AEMET API key");
                             return i18n("Enter your WeatherAPI.com key");
                         }
                         text: {
@@ -643,6 +732,8 @@ KCM.SimpleKCM {
                                 return root.cfg_wbApiKey;
                             if (root.isQWeather)
                                 return root.cfg_qwApiKey;
+                            if (root.isAemet)
+                                return root.cfg_aemetApiKey;
                             return root.cfg_waApiKey;
                         }
                         echoMode: TextInput.Password
@@ -663,6 +754,8 @@ KCM.SimpleKCM {
                                 root.cfg_wbApiKey = text;
                             else if (root.isQWeather)
                                 root.cfg_qwApiKey = text;
+                            else if (root.isAemet)
+                                root.cfg_aemetApiKey = text;
                             else
                                 root.cfg_waApiKey = text;
                         }
@@ -681,6 +774,8 @@ KCM.SimpleKCM {
                                 root.cfg_wbApiKey = text.trim();
                             else if (root.isQWeather)
                                 root.cfg_qwApiKey = text.trim();
+                            else if (root.isAemet)
+                                root.cfg_aemetApiKey = text.trim();
                             else
                                 root.cfg_waApiKey = text.trim();
                         }
@@ -715,6 +810,8 @@ KCM.SimpleKCM {
                                 root.cfg_wbApiKey = "";
                             else if (root.isQWeather)
                                 root.cfg_qwApiKey = "";
+                            else if (root.isAemet)
+                                root.cfg_aemetApiKey = "";
                             else
                                 root.cfg_waApiKey = "";
                         }
@@ -759,6 +856,14 @@ KCM.SimpleKCM {
                 type: Kirigami.MessageType.Information
                 showCloseButton: true
                 text: i18n("If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately.")
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: root.isAemet && !root.isAdaptive
+                type: Kirigami.MessageType.Information
+                text: i18n("AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key, no expiry: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>")
+                onLinkActivated: Qt.openUrlExternally(link)
             }
 
             // ── QWeather API Host section ─────────────────────────────

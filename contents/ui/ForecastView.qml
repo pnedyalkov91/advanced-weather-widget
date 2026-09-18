@@ -435,6 +435,29 @@ Item {
                         return dayStartMs >= hourlyLimitMs;
                     }
 
+                    readonly property bool _dayOutsideAemetHourlyRange: {
+                        if ((Plasmoid.configuration.weatherProvider || "adaptive") !== "aemet")
+                            return false;
+                        var ds = (weatherRoot && weatherRoot.dailyData[dataIndex])
+                            ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
+                        if (!ds)
+                            return false;
+                        var parts = ds.split("-");
+                        if (parts.length < 3)
+                            return false;
+                        var year = parseInt(parts[0], 10);
+                        var month = parseInt(parts[1], 10) - 1;
+                        var day = parseInt(parts[2], 10);
+                        if (isNaN(year) || isNaN(month) || isNaN(day))
+                            return false;
+                        var dayStartMs = new Date(year, month, day, 0, 0, 0, 0).getTime();
+                        // AEMET's "horaria" product only covers today + tomorrow
+                        // (~48h) - day 3 onward has only the 7-day "diaria"
+                        // summary, with no hourly breakdown.
+                        var hourlyLimitMs = (new Date()).getTime() + 48 * 3600 * 1000;
+                        return dayStartMs >= hourlyLimitMs;
+                    }
+
                     readonly property bool _dayIsLoading: {
                         var dateStr = (weatherRoot && weatherRoot.dailyData[dataIndex])
                             ? (weatherRoot.dailyData[dataIndex].dateStr || "") : "";
@@ -466,7 +489,7 @@ Item {
 
                             // ── visibility flags for the optional per-day stat items,
                             // used to decide when to show a "•" separator between them ──
-                            readonly property bool _windVisible: forecastRoot.showWind && !isNaN(weatherRoot.dailyData[dataIndex].windKmh)
+                            readonly property bool _windVisible: forecastRoot.showWind && (((Plasmoid.configuration.weatherProvider || "adaptive") === "aemet") || !isNaN(weatherRoot.dailyData[dataIndex].windKmh))
                             readonly property bool _pressureVisible: Plasmoid.configuration.forecastShowPressure === true
                             readonly property bool _kpVisible: Plasmoid.configuration.forecastShowKpIndex === true
                             readonly property bool _uvVisible: Plasmoid.configuration.forecastShowUvIndex === true
@@ -827,7 +850,9 @@ Item {
                             visible: !_dayIsLoading && ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && _dayHourlyData.length === 0
                             text: _dayOutsideQWeatherHourlyRange
                                 ? i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.")
-                                : i18n("Loading hourly data…")
+                                : _dayOutsideAemetHourlyRange
+                                    ? i18n("AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date.")
+                                    : i18n("Loading hourly data…")
                             color: forecastRoot.themeTextColor
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                             wrapMode: Text.Wrap

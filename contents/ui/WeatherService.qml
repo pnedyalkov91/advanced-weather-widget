@@ -132,6 +132,28 @@ QtObject {
         // Strip trailing slash
         return h.replace(/\/+$/, "");
     }
+    function _aemetKey() {
+        return (Plasmoid.configuration.aemetApiKey || "").trim();
+    }
+
+    // ── Private: location helpers ────────────────────────────────────────
+    /**
+     * True when the configured location is in Spain - used to gate AEMET,
+     * which has zero coverage elsewhere. Prefers the resolved countryCode;
+     * falls back to a quick bounding-box check (peninsula + Balearics +
+     * Canary Islands) when it isn't set yet (e.g. right after a location
+     * switch, before reverse-geocoding lands), mirroring alerts.js's
+     * _looksLikeUS() fallback for the same situation.
+     */
+    function _isSpainLocation() {
+        if (countryCode.length > 0)
+            return countryCode === "ES";
+        var lat = latitude, lon = longitude;
+        if (isNaN(lat) || isNaN(lon)) return false;
+        if (lat >= 35.8 && lat <= 43.9 && lon >= -9.5 && lon <= 4.4) return true;    // peninsula + Balearics
+        if (lat >= 27.5 && lat <= 29.5 && lon >= -18.3 && lon <= -13.3) return true; // Canary Islands
+        return false;
+    }
 
     // ── Private: space weather cache timestamp ──────────────────────────
     property real _lastSpaceWeatherFetch: 0
@@ -154,6 +176,34 @@ QtObject {
     // repeat refreshes for the same location skip the extra lookup request.
     property string _bbcLocId: ""
     property string _bbcLocKey: ""
+    // AEMET is keyed by a 5-digit INE municipio code, resolved by nearest-
+    // match against the ~8,100-entry master list (fetched once per session
+    // and cached here, since it doesn't depend on location). The resolved
+    // id itself is additionally cached keyed by rounded coordinates, same
+    // pattern as _bbcLocId/_bbcLocKey above. _aemetMuniListPending queues
+    // callbacks behind a single in-flight master-list fetch so several
+    // concurrent resolutions (e.g. ForecastView's "expand all days") don't
+    // each fire their own ~1 MB request.
+    property var _aemetMunicipios: null
+    property var _aemetMuniListPending: null
+    property string _aemetMuniId: ""
+    property string _aemetMuniKey: ""
+    // The daily (7-day) and hourly (~48h) products - time-cached (20 min,
+    // see aemet.js's AEMET_CACHE_TTL_MS) rather than just per-refresh-
+    // generation, since AEMET only regenerates these a few times a day, so
+    // most refreshes at typical widget intervals can reuse the last fetch
+    // outright. Shared by fetchCurrent's current-conditions refinement, a
+    // single expanded Forecast day, and "expand all days" - see aemet.js's
+    // _withDailyData()/_withHourlyData().
+    property var _aemetDailyCache: null
+    property var _aemetDailyPending: null
+    property var _aemetHourlyCache: null
+    property var _aemetHourlyPending: null
+    // Set by aemet.js when any AEMET request comes back HTTP 429 (its
+    // documented ~50 req/min-per-key limit) - checked once, in
+    // _tryProvider's chain-exhaustion branch below, to show a specific
+    // "rate limited" message instead of a generic "Failed: AEMET".
+    property bool _aemetRateLimited: false
     // True once the current provider has written native alerts for this
     // refresh generation - lets _fetchAlertsIfNeeded() decide whether to
     // fall back to AlertsJS without having to blank weatherRoot.weatherAlerts
@@ -192,41 +242,31 @@ QtObject {
         onTriggered: service._refreshRelativeUpdateText()
     }
 
-    // ── Auto-retry after a total provider-chain failure ─────────────────
-    // Waking the laptop fires the resume-detection refresh (see main.qml's
-    // heartbeat timer) before NetworkManager has actually reassociated with
-    // Wi-Fi and DNS is working again - every provider in the chain fails
-    // near-instantly (a connection/DNS error, not a slow per-request
-    // timeout), exhausting all 11 within a fraction of a second, well
-    // before the network is back. The widget was then stuck on
-    // "Failed: ..." until the next scheduled auto-refresh
-    // (refreshIntervalMinutes, commonly 15 min) or a manual tap. A short,
-    // bounded, backed-off retry covers this - and any other transient
-    // network blip - without hammering providers when genuinely offline
-    // for a long stretch (e.g. on a plane). The count is reset by any
-    // "real" refreshNow() call (manual, periodic, resume, config change)
-    // and only preserved across the timer's own auto-retry call, so it
-    // can't reset itself back to attempt 1 forever.
-    property int _totalFailureRetryCount: 0
-    readonly property var _totalFailureRetryDelaysMs: [5000, 15000, 45000]
-    property Timer _totalFailureRetryTimer: Timer {
-        interval: 5000
+    // Auto-retry for AEMET specifically, when it was the only provider
+    // tried (explicit selection, no fallback) and failed outright. AEMET is
+    // the one provider here with a real per-key rate limit, so - unlike
+    // every other provider's failure, which just waits for the next
+    // scheduled refresh or a manual tap - a rate-limited or transient
+    // AEMET failure gets one automatic retry: 65 s for a rate limit (safely
+    // past its ~1-minute window) or 15 s for anything else (e.g. network
+    // not fully up yet right after a Plasma restart). Interval is set by
+    // _tryProvider just before restart(); see there for the exact wording
+    // shown while this is pending.
+    property Timer _aemetAutoRetryTimer: Timer {
         repeat: false
-        onTriggered: service.refreshNow(false, true)
+        onTriggered: {
+            if ((Plasmoid.configuration.weatherProvider || "adaptive") === "aemet")
+                service.refreshNow(false);
+        }
     }
 
     // ── Public methods ────────────────────────────────────────────────────
 
     /** Full weather refresh - current + daily forecast.
-     *  force=true bypasses the space weather fetch throttle (manual refresh).
-     *  isAutoRetry=true marks a call made by _totalFailureRetryTimer itself -
-     *  it preserves _totalFailureRetryCount instead of resetting it, so the
-     *  timer's own retries don't reset their own backoff. */
-    function refreshNow(force, isAutoRetry) {
+     *  force=true bypasses the space weather fetch throttle (manual refresh). */
+    function refreshNow(force) {
         _refreshGen++;
         _safetyTimer.stop();
-        _totalFailureRetryTimer.stop();
-        if (isAutoRetry !== true) _totalFailureRetryCount = 0;
 
         var r = weatherRoot;
         if (!r.hasSelectedTown) {
@@ -250,7 +290,21 @@ QtObject {
         _nativeAqiSetThisGen = false;
 
         var provider = Plasmoid.configuration.weatherProvider || "adaptive";
-        var chain = (provider === "adaptive") ? ["openMeteo", "bbc", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "openWeather", "weatherApi"] : [provider];
+        var chain;
+        if (provider === "adaptive") {
+            // AEMET is intentionally not part of adaptive mode - it's the one
+            // provider here with a real per-key rate limit, and it should only
+            // ever be in play when someone has explicitly chosen it, not
+            // silently engaged for Spain locations under a mode whose whole
+            // point is "just make it work without me thinking about it".
+            chain = ["openMeteo", "bbc", "metno", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "openWeather", "weatherApi"];
+        } else {
+            // Explicitly selecting a single provider (including "aemet") means
+            // exactly that provider, with no fallback - a failure shows
+            // "Failed: <name>" via _tryProvider's chain-exhaustion path rather
+            // than silently substituting a different provider's data.
+            chain = [provider];
+        }
         chain._gen = _refreshGen;
 
         _tryProvider(chain, 0);
@@ -337,6 +391,17 @@ QtObject {
         if (ap === "bbc") {
             var _pB = _providers();
             if (!_pB || !_pB.fetchHourlyDirect(ap, service, dateStr, callback))
+                callback([]);
+            return;
+        }
+
+        // ── AEMET ─────────────────────────────────────────────────────────────
+        // Needs the same async municipio-resolution step as BBC's location-id
+        // lookup above, so it's delegated to its own module rather than
+        // inlined here like the single-request providers below.
+        if (ap === "aemet") {
+            var _pAe = _providers();
+            if (!_pAe || !_pAe.fetchHourlyDirect(ap, service, dateStr, callback))
                 callback([]);
             return;
         }
@@ -856,6 +921,8 @@ QtObject {
     }
 
     function _providerUrl(p) {
+        if (p === "aemet")
+            return "https://www.aemet.es";
         if (p === "openWeather")
             return "https://openweathermap.org";
         if (p === "weatherApi")
@@ -880,6 +947,8 @@ QtObject {
     }
 
     function _providerLinkLabel(p) {
+        if (p === "aemet")
+            return "AEMET";
         if (p === "openWeather")
             return "OpenWeather";
         if (p === "weatherApi")
@@ -910,7 +979,7 @@ QtObject {
         var providerLink = "<a href='" + service._providerUrl(provider) + "'>" + service._providerLinkLabel(provider) + "</a>";
         if (provider !== "openWeather" && provider !== "weatherApi" && provider !== "metno" && provider !== "bbc"
             && provider !== "pirateWeather" && provider !== "visualCrossing" && provider !== "tomorrowIo"
-            && provider !== "stormGlass" && provider !== "weatherbit" && provider !== "qWeather") {
+            && provider !== "stormGlass" && provider !== "weatherbit" && provider !== "qWeather" && provider !== "aemet") {
             var mi = W.openMeteoModelInfo(openMeteoModel, countryCode);
             if (mi)
                 providerLink += " (<a href='" + mi.url + "'>" + mi.name + "</a>)";
@@ -927,6 +996,8 @@ QtObject {
     }
 
     function _providerLabel(p) {
+        if (p === "aemet")
+            return "AEMET";
         if (p === "openWeather")
             return "OpenWeather";
         if (p === "weatherApi")
@@ -957,18 +1028,26 @@ QtObject {
         if (idx >= chain.length) {
             weatherRoot.loading = false;
             _safetyTimer.stop();
+            if (chain.length === 1 && chain[0] === "aemet") {
+                service._clearUpdateMetadata();
+                if (_aemetRateLimited) {
+                    weatherRoot.updateText = i18n("AEMET: request limit reached - retrying automatically in a minute.");
+                    _aemetAutoRetryTimer.interval = 65000;
+                } else {
+                    weatherRoot.updateText = i18n("AEMET: request failed - retrying automatically.");
+                    _aemetAutoRetryTimer.interval = 15000;
+                }
+                _aemetRateLimited = false;
+                _failed = [];
+                _fetchAlertsIfNeeded();
+                _aemetAutoRetryTimer.restart();
+                return;
+            }
             var names = chain.map(function (p) {
                 return _providerLabel(p);
             });
             service._clearUpdateMetadata();
-            if (_totalFailureRetryCount < _totalFailureRetryDelaysMs.length) {
-                _totalFailureRetryTimer.interval = _totalFailureRetryDelaysMs[_totalFailureRetryCount];
-                _totalFailureRetryCount++;
-                _totalFailureRetryTimer.restart();
-                weatherRoot.updateText = i18n("Failed: %1 — retrying…", names.join(", "));
-            } else {
-                weatherRoot.updateText = i18n("Failed: %1", names.join(", "));
-            }
+            weatherRoot.updateText = i18n("Failed: %1", names.join(", "));
             _failed = [];
             // Still fetch alerts even if all weather providers failed
             _fetchAlertsIfNeeded();

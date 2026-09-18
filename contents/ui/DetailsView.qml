@@ -361,7 +361,7 @@ Item {
         case "dewpoint":
             return weatherRoot.tempValue(weatherRoot.dewPointC);
         case "visibility":
-            return isNaN(weatherRoot.visibilityKm) ? "--" : weatherRoot.visibilityKm.toFixed(1) + " " + i18n("km");
+            return weatherRoot.visibilityValue(weatherRoot.visibilityKm);
         case "condition":
             return weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime());
         case "preciprate":
@@ -410,7 +410,7 @@ Item {
     readonly property string _dvHumidity: weatherRoot && !isNaN(weatherRoot.humidityPercent) ? Math.round(weatherRoot.humidityPercent) + "%" : "--"
     readonly property string _dvPressure: weatherRoot ? weatherRoot.pressureValue(weatherRoot.pressureHpa) : "--"
     readonly property string _dvDewpoint: weatherRoot ? weatherRoot.tempValue(weatherRoot.dewPointC) : "--"
-    readonly property string _dvVisibility: weatherRoot && !isNaN(weatherRoot.visibilityKm) ? weatherRoot.visibilityKm.toFixed(1) + " " + i18n("km") : "--"
+    readonly property string _dvVisibility: weatherRoot ? weatherRoot.visibilityValue(weatherRoot.visibilityKm) : "--"
     readonly property string _dvCondition: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : "--"
     readonly property string _dvPreciprate: weatherRoot ? weatherRoot.precipValue(weatherRoot.precipMmh) : "--"
     readonly property string _dvPrecipsum: weatherRoot ? weatherRoot.precipSumText(weatherRoot.precipSumMm) : "--"

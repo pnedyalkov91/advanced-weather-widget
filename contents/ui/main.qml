@@ -992,6 +992,7 @@ PlasmoidItem {
     }
 
     function snowDepthText(cm) {
+        if (W.isNotSupported(cm)) return i18n("N/A");
         if (isNaN(cm)) return "--";
         if (_isImperial())
             return (cm / 2.54).toFixed(1) + " " + i18n("in");

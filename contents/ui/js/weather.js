@@ -187,7 +187,11 @@ var _COMPASS_DEGREES = {
     "N": 0, "NNE": 22.5, "NE": 45, "ENE": 67.5,
     "E": 90, "ESE": 112.5, "SE": 135, "SSE": 157.5,
     "S": 180, "SSW": 202.5, "SW": 225, "WSW": 247.5,
-    "W": 270, "WNW": 292.5, "NW": 315, "NNW": 337.5
+    "W": 270, "WNW": 292.5, "NW": 315, "NNW": 337.5,
+    // Spanish 8-point abbreviations (AEMET's "direccion" wind field). N/NE/E/
+    // SE/S are shared with the English table above; only the western points
+    // differ (Oeste/Suroeste/Noroeste vs. West/Southwest/Northwest).
+    "O": 270, "SO": 225, "NO": 315
 };
 function compassToDegrees(abbr) {
     if (!abbr) return NaN;
@@ -496,6 +500,54 @@ function bbcWeatherTypeIsDay(code) {
     if (c === 5 || c === 6 || c === 7 || c === 8) return -1; // mist/fog/cloud: ambiguous
     if (c >= 0 && c <= 30) return (c % 2 === 1) ? 1 : 0;
     return -1;
+}
+
+/**
+ * Converts an AEMET "estadoCielo" sky-state code to a WMO weather code.
+ * AEMET's codes are two digits (cloud amount) with an optional trailing "n"
+ * for the night variant (e.g. "12", "12n") - the WMO code itself doesn't
+ * encode day/night, so the suffix is stripped here and handled separately
+ * by aemetSkyIsDay(). See https://www.aemet.es for the published code table;
+ * this is a coarse bucketing (matching the style of the other
+ * provider->WMO converters above), not a 1:1 mapping.
+ */
+function aemetSkyToWmo(code) {
+    if (!code) return 2;
+    var base = String(code).replace(/n$/i, "");
+    switch (base) {
+        case "11": return 0;   // Despejado (clear)
+        case "12": return 1;   // Poco nuboso (mostly clear)
+        case "13": return 2;   // Intervalos nubosos (cloud intervals)
+        case "14": return 3;   // Nuboso (cloudy)
+        case "15": return 3;   // Muy nuboso (very cloudy)
+        case "16": return 3;   // Cubierto (overcast)
+        case "17": return 2;   // Nubes altas (high clouds)
+        case "81": return 45;  // Niebla (fog)
+        case "82": return 45;  // Bruma (mist)
+        case "83": return 45;  // Calima (haze) - closest available bucket
+        default: break;
+    }
+    // Remaining families are "<cloud state><precip type>" 2-digit codes in
+    // the 2x/3x/4x/5x/6x/7x ranges - bucket by the family (tens digit set)
+    // rather than every individual cloud-amount variant.
+    var n = parseInt(base, 10);
+    if (isNaN(n)) return 2;
+    if (n >= 23 && n <= 26) return 63;  // cloud intervals/cloudy/overcast + rain
+    if (n >= 33 && n <= 36) return 73;  // ...+ snow
+    if (n >= 43 && n <= 46) return 61;  // ...+ light/scattered rain ("lluvia escasa")
+    if (n >= 51 && n <= 54) return 95;  // ...+ storm
+    if (n >= 61 && n <= 64) return 95;  // ...+ storm and light rain
+    if (n >= 71 && n <= 74) return 71;  // ...+ light/scattered snow ("nieve escasa")
+    return 2;
+}
+
+/**
+ * Day/night from an AEMET "estadoCielo" code's trailing "n" suffix.
+ * Returns 1 (day), 0 (night), or -1 if the code carries no suffix info.
+ */
+function aemetSkyIsDay(code) {
+    if (!code) return -1;
+    return /n$/i.test(String(code)) ? 0 : 1;
 }
 
 // ── Unit formatters ─────────────────────────────────────────────────────────
