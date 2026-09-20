@@ -574,7 +574,7 @@ KCM.SimpleKCM {
                 Layout.topMargin: 4
                 visible: root.isAdaptive
                 type: Kirigami.MessageType.Information
-                text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nOpen-Meteo is always tried first - it is free and requires no API key. AEMET is intentionally not part of this list; select it directly if you want it.")
+                text: i18n("Providers are tried in order until one succeeds:\nOpen-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n If you want to choose a specific provider, please turn off Adaptive Mode.\nOpen-Meteo is always tried first - it is free and requires no API key. AEMET is intentionally not part of this list, as it only covers Spain and is not suitable for global use.")
             }
 
             Item {
