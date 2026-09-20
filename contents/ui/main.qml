@@ -225,6 +225,11 @@ PlasmoidItem {
     property var hourlyData: []
     property int panelScrollIndex: 0
     property string updateText: ""
+    // Set/cleared by aemet.js alongside WeatherService's own service._aemetRateLimited
+    // - mirrored here because ForecastView only receives weatherRoot, not the
+    // WeatherService instance, and needs this to show a specific message
+    // instead of an indefinite "Loading hourly data…".
+    property bool aemetRateLimited: false
 
     // Parsed activeLocation - staged so the _locName/_locLat/_locLon/hasSelectedTown
     // cascade fires in the next event loop tick (Qt.callLater) rather than synchronously

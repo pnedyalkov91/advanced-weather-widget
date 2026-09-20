@@ -633,7 +633,7 @@ KCM.SimpleKCM {
                         if (root.isQWeather)
                             return i18n("Chinese weather provider with global coverage. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.qweather.com'>qweather.com</a>";
                         if (root.isAemet)
-                            return i18n("Official Spanish meteorological agency - Spain locations only, falls back to Open-Meteo elsewhere. API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.aemet.es'>aemet.es</a>";
+                            return i18n("Official Spanish meteorological agency - Spain locations only! API key required below.") + "<br/>" + i18n("Provider website:") + " <a href='https://www.aemet.es'>aemet.es</a>";
                         if (root.cfg_weatherProvider === "metno")
                             return i18n("Free Norwegian Meteorological Institute service. No API key needed.") + "<br/>" + i18n("Provider website:") + " <a href='https://met.no'>met.no</a>";
                         if (root.cfg_weatherProvider === "bbc")
@@ -861,8 +861,9 @@ KCM.SimpleKCM {
             Kirigami.InlineMessage {
                 Layout.fillWidth: true
                 visible: root.isAemet && !root.isAdaptive
+                showCloseButton: true
                 type: Kirigami.MessageType.Information
-                text: i18n("AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key, no expiry: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>")
+                text: i18n("AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.")
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 

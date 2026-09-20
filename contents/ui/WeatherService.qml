@@ -177,17 +177,37 @@ QtObject {
     property string _bbcLocId: ""
     property string _bbcLocKey: ""
     // AEMET is keyed by a 5-digit INE municipio code, resolved by nearest-
-    // match against the ~8,100-entry master list (fetched once per session
-    // and cached here, since it doesn't depend on location). The resolved
+    // match against the ~8,100-entry master list (fetched at most once per
+    // session and cached here, since it doesn't depend on location). The resolved
     // id itself is additionally cached keyed by rounded coordinates, same
     // pattern as _bbcLocId/_bbcLocKey above. _aemetMuniListPending queues
     // callbacks behind a single in-flight master-list fetch so several
     // concurrent resolutions (e.g. ForecastView's "expand all days") don't
     // each fire their own ~1 MB request.
+    // Seeded from persisted config rather than starting empty every session:
+    // the resolved code doesn't change for a fixed location, so writing it
+    // through (see _persistAemetMunicipio below) takes the master-list
+    // download from once-per-Plasma-start to once-per-location-ever. With it
+    // primed, a steady-state AEMET refresh is just the daily + hourly
+    // products and no lookup at all.
     property var _aemetMunicipios: null
     property var _aemetMuniListPending: null
-    property string _aemetMuniId: ""
-    property string _aemetMuniKey: ""
+    property string _aemetMuniId: Plasmoid.configuration.aemetMuniId || ""
+    property string _aemetMuniKey: Plasmoid.configuration.aemetMuniKey || ""
+
+    /** Write-through for the resolved municipio, called by aemet.js's
+     *  _resolveMunicipio once a lookup succeeds. Guarded so a config schema
+     *  without these keys degrades to in-memory-only caching (the previous
+     *  behaviour) instead of throwing inside a provider callback. */
+    function _persistAemetMunicipio(k, id) {
+        try {
+            Plasmoid.configuration.aemetMuniKey = k;
+            Plasmoid.configuration.aemetMuniId = id;
+            Plasmoid.configuration.writeConfig();
+        } catch (e) {
+            console.warn("[WeatherService] Could not persist AEMET municipio:", e);
+        }
+    }
     // The daily (7-day) and hourly (~48h) products - time-cached (20 min,
     // see aemet.js's AEMET_CACHE_TTL_MS) rather than just per-refresh-
     // generation, since AEMET only regenerates these a few times a day, so
@@ -230,7 +250,7 @@ QtObject {
                 console.warn("[WeatherService] Safety timeout - forcing loading=false");
                 weatherRoot.loading = false;
                 service._clearUpdateMetadata();
-                weatherRoot.updateText = i18n("Update timed out. Tap to retry.");
+                weatherRoot.updateText = i18n("Update timed out. Click the refresh button to retry.");
             }
         }
     }
@@ -1295,5 +1315,80 @@ QtObject {
             } catch (e) {}
         };
         req.send();
+    }
+
+    /**
+     * Backfills wind and UV from Open-Meteo (free, keyless, no rate limit)
+     * for whichever fields AEMET's own response left NaN. AEMET's per-key
+     * rate limit means "fetched fine overall but missing wind/UV for this
+     * specific hour or day" is a real, recurring situation here, not just
+     * an occasional gap - so unlike a provider with no rate limit at all,
+     * it's worth a small supplementary request rather than just showing
+     * "--". Only ever fills gaps: never overwrites a real AEMET value.
+     * Patches weatherData (current) and dailyData (the 7-day array) in one
+     * request; see aemet.js's fetchHourly for the separate per-day hourly
+     * patch, mirroring how _fetchSunTimesOpenMeteo above only handles
+     * sunrise/sunset/UTC offset.
+     */
+    function _fetchWindUvOpenMeteo() {
+        var gen = _refreshGen;
+        var r = weatherRoot;
+        var tz = (Plasmoid.configuration.timezone || "").trim();
+        var days = Math.min(Math.max((r.dailyData || []).length, 1), 16);
+        var url = "https://api.open-meteo.com/v1/forecast"
+            + "?latitude=" + Plasmoid.configuration.latitude + "&longitude=" + Plasmoid.configuration.longitude
+            + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
+            + "&current=wind_speed_10m,wind_direction_10m,uv_index"
+            + "&daily=wind_speed_10m_max,wind_direction_10m_dominant,uv_index_max"
+            + "&forecast_days=" + days;
+        var req2 = new XMLHttpRequest();
+        req2.open("GET", url);
+        req2.onreadystatechange = function () {
+            if (req2.readyState !== XMLHttpRequest.DONE) return;
+            if (_refreshGen !== gen) return;
+            if (req2.status !== 200) return;
+            try {
+                var d = JSON.parse(req2.responseText);
+
+                if (r.weatherData && d.current) {
+                    var patched = Object.assign({}, r.weatherData);
+                    var curChanged = false;
+                    if (isNaN(patched.windKmh) && d.current.wind_speed_10m !== undefined) {
+                        patched.windKmh = d.current.wind_speed_10m; curChanged = true;
+                    }
+                    if (isNaN(patched.windDirection) && d.current.wind_direction_10m !== undefined) {
+                        patched.windDirection = d.current.wind_direction_10m; curChanged = true;
+                    }
+                    if (isNaN(patched.uvIndex) && d.current.uv_index !== undefined) {
+                        patched.uvIndex = d.current.uv_index; curChanged = true;
+                    }
+                    if (curChanged) r.weatherDataStaged = patched;
+                }
+
+                if (d.daily && d.daily.time && r.dailyData && r.dailyData.length > 0) {
+                    var nd = r.dailyData.slice();
+                    var dailyChanged = false;
+                    for (var i = 0; i < d.daily.time.length; i++) {
+                        for (var j = 0; j < nd.length; j++) {
+                            if (nd[j].dateStr !== d.daily.time[i]) continue;
+                            var day = Object.assign({}, nd[j]);
+                            if (isNaN(day.windKmh) && d.daily.wind_speed_10m_max && d.daily.wind_speed_10m_max[i] !== undefined) {
+                                day.windKmh = d.daily.wind_speed_10m_max[i]; dailyChanged = true;
+                            }
+                            if (isNaN(day.windDir) && d.daily.wind_direction_10m_dominant && d.daily.wind_direction_10m_dominant[i] !== undefined) {
+                                day.windDir = d.daily.wind_direction_10m_dominant[i]; dailyChanged = true;
+                            }
+                            if (isNaN(day.uvMax) && d.daily.uv_index_max && d.daily.uv_index_max[i] !== undefined) {
+                                day.uvMax = d.daily.uv_index_max[i]; dailyChanged = true;
+                            }
+                            nd[j] = day;
+                            break;
+                        }
+                    }
+                    if (dailyChanged) r.dailyData = nd;
+                }
+            } catch (e) {}
+        };
+        req2.send();
     }
 }

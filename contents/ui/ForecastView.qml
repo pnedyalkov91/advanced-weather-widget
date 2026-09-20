@@ -852,7 +852,9 @@ Item {
                                 ? i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.")
                                 : _dayOutsideAemetHourlyRange
                                     ? i18n("AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date.")
-                                    : i18n("Loading hourly data…")
+                                    : (((Plasmoid.configuration.weatherProvider || "adaptive") === "aemet") && weatherRoot && weatherRoot.aemetRateLimited)
+                                        ? i18n("AEMET: request limit reached for the moment. This will retry automatically - please wait a minute.")
+                                        : i18n("Loading hourly data…")
                             color: forecastRoot.themeTextColor
                             font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
                             wrapMode: Text.Wrap
