@@ -64,6 +64,15 @@ function _val(obj) {
     return NaN;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -249,18 +258,22 @@ function fetchHourly(service, W, dateStr) {
         }
 
         var arr = [];
+        var nextDateStr = _nextDateStr(dateStr);
+        var nextEntry = null;
         if (d.hours) {
             d.hours.forEach(function (h) {
                 var dt = new Date(h.time);
                 var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
-                if (hDateStr !== dateStr) return;
+                var isTarget = hDateStr === dateStr;
+                var isClosing = !nextEntry && hDateStr === nextDateStr;
+                if (!isTarget && !isClosing) return;
 
                 var t = _val(h.airTemperature);
                 var cc = _val(h.cloudCover);
                 var pr = _val(h.precipitation);
                 var ws = _val(h.windSpeed);
 
-                arr.push({
+                var entry = {
                     hour: Qt.formatTime(dt, "HH:mm"),
                     tempC: t,
                     code: _deriveWmoCode(cc, pr, t),
@@ -269,9 +282,19 @@ function fetchHourly(service, W, dateStr) {
                     humidity: (function() { var v = _val(h.humidity); return !isNaN(v) ? Math.round(v) : NaN; })(),
                     precipProb: NaN, // not available from StormGlass
                     precipMm: pr
-                });
+                };
+                if (isTarget) {
+                    arr.push(entry);
+                } else {
+                    // d.hours is chronological, so the first match for the
+                    // next date is its earliest hour - append it to close
+                    // the hourly forecast's loop at midnight.
+                    entry.isNextDay = true;
+                    nextEntry = entry;
+                }
             });
         }
+        if (nextEntry) arr.push(nextEntry);
         r.hourlyData = arr;
     };
     req.send();

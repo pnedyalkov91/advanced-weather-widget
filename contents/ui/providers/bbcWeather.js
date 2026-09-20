@@ -123,6 +123,15 @@ function _resolveLocationId(service, gen, cb) {
     req.send();
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function _forecastUrl(id) {
     return "https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/"
         + encodeURIComponent(id);
@@ -238,31 +247,51 @@ function _fetchCurrentForId(service, W, chain, idx, gen, id) {
     req.send();
 }
 
-/** Parses the aggregated forecast JSON into an hourly array for `dateStr`. */
+function _bbcHourEntry(rep, W) {
+    return {
+        hour: _slotTime(rep),
+        tempC: (rep.temperatureC !== undefined) ? rep.temperatureC : NaN,
+        code: W.bbcWeatherTypeToWmo(rep.weatherType),
+        windKmh: (rep.windSpeedKph !== undefined) ? rep.windSpeedKph : NaN,
+        windDeg: W.compassToDegrees ? W.compassToDegrees(rep.windDirection) : NaN,
+        humidity: (rep.humidity !== undefined) ? rep.humidity : NaN,
+        precipProb: (rep.precipitationProbabilityInPercent !== undefined)
+                        ? rep.precipitationProbabilityInPercent : NaN,
+        precipMm: W.NOT_SUPPORTED, // BBC exposes only precip probability, not amount
+        pressureHpa: (rep.pressure !== undefined && rep.pressure !== null)
+                        ? rep.pressure : NaN,
+        visibilityKm: _visibilityKm(rep.visibility),
+        uvIndex: W.NOT_SUPPORTED   // BBC has no per-hour UV index
+    };
+}
+
+/** Parses the aggregated forecast JSON into an hourly array for `dateStr`,
+ *  closed off with the following day's earliest report (marked isNextDay)
+ *  so the array reads 00:00..00:00 instead of stopping at 23:00. */
 function _parseHourly(d, W, dateStr) {
     var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextRep = null;
     if (d.forecasts)
         d.forecasts.forEach(function (fc) {
             var reps = (fc.detailed && fc.detailed.reports) ? fc.detailed.reports : [];
             reps.forEach(function (rep) {
-                if (rep.localDate !== dateStr) return;
-                arr.push({
-                    hour: _slotTime(rep),
-                    tempC: (rep.temperatureC !== undefined) ? rep.temperatureC : NaN,
-                    code: W.bbcWeatherTypeToWmo(rep.weatherType),
-                    windKmh: (rep.windSpeedKph !== undefined) ? rep.windSpeedKph : NaN,
-                    windDeg: W.compassToDegrees ? W.compassToDegrees(rep.windDirection) : NaN,
-                    humidity: (rep.humidity !== undefined) ? rep.humidity : NaN,
-                    precipProb: (rep.precipitationProbabilityInPercent !== undefined)
-                                    ? rep.precipitationProbabilityInPercent : NaN,
-                    precipMm: W.NOT_SUPPORTED, // BBC exposes only precip probability, not amount
-                    pressureHpa: (rep.pressure !== undefined && rep.pressure !== null)
-                                    ? rep.pressure : NaN,
-                    visibilityKm: _visibilityKm(rep.visibility),
-                    uvIndex: W.NOT_SUPPORTED   // BBC has no per-hour UV index
-                });
+                if (rep.localDate === dateStr) {
+                    arr.push(_bbcHourEntry(rep, W));
+                } else if (rep.localDate === nextDateStr) {
+                    // Track the earliest report of the next day (by slot
+                    // time, not array order) so the closing entry is
+                    // genuinely its 00:00 reading.
+                    if (!nextRep || _slotTime(rep) < _slotTime(nextRep))
+                        nextRep = rep;
+                }
             });
         });
+    if (nextRep) {
+        var closing = _bbcHourEntry(nextRep, W);
+        closing.isNextDay = true;
+        arr.push(closing);
+    }
     return arr;
 }
 

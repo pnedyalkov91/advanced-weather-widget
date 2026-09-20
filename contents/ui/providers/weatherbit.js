@@ -60,6 +60,15 @@ function _codeToWmo(code) {
     return 2;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -223,17 +232,21 @@ function fetchHourly(service, W, dateStr) {
         }
 
         var arr = [];
+        var nextDateStr = _nextDateStr(dateStr);
+        var nextEntry = null;
         if (d.data) {
             d.data.forEach(function (h) {
                 // timestamp_local is "yyyy-MM-ddTHH:mm:ss"
                 var dtStr = h.timestamp_local || h.datetime || "";
                 var datePart = dtStr.substring(0, 10);
-                if (datePart !== dateStr) return;
+                var isTarget = datePart === dateStr;
+                var isClosing = !nextEntry && datePart === nextDateStr;
+                if (!isTarget && !isClosing) return;
 
                 var dt = new Date(dtStr);
                 var wCode = (h.weather && h.weather.code !== undefined) ? h.weather.code : undefined;
 
-                arr.push({
+                var entry = {
                     hour: Qt.formatTime(dt, "HH:mm"),
                     tempC: h.temp,
                     code: _codeToWmo(wCode),
@@ -242,9 +255,20 @@ function fetchHourly(service, W, dateStr) {
                     humidity: (h.rh !== undefined) ? Math.round(h.rh) : NaN,
                     precipProb: (h.pop !== undefined) ? Math.round(h.pop) : NaN,
                     precipMm: (h.precip !== undefined) ? h.precip : NaN
-                });
+                };
+                if (isTarget) {
+                    arr.push(entry);
+                } else {
+                    // d.data is chronological, so the first match for the
+                    // next date is its earliest hour - append it to close
+                    // the loop at midnight. Only present when the fixed
+                    // 48h window above happens to reach that far.
+                    entry.isNextDay = true;
+                    nextEntry = entry;
+                }
             });
         }
+        if (nextEntry) arr.push(nextEntry);
         r.hourlyData = arr;
     };
     req.send();

@@ -52,6 +52,15 @@ function _pickField(entry, backupEntry, key, flag) {
     return backupEntry ? backupEntry[key] : v;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function fetchCurrent(service, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -314,12 +323,16 @@ function fetchHourly(service, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var tz = service.timezone;
+    // end_date is one day past dateStr (not dateStr itself) so the response
+    // also carries the following day's 00:00 hour - the entry that closes
+    // the hourly forecast's loop at midnight - in the same single request.
+    var nextDateStr = _nextDateStr(dateStr);
     var url = "https://api.open-meteo.com/v1/forecast?latitude="
         + service.latitude
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
         + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
-        + "&start_date=" + dateStr + "&end_date=" + dateStr
+        + "&start_date=" + dateStr + "&end_date=" + nextDateStr
         + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
     var req = new XMLHttpRequest();
     req.open("GET", url);
@@ -332,7 +345,7 @@ function fetchHourly(service, dateStr) {
             return;
         }
         var d = JSON.parse(req.responseText);
-        var arr = _parseHourlyArray(d);
+        var arr = _parseHourlyArray(d, dateStr, nextDateStr);
 
         // Same national-model horizon issue as the daily forecast: if
         // dateStr falls outside the high-res model's coverage, Open-Meteo
@@ -344,7 +357,7 @@ function fetchHourly(service, dateStr) {
             return;
         }
 
-        _fetchHourlyBackup(service, gen, dateStr, function (backupArr) {
+        _fetchHourlyBackup(service, gen, dateStr, nextDateStr, function (backupArr) {
             if (service._refreshGen !== gen) return;
             r.hourlyData = _mergeHourlyArrays(arr, backupArr);
         });
@@ -354,14 +367,21 @@ function fetchHourly(service, dateStr) {
 
 // Parses the "hourly" block of an Open-Meteo /v1/forecast response into the
 // widget's internal per-hour shape. Shared by the primary (model-specific)
-// fetch and the best-match backup fetch.
-function _parseHourlyArray(d) {
+// fetch and the best-match backup fetch. When dateStr/nextDateStr are given,
+// keeps only dateStr's own hours plus nextDateStr's exact 00:00 entry
+// (flagged isNextDay) - the response covers both dates (see fetchHourly),
+// so this is what actually closes the hourly forecast's loop at midnight.
+function _parseHourlyArray(d, dateStr, nextDateStr) {
     var arr = [];
     if (d.hourly && d.hourly.time)
-        for (var i = 0; i < d.hourly.time.length; ++i)
-            arr.push({
-                timeIso: d.hourly.time[i],
-                hour: Qt.formatTime(new Date(d.hourly.time[i]), "HH:mm"),
+        for (var i = 0; i < d.hourly.time.length; ++i) {
+            var t = d.hourly.time[i];
+            var isTarget = !dateStr || t.substring(0, 10) === dateStr;
+            var isClosing = !isTarget && nextDateStr && t === (nextDateStr + "T00:00");
+            if (dateStr && !isTarget && !isClosing) continue;
+            var entry = {
+                timeIso: t,
+                hour: Qt.formatTime(new Date(t), "HH:mm"),
                 tempC: d.hourly.temperature_2m[i],
                 code: d.hourly.weather_code[i],
                 windKmh: d.hourly.wind_speed_10m[i],
@@ -372,7 +392,10 @@ function _parseHourlyArray(d) {
                 pressureHpa: d.hourly.pressure_msl ? d.hourly.pressure_msl[i] : NaN,
                 visibilityKm: d.hourly.visibility ? d.hourly.visibility[i] / 1000.0 : NaN,
                 uvIndex: d.hourly.uv_index ? d.hourly.uv_index[i] : NaN
-            });
+            };
+            if (isClosing) entry.isNextDay = true;
+            arr.push(entry);
+        }
     return arr;
 }
 
@@ -393,17 +416,18 @@ function _isHourlyIncomplete(entry) {
     return false;
 }
 
-// Fetches the same day from Open-Meteo's global best-match blend to use as
-// backfill. Deliberately omits &models= so Open-Meteo picks its own
-// default, which has full worldwide coverage.
-function _fetchHourlyBackup(service, gen, dateStr, callback) {
+// Fetches the same day (plus the following day, for the midnight-closing
+// entry) from Open-Meteo's global best-match blend to use as backfill.
+// Deliberately omits &models= so Open-Meteo picks its own default, which has
+// full worldwide coverage.
+function _fetchHourlyBackup(service, gen, dateStr, nextDateStr, callback) {
     var tz = service.timezone;
     var url = "https://api.open-meteo.com/v1/forecast?latitude="
         + service.latitude
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
         + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
-        + "&start_date=" + dateStr + "&end_date=" + dateStr;
+        + "&start_date=" + dateStr + "&end_date=" + nextDateStr;
     var req = new XMLHttpRequest();
     req.open("GET", url);
     req.onreadystatechange = function () {
@@ -415,7 +439,7 @@ function _fetchHourlyBackup(service, gen, dateStr, callback) {
         }
         try {
             var d = JSON.parse(req.responseText);
-            callback(_parseHourlyArray(d));
+            callback(_parseHourlyArray(d, dateStr, nextDateStr));
         } catch (e) {
             callback([]);
         }
@@ -451,6 +475,11 @@ function _mergeHourlyArrays(primary, backup) {
         for (var k = 0; k < fields.length; ++k)
             mergedEntry[fields[k]] = _pickField(entry, backupEntry, fields[k], flag);
         if (flag.used) mergedEntry.isBackupModel = true;
+        // Neither field is in `fields` (nothing to backfill per-field) -
+        // carry the flag itself across the merge so the closing midnight
+        // entry stays marked whichever side it came from.
+        if ((entry && entry.isNextDay) || (backupEntry && backupEntry.isNextDay))
+            mergedEntry.isNextDay = true;
         merged.push(mergedEntry);
     }
     return merged;

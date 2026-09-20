@@ -277,6 +277,15 @@ function _aemetDirToDegrees(dir, W) {
     return W.compassToDegrees(d);
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 // ── Two-step "self-discovery" fetch shared by every AEMET endpoint ───────
 
 /**
@@ -921,16 +930,36 @@ function fetchHourlyDirect(service, W, dateStr, cb) {
 }
 
 /** Shared by fetchHourly/fetchHourlyDirect: picks the day matching dateStr
- *  out of an hourly response and builds its per-hour array. AEMET's hourly
- *  product only covers today+tomorrow, so dates further out simply have no
- *  matching day and correctly resolve to an empty array. */
+ *  out of an hourly response and builds its per-hour array, then closes the
+ *  loop with the following day's earliest hour (marked isNextDay) so it
+ *  reads 00:00..00:00 instead of stopping at 23:00 - same as every other
+ *  provider. AEMET's hourly product only covers today+tomorrow, so the
+ *  closing entry is simply omitted when dateStr is the last day it has
+ *  data for (dates further out already resolve to an empty array). */
 function _dayHourlyForDate(hd, dateStr, W, service) {
     if (!hd) return [];
     var root = Array.isArray(hd) ? hd[0] : hd;
     var dias = (root && root.prediccion && root.prediccion.dia) ? root.prediccion.dia : [];
+    var arr = null;
     for (var i = 0; i < dias.length; i++) {
-        if ((dias[i].fecha || "").substr(0, 10) === dateStr)
-            return _buildHourlyArray(dias[i], W, service);
+        if ((dias[i].fecha || "").substr(0, 10) === dateStr) {
+            arr = _buildHourlyArray(dias[i], W, service);
+            break;
+        }
     }
-    return [];
+    if (!arr) return [];
+
+    var nextDateStr = _nextDateStr(dateStr);
+    for (var j = 0; j < dias.length; j++) {
+        if ((dias[j].fecha || "").substr(0, 10) === nextDateStr) {
+            var nextArr = _buildHourlyArray(dias[j], W, service);
+            if (nextArr.length > 0) {
+                var closing = nextArr[0];
+                closing.isNextDay = true;
+                arr.push(closing);
+            }
+            break;
+        }
+    }
+    return arr;
 }

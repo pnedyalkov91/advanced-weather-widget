@@ -35,6 +35,15 @@ function _calcDewPoint(T, rh) {
     return Math.round((c * gamma) / (b - gamma) * 10) / 10;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function _apiTimeTo24h(s) {
     if (!s || s === "--")
         return "--";
@@ -210,11 +219,20 @@ function fetchHourly(service, W, dateStr) {
         r.hourlyData = [];
         return;
     }
+    var nextDateStr = _nextDateStr(dateStr);
+    // WeatherAPI's `dt` parameter "restricts date output" to that single day
+    // only, which left no way to reach the next day's 00:00 (the entry that
+    // closes the hourly forecast's loop at midnight) without a second
+    // request. Requesting the same multi-day window fetchCurrent already
+    // uses instead - wide enough to cover dateStr's following day even when
+    // dateStr is the last configured forecast day - keeps this to one
+    // request and lets both dates be picked out of the same response.
+    var days = Math.min(14, Math.max(3, service.forecastDays) + 1);
     var url = "https://api.weatherapi.com/v1/forecast.json?key="
         + encodeURIComponent(key)
         + "&q=" + encodeURIComponent(
             service.latitude + "," + service.longitude)
-        + "&days=7&aqi=no&alerts=no&dt=" + dateStr;
+        + "&days=" + days + "&aqi=no&alerts=no";
     var req = new XMLHttpRequest();
     req.open("GET", url);
     req.onreadystatechange = function () {
@@ -226,24 +244,36 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
         var d = JSON.parse(req.responseText);
+
+        function buildEntry(h) {
+            return {
+                hour: Qt.formatTime(new Date(h.time_epoch * 1000), "HH:mm"),
+                tempC: h.temp_c,
+                code: W.weatherApiCodeToWmo(h.condition.code),
+                windKmh: h.wind_kph,
+                windDeg: h.wind_degree,
+                humidity: h.humidity,
+                precipProb: (h.chance_of_rain !== undefined)
+                    ? h.chance_of_rain : NaN,
+                precipMm: (h.precip_mm !== undefined) ? h.precip_mm : NaN
+            };
+        }
+
         var arr = [];
-        if (d.forecast && d.forecast.forecastday)
+        if (d.forecast && d.forecast.forecastday) {
             d.forecast.forecastday.forEach(function (day) {
                 if (day.date === dateStr && day.hour)
-                    day.hour.forEach(function (h) {
-                        arr.push({
-                            hour: Qt.formatTime(new Date(h.time_epoch * 1000), "HH:mm"),
-                            tempC: h.temp_c,
-                            code: W.weatherApiCodeToWmo(h.condition.code),
-                            windKmh: h.wind_kph,
-                            windDeg: h.wind_degree,
-                            humidity: h.humidity,
-                            precipProb: (h.chance_of_rain !== undefined)
-                                ? h.chance_of_rain : NaN,
-                            precipMm: (h.precip_mm !== undefined) ? h.precip_mm : NaN
-                        });
-                    });
+                    day.hour.forEach(function (h) { arr.push(buildEntry(h)); });
             });
+            var tomorrow = d.forecast.forecastday.filter(function (day) {
+                return day.date === nextDateStr;
+            })[0];
+            if (tomorrow && tomorrow.hour && tomorrow.hour.length > 0) {
+                var closing = buildEntry(tomorrow.hour[0]);
+                closing.isNextDay = true;
+                arr.push(closing);
+            }
+        }
         r.hourlyData = arr;
     };
     req.send();

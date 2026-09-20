@@ -915,14 +915,17 @@ Item {
                                             if (!t || t === "--") return -1;
                                             var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
                                         }
-                                        // For today (index 0) filter out past hours; keep 1 hour buffer so current hour stays visible
+                                        // For today (index 0) filter out past hours; keep 1 hour buffer so current hour stays visible.
+                                        // The appended closing entry (isNextDay - the following day's 00:00, see the provider
+                                        // fetchers) reads as minutes=0 same as a just-past midnight hour, so it's exempted here -
+                                        // otherwise it would always look "in the past" and get filtered out of "today".
                                         var nowMins = -1;
                                         if (index === 0) {
                                             var _now = new Date();
                                             nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                         }
                                         var source = nowMins >= 0
-                                            ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
+                                            ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return h.isNextDay === true || m < 0 || m >= nowMins; })
                                             : _dayHourlyData;
                                         if (!forecastRoot.showSunEvents)
                                             return source;
@@ -1543,14 +1546,18 @@ Item {
                                                 if (!t || t === "--") return -1;
                                                 var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
                                             }
-                                            // For today (index 0) filter out past hours; keep 1 hour buffer
+                                            // For today (index 0) filter out past hours; keep 1 hour buffer.
+                                            // The appended closing entry (isNextDay - the following day's 00:00,
+                                            // see the provider fetchers) reads as minutes=0 same as a just-past
+                                            // midnight hour, so it's exempted here - otherwise it would always
+                                            // look "in the past" and get filtered out of "today".
                                             var nowMins = -1;
                                             if (index === 0) {
                                                 var _now = new Date();
                                                 nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                             }
                                             var source = nowMins >= 0
-                                                ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return m < 0 || m >= nowMins; })
+                                                ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return h.isNextDay === true || m < 0 || m >= nowMins; })
                                                 : _dayHourlyData;
                                             if (!forecastRoot.showSunEvents)
                                                 return source;

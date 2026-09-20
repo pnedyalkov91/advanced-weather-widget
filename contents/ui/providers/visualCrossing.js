@@ -77,6 +77,15 @@ function _iconIsDay(icon) {
     return -1;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -221,10 +230,13 @@ function fetchHourly(service, W, dateStr) {
         return;
     }
 
-    // Request hours for the specific date only
+    // Request dateStr through the following day (not dateStr alone), so the
+    // one response also carries the next day's 00:00 hour needed to close
+    // the forecast's loop at midnight.
+    var nextDateStr = _nextDateStr(dateStr);
     var url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
         + service.latitude + "," + service.longitude
-        + "/" + dateStr + "/" + dateStr
+        + "/" + dateStr + "/" + nextDateStr
         + "?key=" + encodeURIComponent(key)
         + "&unitGroup=metric"
         + "&include=hours"
@@ -247,20 +259,31 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
+        function buildEntry(h) {
+            return {
+                hour: h.datetime ? h.datetime.substring(0, 5) : "--",
+                tempC: h.temp,
+                code: _iconToWmo(h.icon),
+                windKmh: (h.windspeed !== undefined) ? h.windspeed : NaN,
+                windDeg: (h.winddir !== undefined) ? h.winddir : NaN,
+                humidity: (h.humidity !== undefined) ? Math.round(h.humidity) : NaN,
+                precipProb: (h.precipprob !== undefined) ? Math.round(h.precipprob) : NaN,
+                precipMm: (h.precip !== undefined) ? h.precip : NaN
+            };
+        }
+
         var arr = [];
-        if (d.days && d.days.length > 0 && d.days[0].hours) {
-            d.days[0].hours.forEach(function (h) {
-                arr.push({
-                    hour: h.datetime ? h.datetime.substring(0, 5) : "--",
-                    tempC: h.temp,
-                    code: _iconToWmo(h.icon),
-                    windKmh: (h.windspeed !== undefined) ? h.windspeed : NaN,
-                    windDeg: (h.winddir !== undefined) ? h.winddir : NaN,
-                    humidity: (h.humidity !== undefined) ? Math.round(h.humidity) : NaN,
-                    precipProb: (h.precipprob !== undefined) ? Math.round(h.precipprob) : NaN,
-                    precipMm: (h.precip !== undefined) ? h.precip : NaN
-                });
-            });
+        if (d.days) {
+            var today = d.days.filter(function (day) { return day.datetime === dateStr; })[0];
+            if (today && today.hours)
+                today.hours.forEach(function (h) { arr.push(buildEntry(h)); });
+
+            var tomorrow = d.days.filter(function (day) { return day.datetime === nextDateStr; })[0];
+            if (tomorrow && tomorrow.hours && tomorrow.hours.length > 0) {
+                var closing = buildEntry(tomorrow.hours[0]);
+                closing.isNextDay = true;
+                arr.push(closing);
+            }
         }
         r.hourlyData = arr;
     };

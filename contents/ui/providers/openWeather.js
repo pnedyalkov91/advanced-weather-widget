@@ -35,6 +35,16 @@ function _calcDewPoint(T, rh) {
     return Math.round((c * gamma) / (b - gamma) * 10) / 10;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00 (or 21:00, given
+ *  OpenWeather's 3-hour step). */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -186,24 +196,38 @@ function fetchHourly(service, W, dateStr) {
         }
         var fc = JSON.parse(req.responseText);
         var arr = [];
+        var nextDateStr = _nextDateStr(dateStr);
+        var nextEntry = null;
+        function buildEntry(e, d) {
+            return {
+                hour: Qt.formatTime(d, "HH:mm"),
+                tempC: e.main.temp,
+                code: W.openWeatherCodeToWmo(e.weather[0].id),
+                windKmh: e.wind ? e.wind.speed * 3.6 : NaN,
+                windDeg: e.wind ? e.wind.deg : NaN,
+                humidity: e.main.humidity,
+                precipProb: (e.pop !== undefined && e.pop !== null)
+                    ? Math.round(e.pop * 100) : NaN,
+                precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
+                    : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
+                    : NaN
+            };
+        }
         if (fc.list)
             fc.list.forEach(function (e) {
                 var d = new Date(e.dt * 1000);
-                if (Qt.formatDate(d, "yyyy-MM-dd") === dateStr)
-                    arr.push({
-                        hour: Qt.formatTime(d, "HH:mm"),
-                        tempC: e.main.temp,
-                        code: W.openWeatherCodeToWmo(e.weather[0].id),
-                        windKmh: e.wind ? e.wind.speed * 3.6 : NaN,
-                        windDeg: e.wind ? e.wind.deg : NaN,
-                        humidity: e.main.humidity,
-                        precipProb: (e.pop !== undefined && e.pop !== null)
-                            ? Math.round(e.pop * 100) : NaN,
-                        precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
-                            : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
-                            : NaN
-                    });
+                var dkey = Qt.formatDate(d, "yyyy-MM-dd");
+                if (dkey === dateStr) {
+                    arr.push(buildEntry(e, d));
+                } else if (!nextEntry && dkey === nextDateStr) {
+                    // The list is chronological, so the first match for the
+                    // next date is its earliest step - append it to close
+                    // the hourly forecast's loop at (near) midnight.
+                    nextEntry = buildEntry(e, d);
+                    nextEntry.isNextDay = true;
+                }
             });
+        if (nextEntry) arr.push(nextEntry);
         r.hourlyData = arr;
     };
     req.send();

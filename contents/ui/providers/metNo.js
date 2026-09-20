@@ -35,6 +35,15 @@ function _calcDewPoint(T, rh) {
     return Math.round((c * gamma) / (b - gamma) * 10) / 10;
 }
 
+/** The calendar date (YYYY-MM-DD) immediately after dateStr, in the widget's
+ *  own local time - used to append the closing 00:00 entry so the hourly
+ *  forecast reads 00:00..00:00 instead of stopping at 23:00. */
+function _nextDateStr(dateStr) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -181,37 +190,52 @@ function fetchHourly(service, W, dateStr) {
         }
         var d = JSON.parse(req.responseText);
         var arr = [];
+        var nextDateStr = _nextDateStr(dateStr);
+        var nextEntry = null;
         if (d.properties && d.properties.timeseries)
             d.properties.timeseries.forEach(function (ts) {
                 var dd = new Date(ts.time);
-                if (Qt.formatDate(dd, "yyyy-MM-dd") === dateStr) {
-                    var det = (ts.data && ts.data.instant)
-                        ? ts.data.instant.details : null;
-                    if (!det)
-                        return;
-                    var sym = (ts.data && ts.data.next_1_hours
-                        && ts.data.next_1_hours.summary)
-                        ? ts.data.next_1_hours.summary.symbol_code : "";
-                    arr.push({
-                        hour: Qt.formatTime(dd, "HH:mm"),
-                        tempC: det.air_temperature,
-                        code: W.metNoSymbolToWmo(sym),
-                        windKmh: det.wind_speed !== undefined
-                            ? det.wind_speed * 3.6 : NaN,
-                        windDeg: det.wind_from_direction !== undefined
-                            ? det.wind_from_direction : NaN,
-                        humidity: det.relative_humidity,
-                        precipProb: (ts.data && ts.data.next_1_hours
-                            && ts.data.next_1_hours.details
-                            && ts.data.next_1_hours.details.probability_of_precipitation !== undefined)
-                            ? ts.data.next_1_hours.details.probability_of_precipitation : NaN,
-                        precipMm: (ts.data && ts.data.next_1_hours
-                            && ts.data.next_1_hours.details
-                            && ts.data.next_1_hours.details.precipitation_amount !== undefined)
-                            ? ts.data.next_1_hours.details.precipitation_amount : NaN
-                    });
+                var dkey = Qt.formatDate(dd, "yyyy-MM-dd");
+                var isTarget = dkey === dateStr;
+                var isClosing = !nextEntry && dkey === nextDateStr;
+                if (!isTarget && !isClosing) return;
+
+                var det = (ts.data && ts.data.instant)
+                    ? ts.data.instant.details : null;
+                if (!det)
+                    return;
+                var sym = (ts.data && ts.data.next_1_hours
+                    && ts.data.next_1_hours.summary)
+                    ? ts.data.next_1_hours.summary.symbol_code : "";
+                var entry = {
+                    hour: Qt.formatTime(dd, "HH:mm"),
+                    tempC: det.air_temperature,
+                    code: W.metNoSymbolToWmo(sym),
+                    windKmh: det.wind_speed !== undefined
+                        ? det.wind_speed * 3.6 : NaN,
+                    windDeg: det.wind_from_direction !== undefined
+                        ? det.wind_from_direction : NaN,
+                    humidity: det.relative_humidity,
+                    precipProb: (ts.data && ts.data.next_1_hours
+                        && ts.data.next_1_hours.details
+                        && ts.data.next_1_hours.details.probability_of_precipitation !== undefined)
+                        ? ts.data.next_1_hours.details.probability_of_precipitation : NaN,
+                    precipMm: (ts.data && ts.data.next_1_hours
+                        && ts.data.next_1_hours.details
+                        && ts.data.next_1_hours.details.precipitation_amount !== undefined)
+                        ? ts.data.next_1_hours.details.precipitation_amount : NaN
+                };
+                if (isTarget) {
+                    arr.push(entry);
+                } else {
+                    // met.no's timeseries is chronological, so the first
+                    // entry matched for the next date is its earliest
+                    // (00:00) hour - append it to close the loop at midnight.
+                    entry.isNextDay = true;
+                    nextEntry = entry;
                 }
             });
+        if (nextEntry) arr.push(nextEntry);
         r.hourlyData = arr;
     };
     req.send();
