@@ -109,8 +109,27 @@ Item {
     readonly property string sunTimesMode: Plasmoid.configuration.widgetSunTimesMode || "both"
     readonly property string moonMode: Plasmoid.configuration.widgetMoonMode || "full"
 
+    // Ticks once a minute. upcomingSunEvent()/upcomingMoonEvent() below call
+    // helpers that read new Date() internally, which is not a QML
+    // dependency - same root cause as suntimesCard._isNight. Rather than
+    // caching one result, these two are read from many different icon/label
+    // bindings scattered across this file, so instead each function reads
+    // this tick property first: any binding that calls into either function,
+    // however indirectly, then picks up _nowTick as a real dependency and
+    // re-evaluates every minute instead of only when sunrise/sunset text
+    // next changes value (roughly once a day).
+    property int _nowTick: 0
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root._nowTick = (new Date()).getTime()
+    }
+
     /** Returns "sunrise" or "sunset" depending on which is next (for upcoming mode) */
     function upcomingSunEvent() {
+        void (root._nowTick);
         if (!weatherRoot)
             return "sunrise";
         var utcOff = weatherRoot.locationUtcOffsetMins || 0;
@@ -130,9 +149,11 @@ Item {
 
     /** Returns "moonrise" or "moonset" depending on which is next (for upcoming mode) */
     function upcomingMoonEvent(riseText, setText) {
+        void (root._nowTick);
         var utcOff = (weatherRoot ? weatherRoot.locationUtcOffsetMins : 0) || 0;
         return MoonPath.nextMoonEvent(riseText, setText, utcOff);
     }
+
 
     /** Whether to show sunrise items in sun collapsed/list row */
     function showSunrise() {
@@ -276,6 +297,7 @@ Item {
     }
     /** Resolves the current moon phase icon */
     function resolveMoonPhaseIcon() {
+        void (root._nowTick);
         var stem = Moon.moonPhaseSvgStem(Moon.moonAgeFromPhase(SC.getMoonIllumination(new Date()).phase));
         // Always use bundled SVG for moon phase (flat-color for KDE theme)
         var theme = (root.iconTheme === "kde") ? "flat-color" : root.iconTheme;
@@ -411,7 +433,13 @@ Item {
     readonly property string _dvPressure: weatherRoot ? weatherRoot.pressureValue(weatherRoot.pressureHpa) : "--"
     readonly property string _dvDewpoint: weatherRoot ? weatherRoot.tempValue(weatherRoot.dewPointC) : "--"
     readonly property string _dvVisibility: weatherRoot ? weatherRoot.visibilityValue(weatherRoot.visibilityKm) : "--"
-    readonly property string _dvCondition: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : "--"
+    // _dvCondition depends on isNightTime(), which internally calls new
+    // Date() (see suntimesCard._isNight further down for the full
+    // writeup) - so, like _isNight, this must be a plain property
+    // recomputed on a timer and on weatherRoot signals, NOT a readonly
+    // binding, or the day/night wording here goes stale until weatherCode
+    // next happens to change value.
+    property string _dvCondition: "--"
     readonly property string _dvPreciprate: weatherRoot ? weatherRoot.precipValue(weatherRoot.precipMmh) : "--"
     readonly property string _dvPrecipsum: weatherRoot ? weatherRoot.precipSumText(weatherRoot.precipSumMm) : "--"
     readonly property string _dvUvindex: weatherRoot ? weatherRoot.uvIndexText(weatherRoot.uvIndex) : "--"
@@ -420,6 +448,30 @@ Item {
     readonly property string _dvSpaceweather: weatherRoot ? weatherRoot.spaceWeatherText() : "--"
     readonly property string _dvAlerts: weatherRoot ? weatherRoot.alertsText() : "--"
     readonly property string _dvSnowcover: weatherRoot ? weatherRoot.snowDepthText(weatherRoot.snowDepthCm) : "--"
+    function _updateDvCondition() {
+        _dvCondition = weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : "--";
+    }
+    Component.onCompleted: _updateDvCondition()
+    Timer {
+        interval: 60000
+        running: root.detailIds.indexOf("condition") >= 0
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root._updateDvCondition()
+    }
+    Connections {
+        target: root.weatherRoot
+        // Same two triggers suntimesCard uses: a full data refresh, and the
+        // separate is_day signal path - so "condition" catches up promptly
+        // instead of waiting for the 60s timer or for weatherCode to change.
+        function onWeatherDataChanged() {
+            root._updateDvCondition();
+        }
+        function onIsDayChanged() {
+            root._updateDvCondition();
+        }
+    }
+
     property int _dateTimeTick: 0
     Timer {
         interval: 60000
@@ -2159,34 +2211,22 @@ Item {
                                         readonly property var alerts: weatherRoot ? (weatherRoot.weatherAlerts || []) : []
                                         readonly property bool hasMultiple: alerts.length > 1
 
-                                        // Alerts active right now (onset <= now <= expires)
-                                        readonly property var todayAlerts: {
-                                            var now = new Date();
-                                            var result = [];
-                                            for (var i = 0; i < alerts.length; i++) {
-                                                var a = alerts[i];
-                                                var onset = a.onset ? new Date(a.onset) : null;
-                                                var expires = a.expires ? new Date(a.expires) : null;
-                                                var started = !onset || onset <= now;
-                                                var notExpired = !expires || expires >= now;
-                                                if (started && notExpired)
-                                                    result.push(a);
-                                            }
-                                            // If nothing is active yet, show the earliest-future one
-                                            if (result.length === 0 && alerts.length > 0) {
-                                                var best = alerts[0];
-                                                for (var j = 1; j < alerts.length; j++) {
-                                                    if (alerts[j].onset && (!best.onset || alerts[j].onset < best.onset))
-                                                        best = alerts[j];
-                                                }
-                                                result.push(best);
-                                            }
-                                            return result;
-                                        }
+                                        // todayAlerts/activeAlerts/futureAlerts compare each alert's
+                                        // onset/expires against new Date() ("now"). new Date() is not a
+                                        // QML dependency, so as readonly bindings these only re-evaluate
+                                        // when `alerts` itself changes (a fresh API fetch) - not when
+                                        // wall-clock time actually crosses an alert's onset or expiry.
+                                        // Same bug as suntimesCard._isNight; same fix: plain properties,
+                                        // recomputed on a timer and whenever `alerts` changes.
+                                        property var todayAlerts: []
+                                        property var activeAlerts: []
+                                        property var futureAlerts: []
                                         readonly property int safeIndex: Math.min(Math.max(0, root._currentAlertIndex), Math.max(0, todayAlerts.length - 1))
                                         readonly property bool todayHasMultiple: todayAlerts.length > 1
 
-                                        // All alerts sorted by onset date (for expanded view)
+                                        // All alerts sorted by onset date (for expanded view).
+                                        // Only depends on `alerts` (no "now" comparison), so this one
+                                        // was never affected by the staleness bug above.
                                         readonly property var sortedAlerts: {
                                             var copy = alerts.slice();
                                             copy.sort(function (a, b) {
@@ -2197,39 +2237,66 @@ Item {
                                             return copy;
                                         }
 
-                                        // Active alerts (onset <= now <= expires), sorted by priority then onset
-                                        readonly property var activeAlerts: {
+                                        function _updateAlertWindows() {
                                             var now = new Date();
-                                            var result = [];
+
+                                            // Alerts active right now (onset <= now <= expires)
+                                            var current = [];
                                             for (var i = 0; i < alerts.length; i++) {
                                                 var a = alerts[i];
                                                 var onset = a.onset ? new Date(a.onset) : null;
                                                 var expires = a.expires ? new Date(a.expires) : null;
-                                                if ((!onset || onset <= now) && (!expires || expires >= now))
-                                                    result.push(a);
+                                                var started = !onset || onset <= now;
+                                                var notExpired = !expires || expires >= now;
+                                                if (started && notExpired)
+                                                    current.push(a);
                                             }
-                                            result.sort(function (a, b) {
+
+                                            // todayAlerts: the active set, or (if none active yet) the
+                                            // earliest-future one
+                                            var today = current.slice();
+                                            if (today.length === 0 && alerts.length > 0) {
+                                                var best = alerts[0];
+                                                for (var j = 1; j < alerts.length; j++) {
+                                                    if (alerts[j].onset && (!best.onset || alerts[j].onset < best.onset))
+                                                        best = alerts[j];
+                                                }
+                                                today.push(best);
+                                            }
+
+                                            // activeAlerts: the same active set, sorted by onset
+                                            var active = current.slice();
+                                            active.sort(function (a, b) {
                                                 var da = a.onset ? new Date(a.onset).getTime() : 0;
                                                 var db = b.onset ? new Date(b.onset).getTime() : 0;
                                                 return da - db;
                                             });
-                                            return result;
-                                        }
 
-                                        // Future alerts (onset > now), sorted by onset ascending
-                                        readonly property var futureAlerts: {
-                                            var now = new Date();
-                                            var result = [];
-                                            for (var i = 0; i < alerts.length; i++) {
-                                                var a = alerts[i];
-                                                var onset = a.onset ? new Date(a.onset) : null;
-                                                if (onset && onset > now)
-                                                    result.push(a);
+                                            // futureAlerts: onset strictly in the future, sorted by onset
+                                            var future = [];
+                                            for (var k = 0; k < alerts.length; k++) {
+                                                var af = alerts[k];
+                                                var onsetF = af.onset ? new Date(af.onset) : null;
+                                                if (onsetF && onsetF > now)
+                                                    future.push(af);
                                             }
-                                            result.sort(function (a, b) {
+                                            future.sort(function (a, b) {
                                                 return new Date(a.onset).getTime() - new Date(b.onset).getTime();
                                             });
-                                            return result;
+
+                                            todayAlerts = today;
+                                            activeAlerts = active;
+                                            futureAlerts = future;
+                                        }
+
+                                        Component.onCompleted: _updateAlertWindows()
+                                        onAlertsChanged: _updateAlertWindows()
+                                        Timer {
+                                            interval: 60000
+                                            running: alertsCard.visible
+                                            repeat: true
+                                            triggeredOnStart: true
+                                            onTriggered: alertsCard._updateAlertWindows()
                                         }
 
                                         function alertColorDot(c) {
@@ -3385,7 +3452,19 @@ Item {
                                         // new Date().getHours() - which is always machine-local time,
                                         // not location-local time - and therefore always failed for
                                         // users checking a location in a different timezone.
-                                        readonly property bool _isNight: root.weatherRoot ? root.weatherRoot.isNightTime() : false
+                                        //
+                                        // Must be a plain property recomputed from _updateProg(), NOT
+                                        // a QML binding (see the header comment above this Loader) -
+                                        // isNightTime() calls new Date() internally, which is not a
+                                        // QML dependency, so a binding here only re-evaluates when
+                                        // sunriseTimeText/sunsetTimeText actually change VALUE (i.e.
+                                        // once a day). Confirmed via [SunArc-debug] logging 2026-09-11:
+                                        // it flipped true at 00:05 local (correct for night) and then
+                                        // silently stayed true straight through the 06:06 sunrise and
+                                        // for 2.5+ hours into broad daylight, freezing the arc dot at
+                                        // moonProgress()'s clamped endpoint (mProg=1) since drawSunArc
+                                        // kept using the moon path while _prog kept climbing normally.
+                                        property bool _isNight: false
 
                                         // ── Arc position (_prog) ───────────────────────────────
                                         // Uses UTC + location UTC-offset (from API) for reliable
@@ -3408,8 +3487,10 @@ Item {
                                             _refreshNow();
                                             if (root.weatherRoot) {
                                                 _prog = SunPath.sunProgress(root.weatherRoot.sunriseTimeText, root.weatherRoot.sunsetTimeText, suntimesCard._utcOffset);
+                                                _isNight = root.weatherRoot.isNightTime();
                                             } else {
                                                 _prog = 0.5;
+                                                _isNight = false;
                                             }
                                             sunCanvas.requestPaint();
                                         }
@@ -3431,9 +3512,12 @@ Item {
                                             function onWeatherDataChanged() {
                                                 suntimesCard._updateProg();
                                             }
-                                            // Repaint when is_day flag changes (separate signal path)
+                                            // Recompute when is_day flag changes (separate signal path).
+                                            // _isNight is now a plain property (see above), so this must
+                                            // go through _updateProg() too, not just requestPaint() - a
+                                            // bare repaint would redraw with the last computed value.
                                             function onIsDayChanged() {
-                                                sunCanvas.requestPaint();
+                                                suntimesCard._updateProg();
                                             }
                                         }
 

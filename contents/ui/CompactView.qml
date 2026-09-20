@@ -451,6 +451,12 @@ PlasmaCore.ToolTipArea {
             return [];
         // Subscribe to weatherData object (fires once per refresh) plus scalar deps
         // Use safe fallback strings instead of .length to prevent TypeErrors breaking the binding.
+        // weatherRoot._nowTick (added): panelItemIconInfo()/panelItemTextOnly() route
+        // through isNightTime()/moonPhaseLabel()/_moonUpcoming(), which depend on
+        // new Date() - not a QML dependency on their own. Without this, a panel
+        // chip showing e.g. the condition icon or moon phase only updates on the
+        // next weatherData refresh, not at the actual sunrise/sunset/moonrise/
+        // moonset moment (moon phase: not even then - see main.qml).
         var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex
             + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "")
             + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "")
@@ -458,7 +464,7 @@ PlasmaCore.ToolTipArea {
             + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator
             + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode
             + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize
-            + compactRoot._dateTimeTick;
+            + compactRoot._dateTimeTick + weatherRoot._nowTick;
         return _buildItems();
     }
 

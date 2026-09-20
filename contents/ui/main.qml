@@ -225,11 +225,6 @@ PlasmoidItem {
     property var hourlyData: []
     property int panelScrollIndex: 0
     property string updateText: ""
-    // Set/cleared by aemet.js alongside WeatherService's own service._aemetRateLimited
-    // - mirrored here because ForecastView only receives weatherRoot, not the
-    // WeatherService instance, and needs this to show a specific message
-    // instead of an indefinite "Loading hourly data…".
-    property bool aemetRateLimited: false
 
     // Parsed activeLocation - staged so the _locName/_locLat/_locLon/hasSelectedTown
     // cascade fires in the next event loop tick (Qt.callLater) rather than synchronously
@@ -2180,6 +2175,23 @@ PlasmoidItem {
     // Icons base directory - resolved once so it works in all contexts
     readonly property string _iconsBaseDir: Qt.resolvedUrl("../icons/") + ""
 
+    // Ticks once a minute. moonPhaseLabel()/moonPhaseGlyph()/_moonUpcoming()
+    // below depend only on new Date() - unlike isNightTime() they don't
+    // even have sunrise/sunset text to fall back on for a once-a-day
+    // self-heal, so a live binding built directly on one of them (e.g. a
+    // panel chip in CompactView.qml, or DetailsView.qml's moon phase card)
+    // would otherwise freeze at whatever value was first evaluated and
+    // never change again for the rest of the session. Referencing this
+    // property first gives such bindings a real, changing QML dependency.
+    property int _nowTick: 0
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root._nowTick = (new Date()).getTime()
+    }
+
     function getSimpleModeIconSource() {
         var theme = Plasmoid.configuration.panelIconTheme || "wi-font";
         var code  = weatherCode;
@@ -2264,6 +2276,16 @@ PlasmoidItem {
     }
 
     function isNightTime() {
+        // _nowTick (added alongside the fix below): the comment beneath
+        // this already correctly diagnosed "this only runs when something
+        // explicitly triggers a recompute rather than continuously" as the
+        // cause of the stuck-until-refresh symptom - but treated it as
+        // unfixable overhead. Referencing _nowTick here fixes that: any
+        // live binding that calls isNightTime() directly (several exist in
+        // CompactView.qml's panel/tray icons) now gets new Date() as a
+        // real, continuously-ticking QML dependency instead of only the
+        // sunrise/sunset text's once-a-day one.
+        void (_nowTick);
         // Derive from sunrise/sunset first. This is what the forecast strip
         // already does when it picks its own icons (ForecastView.qml), so
         // going through the same route keeps the condition icon and the
@@ -2311,6 +2333,7 @@ PlasmoidItem {
     // ══════════════════════════════════════════════════════════════════════
 
     function moonPhaseLabel() {
+        void (_nowTick);
         // Each string is a literal so xgettext can extract all 8 translations.
         // moonPhaseNameKey() returns the English key; we map it here.
         var key = Moon.moonPhaseNameKey(Moon.moonAgeFromPhase(SC.getMoonIllumination(new Date()).phase));
@@ -2334,6 +2357,7 @@ PlasmoidItem {
     }
 
     function moonPhaseGlyph() {
+        void (_nowTick);
         return Moon.moonPhaseFontIcon(Moon.moonAgeFromPhase(SC.getMoonIllumination(new Date()).phase));
     }
 
@@ -2648,7 +2672,11 @@ PlasmoidItem {
 
     /** Returns "rise" or "set" depending on which moon event is next */
     function _moonUpcoming() {
-        var nowM = (new Date()).getHours() * 60 + (new Date()).getMinutes();
+        void (_nowTick);
+        // Location-local "now", same as isNightTime() - was previously the
+        // device's own getHours()/getMinutes(), which is wrong once the
+        // configured location is in a different timezone than the device.
+        var nowM = SunPath.nowMinsAt(locationUtcOffsetMins);
         var riseM = parseSunTimeMins(moonriseTimeText);
         var setM = parseSunTimeMins(moonsetTimeText);
         if (riseM >= 0 && nowM < riseM) return "rise";
