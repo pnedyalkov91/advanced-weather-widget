@@ -60,6 +60,13 @@ Item {
     property int _expandAllFetchGeneration: 0
     readonly property int _expandAllMaxConcurrentFetches: 1
 
+    // ── Past hours (today): grey out in place instead of removing ──────────
+    // Off by default - "today"'s already-passed hours are filtered out of the
+    // hourly forecast exactly as before. When on, they stay at their normal
+    // timestamp position and are dimmed instead of disappearing.
+    readonly property bool showPastHoursGreyed: Plasmoid.configuration.forecastShowPastHours === true
+    readonly property real _pastHourOpacity: 0.4
+
     function _cancelExpandAllFetch(clearData) {
         _expandAllFetchGeneration++;
         _expandAllQueue = [];
@@ -915,18 +922,32 @@ Item {
                                             if (!t || t === "--") return -1;
                                             var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
                                         }
-                                        // For today (index 0) filter out past hours; keep 1 hour buffer so current hour stays visible.
+                                        // For today (index 0), hours before "now" (minus a 1 hour buffer so
+                                        // the current hour stays visible) are either dropped, or - when
+                                        // forecastShowPastHours is enabled - kept at their normal position and
+                                        // flagged isPast so the delegates can grey them out instead.
                                         // The appended closing entry (isNextDay - the following day's 00:00, see the provider
                                         // fetchers) reads as minutes=0 same as a just-past midnight hour, so it's exempted here -
-                                        // otherwise it would always look "in the past" and get filtered out of "today".
+                                        // otherwise it would always look "in the past" and get filtered/greyed out of "today".
                                         var nowMins = -1;
                                         if (index === 0) {
                                             var _now = new Date();
                                             nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                         }
-                                        var source = nowMins >= 0
-                                            ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return h.isNextDay === true || m < 0 || m >= nowMins; })
-                                            : _dayHourlyData;
+                                        var source;
+                                        if (forecastRoot.showPastHoursGreyed) {
+                                            source = nowMins >= 0
+                                                ? _dayHourlyData.map(function(h) {
+                                                      var m = toMins(h.hour);
+                                                      var isPast = h.isNextDay !== true && m >= 0 && m < nowMins;
+                                                      return isPast ? Object.assign({}, h, { isPast: true }) : h;
+                                                  })
+                                                : _dayHourlyData;
+                                        } else {
+                                            source = nowMins >= 0
+                                                ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return h.isNextDay === true || m < 0 || m >= nowMins; })
+                                                : _dayHourlyData;
+                                        }
                                         if (!forecastRoot.showSunEvents)
                                             return source;
                                         var rise = toMins(_daySunriseText);
@@ -981,6 +1002,7 @@ Item {
                                                     required property var modelData
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     Label {
                                                         anchors.centerIn: parent
                                                         text: {
@@ -1012,6 +1034,7 @@ Item {
                                                     required property var modelData
                                                     width: stripScrollView.colW
                                                     height: 48
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     WeatherIcon {
                                                         anchors.centerIn: parent
                                                         iconInfo: {
@@ -1121,6 +1144,7 @@ Item {
                                                     required property var modelData
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     Label {
                                                         anchors.centerIn: parent
                                                         text: (modelData.isSunrise || modelData.isSunset) ? i18n(modelData.isSunrise ? "Sunrise" : "Sunset")
@@ -1145,6 +1169,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
@@ -1189,6 +1214,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 28
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     RowLayout {
                                                         anchors.centerIn: parent
                                                         spacing: 2
@@ -1225,6 +1251,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
@@ -1261,6 +1288,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
@@ -1304,6 +1332,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
@@ -1344,6 +1373,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
@@ -1380,6 +1410,7 @@ Item {
                                                     readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
                                                     width: stripScrollView.colW
                                                     height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     spacing: 2
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
@@ -1546,19 +1577,33 @@ Item {
                                                 if (!t || t === "--") return -1;
                                                 var p = t.split(":"); return p.length < 2 ? -1 : parseInt(p[0],10)*60+parseInt(p[1],10);
                                             }
-                                            // For today (index 0) filter out past hours; keep 1 hour buffer.
+                                            // For today (index 0), hours before "now" (minus a 1 hour buffer so
+                                            // the current hour stays visible) are either dropped, or - when
+                                            // forecastShowPastHours is enabled - kept at their normal position and
+                                            // flagged isPast so the delegate can grey them out instead.
                                             // The appended closing entry (isNextDay - the following day's 00:00,
                                             // see the provider fetchers) reads as minutes=0 same as a just-past
                                             // midnight hour, so it's exempted here - otherwise it would always
-                                            // look "in the past" and get filtered out of "today".
+                                            // look "in the past" and get filtered/greyed out of "today".
                                             var nowMins = -1;
                                             if (index === 0) {
                                                 var _now = new Date();
                                                 nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                             }
-                                            var source = nowMins >= 0
-                                                ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return h.isNextDay === true || m < 0 || m >= nowMins; })
-                                                : _dayHourlyData;
+                                            var source;
+                                            if (forecastRoot.showPastHoursGreyed) {
+                                                source = nowMins >= 0
+                                                    ? _dayHourlyData.map(function(h) {
+                                                          var m = toMins(h.hour);
+                                                          var isPast = h.isNextDay !== true && m >= 0 && m < nowMins;
+                                                          return isPast ? Object.assign({}, h, { isPast: true }) : h;
+                                                      })
+                                                    : _dayHourlyData;
+                                            } else {
+                                                source = nowMins >= 0
+                                                    ? _dayHourlyData.filter(function(h) { var m = toMins(h.hour); return h.isNextDay === true || m < 0 || m >= nowMins; })
+                                                    : _dayHourlyData;
+                                            }
                                             if (!forecastRoot.showSunEvents)
                                                 return source;
                                             var rise = toMins(_daySunriseText);
@@ -1590,6 +1635,7 @@ Item {
                                                 width: (modelData.isSunrise || modelData.isSunset) ? 70 : forecastRoot._hourlyCardWidth
                                                 height: forecastRoot._hourlyCardHeight
                                                 radius: 8
+                                                opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                 color: (modelData.isSunrise || modelData.isSunset)
                                                     ? Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.04)
                                                     : Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)

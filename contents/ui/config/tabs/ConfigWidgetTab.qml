@@ -857,6 +857,23 @@ ColumnLayout {
                     opacity: 0.7
                 }
             }
+            RowLayout {
+                Kirigami.FormData.label: i18n("Show past weather info for today:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Switch {
+                    id: forecastShowPastHoursSwitch
+                    checked: widgetTab.configRoot.cfg_forecastShowPastHours
+                    onToggled: widgetTab.configRoot.cfg_forecastShowPastHours = checked
+                }
+                Label {
+                    text: forecastShowPastHoursSwitch.checked
+                        ? i18n("Already-passed hours for today stay in place, greyed out, instead of being removed")
+                        : i18n("Already-passed hours are removed from today's hourly forecast")
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                    opacity: 0.7
+                }
+            }
 
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Daily Forecast Settings

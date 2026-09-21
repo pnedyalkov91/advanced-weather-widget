@@ -276,6 +276,7 @@
     <entry name="forecastHourlyLayout" type="String"><default>cards</default></entry>
     <entry name="forecastAutoOpen"     type="Bool"><default>true</default></entry>
     <entry name="forecastExpandAll"    type="Bool"><default>false</default></entry>
+    <entry name="forecastShowPastHours" type="Bool"><default>false</default></entry>
 
     <!-- ── Widget - daily forecast extra stats ───────────────────────── -->
     <entry name="forecastShowWind"       type="Bool"><default>true</default></entry>
