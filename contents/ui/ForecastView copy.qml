@@ -272,8 +272,8 @@ Item {
         return c;
     }
     readonly property int _hourlyCardHeight: 200 + _hourlyExtraRowCount * 26
-    // Sum of strip rows always shown: time(18) + icon(48) + trend(56) + temp(18) + precip(18) + 4×2 spacing
-    readonly property int _hourlyStripBaseHeight: 166
+    // Sum of strip rows always shown: time(18) + icon(48) + trend(32) + temp(18) + precip(18) + 4×2 spacing
+    readonly property int _hourlyStripBaseHeight: 142
     readonly property int _hourlyStripContentHeight: _hourlyStripBaseHeight + (_hourlyShowWind ? 30 : 0) + _hourlyExtraRowCount * 20
     // Reserve room for the horizontal scrollbar so it never covers the last row or the
     // day-section divider. Breeze (and other classic themes) render an always-visible,
@@ -1003,22 +1003,6 @@ Item {
                                             return arr;
                                         }
 
-                                        // ── Column dividers (GNOME Weather-style grid) ──
-                                        // Thin lines at each interior column boundary, behind
-                                        // everything else since they're declared first.
-                                        Repeater {
-                                            model: Math.max(0, stripScrollView._hourlyWithSun.length - 1)
-                                            delegate: Rectangle {
-                                                required property int index
-                                                x: (index + 1) * (stripScrollView.colW + stripScrollView.colSpacing) - 1
-                                                y: 0
-                                                width: 1
-                                                height: stripContent.height
-                                                color: forecastRoot.themeTextColor
-                                                opacity: 0.1
-                                            }
-                                        }
-
                                         // ── Row 0: time labels ──────────────────────
                                         Row {
                                             id: stripTimeRow
@@ -1100,7 +1084,7 @@ Item {
                                             x: 0
                                             y: stripIconRow.y + stripIconRow.height + 2
                                             width: stripContent.width
-                                            height: 56
+                                            height: 32
                                             property var temps: stripContent._temps
                                             onTempsChanged: requestPaint()
 
@@ -1128,77 +1112,36 @@ Item {
                                                     if (pts[i].tempC > maxT) maxT = pts[i].tempC;
                                                 }
                                                 var range = maxT - minT;
-                                                var pad = 6;
+                                                var pad = 5;
                                                 var cw = stripScrollView.colW + stripScrollView.colSpacing;
-                                                // Each point sits at the center of its column, same as every
-                                                // label row above/below it (the divider lines mark the actual
-                                                // column boundaries, so every column - including the first and
-                                                // last - reads the same way).
                                                 function xOf(col) { return col * cw + cw / 2; }
                                                 function yOf(t) {
-                                                    if (range < 0.01) return height * 0.35;
+                                                    if (range < 0.01) return height / 2;
                                                     return pad + (1 - (t - minT) / range) * (height - pad * 2);
                                                 }
-
-                                                var xs = [], ys = [];
-                                                for (var p = 0; p < pts.length; p++) {
-                                                    xs.push(xOf(pts[p].col));
-                                                    ys.push(yOf(pts[p].tempC));
-                                                }
-
-                                                // Catmull-Rom → bezier smoothing (same technique GNOME Weather-
-                                                // style graphs use) so the curve rounds through each point
-                                                // instead of joining them with straight segments.
-                                                function smoothTo(xs2, ys2) {
-                                                    for (var s = 0; s < xs2.length - 1; s++) {
-                                                        var sx0 = s > 0 ? xs2[s-1] : xs2[s], sy0 = s > 0 ? ys2[s-1] : ys2[s];
-                                                        var sx1 = xs2[s], sy1 = ys2[s], sx2 = xs2[s+1], sy2 = ys2[s+1];
-                                                        var sx3 = s+2 < xs2.length ? xs2[s+2] : sx2, sy3 = s+2 < xs2.length ? ys2[s+2] : sy2;
-                                                        ctx.bezierCurveTo(sx1 + (sx2-sx0)/6, sy1 + (sy2-sy0)/6,
-                                                                           sx2 - (sx3-sx1)/6, sy2 - (sy3-sy1)/6, sx2, sy2);
-                                                    }
-                                                }
-
-                                                // Horizontal color gradient sampled from the same per-temperature
-                                                // scale used for the value labels below, so the curve's color
-                                                // matches what the numbers already say.
-                                                var gx0 = xs[0], gx1 = xs[xs.length - 1];
-                                                if (gx1 <= gx0) gx1 = gx0 + 1;
-                                                var fillGrad = ctx.createLinearGradient(gx0, 0, gx1, 0);
-                                                var lineGrad = ctx.createLinearGradient(gx0, 0, gx1, 0);
-                                                var STOPS = Math.min(pts.length, 7);
-                                                for (var k = 0; k < STOPS; k++) {
-                                                    var off = STOPS === 1 ? 0 : k / (STOPS - 1);
-                                                    var c = tempColor(pts[Math.round(off * (pts.length - 1))].tempC);
-                                                    fillGrad.addColorStop(off, c);
-                                                    lineGrad.addColorStop(off, c);
-                                                }
-
-                                                // Filled area under the curve, flat-extended to the canvas'
-                                                // own left/right edges (not just the first/last point) so the
-                                                // fill always reaches the full width of the strip.
-                                                ctx.beginPath();
-                                                ctx.moveTo(0, ys[0]);
-                                                ctx.lineTo(xs[0], ys[0]);
-                                                smoothTo(xs, ys);
-                                                ctx.lineTo(width, ys[ys.length - 1]);
-                                                ctx.lineTo(width, height);
-                                                ctx.lineTo(0, height);
-                                                ctx.closePath();
-                                                ctx.globalAlpha = 0.32;
-                                                ctx.fillStyle = fillGrad;
-                                                ctx.fill();
-                                                ctx.globalAlpha = 1.0;
-
-                                                // The curve itself, on top of the fill.
-                                                ctx.beginPath();
-                                                ctx.moveTo(xs[0], ys[0]);
-                                                smoothTo(xs, ys);
+                                                // Draw segment by segment, each with its midpoint color
                                                 ctx.lineWidth = 2.5;
                                                 ctx.lineJoin = "round";
                                                 ctx.lineCap = "round";
-                                                ctx.strokeStyle = lineGrad;
-                                                ctx.stroke();
+                                                for (var j = 1; j < pts.length; j++) {
+                                                    var x0 = xOf(pts[j-1].col), y0 = yOf(pts[j-1].tempC);
+                                                    var x1 = xOf(pts[j].col),   y1 = yOf(pts[j].tempC);
+                                                    var grad = ctx.createLinearGradient(x0, y0, x1, y1);
+                                                    grad.addColorStop(0, tempColor(pts[j-1].tempC));
+                                                    grad.addColorStop(1, tempColor(pts[j].tempC));
+                                                    ctx.strokeStyle = grad;
+                                                    ctx.beginPath();
+                                                    ctx.moveTo(x0, y0);
+                                                    ctx.lineTo(x1, y1);
+                                                    ctx.stroke();
+                                                }
+                                                // Dots colored by temp
+                                                for (var k = 0; k < pts.length; k++) {
+                                                    ctx.fillStyle = tempColor(pts[k].tempC);
+                                                    ctx.beginPath();
+                                                    ctx.arc(xOf(pts[k].col), yOf(pts[k].tempC), 3, 0, Math.PI * 2);
+                                                    ctx.fill();
+                                                }
                                             }
                                         }
 
@@ -1218,8 +1161,7 @@ Item {
                                                         anchors.centerIn: parent
                                                         text: (modelData.isSunrise || modelData.isSunset) ? i18n(modelData.isSunrise ? "Sunrise" : "Sunset")
                                                               : (weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--")
-                                                        color: (modelData.isSunrise || modelData.isSunset) ? forecastRoot.themeTextColor
-                                                               : TempColorsJS.cssForTemperature(modelData.tempC, trendCanvas.darkTheme)
+                                                        color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, !(modelData.isSunrise || modelData.isSunset)) : Qt.font({})
                                                         opacity: (modelData.isSunrise || modelData.isSunset) ? 0.75 : 1.0
                                                     }
@@ -1526,75 +1468,6 @@ Item {
                                             wheel.accepted = true;
                                         } else {
                                             wheel.accepted = forecastRoot._scrollParentVertically(wheel);
-                                        }
-                                    }
-                                }
-
-                                // ── Chevron paging buttons (GNOME Weather-style) ──
-                                // Siblings of the Flickable (not scrolled children of it), so
-                                // they stay put at the strip's edges while the content pans
-                                // underneath. Each pages by one viewport-width using the same
-                                // animation the wheel handler above already drives.
-                                Rectangle {
-                                    id: stripLeftChevron
-                                    visible: !stripScrollView.atXBeginning
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 4
-                                    anchors.verticalCenter: trendCanvas.verticalCenter
-                                    width: 26
-                                    height: 26
-                                    radius: width / 2
-                                    color: "black"
-                                    opacity: leftChevronArea.containsMouse ? 0.7 : 0.45
-                                    Behavior on opacity { NumberAnimation { duration: 120 } }
-                                    Kirigami.Icon {
-                                        anchors.centerIn: parent
-                                        source: "arrow-left"
-                                        width: 14
-                                        height: 14
-                                        color: "white"
-                                    }
-                                    MouseArea {
-                                        id: leftChevronArea
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            var target = Math.max(0, stripScrollView.contentX - stripScrollView.width);
-                                            stripWheelAnimation.to = target;
-                                            stripWheelAnimation.restart();
-                                        }
-                                    }
-                                }
-                                Rectangle {
-                                    id: stripRightChevron
-                                    visible: !stripScrollView.atXEnd
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 4
-                                    anchors.verticalCenter: trendCanvas.verticalCenter
-                                    width: 26
-                                    height: 26
-                                    radius: width / 2
-                                    color: "black"
-                                    opacity: rightChevronArea.containsMouse ? 0.7 : 0.45
-                                    Behavior on opacity { NumberAnimation { duration: 120 } }
-                                    Kirigami.Icon {
-                                        anchors.centerIn: parent
-                                        source: "arrow-right"
-                                        width: 14
-                                        height: 14
-                                        color: "white"
-                                    }
-                                    MouseArea {
-                                        id: rightChevronArea
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
-                                            var target = Math.min(maxX, stripScrollView.contentX + stripScrollView.width);
-                                            stripWheelAnimation.to = target;
-                                            stripWheelAnimation.restart();
                                         }
                                     }
                                 }
