@@ -996,6 +996,19 @@ ColumnLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
+
+            RowLayout {
+                Kirigami.FormData.label: i18n("Precip probability:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Switch {
+                    checked: widgetTab.configRoot.cfg_forecastHourlyShowPrecipProb
+                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPrecipProb = checked
+                }
+            }
             RowLayout {
                 Kirigami.FormData.label: i18n("Pressure forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"

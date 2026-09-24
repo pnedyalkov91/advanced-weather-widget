@@ -256,6 +256,7 @@ Item {
         : (_forecastShowTempUnit ? 82 : 58)
 
     // ── Hourly forecast extra stats ─────────────────────────────────
+    readonly property bool _hourlyShowPrecipProb: Plasmoid.configuration.forecastHourlyShowPrecipProb !== false
     readonly property bool _hourlyShowWind:       Plasmoid.configuration.forecastHourlyShowWind !== false
     readonly property bool _hourlyShowPressure:   Plasmoid.configuration.forecastHourlyShowPressure === true
     readonly property bool _hourlyShowKpIndex:    Plasmoid.configuration.forecastHourlyShowKpIndex === true
@@ -272,9 +273,9 @@ Item {
         return c;
     }
     readonly property int _hourlyCardHeight: 200 + _hourlyExtraRowCount * 26
-    // Sum of strip rows always shown: time(18) + icon(48) + trend(56) + temp(18) + precip(18) + 4×2 spacing
-    readonly property int _hourlyStripBaseHeight: 166
-    readonly property int _hourlyStripContentHeight: _hourlyStripBaseHeight + (_hourlyShowWind ? 30 : 0) + _hourlyExtraRowCount * 20
+    // Sum of strip rows always shown: time(18) + icon(60) + trend(56) + temp(32) + 3×2 spacing
+    readonly property int _hourlyStripBaseHeight: 172
+    readonly property int _hourlyStripContentHeight: _hourlyStripBaseHeight + (_hourlyShowPrecipProb ? 20 : 0) + (_hourlyShowWind ? 30 : 0) + _hourlyExtraRowCount * 20
     // Reserve room for the horizontal scrollbar so it never covers the last row or the
     // day-section divider. Breeze (and other classic themes) render an always-visible,
     // thicker inline scrollbar than the default Plasma overlay, so size the reserve to
@@ -973,6 +974,12 @@ Item {
 
                                     readonly property int colSpacing: 0
                                     readonly property int _minColW: 100
+                                    // Visual height of the curve's own band (where the line moves
+                                    // between min/max temp). The canvas itself is taller than this
+                                    // (it extends down to wash color through the rows below), but
+                                    // rows are laid out as if it were still this height, and the
+                                    // curve's y-values stay within it, so nothing shifts position.
+                                    readonly property int _graphNominalHeight: 56
                                     // Fill the available width evenly across columns when there are
                                     // few enough hours that the fixed minimum would leave blank space
                                     // on the right; fall back to that minimum (and horizontal
@@ -1061,19 +1068,15 @@ Item {
                                                 delegate: Item {
                                                     required property var modelData
                                                     width: stripScrollView.colW
-                                                    height: 48
+                                                    height: 60
                                                     opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     WeatherIcon {
                                                         anchors.centerIn: parent
                                                         iconInfo: {
                                                             if (modelData.isSunrise)
-                                                                return IconResolver.resolve("sunrise", 32, forecastRoot.iconsBaseDir,
-                                                                    forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                    (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom") ? "symbolic" : forecastRoot.widgetIconTheme);
+                                                                return IconResolver.resolve("sunrise", 32, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme);
                                                             if (modelData.isSunset)
-                                                                return IconResolver.resolve("sunset", 32, forecastRoot.iconsBaseDir,
-                                                                    forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                    (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom") ? "symbolic" : forecastRoot.widgetIconTheme);
+                                                                return IconResolver.resolve("sunset", 32, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme);
                                                             var isNight = false;
                                                             if (modelData.hour && modelData.hour !== "--") {
                                                                 var p2 = modelData.hour.split(":");
@@ -1087,7 +1090,7 @@ Item {
                                                             }
                                                             return forecastRoot.resolveConditionIcon(modelData.code||0, isNight, forecastRoot.iconSz);
                                                         }
-                                                        iconSize: 44
+                                                        iconSize: 56
                                                         iconColor: forecastRoot.themeTextColor
                                                     }
                                                 }
@@ -1095,14 +1098,21 @@ Item {
                                         }
 
                                         // ── Trend line canvas ────────────────────────
+                                        // Taller than just the curve's own band: it extends all the
+                                        // way to the bottom of the strip so the temperature color
+                                        // washes down through the rows below (fading with depth),
+                                        // while the curve itself still only moves within the nominal
+                                        // band at the top. Declared before those rows, so it paints
+                                        // behind them.
                                         Canvas {
                                             id: trendCanvas
                                             x: 0
                                             y: stripIconRow.y + stripIconRow.height + 2
                                             width: stripContent.width
-                                            height: 56
+                                            height: stripContent.height - y
                                             property var temps: stripContent._temps
                                             onTempsChanged: requestPaint()
+                                            onHeightChanged: requestPaint()
 
                                             // Detect light theme by background luminance
                                             readonly property bool darkTheme: {
@@ -1129,6 +1139,7 @@ Item {
                                                 }
                                                 var range = maxT - minT;
                                                 var pad = 6;
+                                                var curveH = stripScrollView._graphNominalHeight;
                                                 var cw = stripScrollView.colW + stripScrollView.colSpacing;
                                                 // Each point sits at the center of its column, same as every
                                                 // label row above/below it (the divider lines mark the actual
@@ -1136,8 +1147,8 @@ Item {
                                                 // last - reads the same way).
                                                 function xOf(col) { return col * cw + cw / 2; }
                                                 function yOf(t) {
-                                                    if (range < 0.01) return height * 0.35;
-                                                    return pad + (1 - (t - minT) / range) * (height - pad * 2);
+                                                    if (range < 0.01) return curveH * 0.35;
+                                                    return pad + (1 - (t - minT) / range) * (curveH - pad * 2);
                                                 }
 
                                                 var xs = [], ys = [];
@@ -1175,8 +1186,9 @@ Item {
                                                 }
 
                                                 // Filled area under the curve, flat-extended to the canvas'
-                                                // own left/right edges (not just the first/last point) so the
-                                                // fill always reaches the full width of the strip.
+                                                // own left/right/bottom edges (not just the first/last point)
+                                                // so it always reaches the full width and washes all the way
+                                                // down behind the rows below.
                                                 ctx.beginPath();
                                                 ctx.moveTo(0, ys[0]);
                                                 ctx.lineTo(xs[0], ys[0]);
@@ -1185,15 +1197,29 @@ Item {
                                                 ctx.lineTo(width, height);
                                                 ctx.lineTo(0, height);
                                                 ctx.closePath();
-                                                ctx.globalAlpha = 0.32;
                                                 ctx.fillStyle = fillGrad;
                                                 ctx.fill();
-                                                ctx.globalAlpha = 1.0;
 
-                                                // The curve itself, on top of the fill.
+                                                // Fade the fill out with depth (destination-in mask) so the
+                                                // color is clearest right under the curve and dissolves away
+                                                // well before the bottom, instead of a flat wash competing
+                                                // with the rows of text.
+                                                ctx.globalCompositeOperation = "destination-in";
+                                                var vFade = ctx.createLinearGradient(0, 0, 0, height);
+                                                vFade.addColorStop(0, "rgba(255,255,255,0.4)");
+                                                vFade.addColorStop(Math.min(0.95, curveH / height + 0.15), "rgba(255,255,255,0.12)");
+                                                vFade.addColorStop(1, "rgba(255,255,255,0)");
+                                                ctx.fillStyle = vFade;
+                                                ctx.fillRect(0, 0, width, height);
+                                                ctx.globalCompositeOperation = "source-over";
+
+                                                // The curve itself, flat-extended to the true left/right
+                                                // edges too (matching the fill), drawn on top.
                                                 ctx.beginPath();
-                                                ctx.moveTo(xs[0], ys[0]);
+                                                ctx.moveTo(0, ys[0]);
+                                                ctx.lineTo(xs[0], ys[0]);
                                                 smoothTo(xs, ys);
+                                                ctx.lineTo(width, ys[ys.length - 1]);
                                                 ctx.lineWidth = 2.5;
                                                 ctx.lineJoin = "round";
                                                 ctx.lineCap = "round";
@@ -1205,22 +1231,23 @@ Item {
                                         // ── Row 2: temperature labels ────────────────
                                         Row {
                                             id: stripTempRow
-                                            x: 0; y: trendCanvas.y + trendCanvas.height + 2
+                                            x: 0; y: trendCanvas.y + stripScrollView._graphNominalHeight + 2
                                             spacing: stripScrollView.colSpacing
                                             Repeater {
                                                 model: stripScrollView._hourlyWithSun
                                                 delegate: Item {
                                                     required property var modelData
                                                     width: stripScrollView.colW
-                                                    height: 18
+                                                    height: 32
                                                     opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
                                                     Label {
                                                         anchors.centerIn: parent
                                                         text: (modelData.isSunrise || modelData.isSunset) ? i18n(modelData.isSunrise ? "Sunrise" : "Sunset")
                                                               : (weatherRoot ? weatherRoot.tempValue(modelData.tempC) : "--")
-                                                        color: (modelData.isSunrise || modelData.isSunset) ? forecastRoot.themeTextColor
-                                                               : TempColorsJS.cssForTemperature(modelData.tempC, trendCanvas.darkTheme)
-                                                        font: weatherRoot ? weatherRoot.wf(10, !(modelData.isSunrise || modelData.isSunset)) : Qt.font({})
+                                                        color: forecastRoot.themeTextColor
+                                                        font: (modelData.isSunrise || modelData.isSunset)
+                                                              ? (weatherRoot ? weatherRoot.wf(10, false) : Qt.font({}))
+                                                              : Qt.font({ family: Kirigami.Theme.defaultFont.family, pixelSize: 20, bold: true })
                                                         opacity: (modelData.isSunrise || modelData.isSunset) ? 0.75 : 1.0
                                                     }
                                                 }
@@ -1230,6 +1257,7 @@ Item {
                                         // ── Row 3: precipitation ─────────────────────
                                         Row {
                                             id: stripPrecipRow
+                                            visible: forecastRoot._hourlyShowPrecipProb
                                             x: 0; y: stripTempRow.y + stripTempRow.height + 2
                                             spacing: stripScrollView.colSpacing
                                             Repeater {
@@ -1244,11 +1272,9 @@ Item {
                                                     Item { Layout.fillWidth: true }
                                                     WeatherIcon {
                                                         visible: !parent._isSun
-                                                        iconInfo: IconResolver.resolve("umbrella", 16, forecastRoot.iconsBaseDir,
-                                                            forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                            (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                        iconInfo: IconResolver.resolve("umbrella", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                         iconSize: 16
-                                                        iconColor: "#7ec8e3"
+                                                        iconColor: forecastRoot.themeTextColor
                                                         Layout.alignment: Qt.AlignVCenter
                                                     }
                                                     Label {
@@ -1273,7 +1299,7 @@ Item {
                                         // ── Row 4: wind ───────────────────────────────
                                         Row {
                                             id: stripWindRow
-                                            x: 0; y: stripPrecipRow.y + stripPrecipRow.height + 2
+                                            x: 0; y: stripPrecipRow.visible ? (stripPrecipRow.y + stripPrecipRow.height + 2) : stripPrecipRow.y
                                             height: 28
                                             visible: forecastRoot._hourlyShowWind
                                             spacing: stripScrollView.colSpacing
@@ -1540,7 +1566,8 @@ Item {
                                     visible: !stripScrollView.atXBeginning
                                     anchors.left: parent.left
                                     anchors.leftMargin: 4
-                                    anchors.verticalCenter: trendCanvas.verticalCenter
+                                    anchors.top: stripIconRow.bottom
+                                    anchors.topMargin: 2 + stripScrollView._graphNominalHeight / 2 - height / 2
                                     width: 26
                                     height: 26
                                     radius: width / 2
@@ -1571,7 +1598,8 @@ Item {
                                     visible: !stripScrollView.atXEnd
                                     anchors.right: parent.right
                                     anchors.rightMargin: 4
-                                    anchors.verticalCenter: trendCanvas.verticalCenter
+                                    anchors.top: stripIconRow.bottom
+                                    anchors.topMargin: 2 + stripScrollView._graphNominalHeight / 2 - height / 2
                                     width: 26
                                     height: 26
                                     radius: width / 2
@@ -1824,8 +1852,7 @@ Item {
                                                                     modelData.isSunrise ? "sunrise" : "sunset",
                                                                     32,
                                                                     forecastRoot.iconsBaseDir,
-                                                                    forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                    (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                                    forecastRoot.itemsIconTheme)
                                                                 iconSize: 32
                                                                 iconColor: forecastRoot.themeTextColor
                                                             }
@@ -2020,12 +2047,11 @@ Item {
                                                             }
 
                                                             RowLayout {
+                                                                visible: forecastRoot._hourlyShowPrecipProb
                                                                 Layout.alignment: Qt.AlignHCenter
                                                                 spacing: 3
                                                                 WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("umbrella", 32, forecastRoot.iconsBaseDir,
-                                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                                    iconInfo: IconResolver.resolve("umbrella", 32, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                                     iconSize: 32
                                                                     iconColor: forecastRoot.themeTextColor
                                                                     Layout.alignment: Qt.AlignVCenter
@@ -2052,9 +2078,7 @@ Item {
                                                                 visible: modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
                                                                          && modelData.precipMm > 0 && W.isPrecipCode(modelData.code)
                                                                 WeatherIcon {
-                                                                    iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir,
-                                                                        forecastRoot.widgetIconTheme === "kde" ? "flat-color" :
-                                                                        (forecastRoot.widgetIconTheme === "wi-font" || forecastRoot.widgetIconTheme === "custom" || forecastRoot.widgetIconTheme === "kde-symbolic") ? "symbolic" : forecastRoot.widgetIconTheme)
+                                                                    iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
                                                                     iconSize: 32
                                                                     iconColor: forecastRoot.themeTextColor
                                                                     opacity: 0.6

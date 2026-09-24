@@ -287,6 +287,7 @@
     <entry name="forecastShowVisibility" type="Bool"><default>false</default></entry>
 
     <!-- ── Widget - hourly forecast extra stats ──────────────────────── -->
+    <entry name="forecastHourlyShowPrecipProb" type="Bool"><default>true</default></entry>
     <entry name="forecastHourlyShowWind"       type="Bool"><default>true</default></entry>
     <entry name="forecastHourlyShowPressure"   type="Bool"><default>false</default></entry>
     <entry name="forecastHourlyShowKpIndex"    type="Bool"><default>false</default></entry>
