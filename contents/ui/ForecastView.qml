@@ -2075,7 +2075,10 @@ Item {
                                                                 // for an hour whose weather code and probability are dry.
                                                                 // Only show the rate when the code itself implies precipitation,
                                                                 // so it doesn't contradict a clear/sunny icon at 0% probability.
-                                                                visible: modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
+                                                                // Skipped entirely when the explicit precip-sum stat below is
+                                                                // already on, since the two show the same amount.
+                                                                visible: !forecastRoot._hourlyShowPrecipSum
+                                                                         && modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
                                                                          && modelData.precipMm > 0 && W.isPrecipCode(modelData.code)
                                                                 WeatherIcon {
                                                                     iconInfo: IconResolver.resolve("preciprate", 32, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
