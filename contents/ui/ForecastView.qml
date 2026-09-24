@@ -275,7 +275,7 @@ Item {
     readonly property int _hourlyCardHeight: 200 + _hourlyExtraRowCount * 26
     // Sum of strip rows always shown: time(18) + icon(60) + trend(56) + temp(32) + 3×2 spacing
     readonly property int _hourlyStripBaseHeight: 172
-    readonly property int _hourlyStripContentHeight: _hourlyStripBaseHeight + (_hourlyShowPrecipProb ? 20 : 0) + (_hourlyShowWind ? 30 : 0) + _hourlyExtraRowCount * 20
+    readonly property int _hourlyStripContentHeight: _hourlyStripBaseHeight + (_hourlyShowPrecipProb ? 20 : 0) + (_hourlyShowWind ? 30 : 0) + _hourlyExtraRowCount * 20 + (!_hourlyShowPrecipSum ? 20 : 0)
     // Reserve room for the horizontal scrollbar so it never covers the last row or the
     // day-section divider. Breeze (and other classic themes) render an always-visible,
     // thicker inline scrollbar than the default Plasma overlay, so size the reserve to
@@ -1520,6 +1520,50 @@ Item {
                                                     Label {
                                                         visible: !parent._isSun
                                                         text: weatherRoot ? weatherRoot.visibilityValue(modelData.visibilityKm) : "--"
+                                                        color: forecastRoot.themeTextColor
+                                                        font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
+                                                        opacity: 0.7
+                                                        Layout.alignment: Qt.AlignVCenter
+                                                    }
+                                                    Item { Layout.fillWidth: true }
+                                                }
+                                            }
+                                        }
+
+                                        // ── Row 10: automatic precip amount ────────────
+                                        // Mirrors the cards layout: shown only while an hour is
+                                        // actively precipitating (trace amounts on a dry-coded hour
+                                        // are skipped so it doesn't contradict a sunny icon at 0%),
+                                        // and skipped row-wide when the explicit precip-sum stat is
+                                        // on, since the two would show the same amount.
+                                        Row {
+                                            id: stripPrecipRateRow
+                                            x: 0; y: stripVisibilityRow.visible ? (stripVisibilityRow.y + stripVisibilityRow.height + 2) : stripVisibilityRow.y
+                                            visible: !forecastRoot._hourlyShowPrecipSum
+                                            spacing: stripScrollView.colSpacing
+                                            Repeater {
+                                                model: stripScrollView._hourlyWithSun
+                                                delegate: RowLayout {
+                                                    required property var modelData
+                                                    readonly property bool _isSun: modelData.isSunrise === true || modelData.isSunset === true
+                                                    readonly property bool _hasRate: modelData.precipMm !== undefined && !isNaN(modelData.precipMm)
+                                                                                      && modelData.precipMm > 0 && W.isPrecipCode(modelData.code)
+                                                    width: stripScrollView.colW
+                                                    height: 18
+                                                    opacity: modelData.isPast === true ? forecastRoot._pastHourOpacity : 1.0
+                                                    spacing: 2
+                                                    Item { Layout.fillWidth: true }
+                                                    WeatherIcon {
+                                                        visible: !parent._isSun && parent._hasRate
+                                                        iconInfo: IconResolver.resolve("preciprate", 16, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                                                        iconSize: 16
+                                                        iconColor: forecastRoot.themeTextColor
+                                                        opacity: 0.7
+                                                        Layout.alignment: Qt.AlignVCenter
+                                                    }
+                                                    Label {
+                                                        visible: !parent._isSun && parent._hasRate
+                                                        text: weatherRoot ? weatherRoot.precipValue(modelData.precipMm) : "--"
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
                                                         opacity: 0.7
