@@ -60,7 +60,9 @@
     <entry name="qwApiHost"          type="String"><default></default></entry>
     <!-- AEMET OpenData (Spain only) - free key from
          https://opendata.aemet.es/centrodedescargas/altaUsuario -->
-    <entry name="aemetApiKey"        type="String"><default></default></entry>
+    <entry name="aemetApiKey"  type="String"><default></default></entry>
+    <entry name="aemetMuniId" type="String"> <default></default></entry>
+    <entry name="aemetMuniKey" type="String"><default></default></entry>
 
     <!-- ── Behaviour ─────────────────────────────────────────────────── -->
     <entry name="keepOpen"           type="Bool"><default>false</default></entry>

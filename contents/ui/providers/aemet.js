@@ -64,13 +64,32 @@
  *
  * MUNICIPALITY RESOLUTION: forecasts are requested by 5-digit INE municipio
  * code, not lat/lon. There is no reverse-geocoding endpoint on AEMET's side,
- * so the ~8,100-entry /api/maestro/municipios master list is fetched once
- * per session (cached on service._aemetMunicipios - see the "Provider-side
- * staging buffers" properties in WeatherService.qml) and the nearest entry
- * to the configured coordinates is picked via Haversine distance. The
- * master list's own "id" field is prefixed ("id28079") and must have that
- * prefix stripped before use in a forecast URL (confirmed against AEMET's
- * own municipio page URLs, e.g. .../municipios/madrid-id28079).
+ * so the nearest entry to the configured coordinates is picked (Haversine
+ * distance) out of a LOCAL, BUNDLED snapshot of the ~8,100-entry
+ * /api/maestro/municipios master list - see providers/data/aemetMunicipios.js
+ * for how it's generated and why its "id" field (not "id_old") is the
+ * correct one. This used to be a live ~1 MB fetch, refetched once per
+ * session; bundling it removes that fetch from AEMET's network footprint
+ * entirely (it was the single largest and most failure-prone of the
+ * requests a cold-start refresh needed, and cost extra 429-quota on retry).
+ * The resolved id itself is additionally cached keyed by rounded
+ * coordinates and written through to Plasmoid.configuration (see
+ * _resolveMunicipio), so a repeat lookup for the same location doesn't even
+ * repeat the (now free, but not instant on ~8,100 entries) nearest-match
+ * scan.
+ *
+ * 429 (rate limit) DEFENSE: beyond the master-list fetch above being gone
+ * entirely, two more pieces work together here to keep this widget's own
+ * request volume well under AEMET's documented ~50 req/min-per-key limit:
+ * _aemetBudgetOk()/_aemetBudgetRecord() below cap this session to
+ * AEMET_REQUEST_BUDGET_PER_MIN requests in any trailing 60 s window,
+ * refusing (as a synthetic rate-limit) rather than sending a request that
+ * would likely just be rejected anyway and still count against the quota;
+ * and WeatherService.qml's _aemetAutoRetryTimer now backs off exponentially
+ * on repeated failure instead of a fixed 15 s retry - see its own comment
+ * for why the fixed interval could alone reach ~32 req/min from sustained
+ * failure on this widget's own retries, before another instance or a
+ * genuinely busy refresh schedule is even considered.
  *
  * FIELD NAMES VERIFIED AGAINST: AEMET's own schema-description ("sh/...")
  * documents - fetched directly (they need no API key, unlike the actual data
@@ -108,9 +127,9 @@ function _haversineKm(lat1, lon1, lat2, lon2) {
 
 /**
  * Parses an AEMET-style compact sexagesimal coordinate string ("394924N",
- * "025309E") into decimal degrees. Only used as a fallback when a municipio
- * entry's latitud_dec/longitud_dec fields (see _muniLat/_muniLon) are
- * missing - the master list normally provides decimal degrees directly.
+ * "025309E") into decimal degrees. Only used as a last-resort fallback -
+ * see _muniLat/_muniLon - since both the trimmed bundle and AEMET's raw
+ * master list normally provide decimal degrees directly.
  */
 function _dmsToDecimal(coord) {
     if (!coord) return NaN;
@@ -126,11 +145,18 @@ function _dmsToDecimal(coord) {
     return (dir === "S" || dir === "W") ? -dec : dec;
 }
 
+// Accepts either shape: the trimmed local bundle's {lat, lon} (see
+// providers/data/aemetMunicipios.js), or AEMET's raw /api/maestro/municipios
+// field names (latitud_dec/longitud_dec, DMS latitud/longitud as a last
+// resort) - so these keep working unchanged if the bundle is ever
+// regenerated straight from a raw API response instead of the trimmed form.
 function _muniLat(entry) {
+    if (typeof entry.lat === "number") return entry.lat;
     var v = parseFloat(entry.latitud_dec);
     return isNaN(v) ? _dmsToDecimal(entry.latitud) : v;
 }
 function _muniLon(entry) {
+    if (typeof entry.lon === "number") return entry.lon;
     var v = parseFloat(entry.longitud_dec);
     return isNaN(v) ? _dmsToDecimal(entry.longitud) : v;
 }
@@ -270,6 +296,21 @@ function _num(v) {
     return (v === null || v === undefined || (typeof v === "number" && isNaN(v))) ? NaN : v;
 }
 
+// Same "no data" concern as _num() above, but for estadoCielo's string sky
+// code rather than a numeric field: AEMET can legitimately send
+// {"periodo":"...","value":null} for a low-confidence distant period (later
+// days of the daily product, later hours of the hourly one), and passing a
+// bare null through to W.aemetSkyToWmo()/aemetSkyIsDay() - functions that
+// expect a string and weren't written expecting this AEMET-specific null -
+// risks throwing there instead of just mapping to "unknown", which previously
+// could silently abort fetchCurrent's combine() partway through (before
+// anything is written to weatherRoot) and leave the widget stuck showing
+// nothing, forever, with no error - see combine()'s own try/catch below for
+// the backstop in case a still-unanticipated shape does the same thing.
+function _skyValue(entry) {
+    return (entry && entry.value != null) ? entry.value : "";
+}
+
 function _aemetDirToDegrees(dir, W) {
     if (!dir) return NaN;
     var d = String(dir).toUpperCase().trim();
@@ -286,7 +327,39 @@ function _nextDateStr(dateStr) {
     return Qt.formatDate(d, "yyyy-MM-dd");
 }
 
-// ── Two-step "self-discovery" fetch shared by every AEMET endpoint ───────
+// ── Client-side request budget (defends against 429s) ────────────────────
+
+/**
+ * AEMET's own limit is ~50 req/min per key. This widget's own worst case -
+ * both products (daily+hourly, each a two-hop request) failing and each hop
+ * retrying once via _fetchAemetJsonR - is 8 requests per refresh attempt;
+ * repeated every 15 s by the old fixed-interval auto-retry that used to sit
+ * in WeatherService.qml, that alone reached ~32 req/min from this widget
+ * doing nothing but retrying itself, before any other instance or a normal
+ * refresh schedule added anything on top. Capping requests actually sent in
+ * any trailing 60 s window - refusing the rest as a synthetic rate limit
+ * rather than sending them anyway - keeps this widget from ever being the
+ * one pushing its own key over the edge. 40 (not 50) leaves headroom for
+ * one other consumer of the same key (e.g. a second panel instance, or the
+ * person's own manual testing) sharing the quota.
+ */
+var AEMET_REQUEST_BUDGET_PER_MIN = 40;
+
+/** True if sending one more request now would stay within budget. Also
+ *  prunes the log to the last 60 s as a side effect, so the array on
+ *  `service` never grows unbounded. */
+function _aemetBudgetOk(service) {
+    var now = Date.now();
+    var log = (service._aemetRequestLog || []).filter(function (t) { return now - t < 60000; });
+    service._aemetRequestLog = log;
+    return log.length < AEMET_REQUEST_BUDGET_PER_MIN;
+}
+
+function _aemetBudgetRecord(service) {
+    var log = service._aemetRequestLog || [];
+    log.push(Date.now());
+    service._aemetRequestLog = log;
+}
 
 /**
  * ISO-8859-1, not the ISO-8859-15 AEMET actually declares. Qt 6 replaced
@@ -309,16 +382,45 @@ var AEMET_CHARSET = "text/plain; charset=ISO-8859-1";
  * failure ("Failed: AEMET"), with no way for the person to tell "wait a
  * moment" apart from "something is actually broken".
  */
+// Strips "?api_key=..." before a URL ever reaches console.warn - the key is
+// a live credential, and these diagnostics exist to be pasted into bug
+// reports/chat, not to leak it there. (The second-hop "datos" URLs AEMET
+// returns never carry the key at all, so only first-hop URLs need this.)
+function _redactKey(url) {
+    return String(url).replace(/([?&]api_key=)[^&]+/i, "$1<redacted>");
+}
+
 function _fetchAemetJson(url, service, cb) {
+    if (!_aemetBudgetOk(service)) {
+        // Treat exactly like a real 429: AEMET would very likely reject this
+        // anyway (we're already at this widget's own self-imposed ceiling
+        // for the last 60 s), and a rejected request still counts against
+        // the same per-minute quota as an accepted one - so don't send it.
+        console.warn("[aemet] request budget exhausted (" + AEMET_REQUEST_BUDGET_PER_MIN + "/min) - skipping:", _redactKey(url));
+        service._aemetRateLimited = true;
+        service.weatherRoot.aemetRateLimited = true;
+        cb(null);
+        return;
+    }
+    _aemetBudgetRecord(service);
     var meta = new XMLHttpRequest();
     meta.open("GET", url);
     try { meta.overrideMimeType(AEMET_CHARSET); } catch (e) {}
     meta.onreadystatechange = function () {
         if (meta.readyState !== XMLHttpRequest.DONE) return;
-        if (meta.status === 429) { service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return; }
-        if (meta.status !== 200) { cb(null); return; }
+        if (meta.status === 429) {
+            console.warn("[aemet] HTTP 429 (rate limited) on first hop:", _redactKey(url));
+            service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return;
+        }
+        if (meta.status !== 200) {
+            console.warn("[aemet] first hop failed, HTTP " + meta.status + ":", _redactKey(url), "- body:", (meta.responseText || "").substring(0, 300));
+            cb(null); return;
+        }
         var ptr;
-        try { ptr = JSON.parse(meta.responseText); } catch (e) { cb(null); return; }
+        try { ptr = JSON.parse(meta.responseText); } catch (e) {
+            console.warn("[aemet] first hop returned unparseable JSON:", _redactKey(url), "- body:", (meta.responseText || "").substring(0, 300), "-", e);
+            cb(null); return;
+        }
 
         // NOT every endpoint is a two-step pointer, despite what the header
         // comment above used to claim unconditionally: the /api/maestro/*
@@ -331,11 +433,19 @@ function _fetchAemetJson(url, service, cb) {
         if (!ptr || typeof ptr.datos !== "string") {
             // An error body ({"estado":404,"descripcion":"..."}) is not a
             // payload - only a missing/200 estado means "this is the data".
-            if (ptr && ptr.estado !== undefined && ptr.estado !== 200) { cb(null); return; }
+            if (ptr && ptr.estado !== undefined && ptr.estado !== 200) {
+                console.warn("[aemet] first hop returned an AEMET error body:", _redactKey(url), "- estado:", ptr.estado, ptr.descripcion || "");
+                cb(null); return;
+            }
             cb(ptr);
             return;
         }
 
+        if (!_aemetBudgetOk(service)) {
+            console.warn("[aemet] request budget exhausted before second hop - skipping:", ptr.datos);
+            service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return;
+        }
+        _aemetBudgetRecord(service);
         // The "datos" pointer is short-lived and single-use - always fetch
         // it fresh, right now, never cache/reuse it across refreshes.
         var data = new XMLHttpRequest();
@@ -343,10 +453,19 @@ function _fetchAemetJson(url, service, cb) {
         try { data.overrideMimeType(AEMET_CHARSET); } catch (e) {}
         data.onreadystatechange = function () {
             if (data.readyState !== XMLHttpRequest.DONE) return;
-            if (data.status === 429) { service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return; }
-            if (data.status !== 200) { cb(null); return; }
+            if (data.status === 429) {
+                console.warn("[aemet] HTTP 429 (rate limited) on second hop:", ptr.datos);
+                service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return;
+            }
+            if (data.status !== 200) {
+                console.warn("[aemet] second hop (datos) failed, HTTP " + data.status + ":", ptr.datos, "- body:", (data.responseText || "").substring(0, 300));
+                cb(null); return;
+            }
             try { cb(JSON.parse(data.responseText)); }
-            catch (e) { cb(null); }
+            catch (e) {
+                console.warn("[aemet] second hop (datos) returned unparseable JSON:", ptr.datos, "- body:", (data.responseText || "").substring(0, 300), "-", e);
+                cb(null);
+            }
         };
         data.send();
     };
@@ -380,34 +499,21 @@ function _fetchAemetJsonR(url, service, cb) {
 //    "Provider-side staging buffers") ─────────────────────────────────────
 
 /**
- * Ensures service._aemetMunicipios holds the ~8,100-entry master list, then
- * calls cb(list) - fetching it at most once per session. ForecastView's
- * "expand all days" mode can trigger several resolutions back-to-back
- * before the first lands, and AEMET's API is rate-limited, so concurrent
- * callers queue behind a single in-flight fetch (service._aemetMuniListPending)
- * instead of each firing their own ~1 MB two-step request.
+ * Returns service._aemetMunicipios, populating it on first call from the
+ * bundled local dataset (providers/data/aemetMunicipios.js, passed in as
+ * `muniData` - the qualifier Providers.qml imported that file under) rather
+ * than a live /api/maestro/municipios fetch. This is now synchronous and
+ * network-free: no API key needed, no 429 possible, no pending-callback
+ * queue required for concurrent callers (ForecastView's "expand all days"
+ * included) the way the old network version needed one.
  */
-function _withMunicipiosList(service, key, cb) {
-    if (service._aemetMunicipios) { cb(service._aemetMunicipios); return; }
-    if (service._aemetMuniListPending) {
-        service._aemetMuniListPending.push(cb);
-        return;
-    }
-    service._aemetMuniListPending = [cb];
-    var url = "https://opendata.aemet.es/opendata/api/maestro/municipios/?api_key=" + encodeURIComponent(key);
-    _fetchAemetJsonR(url, service, function (list) {
-        var waiters = service._aemetMuniListPending || [];
-        service._aemetMuniListPending = null;
-        var arr = Array.isArray(list) ? list : [];
-        // Cache ONLY a real list. [] is truthy, so caching a failed fetch
-        // made the `if (service._aemetMunicipios)` short-circuit at the top
-        // of this function hit forever after: every later refresh - the
-        // _aemetAutoRetryTimer's included - resolved instantly to an empty
-        // list without touching the network, and AEMET stayed broken until
-        // Plasma itself was restarted.
-        if (arr.length > 0) service._aemetMunicipios = arr;
-        waiters.forEach(function (w) { w(arr); });
-    });
+function _municipiosList(service, muniData) {
+    if (service._aemetMunicipios) return service._aemetMunicipios;
+    var list = (muniData && typeof muniData.list === "function") ? muniData.list() : null;
+    var arr = Array.isArray(list) ? list : [];
+    if (arr.length > 0) service._aemetMunicipios = arr;
+    else console.warn("[aemet] Bundled municipios dataset is missing or empty - AEMET cannot resolve any location.");
+    return arr;
 }
 
 // AEMET regenerates these products only "cuatro veces al día" (4x/day) per
@@ -489,12 +595,10 @@ function _withHourlyData(service, key, muniId, cb) {
  *  service's current lat/lon, then calls cb(id) or cb(null) on failure/
  *  non-Spain location. Result is cached keyed by rounded coordinates, like
  *  BBC's _bbcLocId/_bbcLocKey pattern, so repeat refreshes for the same
- *  location skip both the list fetch and the nearest-match scan - and, via
+ *  location skip the nearest-match scan entirely - and, via
  *  service._persistAemetMunicipio(), is written through to
- *  Plasmoid.configuration so it also survives a Plasma restart. That last
- *  part is what takes the ~1 MB master-list download from once-per-session
- *  to once-per-location-ever, leaving a steady-state refresh at just the
- *  daily + hourly products.
+ *  Plasmoid.configuration so it also survives a Plasma restart without
+ *  redoing that scan once more on first refresh.
  *
  *  `gen` is accepted for call-site symmetry but deliberately NOT used as a
  *  bail-out condition. It used to be, and that contradicted fetchHourly's
@@ -503,9 +607,18 @@ function _withHourlyData(service, key, muniId, cb) {
  *  landing mid-resolution left an expanded Forecast day spinning forever.
  *  Nothing here is generation-sensitive anyway - the municipio is derived
  *  from the live coordinates on every call, so a late resolution is still
- *  the right answer for the still-configured location. */
-function _resolveMunicipio(service, gen, key, cb) {
-    if (!service._isSpainLocation()) { cb(null); return; }
+ *  the right answer for the still-configured location.
+ *
+ *  Still callback-shaped (cb) even though the lookup itself is now
+ *  synchronous (see _municipiosList) - kept this way so fetchCurrent/
+ *  fetchHourly/fetchHourlyDirect didn't all need reworking into a
+ *  synchronous calling convention for what is, from their point of view,
+ *  just "the id, eventually". */
+function _resolveMunicipio(service, gen, muniData, cb) {
+    if (!service._isSpainLocation()) {
+        console.warn("[aemet] _resolveMunicipio: location (" + service.latitude + "," + service.longitude + ") is outside AEMET's Spain bounding-box check - not attempting AEMET.");
+        cb(null); return;
+    }
 
     var rk = _roundKey(service.latitude, service.longitude);
     if (service._aemetMuniKey === rk && service._aemetMuniId) {
@@ -513,18 +626,26 @@ function _resolveMunicipio(service, gen, key, cb) {
         return;
     }
 
-    _withMunicipiosList(service, key, function (list) {
-        if (!list || list.length === 0) { cb(null); return; }
-        var nearest = _nearestMunicipio(list, service.latitude, service.longitude);
-        if (!nearest) { cb(null); return; }
-        var id = String(nearest.id || "").replace(/^id/, "");
-        if (!id) { cb(null); return; }
-        service._aemetMuniKey = rk;
-        service._aemetMuniId = id;
-        if (typeof service._persistAemetMunicipio === "function")
-            service._persistAemetMunicipio(rk, id);
-        cb(id);
-    });
+    var list = _municipiosList(service, muniData);
+    if (!list || list.length === 0) {
+        console.warn("[aemet] _resolveMunicipio: bundled municipios list is empty - see the earlier '[aemet] Bundled municipios dataset...' warning.");
+        cb(null); return;
+    }
+    var nearest = _nearestMunicipio(list, service.latitude, service.longitude);
+    if (!nearest) {
+        console.warn("[aemet] _resolveMunicipio: no nearest municipio found for (" + service.latitude + "," + service.longitude + ") against " + list.length + " entries.");
+        cb(null); return;
+    }
+    var id = String(nearest.id || "").replace(/^id/, "");
+    if (!id) {
+        console.warn("[aemet] _resolveMunicipio: nearest entry has no usable id -", JSON.stringify(nearest));
+        cb(null); return;
+    }
+    service._aemetMuniKey = rk;
+    service._aemetMuniId = id;
+    if (typeof service._persistAemetMunicipio === "function")
+        service._persistAemetMunicipio(rk, id);
+    cb(id);
 }
 
 // ── Field extraction shared by the daily/hourly parsers ─────────────────
@@ -637,7 +758,7 @@ function _buildDailyArray(dias, forecastDays, W) {
             dateStr: (day.fecha || "").substr(0, 10),
             maxC: _num(temp.maxima),
             minC: _num(temp.minima),
-            code: W.aemetSkyToWmo(skyEntry ? skyEntry.value : ""),
+            code: W.aemetSkyToWmo(_skyValue(skyEntry)),
             precipMm: W.NOT_SUPPORTED, // daily product gives a rain probability, not an accumulated mm figure
             snowCm: W.NOT_SUPPORTED,   // AEMET's only snow-related daily field is snow-line elevation, not accumulation
             precipProb: _maxValue(day.probPrecipitacion),
@@ -683,7 +804,7 @@ function _currentFromDailyDay(day, W, service) {
         precipMmh: W.NOT_SUPPORTED,    // daily-only fallback has no per-hour precip amount, only a daily rain probability
         uvIndex: _uvMaxValue(day),
         snowDepthCm: W.NOT_SUPPORTED,  // AEMET's only snow-related field is snow-line elevation, not accumulation/cover
-        weatherCode: W.aemetSkyToWmo(skyEntry ? skyEntry.value : ""),
+        weatherCode: W.aemetSkyToWmo(_skyValue(skyEntry)),
         isDay: isDaytime ? 1 : 0,
         locationUtcOffsetMins: 0,
         sunriseTimeText: "--",
@@ -725,8 +846,8 @@ function _currentFromHourlyDay(today, W, service) {
                        // combine() step backfills it from today's daily uvMax; NOT_SUPPORTED
                        // would defeat that isNaN() check, since -9999 isn't NaN
         snowDepthCm: W.NOT_SUPPORTED, // AEMET's only snow-related field is snow-line elevation, not accumulation/cover
-        weatherCode: W.aemetSkyToWmo(sky ? sky.value : ""),
-        isDay: W.aemetSkyIsDay(sky ? sky.value : ""),
+        weatherCode: W.aemetSkyToWmo(_skyValue(sky)),
+        isDay: W.aemetSkyIsDay(_skyValue(sky)),
         locationUtcOffsetMins: 0,
         sunriseTimeText: "--",
         sunsetTimeText: "--",
@@ -761,7 +882,7 @@ function _buildHourlyArray(day, W, service) {
         arr.push({
             hour: (h.length === 2) ? (h + ":00") : h,
             tempC: temp ? _num(temp.value) : NaN,
-            code: W.aemetSkyToWmo(sky ? sky.value : ""),
+            code: W.aemetSkyToWmo(_skyValue(sky)),
             windKmh: wind ? _num(wind.velocidad) : NaN,
             windDeg: wind ? _aemetDirToDegrees(wind.direccion, W) : NaN,
             humidity: hum ? _num(hum.value) : NaN,
@@ -779,16 +900,22 @@ function _forecastBaseUrl(kind, muniId, key) {
 
 // ── Public entry points (dispatched from Providers.qml) ─────────────────
 
-function fetchCurrent(service, W, chain, idx) {
+function fetchCurrent(service, W, chain, idx, muniData) {
     var gen = service._refreshGen;
     var key = service._aemetKey();
-    if (!key) { service._tryProvider(chain, idx + 1); return; }
+    if (!key) {
+        console.warn("[aemet] fetchCurrent: no API key configured (Plasmoid.configuration.aemetApiKey is empty) - falling back.");
+        service._tryProvider(chain, idx + 1); return;
+    }
     service._aemetRateLimited = false; // fresh attempt - don't judge it by a previous one's rate limit
     service.weatherRoot.aemetRateLimited = false;
 
-    _resolveMunicipio(service, gen, key, function (muniId) {
+    _resolveMunicipio(service, gen, muniData, function (muniId) {
         if (service._refreshGen !== gen) return;
-        if (!muniId) { service._tryProvider(chain, idx + 1); return; }
+        if (!muniId) {
+            console.warn("[aemet] fetchCurrent: municipio resolution failed - see the preceding '[aemet] _resolveMunicipio:' warning for why - falling back.");
+            service._tryProvider(chain, idx + 1); return;
+        }
 
         // Daily and hourly are independent AEMET products, each its own
         // two-hop request - fetched in parallel rather than daily-then-
@@ -806,66 +933,93 @@ function fetchCurrent(service, W, chain, idx) {
             // response that arrived perfectly well (and the hourly one is the
             // better source for current conditions anyway). Only give up on
             // the provider when BOTH came back empty.
-            if (!dailyResult && !hourlyResult) { service._tryProvider(chain, idx + 1); return; }
-
-            var dias = [];
-            if (dailyResult) {
-                var root = Array.isArray(dailyResult) ? dailyResult[0] : dailyResult;
-                var rawDias = (root && root.prediccion && root.prediccion.dia) ? root.prediccion.dia : [];
-                dias = _alignDaysToToday(rawDias, service);
+            if (!dailyResult && !hourlyResult) {
+                console.warn("[aemet] fetchCurrent: both daily and hourly requests failed - see the preceding '[aemet]' warnings above for the actual HTTP/parse failure - falling back.");
+                service._tryProvider(chain, idx + 1); return;
             }
 
-            var nd = dias.length > 0 ? _buildDailyArray(dias, service.forecastDays, W) : [];
-            var finalCur = dias.length > 0 ? _currentFromDailyDay(dias[0], W, service) : null;
-            var sun = null;
-
-            if (hourlyResult) {
-                var hroot = Array.isArray(hourlyResult) ? hourlyResult[0] : hourlyResult;
-                var hdias = (hroot && hroot.prediccion && hroot.prediccion.dia) ? hroot.prediccion.dia : [];
-                hdias = _alignDaysToToday(hdias, service);
-                if (hdias.length > 0) {
-                    var refined = _currentFromHourlyDay(hdias[0], W, service);
-                    if (refined) finalCur = refined;
-                    sun = { orto: hdias[0].orto, ocaso: hdias[0].ocaso };
+            // Everything below only READS dailyResult/hourlyResult and
+            // builds local values - nothing touches weatherRoot until the
+            // assignment near the end - so wrapping it all is safe: on any
+            // exception here (a real AEMET response shaped in some way none
+            // of the parsing above anticipated - a null where none of the
+            // null-guards above expected one, a missing nested object, a
+            // field AEMET documents differently than assumed), we still land
+            // on a clean, visible fallback instead of leaving the widget
+            // stuck silently "loading" forever with nothing shown and no
+            // error - which is worse than any error message, since there is
+            // then nothing for a bug report to even point at.
+            try {
+                var dias = [];
+                if (dailyResult) {
+                    var root = Array.isArray(dailyResult) ? dailyResult[0] : dailyResult;
+                    var rawDias = (root && root.prediccion && root.prediccion.dia) ? root.prediccion.dia : [];
+                    dias = _alignDaysToToday(rawDias, service);
                 }
+
+                var nd = dias.length > 0 ? _buildDailyArray(dias, service.forecastDays, W) : [];
+                var finalCur = dias.length > 0 ? _currentFromDailyDay(dias[0], W, service) : null;
+                var sun = null;
+
+                if (hourlyResult) {
+                    var hroot = Array.isArray(hourlyResult) ? hourlyResult[0] : hourlyResult;
+                    var hdias = (hroot && hroot.prediccion && hroot.prediccion.dia) ? hroot.prediccion.dia : [];
+                    hdias = _alignDaysToToday(hdias, service);
+                    if (hdias.length > 0) {
+                        var refined = _currentFromHourlyDay(hdias[0], W, service);
+                        if (refined) finalCur = refined;
+                        sun = { orto: hdias[0].orto, ocaso: hdias[0].ocaso };
+                    }
+                }
+
+                // Neither product yielded a usable "today" - nothing to show.
+                if (!finalCur) {
+                    console.warn("[aemet] fetchCurrent: daily and/or hourly responses parsed, but neither yielded a usable 'today' entry - falling back. dailyResult:", dailyResult ? "present" : dailyResult, "hourlyResult:", hourlyResult ? "present" : hourlyResult);
+                    service._tryProvider(chain, idx + 1); return;
+                }
+
+                // UV is only on the daily product, never the hourly one - so
+                // whenever the hourly-refined reading is what's showing (the
+                // normal/successful case), backfill it from today's daily
+                // figure instead of leaving it blank for no real reason.
+                // _fetchWindUvOpenMeteo() below covers the daily-missing case.
+                if (isNaN(finalCur.uvIndex) && dias.length > 0)
+                    finalCur.uvIndex = _uvMaxValue(dias[0]);
+
+                finalCur.dailyData = nd;
+                if (sun) {
+                    if (sun.orto)  finalCur.sunriseTimeText = sun.orto;
+                    if (sun.ocaso) finalCur.sunsetTimeText  = sun.ocaso;
+                }
+
+                service.weatherRoot.weatherDataStaged = finalCur;
+                service.weatherRoot.loading = false;
+                service.weatherRoot.updateText = service._formatUpdateText("aemet");
+                // A real success - let _aemetAutoRetryTimer's backoff (see
+                // WeatherService.qml's _tryProvider) start fresh from 15 s/65 s
+                // next time, rather than staying escalated from an old,
+                // now-resolved run of failures.
+                service._aemetRetryAttempt = 0;
+
+                // AEMET's orto/ocaso (and the daily-fallback "--") are local
+                // wall-clock strings with no numeric UTC offset attached -
+                // same limitation as met.no/BBC/Tomorrow.io/StormGlass - so
+                // patch locationUtcOffsetMins (and sunrise/sunset if still
+                // "--") from Open-Meteo the same way those providers do.
+                service._fetchSunTimesOpenMeteo();
+
+                // Backfill wind/UV gaps (fetch failures, hours/days AEMET's own
+                // response didn't have data for) from Open-Meteo - fills in,
+                // never overrides a genuine AEMET value.
+                service._fetchWindUvOpenMeteo();
+
+                // No native CAP alerts in this product - fall back to
+                // MeteoAlarm (already covers Spain) / NWS.
+                service._fetchAlertsIfNeeded();
+            } catch (e) {
+                console.warn("[aemet] fetchCurrent: unexpected error while parsing AEMET's response -", e);
+                service._tryProvider(chain, idx + 1);
             }
-
-            // Neither product yielded a usable "today" - nothing to show.
-            if (!finalCur) { service._tryProvider(chain, idx + 1); return; }
-
-            // UV is only on the daily product, never the hourly one - so
-            // whenever the hourly-refined reading is what's showing (the
-            // normal/successful case), backfill it from today's daily
-            // figure instead of leaving it blank for no real reason.
-            // _fetchWindUvOpenMeteo() below covers the daily-missing case.
-            if (isNaN(finalCur.uvIndex) && dias.length > 0)
-                finalCur.uvIndex = _uvMaxValue(dias[0]);
-
-            finalCur.dailyData = nd;
-            if (sun) {
-                if (sun.orto)  finalCur.sunriseTimeText = sun.orto;
-                if (sun.ocaso) finalCur.sunsetTimeText  = sun.ocaso;
-            }
-
-            service.weatherRoot.weatherDataStaged = finalCur;
-            service.weatherRoot.loading = false;
-            service.weatherRoot.updateText = service._formatUpdateText("aemet");
-
-            // AEMET's orto/ocaso (and the daily-fallback "--") are local
-            // wall-clock strings with no numeric UTC offset attached -
-            // same limitation as met.no/BBC/Tomorrow.io/StormGlass - so
-            // patch locationUtcOffsetMins (and sunrise/sunset if still
-            // "--") from Open-Meteo the same way those providers do.
-            service._fetchSunTimesOpenMeteo();
-
-            // Backfill wind/UV gaps (fetch failures, hours/days AEMET's own
-            // response didn't have data for) from Open-Meteo - fills in,
-            // never overrides a genuine AEMET value.
-            service._fetchWindUvOpenMeteo();
-
-            // No native CAP alerts in this product - fall back to
-            // MeteoAlarm (already covers Spain) / NWS.
-            service._fetchAlertsIfNeeded();
         }
 
         _withDailyData(service, key, muniId, function (d) {
@@ -893,14 +1047,14 @@ function fetchCurrent(service, W, chain, idx) {
  * call regardless of gen, so finishing a request from a now-superseded
  * generation is still correct data for the still-configured location.
  */
-function fetchHourly(service, W, dateStr) {
+function fetchHourly(service, W, dateStr, muniData) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._aemetKey();
     if (!key) { r.hourlyData = []; return; }
     r.aemetRateLimited = false; // reflect only this attempt's outcome, not a previous one's
 
-    _resolveMunicipio(service, gen, key, function (muniId) {
+    _resolveMunicipio(service, gen, muniData, function (muniId) {
         if (!muniId) { r.hourlyData = []; return; }
         _withHourlyData(service, key, muniId, function (hd) {
             r.hourlyData = _dayHourlyForDate(hd, dateStr, W, service);
@@ -915,13 +1069,13 @@ function fetchHourly(service, W, dateStr) {
  * the hourly array to `cb` without touching weatherRoot.hourlyData, so
  * several in-flight requests for different dates don't clobber each other.
  */
-function fetchHourlyDirect(service, W, dateStr, cb) {
+function fetchHourlyDirect(service, W, dateStr, cb, muniData) {
     var gen = service._refreshGen;
     var key = service._aemetKey();
     if (!key) { cb([]); return; }
     service.weatherRoot.aemetRateLimited = false;
 
-    _resolveMunicipio(service, gen, key, function (muniId) {
+    _resolveMunicipio(service, gen, muniData, function (muniId) {
         if (!muniId) { cb([]); return; }
         _withHourlyData(service, key, muniId, function (hd) {
             cb(_dayHourlyForDate(hd, dateStr, W, service));

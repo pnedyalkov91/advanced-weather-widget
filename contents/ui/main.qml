@@ -225,6 +225,15 @@ PlasmoidItem {
     property var hourlyData: []
     property int panelScrollIndex: 0
     property string updateText: ""
+    // Set/cleared directly by providers/aemet.js on every AEMET request
+    // (service.weatherRoot.aemetRateLimited = true/false) and read by
+    // ForecastView.qml to show a "rate limited, retrying" message instead of
+    // the generic "Loading hourly data..." placeholder. Was never declared
+    // here, so every assignment from aemet.js was a silent no-op (QML logs
+    // "Cannot assign to non-existent property" but does not throw or halt
+    // execution) - the indicator just never lit up. Harmless to the actual
+    // data fetch itself, but the indicator was dead code until this line.
+    property bool aemetRateLimited: false
 
     // Parsed activeLocation - staged so the _locName/_locLat/_locLon/hasSelectedTown
     // cascade fires in the next event loop tick (Qt.callLater) rather than synchronously

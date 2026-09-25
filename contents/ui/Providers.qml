@@ -18,18 +18,21 @@
 /**
  * Providers.qml - lazily-loaded weather-provider dispatcher.
  *
- * All provider .js modules are imported here instead of in WeatherService.qml
- * so they are NOT parsed/compiled during shell startup. WeatherService creates
- * this object on demand (first weather fetch, ~600 ms after the widget loads)
- * via Qt.createComponent, keeping ~3.7k lines of provider JS off the critical
- * startup path. The dispatch logic mirrors what previously lived inline in
- * WeatherService (_tryProvider / fetchHourlyForDate / _fetchAlertsIfNeeded).
+ * All provider .js modules (and AEMET's bundled municipios dataset,
+ * providers/data/aemetMunicipios.js) are imported here instead of in
+ * WeatherService.qml so they are NOT parsed/compiled during shell startup.
+ * WeatherService creates this object on demand (first weather fetch, ~600 ms
+ * after the widget loads) via Qt.createComponent, keeping ~3.7k lines of
+ * provider JS off the critical startup path. The dispatch logic mirrors
+ * what previously lived inline in WeatherService (_tryProvider /
+ * fetchHourlyForDate / _fetchAlertsIfNeeded).
  */
 import QtQuick
 
 import "js/weather.js" as W
 import "providers/openMeteo.js" as OpenMeteoJS
 import "providers/aemet.js" as AemetJS
+import "providers/data/aemetMunicipios.js" as AemetMunicipiosData
 import "providers/openWeather.js" as OpenWeatherJS
 import "providers/weatherApi.js" as WeatherApiJS
 import "providers/metNo.js" as MetNoJS
@@ -49,7 +52,7 @@ QtObject {
     /** Current-weather fetch for provider `p` (mirrors the old _tryProvider tail). */
     function fetchCurrent(p, service, chain, idx) {
         switch (p) {
-        case "aemet":          AemetJS.fetchCurrent(service, W, chain, idx); return;
+        case "aemet":          AemetJS.fetchCurrent(service, W, chain, idx, AemetMunicipiosData); return;
         case "pirateWeather":  PirateWeatherJS.fetchCurrent(service, W, chain, idx); return;
         case "visualCrossing": VisualCrossingJS.fetchCurrent(service, W, chain, idx); return;
         case "tomorrowIo":     TomorrowIoJS.fetchCurrent(service, W, chain, idx); return;
@@ -68,7 +71,7 @@ QtObject {
     function fetchHourly(ap, service, dateStr) {
         switch (ap) {
         case "openMeteo":      OpenMeteoJS.fetchHourly(service, dateStr); return true;
-        case "aemet":          AemetJS.fetchHourly(service, W, dateStr); return true;
+        case "aemet":          AemetJS.fetchHourly(service, W, dateStr, AemetMunicipiosData); return true;
         case "pirateWeather":  PirateWeatherJS.fetchHourly(service, W, dateStr); return true;
         case "openWeather":    OpenWeatherJS.fetchHourly(service, W, dateStr); return true;
         case "weatherApi":     WeatherApiJS.fetchHourly(service, W, dateStr); return true;
@@ -89,7 +92,7 @@ QtObject {
      *  resolution is an async step that lives in-module. */
     function fetchHourlyDirect(ap, service, dateStr, callback) {
         if (ap === "bbc") { BbcWeatherJS.fetchHourlyDirect(service, W, dateStr, callback); return true; }
-        if (ap === "aemet") { AemetJS.fetchHourlyDirect(service, W, dateStr, callback); return true; }
+        if (ap === "aemet") { AemetJS.fetchHourlyDirect(service, W, dateStr, callback, AemetMunicipiosData); return true; }
         return false;
     }
 

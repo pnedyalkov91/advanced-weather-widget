@@ -177,6 +177,47 @@ KCM.SimpleKCM {
         return false;
     }
 
+    /**
+     * Follows an AEMET "self-discovery" pointer's "datos" URL and confirms
+     * it actually returns forecast data. A valid key/connectivity on the
+     * FIRST hop (the {estado:200,"datos":"..."} pointer) says nothing about
+     * whether this second hop - a different host, e.g.
+     * "https://opendata.aemet.es/opendata/sh/908845c7" - is reachable or
+     * returns something parseable, and this second request is the one
+     * aemet.js's real fetchCurrent actually depends on. Without this,
+     * "Connection successful" could be shown even when the request that
+     * matters for real data would fail.
+     * genGetter/myGen guard against a stale in-flight check overwriting a
+     * newer one, mirroring the callers' own _testGen/_locGen pattern.
+     */
+    function _aemetVerifyDatos(datosUrl, myGen, genGetter, onDone) {
+        var req2 = new XMLHttpRequest();
+        req2.open("GET", datosUrl);
+        req2.onreadystatechange = function () {
+            if (req2.readyState !== XMLHttpRequest.DONE)
+                return;
+            if (genGetter() !== myGen)
+                return;
+            if (req2.status !== 200) {
+                onDone(false, i18n("AEMET's data link failed (HTTP %1).", req2.status));
+                return;
+            }
+            try {
+                var body = JSON.parse(req2.responseText);
+                var day0 = Array.isArray(body) ? body[0] : body;
+                if (!day0 || !day0.prediccion || !Array.isArray(day0.prediccion.dia) || day0.prediccion.dia.length === 0) {
+                    onDone(false, i18n("AEMET's data link returned no forecast data."));
+                    return;
+                }
+            } catch (e) {
+                onDone(false, i18n("Could not parse AEMET's forecast data."));
+                return;
+            }
+            onDone(true, "");
+        };
+        req2.send();
+    }
+
     function verifyProviderLocation() {
         _locGen++;
         var myGen = _locGen;
@@ -300,17 +341,28 @@ KCM.SimpleKCM {
                 if (req.status === 200) {
                     try {
                         var aeBody = JSON.parse(req.responseText);
-                        if (aeBody.estado === 200) {
-                            locationCheckState = 2;
-                            locationCheckMessage = i18n("Location is available on %1.", pLabel);
-                        } else {
+                        if (aeBody.estado !== 200 || typeof aeBody.datos !== "string") {
                             locationCheckState = 3;
                             locationCheckMessage = i18n("AEMET error (code %1). Check your API key.", aeBody.estado);
+                            return;
                         }
                     } catch (e) {
                         locationCheckState = 3;
                         locationCheckMessage = i18n("Invalid response from AEMET.");
+                        return;
                     }
+                    // First hop only confirms the key/connectivity - don't
+                    // report success until the request that actually
+                    // matters (the second hop) is confirmed too.
+                    root._aemetVerifyDatos(aeBody.datos, myGen, function () { return _locGen; }, function (ok, msg) {
+                        if (ok) {
+                            locationCheckState = 2;
+                            locationCheckMessage = i18n("Location is available on %1.", pLabel);
+                        } else {
+                            locationCheckState = 3;
+                            locationCheckMessage = msg;
+                        }
+                    });
                 } else {
                     locationCheckState = 3;
                     locationCheckMessage = i18n("Location is not available on %1 (HTTP %2). Try a different provider or location.", pLabel, req.status);
@@ -425,7 +477,7 @@ KCM.SimpleKCM {
                 } else if (root.isAemet) {
                     try {
                         var aeBody = JSON.parse(req.responseText);
-                        if (aeBody.estado !== 200) {
+                        if (aeBody.estado !== 200 || typeof aeBody.datos !== "string") {
                             apiTestState = 3;
                             apiTestMessage = i18n("AEMET error (code %1). Check your API key.", aeBody.estado);
                             return;
@@ -435,6 +487,21 @@ KCM.SimpleKCM {
                         apiTestMessage = i18n("Invalid response from AEMET.");
                         return;
                     }
+                    // First hop only confirms the key/connectivity - the
+                    // request that actually matters (the one aemet.js's real
+                    // fetchCurrent uses) is this second one, so don't
+                    // declare success until it's confirmed too.
+                    root._aemetVerifyDatos(aeBody.datos, myGen, function () { return _testGen; }, function (ok, msg) {
+                        if (!ok) {
+                            apiTestState = 3;
+                            apiTestMessage = msg;
+                            return;
+                        }
+                        apiTestState = 2;
+                        apiTestMessage = i18n("Connection successful! %1 key is valid.", root.providerDisplayName(root.cfg_weatherProvider));
+                        root.verifyProviderLocation();
+                    });
+                    return;
                 }
                 apiTestState = 2;
                 var pLabel = root.providerDisplayName(root.cfg_weatherProvider);

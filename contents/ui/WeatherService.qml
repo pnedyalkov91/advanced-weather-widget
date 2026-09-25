@@ -177,21 +177,16 @@ QtObject {
     property string _bbcLocId: ""
     property string _bbcLocKey: ""
     // AEMET is keyed by a 5-digit INE municipio code, resolved by nearest-
-    // match against the ~8,100-entry master list (fetched at most once per
-    // session and cached here, since it doesn't depend on location). The resolved
-    // id itself is additionally cached keyed by rounded coordinates, same
-    // pattern as _bbcLocId/_bbcLocKey above. _aemetMuniListPending queues
-    // callbacks behind a single in-flight master-list fetch so several
-    // concurrent resolutions (e.g. ForecastView's "expand all days") don't
-    // each fire their own ~1 MB request.
-    // Seeded from persisted config rather than starting empty every session:
-    // the resolved code doesn't change for a fixed location, so writing it
-    // through (see _persistAemetMunicipio below) takes the master-list
-    // download from once-per-Plasma-start to once-per-location-ever. With it
-    // primed, a steady-state AEMET refresh is just the daily + hourly
-    // products and no lookup at all.
+    // match against the ~8,100-entry master list - now a bundled local
+    // dataset (providers/data/aemetMunicipios.js, see aemet.js's
+    // "MUNICIPALITY RESOLUTION" comment) rather than a live fetch, so this
+    // is populated synchronously on first use and never touches the
+    // network. The resolved id itself is additionally cached keyed by
+    // rounded coordinates, same pattern as _bbcLocId/_bbcLocKey above, and
+    // seeded from persisted config (see _persistAemetMunicipio below) so a
+    // Plasma restart doesn't even repeat the nearest-match scan for a
+    // location that hasn't changed.
     property var _aemetMunicipios: null
-    property var _aemetMuniListPending: null
     property string _aemetMuniId: Plasmoid.configuration.aemetMuniId || ""
     property string _aemetMuniKey: Plasmoid.configuration.aemetMuniKey || ""
 
@@ -219,6 +214,21 @@ QtObject {
     property var _aemetDailyPending: null
     property var _aemetHourlyCache: null
     property var _aemetHourlyPending: null
+    // Timestamps (ms) of AEMET requests actually sent in roughly the last
+    // 60 s - aemet.js's _aemetBudgetOk()/_aemetBudgetRecord() self-throttle
+    // against this so the widget can't push its own key over AEMET's
+    // ~50 req/min limit; see aemet.js's "429 (rate limit) DEFENSE" comment.
+    property var _aemetRequestLog: []
+    // Consecutive AEMET failures for the *sole-provider* auto-retry below -
+    // drives its exponential backoff. Reset to 0 by a successful fetch (see
+    // aemet.js's fetchCurrent combine()) or by refreshNow(force=true) - i.e.
+    // a manual refresh starts backoff fresh rather than wherever it had
+    // escalated to. Switching weatherProvider away from "aemet" does NOT
+    // reset it - harmless, since the timer's onTriggered re-checks
+    // weatherProvider and no-ops if it's no longer "aemet" - but backoff
+    // will resume from its old point if the person switches back to AEMET
+    // while it's still failing.
+    property int _aemetRetryAttempt: 0
     // Set by aemet.js when any AEMET request comes back HTTP 429 (its
     // documented ~50 req/min-per-key limit) - checked once, in
     // _tryProvider's chain-exhaustion branch below, to show a specific
@@ -267,11 +277,14 @@ QtObject {
     // the one provider here with a real per-key rate limit, so - unlike
     // every other provider's failure, which just waits for the next
     // scheduled refresh or a manual tap - a rate-limited or transient
-    // AEMET failure gets one automatic retry: 65 s for a rate limit (safely
-    // past its ~1-minute window) or 15 s for anything else (e.g. network
-    // not fully up yet right after a Plasma restart). Interval is set by
-    // _tryProvider just before restart(); see there for the exact wording
-    // shown while this is pending.
+    // AEMET failure gets an automatic retry. The interval backs off
+    // exponentially with service._aemetRetryAttempt (set by _tryProvider
+    // just before restart(); see there for the exact schedule and for why a
+    // FIXED retry interval was itself a real contributor to hitting 429 in
+    // the first place) rather than a flat 15 s every time, so a sustained
+    // failure (bad key, genuine outage, or - before this refactor - a
+    // wrong municipio code 404ing every attempt) tapers off instead of
+    // hammering AEMET indefinitely at a constant rate.
     property Timer _aemetAutoRetryTimer: Timer {
         repeat: false
         onTriggered: {
@@ -287,6 +300,15 @@ QtObject {
     function refreshNow(force) {
         _refreshGen++;
         _safetyTimer.stop();
+        if (force) {
+            // A manual refresh is the person actively asking "try again now"
+            // (e.g. right after fixing an API key) - don't leave them
+            // waiting out however far the automatic backoff had climbed,
+            // and don't let a stale queued auto-retry fire a second,
+            // redundant fetch shortly after this one.
+            _aemetAutoRetryTimer.stop();
+            _aemetRetryAttempt = 0;
+        }
 
         var r = weatherRoot;
         if (!r.hasSelectedTown) {
@@ -1050,12 +1072,27 @@ QtObject {
             _safetyTimer.stop();
             if (chain.length === 1 && chain[0] === "aemet") {
                 service._clearUpdateMetadata();
+                // Exponential backoff, capped at 5 minutes - long enough to
+                // ride out almost any transient issue or several full
+                // AEMET rate-limit windows, short enough that the widget
+                // still recovers promptly once the underlying problem
+                // clears. Replaces a flat 15 s (65 s if rate-limited)
+                // retry, which - combined with _fetchAemetJsonR's one
+                // retry per hop on both the daily and hourly products -
+                // could alone reach up to 8 requests every 15 s (~32/min)
+                // during a sustained failure, a meaningful fraction of
+                // AEMET's own ~50 req/min quota from this widget's retries
+                // alone. See aemet.js's "429 (rate limit) DEFENSE" comment
+                // for the client-side request budget that backs this up.
+                _aemetRetryAttempt = Math.min(_aemetRetryAttempt + 1, 10); // cap growth, not just the resulting delay
+                var maxRetryMs = 5 * 60 * 1000;
+                var backoffFactor = Math.pow(2, _aemetRetryAttempt - 1);
                 if (_aemetRateLimited) {
                     weatherRoot.updateText = i18n("AEMET: request limit reached - retrying automatically in a minute.");
-                    _aemetAutoRetryTimer.interval = 65000;
+                    _aemetAutoRetryTimer.interval = Math.min(65000 * backoffFactor, maxRetryMs);
                 } else {
                     weatherRoot.updateText = i18n("AEMET: request failed - retrying automatically.");
-                    _aemetAutoRetryTimer.interval = 15000;
+                    _aemetAutoRetryTimer.interval = Math.min(15000 * backoffFactor, maxRetryMs);
                 }
                 _aemetRateLimited = false;
                 _failed = [];
