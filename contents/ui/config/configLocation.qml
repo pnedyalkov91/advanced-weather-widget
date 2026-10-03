@@ -1635,9 +1635,9 @@ KCM.SimpleKCM {
                         columnSpacing: 8
                         rowSpacing: 6
                         visible: !root.cfg_autoDetectLocation
-                        // Single line only while the hint and all three buttons fit
-                        // next to each other; otherwise stack them (the buttons wrap).
-                        columns: width >= manualLocHint.implicitWidth + manualLocButtons.implicitWidth + columnSpacing ? 2 : 1
+                        // Hint on its own line with the three buttons right below it
+                        // (the buttons wrap onto extra lines in a narrow window).
+                        columns: 1
                         Label {
                             id: manualLocHint
                             Layout.fillWidth: true

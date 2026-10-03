@@ -25,11 +25,41 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+GridLayout {
     id: tooltipTab
+
+    Layout.fillWidth: true
+    // children with a maximum width would otherwise cap the grid itself and make
+    // it flip between one and two columns
+    Layout.maximumWidth: Number.POSITIVE_INFINITY
+    Layout.alignment: Qt.AlignTop
+    // Label and control on one line when there is room (like the wide mode of
+    // Kirigami.FormLayout); the label goes above its control in a narrow window.
+    columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+    columnSpacing: Kirigami.Units.largeSpacing
+    rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configAppearance) for cfg_* properties */
     required property var configRoot
+
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
 
     /** Emitted when the user clicks Configure… to push the tooltip sub-page */
     signal pushSubPage()
@@ -44,8 +74,14 @@ Kirigami.FormLayout {
     }
 
     // ── Enable / Disable tooltip ──────────────────────────
+    Label {
+        text: i18n("Tooltip:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Tooltip:")
         spacing: Kirigami.Units.smallSpacing
         Switch {
             id: tooltipEnabledSwitch
@@ -58,16 +94,23 @@ Kirigami.FormLayout {
         }
     }
 
-    Kirigami.Separator {
+    SectionHeader {
+        title: i18n("Tooltip items settings")
+        Layout.columnSpan: tooltipTab.columns
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Tooltip items settings")
-        Kirigami.FormData.isSection: true
     }
 
     // ── Location name style ──────────────────────────
+    Label {
+        text: i18n("Location name:")
+        visible: tooltipTab.configRoot.cfg_tooltipEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Location name:")
         ComboBox {
             id: ttLocationWrapCombo
             Layout.preferredWidth: 200
@@ -96,9 +139,16 @@ Kirigami.FormLayout {
     // ── Tooltip size ─────────────────────────────────
 
     // Width
+    Label {
+        text: i18n("Tooltip width:")
+        visible: tooltipTab.configRoot.cfg_tooltipEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Tooltip width:")
         spacing: Kirigami.Units.smallSpacing
         ComboBox {
             id: ttWidthModeCombo
@@ -139,9 +189,16 @@ Kirigami.FormLayout {
     }
 
     // Height
+    Label {
+        text: i18n("Tooltip height:")
+        visible: tooltipTab.configRoot.cfg_tooltipEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Tooltip height:")
         spacing: Kirigami.Units.smallSpacing
         ComboBox {
             id: ttHeightModeCombo
@@ -180,9 +237,16 @@ Kirigami.FormLayout {
             opacity: 0.7
         }
     }
+    Label {
+        text: i18n("Prefix style:")
+        visible: tooltipTab.configRoot.cfg_tooltipEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Prefix style:")
         spacing: Kirigami.Units.smallSpacing
         Switch {
             id: ttUseIconsSwitch
@@ -196,8 +260,15 @@ Kirigami.FormLayout {
     }
 
     // ── Tooltip icon theme selector (hidden in Text mode or disabled tooltip) ──
+    Label {
+        text: i18n("Icon theme:")
+        visible: tooltipTab.configRoot.cfg_tooltipEnabled && tooltipTab.configRoot.cfg_tooltipUseIcons
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Icon theme:")
         spacing: Kirigami.Units.largeSpacing
         visible: tooltipTab.configRoot.cfg_tooltipEnabled && tooltipTab.configRoot.cfg_tooltipUseIcons
         ComboBox {
@@ -287,17 +358,27 @@ Kirigami.FormLayout {
         }
     }
     // Custom theme hint (hidden in Text mode or disabled tooltip)
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: tooltipTab.columns === 2 && (tooltipTab.configRoot.cfg_tooltipEnabled && tooltipTab.configRoot.cfg_tooltipUseIcons && ttIconThemeCombo.model[ttIconThemeCombo.currentIndex].value === "custom")
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     RowLayout {
-        Kirigami.FormData.label: ""
+        Layout.fillWidth: true
         visible: tooltipTab.configRoot.cfg_tooltipEnabled && tooltipTab.configRoot.cfg_tooltipUseIcons && ttIconThemeCombo.model[ttIconThemeCombo.currentIndex].value === "custom"
         spacing: Kirigami.Units.largeSpacing
         ColumnLayout {
+            Layout.fillWidth: true
+            Layout.minimumWidth: 0
             spacing: Kirigami.Units.smallSpacing
             Label {
                 text: i18n("Uses KDE system icons by default. Click the button to customise each item's icon.")
                 opacity: 0.65
                 font: Kirigami.Theme.smallFont
                 wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 Layout.maximumWidth: 220
             }
         }
@@ -311,14 +392,22 @@ Kirigami.FormLayout {
         }
     }
 
-    Kirigami.Separator {
+    SectionHeader {
+        title: i18n("Tooltip items")
+        Layout.columnSpan: tooltipTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Tooltip items")
-        Kirigami.FormData.isSection: true
+    }
+    Label {
+        text: i18n("Tooltip items:")
+        visible: tooltipTab.configRoot.cfg_tooltipEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: tooltipTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
     }
     Item {
         visible: tooltipTab.configRoot.cfg_tooltipEnabled
-        Kirigami.FormData.label: i18n("Tooltip items:")
         implicitWidth: ttPreviewRow.implicitWidth
         implicitHeight: ttPreviewRow.implicitHeight
         RowLayout {

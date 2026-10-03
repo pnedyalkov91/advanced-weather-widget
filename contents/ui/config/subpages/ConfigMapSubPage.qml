@@ -22,8 +22,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtLocation
-import QtPositioning
 import org.kde.kirigami as Kirigami
 
 ColumnLayout {
@@ -49,7 +47,7 @@ ColumnLayout {
     property bool _mapSearchBusy: false
     property int _mapSearchReqId: 0
     property int _searchMode: 0   // 0 = Location name, 1 = Coordinates
-    property string _preferredLanguage: Qt.locale().name.split("_")[0]
+    property string _mapError: ""
 
     function _applyToConfig() {
         if (isNaN(selectedLat) || isNaN(selectedLon))
@@ -90,11 +88,53 @@ ColumnLayout {
         } else {
             configRoot._pendingEntry = null;
             configRoot.duplicateWarning = i18n("Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again.", selectedName);
-            configRoot.duplicateDialog.open();
+            if (configRoot.duplicateDialog)
+                configRoot.duplicateDialog.open();
         }
     }
 
-    function _lookupLocation(lat, lon) {
+    // Open the map at a spot: move the pin and zoom in to at least minZoom (0 = keep the view).
+    // Does nothing while the map page is not there (QtWebEngine missing, still loading, offline).
+    function _mapShow(lat, lon, minZoom) {
+        if (mapLoader.item)
+            mapLoader.item.setMarker(lat, lon, minZoom);
+    }
+
+    // Name of the place under a map click, "name, county, state, country" like the location
+    // search and the auto-detect (a part equal to an earlier one is skipped). A "place" result
+    // (city, town, village...) is the settlement itself. For a street, a shop, a metro entrance
+    // and so on Photon's "name" belongs to that object, not to the location, so it is left out
+    // and the settlement comes from "city" when Photon provides it.
+    function _photonReverseName(pr) {
+        var fix = configRoot._fixMixedScript;
+        var isPlace = pr.osm_key === "place" || pr.osm_key === "boundary";
+        var parts = [];
+        [pr.city || (isPlace ? pr.name : ""), pr.county, pr.state, pr.country].forEach(function (part) {
+            part = fix(part);
+            if (part.length > 0 && parts.every(function (x) {
+                return x.toLowerCase() !== part.toLowerCase();
+            }))
+                parts.push(part);
+        });
+        return parts.length > 0 ? parts.join(", ") : fix(pr.locality || pr.district || pr.name || "");
+    }
+
+    // Title of a search result: "name, city, county, state, country" (city helps tell streets and
+    // landmarks apart; a part equal to an earlier one is skipped).
+    function _photonTitle(pr) {
+        var fix = configRoot._fixMixedScript;
+        var parts = [];
+        [pr.name, pr.city, pr.county, pr.state, pr.country].forEach(function (part) {
+            part = fix(part);
+            if (part.length > 0 && parts.every(function (x) {
+                return x.toLowerCase() !== part.toLowerCase();
+            }))
+                parts.push(part);
+        });
+        return parts.join(", ");
+    }
+
+    function _lookupLocation(lat, lon, preset) {
         selectedLat = lat;
         selectedLon = lon;
         selectedName = "";
@@ -107,40 +147,47 @@ ColumnLayout {
         var reqId = ++_reqId;
 
         // Move marker
-        markerItem.coordinate = QtPositioning.coordinate(lat, lon);
-        markerItem.visible = true;
+        _mapShow(lat, lon, 0);
 
-        // 1) Reverse geocode via Nominatim - use preferred language so that
-        //    region and country names come back in the user's locale
-        var revLang = _preferredLanguage.length > 0 ? _preferredLanguage + ",en;q=0.8" : "en";
-        var revReq = new XMLHttpRequest();
-        revReq.open("GET", "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&accept-language=" + revLang + "&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon));
-        revReq.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
-        revReq.onreadystatechange = function () {
-            if (revReq.readyState !== XMLHttpRequest.DONE)
-                return;
-            if (reqId !== _reqId)
-                return;
-            if (revReq.status === 200) {
-                try {
-                    var data = JSON.parse(revReq.responseText);
-                    if (data && data.address) {
-                        var a = data.address;
-                        // Use display_name which is fully localized by accept-language
-                        selectedName = data.display_name || "";
-                        var cc = (a.country_code || "").toUpperCase();
-                        if (cc.length > 0)
-                            selectedCountryCode = cc;
-                    } else if (data && data.display_name) {
-                        selectedName = data.display_name;
+        // 1) Name and country code. A picked search result already carries both (preset),
+        //    otherwise reverse geocode the point via Photon (OpenStreetMap data).
+        //    lang=default: local-language names, the same as the location search.
+        if (preset) {
+            selectedName = preset.name || "";
+            if (preset.countryCode && preset.countryCode.length > 0)
+                selectedCountryCode = preset.countryCode;
+        } else {
+            var revReq = new XMLHttpRequest();
+            var revUrl = "https://photon.komoot.io/reverse?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&radius=20&limit=1&lang=default";
+            console.warn("[LocationSearch] Map Photon reverse GET " + revUrl);
+            revReq.open("GET", revUrl);
+            revReq.onreadystatechange = function () {
+                if (revReq.readyState !== XMLHttpRequest.DONE)
+                    return;
+                if (reqId !== _reqId)
+                    return;
+                console.warn("[LocationSearch] Map Photon reverse HTTP " + revReq.status + " " + revReq.statusText);
+                if (revReq.status === 200) {
+                    try {
+                        var feats = JSON.parse(revReq.responseText).features || [];
+                        if (feats.length > 0) {
+                            var pr = feats[0].properties || {};
+                            selectedName = mapSubPageRoot._photonReverseName(pr);
+                            var cc = (pr.countrycode || "").toUpperCase();
+                            if (cc.length > 0)
+                                selectedCountryCode = cc;
+                            console.warn("[LocationSearch] Map Photon reverse name: " + selectedName);
+                        }
+                    } catch (e) {
+                        console.warn("[MapSubPage] Photon reverse parse error:", e);
                     }
-                } catch (e) {
-                    console.warn("[MapSubPage] Nominatim parse error:", e);
+                } else {
+                    console.warn("[LocationSearch] Map Photon reverse body: " + String(revReq.responseText).substring(0, 300));
                 }
-            }
-            _checkDone();
-        };
-        revReq.send();
+                _checkDone();
+            };
+            revReq.send();
+        }
 
         // 2) Elevation + timezone via Open-Meteo
         var metaReq = new XMLHttpRequest();
@@ -171,9 +218,9 @@ ColumnLayout {
         };
         metaReq.send();
 
-        var _done = 0;
+        var _pending = preset ? 1 : 2;   // Open-Meteo, plus the reverse lookup unless a name was given
         function _checkDone() {
-            if (++_done >= 2) {
+            if (--_pending <= 0) {
                 // Fallback: if still no name, show coordinates
                 if (selectedName.length === 0)
                     selectedName = lat.toFixed(4) + "°, " + lon.toFixed(4) + "°";
@@ -191,35 +238,50 @@ ColumnLayout {
             return;
         }
 
-        // Text search via Nominatim
+        // Text search via Photon (photon.komoot.io, OpenStreetMap data).
+        // lang=default: every place is named in its own local language.
         _mapSearchBusy = true;
         _mapSearchResults = [];
         var reqId = ++_mapSearchReqId;
+        var url = "https://photon.komoot.io/api?q=" + encodeURIComponent(q) + "&limit=8&lang=default";
+        console.warn("[LocationSearch] Map Photon GET " + url);
         var req = new XMLHttpRequest();
-        var searchLang = _preferredLanguage.length > 0 ? _preferredLanguage + ",en;q=0.8" : "en";
-        req.open("GET", "https://nominatim.openstreetmap.org/search?format=json&limit=8&addressdetails=1&accept-language=" + searchLang + "&q=" + encodeURIComponent(q));
-        req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
+        req.open("GET", url);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
             if (reqId !== _mapSearchReqId)
                 return;
             _mapSearchBusy = false;
-            if (req.status === 200) {
-                try {
-                    var results = JSON.parse(req.responseText);
-                    var items = [];
-                    for (var i = 0; i < results.length && i < 8; i++) {
-                        items.push({
-                            name: results[i].display_name || "",
-                            lat: parseFloat(results[i].lat),
-                            lon: parseFloat(results[i].lon)
-                        });
-                    }
-                    _mapSearchResults = items;
-                } catch (e) {
-                    _mapSearchResults = [];
-                }
+            console.warn("[LocationSearch] Map Photon HTTP " + req.status + " " + req.statusText);
+            if (req.status !== 200) {
+                console.warn("[LocationSearch] Map Photon body: " + String(req.responseText).substring(0, 300));
+                return;
+            }
+            try {
+                var feats = JSON.parse(req.responseText).features || [];
+                var items = [], seen = {};
+                feats.forEach(function (f) {
+                    var pr = f.properties || {};
+                    var c = f.geometry && f.geometry.coordinates;   // GeoJSON order: [lon, lat]
+                    if (!c || c.length < 2 || !pr.name)
+                        return;
+                    var key = Number(c[1]).toFixed(3) + "|" + Number(c[0]).toFixed(3);
+                    if (seen[key])
+                        return;
+                    seen[key] = true;
+                    items.push({
+                        name: mapSubPageRoot._photonTitle(pr),
+                        lat: parseFloat(c[1]),
+                        lon: parseFloat(c[0]),
+                        countryCode: (pr.countrycode || "").toUpperCase()
+                    });
+                });
+                console.warn("[LocationSearch] Map Photon returned " + feats.length + " item(s), listed " + items.length);
+                _mapSearchResults = items;
+            } catch (e) {
+                console.warn("[MapSubPage] Photon search parse error:", e);
+                _mapSearchResults = [];
             }
         };
         req.send();
@@ -231,8 +293,7 @@ ColumnLayout {
         var lon = parseFloat(String(lonField.text).replace(",", "."));
         if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180)
             return;
-        osmMap.center = QtPositioning.coordinate(lat, lon);
-        osmMap.zoomLevel = Math.max(osmMap.zoomLevel, 10);
+        _mapShow(lat, lon, 10);
         _lookupLocation(lat, lon);
     }
 
@@ -353,9 +414,11 @@ ColumnLayout {
             text: modelData.name
             icon.name: "mark-location"
             onClicked: {
-                osmMap.center = QtPositioning.coordinate(modelData.lat, modelData.lon);
-                osmMap.zoomLevel = Math.max(osmMap.zoomLevel, 12);
-                mapSubPageRoot._lookupLocation(modelData.lat, modelData.lon);
+                mapSubPageRoot._mapShow(modelData.lat, modelData.lon, 12);
+                mapSubPageRoot._lookupLocation(modelData.lat, modelData.lon, {
+                    "name": modelData.name,
+                    "countryCode": modelData.countryCode
+                });
                 _mapSearchResults = [];
                 mapSearchField.text = "";
             }
@@ -363,165 +426,42 @@ ColumnLayout {
     }
 
     // ── Map ─────────────────────────────────────────────────────────────
+    // Leaflet inside a WebEngineView (LocationMapPickerView.qml + location-map-picker.html), the same approach as the
+    // radar tab. A Loader keeps a missing QtWebEngine from taking the whole page down.
     Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        Map {
-            id: osmMap
+        Loader {
+            id: mapLoader
             anchors.fill: parent
-            plugin: Plugin {
-                name: "osm"
-                PluginParameter {
-                    name: "osm.mapping.providersrepository.disabled"
-                    value: "true"
-                }
-                PluginParameter {
-                    name: "osm.mapping.custom.host"
-                    value: "https://tile.openstreetmap.org/"
-                }
-                PluginParameter {
-                    name: "osm.mapping.custom.mapcopyright"
-                    value: "© OpenStreetMap contributors"
-                }
-            }
-            center: QtPositioning.coordinate(isNaN(configRoot.cfg_latitude) || configRoot.cfg_latitude === 0 ? 48.0 : configRoot.cfg_latitude, isNaN(configRoot.cfg_longitude) || configRoot.cfg_longitude === 0 ? 14.0 : configRoot.cfg_longitude)
-            zoomLevel: 5
-
-            // Explicitly clamp the map's zoom range to match the active map type.
-            // Using 17 as a conservative maximum ensures consistent coverage globally 
-            // and avoids the "Zoom level not supported" overlay for regions with sparse tiles.
-            maximumZoomLevel: (activeMapType && activeMapType.maximumZoomLevel > 0) ? Math.min(17, activeMapType.maximumZoomLevel) : 17
-            minimumZoomLevel: 3
-
-            Behavior on zoomLevel {
-                enabled: !pinch.active
-                NumberAnimation {
-                    duration: 200
-                    easing.type: Easing.OutCubic
-                }
-            }
-            activeMapType: {
-                for (var i = 0; i < supportedMapTypes.length; i++) {
-                    // Prefer our custom OpenStreetMap provider
-                    if (supportedMapTypes[i].name.indexOf("Custom") !== -1)
-                        return supportedMapTypes[i];
-                }
-                return supportedMapTypes.length > 0 ? supportedMapTypes[0] : null;
-            }
-
-            // ── Zoom controls ───────────────────────────────────────
-            PinchHandler {
-                id: pinch
-                target: null
-                onActiveChanged: if (active)
-                    osmMap.startCentroid = osmMap.toCoordinate(pinch.centroid.position, false)
-                onScaleChanged: delta => {
-                    osmMap.zoomLevel = Math.max(osmMap.minimumZoomLevel, Math.min(osmMap.maximumZoomLevel, osmMap.zoomLevel + Math.log2(delta)));
-                    osmMap.alignCoordinateToPoint(osmMap.startCentroid, pinch.centroid.position);
-                }
-                onRotationChanged: delta => {
-                    osmMap.bearing -= delta;
-                    osmMap.alignCoordinateToPoint(osmMap.startCentroid, pinch.centroid.position);
-                }
-                grabPermissions: PointerHandler.TakeOverForbidden
-            }
-            WheelHandler {
-                id: wheel
-                acceptedDevices: Qt.platform.pluginName === "cocoa" || Qt.platform.pluginName === "wayland" ? PointerDevice.Mouse | PointerDevice.TouchPad : PointerDevice.Mouse
-                rotationScale: 1 / 30
-                target: null
-                property real _prevRotation: 0
-                onRotationChanged: {
-                    var delta = rotation - _prevRotation;
-                    _prevRotation = rotation;
-                    var coord = osmMap.toCoordinate(point.position, false);
-                    osmMap.zoomLevel = Math.max(osmMap.minimumZoomLevel, Math.min(osmMap.maximumZoomLevel, osmMap.zoomLevel + delta));
-                    osmMap.alignCoordinateToPoint(coord, point.position);
-                }
-            }
-            DragHandler {
-                id: drag
-                target: null
-                onTranslationChanged: delta => osmMap.pan(-delta.x, -delta.y)
-            }
-            // Start centroid helper for pinch-zoom
-            property geoCoordinate startCentroid
-
-            // ── Click to select location ────────────────────────────
-            TapHandler {
-                onTapped: function (eventPoint) {
-                    var coord = osmMap.toCoordinate(eventPoint.position, false);
-                    mapSubPageRoot._lookupLocation(coord.latitude, coord.longitude);
-                }
-            }
-
-            // ── Marker ──────────────────────────────────────────────
-            MapQuickItem {
-                id: markerItem
-                visible: false
-                anchorPoint.x: markerIcon.width / 2
-                anchorPoint.y: markerIcon.height
-                sourceItem: Kirigami.Icon {
-                    id: markerIcon
-                    source: "mark-location"
-                    width: 32
-                    height: 32
-                    color: Kirigami.Theme.negativeTextColor
-                }
+            source: Qt.resolvedUrl("../../components/LocationMapPickerView.qml")
+            onLoaded: {
+                var lat = configRoot.cfg_latitude;
+                var lon = configRoot.cfg_longitude;
+                item.start(isNaN(lat) || lat === 0 ? 48.0 : lat, isNaN(lon) || lon === 0 ? 14.0 : lon, 5);
             }
         }
 
-        // ── Zoom buttons (top-right) ────────────────────────────────
-        Column {
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 8
-            spacing: 4
-            z: 2
-
-            RoundButton {
-                width: 36
-                height: 36
-                text: "+"
-                font.pixelSize: 18
-                onClicked: osmMap.zoomLevel = Math.min(osmMap.zoomLevel + 1, osmMap.maximumZoomLevel)
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Zoom in")
+        Connections {
+            target: mapLoader.item
+            ignoreUnknownSignals: true
+            function onMapClicked(lat, lon) {
+                mapSubPageRoot._lookupLocation(lat, lon);
             }
-            RoundButton {
-                width: 36
-                height: 36
-                text: "−"
-                font.pixelSize: 18
-                onClicked: osmMap.zoomLevel = Math.max(osmMap.zoomLevel - 1, osmMap.minimumZoomLevel)
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Zoom out")
+            function onLoadFailed() {
+                mapSubPageRoot._mapError = i18n("The map could not be loaded. Check your internet connection.");
             }
         }
 
-        // ── Attribution (bottom-right) ──────────────────────────────
-        Rectangle {
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 4
-            color: Qt.rgba(1, 1, 1, 0.75)
-            radius: 3
-            width: attribLabel.implicitWidth + 8
-            height: attribLabel.implicitHeight + 4
-            z: 2
-
-            Label {
-                id: attribLabel
-                anchors.centerIn: parent
-                text: "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
-                textFormat: Text.RichText
-                font.pixelSize: 10
-                color: "#333"
-                onLinkActivated: function (link) {
-                    Qt.openUrlExternally(link);
-                }
-            }
+        Label {
+            anchors.centerIn: parent
+            width: parent.width - 2 * Kirigami.Units.gridUnit
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            opacity: 0.75
+            text: mapLoader.status === Loader.Error ? i18n("The map needs QtWebEngine, which is not installed. You can still search for a location above.") : mapSubPageRoot._mapError
+            visible: text.length > 0
         }
     }
 

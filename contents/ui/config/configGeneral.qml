@@ -628,22 +628,27 @@ KCM.AbstractKCM {
     Kirigami.ScrollablePage {
         anchors.fill: parent
 
-        StackLayout {
-            currentIndex: tabBar.currentIndex
+        // Tab pages live in a plain ColumnLayout and only the selected one is visible.
+        // A StackLayout is as tall as its TALLEST page, which left empty space and a
+        // permanent scrollbar under the shorter tabs; layouts ignore hidden items.
+        ColumnLayout {
             Layout.fillWidth: true
 
             // TAB 0 - PROVIDER
             ConfigProviderTab {
+                visible: tabBar.currentIndex === 0
                 configRoot: root
             }
 
             // TAB 1 - RADAR
             ConfigRadarTab {
+                visible: tabBar.currentIndex === 1
                 configRoot: root
             }
 
             // TAB 2 - WEATHER ALERTS
             ConfigAlertsTab {
+                visible: tabBar.currentIndex === 2
                 configRoot: root
             }
         }

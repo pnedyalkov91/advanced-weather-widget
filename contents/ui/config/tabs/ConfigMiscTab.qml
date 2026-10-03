@@ -25,11 +25,41 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+GridLayout {
     id: miscTab
+
+    Layout.fillWidth: true
+    // children with a maximum width would otherwise cap the grid itself and make
+    // it flip between one and two columns
+    Layout.maximumWidth: Number.POSITIVE_INFINITY
+    Layout.alignment: Qt.AlignTop
+    // Label and control on one line when there is room (like the wide mode of
+    // Kirigami.FormLayout); the label goes above its control in a narrow window.
+    columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+    columnSpacing: Kirigami.Units.largeSpacing
+    rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configAppearance) for cfg_* properties */
     required property var configRoot
+
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
 
     function setCombo(combo, value) {
         for (var i = 0; i < combo.model.length; ++i)
@@ -39,12 +69,18 @@ Kirigami.FormLayout {
             }
     }
 
-    Kirigami.Separator {
-        Kirigami.FormData.label: i18n("Display")
-        Kirigami.FormData.isSection: true
+    SectionHeader {
+        title: i18n("Display")
+        Layout.columnSpan: miscTab.columns
+    }
+    Label {
+        text: i18n("Round values:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     RowLayout {
-        Kirigami.FormData.label: i18n("Round values:")
         spacing: 12
         Switch {
             id: roundValuesSwitch
@@ -56,8 +92,14 @@ Kirigami.FormLayout {
             opacity: 0.8
         }
     }
+    Label {
+        text: i18n("Show temperature unit:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Show temperature unit:")
         spacing: 12
         Switch {
             id: showTempUnitSwitch
@@ -70,12 +112,19 @@ Kirigami.FormLayout {
         }
     }
 
-    Kirigami.Separator {
-        Kirigami.FormData.label: i18n("Dual temperature")
-        Kirigami.FormData.isSection: true
+    SectionHeader {
+        title: i18n("Dual temperature")
+        Layout.columnSpan: miscTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+    }
+    Label {
+        text: i18n("Show both units:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     RowLayout {
-        Kirigami.FormData.label: i18n("Show both units:")
         spacing: 12
         Switch {
             id: dualTempSwitch
@@ -87,8 +136,14 @@ Kirigami.FormLayout {
             opacity: 0.8
         }
     }
+    Label {
+        text: i18n("Swap order:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Swap order:")
         enabled: miscTab.configRoot.cfg_dualTempEnabled
         opacity: enabled ? 1.0 : 0.5
         spacing: 12
@@ -102,8 +157,15 @@ Kirigami.FormLayout {
             opacity: 0.8
         }
     }
+    Label {
+        text: i18n("Separator:")
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Separator:")
         visible: miscTab.configRoot.cfg_dualTempEnabled
         spacing: Kirigami.Units.smallSpacing
         TextField {
@@ -119,8 +181,17 @@ Kirigami.FormLayout {
             font: Kirigami.Theme.smallFont
         }
     }
-    RowLayout {
-        Kirigami.FormData.label: i18n("Show in:")
+    Label {
+        text: i18n("Show in:")
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    Flow {
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
         visible: miscTab.configRoot.cfg_dualTempEnabled
         spacing: Kirigami.Units.largeSpacing
         Switch {
@@ -140,13 +211,20 @@ Kirigami.FormLayout {
         }
     }
 
-    Kirigami.Separator {
-        Kirigami.FormData.label: i18n("Units")
-        Kirigami.FormData.isSection: true
+    SectionHeader {
+        title: i18n("Units")
+        Layout.columnSpan: miscTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+    }
+    Label {
+        text: i18n("Unit preset:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     ComboBox {
         id: unitsModeCombo
-        Kirigami.FormData.label: i18n("Unit preset:")
         Layout.preferredWidth: 270
         model: [
             {
@@ -212,13 +290,20 @@ Kirigami.FormLayout {
             }
         }
     }
-    Kirigami.Separator {
-        Kirigami.FormData.label: i18n("Individual units")
-        Kirigami.FormData.isSection: true
+    SectionHeader {
+        title: i18n("Individual units")
+        Layout.columnSpan: miscTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+    }
+    Label {
+        text: i18n("Temperature:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     ComboBox {
         id: tempUnitCombo
-        Kirigami.FormData.label: i18n("Temperature:")
         enabled: miscTab.configRoot.cfg_unitsMode === "custom"
         opacity: enabled ? 1.0 : 0.5
         Layout.preferredWidth: 200
@@ -243,9 +328,15 @@ Kirigami.FormLayout {
         onActivated: if (miscTab.configRoot.cfg_unitsMode === "custom")
             miscTab.configRoot.cfg_temperatureUnit = model[currentIndex].value
     }
+    Label {
+        text: i18n("Wind speed:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     ComboBox {
         id: windUnitCombo
-        Kirigami.FormData.label: i18n("Wind speed:")
         enabled: miscTab.configRoot.cfg_unitsMode === "custom"
         opacity: enabled ? 1.0 : 0.5
         Layout.preferredWidth: 200
@@ -278,9 +369,15 @@ Kirigami.FormLayout {
         onActivated: if (miscTab.configRoot.cfg_unitsMode === "custom")
             miscTab.configRoot.cfg_windSpeedUnit = model[currentIndex].value
     }
+    Label {
+        text: i18n("Pressure:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     ComboBox {
         id: pressUnitCombo
-        Kirigami.FormData.label: i18n("Pressure:")
         enabled: miscTab.configRoot.cfg_unitsMode === "custom"
         opacity: enabled ? 1.0 : 0.5
         Layout.preferredWidth: 200
@@ -309,51 +406,88 @@ Kirigami.FormLayout {
         onActivated: if (miscTab.configRoot.cfg_unitsMode === "custom")
             miscTab.configRoot.cfg_pressureUnit = model[currentIndex].value
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Label {
-        Kirigami.FormData.label: ""
         text: i18n("Individual dropdowns are editable only in Custom mode.\nOther presets set units automatically.")
         wrapMode: Text.WordWrap
         opacity: 0.65
         font: Kirigami.Theme.smallFont
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
         Layout.maximumWidth: 340
     }
 
-    Kirigami.Separator {
-        Kirigami.FormData.label: i18n("Air Quality")
-        Kirigami.FormData.isSection: true
+    SectionHeader {
+        title: i18n("Air Quality")
+        Layout.columnSpan: miscTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+    }
+    Label {
+        text: i18n("Show air quality standards:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     Switch {
         id: aqiShowUsSwitch
-        Kirigami.FormData.label: i18n("Show air quality standards:")
         text: i18n("US AQI (0-500)")
         checked: miscTab.configRoot.cfg_aqiShowUs
         onToggled: miscTab.configRoot.cfg_aqiShowUs = checked
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Switch {
         id: aqiShowEuSwitch
-        Kirigami.FormData.label: ""
         text: i18n("European CAQI (0-100+)")
         checked: miscTab.configRoot.cfg_aqiShowEu
         onToggled: miscTab.configRoot.cfg_aqiShowEu = checked
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Switch {
         id: aqiShowCaSwitch
-        Kirigami.FormData.label: ""
         text: i18n("Canadian AQHI (1-10+)")
         checked: miscTab.configRoot.cfg_aqiShowCa
         onToggled: miscTab.configRoot.cfg_aqiShowCa = checked
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Label {
-        Kirigami.FormData.label: ""
         text: i18n("Turn on any combination to show them side by side instead of a single standard below.")
         wrapMode: Text.WordWrap
         opacity: 0.65
         font: Kirigami.Theme.smallFont
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
         Layout.maximumWidth: 340
+    }
+    Label {
+        text: i18n("Air Quality index standard:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     ComboBox {
         id: aqiStandardCombo
-        Kirigami.FormData.label: i18n("Air Quality index standard:")
         Layout.preferredWidth: 270
         enabled: !(miscTab.configRoot.cfg_aqiShowUs || miscTab.configRoot.cfg_aqiShowEu || miscTab.configRoot.cfg_aqiShowCa)
         model: [
@@ -378,14 +512,21 @@ Kirigami.FormLayout {
         textRole: "text"
         onActivated: miscTab.configRoot.cfg_aqiStandard = model[currentIndex].value
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Label {
-        Kirigami.FormData.label: ""
         text: (miscTab.configRoot.cfg_aqiShowUs || miscTab.configRoot.cfg_aqiShowEu || miscTab.configRoot.cfg_aqiShowCa)
               ? i18n("Turn off all three switches above to pick a single standard here instead.")
               : i18n("Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI based on your location's country.")
         wrapMode: Text.WordWrap
         opacity: 0.65
         font: Kirigami.Theme.smallFont
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
         Layout.maximumWidth: 340
     }
 }

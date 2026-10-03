@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>map-picker</title>
+<!--
+  Location picker map for the widget's "Choose on Map" page (ConfigMapSubPage.qml).
+  Same approach as the radar page: Leaflet 1.9.4 inside a WebEngineView. Leaflet stretches
+  the tiles of the last available zoom level instead of showing a "zoom level not supported"
+  overlay, so every spot on the map can be zoomed in on.
+
+  Query parameters (all optional): lat, lon, zoom, theme (light|dark), bg (background id or
+  "auto"), bglist (JSON from MapBackgroundChoices), font, zin / zout (zoom button titles).
+
+  Talks back to QML through document.title:
+    "click:<lat>,<lon>,<n>"  the user clicked the map (n keeps repeated clicks distinct)
+    "error:leaflet"          the Leaflet library could not be loaded (offline)
+  QML drives the page through window.setMarker / setBackground / setTheme / fixViewport.
+-->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { background: #f0f2f5; }
+  body.dark { background: #0f1117; }
+  #map { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: transparent; }
+  .leaflet-container { font-family: var(--ui-font, sans-serif), sans-serif; }
+  /* Dark OSM: the standard raster tiles recoloured (same filter as the radar page). */
+  .base-inverted img { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.8); }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+(function () {
+  'use strict';
+
+  if (typeof L === 'undefined') {
+    document.title = 'error:leaflet';
+    return;
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  function num(key, def) {
+    var v = parseFloat(params.get(key));
+    return isNaN(v) ? def : v;
+  }
+
+  var theme = params.get('theme') === 'dark' ? 'dark' : 'light';
+  var bgId = params.get('bg') || 'auto';
+  var bgList = [];
+  try { bgList = JSON.parse(params.get('bglist') || '[]'); } catch (e) {}
+  var font = params.get('font');
+  if (font)
+    document.documentElement.style.setProperty('--ui-font', '"' + font.replace(/"/g, '') + '"');
+  document.body.className = theme === 'dark' ? 'dark' : '';
+
+  var OSM_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  var OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+  function entryById(id) {
+    for (var i = 0; i < bgList.length; i++) {
+      if (bgList[i].id === id) return bgList[i];
+    }
+    return null;
+  }
+
+  // Same ids and the same "auto" rule as the radar page. The picker only needs a plain raster
+  // map, so a vector style (OpenFreeMap, needs MapLibre + WebGL) is replaced by the OSM raster
+  // tiles, recoloured for the dark styles.
+  function resolveBackground() {
+    var id = bgId === 'auto' ? (theme === 'dark' ? 'openfreemap-dark' : 'osm-standard') : bgId;
+    var entry = entryById(id);
+    if (entry && entry.url && !entry.vector) {
+      return {
+        url: entry.url,
+        attribution: entry.attribution || OSM_ATTR,
+        maxZoom: entry.maxZoom || 19,
+        invert: !!entry.invert
+      };
+    }
+    var dark = entry ? (!!entry.invert || /dark|fiord/.test(id)) : theme === 'dark';
+    return { url: OSM_URL, attribution: OSM_ATTR, maxZoom: 19, invert: dark };
+  }
+
+  var map = L.map('map', {
+    zoomControl: false,
+    doubleClickZoom: false,   // a double click would report two clicks
+    worldCopyJump: true,
+    minZoom: 3,
+    maxZoom: 19
+  }).setView([num('lat', 48), num('lon', 14)], Math.round(num('zoom', 5)));
+
+  L.control.zoom({
+    position: 'topright',
+    zoomInTitle: params.get('zin') || 'Zoom in',
+    zoomOutTitle: params.get('zout') || 'Zoom out'
+  }).addTo(map);
+
+  var baseLayer = null;
+  function applyBackground() {
+    var bg = resolveBackground();
+    if (baseLayer) map.removeLayer(baseLayer);
+    baseLayer = L.tileLayer(bg.url, {
+      attribution: bg.attribution,
+      // Past the last tile level of the provider the tiles are scaled up, never refused.
+      maxNativeZoom: bg.maxZoom,
+      maxZoom: 19,
+      className: bg.invert ? 'base-inverted' : ''
+    }).addTo(map);
+    baseLayer.bringToBack();
+  }
+  applyBackground();
+
+  var marker = null;
+  function placeMarker(lat, lon) {
+    if (marker) marker.setLatLng([lat, lon]);
+    else marker = L.marker([lat, lon], { interactive: false, keyboard: false }).addTo(map);
+  }
+
+  var clicks = 0;
+  map.on('click', function (ev) {
+    var p = ev.latlng.wrap();
+    placeMarker(p.lat, p.lng);
+    document.title = 'click:' + p.lat.toFixed(6) + ',' + p.lng.toFixed(6) + ',' + (++clicks);
+  });
+
+  // Links in the attribution would navigate this page away; hand them to the system browser
+  // (QML opens them from onNewWindowRequested). Capture phase: Leaflet stops click
+  // propagation on its controls.
+  document.addEventListener('click', function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[href]') : null;
+    if (!a) return;
+    ev.preventDefault();
+    window.open(a.href, '_blank');
+  }, true);
+
+  // ---- driven from QML --------------------------------------------------
+  window.setMarker = function (lat, lon, minZoom) {
+    placeMarker(lat, lon);
+    if (minZoom > 0)
+      map.setView([lat, lon], Math.max(map.getZoom(), minZoom));
+  };
+  window.setBackground = function (id) {
+    bgId = id || 'auto';
+    applyBackground();
+  };
+  window.setTheme = function (t) {
+    theme = t === 'dark' ? 'dark' : 'light';
+    document.body.className = theme === 'dark' ? 'dark' : '';
+    if (bgId === 'auto') applyBackground();   // only "auto" follows the theme
+  };
+  window.fixViewport = function () {
+    map.invalidateSize(false);
+  };
+  window.__pickerMap = map;   // handy in the devtools console
+})();
+</script>
+</body>
+</html>
