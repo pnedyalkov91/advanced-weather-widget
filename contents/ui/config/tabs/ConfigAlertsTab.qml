@@ -25,50 +25,97 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+ColumnLayout {
     id: alertsTab
+
+    Layout.fillWidth: true
+    Layout.alignment: Qt.AlignTop
+    spacing: Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configGeneral) for cfg_* properties */
     required property var configRoot
 
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
+
+    // A Switch whose label wraps onto several lines instead of forcing the
+    // whole page wider than the (resizable) settings window.
+    component WrappingSwitch: Switch {
+        id: wrappingSwitch
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        contentItem: Label {
+            text: wrappingSwitch.text
+            font: wrappingSwitch.font
+            wrapMode: Text.Wrap
+            verticalAlignment: Text.AlignVCenter
+            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored
+                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored
+                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // SECTION: Weather Alerts
     // ═══════════════════════════════════════════════════════════════
-    Kirigami.Separator {
-        Kirigami.FormData.isSection: true
-        Kirigami.FormData.label: i18n("Weather Alerts Provider")
+    SectionHeader {
+        title: i18n("Weather Alerts Provider")
     }
 
-    ComboBox {
-        id: alertsProviderCombo
-        Kirigami.FormData.label: i18n("Alerts provider:")
-        Layout.preferredWidth: 280
-        model: [
-            {
-                text: i18n("MeteoAlarm + NOAA NWS (Native)"),
-                value: "native"
-            },
-            {
-                text: i18n("LibreWXR"),
-                value: "librewxr"
-            },
-            {
-                text: i18n("FOSS Public Alert Server"),
-                value: "foss"
-            }
-        ]
-        textRole: "text"
-        currentIndex: {
-            for (var i = 0; i < model.length; i++)
-                if (model[i].value === alertsTab.configRoot.cfg_alertsProvider)
-                    return i;
-            return 0;
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+
+        Label {
+            text: i18n("Alerts provider:")
         }
-        onActivated: alertsTab.configRoot.cfg_alertsProvider = model[currentIndex].value
+
+        ComboBox {
+            id: alertsProviderCombo
+            Layout.preferredWidth: 280
+            model: [
+                {
+                    text: i18n("MeteoAlarm + NOAA NWS (Native)"),
+                    value: "native"
+                },
+                {
+                    text: i18n("LibreWXR"),
+                    value: "librewxr"
+                },
+                {
+                    text: i18n("FOSS Public Alert Server"),
+                    value: "foss"
+                }
+            ]
+            textRole: "text"
+            currentIndex: {
+                for (var i = 0; i < model.length; i++)
+                    if (model[i].value === alertsTab.configRoot.cfg_alertsProvider)
+                        return i;
+                return 0;
+            }
+            onActivated: alertsTab.configRoot.cfg_alertsProvider = model[currentIndex].value
+        }
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
         Layout.fillWidth: true
         visible: alertsTab.configRoot.cfg_alertsProvider === "native"
         showCloseButton: true
@@ -78,7 +125,6 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
         Layout.fillWidth: true
         visible: alertsTab.configRoot.cfg_alertsProvider === "librewxr"
         showCloseButton: true
@@ -88,7 +134,6 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
         Layout.fillWidth: true
         visible: alertsTab.configRoot.cfg_alertsProvider === "foss"
         showCloseButton: true
