@@ -99,13 +99,8 @@ GridLayout {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
-    Item {
-        // empty label cell: keeps the control in the second column
-        visible: radarTab.columns === 2
-        implicitWidth: 0
-        implicitHeight: 0
-    }
     WrappingSwitch {
+        Layout.columnSpan: radarTab.columns
         text: i18n("Show Radar tab in widget")
         checked: radarTab.configRoot.cfg_radarEnabled
         onToggled: radarTab.configRoot.cfg_radarEnabled = checked
@@ -121,13 +116,8 @@ GridLayout {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
-    Item {
-        // empty label cell: keeps the control in the second column
-        visible: radarTab.columns === 2 && (radarTab.configRoot.cfg_radarEnabled)
-        implicitWidth: 0
-        implicitHeight: 0
-    }
     WrappingSwitch {
+        Layout.columnSpan: radarTab.columns
         visible: radarTab.configRoot.cfg_radarEnabled
         text: i18n("Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)")
         checked: radarTab.configRoot.cfg_radarGpuWorkaround

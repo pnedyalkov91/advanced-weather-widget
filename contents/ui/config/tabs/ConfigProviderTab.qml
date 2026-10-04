@@ -92,13 +92,8 @@ GridLayout {
     }
 
     // Adaptive toggle row
-    Item {
-        // empty label cell: keeps the control in the second column
-        visible: providerTab.columns === 2
-        implicitWidth: 0
-        implicitHeight: 0
-    }
     RowLayout {
+        Layout.columnSpan: providerTab.columns
         spacing: 12
         Switch {
             id: adaptiveSwitch
@@ -486,13 +481,8 @@ GridLayout {
         Layout.topMargin: Kirigami.Units.largeSpacing
     }
 
-    Item {
-        // empty label cell: keeps the control in the second column
-        visible: providerTab.columns === 2
-        implicitWidth: 0
-        implicitHeight: 0
-    }
     Switch {
+        Layout.columnSpan: providerTab.columns
         text: i18n("Refresh weather automatically")
         checked: providerTab.configRoot.cfg_autoRefresh
         onToggled: providerTab.configRoot.cfg_autoRefresh = checked
