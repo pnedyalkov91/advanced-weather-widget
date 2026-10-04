@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-09-30 08:15+0300\n"
-"PO-Revision-Date: 2026-09-08 00:00+0000\n"
+"PO-Revision-Date: 2026-10-03 00:00+0000\n"
 "Last-Translator: Toni Karppi\n"
 "Language-Team: Swedish\n"
 "Language: sv_SE\n"
@@ -109,7 +109,7 @@ msgstr "24 h"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:258
 msgid "256 px"
-msgstr ""
+msgstr "256 px"
 
 #: contents/ui/config/configAppearance.qml:265
 #: contents/ui/config/tabs/ConfigPanelTab.qml:332
@@ -122,7 +122,7 @@ msgstr "3D Oxygen (medföljer)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:262
 msgid "512 px"
-msgstr ""
+msgstr "512 px"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:117
 msgid "68°F"
@@ -141,6 +141,8 @@ msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 msgstr ""
+"<b>Lösning för krascher med hybridgrafik / NVIDIA PRIME + Wayland</b><br/><br/>På vissa bärbara datorer med hybridgrafik som kör Wayland kan radarflikens inbäddade webbläsarvy få hela Plasma-skalet att krascha så fort vyn ritas upp första gången, på grund av en konflikt mellan de två grafikprocessorerna på drivrutinsnivå. Det här alternativet inaktiverar GPU-accelererad komposition i webbläsarvyn för att undvika problemet.<br/><br/>Aktivera bara detta om du faktiskt upplever kraschen – det försämrar radarvisningens renderingsprestanda något.<br/><br/><b>Du måste logga ut och in igen för att ändringen ska börja gälla</b>, eftersom inställningen måste göras innan Plasma startar. Den gäller även för hela sessionen, så alla andra program som bäddar in en Chromium-baserad webbläsarvy får samma inställning. Om du senare stänger av alternativet måste du också logga ut och in igen för att inställningen ska återställas helt.\n"
+"        <br/><br/>Om du aktiverar alternativet skapas följande fil: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 
 #: contents/ui/main.qml:1392
 msgid "<b>Instruction:</b> %1"
@@ -165,40 +167,40 @@ msgstr "<b>Varför OWM-lager kan skilja sig från RainViewers radar</b><br/><br/
 
 #: contents/ui/config/configGeneral.qml:596
 msgid "AEMET - Spain only (Key Required)"
-msgstr ""
+msgstr "AEMET – endast Spanien (nyckel krävs)"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:201
 msgid "AEMET API Key:"
-msgstr ""
+msgstr "API-nyckel för AEMET:"
 
 #: contents/ui/config/configGeneral.qml:393
 #: contents/ui/config/configGeneral.qml:522
 msgid "AEMET error (code %1). Check your API key."
-msgstr ""
+msgstr "AEMET-fel (kod %1). Kontrollera din API-nyckel."
 
 #: contents/ui/config/configGeneral.qml:361
 msgid "AEMET only covers Spain - this location has no coverage."
-msgstr ""
+msgstr "AEMET täcker endast Spanien – den här platsen saknar täckning."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:382
 msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
-msgstr ""
+msgstr "AEMET täcker endast platser i Spanien – för andra platser visas ”Misslyckades” i stället för att byta leverantör (AEMET ingår inte heller i adaptivt läge, eftersom det är den enda leverantören här med en egen gräns för antalet anrop). Antalet anrop till AEMET:s API per minut är begränsat, så klicka inte på uppdateringsknappen för många gånger. Du kan då nå gränsen och behöva vänta minst 1 minut innan du gör ett nytt anrop. Vid ett misslyckat anrop görs automatiskt ett nytt försök en gång.<br/><br/>Fält som AEMET inte publicerar alls – lufttryck, sikt, snötäcke och total nederbördsmängd per dygn – visas här som ”Ej tillgängligt”. Det är alltså inget fel. UV anges endast per dygn, inte timme för timme, och vinduppgifter kan saknas för dagar längre fram när AEMET:s prognoser blir mer osäkra.<br/><br/>Kostnadsfri nyckel: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. Nya nycklar upphör att gälla 3 månader efter att de skapats (AEMET:s policy, ändrad i juli 2026) – då behöver du begära en ny.<br/><br/>Uppdatera inte för ofta, eftersom AEMET begränsar antalet anrop per minut. Om du når gränsen måste du vänta minst 1 minut innan du gör ett nytt anrop."
 
 #: contents/ui/ForecastView.qml:867
 msgid "AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date."
-msgstr ""
+msgstr "AEMET tillhandahåller timprognoser för upp till 48 timmar. Dygnsprognosen är fortfarande tillgänglig för detta datum."
 
 #: contents/ui/WeatherService.qml:1094
 msgid "AEMET: request failed - retrying automatically."
-msgstr ""
+msgstr "AEMET: anropet misslyckades – försöker igen automatiskt."
 
 #: contents/ui/WeatherService.qml:1091
 msgid "AEMET: request limit reached - retrying automatically in a minute."
-msgstr ""
+msgstr "AEMET: gränsen för antalet anrop har nåtts – försöker igen automatiskt om en minut."
 
 #: contents/ui/ForecastView.qml:869
 msgid "AEMET: request limit reached for the moment. This will retry automatically - please wait a minute."
-msgstr ""
+msgstr "AEMET: gränsen för antalet anrop har nåtts för tillfället. Ett nytt försök görs automatiskt – vänta en minut."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:145
 msgid "AI-powered weather intelligence. API key required below."
@@ -317,7 +319,7 @@ msgstr "Al"
 
 #: contents/ui/config/configNotifications.qml:379
 msgid "Alert sound:"
-msgstr ""
+msgstr "Varningsljud:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:456
 #: contents/ui/config/configAppearance.qml:1897
@@ -357,7 +359,7 @@ msgstr "Alla dagar är infällda från början"
 
 #: contents/ui/config/configNotifications.qml:425
 msgid "All files (*)"
-msgstr ""
+msgstr "Alla filer (*)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:250
 msgid "All tabs"
@@ -365,11 +367,11 @@ msgstr "Alla flikar"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:890
 msgid "Already-passed hours are removed from today's hourly forecast"
-msgstr ""
+msgstr "Timmar som redan har passerat tas bort från dagens timprognos"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:889
 msgid "Already-passed hours for today stay in place, greyed out, instead of being removed"
-msgstr ""
+msgstr "Timmar som redan har passerat i dag visas nedtonade i stället för att tas bort"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:371
 msgid "Alt: %1 %2"
@@ -405,7 +407,7 @@ msgstr "Animera rullning av rader"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:435
 msgid "Animate the wind on the map (Open-Meteo)"
-msgstr ""
+msgstr "Animera vinden på kartan (Open-Meteo)"
 
 #: contents/ui/config/configAppearance.qml:1821
 msgid "Apparent (feels-like) temperature"
@@ -433,15 +435,15 @@ msgstr "Använd identifierad plats"
 
 #: contents/ui/config/configAppearance.qml:490
 msgid "Apply everywhere"
-msgstr ""
+msgstr "Använd överallt"
 
 #: contents/ui/config/configAppearance.qml:402
 msgid "Apply icon theme"
-msgstr ""
+msgstr "Använd ikontema"
 
 #: contents/ui/config/configAppearance.qml:498
 msgid "Apply only here"
-msgstr ""
+msgstr "Använd endast här"
 
 #: contents/ui/config/configLocation.qml:1380
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
@@ -463,7 +465,7 @@ msgstr "Lufttryck"
 
 #: contents/ui/config/configNotifications.qml:425
 msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
-msgstr ""
+msgstr "Ljudfiler (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:720
 #: contents/ui/DetailsView.qml:2060
@@ -489,7 +491,7 @@ msgstr "Automatiskt (identifiera när du sparar)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:254
 msgid "Auto (device)"
-msgstr ""
+msgstr "Automatiskt (enhet)"
 
 #: contents/ui/config/configLocation.qml:1524
 msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
@@ -573,7 +575,7 @@ msgstr "Avstånd mellan märken:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:238
 msgid "Balanced (10 to 20 fps)"
-msgstr ""
+msgstr "Balanserat (10 till 20 bilder/s)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:214
 msgid "Behavior"
@@ -704,7 +706,7 @@ msgstr "Kinesisk väderleverantör med global täckning. API-nyckel krävs nedan
 
 #: contents/ui/config/configNotifications.qml:424
 msgid "Choose Alert Sound"
-msgstr ""
+msgstr "Välj varningsljud"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1037
 msgid "Choose Simple Mode Font"
@@ -874,7 +876,7 @@ msgstr "Koordinater"
 
 #: contents/ui/config/configNotifications.qml:419
 msgid "Couldn't play that sound file: %1"
-msgstr ""
+msgstr "Kunde inte spela upp ljudfilen: %1"
 
 #: contents/ui/config/configNotifications.qml:451
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
@@ -995,7 +997,7 @@ msgstr "Standard"
 
 #: contents/ui/config/configNotifications.qml:385
 msgid "Default (built-in siren)"
-msgstr ""
+msgstr "Standard (inbyggd siren)"
 
 #: contents/ui/config/configLocation.qml:1819
 msgid "Default location (click to unset)"
@@ -1144,7 +1146,7 @@ msgstr "Varje aviseringstyp kan aktiveras separat, med en egen daglig tid när d
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:234
 msgid "Economy (8 to 10 fps)"
-msgstr ""
+msgstr "Sparläge (8 till 10 bilder/s)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:386
 msgid "Edit Saved Location"
@@ -1212,7 +1214,7 @@ msgstr "Ange manuellt"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:231
 msgid "Enter your AEMET API key"
-msgstr ""
+msgstr "Ange din API-nyckel för AEMET"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:217
 msgid "Enter your OpenWeatherMap API key"
@@ -1378,7 +1380,7 @@ msgstr "Dimma"
 
 #: contents/ui/config/configAppearance.qml:259
 msgid "Font icons"
-msgstr ""
+msgstr "Teckensnittsikoner"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1163
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:209
@@ -1417,7 +1419,7 @@ msgstr "Skogsbrand"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:510
 msgid "Format:"
-msgstr ""
+msgstr "Format:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:157
 msgid "Free BBC Weather service (data from the Met Office). No API key needed."
@@ -1595,7 +1597,7 @@ msgstr "Högsta temperatur"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:588
 msgid "Highlight snow and wintry precipitation with a distinct color"
-msgstr ""
+msgstr "Markera snö och vintrig nederbörd med en särskild färg"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:143
 msgid "Historical and forecast data provider. API key required below."
@@ -1759,7 +1761,7 @@ msgstr "Ogiltigt svar"
 #: contents/ui/config/configGeneral.qml:398
 #: contents/ui/config/configGeneral.qml:527
 msgid "Invalid response from AEMET."
-msgstr ""
+msgstr "Ogiltigt svar från AEMET."
 
 #: contents/ui/config/configGeneral.qml:514
 msgid "Invalid response from QWeather."
@@ -1788,14 +1790,14 @@ msgstr "KDE-ikontema"
 #: contents/ui/config/tabs/ConfigPanelTab.qml:316
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:50
 msgid "KDE Icon Theme (Colorful)"
-msgstr ""
+msgstr "KDE:s ikontema (färgglatt)"
 
 #: contents/ui/config/configAppearance.qml:256
 #: contents/ui/config/tabs/ConfigPanelTab.qml:311
 #: contents/ui/config/tabs/ConfigPanelTab.qml:320
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:51
 msgid "KDE Icon Theme (Symbolic)"
-msgstr ""
+msgstr "KDE:s ikontema (symboliskt)"
 
 #: contents/ui/config/configAppearance.qml:903
 msgid "KDE System Icons (automatic, follows weather code)"
@@ -2146,7 +2148,7 @@ msgstr "MeteoAlarm + NOAA NWS (inbyggt)"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:45
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:55
 msgid "Meteocons (Bundled)"
-msgstr ""
+msgstr "Meteocons (medföljer)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:153
 msgid "Metric (°C, km/h, hPa, mm)"
@@ -2360,7 +2362,7 @@ msgstr "Behöver du koordinaterna för en plats? Du kan hitta dem på <a href=\"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1019
 msgid "Negative spacing pulls panel items closer together than their natural gap and can make icons or text overlap."
-msgstr ""
+msgstr "Negativa mellanrum drar panelobjekt närmare varandra än deras normala avstånd och kan få ikoner eller text att överlappa."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:273
 msgid "Network error"
@@ -2508,19 +2510,19 @@ msgstr "OK"
 
 #: contents/ui/config/configGeneral.qml:143
 msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, and your system isn't systemd-managed, so there's no way to clear that live - it stays disabled (including anything you open freshly in this session) until you log out and back in."
-msgstr ""
+msgstr "Av – skriptet som kringgår problemet har tagits bort och läses därför inte in nästa gång du loggar in. Den här sessionen startades dock med GPU-komposition inaktiverad, och ditt system hanteras inte av systemd, så inställningen kan inte återställas under pågående session. GPU-komposition förblir inaktiverad (även för program du öppnar i den här sessionen) tills du loggar ut och in igen."
 
 #: contents/ui/config/configGeneral.qml:145
 msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, so it stays that way (and anything already open, like a terminal, keeps showing the old value) until you log out and back in."
-msgstr ""
+msgstr "Av – skriptet som kringgår problemet har tagits bort och läses därför inte in nästa gång du loggar in. Den här sessionen startades dock med GPU-komposition inaktiverad, så den förblir inaktiverad (och redan öppna program, till exempel en terminal, fortsätter att visa det gamla värdet) tills du loggar ut och in igen."
 
 #: contents/ui/config/configGeneral.qml:141
 msgid "Off - the workaround script has been removed, so it won't load on your next login. Your system uses systemd, so anything launched fresh from here on may already reflect the cleared value - but anything already open (like a terminal you still have up) keeps showing the old one regardless, and a full log out and back in is the only guaranteed way to clear it everywhere."
-msgstr ""
+msgstr "Av – skriptet som kringgår problemet har tagits bort och läses därför inte in nästa gång du loggar in. Ditt system använder systemd, så program som startas från och med nu kan redan använda det återställda värdet. Redan öppna program (till exempel en terminal som du har öppen) fortsätter dock att visa det gamla värdet. Det enda säkra sättet att återställa inställningen överallt är att logga ut helt och in igen."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:153
 msgid "Official Spanish meteorological agency - Spain locations only! API key required below."
-msgstr ""
+msgstr "Spaniens officiella meteorologiska myndighet – endast platser i Spanien! API-nyckel krävs nedan."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
 #: contents/ui/DetailsView.qml:1526 contents/ui/main.qml:986
@@ -2625,7 +2627,7 @@ msgstr "PM2.5"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:391
 msgid "Palette:"
-msgstr ""
+msgstr "Färgpalett:"
 
 #: contents/ui/config/configAppearance.qml:2459
 #: contents/ui/config/tabs/ConfigMiscTab.qml:132
@@ -2654,15 +2656,15 @@ msgstr "Panelobjekt:"
 
 #: contents/ui/config/configAppearance.qml:119
 msgid "Panel › Icon theme"
-msgstr ""
+msgstr "Panel › Ikontema"
 
 #: contents/ui/config/configAppearance.qml:163
 msgid "Panel › Multi-line layout › Main icon style"
-msgstr ""
+msgstr "Panel › Flerradig layout › Huvudikonens stil"
 
 #: contents/ui/config/configAppearance.qml:133
 msgid "Panel › Simple layout › Weather icon style"
-msgstr ""
+msgstr "Panel › Enkel layout › Väderikonens stil"
 
 #: contents/ui/DetailsView.qml:1316
 msgid "Particulate Matter (PM10)"
@@ -2730,7 +2732,7 @@ msgstr "Spela upp"
 
 #: contents/ui/config/configNotifications.qml:369
 msgid "Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound."
-msgstr ""
+msgstr "Spelar upp ett ljud tillsammans med aviseringen för varningar med den allvarlighetsgraden. Ett nedtonat reglage här betyder att allvarlighetsgraden är avstängd ovan och därför aldrig ger några aviseringar – med eller utan ljud. Som standard spelas ljud endast för röd och lila nivå."
 
 #: contents/ui/config/configAppearance.qml:1883
 #: contents/ui/config/configAppearance.qml:2006
@@ -2765,7 +2767,7 @@ msgstr "Nederbördsmängd"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1024
 msgid "Precip probability:"
-msgstr ""
+msgstr "Sannolikhet för nederbörd:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:937
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1064
@@ -2868,6 +2870,10 @@ msgid ""
 " If you want to choose a specific provider, please turn off Adaptive Mode.\n"
 "Open-Meteo is always tried first - it is free and requires no API key. AEMET is intentionally not part of this list, as it only covers Spain and is not suitable for global use."
 msgstr ""
+"Leverantörerna provas i följande ordning tills någon lyckas:\n"
+"Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
+" Om du vill välja en viss leverantör stänger du av adaptivt läge.\n"
+"Open-Meteo provas alltid först – det är kostnadsfritt och kräver ingen API-nyckel. AEMET ingår avsiktligt inte i listan, eftersom tjänsten endast täcker Spanien och inte är lämplig för global användning."
 
 #: contents/ui/config/configNotifications.qml:304
 #: contents/ui/config/configNotifications.qml:351
@@ -2919,7 +2925,7 @@ msgstr "Radar + satellit"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:39
 msgid "Radar Settings"
-msgstr ""
+msgstr "Radarinställningar"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:253
 msgid "Radar only"
@@ -2976,7 +2982,7 @@ msgstr "Regn/oväder"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:120
 msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
-msgstr ""
+msgstr "Skrivskyddat när adaptivt läge är aktiverat – stäng av det ovan för att välja en viss leverantör."
 
 #: contents/ui/components/RadarWebEngineView.qml:158
 msgid "Real-time"
@@ -3189,7 +3195,7 @@ msgstr "Välj egna ikoner…"
 
 #: contents/ui/config/configAppearance.qml:480
 msgid "Settings where this theme is not available keep their current theme."
-msgstr ""
+msgstr "Inställningar där det här temat inte är tillgängligt behåller sitt nuvarande tema."
 
 #: contents/ui/js/spaceWeather.js:92
 msgid "Severe geomagnetic storm."
@@ -3262,7 +3268,7 @@ msgstr "Visa eller dölj det här detaljobjektet"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:880
 msgid "Show past weather info for today:"
-msgstr ""
+msgstr "Visa väderinformation för tidigare timmar i dag:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:626
 msgid "Show pollen types in expanded view:"
@@ -3288,11 +3294,11 @@ msgstr "Visa temperaturenhet:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:603
 msgid "Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m"
-msgstr ""
+msgstr "Visa vinden på cirka 3000 m höjd (700 hPa), det luftflöde som styr regnet, i stället för marknära vind på 10 m höjd"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:493
 msgid "Show tile options: smoothing, snow mask, format and tile size"
-msgstr ""
+msgstr "Visa alternativ för kartrutor: utjämning, snömask, format och rutstorlek"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:275
 msgid "Show update time and provider"
@@ -3388,15 +3394,15 @@ msgstr "Liten cirkel  ⚬"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:242
 msgid "Smooth (12 to 30 fps)"
-msgstr ""
+msgstr "Mjukt (12 till 30 bilder/s)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:574
 msgid "Smooth radar tile edges"
-msgstr ""
+msgstr "Jämna ut radarkartrutornas kanter"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:566
 msgid "Smoothing"
-msgstr ""
+msgstr "Utjämning"
 
 #: contents/ui/config/configNotifications.qml:592
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
@@ -3453,7 +3459,7 @@ msgstr "Snö kan förekomma %1."
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:580
 msgid "Snow mask"
-msgstr ""
+msgstr "Snömask"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
 #: contents/ui/main.qml:2167
@@ -3471,7 +3477,7 @@ msgstr "Solvind"
 
 #: contents/ui/config/configNotifications.qml:328
 msgid "Sounds:"
-msgstr ""
+msgstr "Ljud:"
 
 #: contents/ui/config/configAppearance.qml:1890
 #: contents/ui/config/configAppearance.qml:2013
@@ -3665,11 +3671,11 @@ msgstr "Inställningar för systembrickans ikon"
 
 #: contents/ui/config/configAppearance.qml:119
 msgid "System tray › Icon theme"
-msgstr ""
+msgstr "Systembricka › Ikontema"
 
 #: contents/ui/config/configAppearance.qml:133
 msgid "System tray › Simple layout › Weather icon style"
-msgstr ""
+msgstr "Systembricka › Enkel layout › Väderikonens stil"
 
 #: contents/ui/components/RadarWebEngineView.qml:131
 #: contents/ui/config/configAppearance.qml:1798
@@ -3708,7 +3714,7 @@ msgstr "Temperatur:"
 
 #: contents/ui/config/configNotifications.qml:396
 msgid "Test"
-msgstr ""
+msgstr "Testa"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:335
 msgid "Test API Key"
@@ -3737,7 +3743,7 @@ msgstr "Texten använder systemets teckensnitt och förstoras för att fylla det
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:226
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
-msgstr ""
+msgstr "Radarfliken kan animera vinden som rörliga partiklar (aktivera det där). Vinddata kommer från <a href='https://open-meteo.com/'>Open-Meteo</a>, oberoende av LibreWXR-servern. Här ställer du in bildfrekvensen: sänk den på en långsam dator och höj den om starka vindar ser ryckiga ut."
 
 #: contents/ui/RadarView.qml:166
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
@@ -3820,7 +3826,7 @@ msgstr "Åska"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:538
 msgid "Tile size:"
-msgstr ""
+msgstr "Rutstorlek:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:364
 msgid "Time format:"
@@ -3844,7 +3850,7 @@ msgstr "Tidszon:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:258
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
-msgstr ""
+msgstr "För att låsa upp ytterligare kartlager (regn, moln, temperatur, vind, lufttryck): inaktivera adaptivt läge på fliken ”Leverantör”, välj OpenWeatherMap som väderleverantör och ange din API-nyckel ovan. När du är klar kan du aktivera adaptivt läge igen."
 
 #: contents/ui/ForecastView.qml:533 contents/ui/main.qml:1688
 #: contents/ui/SimpleView.qml:423
@@ -3912,7 +3918,7 @@ msgstr "Verktygstipsets bredd:"
 
 #: contents/ui/config/configAppearance.qml:225
 msgid "Tooltip › Icon theme"
-msgstr ""
+msgstr "Verktygstips › Ikontema"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:48
 msgid "Tooltip:"
@@ -4052,7 +4058,7 @@ msgstr "Kommande: %1"
 
 #: contents/ui/WeatherService.qml:263
 msgid "Update timed out. Click the refresh button to retry."
-msgstr ""
+msgstr "Uppdateringens tidsgräns överskreds. Klicka på uppdateringsknappen för att försöka igen."
 
 #: contents/ui/WeatherService.qml:962
 msgid "Updated %1 day ago"
@@ -4203,7 +4209,7 @@ msgstr "Vädervarningar"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:39
 msgid "Weather Alerts Provider"
-msgstr ""
+msgstr "Leverantör av vädervarningar"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:39
 msgid "Weather Provider"
@@ -4299,11 +4305,11 @@ msgstr "Widgetens panelyta:"
 
 #: contents/ui/config/configAppearance.qml:210
 msgid "Widget › Details › Icon theme"
-msgstr ""
+msgstr "Widget › Detaljer › Ikontema"
 
 #: contents/ui/config/configAppearance.qml:181
 msgid "Widget › General › Weather icon theme"
-msgstr ""
+msgstr "Widget › Allmänt › Väderikontema"
 
 #: contents/ui/components/RadarWebEngineView.qml:132
 #: contents/ui/config/configAppearance.qml:1812
@@ -4316,7 +4322,7 @@ msgstr "Vind"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:217
 msgid "Wind animation:"
-msgstr ""
+msgstr "Vindanimation:"
 
 #: contents/ui/config/configAppearance.qml:1944
 #: contents/ui/config/configAppearance.qml:2067
@@ -4339,11 +4345,11 @@ msgstr "Vind:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:427
 msgid "Winds"
-msgstr ""
+msgstr "Vindar"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:594
 msgid "Winds aloft"
-msgstr ""
+msgstr "Vindar på hög höjd"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:60
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
@@ -4382,7 +4388,7 @@ msgstr "Du kan behöva öka widgetens bredd för att se all vald information"
 
 #: contents/ui/config/configAppearance.qml:435
 msgid "You selected <b>%1</b>. Apply it to every icon theme setting where it is available?"
-msgstr ""
+msgstr "Du valde <b>%1</b>. Vill du använda det för alla inställningar för ikonteman där det är tillgängligt?"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:490
 msgid "Zoom in"
@@ -4402,7 +4408,7 @@ msgstr "lätt molnighet"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "already set"
-msgstr ""
+msgstr "redan inställt"
 
 #: contents/ui/main.qml:1942
 msgid "an increase from yesterday"
@@ -4567,7 +4573,7 @@ msgstr "mph"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "not available - left unchanged"
-msgstr ""
+msgstr "inte tillgängligt – lämnas oförändrat"
 
 #: contents/ui/main.qml:1715
 msgid "overcast skies"
@@ -4597,7 +4603,7 @@ msgstr "regn"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "selected here"
-msgstr ""
+msgstr "valt här"
 
 #: contents/ui/main.qml:1996
 msgid "severe"
@@ -4661,7 +4667,7 @@ msgstr "mycket hög"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "will be changed"
-msgstr ""
+msgstr "kommer att ändras"
 
 #: contents/ui/main.qml:1335 contents/ui/main.qml:1686
 #: contents/ui/main.qml:1759
