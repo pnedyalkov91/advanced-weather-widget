@@ -28,11 +28,41 @@ import QtQuick.Layouts
 import Qt.labs.platform as Platform
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+GridLayout {
     id: panelTab
+
+    Layout.fillWidth: true
+    // children with a maximum width would otherwise cap the grid itself and make
+    // it flip between one and two columns
+    Layout.maximumWidth: Number.POSITIVE_INFINITY
+    Layout.alignment: Qt.AlignTop
+    // Label and control on one line when there is room (like the wide mode of
+    // Kirigami.FormLayout); the label goes above its control in a narrow window.
+    columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+    columnSpacing: Kirigami.Units.largeSpacing
+    rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configAppearance) for cfg_* properties */
     required property var configRoot
+
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
 
     /** Emitted when the user clicks Configure… to push the panel sub-page */
     signal pushSubPage
@@ -86,14 +116,21 @@ Kirigami.FormLayout {
             configRoot.cfg_compressedBadgeOpacity = value;
     }
 
-    Kirigami.Separator {
-        Kirigami.FormData.label: panelTab.isSystemTrayConfig ? i18n("System tray display settings") : i18n("Panel display settings")
-        Kirigami.FormData.isSection: true
+    SectionHeader {
+        title: panelTab.isSystemTrayConfig ? i18n("System tray display settings") : i18n("Panel display settings")
+        Layout.columnSpan: panelTab.columns
+    }
+    Label {
+        text: i18n("Display mode:")
+        visible: !panelTab.isSystemTrayConfig
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
     }
     ComboBox {
         id: panelModeCombo
         visible: !panelTab.isSystemTrayConfig
-        Kirigami.FormData.label: i18n("Display mode:")
         Layout.preferredWidth: 290
         model: [
             {
@@ -121,17 +158,24 @@ Kirigami.FormLayout {
     }
 
     Label {
+        text: i18n("Display mode:")
         visible: panelTab.isSystemTrayConfig
-        Kirigami.FormData.label: i18n("Display mode:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    Label {
+        visible: panelTab.isSystemTrayConfig
         text: i18n("Simple (icon + temperature)")
         opacity: 0.8
     }
 
     // ── Vertical panel truncation warning ──
     Kirigami.InlineMessage {
+        Layout.columnSpan: panelTab.columns
         visible: !panelTab.isSystemTrayConfig && (panelTab._panelInfoMode === "single" || panelTab._panelInfoMode === "multiline")
         Layout.fillWidth: true
-        Layout.columnSpan: 2
         type: Kirigami.MessageType.Information
         text: i18n("In a vertical panel, long item labels may be truncated. " + "Consider using \"Simple\" mode, increasing the panel width, or reducing the font size.")
         showCloseButton: false
@@ -139,15 +183,23 @@ Kirigami.FormLayout {
 
     // ── Simple mode sub‑options ──
 
-    Kirigami.Separator {
+    SectionHeader {
+        title: panelTab.isSystemTrayConfig ? i18n("System tray icon settings") : i18n("Simple display mode settings")
+        Layout.columnSpan: panelTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
         visible: panelTab._panelInfoMode !== "single" && panelTab._panelInfoMode !== "multiline"
-        Kirigami.FormData.label: panelTab.isSystemTrayConfig ? i18n("System tray icon settings") : i18n("Simple display mode settings")
-        Kirigami.FormData.isSection: true
     }
 
+    Label {
+        text: i18n("Layout type:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple"
-        Kirigami.FormData.label: i18n("Layout type:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleLayoutCombo
@@ -179,16 +231,30 @@ Kirigami.FormLayout {
     }
 
     Label {
+        text: i18n("Layout type:")
         visible: panelTab.isSystemTrayConfig
-        Kirigami.FormData.label: i18n("Layout type:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    Label {
+        visible: panelTab.isSystemTrayConfig
         text: i18n("Compressed")
         opacity: 0.8
     }
 
     // ── Horizontal-layout content filter ──────────────────
+    Label {
+        text: i18n("Show:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab._simpleLayoutType === 0
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab._simpleLayoutType === 0
-        Kirigami.FormData.label: i18n("Show:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleHorizContentCombo
@@ -219,9 +285,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Items Order:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab._simpleLayoutType !== 2 && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent === "both")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab._simpleLayoutType !== 2 && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent === "both")
-        Kirigami.FormData.label: i18n("Items Order:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleOrderCombo
@@ -248,9 +321,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Widget panel area:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple"
-        Kirigami.FormData.label: i18n("Widget panel area:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleClickAreaModeCombo
@@ -294,9 +374,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Weather icon style:")
+        visible: panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "temp_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "temp_only")
-        Kirigami.FormData.label: i18n("Weather icon style:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleIconStyleCombo
@@ -375,9 +462,16 @@ Kirigami.FormLayout {
     }
 
     // Icon size mode
+    Label {
+        text: i18n("Icon size:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "temp_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "temp_only")
-        Kirigami.FormData.label: i18n("Icon size:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleIconSizeModeCombo
@@ -461,9 +555,16 @@ Kirigami.FormLayout {
     }
 
     // ── Simple mode: font size ────────────────────────────────────────────────
+    Label {
+        text: i18n("Font size:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
-        Kirigami.FormData.label: i18n("Font size:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: simpleFontSizeModeCombo
@@ -511,9 +612,16 @@ Kirigami.FormLayout {
     }
 
     // ── Simple mode: temperature color ───────────────────────────────────────
+    Label {
+        text: i18n("Temperature color:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
-        Kirigami.FormData.label: i18n("Temperature color:")
         spacing: Kirigami.Units.smallSpacing
         Rectangle {
             width: 24
@@ -557,9 +665,16 @@ Kirigami.FormLayout {
     }
 
     // ── Simple mode: temperature color follows the forecast curve ────────────
+    Label {
+        text: i18n("Color by temperature:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
-        Kirigami.FormData.label: i18n("Color by temperature:")
         spacing: Kirigami.Units.smallSpacing
         Switch {
             checked: panelTab.configRoot.cfg_simpleTempColorDynamic
@@ -575,9 +690,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Temperature shadow:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
-        Kirigami.FormData.label: i18n("Temperature shadow:")
         spacing: Kirigami.Units.largeSpacing
         Switch {
             checked: panelTab.configRoot.cfg_panelSimpleTempShadowEnabled
@@ -589,9 +711,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Shadow intensity:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
-        Kirigami.FormData.label: i18n("Shadow intensity:")
         spacing: Kirigami.Units.largeSpacing
         Slider {
             id: simpleShadowIntensitySlider
@@ -609,9 +738,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Shadow color:")
+        visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: !panelTab.isSystemTrayConfig && panelTab._panelInfoMode === "simple" && panelTab.configRoot.cfg_panelSimpleTempShadowEnabled && (panelTab._simpleLayoutType !== 0 || panelTab.configRoot.cfg_panelSimpleHorizontalContent !== "icon_only")
-        Kirigami.FormData.label: i18n("Shadow color:")
         spacing: Kirigami.Units.smallSpacing
         Rectangle {
             width: 24
@@ -650,15 +786,23 @@ Kirigami.FormLayout {
     }
 
     // ── Compressed badge options (only in compressed layout) ───────────
-    Kirigami.Separator {
+    SectionHeader {
+        title: i18n("Temperature badge")
+        Layout.columnSpan: panelTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
         visible: panelTab._isSimpleCompressed
-        Kirigami.FormData.label: i18n("Temperature badge")
-        Kirigami.FormData.isSection: true
     }
 
+    Label {
+        text: i18n("Badge position:")
+        visible: panelTab._isSimpleCompressed
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._isSimpleCompressed
-        Kirigami.FormData.label: i18n("Badge position:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: badgePosCombo
@@ -702,9 +846,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Badge spacing:")
+        visible: panelTab._isSimpleCompressed
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._isSimpleCompressed
-        Kirigami.FormData.label: i18n("Badge spacing:")
         spacing: Kirigami.Units.largeSpacing
         SpinBox {
             from: -20
@@ -718,9 +869,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Badge background:")
+        visible: panelTab._isSimpleCompressed
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._isSimpleCompressed
-        Kirigami.FormData.label: i18n("Badge background:")
         spacing: Kirigami.Units.largeSpacing
 
         Rectangle {
@@ -762,9 +920,16 @@ Kirigami.FormLayout {
         }
     }
 
+    Label {
+        text: i18n("Badge opacity:")
+        visible: panelTab._isSimpleCompressed
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._isSimpleCompressed
-        Kirigami.FormData.label: i18n("Badge opacity:")
         spacing: Kirigami.Units.largeSpacing
         Slider {
             id: badgeOpacitySlider
@@ -793,8 +958,15 @@ Kirigami.FormLayout {
     }
 
     // ── Multiple lines options (hidden in Simple mode) ─────
+    Label {
+        text: i18n("Scroll interval (sec):")
+        visible: panelTab._panelInfoMode === "multiline"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     SpinBox {
-        Kirigami.FormData.label: i18n("Scroll interval (sec):")
         visible: panelTab._panelInfoMode === "multiline"
         from: 1
         to: 30
@@ -803,8 +975,15 @@ Kirigami.FormLayout {
         ToolTip.text: i18n("How often the rows scroll to reveal the next item")
         ToolTip.visible: hovered
     }
+    Label {
+        text: i18n("Lines:")
+        visible: panelTab._panelInfoMode === "multiline"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     SpinBox {
-        Kirigami.FormData.label: i18n("Lines:")
         visible: panelTab._panelInfoMode === "multiline"
         from: 1
         to: 8
@@ -813,16 +992,30 @@ Kirigami.FormLayout {
         ToolTip.text: i18n("Number of item rows visible at once. Resize the panel height in KDE settings to match.")
         ToolTip.visible: hovered
     }
+    Label {
+        text: i18n("Scroll animation:")
+        visible: panelTab._panelInfoMode === "multiline"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     CheckBox {
-        Kirigami.FormData.label: i18n("Scroll animation:")
         visible: panelTab._panelInfoMode === "multiline"
         text: i18n("Animate row scrolling")
         checked: panelTab.configRoot.cfg_panelMultiAnimate
         onToggled: panelTab.configRoot.cfg_panelMultiAnimate = checked
     }
     // Multiline mode: icon style (symbolic vs colorful)
+    Label {
+        text: i18n("Main icon style:")
+        visible: panelTab._panelInfoMode === "multiline"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Main icon style:")
         visible: panelTab._panelInfoMode === "multiline"
         spacing: 8
         ComboBox {
@@ -913,9 +1106,17 @@ Kirigami.FormLayout {
             onActivated: panelTab.configRoot.cfg_panelMultilineIconSize = sizeModel[currentIndex].value
         }
     }
-    RowLayout {
+    Label {
+        text: i18n("Item width:")
         visible: panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Item width:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        Layout.fillWidth: true
+        visible: panelTab._panelInfoMode !== "simple"
         spacing: 8
         SpinBox {
             from: 0
@@ -932,13 +1133,22 @@ Kirigami.FormLayout {
             opacity: 0.65
             font: Kirigami.Theme.smallFont
             wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+            Layout.minimumWidth: 0
             Layout.maximumWidth: 260
         }
     }
 
+    Label {
+        text: i18n("Separator:")
+        visible: panelTab._panelInfoMode !== "multiline" && panelTab._panelInfoMode !== "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._panelInfoMode !== "multiline" && panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Separator:")
         spacing: 6
         ComboBox {
             id: separatorCombo
@@ -995,9 +1205,16 @@ Kirigami.FormLayout {
             onTextChanged: panelTab.configRoot.cfg_panelSeparator = text
         }
     }
+    Label {
+        text: i18n("Item spacing:")
+        visible: panelTab._panelInfoMode !== "multiline" && panelTab._panelInfoMode !== "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._panelInfoMode !== "multiline" && panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Item spacing:")
         spacing: 8
         SpinBox {
             id: itemSpacingSpin
@@ -1012,24 +1229,32 @@ Kirigami.FormLayout {
         }
     }
     Kirigami.InlineMessage {
+        Layout.columnSpan: panelTab.columns
         visible: panelTab._panelInfoMode !== "multiline" && panelTab._panelInfoMode !== "simple" && panelTab.configRoot.cfg_panelItemSpacing < 0
         Layout.fillWidth: true
-        Layout.columnSpan: 2
         type: Kirigami.MessageType.Warning
         text: i18n("Negative spacing pulls panel items closer together than their natural gap and can make icons or text overlap.")
         showCloseButton: false
     }
+    Label {
+        text: i18n("Fill panel:")
+        visible: panelTab._panelInfoMode === "single"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     CheckBox {
         visible: panelTab._panelInfoMode === "single"
-        Kirigami.FormData.label: i18n("Fill panel:")
         text: i18n("Expand widget to fill available panel space")
         checked: panelTab.configRoot.cfg_panelFillWidth
         onToggled: panelTab.configRoot.cfg_panelFillWidth = checked
     }
-    Kirigami.Separator {
+    SectionHeader {
+        title: i18n("Panel items settings")
+        Layout.columnSpan: panelTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
         visible: panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Panel items settings")
-        Kirigami.FormData.isSection: true
     }
     // ── Simple mode font style dialog ─────────────────────────────────────────
     Platform.FontDialog {
@@ -1089,9 +1314,16 @@ Kirigami.FormLayout {
             panelTab.configRoot.cfg_panelUseSystemFont = false;
         }
     }
+    Label {
+        text: i18n("Panel font:")
+        visible: panelTab._panelInfoMode !== "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Panel font:")
         spacing: Kirigami.Units.smallSpacing
         Switch {
             id: panelFontSwitch
@@ -1111,18 +1343,30 @@ Kirigami.FormLayout {
             opacity: 0.8
         }
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: panelTab.columns === 2 && (!panelFontSwitch.checked && panelTab._panelInfoMode !== "simple")
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Label {
         visible: !panelFontSwitch.checked && panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: ""
         text: i18n("Text will follow the system font and expand to fill the available space.")
         opacity: 0.65
         font: Kirigami.Theme.smallFont
         wrapMode: Text.WordWrap
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
         Layout.maximumWidth: 300
+    }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: panelTab.columns === 2 && (panelFontSwitch.checked && panelTab._panelInfoMode !== "simple")
+        implicitWidth: 0
+        implicitHeight: 0
     }
     RowLayout {
         visible: panelFontSwitch.checked && panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: ""
         spacing: Kirigami.Units.smallSpacing
         Button {
             text: i18nc("@action:button", "Choose Style\u2026")
@@ -1133,9 +1377,14 @@ Kirigami.FormLayout {
             }
         }
     }
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: panelTab.columns === 2 && (panelFontSwitch.checked && panelTab.configRoot.cfg_panelFontFamily.length > 0 && panelTab._panelInfoMode !== "simple")
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     ColumnLayout {
         visible: panelFontSwitch.checked && panelTab.configRoot.cfg_panelFontFamily.length > 0 && panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: ""
         spacing: 2
         Label {
             text: i18nc("@info %1 size %2 family", "%1pt %2", panelFontDialog.fontChosen.pointSize > 0 ? panelFontDialog.fontChosen.pointSize : (panelTab.configRoot.cfg_panelFontSize > 0 ? panelTab.configRoot.cfg_panelFontSize : 11), panelTab.configRoot.cfg_panelFontFamily)
@@ -1146,13 +1395,22 @@ Kirigami.FormLayout {
             font: Kirigami.Theme.smallFont
             opacity: 0.65
             wrapMode: Text.WordWrap
+            Layout.fillWidth: true
+            Layout.minimumWidth: 0
             Layout.maximumWidth: 300
         }
     }
     // Icon theme selector
+    Label {
+        text: i18n("Icon theme:")
+        visible: panelTab._panelInfoMode !== "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
         visible: panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Icon theme:")
         spacing: Kirigami.Units.largeSpacing
         ComboBox {
             id: iconThemeCombo
@@ -1241,17 +1499,27 @@ Kirigami.FormLayout {
         }
     }
     // Custom theme: description + button to open Panel Items with icon pickers
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: panelTab.columns === 2 && (iconThemeCombo.model[iconThemeCombo.currentIndex].value === "custom" && panelTab._panelInfoMode !== "simple")
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     RowLayout {
+        Layout.fillWidth: true
         visible: iconThemeCombo.model[iconThemeCombo.currentIndex].value === "custom" && panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: ""
         spacing: Kirigami.Units.largeSpacing
         ColumnLayout {
+            Layout.fillWidth: true
+            Layout.minimumWidth: 0
             spacing: Kirigami.Units.smallSpacing
             Label {
                 text: i18n("Uses KDE system icons by default. Click the button to customise each item's icon.")
                 opacity: 0.65
                 font: Kirigami.Theme.smallFont
                 wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 Layout.maximumWidth: 220
             }
         }
@@ -1265,9 +1533,16 @@ Kirigami.FormLayout {
         }
     }
     // Panel items configure button + preview chips
+    Label {
+        text: i18n("Panel items:")
+        visible: panelTab._panelInfoMode !== "simple"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: panelTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
     Item {
         visible: panelTab._panelInfoMode !== "simple"
-        Kirigami.FormData.label: i18n("Panel items:")
         implicitWidth: panelPreviewRow.implicitWidth
         implicitHeight: panelPreviewRow.implicitHeight
         RowLayout {
@@ -1311,4 +1586,9 @@ Kirigami.FormLayout {
             }
         }
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: panelTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: panelTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

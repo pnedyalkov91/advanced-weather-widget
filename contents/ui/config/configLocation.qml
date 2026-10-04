@@ -603,6 +603,41 @@ KCM.SimpleKCM {
         }
     }
 
+    // Some OSM names mix Cyrillic with look-alike Latin letters - Photon returns the
+    // Bulgarian country name with a Latin "a" in the middle. It looks identical but is a
+    // different character, so replace Latin look-alikes in words that also contain Cyrillic.
+    function _fixMixedScript(text) {
+        if (!text)
+            return "";
+        var map = {
+            "A": "\u0410",
+            "B": "\u0412",
+            "C": "\u0421",
+            "E": "\u0415",
+            "H": "\u041D",
+            "K": "\u041A",
+            "M": "\u041C",
+            "O": "\u041E",
+            "P": "\u0420",
+            "T": "\u0422",
+            "X": "\u0425",
+            "a": "\u0430",
+            "c": "\u0441",
+            "e": "\u0435",
+            "o": "\u043E",
+            "p": "\u0440",
+            "x": "\u0445",
+            "y": "\u0443"
+        };
+        return String(text).replace(/[^\s,.\-()]+/g, function (word) {
+            if (!/[\u0400-\u04FF]/.test(word) || !/[A-Za-z]/.test(word))
+                return word;
+            return word.replace(/[A-Za-z]/g, function (ch) {
+                return map[ch] || ch;
+            });
+        });
+    }
+
     function formatResultTitle(item) {
         if (!item)
             return "";
@@ -704,29 +739,51 @@ KCM.SimpleKCM {
         };
         metaReq.send();
         var req = new XMLHttpRequest();
-        // accept-language must NOT be percent-encoded (commas are syntactically significant)
-        var revLang = preferredLanguage.length > 0 ? preferredLanguage + ",en;q=0.8" : "en";
-        req.open("GET", "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1" + "&accept-language=" + revLang + "&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon));
-        req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
+        // Photon reverse geocoding (OpenStreetMap data). lang=default gives local-language names,
+        // the same as the location search. radius is in km: nearest object within 20 km.
+        var revUrl = "https://photon.komoot.io/reverse?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&radius=20&limit=1&lang=default&layer=city";
+        console.warn("[LocationSearch] Photon reverse GET " + revUrl);
+        req.open("GET", revUrl);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
+            console.warn("[LocationSearch] Photon reverse HTTP " + req.status + " " + req.statusText);
+            if (req.status !== 200)
+                console.warn("[LocationSearch] Photon reverse body: " + String(req.responseText).substring(0, 400));
             if (req.status === 200) {
-                var data = JSON.parse(req.responseText);
-                if (data && data.address) {
-                    var a = data.address;
-                    // Extended fallback chain - matches forward-search logic
-                    var city = a.city || a.town || a.village || a.hamlet || a.suburb || a.municipality || a.county || "";
-                    var country = a.country || "";
-                    var name;
-                    if (city.length > 0 && country.length > 0)
-                        name = city + ", " + country;
-                    else if (city.length > 0)
-                        name = city;
-                    else if (country.length > 0)
-                        name = country;
-                    else
-                        name = data.display_name || "";   // last-resort fallback
+                var p = null;
+                try {
+                    var feats = JSON.parse(req.responseText).features || [];
+                    p = feats.length > 0 ? (feats[0].properties || {}) : null;
+                } catch (e) {
+                    console.warn("[LocationSearch] Photon reverse parse error: " + e);
+                }
+                if (p) {
+                    console.warn("[LocationSearch] Photon reverse result: " + JSON.stringify({
+                        name: p.name,
+                        osm_key: p.osm_key,
+                        osm_value: p.osm_value,
+                        city: p.city,
+                        district: p.district,
+                        county: p.county,
+                        state: p.state,
+                        country: p.country
+                    }));
+                    // Title format "name, county, state, country", the same as the search results
+                    // (a part equal to an earlier one is skipped). For a "place" result (city, town,
+                    // village...) name is the settlement itself. For anything else (a metro entrance,
+                    // a shop, a street...) name belongs to that object, not to the location, so it is
+                    // left out; the settlement then comes from "city" when Photon provides it.
+                    var isPlace = p.osm_key === "place" || p.osm_key === "boundary";
+                    var parts = [];
+                    [p.city || (isPlace ? p.name : ""), p.county, p.state, p.country].forEach(function (part) {
+                        part = _fixMixedScript(part);
+                        if (part.length > 0 && parts.every(function (x) {
+                            return x.toLowerCase() !== part.toLowerCase();
+                        }))
+                            parts.push(part);
+                    });
+                    var name = parts.length > 0 ? parts.join(", ") : _fixMixedScript(p.locality || p.district || p.name || "");
 
                     if (name.length > 0) {
                         if (shouldConfirmAutoDetectedLocation()) {
@@ -738,7 +795,7 @@ KCM.SimpleKCM {
                         }
                     }
                     // Capture country code for MeteoAlarm alerts
-                    var cc = (a.country_code || "").toUpperCase();
+                    var cc = (p.countrycode || "").toUpperCase();
                     if (cc.length > 0) {
                         if (shouldConfirmAutoDetectedLocation()) {
                             root.detectedCountryCode = cc;
@@ -763,8 +820,15 @@ KCM.SimpleKCM {
     // Tier 3: IP geolocation (geo.kamero.ai → reallyfreegeoip.org)
     // Which tier is active: 0 = idle, 1 = geoclue2, 2 = generic, 3 = IP
     property int _cfgLocationTier: 0
+    // GeoClue2 / Qt Positioning can report several fixes for one detection; only the first is used.
+    property bool _cfgFixHandled: false
 
     function _cfgHandlePosition(lat, lon, alt, tierLabel) {
+        if (_cfgFixHandled) {
+            console.warn("[LocationSearch] duplicate position fix ignored");
+            return;
+        }
+        _cfgFixHandled = true;
         // Deactivate sources after successful fix to avoid duplicate callbacks
         var ps = posSourceLoader.item;
         if (ps) {
@@ -801,6 +865,7 @@ KCM.SimpleKCM {
             return;
         }
         autoDetectBusy = true;
+        _cfgFixHandled = false;
         _cfgLocationTier = 1;
         autoDetectStatus = i18n("Requesting location via GeoClue2…");
         var ps = posSourceLoader.item;
@@ -985,10 +1050,10 @@ KCM.SimpleKCM {
         if (!item)
             return;
         var newName;
-        if (item.providerKey === "nominatim" && item.localizedDisplayName && item.localizedDisplayName.length > 0) {
+        if ((item.providerKey === "nominatim" || item.providerKey === "photon") && item.localizedDisplayName && item.localizedDisplayName.length > 0) {
             newName = item.localizedDisplayName;
         } else {
-            var nameParts = [];
+            const nameParts = [];
             if (item.name && item.name.length > 0)
                 nameParts.push(item.name);
             if (item.district && item.district.length > 0 && item.district.toLowerCase() !== (item.name || "").toLowerCase())
@@ -1499,6 +1564,7 @@ KCM.SimpleKCM {
                     // ── Auto-detect radio ──────────────────────────────────
                     ColumnLayout {
                         Layout.fillWidth: true
+                        Layout.minimumWidth: 0
                         spacing: 4
 
                         RowLayout {
@@ -1527,10 +1593,14 @@ KCM.SimpleKCM {
 
                         RowLayout {
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             Layout.leftMargin: 24
                             spacing: 8
                             Label {
                                 Layout.fillWidth: true
+                                // Without an explicit minimum the label keeps its
+                                // one-line width and is clipped in a narrow window.
+                                Layout.minimumWidth: 0
                                 wrapMode: Text.WordWrap
                                 opacity: 0.78
                                 text: root._positioningAvailable ? (root.autoDetectBusy ? i18n("Detecting…") : (root.autoDetectStatus.length > 0 ? root.autoDetectStatus : i18n("Location detection is depending on system configuration and permissions."))) : i18n("GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection.")
@@ -1557,46 +1627,60 @@ KCM.SimpleKCM {
                         ButtonGroup.group: locationModeGroup
                         onClicked: root.cfg_autoDetectLocation = false
                     }
-                    RowLayout {
+                    GridLayout {
+                        id: manualLocRow
                         Layout.fillWidth: true
+                        Layout.minimumWidth: 0
                         Layout.leftMargin: 24
-                        spacing: 8
+                        columnSpacing: 8
+                        rowSpacing: 6
                         visible: !root.cfg_autoDetectLocation
+                        // Hint on its own line with the three buttons right below it
+                        // (the buttons wrap onto extra lines in a narrow window).
+                        columns: 1
                         Label {
+                            id: manualLocHint
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             wrapMode: Text.WordWrap
                             opacity: 0.78
                             text: i18n("Search for a location or choose it on the map.")
                         }
-                        Button {
-                            text: i18n("Search Location")
-                            icon.name: "edit-find"
-                            enabled: !root.cfg_autoDetectLocation
-                            ToolTip.visible: hovered
-                            ToolTip.text: i18n("Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement.")
-                            onClicked: root.openSearchPage()
-                        }
-                        Button {
-                            text: i18n("Choose on Map")
-                            icon.name: "map-flat"
-                            enabled: !root.cfg_autoDetectLocation
-                            ToolTip.visible: hovered
-                            ToolTip.text: i18n("Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark.")
-                            onClicked: {
-                                if (!root._qtLocationAvailable) {
-                                    missingLocationDialog.open();
-                                    return;
-                                }
-                                root.openMapPage();
+                        Flow {
+                            id: manualLocButtons
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            spacing: 8
+                            Button {
+                                text: i18n("Search Location")
+                                icon.name: "edit-find"
+                                enabled: !root.cfg_autoDetectLocation
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement.")
+                                onClicked: root.openSearchPage()
                             }
-                        }
-                        Button {
-                            text: i18n("Enter Manually")
-                            icon.name: "document-edit"
-                            enabled: !root.cfg_autoDetectLocation
-                            ToolTip.visible: hovered
-                            ToolTip.text: i18n("Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps.")
-                            onClicked: root.openManualPage()
+                            Button {
+                                text: i18n("Choose on Map")
+                                icon.name: "map-flat"
+                                enabled: !root.cfg_autoDetectLocation
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark.")
+                                onClicked: {
+                                    if (!root._qtLocationAvailable) {
+                                        missingLocationDialog.open();
+                                        return;
+                                    }
+                                    root.openMapPage();
+                                }
+                            }
+                            Button {
+                                text: i18n("Enter Manually")
+                                icon.name: "document-edit"
+                                enabled: !root.cfg_autoDetectLocation
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps.")
+                                onClicked: root.openManualPage()
+                            }
                         }
                     }
 
@@ -1755,19 +1839,25 @@ KCM.SimpleKCM {
 
                                     ColumnLayout {
                                         Layout.fillWidth: true
+                                        // Let the text column shrink so the row never gets
+                                        // wider than the window (which pushed the buttons
+                                        // on the right out of view).
+                                        Layout.minimumWidth: 0
                                         spacing: 0
 
                                         Label {
                                             Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
                                             visible: !savedLocDelegateRoot._renaming
                                             text: savedLocDelegateRoot.name.length > 0 ? savedLocDelegateRoot.name : i18n("Unknown")
-                                            elide: Text.ElideRight
+                                            wrapMode: Text.Wrap
                                             font.bold: savedLocDelegateRoot._isActive
                                             color: savedLocDelegateRoot._isActive ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
                                         }
                                         TextField {
                                             id: renameField
                                             Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
                                             visible: savedLocDelegateRoot._renaming
                                             onVisibleChanged: {
                                                 if (visible) {
@@ -1781,6 +1871,8 @@ KCM.SimpleKCM {
                                         }
                                         Label {
                                             Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
+                                            wrapMode: Text.Wrap
                                             text: {
                                                 var parts = [savedLocDelegateRoot.lat.toFixed(4) + "°, " + savedLocDelegateRoot.lon.toFixed(4) + "°"];
                                                 if (savedLocDelegateRoot.altitude !== 0)
@@ -1791,7 +1883,6 @@ KCM.SimpleKCM {
                                             }
                                             opacity: 0.6
                                             font.pointSize: Kirigami.Theme.smallFont.pointSize
-                                            elide: Text.ElideRight
                                         }
                                     }
 

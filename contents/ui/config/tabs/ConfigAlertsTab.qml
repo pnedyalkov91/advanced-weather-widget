@@ -25,23 +25,59 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+GridLayout {
     id: alertsTab
+
+    Layout.fillWidth: true
+    // children with a maximum width would otherwise cap the grid itself and make
+    // it flip between one and two columns
+    Layout.maximumWidth: Number.POSITIVE_INFINITY
+    Layout.alignment: Qt.AlignTop
+    // Label and control on one line when there is room (like the wide mode of
+    // Kirigami.FormLayout); the label goes above its control in a narrow window.
+    columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+    columnSpacing: Kirigami.Units.largeSpacing
+    rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configGeneral) for cfg_* properties */
     required property var configRoot
 
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // SECTION: Weather Alerts
     // ═══════════════════════════════════════════════════════════════
-    Kirigami.Separator {
-        Kirigami.FormData.isSection: true
-        Kirigami.FormData.label: i18n("Weather Alerts Provider")
+    SectionHeader {
+        title: i18n("Weather Alerts Provider")
+        Layout.columnSpan: alertsTab.columns
     }
 
+    Label {
+        text: i18n("Alerts provider:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: alertsTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     ComboBox {
         id: alertsProviderCombo
-        Kirigami.FormData.label: i18n("Alerts provider:")
         Layout.preferredWidth: 280
         model: [
             {
@@ -68,7 +104,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: alertsTab.columns
         Layout.fillWidth: true
         visible: alertsTab.configRoot.cfg_alertsProvider === "native"
         showCloseButton: true
@@ -78,7 +114,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: alertsTab.columns
         Layout.fillWidth: true
         visible: alertsTab.configRoot.cfg_alertsProvider === "librewxr"
         showCloseButton: true
@@ -88,7 +124,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: alertsTab.columns
         Layout.fillWidth: true
         visible: alertsTab.configRoot.cfg_alertsProvider === "foss"
         showCloseButton: true
@@ -96,4 +132,9 @@ Kirigami.FormLayout {
         text: i18n("Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>" + "KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider.")
         onLinkActivated: Qt.openUrlExternally(link)
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: alertsTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: alertsTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

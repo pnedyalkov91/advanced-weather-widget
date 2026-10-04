@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: advanced-weather-widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-09-30 08:15+0300\n"
+"POT-Creation-Date: 2026-10-04 10:48+0300\n"
 "PO-Revision-Date: 2026-07-06 10:44+0300\n"
 "Last-Translator: Petar Nedyalkov <petar.nedyalkov91@gmail.com>\n"
 "Language-Team: Bulgarian <kde-i18n-doc@kde.org>\n"
@@ -55,7 +55,7 @@ msgstr "Възможен %1 %2."
 msgid "%1 there will be %2 with a low of %3 and a high of %4."
 msgstr "%1 ще има %2 с минимална температура %3 и максимална %4."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1141
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1390
 msgctxt "@info %1 size %2 family"
 msgid "%1pt %2"
 msgstr "%1pt %2"
@@ -65,20 +65,19 @@ msgstr "%1pt %2"
 msgid "--"
 msgstr "--"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:452
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:561
 msgid "-180 to 180 (e.g. 23.3219)"
 msgstr "-180 до 180 (напр. 23,3219)"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:435
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:544
 msgid "-90 to 90 (e.g. 42.6977)"
 msgstr "-90 до 90 (напр. 42,6977)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:931
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1132
 msgid "0 = auto (120 px per chip). Increase if values are truncated."
-msgstr ""
-"0 = автоматично (120 px на елемент). Увеличете, ако стойностите се скъсяват."
+msgstr "0 = автоматично (120 px на елемент). Увеличете, ако стойностите се скъсяват."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:931
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1132
 msgid "0 = auto. Increase if items are cut off."
 msgstr "0 = автоматично. Увеличете, ако елементите се отрязват."
 
@@ -115,11 +114,11 @@ msgid "256 px"
 msgstr "256 пиксела"
 
 #: contents/ui/config/configAppearance.qml:265
-#: contents/ui/config/tabs/ConfigPanelTab.qml:332
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1175
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:221
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:44
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:54
+#: contents/ui/config/tabs/ConfigPanelTab.qml:419
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1433
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:292
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:63
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:73
 msgid "3D Oxygen (Bundled)"
 msgstr "3D Oxygen (вградена)"
 
@@ -127,7 +126,7 @@ msgstr "3D Oxygen (вградена)"
 msgid "512 px"
 msgstr "512 пиксела"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:117
+#: contents/ui/config/tabs/ConfigMiscTab.qml:179
 msgid "68°F"
 msgstr "68°F"
 
@@ -139,7 +138,7 @@ msgstr "<b>В сила:</b> %1"
 msgid "<b>Headline:</b> %1"
 msgstr "<b>Заглавие:</b> %1"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:79
+#: contents/ui/config/tabs/ConfigRadarTab.qml:141
 msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
@@ -164,32 +163,15 @@ msgstr "<b>Степен на опасност:</b> %1%2"
 msgid "<b>Starts:</b> %1"
 msgstr "<b>Започва:</b> %1"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:267
-msgid ""
-"<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM "
-"precipitation/cloud layers are <b>static model tiles</b> - they show a "
-"smoothed NWP (Numerical Weather Prediction) output, not actual radar "
-"returns. They represent where the model <i>thinks</i> it is raining based on"
-" interpolation between weather stations and model runs.<br/><br/>RainViewer "
-"uses <b>real weather radar composites</b> from radar stations - actual "
-"measured reflectivity updated every 2-10 minutes. This discrepancy is "
-"expected and known."
-msgstr ""
-"<b>Защо слоевете на OWM може да не съвпадат с радара на "
-"RainViewer</b><br/><br/>Слоевете за валежи/облачност на OWM са <b>статични "
-"моделни плочки</b> - те показват изгладен NWP (Числено прогнозиране на "
-"времето) резултат, а не реални радарни данни. Те представят къде моделът "
-"<i>смята</i>, че вали въз основа на интерполация между метеорологични "
-"станции и изпълнения на модела.<br/><br/>RainViewer използва <b>реални "
-"метеорологични радарни композити</b> от радарни станции - действително "
-"измерена отражателна способност, обновявана на всеки 2-10 минути. Това "
-"несъответствие е очаквано и известно."
+#: contents/ui/config/tabs/ConfigRadarTab.qml:361
+msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
+msgstr "<b>Защо слоевете на OWM може да не съвпадат с радара на RainViewer</b><br/><br/>Слоевете за валежи/облачност на OWM са <b>статични моделни плочки</b> - те показват изгладен NWP (Числено прогнозиране на времето) резултат, а не реални радарни данни. Те представят къде моделът <i>смята</i>, че вали въз основа на интерполация между метеорологични станции и изпълнения на модела.<br/><br/>RainViewer използва <b>реални метеорологични радарни композити</b> от радарни станции - действително измерена отражателна способност, обновявана на всеки 2-10 минути. Това несъответствие е очаквано и известно."
 
 #: contents/ui/config/configGeneral.qml:596
 msgid "AEMET - Spain only (Key Required)"
 msgstr "AEMET - само Испания (изисква се ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:201
+#: contents/ui/config/tabs/ConfigProviderTab.qml:251
 msgid "AEMET API Key:"
 msgstr "API ключ за AEMET:"
 
@@ -202,51 +184,13 @@ msgstr "Грешка от AEMET (код %1). Проверете своя API к�
 msgid "AEMET only covers Spain - this location has no coverage."
 msgstr "AEMET покрива само Испания - това местоположение не се обслужва."
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:382
-msgid ""
-"AEMET only covers locations in Spain - other locations show \"Failed\" "
-"rather than switching provider (it's intentionally left out of Adaptive Mode"
-" too, since it's the one provider here with its own request limit). There is"
-" a limit on the number of requests to the AEMET API per minute, so don't "
-"click the refresh button too many times, as you may hit the limit and have "
-"to wait at least 1 minute before making another request.A failed request "
-"retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - "
-"pressure, visibility, snow cover, and a daily accumulated precipitation "
-"total - show as \"N/A\" here rather than a bug. UV is a daily figure only, "
-"not hour-by-hour, and wind can be missing for days further out where AEMET's"
-" own forecast confidence drops off.<br/><br/>Free key: <a "
-"href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>."
-" New keys expire 3 months after creation (AEMET's policy, changed July 2026)"
-" - you'll need to request a new one when that happens.<br/><br/>Please don't"
-" refresh too often, as AEMET has a request limit per minute. If you hit it, "
-"you'll have to wait at least 1 minute before making another request."
-msgstr ""
-"AEMET покрива само местоположения в Испания - другите местоположения "
-"показват \"Неуспешно\", вместо да превключат доставчика (той е нарочно "
-"изключен и от Адаптивния режим, тъй като е единственият доставчик тук със "
-"собствено ограничение на заявките). Съществува ограничение за броя заявки "
-"към API на AEMET в минута, затова не щраквайте твърде често бутона за "
-"обновяване, тъй като може да достигнете лимита и да се наложи да изчакате "
-"поне 1 минута преди следваща заявка. Неуспешна заявка се повтаря автоматично"
-" веднъж.<br/><br/>Полетата, които AEMET изобщо не публикува - налягане, "
-"видимост, снежна покривка и дневна сума на валежите - се показват тук като "
-"\"Няма данни\", а не заради грешка. UV е само дневна стойност, не почасова, "
-"а вятърът може да липсва за по-далечни дни, където собствената прогноза на "
-"AEMET губи увереност.<br/><br/>Безплатен ключ: <a "
-"href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>."
-" Новите ключове изтичат 3 месеца след създаването им (политика на AEMET, "
-"променена през юли 2026 г.) - ще трябва да заявите нов, когато това се "
-"случи.<br/><br/>Моля, не обновявайте твърде често, тъй като AEMET има "
-"ограничение на заявките в минута. Ако го достигнете, ще трябва да изчакате "
-"поне 1 минута преди следваща заявка."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:440
+msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
+msgstr "AEMET покрива само местоположения в Испания - другите местоположения показват \"Неуспешно\", вместо да превключат доставчика (той е нарочно изключен и от Адаптивния режим, тъй като е единственият доставчик тук със собствено ограничение на заявките). Съществува ограничение за броя заявки към API на AEMET в минута, затова не щраквайте твърде често бутона за обновяване, тъй като може да достигнете лимита и да се наложи да изчакате поне 1 минута преди следваща заявка. Неуспешна заявка се повтаря автоматично веднъж.<br/><br/>Полетата, които AEMET изобщо не публикува - налягане, видимост, снежна покривка и дневна сума на валежите - се показват тук като \"Няма данни\", а не заради грешка. UV е само дневна стойност, не почасова, а вятърът може да липсва за по-далечни дни, където собствената прогноза на AEMET губи увереност.<br/><br/>Безплатен ключ: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. Новите ключове изтичат 3 месеца след създаването им (политика на AEMET, променена през юли 2026 г.) - ще трябва да заявите нов, когато това се случи.<br/><br/>Моля, не обновявайте твърде често, тъй като AEMET има ограничение на заявките в минута. Ако го достигнете, ще трябва да изчакате поне 1 минута преди следваща заявка."
 
 #: contents/ui/ForecastView.qml:867
-msgid ""
-"AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still "
-"available for this date."
-msgstr ""
-"AEMET предоставя почасова прогноза до 48 часа напред. Дневната прогноза за "
-"тази дата все пак е налична."
+msgid "AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date."
+msgstr "AEMET предоставя почасова прогноза до 48 часа напред. Дневната прогноза за тази дата все пак е налична."
 
 #: contents/ui/WeatherService.qml:1094
 msgid "AEMET: request failed - retrying automatically."
@@ -254,19 +198,13 @@ msgstr "AEMET: заявката е неуспешна - автоматично �
 
 #: contents/ui/WeatherService.qml:1091
 msgid "AEMET: request limit reached - retrying automatically in a minute."
-msgstr ""
-"AEMET: достигнат е лимитът на заявките - автоматично ще се повтори след "
-"минута."
+msgstr "AEMET: достигнат е лимитът на заявките - автоматично ще се повтори след минута."
 
 #: contents/ui/ForecastView.qml:869
-msgid ""
-"AEMET: request limit reached for the moment. This will retry automatically -"
-" please wait a minute."
-msgstr ""
-"AEMET: лимитът на заявките е достигнат за момента. Ще се повтори автоматично"
-" - моля, изчакайте минута."
+msgid "AEMET: request limit reached for the moment. This will retry automatically - please wait a minute."
+msgstr "AEMET: лимитът на заявките е достигнат за момента. Ще се повтори автоматично - моля, изчакайте минута."
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:145
+#: contents/ui/config/tabs/ConfigProviderTab.qml:195
 msgid "AI-powered weather intelligence. API key required below."
 msgstr "Изкуствен интелект за време. Изисква API ключ по-долу."
 
@@ -291,22 +229,18 @@ msgid "Active"
 msgstr "Активен"
 
 #: contents/ui/config/configGeneral.qml:157
-msgid ""
-"Active - GPU compositing is currently disabled for the radar map in this "
-"session."
-msgstr ""
-"Активно - композирането с GPU в момента е изключено за радарната карта в "
-"тази сесия."
+msgid "Active - GPU compositing is currently disabled for the radar map in this session."
+msgstr "Активно - композирането с GPU в момента е изключено за радарната карта в тази сесия."
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:393
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:376
 msgid "Adaptive (Open-Meteo)"
 msgstr "Адаптивен (Open-Meteo)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:74
+#: contents/ui/config/tabs/ConfigProviderTab.qml:104
 msgid "Adaptive (auto-fallback)"
 msgstr "Адаптивен (автоматично резервен)"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:387
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:495
 msgid "Add Location Manually"
 msgstr "Добавяне на местоположение ръчно"
 
@@ -314,7 +248,7 @@ msgstr "Добавяне на местоположение ръчно"
 msgid "Add a location"
 msgstr "Добавяне на местоположение"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:130
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:176
 msgid "Advanced (all tabs)"
 msgstr "Разширен (всички раздели)"
 
@@ -325,12 +259,12 @@ msgstr "Следобед"
 #: contents/ui/config/configAppearance.qml:1876
 #: contents/ui/config/configAppearance.qml:1999
 #: contents/ui/config/configAppearance.qml:2122
-#: contents/ui/config/tabs/ConfigMiscTab.qml:322
+#: contents/ui/config/tabs/ConfigMiscTab.qml:426
 #: contents/ui/DetailsView.qml:365 contents/ui/SimpleView.qml:266
 msgid "Air Quality"
 msgstr "Качество на въздуха"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:356
+#: contents/ui/config/tabs/ConfigMiscTab.qml:483
 msgid "Air Quality index standard:"
 msgstr "Стандарт за индекс на качеството на въздуха:"
 
@@ -349,12 +283,8 @@ msgid "Air quality is acceptable."
 msgstr "Качеството на въздуха е приемливо."
 
 #: contents/ui/js/airQuality.js:103
-msgid ""
-"Air quality is acceptable; there may be a risk for people unusually "
-"sensitive to air pollution."
-msgstr ""
-"Качеството на въздуха е приемливо; може да съществува риск за хора, "
-"необичайно чувствителни към замърсяването на въздуха."
+msgid "Air quality is acceptable; there may be a risk for people unusually sensitive to air pollution."
+msgstr "Качеството на въздуха е приемливо; може да съществува риск за хора, необичайно чувствителни към замърсяването на въздуха."
 
 #: contents/ui/js/airQuality.js:95
 msgid "Air quality is extremely poor."
@@ -369,11 +299,8 @@ msgid "Air quality is poor."
 msgstr "Качеството на въздуха е лошо."
 
 #: contents/ui/js/airQuality.js:102
-msgid ""
-"Air quality is satisfactory, and air pollution poses little or no risk."
-msgstr ""
-"Качеството на въздуха е задоволително, а замърсяването на въздуха "
-"представлява малък или никакъв риск."
+msgid "Air quality is satisfactory, and air pollution poses little or no risk."
+msgstr "Качеството на въздуха е задоволително, а замърсяването на въздуха представлява малък или никакъв риск."
 
 #: contents/ui/js/airQuality.js:90
 msgid "Air quality is satisfactory."
@@ -392,140 +319,91 @@ msgstr "Опции за качество на въздуха"
 msgid "Alder"
 msgstr "Елша"
 
-#: contents/ui/config/configNotifications.qml:379
+#: contents/ui/config/configNotifications.qml:418
 msgid "Alert sound:"
 msgstr "Звук за предупреждение:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:456
 #: contents/ui/config/configAppearance.qml:1897
 #: contents/ui/config/configAppearance.qml:2020
-#: contents/ui/config/configAppearance.qml:2143
-#: contents/ui/DetailsView.qml:368 contents/ui/SimpleView.qml:269
+#: contents/ui/config/configAppearance.qml:2143 contents/ui/DetailsView.qml:368
+#: contents/ui/SimpleView.qml:269
 msgid "Alerts"
 msgstr "Предупреждения"
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:44
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:73
 msgid "Alerts provider:"
 msgstr "Доставчик на предупреждения:"
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:96
-msgid ""
-"Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert "
-"Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-"
-"weather warnings in CAP format from agencies worldwide and matches them to "
-"your exact location. Alert notifications work the same as with the native "
-"provider."
-msgstr ""
-"Доставчик на предупреждения: <a href='https://alerts.kde.org/'>FOSS Public "
-"Alert Server</a><br/><br/>FOSS Public Alert Server на KDE събира официални "
-"предупреждения за опасно време във формат CAP от агенции по целия свят и ги "
-"съпоставя с точното ви местоположение. Известията за предупреждения работят "
-"по същия начин, както при стандартния доставчик."
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:132
+msgid "Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr "Доставчик на предупреждения: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>FOSS Public Alert Server на KDE събира официални предупреждения за опасно време във формат CAP от агенции по целия свят и ги съпоставя с точното ви местоположение. Известията за предупреждения работят по същия начин, както при стандартния доставчик."
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:86
-msgid ""
-"Alerts provider: <a "
-"href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-"
-"source weather API that aggregates official CAP alerts worldwide (WMO Severe"
-" Weather Information Centre, NOAA NWS, and others) and matches them to your "
-"exact location. Alert notifications work the same as with the native "
-"provider."
-msgstr ""
-"Доставчик на предупреждения: <a "
-"href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR е безплатен API "
-"с отворен код за времето, който събира официални CAP предупреждения по целия"
-" свят (WMO Severe Weather Information Centre, NOAA NWS и други) и ги "
-"съпоставя с точното ви местоположение. Известията за предупреждения работят "
-"по същия начин, както при стандартния доставчик."
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:122
+msgid "Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr "Доставчик на предупреждения: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR е безплатен API с отворен код за времето, който събира официални CAP предупреждения по целия свят (WMO Severe Weather Information Centre, NOAA NWS и други) и ги съпоставя с точното ви местоположение. Известията за предупреждения работят по същия начин, както при стандартния доставчик."
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:76
-msgid ""
-"Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET "
-"MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA "
-"NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 "
-"countries), US locations use the NOAA National Weather Service alerts API, "
-"with met.no MetAlerts as a fallback. If your weather provider delivers its "
-"own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
-msgstr ""
-"Доставчик на предупреждения: <a href='https://www.meteoalarm.org/'>EUMETNET "
-"MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>За"
-" местоположения в Европа се използват официалните емисии на MeteoAlarm (38 "
-"държави), а за местоположения в САЩ - API за предупреждения на NOAA National"
-" Weather Service, с MetAlerts на met.no като резервен вариант. Ако вашият "
-"метеорологичен доставчик предоставя собствени предупреждения (напр. "
-"WeatherAPI.com, Pirate Weather), те се използват директно."
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:112
+msgid "Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
+msgstr "Доставчик на предупреждения: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>За местоположения в Европа се използват официалните емисии на MeteoAlarm (38 държави), а за местоположения в САЩ - API за предупреждения на NOAA National Weather Service, с MetAlerts на met.no като резервен вариант. Ако вашият метеорологичен доставчик предоставя собствени предупреждения (напр. WeatherAPI.com, Pirate Weather), те се използват директно."
 
 #: contents/ui/TooltipContent.qml:485
 msgid "Alerts:"
 msgstr "Предупреждения:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:872
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1177
 msgid "All days show hourly forecast when opening the tab"
 msgstr "Всички дни показват почасова прогноза при отваряне на раздела"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:856
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1154
 msgid "All days start collapsed"
 msgstr "Всички дни започват свити"
 
-#: contents/ui/config/configNotifications.qml:425
+#: contents/ui/config/configNotifications.qml:473
 msgid "All files (*)"
 msgstr "Всички файлове (*)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:250
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:349
 msgid "All tabs"
 msgstr "Всички раздели"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:890
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1202
 msgid "Already-passed hours are removed from today's hourly forecast"
 msgstr "Отминалите часове се премахват от днешната почасова прогноза"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:889
-msgid ""
-"Already-passed hours for today stay in place, greyed out, instead of being "
-"removed"
-msgstr ""
-"Отминалите часове за днес остават на място, посивени, вместо да бъдат "
-"премахнати"
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1201
+msgid "Already-passed hours for today stay in place, greyed out, instead of being removed"
+msgstr "Отминалите часове за днес остават на място, посивени, вместо да бъдат премахнати"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:371
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:354
 msgid "Alt: %1 %2"
 msgstr "Вис: %1 %2"
 
-#: contents/ui/config/configLocation.qml:1787
+#: contents/ui/config/configLocation.qml:1879
 msgid "Alt: %1 m"
 msgstr "Вис: %1 м"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:139
+#: contents/ui/config/tabs/ConfigProviderTab.qml:189
 msgid "Alternative provider. API key required below."
 msgstr "Алтернативен доставчик. Изисква API ключ по-долу."
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:464
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:573
 msgid "Altitude (%1):"
 msgstr "Надморска височина (%1):"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:483
-msgid ""
-"Altitude is optional, but strongly recommended for accurate forecasts. MET "
-"Norway (met.no) uses it to correct temperature and pressure for elevation; "
-"leaving it at 0 for a mountain location will return sea-level values."
-msgstr ""
-"Височината е незадължителна, но силно препоръчителна за точни прогнози. MET "
-"Norway (met.no) я използва за корекция на температурата и налягането спрямо "
-"надморската височина; ако оставите 0 за планинско местоположение, ще "
-"получите стойности на морското равнище."
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:594
+msgid "Altitude is optional, but strongly recommended for accurate forecasts. MET Norway (met.no) uses it to correct temperature and pressure for elevation; leaving it at 0 for a mountain location will return sea-level values."
+msgstr "Височината е незадължителна, но силно препоръчителна за точни прогнози. MET Norway (met.no) я използва за корекция на температурата и налягането спрямо надморската височина; ако оставите 0 за планинско местоположение, ще получите стойности на морското равнище."
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:610
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:550
 msgid "Altitude:"
 msgstr "Надморска височина:"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:348
-msgid ""
-"An API key is required for %1. Weather data cannot be retrieved without it."
-msgstr ""
-"Изисква се API ключ за %1. Без него не могат да се получат метеорологични "
-"данни."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:406
+msgid "An API key is required for %1. Weather data cannot be retrieved without it."
+msgstr "Изисква се API ключ за %1. Без него не могат да се получат метеорологични данни."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:819
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1005
 msgid "Animate row scrolling"
 msgstr "Анимация при превъртане на редове"
 
@@ -543,7 +421,7 @@ msgid "Apparent temperature"
 msgstr "Усеща се като температура"
 
 #: contents/config/config.qml:57
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:145
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:190
 msgid "Appearance"
 msgstr "Външен вид"
 
@@ -553,7 +431,7 @@ msgstr "Външен вид"
 msgid "Apply Settings?"
 msgstr "Прилагане на настройките?"
 
-#: contents/ui/config/configLocation.qml:1171
+#: contents/ui/config/configLocation.qml:1236
 msgid "Apply detected location"
 msgstr "Прилагане на откритото местоположение"
 
@@ -569,14 +447,9 @@ msgstr "Прилагане на темата на иконите"
 msgid "Apply only here"
 msgstr "Прилагане само тук"
 
-#: contents/ui/config/configLocation.qml:1380
-msgid ""
-"Are you sure? This is your last saved location. If you remove it, the widget"
-" will no longer show weather information."
-msgstr ""
-"Сигурни ли сте? Това е последното ви запазено местоположение. Ако го "
-"премахнете, приспособлението повече няма да показва метеорологична "
-"информация."
+#: contents/ui/config/configLocation.qml:1445
+msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
+msgstr "Сигурни ли сте? Това е последното ви запазено местоположение. Ако го премахнете, приспособлението повече няма да показва метеорологична информация."
 
 #: contents/ui/DetailsView.qml:3614
 msgid "Around midnight - "
@@ -592,7 +465,7 @@ msgstr "Стрелки"
 msgid "Atmospheric pressure"
 msgstr "Атмосферно налягане"
 
-#: contents/ui/config/configNotifications.qml:425
+#: contents/ui/config/configNotifications.qml:473
 msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "Аудио файлове (*.wav *.ogg *.oga *.mp3 *.flac)"
 
@@ -601,20 +474,20 @@ msgstr "Аудио файлове (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgid "Aurora Visibility"
 msgstr "Видимост на полярно сияние"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:261
-#: contents/ui/config/tabs/ConfigPanelTab.qml:388
-#: contents/ui/config/tabs/ConfigPanelTab.qml:474
-#: contents/ui/config/tabs/ConfigPanelTab.qml:882
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:109
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:152
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:472
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:504
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:646
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:680
+#: contents/ui/config/tabs/ConfigPanelTab.qml:341
+#: contents/ui/config/tabs/ConfigPanelTab.qml:482
+#: contents/ui/config/tabs/ConfigPanelTab.qml:575
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1075
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:159
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:209
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:617
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:655
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:860
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:901
 msgid "Auto"
 msgstr "Автоматично"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:108
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:76
 msgid "Auto (detect on save)"
 msgstr "Авто (откриване при запазване)"
 
@@ -622,65 +495,40 @@ msgstr "Авто (откриване при запазване)"
 msgid "Auto (device)"
 msgstr "Автоматично (устройство)"
 
-#: contents/ui/config/configLocation.qml:1524
-msgid ""
-"Auto-detection first asks GeoClue2, the system location service, for your "
-"current position. If system location is unavailable, the widget estimates "
-"your location from your public IP address, which is usually less precise and"
-" only updates when detection runs again."
-msgstr ""
-"Автоматичното откриване първо пита GeoClue2, системната услуга за "
-"местоположение, за текущата ви позиция. Ако системното местоположение не е "
-"достъпно, приспособлението преценява вашето местоположение от вашия публичен"
-" IP адрес, което обикновено е по-малко точно и се обновява само когато "
-"откриването се стартира отново."
+#: contents/ui/config/configLocation.qml:1590
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr "Автоматичното откриване първо пита GeoClue2, системната услуга за местоположение, за текущата ви позиция. Ако системното местоположение не е достъпно, приспособлението преценява вашето местоположение от вашия публичен IP адрес, което обикновено е по-малко точно и се обновява само когато откриването се стартира отново."
 
-#: contents/ui/config/configLocation.qml:1485
-msgid ""
-"Auto-detection is limited without QtLocation and QtPositioning. It will fall"
-" back to IP-based detection, which may be less accurate and will not update "
-"in real time as you move. If you want to improve auto-detection accuracy, "
-"please install the required packages for your distribution. For more "
-"details, see the install guide."
-msgstr ""
-"Автоматичното откриване е ограничено без QtLocation и QtPositioning. То ще "
-"премине към откриване, базирано на IP, което може да бъде по-малко точно и "
-"няма да се обновява в реално време, докато се движите. Ако искате да "
-"подобрите точността на автоматичното откриване, моля, инсталирайте "
-"необходимите пакети за вашата дистрибуция. За повече подробности вижте "
-"ръководството за инсталиране."
+#: contents/ui/config/configLocation.qml:1550
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr "Автоматичното откриване е ограничено без QtLocation и QtPositioning. То ще премине към откриване, базирано на IP, което може да бъде по-малко точно и няма да се обновява в реално време, докато се движите. Ако искате да подобрите точността на автоматичното откриване, моля, инсталирайте необходимите пакети за вашата дистрибуция. За повече подробности вижте ръководството за инсталиране."
 
-#: contents/ui/config/configLocation.qml:753
+#: contents/ui/config/configLocation.qml:810
 msgid "Auto-detection updated coordinates."
 msgstr "Координатите са обновени при автоматично откриване."
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:846
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1137
 msgid "Auto-open hourly forecast:"
 msgstr "Автоматично отваряне на почасова прогноза:"
 
 #: contents/ui/components/MapBackgroundChoices.qml:42
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1110
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1342
 msgid "Automatic"
 msgstr "Автоматично"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:361
+#: contents/ui/config/tabs/ConfigMiscTab.qml:495
 msgid "Automatic (based on location)"
 msgstr "Автоматично (според местоположението)"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:385
-msgid ""
-"Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI"
-" based on your location's country."
-msgstr ""
-"Автоматично използва американския AQI навсякъде по света, като превключва "
-"към европейския CAQI или канадския AQHI според държавата на вашето "
-"местоположение."
+#: contents/ui/config/tabs/ConfigMiscTab.qml:524
+msgid "Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI based on your location's country."
+msgstr "Автоматично използва американския AQI навсякъде по света, като превключва към европейския CAQI или канадския AQHI според държавата на вашето местоположение."
 
-#: contents/ui/config/configLocation.qml:1508
+#: contents/ui/config/configLocation.qml:1574
 msgid "Automatically detect location"
 msgstr "Автоматично откриване на местоположение"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:269
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:366
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:126
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:124
 msgid "Available"
@@ -699,39 +547,39 @@ msgid "BBC Weather (free)"
 msgstr "BBC Weather (безплатно)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:100
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:374
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:287
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:250
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:484
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:270
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:311
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:84
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:83
 msgid "Back"
 msgstr "Назад"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:787
+#: contents/ui/config/tabs/ConfigPanelTab.qml:952
 msgid "Badge Background Color"
 msgstr "Цвят на фона на значката"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:723
+#: contents/ui/config/tabs/ConfigPanelTab.qml:873
 msgid "Badge background:"
 msgstr "Фон на значката:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:767
+#: contents/ui/config/tabs/ConfigPanelTab.qml:924
 msgid "Badge opacity:"
 msgstr "Непрозрачност на значката:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:661
+#: contents/ui/config/tabs/ConfigPanelTab.qml:797
 msgid "Badge position:"
 msgstr "Позиция на значката:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:707
+#: contents/ui/config/tabs/ConfigPanelTab.qml:850
 msgid "Badge spacing:"
 msgstr "Разстояние на значката:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:238
+#: contents/ui/config/tabs/ConfigRadarTab.qml:332
 msgid "Balanced (10 to 20 fps)"
 msgstr "Балансирано (10 до 20 кадъра/сек)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:214
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:291
 msgid "Behavior"
 msgstr "Поведение"
 
@@ -754,15 +602,15 @@ msgstr "И двете  07:17 / 18:03"
 msgid "Both (sunrise & sunset)"
 msgstr "И двете (изгрев и залез)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:685
+#: contents/ui/config/tabs/ConfigPanelTab.qml:829
 msgid "Bottom Center"
 msgstr "Долу в центъра"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:673
+#: contents/ui/config/tabs/ConfigPanelTab.qml:817
 msgid "Bottom Left"
 msgstr "Долу вляво"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:669
+#: contents/ui/config/tabs/ConfigPanelTab.qml:813
 msgid "Bottom Right"
 msgstr "Долу вдясно"
 
@@ -772,11 +620,11 @@ msgstr "Долу вдясно"
 #: contents/ui/config/configAppearance.qml:1298
 #: contents/ui/config/configAppearance.qml:1423
 #: contents/ui/config/configAppearance.qml:1466
-#: contents/ui/config/configNotifications.qml:390
+#: contents/ui/config/configNotifications.qml:437
 msgid "Browse…"
 msgstr "Разглеждане…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:948
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1158
 msgid "Bullet  •"
 msgstr "Точка  •"
 
@@ -798,21 +646,21 @@ msgstr "CAQI"
 msgid "CO"
 msgstr "CO"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:342
-#: contents/ui/config/tabs/ConfigMiscTab.qml:373
+#: contents/ui/config/tabs/ConfigMiscTab.qml:463
+#: contents/ui/config/tabs/ConfigMiscTab.qml:507
 msgid "Canadian AQHI (1-10+)"
 msgstr "Канадски AQHI (1-10+)"
 
 #: contents/ui/config/configAppearance.qml:506
 #: contents/ui/config/configAppearance.qml:1034
-#: contents/ui/config/configLocation.qml:1407
+#: contents/ui/config/configLocation.qml:1472
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:85
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:68
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:67
 msgid "Cancel"
 msgstr "Отказ"
 
-#: contents/ui/config/configLocation.qml:1852
+#: contents/ui/config/configLocation.qml:1943
 msgid "Cancel rename"
 msgstr "Отказ на преименуването"
 
@@ -820,27 +668,27 @@ msgstr "Отказ на преименуването"
 msgid "Carbon Monoxide (CO)"
 msgstr "Въглероден оксид (CO)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:992
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1361
 msgid "Cards"
 msgstr "Карти"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:628
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:835
 msgid "Cards (2 columns)"
 msgstr "Карти (2 колони)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:639
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:845
 msgid "Cards height:"
 msgstr "Височина на картите:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:227
+#: contents/ui/config/tabs/ConfigMiscTab.qml:312
 msgid "Celsius (°C)"
 msgstr "Целзий (°C)"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:543
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:655
 msgid "Changes staged. Click the main Apply button to save."
 msgstr "Промените са подготвени. Щракнете бутона Приложи, за да запазите."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:96
+#: contents/ui/config/tabs/ConfigRadarTab.qml:163
 msgid "Check Status"
 msgstr "Проверка на състоянието"
 
@@ -850,30 +698,28 @@ msgid "Checking location availability…"
 msgstr "Проверка на наличността на местоположение…"
 
 #: contents/ui/config/configGeneral.qml:231
-#: contents/ui/config/tabs/ConfigRadarTab.qml:96
+#: contents/ui/config/tabs/ConfigRadarTab.qml:163
 msgid "Checking…"
 msgstr "Проверка…"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:151
+#: contents/ui/config/tabs/ConfigProviderTab.qml:201
 msgid "Chinese weather provider with global coverage. API key required below."
-msgstr ""
-"Китайски метеорологичен доставчик с глобално покритие. Изисква API ключ по-"
-"долу."
+msgstr "Китайски метеорологичен доставчик с глобално покритие. Изисква API ключ по-долу."
 
-#: contents/ui/config/configNotifications.qml:424
+#: contents/ui/config/configNotifications.qml:472
 msgid "Choose Alert Sound"
 msgstr "Избор на звук за предупреждение"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1037
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1262
 msgid "Choose Simple Mode Font"
 msgstr "Избор на шрифт за опростен режим"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1128
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1372
 msgctxt "@action:button"
 msgid "Choose Style…"
 msgstr "Избор на стил…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1076
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1301
 msgid "Choose a Panel Font"
 msgstr "Избор на шрифт за панела"
 
@@ -883,12 +729,12 @@ msgstr "Избор на шрифт за панела"
 msgid "Choose a custom icon for this item"
 msgstr "Избор на персонализирана икона за този елемент"
 
-#: contents/ui/config/configLocation.qml:1580
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:256
+#: contents/ui/config/configLocation.qml:1663
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:317
 msgid "Choose on Map"
 msgstr "Избор от карта"
 
-#: contents/ui/config/configLocation.qml:1195
+#: contents/ui/config/configLocation.qml:1260
 msgid "Choose on map"
 msgstr "Избор от карта"
 
@@ -896,7 +742,7 @@ msgstr "Избор от карта"
 msgid "City / location name"
 msgstr "Име на град / местоположение"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:307
+#: contents/ui/config/tabs/ConfigProviderTab.qml:365
 msgid "Clear"
 msgstr "Изчистване"
 
@@ -913,22 +759,16 @@ msgid "Clear night"
 msgstr "Ясна нощ"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:48
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:670
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:610
 #: contents/ui/main.qml:2119
 msgid "Clear sky"
 msgstr "Ясно небе"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:581
-msgid ""
-"Click \"Test across providers\" to check if the coordinates are serviceable "
-"by each supported weather provider. Providers requiring an API key that is "
-"not configured will be skipped."
-msgstr ""
-"Щракнете \"Тестване в доставчици\", за да проверите дали координатите се "
-"обслужват от всеки поддържан метеорологичен доставчик. Доставчици, изискващи"
-" API ключ, който не е конфигуриран, ще бъдат пропуснати."
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:693
+msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
+msgstr "Щракнете \"Тестване в доставчици\", за да проверите дали координатите се обслужват от всеки поддържан метеорологичен доставчик. Доставчици, изискващи API ключ, който не е конфигуриран, ще бъдат пропуснати."
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:635
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:575
 msgid "Click on the map to select a location"
 msgstr "Щракнете върху картата, за да изберете местоположение"
 
@@ -944,34 +784,29 @@ msgstr "Облаци"
 msgid "Coastal event"
 msgstr "Крайбрежно явление"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:562
+#: contents/ui/config/tabs/ConfigPanelTab.qml:669
 msgid "Color by temperature:"
 msgstr "Оцветяване по температура:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:569
-msgid ""
-"Color the panel temperature with the same cold to hot scale as the forecast "
-"curve, instead of a fixed color."
-msgstr ""
-"Оцветяване на температурата в панела по същата скала от студено до горещо, "
-"както в кривата на прогнозата, вместо с фиксиран цвят."
+#: contents/ui/config/tabs/ConfigPanelTab.qml:684
+msgid "Color the panel temperature with the same cold to hot scale as the forecast curve, instead of a fixed color."
+msgstr "Оцветяване на температурата в панела по същата скала от студено до горещо, както в кривата на прогнозата, вместо с фиксиран цвят."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:834
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1027
 msgid "Colorful (KDE color icons)"
 msgstr "Цветен (цветни икони на KDE)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1117
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1574
 msgid "Compass in forecast:"
 msgstr "Компас в прогнозата:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:166
-#: contents/ui/config/tabs/ConfigPanelTab.qml:184
+#: contents/ui/config/tabs/ConfigPanelTab.qml:218
+#: contents/ui/config/tabs/ConfigPanelTab.qml:243
 msgid "Compressed"
 msgstr "Компресирано"
 
 #: contents/ui/config/configAppearance.qml:1791
-#: contents/ui/config/configAppearance.qml:2052
-#: contents/ui/DetailsView.qml:361
+#: contents/ui/config/configAppearance.qml:2052 contents/ui/DetailsView.qml:361
 msgid "Condition"
 msgstr "Състояние"
 
@@ -1000,24 +835,24 @@ msgstr "Конфигуриране на икона - %1"
 msgid "Configure icon…"
 msgstr "Конфигуриране на икона…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:364
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:169
+#: contents/ui/config/tabs/ConfigPanelTab.qml:451
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:234
 msgid "Configure weather icons…"
 msgstr "Конфигуриране на иконите за времето…"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:866
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1305
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:356
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:757
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:802
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1059
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1580
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:445
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:998
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1050
 msgid "Configure…"
 msgstr "Конфигуриране…"
 
-#: contents/ui/config/configLocation.qml:1844
+#: contents/ui/config/configLocation.qml:1935
 msgid "Confirm rename"
 msgstr "Потвърждаване на преименуването"
 
-#: contents/ui/config/configLocation.qml:1125
+#: contents/ui/config/configLocation.qml:1190
 msgid "Confirm your location"
 msgstr "Потвърдете вашето местоположение"
 
@@ -1034,30 +869,20 @@ msgid "Connection successful! %1 key is valid."
 msgstr "Връзката е успешна! Ключът %1 е валиден."
 
 #: contents/ui/js/airQuality.js:121
-msgid ""
-"Consider reducing or rescheduling strenuous outdoor activities if you "
-"experience symptoms such as coughing or throat irritation."
-msgstr ""
-"Обмислете намаляване или преместване на усилените дейности на открито, ако "
-"изпитвате симптоми като кашлица или дразнене на гърлото."
+msgid "Consider reducing or rescheduling strenuous outdoor activities if you experience symptoms such as coughing or throat irritation."
+msgstr "Обмислете намаляване или преместване на усилените дейности на открито, ако изпитвате симптоми като кашлица или дразнене на гърлото."
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:270
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:331
 msgid "Coordinates"
 msgstr "Координати"
 
-#: contents/ui/config/configNotifications.qml:419
+#: contents/ui/config/configNotifications.qml:467
 msgid "Couldn't play that sound file: %1"
 msgstr "Не можа да се възпроизведе този звуков файл: %1"
 
-#: contents/ui/config/configNotifications.qml:451
-msgid ""
-"Critical notifications are still shown even when Do Not Disturb is enabled, "
-"or while you're playing a game or watching a fullscreen video (if those "
-"options are enabled in System Settings → Notifications)."
-msgstr ""
-"Критичните известия се показват дори когато е активиран режим „Не "
-"безпокойте“ или докато играете игра, или гледате видео на цял екран (ако "
-"тези опции са активирани в Системни настройки → Известия)."
+#: contents/ui/config/configNotifications.qml:499
+msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
+msgstr "Критичните известия се показват дори когато е активиран режим „Не безпокойте“ или докато играете игра, или гледате видео на цял екран (ако тези опции са активирани в Системни настройки → Известия)."
 
 #: contents/ui/config/configAppearance.qml:1912
 #: contents/ui/config/configAppearance.qml:2035
@@ -1074,11 +899,11 @@ msgstr "Текуща фаза на луната"
 msgid "Current temperature"
 msgstr "Текуща температура"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:229
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:300
 msgid "Custom"
 msgstr "Персонализиран"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:165
+#: contents/ui/config/tabs/ConfigMiscTab.qml:243
 msgid "Custom (set each unit manually)"
 msgstr "Персонализиран (задаване на всяка единица ръчно)"
 
@@ -1092,12 +917,12 @@ msgstr "Персонализирани икони за всяко състоян
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:735
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:649
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:729
-#: contents/ui/config/tabs/ConfigPanelTab.qml:340
-#: contents/ui/config/tabs/ConfigPanelTab.qml:842
-#: contents/ui/config/tabs/ConfigPanelTab.qml:968
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:56
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:318
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:377
+#: contents/ui/config/tabs/ConfigPanelTab.qml:427
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1035
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1178
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:75
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:443
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:509
 msgid "Custom…"
 msgstr "Персонализиран…"
 
@@ -1105,32 +930,29 @@ msgstr "Персонализиран…"
 msgid "CyclOSM (cycling)"
 msgstr "CyclOSM (велосипедна)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:902
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1213
 msgid "Daily Forecast Settings"
 msgstr "Настройки за дневна прогноза"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:141
+#: contents/ui/config/tabs/ConfigProviderTab.qml:191
 msgid "Dark Sky-compatible API with US alerts. API key required below."
-msgstr ""
-"API, съвместим с Dark Sky, с предупреждения за САЩ. Изисква API ключ по-"
-"долу."
+msgstr "API, съвместим с Dark Sky, с предупреждения за САЩ. Изисква API ключ по-долу."
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:469
 msgid "Dark map"
 msgstr "Тъмна карта"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:956
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1166
 msgid "Dash  –"
 msgstr "Тире  –"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:415
+#: contents/ui/config/tabs/ConfigProviderTab.qml:479
 msgid "Data Refresh"
 msgstr "Обновяване на данните"
 
 #: contents/ui/config/configAppearance.qml:1911
 #: contents/ui/config/configAppearance.qml:2034
-#: contents/ui/config/configAppearance.qml:2157
-#: contents/ui/DetailsView.qml:370
+#: contents/ui/config/configAppearance.qml:2157 contents/ui/DetailsView.qml:370
 msgid "Date / Time"
 msgstr "Дата / Час"
 
@@ -1140,11 +962,11 @@ msgstr "Дата / Час"
 msgid "Date / Time options"
 msgstr "Опции за дата / час"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:294
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:406
 msgid "Date and time in header:"
 msgstr "Дата и час в заглавната част:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:303
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:421
 msgid "Date format:"
 msgstr "Формат на датата:"
 
@@ -1170,24 +992,24 @@ msgstr "Ден"
 msgid "Daylight over"
 msgstr "Дневната светлина свърши"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:542
-#: contents/ui/config/tabs/ConfigPanelTab.qml:637
+#: contents/ui/config/tabs/ConfigPanelTab.qml:650
+#: contents/ui/config/tabs/ConfigPanelTab.qml:773
 msgid "Default"
 msgstr "По подразбиране"
 
-#: contents/ui/config/configNotifications.qml:385
+#: contents/ui/config/configNotifications.qml:425
 msgid "Default (built-in siren)"
 msgstr "По подразбиране (вградена сирена)"
 
-#: contents/ui/config/configLocation.qml:1819
+#: contents/ui/config/configLocation.qml:1910
 msgid "Default location (click to unset)"
 msgstr "Местоположение по подразбиране (щракнете за премахване)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:220
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:305
 msgid "Default tab:"
 msgstr "Раздел по подразбиране:"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:684
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:624
 msgid "Dense drizzle"
 msgstr "Гъст ръмеж"
 
@@ -1195,26 +1017,25 @@ msgstr "Гъст ръмеж"
 msgid "Description"
 msgstr "Описание"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:95
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:228
-#: contents/ui/FullView.qml:571
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:114
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:320 contents/ui/FullView.qml:571
 msgid "Details"
 msgstr "Подробности"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:114
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:715
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:941
 msgid "Details Items"
 msgstr "Елементи за подробности"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:721
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:955
 msgid "Details items:"
 msgstr "Елементи за подробности:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:621
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:821
 msgid "Details layout:"
 msgstr "Оформление на подробности:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:251
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:350
 msgid "Details only"
 msgstr "Само подробности"
 
@@ -1226,12 +1047,12 @@ msgstr "Откриване / промяна на местоположение"
 msgid "Detect / change location…"
 msgstr "Откриване / промяна на местоположение…"
 
-#: contents/ui/config/configLocation.qml:1536
+#: contents/ui/config/configLocation.qml:1606
 msgid "Detecting…"
 msgstr "Откриване…"
 
-#: contents/ui/config/configAppearance.qml:1957
-#: contents/ui/DetailsView.qml:358 contents/ui/SimpleView.qml:261
+#: contents/ui/config/configAppearance.qml:1957 contents/ui/DetailsView.qml:358
+#: contents/ui/SimpleView.qml:261
 msgid "Dew Point"
 msgstr "Точка на оросяване"
 
@@ -1243,24 +1064,19 @@ msgstr "Температура на точката на оросяване"
 msgid "Dew point:"
 msgstr "Точка на оросяване:"
 
-#: contents/ui/config/configNotifications.qml:500
-msgid ""
-"Disable a type to silence it, or give it its own repeat interval. The "
-"interval is used only when 'Repeat reminder until dismissed' is on."
-msgstr ""
-"Изключете даден тип, за да го заглушите, или му задайте собствен интервал на"
-" повторение. Интервалът се използва само когато „Повтаряй напомнянето до "
-"отхвърляне“ е включено."
+#: contents/ui/config/configNotifications.qml:548
+msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
+msgstr "Изключете даден тип, за да го заглушите, или му задайте собствен интервал на повторение. Интервалът се използва само когато „Повтаряй напомнянето до отхвърляне“ е включено."
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:488
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:483
 msgid "Disable item"
 msgstr "Деактивиране на елемент"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:573
-#: contents/ui/config/tabs/ConfigPanelTab.qml:587
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:56
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:182
+#: contents/ui/config/tabs/ConfigPanelTab.qml:688
+#: contents/ui/config/tabs/ConfigPanelTab.qml:709
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:92
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:253
 msgid "Disabled"
 msgstr "Деактивирана"
 
@@ -1274,18 +1090,18 @@ msgstr "Отхвърляне"
 msgid "Dismiss"
 msgstr "Отхвърли"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:43
+#: contents/ui/config/tabs/ConfigMiscTab.qml:73
 msgid "Display"
 msgstr "Показване"
 
 #: contents/ui/config/configAppearance.qml:1174
 #: contents/ui/config/configAppearance.qml:1330
-#: contents/ui/config/tabs/ConfigPanelTab.qml:96
-#: contents/ui/config/tabs/ConfigPanelTab.qml:125
+#: contents/ui/config/tabs/ConfigPanelTab.qml:124
+#: contents/ui/config/tabs/ConfigPanelTab.qml:161
 msgid "Display mode:"
 msgstr "Режим на показване:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:86
+#: contents/ui/config/tabs/ConfigMiscTab.qml:135
 msgid "Displaying °C and °F together"
 msgstr "Показване на °C и °F заедно"
 
@@ -1309,7 +1125,7 @@ msgstr "Влачете, за да пренаредите показаните е
 msgid "Drizzle"
 msgstr "Ръмеж"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:74
+#: contents/ui/config/tabs/ConfigMiscTab.qml:116
 msgid "Dual temperature"
 msgstr "Двойна температура"
 
@@ -1318,37 +1134,27 @@ msgctxt "Alert severity"
 msgid "EXTREME"
 msgstr "Екестремно време"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:397
-msgid ""
-"Each QWeather project has a unique API host. Find yours at "
-"console.qweather.com under your project settings."
-msgstr ""
-"Всеки QWeather проект има уникален API хост. Намерете вашия на "
-"console.qweather.com в настройките на проекта."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:462
+msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
+msgstr "Всеки QWeather проект има уникален API хост. Намерете вашия на console.qweather.com в настройките на проекта."
 
-#: contents/ui/config/configNotifications.qml:483
+#: contents/ui/config/configNotifications.qml:531
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
-msgstr ""
-"Всяко предупреждение се показва само веднъж, без бутоните „Отхвърли“ и "
-"„Отложи“."
+msgstr "Всяко предупреждение се показва само веднъж, без бутоните „Отхвърли“ и „Отложи“."
 
-#: contents/ui/config/configNotifications.qml:266
-msgid ""
-"Each notification type can be enabled independently, with its own daily time"
-" where applicable."
-msgstr ""
-"Всеки тип известие може да бъде активиран самостоятелно, с собствено дневно "
-"време, където е приложимо."
+#: contents/ui/config/configNotifications.qml:286
+msgid "Each notification type can be enabled independently, with its own daily time where applicable."
+msgstr "Всеки тип известие може да бъде активиран самостоятелно, с собствено дневно време, където е приложимо."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:234
+#: contents/ui/config/tabs/ConfigRadarTab.qml:328
 msgid "Economy (8 to 10 fps)"
 msgstr "Икономично (8 до 10 кадъра/сек)"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:386
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:495
 msgid "Edit Saved Location"
 msgstr "Редактиране на запазеното местоположение"
 
-#: contents/ui/config/configLocation.qml:1874
+#: contents/ui/config/configLocation.qml:1965
 msgid "Edit location details"
 msgstr "Редактиране на детайлите за местоположение"
 
@@ -1356,7 +1162,7 @@ msgstr "Редактиране на детайлите за местополож
 msgid "Effective"
 msgstr "Действащ"
 
-#: contents/ui/config/configNotifications.qml:277
+#: contents/ui/config/configNotifications.qml:297
 msgid "Enable alert notifications"
 msgstr "Активиране на известия за предупреждения"
 
@@ -1381,85 +1187,75 @@ msgstr "Активиране или деактивиране на този ел�
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:126
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:124
-#: contents/ui/config/tabs/ConfigPanelTab.qml:573
-#: contents/ui/config/tabs/ConfigPanelTab.qml:587
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:56
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:182
+#: contents/ui/config/tabs/ConfigPanelTab.qml:688
+#: contents/ui/config/tabs/ConfigPanelTab.qml:709
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:92
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:253
 msgid "Enabled"
 msgstr "Активирана"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:412
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:395
 msgid "Enter Location"
 msgstr "Въведете местоположение"
 
-#: contents/ui/config/configLocation.qml:1594
+#: contents/ui/config/configLocation.qml:1677
 msgid "Enter Manually"
 msgstr "Ръчно въвеждане"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:545
-msgid ""
-"Enter a location name and valid coordinates, then click the main Apply "
-"button."
-msgstr ""
-"Въведете име на местоположение и валидни координати, след което щракнете "
-"бутона Приложи."
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:655
+msgid "Enter a location name and valid coordinates, then click the main Apply button."
+msgstr "Въведете име на местоположение и валидни координати, след което щракнете бутона Приложи."
 
-#: contents/ui/config/configLocation.qml:1598
-msgid ""
-"Enter exact latitude, longitude, and optional elevation for a more local "
-"forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google "
-"Maps."
-msgstr ""
-"Въведете точна географска ширина, дължина и незадължителна височина за по-"
-"локална прогноза. Можете да копирате координати от OpenStreetMap, GeoNames "
-"или Google Maps."
+#: contents/ui/config/configLocation.qml:1681
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr "Въведете точна географска ширина, дължина и незадължителна височина за по-локална прогноза. Можете да копирате координати от OpenStreetMap, GeoNames или Google Maps."
 
-#: contents/ui/config/configLocation.qml:1185
+#: contents/ui/config/configLocation.qml:1250
 msgid "Enter manually"
 msgstr "Въвеждане ръчно"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:231
+#: contents/ui/config/tabs/ConfigProviderTab.qml:289
 msgid "Enter your AEMET API key"
 msgstr "Въведете вашия AEMET API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:217
+#: contents/ui/config/tabs/ConfigProviderTab.qml:275
 msgid "Enter your OpenWeatherMap API key"
 msgstr "Въведете вашия OpenWeatherMap API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:219
+#: contents/ui/config/tabs/ConfigProviderTab.qml:277
 msgid "Enter your Pirate Weather API key"
 msgstr "Въведете вашия Pirate Weather API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:229
+#: contents/ui/config/tabs/ConfigProviderTab.qml:287
 msgid "Enter your QWeather API key"
 msgstr "Въведете вашия QWeather API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:225
+#: contents/ui/config/tabs/ConfigProviderTab.qml:283
 msgid "Enter your StormGlass API key"
 msgstr "Въведете вашия StormGlass API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:223
+#: contents/ui/config/tabs/ConfigProviderTab.qml:281
 msgid "Enter your Tomorrow.io API key"
 msgstr "Въведете вашия Tomorrow.io API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:221
+#: contents/ui/config/tabs/ConfigProviderTab.qml:279
 msgid "Enter your Visual Crossing API key"
 msgstr "Въведете вашия Visual Crossing API ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:232
+#: contents/ui/config/tabs/ConfigProviderTab.qml:290
 msgid "Enter your WeatherAPI.com key"
 msgstr "Въведете вашия WeatherAPI.com ключ"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:227
+#: contents/ui/config/tabs/ConfigProviderTab.qml:285
 msgid "Enter your Weatherbit API key"
 msgstr "Въведете вашия Weatherbit API ключ"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:259
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:354
 msgid "Error (code %1)"
 msgstr "Грешка (код %1)"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:335
-#: contents/ui/config/tabs/ConfigMiscTab.qml:369
+#: contents/ui/config/tabs/ConfigMiscTab.qml:451
+#: contents/ui/config/tabs/ConfigMiscTab.qml:503
 msgid "European CAQI (0-100+)"
 msgstr "Европейски CAQI (0-100+)"
 
@@ -1468,27 +1264,22 @@ msgid "Evening - "
 msgstr "Вечер - "
 
 #: contents/ui/js/airQuality.js:105
-msgid ""
-"Everyone may begin to experience health effects; sensitive groups may "
-"experience more serious effects."
-msgstr ""
-"Всички могат да започнат да изпитват здравословни ефекти; чувствителните "
-"групи могат да изпитат по-сериозни ефекти."
+msgid "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
+msgstr "Всички могат да започнат да изпитват здравословни ефекти; чувствителните групи могат да изпитат по-сериозни ефекти."
 
 #: contents/ui/js/spaceWeather.js:198
 msgid "Excellent"
 msgstr "Отлично"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:863
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1161
 msgid "Expand all days:"
 msgstr "Разгъване на всички дни:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1025
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1249
 msgid "Expand widget to fill available panel space"
-msgstr ""
-"Разширяване на приспособлението, за да запълни наличната ширина на панела"
+msgstr "Разширяване на приспособлението, за да запълни наличната ширина на панела"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:673
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:886
 msgid "Expanded cards height:"
 msgstr "Височина на разгънатите карти:"
 
@@ -1509,11 +1300,11 @@ msgstr "Екстремна геомагнитна буря."
 msgid "Extremely Poor"
 msgstr "Изключително лошо"
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:56
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:92
 msgid "FOSS Public Alert Server"
 msgstr "FOSS Public Alert Server"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:231
+#: contents/ui/config/tabs/ConfigMiscTab.qml:316
 msgid "Fahrenheit (°F)"
 msgstr "Фаренхайт (°F)"
 
@@ -1531,8 +1322,8 @@ msgstr "Задоволително"
 
 #: contents/ui/config/configAppearance.qml:1820
 #: contents/ui/config/configAppearance.qml:1922
-#: contents/ui/config/configAppearance.qml:2059
-#: contents/ui/DetailsView.qml:353 contents/ui/SimpleView.qml:258
+#: contents/ui/config/configAppearance.qml:2059 contents/ui/DetailsView.qml:353
+#: contents/ui/SimpleView.qml:258
 msgid "Feels Like"
 msgstr "Усеща се като"
 
@@ -1544,15 +1335,15 @@ msgstr "Усеща се като:"
 msgid "Feels like: %1"
 msgstr "Усеща се като: %1"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:265
+#: contents/ui/config/tabs/ConfigPanelTab.qml:345
 msgid "Fill panel"
 msgstr "Запълване на панела"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1024
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1240
 msgid "Fill panel:"
 msgstr "Запълване на панела:"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:314
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:375
 msgid "Find"
 msgstr "Търсене"
 
@@ -1569,11 +1360,11 @@ msgid "Flare Warning"
 msgstr "Предупреждение за слънчева буря"
 
 #: contents/ui/config/configAppearance.qml:263
-#: contents/ui/config/tabs/ConfigPanelTab.qml:328
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1171
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:217
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:43
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:53
+#: contents/ui/config/tabs/ConfigPanelTab.qml:415
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1429
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:288
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:62
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:72
 msgid "Flat Color (Bundled)"
 msgstr "Плосък цвят (вградена)"
 
@@ -1584,7 +1375,7 @@ msgstr "Наводнение"
 #: contents/ui/config/configAppearance.qml:705
 #: contents/ui/config/configNotifications.qml:77
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:52
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:678
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:618
 #: contents/ui/main.qml:1071 contents/ui/main.qml:2127
 msgid "Fog"
 msgstr "Мъгла"
@@ -1593,35 +1384,34 @@ msgstr "Мъгла"
 msgid "Font icons"
 msgstr "Шрифтови икони"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1163
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:209
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1421
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:280
 msgid "Font icons (default)"
 msgstr "Шрифтови икони (по подразбиране)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:466
+#: contents/ui/config/tabs/ConfigPanelTab.qml:559
 msgid "Font size:"
 msgstr "Размер на шрифта:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:268
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:367
 msgid "Footer:"
 msgstr "Долен колонтитул:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:269
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:99
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:229
-#: contents/ui/FullView.qml:572
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:118
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:321 contents/ui/FullView.qml:572
 msgid "Forecast"
 msgstr "Прогноза"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:832
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1111
 msgid "Forecast days:"
 msgstr "Дни за прогноза:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:252
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:351
 msgid "Forecast only"
 msgstr "Само прогноза"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1108
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1558
 msgid "Forecast:"
 msgstr "Прогноза:"
 
@@ -1633,23 +1423,20 @@ msgstr "Горски пожар"
 msgid "Format:"
 msgstr "Формат:"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:157
-msgid ""
-"Free BBC Weather service (data from the Met Office). No API key needed."
-msgstr ""
-"Безплатна услуга BBC Weather (данни от Met Office). Не изисква API ключ."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:207
+msgid "Free BBC Weather service (data from the Met Office). No API key needed."
+msgstr "Безплатна услуга BBC Weather (данни от Met Office). Не изисква API ключ."
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:155
+#: contents/ui/config/tabs/ConfigProviderTab.qml:205
 msgid "Free Norwegian Meteorological Institute service. No API key needed."
-msgstr ""
-"Безплатна услуга на Норвежкия метеорологичен институт. Не изисква API ключ."
+msgstr "Безплатна услуга на Норвежкия метеорологичен институт. Не изисква API ключ."
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:158
+#: contents/ui/config/tabs/ConfigProviderTab.qml:208
 msgid "Free and open-source. No API key needed. Recommended."
 msgstr "Безплатен и с отворен код. Не изисква API ключ. Препоръчва се."
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:54
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:686
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:626
 #: contents/ui/main.qml:2139
 msgid "Freezing drizzle"
 msgstr "Замръзващ ръмеж"
@@ -1663,7 +1450,7 @@ msgid "Freezing drizzle (night)"
 msgstr "Замръзващ ръмеж (нощ)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:694
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:634
 #: contents/ui/main.qml:2149
 msgid "Freezing rain"
 msgstr "Замръзващ дъжд"
@@ -1688,21 +1475,17 @@ msgstr "Пълнолуние"
 msgid "Future alerts"
 msgstr "Бъдещи предупреждения"
 
-#: contents/ui/config/configLocation.qml:1536
-msgid ""
-"GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using"
-" IP-based detection."
-msgstr ""
-"GPS / GeoClue2 са недостъпни (инсталирайте qt6-qtlocation за най-добра "
-"точност). Използва се откриване по IP адрес."
+#: contents/ui/config/configLocation.qml:1606
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
+msgstr "GPS / GeoClue2 са недостъпни (инсталирайте qt6-qtlocation за най-добра точност). Използва се откриване по IP адрес."
 
 #: contents/config/config.qml:52
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:91
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:826
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:110
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1098
 msgid "General"
 msgstr "Общи"
 
-#: contents/ui/config/configLocation.qml:819
+#: contents/ui/config/configLocation.qml:884
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 е недостъпно, опит със системното местоположение…"
 
@@ -1711,7 +1494,7 @@ msgstr "GeoClue2 е недостъпно, опит със системното �
 msgid "Geomagnetic Storm"
 msgstr "Геомагнитна буря"
 
-#: contents/ui/config/configNotifications.qml:626 contents/ui/main.qml:2020
+#: contents/ui/config/configNotifications.qml:672 contents/ui/main.qml:2020
 msgid "Geomagnetic activity"
 msgstr "Геомагнитна активност"
 
@@ -1719,7 +1502,7 @@ msgstr "Геомагнитна активност"
 msgid "Geomagnetic activity is expected to be %1 (Kp %2)"
 msgstr "Очаква се геомагнитната активност да бъде %1 (Kp %2)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:192
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:262
 msgid "Glow intensity:"
 msgstr "Интензивност на сиянието:"
 
@@ -1742,17 +1525,11 @@ msgstr "Заглавие"
 
 #: contents/ui/js/airQuality.js:106
 msgid "Health alert: everyone may experience more serious health effects."
-msgstr ""
-"Здравно предупреждение: всички могат да изпитат по-сериозни здравословни "
-"ефекти."
+msgstr "Здравно предупреждение: всички могат да изпитат по-сериозни здравословни ефекти."
 
 #: contents/ui/js/airQuality.js:107
-msgid ""
-"Health warning of emergency conditions: everyone is more likely to be "
-"affected."
-msgstr ""
-"Здравно предупреждение за извънредни условия: вероятността всички да бъдат "
-"засегнати е по-голяма."
+msgid "Health warning of emergency conditions: everyone is more likely to be affected."
+msgstr "Здравно предупреждение за извънредни условия: вероятността всички да бъдат засегнати е по-голяма."
 
 #: contents/ui/components/RadarWebEngineView.qml:163
 #: contents/ui/components/RadarWebEngineView.qml:849
@@ -1763,7 +1540,7 @@ msgstr "Силно"
 msgid "Heavy drizzle"
 msgstr "Силен ръмеж"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:692
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:632
 #: contents/ui/main.qml:2145
 msgid "Heavy rain"
 msgstr "Силен дъжд"
@@ -1776,11 +1553,11 @@ msgstr "Силни превалявания"
 msgid "Heavy snow"
 msgstr "Силен сняг"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:712
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:652
 msgid "Heavy snow showers"
 msgstr "Силни снеговалежи"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:700
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:640
 msgid "Heavy snowfall"
 msgstr "Силен снеговалеж"
 
@@ -1813,7 +1590,7 @@ msgstr "Макс."
 msgid "High Risk"
 msgstr "Висок риск"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:149
+#: contents/ui/config/tabs/ConfigProviderTab.qml:199
 msgid "High precision forecast provider. API key required below."
 msgstr "Доставчик на прогнози с висока точност. Изисква API ключ по-долу."
 
@@ -1825,23 +1602,23 @@ msgstr "Висока температура"
 msgid "Highlight snow and wintry precipitation with a distinct color"
 msgstr "Открояване на снега и зимните валежи с отличителен цвят"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:143
+#: contents/ui/config/tabs/ConfigProviderTab.qml:193
 msgid "Historical and forecast data provider. API key required below."
 msgstr "Доставчик на исторически и прогнозни данни. Изисква API ключ по-долу."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:158
+#: contents/ui/config/tabs/ConfigPanelTab.qml:210
 msgid "Horizontal"
 msgstr "Хоризонтално"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:978
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1332
 msgid "Hourly Forecast Settings"
 msgstr "Настройки на почасовата прогноза"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:988
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1350
 msgid "Hourly layout:"
 msgstr "Почасово оформление:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:803
+#: contents/ui/config/tabs/ConfigPanelTab.qml:975
 msgid "How often the rows scroll to reveal the next item"
 msgstr "Колко често редовете се превъртат, за да покажат следващия елемент"
 
@@ -1851,8 +1628,8 @@ msgstr "Humanitarian (HOT)"
 
 #: contents/ui/config/configAppearance.qml:1827
 #: contents/ui/config/configAppearance.qml:1929
-#: contents/ui/config/configAppearance.qml:2073
-#: contents/ui/DetailsView.qml:354 contents/ui/SimpleView.qml:259
+#: contents/ui/config/configAppearance.qml:2073 contents/ui/DetailsView.qml:354
+#: contents/ui/SimpleView.qml:259
 msgid "Humidity"
 msgstr "Влажност"
 
@@ -1860,28 +1637,28 @@ msgstr "Влажност"
 msgid "Humidity:"
 msgstr "Влажност:"
 
-#: contents/ui/config/configLocation.qml:938
-#: contents/ui/config/configLocation.qml:969
+#: contents/ui/config/configLocation.qml:1003
+#: contents/ui/config/configLocation.qml:1034
 msgid "IP geolocation"
 msgstr "IP геолокация"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:199
+#: contents/ui/config/tabs/ConfigPanelTab.qml:265
 msgid "Icon and temperature"
 msgstr "Икона за времето и температура"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:232
+#: contents/ui/config/tabs/ConfigPanelTab.qml:305
 msgid "Icon first"
 msgstr "Първо икона"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:175
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:240
 msgid "Icon glow:"
 msgstr "Сияние на иконата:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:207
+#: contents/ui/config/tabs/ConfigPanelTab.qml:273
 msgid "Icon only"
 msgstr "Само икона"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:380
+#: contents/ui/config/tabs/ConfigPanelTab.qml:466
 msgid "Icon size:"
 msgstr "Размер на иконата:"
 
@@ -1889,9 +1666,9 @@ msgstr "Размер на иконата:"
 msgid "Icon source:"
 msgstr "Източник на икона:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1155
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:200
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:542
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1405
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:264
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:717
 msgid "Icon theme:"
 msgstr "Тема на иконите:"
 
@@ -1899,8 +1676,8 @@ msgstr "Тема на иконите:"
 msgid "Icon:"
 msgstr "Икона:"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:193
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:537
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:257
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:705
 msgid "Icons"
 msgstr "Икони"
 
@@ -1908,37 +1685,23 @@ msgstr "Икони"
 msgid "Ideal air quality for outdoor activities."
 msgstr "Идеално качество на въздуха за дейности на открито."
 
-#: contents/ui/config/configLocation.qml:1161
-msgid ""
-"If this looks correct, apply it. Otherwise, choose your location manually."
-msgstr ""
-"Ако изглежда правилно, го приложете. В противен случай изберете "
-"местоположението ръчно."
+#: contents/ui/config/configLocation.qml:1226
+msgid "If this looks correct, apply it. Otherwise, choose your location manually."
+msgstr "Ако изглежда правилно, го приложете. В противен случай изберете местоположението ръчно."
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:373
-msgid ""
-"If you have just registered a new OpenWeatherMap API key, it might take up "
-"to 2 hours for it to become active. Please try again later if it doesn't "
-"work immediately."
-msgstr ""
-"Ако току-що сте регистрирали нов OpenWeatherMap API ключ, може да са нужни "
-"до 2 часа, за да стане активен. Моля, опитайте отново по-късно, ако не "
-"заработи веднага."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:431
+msgid "If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately."
+msgstr "Ако току-що сте регистрирали нов OpenWeatherMap API ключ, може да са нужни до 2 часа, за да стане активен. Моля, опитайте отново по-късно, ако не заработи веднага."
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:157
+#: contents/ui/config/tabs/ConfigMiscTab.qml:235
 msgid "Imperial (°F, mph, inHg, in)"
 msgstr "Имперски (°F, mph, inHg, in)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:136
-msgid ""
-"In a vertical panel, long item labels may be truncated. Consider using "
-"\"Simple\" mode, increasing the panel width, or reducing the font size."
-msgstr ""
-"Във вертикален панел дългите имена на елементите може да бъдат съкратени. "
-"Помислете за използване на режим \"Опростен\", увеличаване ширината на "
-"панела или намаляване размера на шрифта."
+#: contents/ui/config/tabs/ConfigPanelTab.qml:180
+msgid "In a vertical panel, long item labels may be truncated. Consider using \"Simple\" mode, increasing the panel width, or reducing the font size."
+msgstr "Във вертикален панел дългите имена на елементите може да бъдат съкратени. Помислете за използване на режим \"Опростен\", увеличаване ширината на панела или намаляване размера на шрифта."
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:314
+#: contents/ui/config/tabs/ConfigMiscTab.qml:416
 msgid ""
 "Individual dropdowns are editable only in Custom mode.\n"
 "Other presets set units automatically."
@@ -1946,11 +1709,11 @@ msgstr ""
 "Индивидуалните падащи менюта са редактируеми само в персонализиран режим.\n"
 "Другите предварителни настройки задават единиците автоматично."
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:216
+#: contents/ui/config/tabs/ConfigMiscTab.qml:294
 msgid "Individual units"
 msgstr "Индивидуални единици"
 
-#: contents/ui/config/configLocation.qml:1108
+#: contents/ui/config/configLocation.qml:1173
 msgid ""
 "Install it for your distribution:\n"
 "  • Fedora / RHEL / Arch: qt6-qtlocation\n"
@@ -1982,11 +1745,11 @@ msgstr ""
 msgid "Instruction"
 msgstr "Инструкция"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:426
+#: contents/ui/config/tabs/ConfigProviderTab.qml:492
 msgid "Interval:"
 msgstr "Интервал:"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:271
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:368
 msgid "Invalid API key (HTTP %1)"
 msgstr "Невалиден API ключ (HTTP %1)"
 
@@ -1994,7 +1757,7 @@ msgstr "Невалиден API ключ (HTTP %1)"
 msgid "Invalid API key. Please check and try again."
 msgstr "Невалиден API ключ. Моля, проверете и опитайте отново."
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:264
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:360
 msgid "Invalid response"
 msgstr "Невалиден отговор"
 
@@ -2007,35 +1770,35 @@ msgstr "Невалиден отговор от AEMET."
 msgid "Invalid response from QWeather."
 msgstr "Невалиден отговор от QWeather."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1000
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1209
 msgid "Item spacing:"
 msgstr "Разстояние между елементите:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:918
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1110
 msgid "Item width:"
 msgstr "Ширина на елемента:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:224
+#: contents/ui/config/tabs/ConfigPanelTab.qml:289
 msgid "Items Order:"
 msgstr "Ред на елементите:"
 
 #: contents/ui/config/configAppearance.qml:269
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1183
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:41
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1441
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:60
 msgid "KDE Icon Theme"
 msgstr "Тема на иконите на KDE"
 
 #: contents/ui/config/configAppearance.qml:254
-#: contents/ui/config/tabs/ConfigPanelTab.qml:307
-#: contents/ui/config/tabs/ConfigPanelTab.qml:316
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:50
+#: contents/ui/config/tabs/ConfigPanelTab.qml:394
+#: contents/ui/config/tabs/ConfigPanelTab.qml:403
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:69
 msgid "KDE Icon Theme (Colorful)"
 msgstr "Тема на иконите на KDE (Цветна)"
 
 #: contents/ui/config/configAppearance.qml:256
-#: contents/ui/config/tabs/ConfigPanelTab.qml:311
-#: contents/ui/config/tabs/ConfigPanelTab.qml:320
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:51
+#: contents/ui/config/tabs/ConfigPanelTab.qml:398
+#: contents/ui/config/tabs/ConfigPanelTab.qml:407
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:70
 msgid "KDE Icon Theme (Symbolic)"
 msgstr "Тема на иконите на KDE (Символична)"
 
@@ -2043,14 +1806,9 @@ msgstr "Тема на иконите на KDE (Символична)"
 msgid "KDE System Icons (automatic, follows weather code)"
 msgstr "Системни икони на KDE (автоматично, следват кода за времето)"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:588
-msgid ""
-"KDE icon themes don't fully support many item icons. You can set your own "
-"icons by clicking \"Set your own icons\"."
-msgstr ""
-"Темите на иконите на KDE не поддържат напълно много икони на елементи. "
-"Можете да зададете свои собствени икони, като щракнете върху \"Задаване на "
-"ваши собствени икони\"."
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:775
+msgid "KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\"."
+msgstr "Темите на иконите на KDE не поддържат напълно много икони на елементи. Можете да зададете свои собствени икони, като щракнете върху \"Задаване на ваши собствени икони\"."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:61
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:50
@@ -2074,7 +1832,7 @@ msgstr "Да се запазят ли направените промени в �
 msgid "Keep widget open"
 msgstr "Оставяне на притурката отворена"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:266
+#: contents/ui/config/tabs/ConfigMiscTab.qml:357
 msgid "Knots (kn)"
 msgstr "Възли (kn)"
 
@@ -2083,13 +1841,13 @@ msgstr "Възли (kn)"
 msgid "Kp Index"
 msgstr "Kp Индекс"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:915
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1040
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1240
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1442
 msgid "Kp index/G forecast:"
 msgstr "Прогноза за Kp индекс/G:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:392
-#: contents/ui/config/tabs/ConfigPanelTab.qml:478
+#: contents/ui/config/tabs/ConfigPanelTab.qml:486
+#: contents/ui/config/tabs/ConfigPanelTab.qml:579
 msgid "Large"
 msgstr "Голям"
 
@@ -2097,46 +1855,42 @@ msgstr "Голям"
 msgid "Last Quarter"
 msgstr "Последна четвърт"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:595
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:535
 msgid "Lat:"
 msgstr "Шир:"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:367
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:350
 msgid "Lat: %1°"
 msgstr "Шир: %1°"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:293
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:354
 msgid "Latitude"
 msgstr "Географска ширина"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:432
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:541
 msgid "Latitude:"
 msgstr "Географска ширина:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:117
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:612
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:150
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:804
 msgid "Layout"
 msgstr "Оформление"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:150
-#: contents/ui/config/tabs/ConfigPanelTab.qml:183
+#: contents/ui/config/tabs/ConfigPanelTab.qml:194
+#: contents/ui/config/tabs/ConfigPanelTab.qml:234
 msgid "Layout type:"
 msgstr "Тип оформление:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:199
-msgid ""
-"Leave this empty to use the public server. Set it to your own address if you"
-" run a self-hosted LibreWXR instance."
-msgstr ""
-"Оставете това поле празно, за да използвате публичния сървър. Задайте свой "
-"собствен адрес, ако използвате самостоятелно хоствана инстанция на LibreWXR."
+#: contents/ui/config/tabs/ConfigRadarTab.qml:286
+msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
+msgstr "Оставете това поле празно, за да използвате публичния сървър. Задайте свой собствен адрес, ако използвате самостоятелно хоствана инстанция на LibreWXR."
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:52
-#: contents/ui/config/tabs/ConfigRadarTab.qml:158
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:88
+#: contents/ui/config/tabs/ConfigRadarTab.qml:238
 msgid "LibreWXR"
 msgstr "LibreWXR"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:190
+#: contents/ui/config/tabs/ConfigRadarTab.qml:270
 msgid "LibreWXR server:"
 msgstr "Сървър на LibreWXR:"
 
@@ -2145,7 +1899,7 @@ msgstr "Сървър на LibreWXR:"
 msgid "Light"
 msgstr "Слабо"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:680
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:620
 #: contents/ui/main.qml:2131
 msgid "Light drizzle"
 msgstr "Лек ръмеж"
@@ -2190,11 +1944,11 @@ msgstr "Лек сняг (нощ)"
 msgid "Light snow showers"
 msgstr "Леки снежни превалявания"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:807
+#: contents/ui/config/tabs/ConfigPanelTab.qml:979
 msgid "Lines:"
 msgstr "Редове:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:629
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:836
 msgid "List"
 msgstr "Списък"
 
@@ -2218,7 +1972,7 @@ msgstr "Зареждане на кадър…"
 msgid "Loading hourly data…"
 msgstr "Зареждане на почасови данни…"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:538
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:527
 msgid "Loading locations…"
 msgstr "Зареждане на местоположения…"
 
@@ -2234,29 +1988,22 @@ msgstr "Зареждане…"
 msgid "Location"
 msgstr "Местоположение"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:513
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:92
-msgid ""
-"Location '%1' is already in your saved list. You can apply the selected "
-"location, but it will not be saved again."
-msgstr ""
-"Местоположението „%1“ вече е във вашия списък със запазени. Можете да "
-"приложите избраното местоположение, но то няма да бъде запазено отново."
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:502
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:90
+msgid "Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again."
+msgstr "Местоположението „%1“ вече е във вашия списък със запазени. Можете да приложите избраното местоположение, но то няма да бъде запазено отново."
 
 #: contents/ui/config/configAppearance.qml:1841
 msgid "Location Name"
 msgstr "Име на местоположение"
 
-#: contents/ui/config/configLocation.qml:751
+#: contents/ui/config/configLocation.qml:808
 msgid "Location auto-detected."
 msgstr "Местоположението е открито автоматично."
 
-#: contents/ui/config/configLocation.qml:1536
-msgid ""
-"Location detection is depending on system configuration and permissions."
-msgstr ""
-"Откриването на местоположение зависи от системната конфигурация и "
-"разрешения."
+#: contents/ui/config/configLocation.qml:1606
+msgid "Location detection is depending on system configuration and permissions."
+msgstr "Откриването на местоположение зависи от системната конфигурация и разрешения."
 
 #: contents/ui/config/configGeneral.qml:405
 #: contents/ui/config/configGeneral.qml:414
@@ -2267,57 +2014,56 @@ msgstr "Местоположението е налично на %1."
 #: contents/ui/config/configGeneral.qml:408
 #: contents/ui/config/configGeneral.qml:417
 #: contents/ui/config/configLocation.qml:541
-msgid ""
-"Location is not available on %1 (HTTP %2). Try a different provider or "
-"location."
-msgstr ""
-"Местоположението не е налично на %1 (HTTP %2). Опитайте с друг доставчик или"
-" местоположение."
+msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
+msgstr "Местоположението не е налично на %1 (HTTP %2). Опитайте с друг доставчик или местоположение."
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:270
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:331
 msgid "Location name"
 msgstr "Име на местоположение"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:421
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:70
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:530
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:105
 msgid "Location name:"
 msgstr "Име на местоположение:"
 
-#: contents/ui/config/configLocation.qml:1521
+#: contents/ui/config/configLocation.qml:1587
 msgid "Location package notice"
 msgstr "Съобщение за пакет за местоположение"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:544
-msgid "Location staged. Click the main Apply button to save."
-msgstr ""
-"Местоположението е подготвено. Щракнете бутона Приложи, за да запазите."
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:559
+msgid "Location search by %1 · Map data © %2"
+msgstr "Търсене на местоположение от %1 · Данни за картата © %2"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:346
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:655
+msgid "Location staged. Click the main Apply button to save."
+msgstr "Местоположението е подготвено. Щракнете бутона Приложи, за да запазите."
+
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:329
 msgid "Location:"
 msgstr "Местоположение:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:83
-#: contents/ui/config/tabs/ConfigRadarTab.qml:136
+#: contents/ui/config/tabs/ConfigRadarTab.qml:145
+#: contents/ui/config/tabs/ConfigRadarTab.qml:203
 msgid "Log Out Now…"
 msgstr "Излизане от системата сега…"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:602
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:542
 msgid "Lon:"
 msgstr "Дълж:"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:368
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:351
 msgid "Lon: %1°"
 msgstr "Дълж: %1°"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:305
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:366
 msgid "Longitude"
 msgstr "Географска дължина"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:449
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:558
 msgid "Longitude:"
 msgstr "Географска дължина:"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:561
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:501
 msgid "Looking up location…"
 msgstr "Търсене на местоположение…"
 
@@ -2355,12 +2101,12 @@ msgstr "Високо предупреждение за опасно време"
 msgid "Magnetic Field (Bz)"
 msgstr "Магнитно поле (Bz)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:825
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1011
 msgid "Main icon style:"
 msgstr "Стил на основната икона:"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:49
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:672
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:612
 #: contents/ui/main.qml:2121
 msgid "Mainly clear"
 msgstr "Предимно ясно"
@@ -2373,16 +2119,16 @@ msgstr "Предимно ясно (ден)"
 msgid "Mainly clear (night)"
 msgstr "Предимно ясно (нощ)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:269
-#: contents/ui/config/tabs/ConfigPanelTab.qml:396
-#: contents/ui/config/tabs/ConfigPanelTab.qml:482
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1110
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:113
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:156
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:473
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:505
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:647
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:681
+#: contents/ui/config/tabs/ConfigPanelTab.qml:349
+#: contents/ui/config/tabs/ConfigPanelTab.qml:490
+#: contents/ui/config/tabs/ConfigPanelTab.qml:583
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1342
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:163
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:213
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:618
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:656
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:861
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:902
 msgid "Manual"
 msgstr "Ръчно"
 
@@ -2390,32 +2136,28 @@ msgstr "Ръчно"
 msgid "Map background"
 msgstr "Фон на картата"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:147
+#: contents/ui/config/tabs/ConfigProviderTab.qml:197
 msgid "Marine and weather data provider. API key required below."
 msgstr "Доставчик на морски и метеорологични данни. Изисква API ключ по-долу."
 
 #: contents/ui/js/airQuality.js:104
-msgid ""
-"Members of sensitive groups may experience health effects; the general "
-"public is less likely to be affected."
-msgstr ""
-"Членове на чувствителни групи може да изпитат здравословни ефекти; общото "
-"население е по-малко вероятно да бъде засегнато."
+msgid "Members of sensitive groups may experience health effects; the general public is less likely to be affected."
+msgstr "Членове на чувствителни групи може да изпитат здравословни ефекти; общото население е по-малко вероятно да бъде засегнато."
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:48
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:84
 msgid "MeteoAlarm + NOAA NWS (Native)"
 msgstr "MeteoAlarm + NOAA NWS (стандартен)"
 
 #: contents/ui/config/configAppearance.qml:267
-#: contents/ui/config/tabs/ConfigPanelTab.qml:336
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1179
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:225
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:45
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:55
+#: contents/ui/config/tabs/ConfigPanelTab.qml:423
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1437
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:296
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:64
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:74
 msgid "Meteocons (Bundled)"
 msgstr "Meteocons (вградени)"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:153
+#: contents/ui/config/tabs/ConfigMiscTab.qml:231
 msgid "Metric (°C, km/h, hPa, mm)"
 msgstr "Метрични (°C, km/h, hPa, mm)"
 
@@ -2427,11 +2169,11 @@ msgstr "Леки симптоми при силно чувствителни и�
 msgid "Minimal to no risk."
 msgstr "Минимален до никакъв риск."
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:497
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:642
 msgid "Minimum height:"
 msgstr "Минимална височина:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:465
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:604
 msgid "Minimum width:"
 msgstr "Минимална ширина:"
 
@@ -2447,7 +2189,7 @@ msgstr "Разни"
 msgid "Mod"
 msgstr "Умер."
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:123
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:163
 msgid "Mode:"
 msgstr "Режим:"
 
@@ -2463,7 +2205,7 @@ msgstr "Умерено"
 msgid "Moderate Risk"
 msgstr "Умерен риск"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:682
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:622
 msgid "Moderate drizzle"
 msgstr "Умерен ръмеж"
 
@@ -2471,15 +2213,15 @@ msgstr "Умерен ръмеж"
 msgid "Moderate geomagnetic storm."
 msgstr "Геомагнита буря"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:690
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:630
 msgid "Moderate rain"
 msgstr "Умерен дъжд"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:706
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:646
 msgid "Moderate rain showers"
 msgstr "Умерени дъждовни превалявания"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:698
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:638
 msgid "Moderate snowfall"
 msgstr "Умерен снеговалеж"
 
@@ -2600,7 +2342,7 @@ msgstr "Повечето хора с алергии ще изпитват дис
 msgid "Mugwort"
 msgstr "Пелин"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:104
+#: contents/ui/config/tabs/ConfigPanelTab.qml:141
 msgid "Multiple lines (tall panel)"
 msgstr "Множество редове (висок панел)"
 
@@ -2621,24 +2363,15 @@ msgstr "NOAA Kp индекс и геомагнитна активност"
 msgid "NO₂"
 msgstr "NO₂"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:410
-msgid ""
-"Need the coordinates for a place? You can look them up at <a "
-"href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
-msgstr ""
-"Нуждаете се от координати за място? Можете да ги намерите на <a "
-"href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:519
+msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
+msgstr "Нуждаете се от координати за място? Можете да ги намерите на <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1019
-msgid ""
-"Negative spacing pulls panel items closer together than their natural gap "
-"and can make icons or text overlap."
-msgstr ""
-"Отрицателното разстояние доближава елементите на панела по-близо от "
-"естественото им разстояние и може да причини припокриване на икони или "
-"текст."
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1236
+msgid "Negative spacing pulls panel items closer together than their natural gap and can make icons or text overlap."
+msgstr "Отрицателното разстояние доближава елементите на панела по-близо от естественото им разстояние и може да причини припокриване на икони или текст."
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:273
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:370
 msgid "Network error"
 msgstr "Мрежова грешка"
 
@@ -2654,7 +2387,7 @@ msgstr "Нощ"
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Азотен диоксид (NO₂)"
 
-#: contents/ui/config/configLocation.qml:1307
+#: contents/ui/config/configLocation.qml:1372
 msgid "No"
 msgstr "Не"
 
@@ -2695,29 +2428,25 @@ msgstr "Няма радарни данни"
 msgid "No satellite data"
 msgstr "Няма сателитни данни"
 
-#: contents/ui/config/configLocation.qml:1627
-msgid ""
-"No saved locations. Save the current location to quickly switch between "
-"places."
-msgstr ""
-"Няма запазени местоположения. Запазете текущото местоположение, за да "
-"превключвате бързо между места."
+#: contents/ui/config/configLocation.qml:1711
+msgid "No saved locations. Save the current location to quickly switch between places."
+msgstr "Няма запазени местоположения. Запазете текущото местоположение, за да превключвате бързо между места."
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:538
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:527
 msgid "No weather stations found for '%1'"
 msgstr "Не са открити метеорологични станции за '%1'"
 
 #: contents/ui/components/RadarWebEngineView.qml:160
 #: contents/ui/components/RadarWebEngineView.qml:849
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:348
-#: contents/ui/config/tabs/ConfigPanelTab.qml:960
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:254
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:331
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1170
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:353
 #: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1041
 #: contents/ui/main.qml:1043
 msgid "None"
 msgstr "Няма"
 
-#: contents/ui/config/configLocation.qml:635
+#: contents/ui/config/configLocation.qml:670
 msgid "None Selected"
 msgstr "Няма избрано"
 
@@ -2725,139 +2454,94 @@ msgstr "Няма избрано"
 msgid "Normal"
 msgstr "Нормално"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:275
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:372
 msgid "Not available (HTTP %1)"
 msgstr "Недостъпно (HTTP %1)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:480
-msgid ""
-"Not available: the selected base map already has a fixed light or dark "
-"style."
-msgstr ""
-"Недостъпно: избраната основна карта вече има фиксиран светъл или тъмен стил."
+msgid "Not available: the selected base map already has a fixed light or dark style."
+msgstr "Недостъпно: избраната основна карта вече има фиксиран светъл или тъмен стил."
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:623
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:744
 msgid "Not tested"
 msgstr "Не е тествано"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1145
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1394
 msgid "Note: size may be reduced if the panel is not thick enough."
-msgstr ""
-"Забележка: размерът може да бъде намален, ако панелът не е достатъчно дебел."
+msgstr "Забележка: размерът може да бъде намален, ако панелът не е достатъчно дебел."
 
-#: contents/config/config.qml:62
-#: contents/ui/config/configNotifications.qml:257
+#: contents/config/config.qml:62 contents/ui/config/configNotifications.qml:277
 msgid "Notifications"
 msgstr "Известия"
 
-#: contents/ui/config/configNotifications.qml:457
+#: contents/ui/config/configNotifications.qml:505
 msgid "Notify about upcoming alerts before they start"
 msgstr "Известяване за предстоящи предупреждения преди да започнат"
 
-#: contents/ui/config/configNotifications.qml:581
+#: contents/ui/config/configNotifications.qml:627
 msgid "Notify about upcoming rain/storms"
 msgstr "Известяване за предстоящ дъжд/бури"
 
-#: contents/ui/config/configNotifications.qml:595
+#: contents/ui/config/configNotifications.qml:641
 msgid "Notify about upcoming snow"
 msgstr "Известяване за очакван снеговалеж"
 
-#: contents/ui/config/configNotifications.qml:609
+#: contents/ui/config/configNotifications.qml:655
 msgid "Notify with today's UV forecast"
 msgstr "Известяване с днешната UV прогноза"
 
-#: contents/ui/config/configNotifications.qml:541
+#: contents/ui/config/configNotifications.qml:587
 msgid "Notify with today's forecast"
 msgstr "Известяване с днешната прогноза"
 
-#: contents/ui/config/configNotifications.qml:629
+#: contents/ui/config/configNotifications.qml:675
 msgid "Notify with today's geomagnetic activity forecast"
 msgstr "Известяване с днешната прогноза за геомагнитна активност"
 
-#: contents/ui/config/configNotifications.qml:561
+#: contents/ui/config/configNotifications.qml:607
 msgid "Notify with tomorrow's forecast"
 msgstr "Известяване с утрешната прогноза"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:398
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:381
 #, javascript-format
 msgid "Now: %1%2"
 msgstr "Сега: %1%2"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:813
-msgid ""
-"Number of item rows visible at once. Resize the panel height in KDE settings"
-" to match."
-msgstr ""
-"Брой редове с елементи, видими наведнъж. Променете височината на панела в "
-"настройките на KDE, за да съответства."
+#: contents/ui/config/tabs/ConfigPanelTab.qml:992
+msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
+msgstr "Брой редове с елементи, видими наведнъж. Променете височината на панела в настройките на KDE, за да съответства."
 
 #: contents/ui/config/configAppearance.qml:1026
 msgid "OK"
 msgstr "OK"
 
 #: contents/ui/config/configGeneral.qml:143
-msgid ""
-"Off - the workaround script has been removed, so it won't load on your next "
-"login. This session already started with GPU compositing disabled though, "
-"and your system isn't systemd-managed, so there's no way to clear that live "
-"- it stays disabled (including anything you open freshly in this session) "
-"until you log out and back in."
-msgstr ""
-"Изключено - скриптът за заобикаляне беше премахнат, така че няма да се "
-"зареди при следващото ви влизане. Тази сесия обаче вече е стартирала с "
-"изключено композиране с GPU, а системата ви не се управлява от systemd, така"
-" че няма как това да се изчисти на живо - остава изключено (включително "
-"всичко, което отворите наново в тази сесия), докато не излезете и не влезете"
-" отново."
+msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, and your system isn't systemd-managed, so there's no way to clear that live - it stays disabled (including anything you open freshly in this session) until you log out and back in."
+msgstr "Изключено - скриптът за заобикаляне беше премахнат, така че няма да се зареди при следващото ви влизане. Тази сесия обаче вече е стартирала с изключено композиране с GPU, а системата ви не се управлява от systemd, така че няма как това да се изчисти на живо - остава изключено (включително всичко, което отворите наново в тази сесия), докато не излезете и не влезете отново."
 
 #: contents/ui/config/configGeneral.qml:145
-msgid ""
-"Off - the workaround script has been removed, so it won't load on your next "
-"login. This session already started with GPU compositing disabled though, so"
-" it stays that way (and anything already open, like a terminal, keeps "
-"showing the old value) until you log out and back in."
-msgstr ""
-"Изключено - скриптът за заобикаляне беше премахнат, така че няма да се "
-"зареди при следващото ви влизане. Тази сесия обаче вече е стартирала с "
-"изключено композиране с GPU, така че остава така (а всичко вече отворено, "
-"като терминал, продължава да показва старата стойност), докато не излезете и"
-" не влезете отново."
+msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, so it stays that way (and anything already open, like a terminal, keeps showing the old value) until you log out and back in."
+msgstr "Изключено - скриптът за заобикаляне беше премахнат, така че няма да се зареди при следващото ви влизане. Тази сесия обаче вече е стартирала с изключено композиране с GPU, така че остава така (а всичко вече отворено, като терминал, продължава да показва старата стойност), докато не излезете и не влезете отново."
 
 #: contents/ui/config/configGeneral.qml:141
-msgid ""
-"Off - the workaround script has been removed, so it won't load on your next "
-"login. Your system uses systemd, so anything launched fresh from here on may"
-" already reflect the cleared value - but anything already open (like a "
-"terminal you still have up) keeps showing the old one regardless, and a full"
-" log out and back in is the only guaranteed way to clear it everywhere."
-msgstr ""
-"Изключено - скриптът за заобикаляне беше премахнат, така че няма да се "
-"зареди при следващото ви влизане. Системата ви използва systemd, така че "
-"всичко, стартирано наново отсега нататък, може вече да отразява изчистената "
-"стойност - но всичко вече отворено (като терминал, който все още имате "
-"отворен) продължава да показва старата, независимо от това, а пълно излизане"
-" и повторно влизане е единственият сигурен начин тя да бъде изчистена "
-"навсякъде."
+msgid "Off - the workaround script has been removed, so it won't load on your next login. Your system uses systemd, so anything launched fresh from here on may already reflect the cleared value - but anything already open (like a terminal you still have up) keeps showing the old one regardless, and a full log out and back in is the only guaranteed way to clear it everywhere."
+msgstr "Изключено - скриптът за заобикаляне беше премахнат, така че няма да се зареди при следващото ви влизане. Системата ви използва systemd, така че всичко, стартирано наново отсега нататък, може вече да отразява изчистената стойност - но всичко вече отворено (като терминал, който все още имате отворен) продължава да показва старата, независимо от това, а пълно излизане и повторно влизане е единственият сигурен начин тя да бъде изчистена навсякъде."
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:153
-msgid ""
-"Official Spanish meteorological agency - Spain locations only! API key "
-"required below."
-msgstr ""
-"Официална испанска метеорологична агенция - само за местоположения в "
-"Испания! Изисква API ключ по-долу."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:203
+msgid "Official Spanish meteorological agency - Spain locations only! API key required below."
+msgstr "Официална испанска метеорологична агенция - само за местоположения в Испания! Изисква API ключ по-долу."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
 #: contents/ui/DetailsView.qml:1526 contents/ui/main.qml:986
 msgid "Olive"
 msgstr "Маслина"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:873
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1178
 msgid "Only the clicked day expands"
 msgstr "Разгъва се само щракнатият ден"
 
-#: contents/ui/config/configLocation.qml:1112
-#: contents/ui/config/configLocation.qml:1489 contents/ui/RadarView.qml:196
+#: contents/ui/config/configLocation.qml:1177
+#: contents/ui/config/configLocation.qml:1554 contents/ui/RadarView.qml:196
 msgid "Open install guide"
 msgstr "Отваряне на ръководството за инсталиране"
 
@@ -2901,15 +2585,13 @@ msgstr "OpenTopoMap (топографска)"
 msgid "OpenWeatherMap (Key Required)"
 msgstr "OpenWeatherMap (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:187
+#: contents/ui/config/tabs/ConfigProviderTab.qml:237
 msgid "OpenWeatherMap API Key:"
 msgstr "OpenWeatherMap API ключ:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:855
-msgid ""
-"Opens today's hourly forecast automatically (or the next available day)"
-msgstr ""
-"Отваря автоматично почасовата прогноза за днес (или следващия наличен ден)"
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1153
+msgid "Opens today's hourly forecast automatically (or the next available day)"
+msgstr "Отваря автоматично почасовата прогноза за днес (или следващия наличен ден)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:486
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:355
@@ -2918,14 +2600,14 @@ msgstr ""
 msgid "Options"
 msgstr "Опции"
 
-#: contents/ui/config/configNotifications.qml:294
-#: contents/ui/config/configNotifications.qml:337
+#: contents/ui/config/configNotifications.qml:322
+#: contents/ui/config/configNotifications.qml:371
 msgid "Orange"
 msgstr "Оранжево"
 
 #: contents/ui/config/configAppearance.qml:699
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:51
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:676
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:616
 #: contents/ui/main.qml:2125
 msgid "Overcast"
 msgstr "Облачно"
@@ -2955,7 +2637,7 @@ msgid "Palette:"
 msgstr "Палитра:"
 
 #: contents/ui/config/configAppearance.qml:2459
-#: contents/ui/config/tabs/ConfigMiscTab.qml:132
+#: contents/ui/config/tabs/ConfigMiscTab.qml:203
 msgid "Panel"
 msgstr "Панел"
 
@@ -2963,19 +2645,19 @@ msgstr "Панел"
 msgid "Panel Items"
 msgstr "Елементи на панела"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:90
+#: contents/ui/config/tabs/ConfigPanelTab.qml:120
 msgid "Panel display settings"
 msgstr "Настройки за показване в панела"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1094
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1318
 msgid "Panel font:"
 msgstr "Шрифт за панела:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1031
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1254
 msgid "Panel items settings"
 msgstr "Настройки на елементите в панела"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1270
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1537
 msgid "Panel items:"
 msgstr "Елементи на панела:"
 
@@ -3000,7 +2682,7 @@ msgid "Particulate Matter (PM2.5)"
 msgstr "Фини прахови частици (PM2.5)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:50
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:674
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:614
 #: contents/ui/main.qml:2123 contents/ui/main.qml:2175
 msgid "Partly cloudy"
 msgstr "Променлива облачност"
@@ -3017,7 +2699,7 @@ msgstr "Променлива облачност (нощ)"
 msgid "Pause"
 msgstr "Пауза"
 
-#: contents/ui/config/configNotifications.qml:491
+#: contents/ui/config/configNotifications.qml:539
 msgid "Per alert type:"
 msgstr "По тип предупреждение:"
 
@@ -3035,15 +2717,11 @@ msgstr "Фаза + изгрев и залез на луната"
 msgid "Phase + upcoming rise/set"
 msgstr "Фаза + предстоящ изгрев/залез"
 
-#: contents/ui/config/configLocation.qml:1584
-msgid ""
-"Pick an exact spot on the map for a more local forecast, such as your "
-"neighborhood block or a specific landmark."
-msgstr ""
-"Изберете точно място на картата за по-локална прогноза, като например вашия "
-"жилищен блок или конкретна забележителност."
+#: contents/ui/config/configLocation.qml:1667
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
+msgstr "Изберете точно място на картата за по-локална прогноза, като например вашия жилищен блок или конкретна забележителност."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:952
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1162
 msgid "Pipe  |"
 msgstr "Вертикална черта  |"
 
@@ -3051,7 +2729,7 @@ msgstr "Вертикална черта  |"
 msgid "Pirate Weather (Key Required)"
 msgstr "Pirate Weather (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:189
+#: contents/ui/config/tabs/ConfigProviderTab.qml:239
 msgid "Pirate Weather API Key:"
 msgstr "Pirate Weather API ключ:"
 
@@ -3059,22 +2737,14 @@ msgstr "Pirate Weather API ключ:"
 msgid "Play"
 msgstr "Възпроизвеждане"
 
-#: contents/ui/config/configNotifications.qml:369
-msgid ""
-"Plays a sound alongside the notification for alerts of that severity. A "
-"switch greyed out here means that severity is turned off above, so it never "
-"notifies - with or without sound. By default only Red and Purple play a "
-"sound."
-msgstr ""
-"Възпроизвежда звук заедно с известието за предупреждения от тази степен на "
-"опасност. Посивен превключвател тук означава, че тази степен е изключена по-"
-"горе, така че никога не известява - със или без звук. По подразбиране само "
-"Червено и Лилаво възпроизвеждат звук."
+#: contents/ui/config/configNotifications.qml:403
+msgid "Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound."
+msgstr "Възпроизвежда звук заедно с известието за предупреждения от тази степен на опасност. Посивен превключвател тук означава, че тази степен е изключена по-горе, така че никога не известява - със или без звук. По подразбиране само Червено и Лилаво възпроизвеждат звук."
 
 #: contents/ui/config/configAppearance.qml:1883
 #: contents/ui/config/configAppearance.qml:2006
-#: contents/ui/config/configAppearance.qml:2129
-#: contents/ui/DetailsView.qml:366 contents/ui/SimpleView.qml:267
+#: contents/ui/config/configAppearance.qml:2129 contents/ui/DetailsView.qml:366
+#: contents/ui/SimpleView.qml:267
 msgid "Pollen"
 msgstr "Полен"
 
@@ -3102,12 +2772,12 @@ msgstr "Отлагане"
 msgid "Precip Sum"
 msgstr "Валежна сума"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1024
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1412
 msgid "Precip probability:"
 msgstr "Вероятност за валеж:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:937
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1064
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1274
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1480
 msgid "Precip sum:"
 msgstr "Сума на валежите:"
 
@@ -3117,15 +2787,14 @@ msgstr "Валежна сума:"
 
 #: contents/ui/config/configAppearance.qml:1855
 #: contents/ui/config/configAppearance.qml:1978
-#: contents/ui/config/configAppearance.qml:2101
-#: contents/ui/DetailsView.qml:362 contents/ui/SimpleView.qml:263
+#: contents/ui/config/configAppearance.qml:2101 contents/ui/DetailsView.qml:362
+#: contents/ui/SimpleView.qml:263
 msgid "Precipitation"
 msgstr "Валежи"
 
 #: contents/ui/config/configAppearance.qml:1862
 #: contents/ui/config/configAppearance.qml:1985
-#: contents/ui/config/configAppearance.qml:2108
-#: contents/ui/DetailsView.qml:363
+#: contents/ui/config/configAppearance.qml:2108 contents/ui/DetailsView.qml:363
 msgid "Precipitation Sum"
 msgstr "Валежна сума"
 
@@ -3139,33 +2808,33 @@ msgstr "Интензивност на валежите (mm/h)"
 msgid "Precipitation:"
 msgstr "Валежи:"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:185
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:241
 msgid "Prefix style:"
 msgstr "Стил на префикса:"
 
 #: contents/ui/components/RadarWebEngineView.qml:133
 #: contents/ui/config/configAppearance.qml:1834
 #: contents/ui/config/configAppearance.qml:1936
-#: contents/ui/config/configAppearance.qml:2080
-#: contents/ui/DetailsView.qml:355 contents/ui/SimpleView.qml:260
+#: contents/ui/config/configAppearance.qml:2080 contents/ui/DetailsView.qml:355
+#: contents/ui/SimpleView.qml:260
 msgid "Pressure"
 msgstr "Налягане"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:908
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1032
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1227
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1427
 msgid "Pressure forecast:"
 msgstr "Прогноза за налягане:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:283
+#: contents/ui/config/tabs/ConfigMiscTab.qml:373
 #: contents/ui/TooltipContent.qml:443
 msgid "Pressure:"
 msgstr "Налягане:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:117
+#: contents/ui/config/tabs/ConfigMiscTab.qml:179
 msgid "Preview: 20°C"
 msgstr "Преглед: 20°C"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:101
+#: contents/ui/config/tabs/ConfigMiscTab.qml:156
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Основната единица се показва първа (напр. °C / °F)"
 
@@ -3173,35 +2842,35 @@ msgstr "Основната единица се показва първа (нап
 msgid "Provider"
 msgstr "Доставчик"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:566
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:676
 msgid "Provider availability"
 msgstr "Наличност на доставчик"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:137
-#: contents/ui/config/tabs/ConfigProviderTab.qml:139
-#: contents/ui/config/tabs/ConfigProviderTab.qml:141
-#: contents/ui/config/tabs/ConfigProviderTab.qml:143
-#: contents/ui/config/tabs/ConfigProviderTab.qml:145
-#: contents/ui/config/tabs/ConfigProviderTab.qml:147
-#: contents/ui/config/tabs/ConfigProviderTab.qml:149
-#: contents/ui/config/tabs/ConfigProviderTab.qml:151
-#: contents/ui/config/tabs/ConfigProviderTab.qml:153
-#: contents/ui/config/tabs/ConfigProviderTab.qml:155
-#: contents/ui/config/tabs/ConfigProviderTab.qml:157
-#: contents/ui/config/tabs/ConfigProviderTab.qml:158
+#: contents/ui/config/tabs/ConfigProviderTab.qml:187
+#: contents/ui/config/tabs/ConfigProviderTab.qml:189
+#: contents/ui/config/tabs/ConfigProviderTab.qml:191
+#: contents/ui/config/tabs/ConfigProviderTab.qml:193
+#: contents/ui/config/tabs/ConfigProviderTab.qml:195
+#: contents/ui/config/tabs/ConfigProviderTab.qml:197
+#: contents/ui/config/tabs/ConfigProviderTab.qml:199
+#: contents/ui/config/tabs/ConfigProviderTab.qml:201
+#: contents/ui/config/tabs/ConfigProviderTab.qml:203
+#: contents/ui/config/tabs/ConfigProviderTab.qml:205
+#: contents/ui/config/tabs/ConfigProviderTab.qml:207
+#: contents/ui/config/tabs/ConfigProviderTab.qml:208
 msgid "Provider website:"
 msgstr "Уебсайт на доставчика:"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:99
+#: contents/ui/config/tabs/ConfigProviderTab.qml:128
 #: contents/ui/DetailsView.qml:2185 contents/ui/DetailsView.qml:2928
 msgid "Provider:"
 msgstr "Доставчик:"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:394
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:377
 msgid "Provider: %1"
 msgstr "Доставчик: %1"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:92
+#: contents/ui/config/tabs/ConfigProviderTab.qml:122
 msgid ""
 "Providers are tried in order until one succeeds:\n"
 "Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
@@ -3213,8 +2882,8 @@ msgstr ""
 " Ако искате да изберете конкретен доставчик, моля, изключете Адаптивния режим.\n"
 "Open-Meteo винаги се изпробва първи - той е безплатен и не изисква API ключ. AEMET нарочно не е част от този списък, тъй като покрива само Испания и не е подходящ за глобална употреба."
 
-#: contents/ui/config/configNotifications.qml:304
-#: contents/ui/config/configNotifications.qml:351
+#: contents/ui/config/configNotifications.qml:332
+#: contents/ui/config/configNotifications.qml:385
 msgid "Purple"
 msgstr "Лилаво"
 
@@ -3222,11 +2891,11 @@ msgstr "Лилаво"
 msgid "QWeather (Key Required)"
 msgstr "QWeather (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:388
+#: contents/ui/config/tabs/ConfigProviderTab.qml:446
 msgid "QWeather API Host:"
 msgstr "QWeather API хост:"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:199
+#: contents/ui/config/tabs/ConfigProviderTab.qml:249
 msgid "QWeather API Key:"
 msgstr "QWeather API ключ:"
 
@@ -3235,14 +2904,10 @@ msgid "QWeather error (code %1). Check your API key."
 msgstr "Грешка в QWeather (код %1). Проверете вашия API ключ."
 
 #: contents/ui/ForecastView.qml:865
-msgid ""
-"QWeather provides hourly forecasts for up to 168 hours (7 days). Daily "
-"forecast is still available for this date."
-msgstr ""
-"QWeather предоставя почасови прогнози до 168 часа (7 дни) напред. Дневната "
-"прогноза все още е налична за тази дата."
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
+msgstr "QWeather предоставя почасови прогнози до 168 часа (7 дни) напред. Дневната прогноза все още е налична за тази дата."
 
-#: contents/ui/config/configLocation.qml:1065
+#: contents/ui/config/configLocation.qml:1130
 msgid "QtLocation and QtPositioning are not installed"
 msgstr "QtLocation и QtPositioning не са инсталирани"
 
@@ -3257,8 +2922,7 @@ msgstr "Спокойно"
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:221
 #: contents/ui/components/RadarWebEngineView.qml:128
 #: contents/ui/config/configGeneral.qml:620
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:230
-#: contents/ui/FullView.qml:573
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:322 contents/ui/FullView.qml:573
 msgid "Radar"
 msgstr "Радар"
 
@@ -3266,61 +2930,25 @@ msgstr "Радар"
 msgid "Radar + Satellite"
 msgstr "Радар + Сателит"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:39
+#: contents/ui/config/tabs/ConfigRadarTab.qml:88
 msgid "Radar Settings"
 msgstr "Настройки на радара"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:253
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:352
 msgid "Radar only"
 msgstr "Само радар"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:149
+#: contents/ui/config/tabs/ConfigRadarTab.qml:221
 msgid "Radar provider:"
 msgstr "Доставчик на радар:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:183
-msgid ""
-"Radar provider: <a "
-"href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-"
-"source weather radar API. It combines real radar composites from NOAA, "
-"Canadian, and European sources with a global model fallback, and provides "
-"the past 2 hours of radar data plus a short nowcast. It also offers a free "
-"satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and "
-"motion arrows are selected directly in the Radar tab. The map follows your "
-"Plasma light/dark theme automatically."
-msgstr ""
-"Доставчик на радар: <a "
-"href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR е безплатен API "
-"с отворен код за метеорологичен радар. Той съчетава реални радарни композити"
-" от NOAA, канадски и европейски източници с глобален модел като резервен "
-"вариант и предоставя радарни данни за последните 2 часа плюс кратка "
-"краткосрочна прогноза. Предлага и безплатен сателитен (инфрачервен) "
-"слой.<br/><br/>Режимът на слоя, цветовата схема на радара и стрелките за "
-"движение се избират директно в раздела Радар. Картата автоматично следва "
-"светлата/тъмната тема на Plasma."
+#: contents/ui/config/tabs/ConfigRadarTab.qml:263
+msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
+msgstr "Доставчик на радар: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR е безплатен API с отворен код за метеорологичен радар. Той съчетава реални радарни композити от NOAA, канадски и европейски източници с глобален модел като резервен вариант и предоставя радарни данни за последните 2 часа плюс кратка краткосрочна прогноза. Предлага и безплатен сателитен (инфрачервен) слой.<br/><br/>Режимът на слоя, цветовата схема на радара и стрелките за движение се избират директно в раздела Радар. Картата автоматично следва светлата/тъмната тема на Plasma."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:173
-msgid ""
-"Radar provider: <a href='https://www.rainviewer.com/'>Rain "
-"Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides "
-"the past 2 hours of weather radar data in 10-minute intervals. Radar "
-"forecast is not supported.<br/><br/>Rain Viewer does not guarantee the "
-"availability of radar data. They do not conclude contracts with owners of "
-"this data. The reason is that the owners can ask them to remove their data "
-"from Rain Viewer, change the format, or stop sharing the data. They are "
-"trying to keep radar data for as long as possible, but sometimes the owners "
-"just stop providing the images."
-msgstr ""
-"Доставчик на радар: <a href='https://www.rainviewer.com/'>Rain "
-"Viewer</a><br/><br/>Приспособлението използва безплатния API на RainViewer, "
-"който предоставя метеорологични радарни данни за последните 2 часа през "
-"интервали от 10 минути. Радарна прогноза не се поддържа.<br/><br/>Rain "
-"Viewer не гарантира наличността на радарните данни. Те не сключват договори "
-"със собствениците на тези данни. Причината е, че собствениците могат да "
-"поискат данните им да бъдат премахнати от Rain Viewer, да променят формата "
-"или да спрат да ги споделят. Те се опитват да пазят радарните данни възможно"
-" най-дълго, но понякога собствениците просто спират да предоставят "
-"изображенията."
+#: contents/ui/config/tabs/ConfigRadarTab.qml:253
+msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+msgstr "Доставчик на радар: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Приспособлението използва безплатния API на RainViewer, който предоставя метеорологични радарни данни за последните 2 часа през интервали от 10 минути. Радарна прогноза не се поддържа.<br/><br/>Rain Viewer не гарантира наличността на радарните данни. Те не сключват договори със собствениците на тези данни. Причината е, че собствениците могат да поискат данните им да бъдат премахнати от Rain Viewer, да променят формата или да спрат да ги споделят. Те се опитват да пазят радарните данни възможно най-дълго, но понякога собствениците просто спират да предоставят изображенията."
 
 #: contents/ui/FullView.qml:738 contents/ui/FullView.qml:740
 msgid "Radar:"
@@ -3347,7 +2975,7 @@ msgstr "Дъжд (ден)"
 msgid "Rain (night)"
 msgstr "Дъжд (нощ)"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:154
+#: contents/ui/config/tabs/ConfigRadarTab.qml:234
 msgid "Rain Viewer"
 msgstr "Rain Viewer"
 
@@ -3355,17 +2983,13 @@ msgstr "Rain Viewer"
 msgid "Rain showers"
 msgstr "Дъждовни превалявания"
 
-#: contents/ui/config/configNotifications.qml:578
+#: contents/ui/config/configNotifications.qml:624
 msgid "Rain/Storm"
 msgstr "Дъжд/Буря"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:120
-msgid ""
-"Read-only while Adaptive mode is on - turn it off above to choose a specific"
-" provider."
-msgstr ""
-"Само за четене, докато Адаптивният режим е включен - изключете го по-горе, "
-"за да изберете конкретен доставчик."
+#: contents/ui/config/tabs/ConfigProviderTab.qml:163
+msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
+msgstr "Само за четене, докато Адаптивният режим е включен - изключете го по-горе, за да изберете конкретен доставчик."
 
 #: contents/ui/components/RadarWebEngineView.qml:158
 msgid "Real-time"
@@ -3375,50 +2999,46 @@ msgstr "Реално време"
 msgid "Recent"
 msgstr "Скорошни"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:468
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:576
 msgid "Recommended - e.g. 560"
 msgstr "Препоръчително - напр. 560"
 
-#: contents/ui/config/configNotifications.qml:299
-#: contents/ui/config/configNotifications.qml:344
+#: contents/ui/config/configNotifications.qml:327
+#: contents/ui/config/configNotifications.qml:378
 msgid "Red"
 msgstr "Червено"
 
 #: contents/ui/js/airQuality.js:122
-msgid ""
-"Reduce or reschedule strenuous outdoor activities, especially if you "
-"experience symptoms."
-msgstr ""
-"Намалете или пренасрочете усилените дейности на открито, особено ако "
-"изпитвате симптоми."
+msgid "Reduce or reschedule strenuous outdoor activities, especially if you experience symptoms."
+msgstr "Намалете или пренасрочете усилените дейности на открито, особено ако изпитвате симптоми."
 
-#: contents/ui/config/configLocation.qml:1539 contents/ui/FullView.qml:419
+#: contents/ui/config/configLocation.qml:1609 contents/ui/FullView.qml:419
 #: contents/ui/main.qml:379
 msgid "Refresh"
 msgstr "Обновяване"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:420
+#: contents/ui/config/tabs/ConfigProviderTab.qml:486
 msgid "Refresh weather automatically"
 msgstr "Автоматично обновяване на времето"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:857
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:731
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:725
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:372
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:504
 msgid "Region default"
 msgstr "По подразбиране за региона"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:777
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:651
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:645
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:311
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:436
 msgid "Region default (long)"
 msgstr "По подразбиране за региона (дълъг)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:776
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:650
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:644
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:312
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:437
 msgid "Region default (short)"
 msgstr "По подразбиране за региона (кратък)"
 
@@ -3431,27 +3051,27 @@ msgstr "Относителна влажност %"
 msgid "Relative humidity percentage"
 msgstr "Процент относителна влажност"
 
-#: contents/ui/config/configLocation.qml:1355
+#: contents/ui/config/configLocation.qml:1420
 msgid "Remove last location?"
 msgstr "Премахване на последното местоположение?"
 
-#: contents/ui/config/configLocation.qml:1892
+#: contents/ui/config/configLocation.qml:1983
 msgid "Remove saved location"
 msgstr "Премахване на запазено местоположение"
 
-#: contents/ui/config/configLocation.qml:1861
+#: contents/ui/config/configLocation.qml:1952
 msgid "Rename location"
 msgstr "Преименуване на местоположение"
 
-#: contents/ui/config/configNotifications.qml:473
+#: contents/ui/config/configNotifications.qml:521
 msgid "Repeat reminder until dismissed"
 msgstr "Повтаряй напомнянето до отхвърляне"
 
-#: contents/ui/config/configLocation.qml:805
+#: contents/ui/config/configLocation.qml:870
 msgid "Requesting location via GeoClue2…"
 msgstr "Заявка за местоположение чрез GeoClue2…"
 
-#: contents/ui/config/configLocation.qml:794
+#: contents/ui/config/configLocation.qml:858
 msgid "Requesting location… (%1)"
 msgstr "Заявка за местоположение… (%1)"
 
@@ -3460,10 +3080,10 @@ msgstr "Заявка за местоположение… (%1)"
 #: contents/ui/config/configAppearance.qml:1310
 #: contents/ui/config/configAppearance.qml:1435
 #: contents/ui/config/configAppearance.qml:1478
-#: contents/ui/config/configNotifications.qml:407
-#: contents/ui/config/tabs/ConfigPanelTab.qml:552
-#: contents/ui/config/tabs/ConfigPanelTab.qml:646
-#: contents/ui/config/tabs/ConfigPanelTab.qml:759
+#: contents/ui/config/configNotifications.qml:454
+#: contents/ui/config/tabs/ConfigPanelTab.qml:660
+#: contents/ui/config/tabs/ConfigPanelTab.qml:782
+#: contents/ui/config/tabs/ConfigPanelTab.qml:917
 msgid "Reset"
 msgstr "Нулиране"
 
@@ -3479,7 +3099,7 @@ msgstr "Възстановяване на стойността по подраз
 msgid "Rime fog"
 msgstr "Замръзваща мъгла"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:47
+#: contents/ui/config/tabs/ConfigMiscTab.qml:77
 msgid "Round values:"
 msgstr "Закръгляване на стойности:"
 
@@ -3500,72 +3120,57 @@ msgstr "Сателит"
 msgid "Saturday"
 msgstr "Събота"
 
-#: contents/ui/config/configLocation.qml:1611
+#: contents/ui/config/configLocation.qml:1695
 msgid "Saved locations"
 msgstr "Запазени местоположения"
 
 #: contents/ui/config/configGeneral.qml:160
 msgid "Saved, but not active yet - log out and back in for it to take effect."
-msgstr ""
-"Запазено, но все още не е активно - излезте и влезте отново в системата, за "
-"да влезе в сила."
+msgstr "Запазено, но все още не е активно - излезте и влезте отново в системата, за да влезе в сила."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:817
+#: contents/ui/config/tabs/ConfigPanelTab.qml:996
 msgid "Scroll animation:"
 msgstr "Анимация при превъртане:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:797
+#: contents/ui/config/tabs/ConfigPanelTab.qml:962
 msgid "Scroll interval (sec):"
 msgstr "Интервал на превъртане (сек):"
 
-#: contents/ui/config/configLocation.qml:1572
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:293
+#: contents/ui/config/configLocation.qml:1655
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:276
 msgid "Search Location"
 msgstr "Търсене на местоположение"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:538
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:527
 msgid "Search a weather station to set your location"
 msgstr "Търсене на метеорологична станция, за да зададете местоположението си"
 
-#: contents/ui/config/configLocation.qml:1576
-msgid ""
-"Search by city or place name. Results show the location name, region, and "
-"country, and are suitable for general city-level forecasts rather than exact"
-" street-level placement."
-msgstr ""
-"Търсене по име на град или място. Резултатите показват името на "
-"местоположението, региона и държавата и са подходящи за общи прогнози на "
-"ниво град, а не за точно разположение на ниво улица."
+#: contents/ui/config/configLocation.qml:1659
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
+msgstr "Търсене по име на град или място. Резултатите показват името на местоположението, региона и държавата и са подходящи за общи прогнози на ниво град, а не за точно разположение на ниво улица."
 
-#: contents/ui/config/configLocation.qml:1569
+#: contents/ui/config/configLocation.qml:1647
 msgid "Search for a location or choose it on the map."
 msgstr "Търсете местоположение или го изберете на картата."
 
-#: contents/ui/config/configLocation.qml:1180
+#: contents/ui/config/configLocation.qml:1245
 msgid "Search location"
 msgstr "Търсене на местоположение"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:284
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:345
 msgid "Search location…"
 msgstr "Търсене на местоположение…"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:101
+#: contents/ui/config/tabs/ConfigMiscTab.qml:156
 msgid "Secondary unit shown first (e.g. °F / °C)"
 msgstr "Вторичната единица се показва първа (напр. °F / °C)"
 
-#: contents/ui/config/configNotifications.qml:467
-msgid ""
-"Sends a single, low-priority heads-up as soon as a future alert is published"
-" (e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert "
-"notification above still fires separately once it actually becomes active."
-msgstr ""
-"Изпраща еднократно известие с нисък приоритет веднага щом бъде публикувано "
-"бъдещо предупреждение (напр. \"Предупреждение за горещина започва утре в "
-"11:00\"). Обичайното известие за предупреждение по-горе все пак се задейства"
-" отделно, когато то реално стане активно."
+#: contents/ui/config/configNotifications.qml:515
+msgid "Sends a single, low-priority heads-up as soon as a future alert is published (e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert notification above still fires separately once it actually becomes active."
+msgstr "Изпраща еднократно известие с нисък приоритет веднага щом бъде публикувано бъдещо предупреждение (напр. \"Предупреждение за горещина започва утре в 11:00\"). Обичайното известие за предупреждение по-горе все пак се задейства отделно, когато то реално стане активно."
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:106
-#: contents/ui/config/tabs/ConfigPanelTab.qml:941
+#: contents/ui/config/tabs/ConfigMiscTab.qml:161
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1143
 msgid "Separator:"
 msgstr "Разделител:"
 
@@ -3573,7 +3178,7 @@ msgstr "Разделител:"
 msgid "Serious risk; avoid outdoor activities."
 msgstr "Сериозен риск; избягвайте дейности на открито."
 
-#: contents/ui/config/configLocation.qml:1252
+#: contents/ui/config/configLocation.qml:1317
 msgid "Set <b>%1</b> as your default location?"
 msgstr "Задаване на <b>%1</b> като местоположение по подразбиране?"
 
@@ -3581,42 +3186,41 @@ msgstr "Задаване на <b>%1</b> като местоположение п
 msgid "Set Location…"
 msgstr "Задаване на местоположение…"
 
-#: contents/ui/config/configLocation.qml:1819
+#: contents/ui/config/configLocation.qml:1910
 msgid "Set as default location"
 msgstr "Задаване като местоположение по подразбиране"
 
-#: contents/ui/config/configLocation.qml:1225
+#: contents/ui/config/configLocation.qml:1290
 msgid "Set as default?"
 msgstr "Задаване по подразбиране?"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1259
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:305
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:592
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1527
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:386
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:779
 msgid "Set your own icons…"
 msgstr "Задаване на ваши собствени икони…"
 
 #: contents/ui/config/configAppearance.qml:480
 msgid "Settings where this theme is not available keep their current theme."
-msgstr ""
-"Настройките, при които тази тема не е налична, запазват текущата си тема."
+msgstr "Настройките, при които тази тема не е налична, запазват текущата си тема."
 
 #: contents/ui/js/spaceWeather.js:92
 msgid "Severe geomagnetic storm."
 msgstr "Силна геомагнитна буря."
 
-#: contents/ui/config/configNotifications.qml:287
+#: contents/ui/config/configNotifications.qml:311
 msgid "Severities:"
 msgstr "Степени:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1065
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1290
 msgid "Shadow Color"
 msgstr "Цвят на сянката"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:614
+#: contents/ui/config/tabs/ConfigPanelTab.qml:742
 msgid "Shadow color:"
 msgstr "Цвят на сянката:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:594
+#: contents/ui/config/tabs/ConfigPanelTab.qml:715
 msgid "Shadow intensity:"
 msgstr "Интензивност на сянката:"
 
@@ -3629,11 +3233,11 @@ msgstr "Показване / скриване на префикс иконата
 msgid "Show / hide the prefix icon on the panel"
 msgstr "Показване / скриване на префикс иконата в панела"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:48
+#: contents/ui/config/tabs/ConfigRadarTab.qml:104
 msgid "Show Radar tab in widget"
 msgstr "Показване на раздела Радар в приспособлението"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:839
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1124
 msgid "Show Today:"
 msgstr "Показване на Днес:"
 
@@ -3641,11 +3245,11 @@ msgstr "Показване на Днес:"
 msgid "Show WMO alerts on the map"
 msgstr "Показване на предупрежденията на WMO на картата"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:327
+#: contents/ui/config/tabs/ConfigMiscTab.qml:431
 msgid "Show air quality standards:"
 msgstr "Показване на стандарти за качество на въздуха:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:78
+#: contents/ui/config/tabs/ConfigMiscTab.qml:121
 msgid "Show both units:"
 msgstr "Показване на двете единици:"
 
@@ -3653,7 +3257,7 @@ msgstr "Показване на двете единици:"
 msgid "Show in details"
 msgstr "Показване в подробности"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:123
+#: contents/ui/config/tabs/ConfigMiscTab.qml:185
 msgid "Show in:"
 msgstr "Показване в:"
 
@@ -3669,7 +3273,7 @@ msgstr "Показване на моето местоположение"
 msgid "Show or hide this detail item"
 msgstr "Показване или скриване на този детайл"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:880
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1185
 msgid "Show past weather info for today:"
 msgstr "Показване на информация за отминалото време за днес:"
 
@@ -3691,33 +3295,27 @@ msgstr "Показване на префикс иконата"
 msgid "Show space weather items in expanded view:"
 msgstr "Показване на космическите метеорологични елементи в разширен изглед:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:60
+#: contents/ui/config/tabs/ConfigMiscTab.qml:96
 msgid "Show temperature unit:"
 msgstr "Показване на мерната единица за температура:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:603
-msgid ""
-"Show the wind at about 3000 m (700 hPa), the flow that steers the rain, "
-"instead of the surface wind at 10 m"
-msgstr ""
-"Показване на вятъра на около 3000 м (700 hPa), потока, който насочва дъжда, "
-"вместо приземния вятър на 10 м"
+msgid "Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m"
+msgstr "Показване на вятъра на около 3000 м (700 hPa), потока, който насочва дъжда, вместо приземния вятър на 10 м"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:493
 msgid "Show tile options: smoothing, snow mask, format and tile size"
-msgstr ""
-"Показване на опциите за плочки: изглаждане, снежна маска, формат и размер на"
-" плочката"
+msgstr "Показване на опциите за плочки: изглаждане, снежна маска, формат и размер на плочката"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:275
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:380
 msgid "Show update time and provider"
 msgstr "Показване на часа на обновяване и доставчика"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:302
+#: contents/ui/config/tabs/ConfigProviderTab.qml:360
 msgid "Show/hide key"
 msgstr "Показване/скриване на ключа"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:191
+#: contents/ui/config/tabs/ConfigPanelTab.qml:249
 msgid "Show:"
 msgstr "Покажи на панела само:"
 
@@ -3725,15 +3323,15 @@ msgstr "Покажи на панела само:"
 msgid "Showers"
 msgstr "Превалявания"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:86
+#: contents/ui/config/tabs/ConfigMiscTab.qml:135
 msgid "Showing primary unit only"
 msgstr "Показване само на основната единица"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:68
+#: contents/ui/config/tabs/ConfigMiscTab.qml:110
 msgid "Showing ° only"
 msgstr "Покажи само °"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:68
+#: contents/ui/config/tabs/ConfigMiscTab.qml:110
 msgid "Showing °C / °F after values"
 msgstr "Покажи °C / °F след стойността на температурата"
 
@@ -3741,67 +3339,67 @@ msgstr "Покажи °C / °F след стойността на темпера
 msgid "Shown"
 msgstr "Показани"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:131
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:177
 msgid "Simple"
 msgstr "Опростен"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:108
-#: contents/ui/config/tabs/ConfigPanelTab.qml:126
+#: contents/ui/config/tabs/ConfigPanelTab.qml:145
+#: contents/ui/config/tabs/ConfigPanelTab.qml:170
 msgid "Simple (icon + temperature)"
 msgstr "Опростен (икона + температура)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:114
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:715
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:941
 msgid "Simple Mode Items"
 msgstr "Елементи за опростен режим"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1098
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1540
 msgid "Simple Widget"
 msgstr "Опростено приспособление"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:766
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1007
 msgid "Simple chips:"
 msgstr "Опростени елементи:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:144
+#: contents/ui/config/tabs/ConfigPanelTab.qml:187
 msgid "Simple display mode settings"
 msgstr "Настройки за опростен режим на показване"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:100
+#: contents/ui/config/tabs/ConfigPanelTab.qml:137
 msgid "Single line (all items at once)"
 msgstr "Единичен ред (всички елементи наведнъж)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1204
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:250
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:556
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1462
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:321
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:737
 msgid "Size:"
 msgstr "Размер:"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:218
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:309
 msgid "Skipped - API key not configured"
 msgstr "Пропуснато - API ключът не е конфигуриран"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:688
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:628
 msgid "Slight rain"
 msgstr "Лек дъжд"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:704
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:644
 msgid "Slight rain showers"
 msgstr "Леки дъждовни превалявания"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:710
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:650
 msgid "Slight snow showers"
 msgstr "Леки снеговалежи"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:696
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:636
 msgid "Slight snowfall"
 msgstr "Лек снеговалеж"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:964
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1174
 msgid "Small circle  ⚬"
 msgstr "Малко кръгче  ⚬"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:242
+#: contents/ui/config/tabs/ConfigRadarTab.qml:336
 msgid "Smooth (12 to 30 fps)"
 msgstr "Плавно (12 до 30 кадъра/сек)"
 
@@ -3813,7 +3411,7 @@ msgstr "Изглаждане на ръбовете на радарните пл�
 msgid "Smoothing"
 msgstr "Изглаждане"
 
-#: contents/ui/config/configNotifications.qml:592
+#: contents/ui/config/configNotifications.qml:638
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
 #: contents/ui/main.qml:2153
 msgid "Snow"
@@ -3829,8 +3427,8 @@ msgstr "Сняг (нощ)"
 
 #: contents/ui/config/configAppearance.qml:1904
 #: contents/ui/config/configAppearance.qml:2027
-#: contents/ui/config/configAppearance.qml:2150
-#: contents/ui/DetailsView.qml:369 contents/ui/SimpleView.qml:270
+#: contents/ui/config/configAppearance.qml:2150 contents/ui/DetailsView.qml:369
+#: contents/ui/SimpleView.qml:270
 msgid "Snow Cover"
 msgstr "Снежна покривка"
 
@@ -3845,7 +3443,7 @@ msgid "Snow depth (cm/in)"
 msgstr "Дебелина на снежна покривка (cm/in)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:58
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:702
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:642
 #: contents/ui/main.qml:2157
 msgid "Snow grains"
 msgstr "Снежни зърна"
@@ -3884,14 +3482,14 @@ msgstr "Сняг/Лед"
 msgid "Solar Wind"
 msgstr "Слънчев вятър"
 
-#: contents/ui/config/configNotifications.qml:328
+#: contents/ui/config/configNotifications.qml:358
 msgid "Sounds:"
 msgstr "Звуци:"
 
 #: contents/ui/config/configAppearance.qml:1890
 #: contents/ui/config/configAppearance.qml:2013
-#: contents/ui/config/configAppearance.qml:2136
-#: contents/ui/DetailsView.qml:367 contents/ui/SimpleView.qml:268
+#: contents/ui/config/configAppearance.qml:2136 contents/ui/DetailsView.qml:367
+#: contents/ui/SimpleView.qml:268
 msgid "Space Weather"
 msgstr "Космическо време"
 
@@ -3903,11 +3501,11 @@ msgstr "Космическо време:"
 msgid "Space weather options"
 msgstr "Опции за космическо време"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:137
+#: contents/ui/config/tabs/ConfigProviderTab.qml:187
 msgid "Standard provider. API key required below."
 msgstr "Стандартен доставчик. Изисква API ключ по-долу."
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:810
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1058
 msgid "Stats items:"
 msgstr "Статистически елементи:"
 
@@ -3925,11 +3523,11 @@ msgstr "Бурни клетки"
 msgid "StormGlass (Key Required)"
 msgstr "StormGlass (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:195
+#: contents/ui/config/tabs/ConfigProviderTab.qml:245
 msgid "StormGlass API Key:"
 msgstr "StormGlass API ключ:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:993
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1362
 msgid "Strip"
 msgstr "Лента"
 
@@ -3972,7 +3570,7 @@ msgstr "Неделя"
 msgid "Sunrise"
 msgstr "Изгрев"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:285
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:390
 msgid "Sunrise / Sunset:"
 msgstr "Изгрев / Залез:"
 
@@ -3996,12 +3594,11 @@ msgstr "Само изгрев  07:17"
 
 #: contents/ui/config/configAppearance.qml:1805
 #: contents/ui/config/configAppearance.qml:1950
-#: contents/ui/config/configAppearance.qml:2087
-#: contents/ui/DetailsView.qml:357
+#: contents/ui/config/configAppearance.qml:2087 contents/ui/DetailsView.qml:357
 msgid "Sunrise/Sunset"
 msgstr "Изгрев/Залез"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1005
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1374
 msgid "Sunrise/sunset markers:"
 msgstr "Маркери за изгрев/залез:"
 
@@ -4034,40 +3631,36 @@ msgstr "Само залез   18:03"
 msgid "Sunset:"
 msgstr "Залез:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:91
+#: contents/ui/config/tabs/ConfigMiscTab.qml:140
 msgid "Swap order:"
 msgstr "Размяна на реда:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:480
-msgid ""
-"Switch between the light and dark map style. Until first toggled, the map "
-"follows the Plasma theme."
-msgstr ""
-"Превключване между светъл и тъмен стил на картата. До първото превключване "
-"картата следва темата на Plasma."
+msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
+msgstr "Превключване между светъл и тъмен стил на картата. До първото превключване картата следва темата на Plasma."
 
 #: contents/ui/FullView.qml:335
 msgid "Switch location"
 msgstr "Смяна на местоположение"
 
 #: contents/ui/config/configAppearance.qml:261
-#: contents/ui/config/tabs/ConfigPanelTab.qml:324
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1167
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:213
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:42
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:52
+#: contents/ui/config/tabs/ConfigPanelTab.qml:411
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1425
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:284
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:61
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:71
 msgid "Symbolic (Bundled)"
 msgstr "Символична (вградена)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:838
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1031
 msgid "Symbolic (follows theme colour)"
 msgstr "Символичен (следва цвета на темата)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:787
+#: contents/ui/config/tabs/ConfigPanelTab.qml:952
 msgid "System Tray Badge Background Color"
 msgstr "Цвят на фона на значката в системната област"
 
-#: contents/ui/config/configLocation.qml:832
+#: contents/ui/config/configLocation.qml:897
 msgid "System location unavailable, trying IP geolocation…"
 msgstr "Системното местоположение е недостъпно, опит с IP геолокация…"
 
@@ -4075,11 +3668,11 @@ msgstr "Системното местоположение е недостъпн�
 msgid "System tray"
 msgstr "Системна област"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:90
+#: contents/ui/config/tabs/ConfigPanelTab.qml:120
 msgid "System tray display settings"
 msgstr "Настройки за показване в системната област"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:144
+#: contents/ui/config/tabs/ConfigPanelTab.qml:187
 msgid "System tray icon settings"
 msgstr "Настройки на иконата в системната област"
 
@@ -4097,44 +3690,44 @@ msgstr "Системна област › Опростено оформлени�
 msgid "Temperature"
 msgstr "Температура"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1054
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1279
 msgid "Temperature Color"
 msgstr "Цвят на температурата"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:655
+#: contents/ui/config/tabs/ConfigPanelTab.qml:790
 msgid "Temperature badge"
 msgstr "Значка с температура"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:516
+#: contents/ui/config/tabs/ConfigPanelTab.qml:616
 msgid "Temperature color:"
 msgstr "Цвят на температурата:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:236
+#: contents/ui/config/tabs/ConfigPanelTab.qml:309
 msgid "Temperature first"
 msgstr "Първо температура"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:203
+#: contents/ui/config/tabs/ConfigPanelTab.qml:269
 msgid "Temperature only"
 msgstr "Само температура"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:580
+#: contents/ui/config/tabs/ConfigPanelTab.qml:694
 msgid "Temperature shadow:"
 msgstr "Сянка на температурата"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:221
+#: contents/ui/config/tabs/ConfigMiscTab.qml:299
 #: contents/ui/TooltipContent.qml:416
 msgid "Temperature:"
 msgstr "Температура:"
 
-#: contents/ui/config/configNotifications.qml:396
+#: contents/ui/config/configNotifications.qml:443
 msgid "Test"
 msgstr "Тест"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:335
+#: contents/ui/config/tabs/ConfigProviderTab.qml:393
 msgid "Test API Key"
 msgstr "Тест на API ключ"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:527
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:639
 msgid "Test across providers"
 msgstr "Тестване в доставчици"
 
@@ -4142,89 +3735,64 @@ msgstr "Тестване в доставчици"
 msgid "Testing connection…"
 msgstr "Тестване на връзката…"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:222
-#: contents/ui/config/tabs/ConfigProviderTab.qml:335
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:314
+#: contents/ui/config/tabs/ConfigProviderTab.qml:393
 msgid "Testing…"
 msgstr "Тестване…"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:193
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:257
 msgid "Text labels (Temperature, Wind…)"
 msgstr "Текстови етикети (Температура, Вятър…)"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1117
-msgid ""
-"Text will follow the system font and expand to fill the available space."
-msgstr ""
-"Текстът ще следва системния шрифт и ще се разшири, за да запълни наличното "
-"пространство."
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1354
+msgid "Text will follow the system font and expand to fill the available space."
+msgstr "Текстът ще следва системния шрифт и ще се разшири, за да запълни наличното пространство."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:226
-msgid ""
-"The Radar tab can animate the wind as moving particles (switch it on there)."
-" The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, "
-"independently of the LibreWXR server. This sets the frame rate: lower it on "
-"a slow computer, raise it if strong winds look jerky."
-msgstr ""
-"Разделът Радар може да анимира вятъра като движещи се частици (включете го "
-"там). Данните за вятъра идват от <a href='https://open-meteo.com/'>Open-"
-"Meteo</a>, независимо от сървъра на LibreWXR. Това задава честотата на "
-"кадрите: намалете я на бавен компютър, увеличете я, ако силните ветрове "
-"изглеждат накъсани."
+#: contents/ui/config/tabs/ConfigRadarTab.qml:320
+msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
+msgstr "Разделът Радар може да анимира вятъра като движещи се частици (включете го там). Данните за вятъра идват от <a href='https://open-meteo.com/'>Open-Meteo</a>, независимо от сървъра на LibreWXR. Това задава честотата на кадрите: намалете я на бавен компютър, увеличете я, ако силните ветрове изглеждат накъсани."
 
 #: contents/ui/RadarView.qml:166
-msgid ""
-"The Radar tab requires the QtWebEngine package, which is not installed on "
-"this system."
-msgstr ""
-"Разделът Радар изисква пакета QtWebEngine, който не е инсталиран на тази "
-"система."
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
+msgstr "Разделът Радар изисква пакета QtWebEngine, който не е инсталиран на тази система."
 
 #: contents/ui/config/configLocation.qml:371
 msgid "The auto-detected location is already in your saved list."
-msgstr ""
-"Автоматично откритото местоположение вече е във вашия списък със запазени."
+msgstr "Автоматично откритото местоположение вече е във вашия списък със запазени."
 
 #: contents/ui/config/configAppearance.qml:922
-msgid ""
-"The condition icon will automatically reflect the current weather using your"
-" KDE system icon theme. No customisation is needed."
-msgstr ""
-"Иконата за състоянието автоматично ще отразява текущото време, използвайки "
-"темата на иконите на KDE. Не се изисква персонализация."
+msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
+msgstr "Иконата за състоянието автоматично ще отразява текущото време, използвайки темата на иконите на KDE. Не се изисква персонализация."
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:923
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1049
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1254
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1458
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr "Геомагнитната (Kp/G) прогноза е достъпна само до 3 дни напред"
 
-#: contents/ui/config/configLocation.qml:1095
-msgid ""
-"The map picker requires the QtLocation and QtPositioning packages, which are"
-" not installed on this system."
-msgstr ""
-"Изборът на карта изисква пакетите QtLocation и QtPositioning, които не са "
-"инсталирани на тази система."
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:453
+msgid "The map could not be loaded. Check your internet connection."
+msgstr "Картата не можа да се зареди. Проверете интернет връзката си."
+
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:463
+msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
+msgstr "Картата изисква QtWebEngine, който не е инсталиран. Все пак можете да търсите местоположение по-горе."
+
+#: contents/ui/config/configLocation.qml:1160
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
+msgstr "Изборът на карта изисква пакетите QtLocation и QtPositioning, които не са инсталирани на тази система."
 
 #: contents/ui/config/configGeneral.qml:163
-msgid ""
-"The workaround script wasn't found on disk. Try toggling the option off and "
-"on again."
-msgstr ""
-"Скриптът за заобикаляне не беше открит на диска. Опитайте да изключите и "
-"включите опцията отново."
+msgid "The workaround script wasn't found on disk. Try toggling the option off and on again."
+msgstr "Скриптът за заобикаляне не беше открит на диска. Опитайте да изключите и включите опцията отново."
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:750
+#: contents/ui/config/tabs/ConfigPanelTab.qml:908
 msgid "Theme default"
 msgstr "По подразбиране за темата"
 
-#: contents/ui/config/configAppearance.qml:2504
-#: contents/ui/config/configAppearance.qml:2543
-msgid ""
-"These settings only apply when the widget is placed in a panel or the system"
-" tray - they have no effect on the desktop."
-msgstr ""
-"Тези настройки се прилагат само когато приспособлението е поставено в панел "
-"или системна област - те нямат ефект на работния плот."
+#: contents/ui/config/configAppearance.qml:2507
+#: contents/ui/config/configAppearance.qml:2548
+msgid "These settings only apply when the widget is placed in a panel or the system tray - they have no effect on the desktop."
+msgstr "Тези настройки се прилагат само когато приспособлението е поставено в панел или системна област - те нямат ефект на работния плот."
 
 #: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
@@ -4232,7 +3800,7 @@ msgstr "Това местоположение вече е във вашия сп
 
 #: contents/ui/config/configNotifications.qml:76
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:61
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:714
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:654
 #: contents/ui/main.qml:1070 contents/ui/main.qml:2169
 msgid "Thunderstorm"
 msgstr "Гръмотевична буря"
@@ -4246,7 +3814,7 @@ msgid "Thunderstorm (night)"
 msgstr "Гръмотевична буря (нощ)"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:716
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:656
 #: contents/ui/main.qml:2171
 msgid "Thunderstorm with hail"
 msgstr "Гръмотевична буря с градушка"
@@ -4275,38 +3843,29 @@ msgstr "Гръмотевични бури"
 msgid "Tile size:"
 msgstr "Размер на плочката:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:364
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:489
 msgid "Time format:"
 msgstr "Формат на часа:"
 
-#: contents/ui/config/configNotifications.qml:204
+#: contents/ui/config/configNotifications.qml:224
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:826
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:700
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:694
 msgid "Time:"
 msgstr "Час:"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:241
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:333
 msgid "Timed out"
 msgstr "Времето изтече"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:488
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:617
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:599
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:557
 msgid "Timezone:"
 msgstr "Часова зона:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:258
-msgid ""
-"To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure):"
-" disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as "
-"your weather provider, and enter your API key above. When you are ready, you"
-" can enable Adaptive mode again."
-msgstr ""
-"За да отключите допълнителни слоеве на картата (Дъжд, Облаци, Температура, "
-"Вятър, Налягане): деактивирайте Адаптивния режим в раздела „Доставчик“, "
-"изберете OpenWeatherMap като ваш метеорологичен доставчик и въведете своя "
-"API ключ по-горе. Когато сте готови, можете отново да активирате Адаптивния "
-"режим."
+#: contents/ui/config/tabs/ConfigRadarTab.qml:352
+msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
+msgstr "За да отключите допълнителни слоеве на картата (Дъжд, Облаци, Температура, Вятър, Налягане): деактивирайте Адаптивния режим в раздела „Доставчик“, изберете OpenWeatherMap като ваш метеорологичен доставчик и въведете своя API ключ по-горе. Когато сте готови, можете отново да активирате Адаптивния режим."
 
 #: contents/ui/ForecastView.qml:533 contents/ui/main.qml:1688
 #: contents/ui/SimpleView.qml:423
@@ -4319,7 +3878,7 @@ msgstr "Днес"
 msgid "Today's total precipitation (mm/in)"
 msgstr "Общо валежи за днес (mm/in)"
 
-#: contents/ui/config/configNotifications.qml:538
+#: contents/ui/config/configNotifications.qml:584
 msgid "Today's weather"
 msgstr "Времето днес"
 
@@ -4327,7 +3886,7 @@ msgstr "Времето днес"
 msgid "Tomorrow"
 msgstr "Утре"
 
-#: contents/ui/config/configNotifications.qml:558
+#: contents/ui/config/configNotifications.qml:604
 msgid "Tomorrow forecast"
 msgstr "Прогноза за утре"
 
@@ -4335,7 +3894,7 @@ msgstr "Прогноза за утре"
 msgid "Tomorrow.io (Key Required)"
 msgstr "Tomorrow.io (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:193
+#: contents/ui/config/tabs/ConfigProviderTab.qml:243
 msgid "Tomorrow.io API Key:"
 msgstr "Tomorrow.io API ключ:"
 
@@ -4344,7 +3903,7 @@ msgid "Tonight"
 msgstr "Тази вечер"
 
 #: contents/ui/config/configAppearance.qml:2467
-#: contents/ui/config/tabs/ConfigMiscTab.qml:137
+#: contents/ui/config/tabs/ConfigMiscTab.qml:208
 msgid "Tooltip"
 msgstr "Подсказка"
 
@@ -4352,23 +3911,23 @@ msgstr "Подсказка"
 msgid "Tooltip Items"
 msgstr "Елементи на подсказката"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:144
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:193
 msgid "Tooltip height:"
 msgstr "Височина на подсказката:"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:316
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:396
 msgid "Tooltip items"
 msgstr "Елементи на подсказката"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:63
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:98
 msgid "Tooltip items settings"
 msgstr "Настройки на елементите на подсказката"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:321
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:402
 msgid "Tooltip items:"
 msgstr "Елементи на подсказката:"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:101
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:143
 msgid "Tooltip width:"
 msgstr "Ширина на подсказката:"
 
@@ -4376,52 +3935,45 @@ msgstr "Ширина на подсказката:"
 msgid "Tooltip › Icon theme"
 msgstr "Подсказка › Тема на иконите"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:48
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:78
 msgid "Tooltip:"
 msgstr "Подсказка:"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:689
+#: contents/ui/config/tabs/ConfigPanelTab.qml:833
 msgid "Top Center"
 msgstr "Горе в центъра"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:681
+#: contents/ui/config/tabs/ConfigPanelTab.qml:825
 msgid "Top Left"
 msgstr "Горе вляво"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:677
+#: contents/ui/config/tabs/ConfigPanelTab.qml:821
 msgid "Top Right"
 msgstr "Горе вдясно"
 
-#: contents/ui/config/configNotifications.qml:441
+#: contents/ui/config/configNotifications.qml:489
 msgid "Treat alert notifications as critical"
 msgstr "Третиране на известията за предупреждения като критични"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:77
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:120
 msgid "Truncate (single line)"
 msgstr "Съкращаване (един ред)"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:384
-msgid ""
-"Turn off all three switches above to pick a single standard here instead."
-msgstr ""
-"Изключете и трите превключвателя по-горе, за да изберете вместо това единен "
-"стандарт тук."
+#: contents/ui/config/tabs/ConfigMiscTab.qml:523
+msgid "Turn off all three switches above to pick a single standard here instead."
+msgstr "Изключете и трите превключвателя по-горе, за да изберете вместо това единен стандарт тук."
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:348
-msgid ""
-"Turn on any combination to show them side by side instead of a single "
-"standard below."
-msgstr ""
-"Включете произволна комбинация, за да ги покажете един до друг вместо единен"
-" стандарт по-долу."
+#: contents/ui/config/tabs/ConfigMiscTab.qml:474
+msgid "Turn on any combination to show them side by side instead of a single standard below."
+msgstr "Включете произволна комбинация, за да ги покажете един до друг вместо единен стандарт по-долу."
 
 #: contents/ui/main.qml:1371
 msgctxt "Alert severity"
 msgid "UNKNOWN"
 msgstr "НЕИЗВЕСТНО"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:328
-#: contents/ui/config/tabs/ConfigMiscTab.qml:365
+#: contents/ui/config/tabs/ConfigMiscTab.qml:439
+#: contents/ui/config/tabs/ConfigMiscTab.qml:499
 msgid "US AQI (0-500)"
 msgstr "Американски AQI (0-500)"
 
@@ -4431,8 +3983,8 @@ msgstr "USG"
 
 #: contents/ui/config/configAppearance.qml:1869
 #: contents/ui/config/configAppearance.qml:1992
-#: contents/ui/config/configAppearance.qml:2115
-#: contents/ui/DetailsView.qml:364 contents/ui/SimpleView.qml:265
+#: contents/ui/config/configAppearance.qml:2115 contents/ui/DetailsView.qml:364
+#: contents/ui/SimpleView.qml:265
 msgid "UV Index"
 msgstr "UV Индекс"
 
@@ -4440,12 +3992,12 @@ msgstr "UV Индекс"
 msgid "UV Index:"
 msgstr "UV Индекс:"
 
-#: contents/ui/config/configNotifications.qml:606 contents/ui/main.qml:1975
+#: contents/ui/config/configNotifications.qml:652 contents/ui/main.qml:1975
 msgid "UV index"
 msgstr "UV индекс"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:930
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1056
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1261
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1465
 msgid "UV index forecast:"
 msgstr "Прогноза за UV индекс:"
 
@@ -4459,11 +4011,10 @@ msgstr "UV индексът ще бъде %1 (%2)"
 msgid "Ultraviolet index"
 msgstr "Ултравиолетов индекс"
 
-#: contents/ui/config/configLocation.qml:871
-#: contents/ui/config/configLocation.qml:978
+#: contents/ui/config/configLocation.qml:936
+#: contents/ui/config/configLocation.qml:1043
 msgid "Unable to detect location. All methods failed."
-msgstr ""
-"Местоположението не може да бъде определено. Всички методи бяха неуспешни."
+msgstr "Местоположението не може да бъде определено. Всички методи бяха неуспешни."
 
 #: contents/ui/js/airQuality.js:105
 msgid "Unhealthy"
@@ -4473,21 +4024,21 @@ msgstr "Нездравословно"
 msgid "Unhealthy for Sensitive Groups"
 msgstr "Нездравословно за чувствителни групи"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:149
+#: contents/ui/config/tabs/ConfigMiscTab.qml:220
 msgid "Unit preset:"
 msgstr "Предварителна настройка за единици:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:144
+#: contents/ui/config/tabs/ConfigMiscTab.qml:215
 msgid "Units"
 msgstr "Единици"
 
-#: contents/ui/config/configLocation.qml:1763
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:717
+#: contents/ui/config/configLocation.qml:1852
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:657
 #: contents/ui/FullView.qml:359
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:561
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:501
 msgid "Unknown location"
 msgstr "Неизвестно местоположение"
 
@@ -4522,9 +4073,7 @@ msgstr "Предстоящо: %1"
 
 #: contents/ui/WeatherService.qml:263
 msgid "Update timed out. Click the refresh button to retry."
-msgstr ""
-"Времето за обновяване изтече. Щракнете върху бутона за обновяване, за да "
-"опитате отново."
+msgstr "Времето за обновяване изтече. Щракнете върху бутона за обновяване, за да опитате отново."
 
 #: contents/ui/WeatherService.qml:962
 msgid "Updated %1 day ago"
@@ -4552,15 +4101,15 @@ msgstr "Обновено току-що"
 msgid "Updating…"
 msgstr "Обновяване…"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:412
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:544
 msgid "Use 24-hour format:"
 msgstr "Използване на 24-часов формат:"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:161
+#: contents/ui/config/tabs/ConfigMiscTab.qml:239
 msgid "Use KDE locale settings"
 msgstr "Използване на настройките за локал на KDE"
 
-#: contents/ui/config/configLocation.qml:1555
+#: contents/ui/config/configLocation.qml:1625
 msgid "Use manual location"
 msgstr "Използване на ръчно местоположение"
 
@@ -4568,14 +4117,10 @@ msgstr "Използване на ръчно местоположение"
 msgid "Use region defaults"
 msgstr "Използване на настройките по подразбиране за региона"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:1251
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:297
-msgid ""
-"Uses KDE system icons by default. Click the button to customise each item's "
-"icon."
-msgstr ""
-"Използва системни икони на KDE по подразбиране. Щракнете върху бутона, за да"
-" персонализирате иконата на всеки елемент."
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1517
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:376
+msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
+msgstr "Използва системни икони на KDE по подразбиране. Щракнете върху бутона, за да персонализирате иконата на всеки елемент."
 
 #: contents/ui/js/airQuality.js:123
 msgid "V.High"
@@ -4589,15 +4134,15 @@ msgstr "Много лошо"
 msgid "V.Unhealthy"
 msgstr "Мн. нездр."
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:55
+#: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Values are rounded to whole numbers"
 msgstr "Стойностите се закръгляват до цели числа"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:55
+#: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Values show decimal places"
 msgstr "Стойностите показват десетични знаци"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:162
+#: contents/ui/config/tabs/ConfigPanelTab.qml:214
 msgid "Vertical"
 msgstr "Вертикално"
 
@@ -4618,12 +4163,12 @@ msgstr "Много лошо"
 msgid "Very Unhealthy"
 msgstr "Много нездравословно"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:708
+#: contents/ui/config/subpages/ConfigMapSubPage.qml:648
 msgid "Violent rain showers"
 msgstr "Силни дъждовни превалявания"
 
-#: contents/ui/config/configAppearance.qml:1964
-#: contents/ui/DetailsView.qml:359 contents/ui/SimpleView.qml:262
+#: contents/ui/config/configAppearance.qml:1964 contents/ui/DetailsView.qml:359
+#: contents/ui/SimpleView.qml:262
 msgid "Visibility"
 msgstr "Видимост"
 
@@ -4631,13 +4176,13 @@ msgstr "Видимост"
 msgid "Visibility distance"
 msgstr "Разстояние на видимост"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:944
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1072
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1287
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1495
 #: contents/ui/TooltipContent.qml:450
 msgid "Visibility:"
 msgstr "Видимост:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:242
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:334
 msgid "Visible tabs:"
 msgstr "Видими раздели:"
 
@@ -4645,7 +4190,7 @@ msgstr "Видими раздели:"
 msgid "Visual Crossing (Key Required)"
 msgstr "Visual Crossing (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:191
+#: contents/ui/config/tabs/ConfigProviderTab.qml:241
 msgid "Visual Crossing API Key:"
 msgstr "Visual Crossing API ключ:"
 
@@ -4665,11 +4210,11 @@ msgstr "Нарастващ сърп"
 msgid "Waxing Gibbous"
 msgstr "Нарастваща изпъкнала Луна"
 
-#: contents/ui/config/configLocation.qml:1154
+#: contents/ui/config/configLocation.qml:1219
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
 msgstr "Открихме вашите координати: <b>%1°, %2°</b>."
 
-#: contents/ui/config/configLocation.qml:1154
+#: contents/ui/config/configLocation.qml:1219
 msgid "We detected your location as: <b>%1</b>."
 msgstr "Открихме вашето местоположение като: <b>%1</b>."
 
@@ -4677,11 +4222,11 @@ msgstr "Открихме вашето местоположение като: <b>
 msgid "Weather Alerts"
 msgstr "Метеорологични предупреждения"
 
-#: contents/ui/config/tabs/ConfigAlertsTab.qml:39
+#: contents/ui/config/tabs/ConfigAlertsTab.qml:68
 msgid "Weather Alerts Provider"
 msgstr "Доставчик на метеорологични предупреждения"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:39
+#: contents/ui/config/tabs/ConfigProviderTab.qml:68
 msgid "Weather Provider"
 msgstr "Доставчик на времето"
 
@@ -4696,7 +4241,7 @@ msgstr "Предупреждение за времето"
 #: contents/ui/config/configAppearance.qml:1898
 #: contents/ui/config/configAppearance.qml:2021
 #: contents/ui/config/configAppearance.qml:2144
-#: contents/ui/config/configNotifications.qml:274
+#: contents/ui/config/configNotifications.qml:294
 msgid "Weather alerts"
 msgstr "Метеорологични предупреждения"
 
@@ -4708,11 +4253,11 @@ msgstr "Текст за състоянието на времето"
 msgid "Weather icon + condition text"
 msgstr "Икона за времето + текст за състоянието"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:299
+#: contents/ui/config/tabs/ConfigPanelTab.qml:378
 msgid "Weather icon style:"
 msgstr "Стил на иконата за времето:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:151
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:204
 msgid "Weather icon theme:"
 msgstr "Тема на иконите за времето:"
 
@@ -4720,7 +4265,7 @@ msgstr "Тема на иконите за времето:"
 msgid "Weather provider:"
 msgstr "Доставчик на времето:"
 
-#: contents/ui/config/configNotifications.qml:319
+#: contents/ui/config/configNotifications.qml:347
 msgid ""
 "Weather-alert severity levels, from lowest to highest:\n"
 "\n"
@@ -4744,7 +4289,7 @@ msgstr ""
 msgid "WeatherAPI.com (Key Required)"
 msgstr "WeatherAPI.com (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:202
+#: contents/ui/config/tabs/ConfigProviderTab.qml:252
 msgid "WeatherAPI.com API Key:"
 msgstr "WeatherAPI.com API ключ:"
 
@@ -4752,7 +4297,7 @@ msgstr "WeatherAPI.com API ключ:"
 msgid "Weatherbit (Key Required)"
 msgstr "Weatherbit (изисква ключ)"
 
-#: contents/ui/config/tabs/ConfigProviderTab.qml:197
+#: contents/ui/config/tabs/ConfigProviderTab.qml:247
 msgid "Weatherbit API Key:"
 msgstr "Weatherbit API ключ:"
 
@@ -4761,15 +4306,15 @@ msgid "Website"
 msgstr "Уебсайт"
 
 #: contents/ui/config/configAppearance.qml:2463
-#: contents/ui/config/tabs/ConfigMiscTab.qml:127
+#: contents/ui/config/tabs/ConfigMiscTab.qml:198
 msgid "Widget"
 msgstr "Приспособление"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:459
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:590
 msgid "Widget Size"
 msgstr "Размер на притурката"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:253
+#: contents/ui/config/tabs/ConfigPanelTab.qml:325
 msgid "Widget panel area:"
 msgstr "Зона на приспособлението в панела:"
 
@@ -4790,7 +4335,7 @@ msgstr "Приспособление › Общи › Тема на иконит
 msgid "Wind"
 msgstr "Вятър"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:217
+#: contents/ui/config/tabs/ConfigRadarTab.qml:304
 msgid "Wind animation:"
 msgstr "Анимация на вятъра:"
 
@@ -4803,12 +4348,12 @@ msgstr "Скорост на вятъра + посока"
 msgid "Wind speed and direction"
 msgstr "Скорост и посока на вятъра"
 
-#: contents/ui/config/tabs/ConfigMiscTab.qml:248
+#: contents/ui/config/tabs/ConfigMiscTab.qml:332
 msgid "Wind speed:"
 msgstr "Скорост на вятъра:"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:951
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:1080
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1300
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1510
 #: contents/ui/TooltipContent.qml:427
 msgid "Wind:"
 msgstr "Вятър:"
@@ -4821,13 +4366,11 @@ msgstr "Ветрове"
 msgid "Winds aloft"
 msgstr "Ветрове на височина"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:60
+#: contents/ui/config/tabs/ConfigRadarTab.qml:122
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
-msgstr ""
-"Заобикаляне на срива на радарната карта при системи с хибридна GPU "
-"(ЕКСПЕРИМЕНТАЛНО)"
+msgstr "Заобикаляне на срива на радарната карта при системи с хибридна GPU (ЕКСПЕРИМЕНТАЛНО)"
 
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:81
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:124
 msgid "Wrap to next line"
 msgstr "Пренасяне на следващ ред"
 
@@ -4836,51 +4379,37 @@ msgstr "Пренасяне на следващ ред"
 msgid "X-ray Flare Class"
 msgstr "Клас на рентгеновата слънчева буря"
 
-#: contents/ui/config/configNotifications.qml:289
-#: contents/ui/config/configNotifications.qml:330
+#: contents/ui/config/configNotifications.qml:317
+#: contents/ui/config/configNotifications.qml:364
 msgid "Yellow"
 msgstr "Жълто"
 
-#: contents/ui/config/configLocation.qml:1261
+#: contents/ui/config/configLocation.qml:1326
 msgid "Yes"
 msgstr "Да"
 
-#: contents/ui/config/configLocation.qml:1389
+#: contents/ui/config/configLocation.qml:1454
 msgid "Yes, remove it"
 msgstr "Да, премахни го"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:359
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:450
-msgid ""
-"You can see date/time format reference at: <a "
-"href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt "
-"documentation</a>"
-msgstr ""
-"Можете да видите справка за формата на датата/часа на: <a "
-"href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt "
-"документация</a>"
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:484
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:582
+msgid "You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>"
+msgstr "Можете да видите справка за формата на датата/часа на: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt документация</a>"
 
-#: contents/ui/config/tabs/ConfigWidgetTab.qml:970
-msgid ""
-"You may need to increase the widget's width to see all the selected "
-"information"
-msgstr ""
-"Може да е необходимо да увеличите ширината на джаджата, за да видите цялата "
-"избрана информация"
+#: contents/ui/config/tabs/ConfigWidgetTab.qml:1325
+msgid "You may need to increase the widget's width to see all the selected information"
+msgstr "Може да е необходимо да увеличите ширината на джаджата, за да видите цялата избрана информация"
 
 #: contents/ui/config/configAppearance.qml:435
-msgid ""
-"You selected <b>%1</b>. Apply it to every icon theme setting where it is "
-"available?"
-msgstr ""
-"Избрахте <b>%1</b>. Да се приложи ли към всяка настройка за тема на иконите,"
-" където е налична?"
+msgid "You selected <b>%1</b>. Apply it to every icon theme setting where it is available?"
+msgstr "Избрахте <b>%1</b>. Да се приложи ли към всяка настройка за тема на иконите, където е налична?"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:490
+#: contents/ui/components/LocationMapPickerView.qml:54
 msgid "Zoom in"
 msgstr "Увеличаване"
 
-#: contents/ui/config/subpages/ConfigMapSubPage.qml:499
+#: contents/ui/components/LocationMapPickerView.qml:54
 msgid "Zoom out"
 msgstr "Намаляване"
 
@@ -4916,7 +4445,7 @@ msgstr "cm"
 msgid "drizzle"
 msgstr "ръмеж"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:424
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:533
 msgid "e.g. Sofia, Bulgaria"
 msgstr "напр. София, България"
 
@@ -4924,7 +4453,7 @@ msgstr "напр. София, България"
 msgid "extreme"
 msgstr "екстремна"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:573
 msgid "feet"
 msgstr "футове"
 
@@ -4940,7 +4469,7 @@ msgstr "заледяващ дъжд"
 msgid "from %1"
 msgstr "от %1"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:370
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:353
 msgid "ft"
 msgstr "фута"
 
@@ -4949,7 +4478,7 @@ msgid "grains/m³"
 msgstr "зърна/m³"
 
 #: contents/ui/components/RadarWebEngineView.qml:862
-#: contents/ui/config/tabs/ConfigMiscTab.qml:289 contents/ui/js/weather.js:608
+#: contents/ui/config/tabs/ConfigMiscTab.qml:386 contents/ui/js/weather.js:608
 msgid "hPa"
 msgstr "hPa"
 
@@ -4970,7 +4499,7 @@ msgid "in/h"
 msgstr "in/h"
 
 #: contents/ui/components/RadarWebEngineView.qml:860
-#: contents/ui/config/tabs/ConfigMiscTab.qml:297 contents/ui/js/weather.js:607
+#: contents/ui/config/tabs/ConfigMiscTab.qml:394 contents/ui/js/weather.js:607
 msgid "inHg"
 msgstr "inHg"
 
@@ -4980,7 +4509,7 @@ msgid "km"
 msgstr "km"
 
 #: contents/ui/components/RadarWebEngineView.qml:855
-#: contents/ui/config/tabs/ConfigMiscTab.qml:254 contents/ui/js/weather.js:601
+#: contents/ui/config/tabs/ConfigMiscTab.qml:345 contents/ui/js/weather.js:601
 msgid "km/h"
 msgstr "km/h"
 
@@ -5001,12 +4530,12 @@ msgstr "остават"
 msgid "low"
 msgstr "ниска"
 
-#: contents/ui/config/subpages/ConfigLocationSubPage.qml:370
+#: contents/ui/config/subpages/ConfigLocationSubPage.qml:353
 msgid "m"
 msgstr "метър"
 
 #: contents/ui/components/RadarWebEngineView.qml:857
-#: contents/ui/config/tabs/ConfigMiscTab.qml:262 contents/ui/js/weather.js:599
+#: contents/ui/config/tabs/ConfigMiscTab.qml:353 contents/ui/js/weather.js:599
 msgid "m/s"
 msgstr "m/s"
 
@@ -5014,7 +4543,7 @@ msgstr "m/s"
 msgid "met.no (free)"
 msgstr "met.no (безплатно)"
 
-#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:465
+#: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:573
 msgid "meters"
 msgstr "метри"
 
@@ -5030,8 +4559,8 @@ msgstr "mi"
 msgid "minor"
 msgstr "лека"
 
-#: contents/ui/config/configNotifications.qml:528
-#: contents/ui/config/tabs/ConfigProviderTab.qml:438
+#: contents/ui/config/configNotifications.qml:574
+#: contents/ui/config/tabs/ConfigProviderTab.qml:510
 msgid "minutes"
 msgstr "минути"
 
@@ -5044,7 +4573,7 @@ msgid "mm/h"
 msgstr "mm/h"
 
 #: contents/ui/components/RadarWebEngineView.qml:861
-#: contents/ui/config/tabs/ConfigMiscTab.qml:293 contents/ui/js/weather.js:606
+#: contents/ui/config/tabs/ConfigMiscTab.qml:390 contents/ui/js/weather.js:606
 msgid "mmHg"
 msgstr "mmHg"
 
@@ -5053,7 +4582,7 @@ msgid "moderate"
 msgstr "умерена"
 
 #: contents/ui/components/RadarWebEngineView.qml:854
-#: contents/ui/config/tabs/ConfigMiscTab.qml:258 contents/ui/js/weather.js:598
+#: contents/ui/config/tabs/ConfigMiscTab.qml:349 contents/ui/js/weather.js:598
 msgid "mph"
 msgstr "mph"
 
@@ -5065,17 +4594,17 @@ msgstr "не е налично - оставено без промяна"
 msgid "overcast skies"
 msgstr "напълно облачно"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:927
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:136
-#: contents/ui/config/tabs/ConfigTooltipTab.qml:179
+#: contents/ui/config/tabs/ConfigPanelTab.qml:1128
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:186
+#: contents/ui/config/tabs/ConfigTooltipTab.qml:236
 msgid "px"
 msgstr "пиксели"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:292
+#: contents/ui/config/tabs/ConfigPanelTab.qml:372
 msgid "px height"
 msgstr "px височина"
 
-#: contents/ui/config/tabs/ConfigPanelTab.qml:292
+#: contents/ui/config/tabs/ConfigPanelTab.qml:372
 msgid "px width"
 msgstr "px ширина"
 
@@ -5119,7 +4648,7 @@ msgstr "снеговалеж"
 msgid "strong"
 msgstr "силна"
 
-#: contents/ui/config/configLocation.qml:906
+#: contents/ui/config/configLocation.qml:971
 msgid "system location"
 msgstr "системно местоположение"
 
@@ -5195,16 +4724,8 @@ msgstr "µg/m³"
 #~ msgid "Symbolic"
 #~ msgstr "Символичен"
 
-#~ msgid ""
-#~ "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure):"
-#~ " disable Adaptive mode, select OpenWeatherMap as your weather provider, and "
-#~ "enter your API key above. When you are ready, you can enable Adaptive mode "
-#~ "again."
-#~ msgstr ""
-#~ "За да отключите допълнителни слоеве на картата (Дъжд, Облаци, Температура, "
-#~ "Вятър, Налягане): деактивирайте Адаптивния режим, изберете OpenWeatherMap "
-#~ "като ваш метеорологичен доставчик и въведете своя API ключ по-горе. Когато "
-#~ "сте готови, можете отново да активирате Адаптивния режим."
+#~ msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
+#~ msgstr "За да отключите допълнителни слоеве на картата (Дъжд, Облаци, Температура, Вятър, Налягане): деактивирайте Адаптивния режим, изберете OpenWeatherMap като ваш метеорологичен доставчик и въведете своя API ключ по-горе. Когато сте готови, можете отново да активирате Адаптивния режим."
 
 #~ msgid "Update timed out. Tap to retry."
 #~ msgstr "Обновяването изтече. Докоснете за повторен опит."
@@ -5287,22 +4808,8 @@ msgstr "µg/m³"
 #~ msgid "this night"
 #~ msgstr "тази нощ"
 
-#~ msgid ""
-#~ "Radar provider: <a href='https://www.rainviewer.com/'>Rain "
-#~ "Viewer</a><br/><br/>Rain Viewer does not guarantee the availability of radar"
-#~ " data. They do not conclude contracts with owners of this data. The reason "
-#~ "is that the owners can ask them to remove their data from Rain Viewer, "
-#~ "change the format, or stop sharing the data. They are trying to keep radar "
-#~ "data for as long as possible, but sometimes the owners just stop providing "
-#~ "the images."
-#~ msgstr ""
-#~ "Доставчик на радар: <a href='https://www.rainviewer.com/'>Rain "
-#~ "Viewer</a><br/><br/>Rain Viewer не гарантира наличността на радарни данни. "
-#~ "Те не сключват договори със собствениците на тези данни. Причината е, че "
-#~ "собствениците могат да поискат от тях да премахнат данните им от Rain "
-#~ "Viewer, да променят формата или да спрат да споделят данните. Те се опитват "
-#~ "да съхраняват радарни данни възможно най-дълго, но понякога собствениците "
-#~ "просто спират да предоставят изображенията."
+#~ msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+#~ msgstr "Доставчик на радар: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Rain Viewer не гарантира наличността на радарни данни. Те не сключват договори със собствениците на тези данни. Причината е, че собствениците могат да поискат от тях да премахнат данните им от Rain Viewer, да променят формата или да спрат да споделят данните. Те се опитват да съхраняват радарни данни възможно най-дълго, но понякога собствениците просто спират да предоставят изображенията."
 
 #~ msgid "Both"
 #~ msgstr "И двете"
@@ -5316,27 +4823,17 @@ msgstr "µg/m³"
 #~ msgid "Show sunrise/sunset markers"
 #~ msgstr "Показване на маркери за изгрев/залез"
 
-#~ msgid ""
-#~ "An API key is required for OpenWeatherMap. Weather data cannot be retrieved "
-#~ "without it."
-#~ msgstr ""
-#~ "Изисква се API ключ за OpenWeatherMap. Метеорологичните данни не могат да "
-#~ "бъдат получени без него."
+#~ msgid "An API key is required for OpenWeatherMap. Weather data cannot be retrieved without it."
+#~ msgstr "Изисква се API ключ за OpenWeatherMap. Метеорологичните данни не могат да бъдат получени без него."
 
-#~ msgid ""
-#~ "An API key is required for WeatherAPI.com. Weather data cannot be retrieved "
-#~ "without it."
-#~ msgstr ""
-#~ "Изисква се API ключ за WeatherAPI.com. Метеорологичните данни не могат да "
-#~ "бъдат получени без него."
+#~ msgid "An API key is required for WeatherAPI.com. Weather data cannot be retrieved without it."
+#~ msgstr "Изисква се API ключ за WeatherAPI.com. Метеорологичните данни не могат да бъдат получени без него."
 
 #~ msgid "Change Location"
 #~ msgstr "Промяна на местоположението"
 
 #~ msgid "Click 'Change Location' to search and set your location manually."
-#~ msgstr ""
-#~ "Щракнете върху „Промяна на местоположението“, за да търсите и зададете "
-#~ "местоположението ръчно."
+#~ msgstr "Щракнете върху „Промяна на местоположението“, за да търсите и зададете местоположението ръчно."
 
 #~ msgid "Connection successful! OpenWeatherMap key is valid."
 #~ msgstr "Връзката е успешна! OpenWeatherMap ключът е валиден."
@@ -5401,12 +4898,8 @@ msgstr "µg/m³"
 #~ msgid "Updated %1 (met.no)"
 #~ msgstr "Обновено %1 (met.no)"
 
-#~ msgid ""
-#~ "Uses KDE system icons by default. Click the button to customise each item’s "
-#~ "icon."
-#~ msgstr ""
-#~ "Използва системни икони на KDE по подразбиране. Щракнете върху бутона, за да"
-#~ " персонализирате иконата на всеки елемент."
+#~ msgid "Uses KDE system icons by default. Click the button to customise each item’s icon."
+#~ msgstr "Използва системни икони на KDE по подразбиране. Щракнете върху бутона, за да персонализирате иконата на всеки елемент."
 
 #~ msgid "Widget items"
 #~ msgstr "Елементи на приспособлението"

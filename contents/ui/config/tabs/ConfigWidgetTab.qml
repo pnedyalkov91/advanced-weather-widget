@@ -31,6 +31,25 @@ ColumnLayout {
     /** Reference to the root KCM (configAppearance) for cfg_* properties */
     required property var configRoot
 
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
+
     /** Emitted when the user clicks Configure… to push the details sub-page */
     signal pushSubPage()
     /** Emitted when the user clicks Configure… to push the simple items sub-page */
@@ -102,25 +121,52 @@ ColumnLayout {
 
     Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
 
-    StackLayout {
-        currentIndex: subTabBar.currentIndex
+    // Tab pages live in a plain ColumnLayout and only the selected one is visible.
+    // A StackLayout is as tall as its TALLEST page, which left empty space and a
+    // permanent scrollbar under the shorter tabs; layouts ignore hidden items.
+    ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
 
         // ── SUB-TAB 0: General ────────────────────────────────────────
-        Kirigami.FormLayout {
+        GridLayout {
+            id: _form1
+            visible: subTabBar.currentIndex === 0
+            Layout.fillWidth: true
+            // children with a maximum width would otherwise cap the grid itself and make
+            // it flip between one and two columns
+            Layout.maximumWidth: Number.POSITIVE_INFINITY
+            Layout.alignment: Qt.AlignTop
+            // Label and control on one line when there is room (like the wide mode of
+            // Kirigami.FormLayout); the label goes above its control in a narrow window.
+            columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+            columnSpacing: Kirigami.Units.largeSpacing
+            rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
+
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Layout
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Layout")
+            SectionHeader {
+                title: i18n("Layout")
+                Layout.columnSpan: _form1.columns
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form1.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Mode:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Mode:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: layoutModeCombo
@@ -140,15 +186,28 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Appearance
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Appearance")
+            SectionHeader {
+                title: i18n("Appearance")
+                Layout.columnSpan: _form1.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form1.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Weather icon theme:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Weather icon theme:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: conditionIconThemeCombo
@@ -164,6 +223,12 @@ ColumnLayout {
                     onActivated: widgetTab.configRoot.requestIconTheme("condition", model[currentIndex].value)
                 }
             }
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form1.columns === 2 && (widgetTab.configRoot.cfg_conditionIconTheme === "custom")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Button {
                 visible: widgetTab.configRoot.cfg_conditionIconTheme === "custom"
                 text: i18n("Configure weather icons…")
@@ -171,8 +236,14 @@ ColumnLayout {
                 onClicked: widgetTab.configRoot.conditionIconDialog.openWithContext("widget")
             }
 
+            Label {
+                text: i18n("Icon glow:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Icon glow:")
                 spacing: Kirigami.Units.largeSpacing
                 Switch {
                     checked: widgetTab.configRoot.cfg_iconGlowEnabled
@@ -187,9 +258,16 @@ ColumnLayout {
                     }
                 }
             }
+            Label {
+                text: i18n("Glow intensity:")
+                visible: widgetTab.configRoot.cfg_iconGlowEnabled
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
                 visible: widgetTab.configRoot.cfg_iconGlowEnabled
-                Kirigami.FormData.label: i18n("Glow intensity:")
                 spacing: Kirigami.Units.largeSpacing
                 Slider {
                     Layout.preferredWidth: 160
@@ -209,15 +287,29 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Behavior
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Behavior")
+            SectionHeader {
+                title: i18n("Behavior")
+                Layout.columnSpan: _form1.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form1.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Default tab:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Default tab:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
@@ -238,8 +330,15 @@ ColumnLayout {
                     onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
                 }
             }
+            Label {
+                text: i18n("Visible tabs:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Visible tabs:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
@@ -264,8 +363,14 @@ ColumnLayout {
                     onActivated: widgetTab.configRoot.cfg_widgetVisibleTabs = model[currentIndex].value
                 }
             }
+            Label {
+                text: i18n("Footer:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Footer:")
                 Switch {
                     id: footerSwitch
                     checked: widgetTab.configRoot.cfg_showUpdateText
@@ -281,8 +386,15 @@ ColumnLayout {
                 }
             }
 
+            Label {
+                text: i18n("Sunrise / Sunset:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Sunrise / Sunset:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_simpleShowSunriseSunset
@@ -290,8 +402,14 @@ ColumnLayout {
                 }
             }
 
+            Label {
+                text: i18n("Date and time in header:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Date and time in header:")
                 Switch {
                     id: headerDateTimeSwitch
                     checked: widgetTab.configRoot.cfg_headerShowDateTime
@@ -299,8 +417,15 @@ ColumnLayout {
                 }
             }
 
+            Label {
+                text: i18n("Date format:")
+                visible: widgetTab.configRoot.cfg_headerShowDateTime
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Date format:")
                 visible: widgetTab.configRoot.cfg_headerShowDateTime
                 spacing: Kirigami.Units.smallSpacing
                 ComboBox {
@@ -351,8 +476,8 @@ ColumnLayout {
             }
 
             Kirigami.InlineMessage {
+                Layout.columnSpan: _form1.columns
                 Layout.fillWidth: true
-                Layout.columnSpan: 2
                 visible: widgetTab.configRoot.cfg_headerShowDateTime &&
                          headerDateFormatCombo.currentIndex === headerDateFormatCombo._presets.length - 1
                 type: Kirigami.MessageType.Information
@@ -360,8 +485,15 @@ ColumnLayout {
                 onLinkActivated: link => Qt.openUrlExternally(link)
             }
 
+            Label {
+                text: i18n("Time format:")
+                visible: widgetTab.configRoot.cfg_headerShowDateTime
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Time format:")
                 visible: widgetTab.configRoot.cfg_headerShowDateTime
                 spacing: Kirigami.Units.smallSpacing
                 ComboBox {
@@ -442,8 +574,8 @@ ColumnLayout {
             }
 
             Kirigami.InlineMessage {
+                Layout.columnSpan: _form1.columns
                 Layout.fillWidth: true
-                Layout.columnSpan: 2
                 visible: widgetTab.configRoot.cfg_headerShowDateTime &&
                          headerTimeFormatCombo.currentIndex === headerTimeFormatCombo._presets.length - 1
                 type: Kirigami.MessageType.Information
@@ -454,15 +586,28 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Widget popup size
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Widget Size")
+            SectionHeader {
+                title: i18n("Widget Size")
+                Layout.columnSpan: _form1.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form1.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Minimum width:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Minimum width:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: minWidthModeCombo
@@ -493,8 +638,14 @@ ColumnLayout {
                     opacity: 0.65
                 }
             }
+            Label {
+                text: i18n("Minimum height:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Minimum height:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: minHeightModeCombo
@@ -525,21 +676,51 @@ ColumnLayout {
                     opacity: 0.65
                 }
             }
+
+            // Invisible filler row: it lets the second column take ALL spare width, so the
+            // label column keeps its width when rows are shown or hidden.
+            Item { visible: _form1.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+            Item { visible: _form1.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
         }
 
         // ── SUB-TAB 1: Details ────────────────────────────────────────
-        Kirigami.FormLayout {
+        GridLayout {
+            id: _form2
+            visible: subTabBar.currentIndex === 1
+            Layout.fillWidth: true
+            // children with a maximum width would otherwise cap the grid itself and make
+            // it flip between one and two columns
+            Layout.maximumWidth: Number.POSITIVE_INFINITY
+            Layout.alignment: Qt.AlignTop
+            // Label and control on one line when there is room (like the wide mode of
+            // Kirigami.FormLayout); the label goes above its control in a narrow window.
+            columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+            columnSpacing: Kirigami.Units.largeSpacing
+            rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
+
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Icons
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Icons")
+            SectionHeader {
+                title: i18n("Icons")
+                Layout.columnSpan: _form2.columns
+            }
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form2.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
             }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Icon theme:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Icon theme:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: widgetIconThemeCombo
@@ -577,12 +758,18 @@ ColumnLayout {
                 }
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form2.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
             // ── Warning - KDE themes lack some item icons ──
             Kirigami.InlineMessage {
+                Layout.columnSpan: _form2.columns
                 Layout.fillWidth: true
-                Layout.columnSpan: 2
                 visible: widgetTab.configRoot.cfg_widgetIconTheme === "kde"
                 type: Kirigami.MessageType.Warning
                 text: i18n("KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\".")
@@ -600,6 +787,12 @@ ColumnLayout {
             }
 
             Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form2.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
                 Layout.preferredHeight: Kirigami.Units.largeSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
@@ -607,18 +800,32 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Layout
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Layout")
+            SectionHeader {
+                title: i18n("Layout")
+                Layout.columnSpan: _form2.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form2.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
+                implicitWidth: 0
+                implicitHeight: 0
             }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
+            Label {
+                text: i18n("Details layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Details layout:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 ComboBox {
                     id: detailsLayoutCombo
@@ -634,9 +841,16 @@ ColumnLayout {
             }
 
             // Cards height (hidden in list mode or simple mode)
+            Label {
+                text: i18n("Cards height:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
-                Kirigami.FormData.label: i18n("Cards height:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: cardsHeightModeCombo
@@ -668,9 +882,16 @@ ColumnLayout {
             }
 
             // Expanded cards height (hidden in list mode or simple mode)
+            Label {
+                text: i18n("Expanded cards height:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
-                Kirigami.FormData.label: i18n("Expanded cards height:")
                 spacing: Kirigami.Units.largeSpacing
                 ComboBox {
                     id: expandedCardsHeightModeCombo
@@ -702,6 +923,12 @@ ColumnLayout {
             }
 
             Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form2.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
                 Layout.preferredHeight: Kirigami.Units.largeSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
@@ -709,16 +936,30 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Items - switches between advanced and simple mode
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+            SectionHeader {
+                title: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                     ? i18n("Simple Mode Items") : i18n("Details Items")
+                Layout.columnSpan: _form2.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
+            }
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form2.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
             }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
             // Advanced mode: details items preview + Configure
+            Label {
+                text: i18n("Details items:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
             Item {
-                Kirigami.FormData.label: i18n("Details items:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 implicitWidth: detailsPreviewRow.implicitWidth
                 implicitHeight: detailsPreviewRow.implicitHeight
@@ -762,8 +1003,15 @@ ColumnLayout {
             }
 
             // Simple mode: simple chips preview + Configure
+            Label {
+                text: i18n("Simple chips:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
             Item {
-                Kirigami.FormData.label: i18n("Simple chips:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                 implicitWidth: simplePreviewRow.implicitWidth
                 implicitHeight: simplePreviewRow.implicitHeight
@@ -806,44 +1054,94 @@ ColumnLayout {
                 }
             }
 
+            Label {
+                text: i18n("Stats items:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Stats items:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_simpleShowStatsChips
                     onToggled: widgetTab.configRoot.cfg_simpleShowStatsChips = checked
                 }
             }
+
+            // Invisible filler row: it lets the second column take ALL spare width, so the
+            // label column keeps its width when rows are shown or hidden.
+            Item { visible: _form2.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+            Item { visible: _form2.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
         }
 
         // ── SUB-TAB 2: Forecast ───────────────────────────────────────
-        Kirigami.FormLayout {
+        GridLayout {
+            id: _form3
+            visible: subTabBar.currentIndex === 2
+            Layout.fillWidth: true
+            // children with a maximum width would otherwise cap the grid itself and make
+            // it flip between one and two columns
+            Layout.maximumWidth: Number.POSITIVE_INFINITY
+            Layout.alignment: Qt.AlignTop
+            // Label and control on one line when there is room (like the wide mode of
+            // Kirigami.FormLayout); the label goes above its control in a narrow window.
+            columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+            columnSpacing: Kirigami.Units.largeSpacing
+            rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
+
             // ═══════════════════════════════════════════════════════════════
             // SECTION: General
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("General")
+            SectionHeader {
+                title: i18n("General")
+                Layout.columnSpan: _form3.columns
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Forecast days:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             SpinBox {
-                Kirigami.FormData.label: i18n("Forecast days:")
                 from: 3
                 to: 16
                 value: widgetTab.configRoot.cfg_forecastDays
                 onValueModified: widgetTab.configRoot.cfg_forecastDays = value
             }
+            Label {
+                text: i18n("Show Today:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Show Today:")
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowToday
                     onToggled: widgetTab.configRoot.cfg_forecastShowToday = checked
                 }
             }
+            Label {
+                text: i18n("Auto-open hourly forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Auto-open hourly forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     id: forecastAutoOpenSwitch
@@ -859,8 +1157,15 @@ ColumnLayout {
                     opacity: 0.7
                 }
             }
+            Label {
+                text: i18n("Expand all days:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Expand all days:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     id: forecastExpandAllSwitch
@@ -876,8 +1181,15 @@ ColumnLayout {
                     opacity: 0.7
                 }
             }
+            Label {
+                text: i18n("Show past weather info for today:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Show past weather info for today:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     id: forecastShowPastHoursSwitch
@@ -897,22 +1209,41 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Daily Forecast Settings
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Daily Forecast Settings")
+            SectionHeader {
+                title: i18n("Daily Forecast Settings")
+                Layout.columnSpan: _form3.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
+            Label {
+                text: i18n("Pressure forecast:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Pressure forecast:")
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowPressure
                     onToggled: widgetTab.configRoot.cfg_forecastShowPressure = checked
                 }
             }
+            Label {
+                text: i18n("Kp index/G forecast:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Kp index/G forecast:")
                 Switch {
                     id: forecastShowKpIndexSwitch
                     checked: widgetTab.configRoot.cfg_forecastShowKpIndex
@@ -926,29 +1257,53 @@ ColumnLayout {
                     opacity: 0.7
                 }
             }
+            Label {
+                text: i18n("UV index forecast:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("UV index forecast:")
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowUvIndex
                     onToggled: widgetTab.configRoot.cfg_forecastShowUvIndex = checked
                 }
             }
+            Label {
+                text: i18n("Precip sum:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Precip sum:")
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowPrecipSum
                     onToggled: widgetTab.configRoot.cfg_forecastShowPrecipSum = checked
                 }
             }
+            Label {
+                text: i18n("Visibility:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Visibility:")
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowVisibility
                     onToggled: widgetTab.configRoot.cfg_forecastShowVisibility = checked
                 }
             }
+            Label {
+                text: i18n("Wind:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Wind:")
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowWind
                     onToggled: widgetTab.configRoot.cfg_forecastShowWind = checked
@@ -956,8 +1311,8 @@ ColumnLayout {
             }
 
             Kirigami.InlineMessage {
+                Layout.columnSpan: _form3.columns
                 Layout.fillWidth: true
-                Layout.columnSpan: 2
                 visible: [
                     widgetTab.configRoot.cfg_forecastShowPressure,
                     widgetTab.configRoot.cfg_forecastShowKpIndex,
@@ -973,19 +1328,33 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Hourly Forecast Settings
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Hourly Forecast Settings")
+            SectionHeader {
+                title: i18n("Hourly Forecast Settings")
+                Layout.columnSpan: _form3.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
+            Label {
+                text: i18n("Hourly layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             ComboBox {
-                Kirigami.FormData.label: i18n("Hourly layout:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 textRole: "text"
                 readonly property var _opts: [
@@ -1001,8 +1370,15 @@ ColumnLayout {
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastHourlyLayout = _opts[currentIndex].value
             }
+            Label {
+                text: i18n("Sunrise/sunset markers:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Sunrise/sunset markers:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastShowSunEvents
@@ -1011,33 +1387,66 @@ ColumnLayout {
             }
 
             Item {
-                Layout.preferredHeight: Kirigami.Units.smallSpacing
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
+                implicitWidth: 0
+                implicitHeight: 0
             }
-
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+            }
+
+            Label {
+                text: i18n("Precip probability:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Precip probability:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastHourlyShowPrecipProb
                     onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPrecipProb = checked
                 }
             }
+            Label {
+                text: i18n("Pressure forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Pressure forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastHourlyShowPressure
                     onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPressure = checked
                 }
             }
+            Label {
+                text: i18n("Kp index/G forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Kp index/G forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     id: forecastHourlyShowKpIndexSwitch
@@ -1052,32 +1461,60 @@ ColumnLayout {
                     opacity: 0.7
                 }
             }
+            Label {
+                text: i18n("UV index forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("UV index forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastHourlyShowUvIndex
                     onToggled: widgetTab.configRoot.cfg_forecastHourlyShowUvIndex = checked
                 }
             }
+            Label {
+                text: i18n("Precip sum:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Precip sum:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastHourlyShowPrecipSum
                     onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPrecipSum = checked
                 }
             }
+            Label {
+                text: i18n("Visibility:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Visibility:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastHourlyShowVisibility
                     onToggled: widgetTab.configRoot.cfg_forecastHourlyShowVisibility = checked
                 }
             }
+            Label {
+                text: i18n("Wind:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Wind:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_forecastHourlyShowWind
@@ -1086,6 +1523,12 @@ ColumnLayout {
             }
 
             Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode === "simple")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
                 Layout.preferredHeight: Kirigami.Units.largeSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
             }
@@ -1093,19 +1536,33 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Simple widget
             // ═══════════════════════════════════════════════════════════════
-            Kirigami.Separator {
-                Kirigami.FormData.isSection: true
-                Kirigami.FormData.label: i18n("Simple Widget")
+            SectionHeader {
+                title: i18n("Simple Widget")
+                Layout.columnSpan: _form3.columns
+                Layout.topMargin: Kirigami.Units.largeSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
             }
 
+            Item {
+                // empty label cell: keeps the control in the second column
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode === "simple")
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
             }
 
+            Label {
+                text: i18n("Forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                 Switch {
                     checked: widgetTab.configRoot.cfg_simpleShowForecast
@@ -1113,8 +1570,15 @@ ColumnLayout {
                 }
             }
 
+            Label {
+                text: i18n("Compass in forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
             RowLayout {
-                Kirigami.FormData.label: i18n("Compass in forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                 enabled: widgetTab.configRoot.cfg_simpleShowForecast
                 Switch {
@@ -1123,6 +1587,11 @@ ColumnLayout {
                 }
             }
 
+
+            // Invisible filler row: it lets the second column take ALL spare width, so the
+            // label column keeps its width when rows are shown or hidden.
+            Item { visible: _form3.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+            Item { visible: _form3.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
         }
     }
 }

@@ -186,6 +186,26 @@ KCM.SimpleKCM {
         }
     }
 
+    // A Switch whose label wraps onto several lines instead of forcing the
+    // whole page wider than the (resizable) settings window. A plain Switch
+    // keeps its full single-line text width and cannot shrink, so a long
+    // label makes the page wider than the window and gets clipped.
+    component WrappingSwitch: Switch {
+        id: wrappingSwitch
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        contentItem: Label {
+            text: wrappingSwitch.text
+            font: wrappingSwitch.font
+            wrapMode: Text.Wrap
+            verticalAlignment: Text.AlignVCenter
+            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored
+                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored
+                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+        }
+    }
+
     component SingleTimeEditor: RowLayout {
         id: singleTimeEditor
         required property string time
@@ -273,19 +293,27 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("Weather alerts") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Enable alert notifications")
                 checked: root.cfg_alertNotificationsEnabled
                 onToggled: root.cfg_alertNotificationsEnabled = checked
             }
 
-            RowLayout {
+            // Flow (not RowLayout) so the switches wrap onto a second line when
+            // the window is narrow instead of running off the right edge.
+            Flow {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 enabled: root.cfg_alertNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.5
                 spacing: 10
-                Label { text: i18n("Severities:") }
+                Label {
+                    text: i18n("Severities:")
+                    height: severityYellowSwitch.height
+                    verticalAlignment: Text.AlignVCenter
+                }
                 Switch {
+                    id: severityYellowSwitch
                     text: i18n("Yellow")
                     checked: root.cfg_alertNotificationsYellowEnabled
                     onToggled: root.cfg_alertNotificationsYellowEnabled = checked
@@ -320,13 +348,19 @@ KCM.SimpleKCM {
                 }
             }
 
-            RowLayout {
+            Flow {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 enabled: root.cfg_alertNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.5
                 spacing: 10
-                Label { text: i18n("Sounds:") }
+                Label {
+                    text: i18n("Sounds:")
+                    height: soundYellowSwitch.height
+                    verticalAlignment: Text.AlignVCenter
+                }
                 Switch {
+                    id: soundYellowSwitch
                     text: i18n("Yellow")
                     enabled: root.cfg_alertNotificationsYellowEnabled
                     opacity: enabled ? 1.0 : 0.5
@@ -370,44 +404,58 @@ KCM.SimpleKCM {
                 }
             }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 enabled: root.cfg_alertNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.5
                 spacing: 6
 
-                Label { text: i18n("Alert sound:") }
-
-                TextField {
-                    id: soundFileField
+                RowLayout {
                     Layout.fillWidth: true
-                    readOnly: true
-                    placeholderText: i18n("Default (built-in siren)")
-                    text: root.soundFileDisplayPath(root.cfg_alertNotificationsSoundFile)
-                }
+                    spacing: 6
 
-                Button {
-                    text: i18n("Browse…")
-                    icon.name: "document-open"
-                    onClicked: soundFileDialog.open()
-                }
+                    Label { text: i18n("Alert sound:") }
 
-                Button {
-                    text: i18n("Test")
-                    icon.name: "media-playback-start"
-                    onClicked: {
-                        testMediaPlayer.source = root.cfg_alertNotificationsSoundFile.length > 0
-                            ? root.cfg_alertNotificationsSoundFile
-                            : root.defaultAlertSoundUrl;
-                        testMediaPlayer.play();
+                    TextField {
+                        id: soundFileField
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        readOnly: true
+                        placeholderText: i18n("Default (built-in siren)")
+                        text: root.soundFileDisplayPath(root.cfg_alertNotificationsSoundFile)
                     }
                 }
 
-                Button {
-                    text: i18n("Reset")
-                    icon.name: "edit-undo"
-                    enabled: root.cfg_alertNotificationsSoundFile.length > 0
-                    onClicked: root.cfg_alertNotificationsSoundFile = ""
+                // Buttons wrap onto extra lines when the window is narrow.
+                Flow {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    spacing: 6
+
+                    Button {
+                        text: i18n("Browse…")
+                        icon.name: "document-open"
+                        onClicked: soundFileDialog.open()
+                    }
+
+                    Button {
+                        text: i18n("Test")
+                        icon.name: "media-playback-start"
+                        onClicked: {
+                            testMediaPlayer.source = root.cfg_alertNotificationsSoundFile.length > 0
+                                ? root.cfg_alertNotificationsSoundFile
+                                : root.defaultAlertSoundUrl;
+                            testMediaPlayer.play();
+                        }
+                    }
+
+                    Button {
+                        text: i18n("Reset")
+                        icon.name: "edit-undo"
+                        enabled: root.cfg_alertNotificationsSoundFile.length > 0
+                        onClicked: root.cfg_alertNotificationsSoundFile = ""
+                    }
                 }
             }
 
@@ -435,7 +483,7 @@ KCM.SimpleKCM {
                 audioOutput: AudioOutput {}
             }
 
-            Switch {
+            WrappingSwitch {
                 enabled: root.cfg_alertNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.5
                 text: i18n("Treat alert notifications as critical")
@@ -451,7 +499,7 @@ KCM.SimpleKCM {
                 text: i18n("Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications).")
             }
 
-            Switch {
+            WrappingSwitch {
                 enabled: root.cfg_alertNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.5
                 text: i18n("Notify about upcoming alerts before they start")
@@ -467,7 +515,7 @@ KCM.SimpleKCM {
                 text: i18n("Sends a single, low-priority heads-up as soon as a future alert is published (e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert notification above still fires separately once it actually becomes active.")
             }
 
-            Switch {
+            WrappingSwitch {
                 enabled: root.cfg_alertNotificationsEnabled
                 opacity: enabled ? 1.0 : 0.5
                 text: i18n("Repeat reminder until dismissed")
@@ -509,13 +557,11 @@ KCM.SimpleKCM {
                     opacity: enabled ? 1.0 : 0.5
                     spacing: 8
 
-                    Switch {
-                        Layout.preferredWidth: 200
+                    WrappingSwitch {
                         text: modelData.name
                         checked: root.alertTypeEnabled(modelData.type)
                         onToggled: root.setAlertType(modelData.type, checked, root.alertTypeMinutes(modelData.type))
                     }
-                    Item { Layout.fillWidth: true }
                     SpinBox {
                         enabled: root.cfg_alertNotificationsRepeatEnabled && root.alertTypeEnabled(modelData.type)
                         opacity: enabled ? 1.0 : 0.5
@@ -537,7 +583,7 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("Today's weather") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Notify with today's forecast")
                 checked: root.cfg_notificationTodayEnabled
                 onToggled: root.cfg_notificationTodayEnabled = checked
@@ -557,7 +603,7 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("Tomorrow forecast") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Notify with tomorrow's forecast")
                 checked: root.cfg_notificationTomorrowEnabled
                 onToggled: root.cfg_notificationTomorrowEnabled = checked
@@ -577,7 +623,7 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("Rain/Storm") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Notify about upcoming rain/storms")
                 checked: root.cfg_notificationRainEnabled
                 onToggled: root.cfg_notificationRainEnabled = checked
@@ -591,7 +637,7 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("Snow") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Notify about upcoming snow")
                 checked: root.cfg_notificationSnowEnabled
                 onToggled: root.cfg_notificationSnowEnabled = checked
@@ -605,7 +651,7 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("UV index") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Notify with today's UV forecast")
                 checked: root.cfg_notificationUvEnabled
                 onToggled: root.cfg_notificationUvEnabled = checked
@@ -625,7 +671,7 @@ KCM.SimpleKCM {
 
             SectionHeader { title: i18n("Geomagnetic activity") }
 
-            Switch {
+            WrappingSwitch {
                 text: i18n("Notify with today's geomagnetic activity forecast")
                 checked: root.cfg_notificationSpaceWeatherEnabled
                 onToggled: root.cfg_notificationSpaceWeatherEnabled = checked

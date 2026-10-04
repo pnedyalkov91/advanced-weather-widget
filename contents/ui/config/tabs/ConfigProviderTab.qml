@@ -25,18 +25,48 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+GridLayout {
     id: providerTab
+
+    Layout.fillWidth: true
+    // children with a maximum width would otherwise cap the grid itself and make
+    // it flip between one and two columns
+    Layout.maximumWidth: Number.POSITIVE_INFINITY
+    Layout.alignment: Qt.AlignTop
+    // Label and control on one line when there is room (like the wide mode of
+    // Kirigami.FormLayout); the label goes above its control in a narrow window.
+    columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+    columnSpacing: Kirigami.Units.largeSpacing
+    rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configGeneral) for cfg_* properties, functions and state */
     required property var configRoot
 
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // SECTION: Weather Provider
     // ═══════════════════════════════════════════════════════════════
-    Kirigami.Separator {
-        Kirigami.FormData.isSection: true
-        Kirigami.FormData.label: i18n("Weather Provider")
+    SectionHeader {
+        title: i18n("Weather Provider")
+        Layout.columnSpan: providerTab.columns
     }
 
     // The single place that flips Adaptive on/off. Both the Switch and its
@@ -63,7 +93,7 @@ Kirigami.FormLayout {
 
     // Adaptive toggle row
     RowLayout {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         spacing: 12
         Switch {
             id: adaptiveSwitch
@@ -85,7 +115,7 @@ Kirigami.FormLayout {
 
     // Adaptive description - shown only when Adaptive is ON
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         Layout.fillWidth: true
         visible: providerTab.configRoot.isAdaptive
         type: Kirigami.MessageType.Information
@@ -94,9 +124,15 @@ Kirigami.FormLayout {
 
     // Manual provider selector - always visible now; read-only (disabled)
     // while Adaptive is ON instead of being hidden.
+    Label {
+        text: i18n("Provider:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: providerTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     ComboBox {
         id: providerCombo
-        Kirigami.FormData.label: i18n("Provider:")
         Layout.preferredWidth: 280
         model: providerTab.configRoot.providerModel
         textRole: "text"
@@ -114,8 +150,15 @@ Kirigami.FormLayout {
         }
     }
 
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: providerTab.columns === 2 && (providerTab.configRoot.isAdaptive)
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Label {
-        Kirigami.FormData.label: ""
+        Layout.fillWidth: true
+        wrapMode: Text.WordWrap
         visible: providerTab.configRoot.isAdaptive
         text: i18n("Read-only while Adaptive mode is on - turn it off above to choose a specific provider.")
         opacity: 0.65
@@ -123,8 +166,15 @@ Kirigami.FormLayout {
     }
 
     // Provider sub-label
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: providerTab.columns === 2 && (providerTab.configRoot.isAdaptive === false)
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Label {
-        Kirigami.FormData.label: ""
+        Layout.fillWidth: true
+        wrapMode: Text.WordWrap
         visible: providerTab.configRoot.isAdaptive === false
         opacity: 0.6
         font.pixelSize: Kirigami.Theme.smallFont.pixelSize
@@ -163,7 +213,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         Layout.fillWidth: true
         visible: providerTab.configRoot.locationCheckState === 2
         type: Kirigami.MessageType.Positive
@@ -171,7 +221,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         Layout.fillWidth: true
         visible: providerTab.configRoot.locationCheckState === 3
         type: Kirigami.MessageType.Error
@@ -181,8 +231,8 @@ Kirigami.FormLayout {
     // ── API Key section ───────────────────────────────────────
     // Shown only when OpenWeather or WeatherAPI (or another key-requiring
     // provider) is selected
-    ColumnLayout {
-        Kirigami.FormData.label: {
+    Label {
+        text: {
             if (providerTab.configRoot.isOpenWeather)
                 return i18n("OpenWeatherMap API Key:");
             if (providerTab.configRoot.isPirateWeather)
@@ -201,6 +251,13 @@ Kirigami.FormLayout {
                 return i18n("AEMET API Key:");
             return i18n("WeatherAPI.com API Key:");
         }
+        visible: providerTab.configRoot.needsKeyUi && !providerTab.configRoot.isAdaptive
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: providerTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
+    ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
         visible: providerTab.configRoot.needsKeyUi && !providerTab.configRoot.isAdaptive
@@ -212,6 +269,7 @@ Kirigami.FormLayout {
             TextField {
                 id: apiKeyField
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 placeholderText: {
                     if (providerTab.configRoot.isOpenWeather)
                         return i18n("Enter your OpenWeatherMap API key");
@@ -365,7 +423,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         Layout.fillWidth: true
         visible: providerTab.configRoot.isOpenWeather && !providerTab.configRoot.isAdaptive && apiKeyField.text.trim().length > 0
         type: Kirigami.MessageType.Information
@@ -374,7 +432,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         Layout.fillWidth: true
         visible: providerTab.configRoot.isAemet && !providerTab.configRoot.isAdaptive
         showCloseButton: true
@@ -384,8 +442,15 @@ Kirigami.FormLayout {
     }
 
     // ── QWeather API Host section ─────────────────────────────
+    Label {
+        text: i18n("QWeather API Host:")
+        visible: providerTab.configRoot.isQWeather && !providerTab.configRoot.isAdaptive
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: providerTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
     ColumnLayout {
-        Kirigami.FormData.label: i18n("QWeather API Host:")
         Layout.fillWidth: true
         spacing: 8
         visible: providerTab.configRoot.isQWeather && !providerTab.configRoot.isAdaptive
@@ -410,20 +475,27 @@ Kirigami.FormLayout {
     // ═══════════════════════════════════════════════════════════════
     // SECTION: Data Refresh
     // ═══════════════════════════════════════════════════════════════
-    Kirigami.Separator {
-        Kirigami.FormData.isSection: true
-        Kirigami.FormData.label: i18n("Data Refresh")
+    SectionHeader {
+        title: i18n("Data Refresh")
+        Layout.columnSpan: providerTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
     }
 
     Switch {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: providerTab.columns
         text: i18n("Refresh weather automatically")
         checked: providerTab.configRoot.cfg_autoRefresh
         onToggled: providerTab.configRoot.cfg_autoRefresh = checked
     }
 
+    Label {
+        text: i18n("Interval:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: providerTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     RowLayout {
-        Kirigami.FormData.label: i18n("Interval:")
         spacing: 8
         enabled: providerTab.configRoot.cfg_autoRefresh
         opacity: providerTab.configRoot.cfg_autoRefresh ? 1.0 : 0.5
@@ -438,4 +510,9 @@ Kirigami.FormLayout {
             text: i18n("minutes")
         }
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: providerTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: providerTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

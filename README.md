@@ -119,28 +119,45 @@ python3 scripts/build_librewxr_map.py --librewxr /path/to/LibreWXR
 
 <p align="center">
   <b>Detailed Widget Layouts</b><br>
-  <img src="screenshots/widget/advanced/advanced mode (cards).png" width="800" alt="Advanced Weather Widget (Advance mode)">
-  <img src="screenshots/widget/advanced/advanced mode (list).png" width="800" alt="Advanced Weather Widget (List mode)">
+  <img src="screenshots/widget/advanced/advanced mode (cards).png" width="500" alt="Advanced Weather Widget (Advance mode)">
+  <img src="screenshots/widget/advanced/advanced mode (list).png" width="500" alt="Advanced Weather Widget (List mode)">
+  <br>
   (<b>Advanced mode:</b> Choose between modern Cards or a clean List view.)
   <br><br>
-  <img src="screenshots/widget/simple/simple mode (default).png" width="800" alt="Simple mode">
-  <img src="screenshots/widget/simple/super simple.png" width="800" alt="Super Simple mode">
+  <img src="screenshots/widget/simple/simple mode (default).png" width="500" alt="Simple mode">
+  <br>
+  <img src="screenshots/widget/simple/super simple.png" width="500" alt="Super Simple mode">
+    <br>
       (<b>Simple modes:</b> Focused views for those who want weather without the tabs.)
 </p>
 
 <p align="center">
   <b>Tabs</b><br>
-  <img src="screenshots/widget/tabs/forecast.png" width="800" alt="Forecast tab">
-  (Forecast tab)
+    <img src="screenshots/widget/tabs/forecast-strip.png" width="500" alt="Forecast tab">
+      <br>
+  (Forecast tab - Strip)
+      <br>
+  <img src="screenshots/widget/tabs/forecast.png" width="500" alt="Forecast tab">
+    <br>
+  (Forecast tab - Cards)
   <br><br>
-  <img src="screenshots/widget/tabs/radar.png" width="800" alt="Radar tab">
+  <img src="screenshots/widget/tabs/radar.png" width="500" alt="Radar tab">
+      <br>
   (Radar tab)
+   <br><br>
+   <img src="screenshots/notifications/regular-notifications.png" width="300" alt="Regular Notifications">
+   <br>
+  (Regular Notifications)
+   <br><br>
+      <img src="screenshots/notifications/alerts-notifications.png" width="300" alt="Alerts Notifications with native language support">
+   <br>
+  (Alerts Notifications with native language support)
 </p>
 
 # ✨ Detailed Features
 
 ### 📍 Location Management
-- **Precision:** Automatic detection via GeoClue2/IP or manual search with dual geocoding (Open-Meteo + Nominatim).
+- **Precision:** Automatic detection via GeoClue2/IP or manual search with dual geocoding ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)).
 - **Map Picker:** Integrated OpenStreetMap preview to pin your exact location.
 - **Smart Data:** Automatic timezone, altitude detection, and localized city names.
 
@@ -168,6 +185,7 @@ For providers that require an API key, you can enter it in the widget's settings
 | **StormGlass** | ✅ | [Sign Up](https://stormglass.io/) |
 | **Weatherbit** | ✅ | [Sign Up](https://www.weatherbit.io/) |
 | **QWeather** | ✅ | [Sign Up](https://dev.qweather.com/) |
+| **AEMET** | ✅ | [Sign Up](https://opendata.aemet.es/centrodedescargas/altaUsuario) |
 
 ### 🌡 Data Points
 - **Core:** Temp (Current/Apparent/Dew), Wind (Speed/Direction), Humidity, Pressure, Visibility.
@@ -307,15 +325,19 @@ NOAA/NWS data and products are in the public domain and are not subject to copyr
 
 - **Alert Sound:** Sourced from Pixabay: https://pixabay.com (Licensed under the Pixabay License. Free for commercial and non-commercial use)
 
+- This project ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)) for Automatic detection via GeoClue2/IP and manual location search with  geocoding
+ © OpenStreetMap contributors. Licensed under the **Open Database License (ODbL)**.
+ [Photon](https://photon.komoot.io/) is a project run by ©  [komoot GmbH](https://www.komoot.com/)
 
 
 
 ## ❤️ Support the project
 
-Advanced Weather Widget is developed in my free time.
+Advanced Weather Widget is developed in my free time. Thank you to everyone who has supported this project so far! I really appreciate it!
 
 If you enjoy using it, you can support the project:
 
+- Buy Me a Coffee: https://buymeacoffee.com/petarnedyaq
 - Liberapay: https://liberapay.com/pnedyalkov
 - PayPal: https://paypal.me/pnedyalkov91
 - Revolut: https://revolut.me/petarnedyalkov91

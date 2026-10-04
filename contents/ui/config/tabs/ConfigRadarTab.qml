@@ -25,37 +25,99 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
-Kirigami.FormLayout {
+GridLayout {
     id: radarTab
+
+    Layout.fillWidth: true
+    // children with a maximum width would otherwise cap the grid itself and make
+    // it flip between one and two columns
+    Layout.maximumWidth: Number.POSITIVE_INFINITY
+    Layout.alignment: Qt.AlignTop
+    // Label and control on one line when there is room (like the wide mode of
+    // Kirigami.FormLayout); the label goes above its control in a narrow window.
+    columns: width >= Kirigami.Units.gridUnit * 30 ? 2 : 1
+    columnSpacing: Kirigami.Units.largeSpacing
+    rowSpacing: columns === 1 ? Kirigami.Units.smallSpacing : Kirigami.Units.smallSpacing * 2
 
     /** Reference to the root KCM (configGeneral) for cfg_* properties, functions and state */
     required property var configRoot
 
+    // Section title with a thin rule, same look as the Notifications page.
+    component SectionHeader: RowLayout {
+        required property string title
+        Layout.fillWidth: true
+        spacing: 8
+
+        Label {
+            text: parent.title
+            font.bold: true
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Kirigami.Theme.disabledTextColor
+            opacity: 0.5
+        }
+    }
+
+    // A Switch whose label wraps onto several lines instead of forcing the
+    // whole page wider than the (resizable) settings window. A plain Switch
+    // keeps its full single-line text width and cannot shrink, so a long
+    // label gets clipped when the window is narrow.
+    component WrappingSwitch: Switch {
+        id: wrappingSwitch
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        contentItem: Label {
+            text: wrappingSwitch.text
+            font: wrappingSwitch.font
+            wrapMode: Text.Wrap
+            verticalAlignment: Text.AlignVCenter
+            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored
+                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored
+                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // SECTION: Radar
     // ═══════════════════════════════════════════════════════════════
-    Kirigami.Separator {
-        Kirigami.FormData.isSection: true
-        Kirigami.FormData.label: i18n("Radar Settings")
+    SectionHeader {
+        title: i18n("Radar Settings")
+        Layout.columnSpan: radarTab.columns
     }
 
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: radarTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     Item {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
-    Switch {
-        Kirigami.FormData.label: ""
+    WrappingSwitch {
+        Layout.columnSpan: radarTab.columns
         text: i18n("Show Radar tab in widget")
         checked: radarTab.configRoot.cfg_radarEnabled
         onToggled: radarTab.configRoot.cfg_radarEnabled = checked
     }
 
     Item {
+        // empty label cell: keeps the control in the second column
+        visible: radarTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Item {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
-    Switch {
-        Kirigami.FormData.label: ""
+    WrappingSwitch {
+        Layout.columnSpan: radarTab.columns
         visible: radarTab.configRoot.cfg_radarEnabled
         text: i18n("Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)")
         checked: radarTab.configRoot.cfg_radarGpuWorkaround
@@ -71,7 +133,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarGpuWorkaround
         showCloseButton: false
@@ -87,8 +149,13 @@ Kirigami.FormLayout {
         ]
     }
 
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: radarTab.columns === 2 && (radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarGpuWorkaround)
+        implicitWidth: 0
+        implicitHeight: 0
+    }
     RowLayout {
-        Kirigami.FormData.label: ""
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarGpuWorkaround
         Layout.fillWidth: true
 
@@ -101,7 +168,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 2
         type: Kirigami.MessageType.Positive
@@ -109,7 +176,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 3
         type: Kirigami.MessageType.Warning
@@ -117,7 +184,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 4
         type: Kirigami.MessageType.Error
@@ -125,7 +192,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 5
         showCloseButton: true
@@ -141,12 +208,25 @@ Kirigami.FormLayout {
     }
 
     Item {
+        // empty label cell: keeps the control in the second column
+        visible: radarTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Item {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
+    Label {
+        text: i18n("Radar provider:")
+        visible: radarTab.configRoot.cfg_radarEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
     ComboBox {
         id: radarProviderCombo
-        Kirigami.FormData.label: i18n("Radar provider:")
         Layout.preferredWidth: 280
         visible: radarTab.configRoot.cfg_radarEnabled
         model: [
@@ -165,7 +245,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider !== "librewxr"
         showCloseButton: true
@@ -175,7 +255,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
         showCloseButton: true
@@ -186,8 +266,15 @@ Kirigami.FormLayout {
 
     // LibreWXR is self-hostable, so let the user point the radar and the
     // alerts provider at their own instance instead of the public API.
+    Label {
+        text: i18n("LibreWXR server:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
     ColumnLayout {
-        Kirigami.FormData.label: i18n("LibreWXR server:")
         Layout.fillWidth: true
         spacing: 8
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
@@ -213,8 +300,15 @@ Kirigami.FormLayout {
     // Open-Meteo, not from the LibreWXR server. It redraws the map at
     // every frame, so the frame-rate budget is what the CPU cost
     // depends on; the rate rises with the wind speed inside the range.
+    Label {
+        text: i18n("Wind animation:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
     ColumnLayout {
-        Kirigami.FormData.label: i18n("Wind animation:")
         Layout.fillWidth: true
         spacing: 8
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
@@ -250,7 +344,7 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         showCloseButton: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider !== "librewxr" && radarTab.configRoot.cfg_radarEnabled && (radarTab.configRoot.cfg_owApiKey || "").trim() === ""
@@ -259,11 +353,16 @@ Kirigami.FormLayout {
     }
 
     Kirigami.InlineMessage {
-        Kirigami.FormData.label: ""
+        Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         showCloseButton: true
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider !== "librewxr" && radarTab.configRoot.cfg_radarEnabled && (radarTab.configRoot.cfg_owApiKey || "").trim() !== ""
         type: Kirigami.MessageType.Warning
         text: i18n("<b>Why OWM layers may not match RainViewer radar</b><br/><br/>" + "OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. " + "They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>" + "RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. " + "This discrepancy is expected and known.")
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: radarTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: radarTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

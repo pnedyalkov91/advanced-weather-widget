@@ -2485,12 +2485,15 @@ KCM.AbstractKCM {
         id: mainPage
         Kirigami.ScrollablePage {
             anchors.fill: parent
-            StackLayout {
-                currentIndex: tabBar.currentIndex
+            // Tab pages live in a plain ColumnLayout and only the selected one is visible.
+            // A StackLayout is as tall as its TALLEST page, which left empty space and a
+            // permanent scrollbar under the shorter tabs; layouts ignore hidden items.
+            ColumnLayout {
                 Layout.fillWidth: true
 
                 // TAB 0 - PANEL
                 ColumnLayout {
+                    visible: tabBar.currentIndex === 0
                     // The InlineMessage is a SIBLING of ConfigPanelTab, not a
                     // descendant - enabled: false cascades to all descendants
                     // of an item, and there's no way for a child to opt back
@@ -2522,6 +2525,7 @@ KCM.AbstractKCM {
                 // TAB 1 - WIDGET
                 // ════════════════════════════════════════════════════════
                 ConfigWidgetTab {
+                    visible: tabBar.currentIndex === 1
                     configRoot: root
                     onPushSubPage: stack.push(detailsSubPage)
                     onPushSimpleSubPage: stack.push(simpleSubPage)
@@ -2531,6 +2535,7 @@ KCM.AbstractKCM {
                 // TAB 2 - TOOLTIP
                 // ════════════════════════════════════════════════════════
                 ColumnLayout {
+                    visible: tabBar.currentIndex === 2
                     // Same reasoning as the Panel tab above: CompactView.qml
                     // (PlasmaCore.ToolTipArea, hosting TooltipContent) is only
                     // ever used as compactRepresentation, never shown on the
@@ -2554,6 +2559,7 @@ KCM.AbstractKCM {
                 // TAB 3 - MISC (renamed from Units; includes Round Values)
                 // ════════════════════════════════════════════════════════
                 ConfigMiscTab {
+                    visible: tabBar.currentIndex === 3
                     configRoot: root
                 }
             }
