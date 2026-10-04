@@ -132,4 +132,9 @@ GridLayout {
         text: i18n("Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>" + "KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider.")
         onLinkActivated: Qt.openUrlExternally(link)
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: alertsTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: alertsTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

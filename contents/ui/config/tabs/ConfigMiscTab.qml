@@ -529,4 +529,9 @@ GridLayout {
         Layout.minimumWidth: 0
         Layout.maximumWidth: 340
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: miscTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: miscTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

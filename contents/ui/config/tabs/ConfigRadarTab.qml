@@ -360,4 +360,9 @@ GridLayout {
         type: Kirigami.MessageType.Warning
         text: i18n("<b>Why OWM layers may not match RainViewer radar</b><br/><br/>" + "OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. " + "They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>" + "RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. " + "This discrepancy is expected and known.")
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: radarTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: radarTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }

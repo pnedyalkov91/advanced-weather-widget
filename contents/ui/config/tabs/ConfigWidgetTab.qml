@@ -676,6 +676,11 @@ ColumnLayout {
                     opacity: 0.65
                 }
             }
+
+            // Invisible filler row: it lets the second column take ALL spare width, so the
+            // label column keeps its width when rows are shown or hidden.
+            Item { visible: _form1.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+            Item { visible: _form1.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
         }
 
         // ── SUB-TAB 1: Details ────────────────────────────────────────
@@ -1064,6 +1069,11 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_simpleShowStatsChips = checked
                 }
             }
+
+            // Invisible filler row: it lets the second column take ALL spare width, so the
+            // label column keeps its width when rows are shown or hidden.
+            Item { visible: _form2.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+            Item { visible: _form2.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
         }
 
         // ── SUB-TAB 2: Forecast ───────────────────────────────────────
@@ -1577,6 +1587,11 @@ ColumnLayout {
                 }
             }
 
+
+            // Invisible filler row: it lets the second column take ALL spare width, so the
+            // label column keeps its width when rows are shown or hidden.
+            Item { visible: _form3.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+            Item { visible: _form3.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
         }
     }
 }

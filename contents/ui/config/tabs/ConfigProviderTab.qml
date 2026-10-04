@@ -510,4 +510,9 @@ GridLayout {
             text: i18n("minutes")
         }
     }
+
+    // Invisible filler row: it lets the second column take ALL spare width, so the
+    // label column keeps its width when rows are shown or hidden.
+    Item { visible: providerTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
+    Item { visible: providerTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
 }
