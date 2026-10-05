@@ -50,7 +50,7 @@ For the full functionality of this widget, please ensure you have the following 
 | **Arch Linux** | `qt6-webengine` |
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtwebengine` |
 
-> Some users have reported that KDE Plasma crashes when opening the Radar tab or the map in the location selection dialog.  On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the entire Plasma shell the first time it renders, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside the browser view to prevent the crash.
+> Some users have reported that KDE Plasma crashes when opening the Radar tab or the map in the location selection dialog.  On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the entire *plasmashell* the first time it renders, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside the browser view to prevent the crash.
 > The problem is not caused by the widget itself, but by certain versions of QtWebEngine.
 > To enable this workaround, go to the widget settings -> General -> Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL).
 > Only enable this option if you are actually experiencing this crash, as it may reduce rendering performance on the radar map.
@@ -69,11 +69,12 @@ For the full functionality of this widget, please ensure you have the following 
 | **Arch Linux** | `qt6-multimedia` `qt6-multimedia-ffmpeg` |
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtmultimedia` |
 
+> The default sound is located in `/home/<your username>/.local/share/plasma/plasmoids/org.kde.plasma.advanced-weather-widget/contents/sounds/alert-default.ogg`
 > The alert sounds support .wav, .ogg, and .mp3 formats. I haven’t tested other sound formats, but in theory, they should work as well. Please test your sound in the widget settings before applying it.
 
 > On Arch, `qt6-multimedia` alone has no playback backend - it needs either `qt6-multimedia-ffmpeg` (recommended) or `qt6-multimedia-gstreamer` alongside it.
 
-> **Note:** After installing these, restart your session or run `systemctl --user restart plasma-plasmashell`.
+> **Note:** After installing QtMultimedia, restart your session or run `systemctl --user restart plasma-plasmashell`.
 
 ## 🛍 Install from KDE Store (Recommended)
 1. Right-click your Panel or Desktop.
