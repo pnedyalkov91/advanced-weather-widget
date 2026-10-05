@@ -70,7 +70,7 @@ For the full functionality of this widget, please ensure you have the following 
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtmultimedia` |
 
 > The default sound is located in `/home/<your username>/.local/share/plasma/plasmoids/org.kde.plasma.advanced-weather-widget/contents/sounds/alert-default.ogg`
-> The alert sounds support .wav, .ogg, and .mp3 formats. I haven’t tested other sound formats, but in theory, they should work as well. Please test your sound in the widget settings before applying it.
+> The alert sounds support .wav, .ogg, and .mp3 formats. I haven’t tested other sound formats, but in theory, they should work as well. Please test your sound in the widget settings before applying it. You can do that using the "Test" button in the notification settings.
 
 > On Arch, `qt6-multimedia` alone has no playback backend - it needs either `qt6-multimedia-ffmpeg` (recommended) or `qt6-multimedia-gstreamer` alongside it.
 
