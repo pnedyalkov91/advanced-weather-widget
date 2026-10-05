@@ -157,7 +157,7 @@ python3 scripts/build_librewxr_map.py --librewxr /path/to/LibreWXR
 # ✨ Detailed Features
 
 ### 📍 Location Management
-- **Precision:** Automatic detection via GeoClue2/IP or manual search with dual geocoding ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)).
+- **Precision:** Automatic detection via GeoClue2 or manual search with dual geocoding ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)).
 - **Map Picker:** Integrated OpenStreetMap preview to pin your exact location.
 - **Smart Data:** Automatic timezone, altitude detection, and localized city names.
 
@@ -191,7 +191,7 @@ For providers that require an API key, you can enter it in the widget's settings
 - **Core:** Temp (Current/Apparent/Dew), Wind (Speed/Direction), Humidity, Pressure, Visibility.
 - **Environment:** UV Index, Air Quality (CAQI), Pollen (Universal Index), Space Weather (Kp index, G-index, aurora probability).
 - **Astronomy:** Configurable Sun Arc (Sunrise/Set) and Moon Path (Phases/Rise/Set).
-- **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, LibreWXR, KDE's FOSS Public Alert Server, and provider-specific sources, including a dedicated "Purple" tier for extreme-severity alerts.
+- **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, LibreWXR, KDE's FOSS Public Alert Server, and provider-specific sources, including a dedicated "Purple" tier for extreme-severity alerts. Starting with version 1.8.0, the widget supports sounds for alert notifications, which are fully configurable.
 
 ### 🖥 Customization
 - **Dual Temperature:** Option to display two different temperature metrics simultaneously (e.g., Actual + Apparent).
@@ -325,7 +325,7 @@ NOAA/NWS data and products are in the public domain and are not subject to copyr
 
 - **Alert Sound:** Sourced from Pixabay: https://pixabay.com (Licensed under the Pixabay License. Free for commercial and non-commercial use)
 
-- This project ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)) for Automatic detection via GeoClue2/IP and manual location search with  geocoding
+- This project uses ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)) for Automatic detection via GeoClue2/IP and manual location search with  geocoding
  © OpenStreetMap contributors. Licensed under the **Open Database License (ODbL)**.
  [Photon](https://photon.komoot.io/) is a project run by ©  [komoot GmbH](https://www.komoot.com/)
 

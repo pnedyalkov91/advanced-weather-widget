@@ -74,10 +74,8 @@ GridLayout {
             font: wrappingSwitch.font
             wrapMode: Text.Wrap
             verticalAlignment: Text.AlignVCenter
-            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored
-                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
-            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored
-                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
         }
     }
 
@@ -279,12 +277,6 @@ GridLayout {
         spacing: 8
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
 
-        Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            opacity: 0.7
-            text: i18n("Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance.")
-        }
         TextField {
             id: librewxrUrlField
             Layout.fillWidth: true
@@ -293,6 +285,13 @@ GridLayout {
             selectByMouse: true
             onTextEdited: radarTab.configRoot.cfg_librewxrUrl = text
             onEditingFinished: radarTab.configRoot.cfg_librewxrUrl = text.trim()
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance.")
         }
     }
 
@@ -313,13 +312,6 @@ GridLayout {
         spacing: 8
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
 
-        Label {
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            opacity: 0.7
-            text: i18n("The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky.")
-            onLinkActivated: Qt.openUrlExternally(link)
-        }
         ComboBox {
             id: windQualityCombo
             Layout.preferredWidth: 280
@@ -340,6 +332,14 @@ GridLayout {
             textRole: "text"
             currentIndex: radarTab.configRoot.cfg_librewxrWindQuality === "economy" ? 0 : (radarTab.configRoot.cfg_librewxrWindQuality === "smooth" ? 2 : 1)
             onActivated: radarTab.configRoot.cfg_librewxrWindQuality = model[currentIndex].value
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky.")
+            onLinkActivated: link => Qt.openUrlExternally(link)
         }
     }
 
@@ -363,6 +363,15 @@ GridLayout {
 
     // Invisible filler row: it lets the second column take ALL spare width, so the
     // label column keeps its width when rows are shown or hidden.
-    Item { visible: radarTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
-    Item { visible: radarTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
+    Item {
+        visible: radarTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Item {
+        visible: radarTab.columns === 2
+        Layout.fillWidth: true
+        implicitWidth: 0
+        implicitHeight: 0
+    }
 }
