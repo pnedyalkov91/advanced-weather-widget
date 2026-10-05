@@ -3584,10 +3584,10 @@ Item {
                                                             return "--";
                                                         if (suntimesCard._isNight) {
                                                             var nl = SunPath.nightLengthMins(root.weatherRoot.sunriseTimeText, root.weatherRoot.sunsetTimeText);
-                                                            return i18n("Night") + ": " + SunPath.formatDuration(nl);
+                                                            return i18n("Night") + ": " + root.durationText(nl);
                                                         }
                                                         var dl = SunPath.dayLengthMins(root.weatherRoot.sunriseTimeText, root.weatherRoot.sunsetTimeText);
-                                                        return i18n("Day") + ": " + SunPath.formatDuration(dl);
+                                                        return i18n("Day") + ": " + root.durationText(dl);
                                                     }
                                                     color: root.themeTextColor
                                                     opacity: 0.65
@@ -3607,15 +3607,15 @@ Item {
                                                             var mp = SunPath.moonProgress(root.weatherRoot.sunriseTimeText, root.weatherRoot.sunsetTimeText, suntimesCard._utcOffset);
                                                             var phase = SunPath.nightPhaseLabel(mp, until);
                                                             if (phase === "approaching")
-                                                                return i18n("Dawn approaching - ") + SunPath.formatDuration(until);
+                                                                return i18n("Dawn approaching - ") + root.durationText(until);
                                                             if (phase === "evening")
-                                                                return i18n("Evening - ") + SunPath.formatDuration(until) + i18n(" until dawn");
+                                                                return i18n("Evening - ") + root.durationText(until) + i18n(" until dawn");
                                                             if (phase === "midnight")
-                                                                return i18n("Around midnight - ") + SunPath.formatDuration(until) + i18n(" until dawn");
-                                                            return SunPath.formatDuration(until) + " " + i18n("until dawn");
+                                                                return i18n("Around midnight - ") + root.durationText(until) + i18n(" until dawn");
+                                                            return root.durationText(until) + " " + i18n("until dawn");
                                                         }
                                                         var rem = SunPath.remainingMins(root.weatherRoot.sunriseTimeText, root.weatherRoot.sunsetTimeText, suntimesCard._utcOffset);
-                                                        return rem > 0 ? SunPath.formatDuration(rem) + " " + i18n("left") : i18n("Daylight over");
+                                                        return rem > 0 ? root.durationText(rem) + " " + i18n("left") : i18n("Daylight over");
                                                     }
                                                     color: suntimesCard._isNight ? suntimesCard._nightCentre : root.accentOrange
                                                     font: root.weatherRoot ? root.weatherRoot.wf(11, true) : Qt.font({
@@ -4250,4 +4250,15 @@ Item {
             } // Repeater (rows)
         } // Column
     } // ScrollView
+
+    // Keep duration units translatable; the JS arc helpers return literal h/m.
+    function durationText(totalMins) {
+        if (!isFinite(totalMins)) return "--";
+        if (totalMins <= 0) return i18n("%1m", 0);
+        var h = Math.floor(totalMins / 60);
+        var m = totalMins % 60;
+        if (h === 0) return i18n("%1m", m);
+        if (m === 0) return i18n("%1h", h);
+        return i18n("%1h %2m", h, m);
+    }
 }
