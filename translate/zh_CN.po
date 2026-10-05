@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-10-04 10:48+0300\n"
+"POT-Creation-Date: 2026-10-05 10:50+0300\n"
 "PO-Revision-Date: 2026-09-30 14:31+0800\n"
 "Last-Translator: kang guo\n"
 "Language-Team: Chinese (Simplified)\n"
@@ -135,7 +135,7 @@ msgstr "<b>生效时间：</b> %1"
 msgid "<b>Headline:</b> %1"
 msgstr "<b>标题：</b> %1"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:141
+#: contents/ui/config/tabs/ConfigRadarTab.qml:139
 msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
@@ -572,7 +572,7 @@ msgstr "徽标位置："
 msgid "Badge spacing:"
 msgstr "徽标间距："
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:332
+#: contents/ui/config/tabs/ConfigRadarTab.qml:324
 msgid "Balanced (10 to 20 fps)"
 msgstr "均衡（10 到 20 帧/秒）"
 
@@ -685,7 +685,7 @@ msgstr "摄氏度（°C）"
 msgid "Changes staged. Click the main Apply button to save."
 msgstr "更改已暂存。点击主“应用”按钮保存。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:163
+#: contents/ui/config/tabs/ConfigRadarTab.qml:161
 msgid "Check Status"
 msgstr "检查状态"
 
@@ -695,7 +695,7 @@ msgid "Checking location availability…"
 msgstr "正在检查位置可用性…"
 
 #: contents/ui/config/configGeneral.qml:231
-#: contents/ui/config/tabs/ConfigRadarTab.qml:163
+#: contents/ui/config/tabs/ConfigRadarTab.qml:161
 msgid "Checking…"
 msgstr "正在检查…"
 
@@ -1143,7 +1143,7 @@ msgstr "每条警报仅显示一次，且不带“关闭”和“推迟”按钮
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "每种通知类型都可以独立启用，并可在适用时设置各自的每日通知时间。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:328
+#: contents/ui/config/tabs/ConfigRadarTab.qml:320
 msgid "Economy (8 to 10 fps)"
 msgstr "节能（8 到 10 帧/秒）"
 
@@ -1878,16 +1878,16 @@ msgstr "布局"
 msgid "Layout type:"
 msgstr "布局类型："
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:286
+#: contents/ui/config/tabs/ConfigRadarTab.qml:294
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
 msgstr "留空可使用公共服务器。如果自行部署了 LibreWXR 实例，请填写自己的服务器地址。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:88
-#: contents/ui/config/tabs/ConfigRadarTab.qml:238
+#: contents/ui/config/tabs/ConfigRadarTab.qml:236
 msgid "LibreWXR"
 msgstr "LibreWXR"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:270
+#: contents/ui/config/tabs/ConfigRadarTab.qml:268
 msgid "LibreWXR server:"
 msgstr "LibreWXR 服务器："
 
@@ -2039,8 +2039,8 @@ msgstr "位置已暂存。点击主“应用”按钮保存。"
 msgid "Location:"
 msgstr "位置："
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:145
-#: contents/ui/config/tabs/ConfigRadarTab.qml:203
+#: contents/ui/config/tabs/ConfigRadarTab.qml:143
+#: contents/ui/config/tabs/ConfigRadarTab.qml:201
 msgid "Log Out Now…"
 msgstr "立即注销…"
 
@@ -2927,7 +2927,7 @@ msgstr "雷达"
 msgid "Radar + Satellite"
 msgstr "雷达 + 卫星"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:88
+#: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Radar Settings"
 msgstr "雷达设置"
 
@@ -2935,15 +2935,15 @@ msgstr "雷达设置"
 msgid "Radar only"
 msgstr "仅雷达"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:221
+#: contents/ui/config/tabs/ConfigRadarTab.qml:219
 msgid "Radar provider:"
 msgstr "雷达数据源："
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:263
+#: contents/ui/config/tabs/ConfigRadarTab.qml:261
 msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
 msgstr "雷达数据源：<a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR 是一个免费、开源的天气雷达 API。它结合来自 NOAA、加拿大和欧洲来源的真实雷达拼合图，并提供全球模式作为回退，可提供过去 2 小时的雷达数据以及短时临近预报。它还提供免费的卫星（红外）图层。<br/><br/>图层模式、雷达配色方案和运动箭头可直接在“雷达”标签页中选择。地图会自动跟随 Plasma 的浅色/深色主题。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:253
+#: contents/ui/config/tabs/ConfigRadarTab.qml:251
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "雷达数据源：<a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>本小组件使用免费的 RainViewer API，它以 10 分钟为间隔提供过去 2 小时的天气雷达数据。不支持雷达预报。<br/><br/>Rain Viewer 不保证雷达数据始终可用。它们不会与这些数据的所有者签订合同，原因是数据所有者可以要求它们从 Rain Viewer 移除数据、更改格式，或停止共享数据。Rain Viewer 会尽量长期保留雷达数据，但有时数据所有者会直接停止提供图像。"
 
@@ -2972,7 +2972,7 @@ msgstr "雨（白天）"
 msgid "Rain (night)"
 msgstr "雨（夜间）"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:234
+#: contents/ui/config/tabs/ConfigRadarTab.qml:232
 msgid "Rain Viewer"
 msgstr "Rain Viewer"
 
@@ -3230,7 +3230,7 @@ msgstr "显示 / 隐藏前缀图标"
 msgid "Show / hide the prefix icon on the panel"
 msgstr "在面板上显示 / 隐藏前缀图标"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:104
+#: contents/ui/config/tabs/ConfigRadarTab.qml:102
 msgid "Show Radar tab in widget"
 msgstr "在小组件中显示雷达标签页"
 
@@ -3396,7 +3396,7 @@ msgstr "小雪"
 msgid "Small circle  ⚬"
 msgstr "小圆圈  ⚬"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:336
+#: contents/ui/config/tabs/ConfigRadarTab.qml:328
 msgid "Smooth (12 to 30 fps)"
 msgstr "流畅（12 到 30 帧/秒）"
 
@@ -3745,7 +3745,7 @@ msgstr "文本标签（温度、风…）"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "文本将跟随系统字体，并扩展以填满可用空间。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:320
+#: contents/ui/config/tabs/ConfigRadarTab.qml:341
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
 msgstr "雷达标签页可使用移动粒子展示风场动画（在该标签页中开启）。风场数据来自 <a href='https://open-meteo.com/'>Open-Meteo</a>，独立于 LibreWXR 服务器。此处用于设置动画帧率：电脑性能较低时可降低帧率；如果强风动画不连贯，可提高帧率。"
 
@@ -4329,7 +4329,7 @@ msgstr "小组件 › 常规 › 天气图标主题"
 msgid "Wind"
 msgstr "风"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:304
+#: contents/ui/config/tabs/ConfigRadarTab.qml:303
 msgid "Wind animation:"
 msgstr "风场动画："
 
@@ -4360,7 +4360,7 @@ msgstr "风场"
 msgid "Winds aloft"
 msgstr "高空风"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:122
+#: contents/ui/config/tabs/ConfigRadarTab.qml:120
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
 msgstr "规避混合 GPU 系统上的雷达地图崩溃（实验性）"
 

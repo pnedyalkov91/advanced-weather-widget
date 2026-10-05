@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-10-04 10:48+0300\n"
+"POT-Creation-Date: 2026-10-05 10:50+0300\n"
 "PO-Revision-Date: 2026-10-01 22:32+0900\n"
 "Last-Translator: Presire <presire2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -135,7 +135,7 @@ msgstr "<b>発効:</b> %1"
 msgid "<b>Headline:</b> %1"
 msgstr "<b>見出し:</b> %1"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:141
+#: contents/ui/config/tabs/ConfigRadarTab.qml:139
 msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
@@ -572,7 +572,7 @@ msgstr "バッジの位置:"
 msgid "Badge spacing:"
 msgstr "バッジの間隔:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:332
+#: contents/ui/config/tabs/ConfigRadarTab.qml:324
 msgid "Balanced (10 to 20 fps)"
 msgstr "バランス（10〜20 fps）"
 
@@ -685,7 +685,7 @@ msgstr "摂氏（°C）"
 msgid "Changes staged. Click the main Apply button to save."
 msgstr "変更がステージングされました。メインの適用ボタンをクリックして保存してください。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:163
+#: contents/ui/config/tabs/ConfigRadarTab.qml:161
 msgid "Check Status"
 msgstr "状態を確認"
 
@@ -695,7 +695,7 @@ msgid "Checking location availability…"
 msgstr "位置の利用可能性を確認中…"
 
 #: contents/ui/config/configGeneral.qml:231
-#: contents/ui/config/tabs/ConfigRadarTab.qml:163
+#: contents/ui/config/tabs/ConfigRadarTab.qml:161
 msgid "Checking…"
 msgstr "確認中…"
 
@@ -1143,7 +1143,7 @@ msgstr "各警報は「閉じる」「延期」ボタンなしで一度だけ表
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "各通知タイプは個別に有効化でき、該当する場合は毎日の時刻も設定できます。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:328
+#: contents/ui/config/tabs/ConfigRadarTab.qml:320
 msgid "Economy (8 to 10 fps)"
 msgstr "エコノミー（8〜10 fps）"
 
@@ -1878,16 +1878,16 @@ msgstr "レイアウト"
 msgid "Layout type:"
 msgstr "レイアウトタイプ:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:286
+#: contents/ui/config/tabs/ConfigRadarTab.qml:294
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
 msgstr "空欄のままにすると公開サーバーを使用します。セルフホストのLibreWXRインスタンスを実行している場合は、ご自身のアドレスを設定してください。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:88
-#: contents/ui/config/tabs/ConfigRadarTab.qml:238
+#: contents/ui/config/tabs/ConfigRadarTab.qml:236
 msgid "LibreWXR"
 msgstr "LibreWXR"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:270
+#: contents/ui/config/tabs/ConfigRadarTab.qml:268
 msgid "LibreWXR server:"
 msgstr "LibreWXRサーバー:"
 
@@ -2039,8 +2039,8 @@ msgstr "位置がステージングされました。メインの適用ボタン
 msgid "Location:"
 msgstr "位置:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:145
-#: contents/ui/config/tabs/ConfigRadarTab.qml:203
+#: contents/ui/config/tabs/ConfigRadarTab.qml:143
+#: contents/ui/config/tabs/ConfigRadarTab.qml:201
 msgid "Log Out Now…"
 msgstr "今すぐログアウト…"
 
@@ -2927,7 +2927,7 @@ msgstr "レーダー"
 msgid "Radar + Satellite"
 msgstr "レーダー + 衛星"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:88
+#: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Radar Settings"
 msgstr "レーダー設定"
 
@@ -2935,15 +2935,15 @@ msgstr "レーダー設定"
 msgid "Radar only"
 msgstr "レーダーのみ"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:221
+#: contents/ui/config/tabs/ConfigRadarTab.qml:219
 msgid "Radar provider:"
 msgstr "レーダープロバイダ:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:263
+#: contents/ui/config/tabs/ConfigRadarTab.qml:261
 msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
 msgstr "レーダープロバイダ: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXRは、無料のオープンソース気象レーダーAPIです。NOAA、カナダ、ヨーロッパの実際のレーダー合成画像をグローバルモデルのフォールバックと組み合わせ、過去2時間のレーダーデータと短時間のナウキャストを提供します。無料の衛星（赤外線）レイヤーも提供しています。<br/><br/>レイヤーモード、レーダー配色、移動方向矢印はレーダータブで直接選択します。マップはPlasmaのライト/ダークテーマに自動的に追従します。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:253
+#: contents/ui/config/tabs/ConfigRadarTab.qml:251
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "レーダープロバイダ: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>ウィジェットは無料のRainViewer APIを使用しており、過去2時間の気象レーダーデータを10分間隔で提供します。レーダー予報には対応していません。<br/><br/>Rain Viewerはレーダーデータの可用性を保証していません。データの所有者との間で契約を結んでいません。その理由は、所有者がRain Viewerからのデータ削除を求めたり、形式を変更したり、データの共有を停止する可能性があるためです。レーダーデータは可能な限り長く保持するよう努めていますが、所有者が画像の提供を停止することもあります。"
 
@@ -2972,7 +2972,7 @@ msgstr "雨（昼）"
 msgid "Rain (night)"
 msgstr "雨（夜）"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:234
+#: contents/ui/config/tabs/ConfigRadarTab.qml:232
 msgid "Rain Viewer"
 msgstr "Rain Viewer"
 
@@ -3230,7 +3230,7 @@ msgstr "接頭アイコンの表示 / 非表示"
 msgid "Show / hide the prefix icon on the panel"
 msgstr "パネルの接頭アイコンを表示 / 非表示"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:104
+#: contents/ui/config/tabs/ConfigRadarTab.qml:102
 msgid "Show Radar tab in widget"
 msgstr "ウィジェットにレーダータブを表示"
 
@@ -3396,7 +3396,7 @@ msgstr "弱い降雪"
 msgid "Small circle  ⚬"
 msgstr "小さな丸  ⚬"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:336
+#: contents/ui/config/tabs/ConfigRadarTab.qml:328
 msgid "Smooth (12 to 30 fps)"
 msgstr "スムーズ（12〜30 fps）"
 
@@ -3745,7 +3745,7 @@ msgstr "テキストラベル（気温、風…）"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "テキストはシステムフォントに従い、利用可能な領域を埋めるよう拡張されます。"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:320
+#: contents/ui/config/tabs/ConfigRadarTab.qml:341
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
 msgstr "レーダータブでは、風を動く粒子としてアニメーション表示できます（タブ内でオンにしてください）。風データはLibreWXRサーバーとは独立して、<a href='https://open-meteo.com/'>Open-Meteo</a>から取得されます。ここではフレームレートを設定します: 低速なコンピュータでは下げ、強風がぎこちなく見える場合は上げてください。"
 
@@ -4329,7 +4329,7 @@ msgstr "ウィジェット › 一般 › 天気アイコンテーマ"
 msgid "Wind"
 msgstr "風"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:304
+#: contents/ui/config/tabs/ConfigRadarTab.qml:303
 msgid "Wind animation:"
 msgstr "風のアニメーション:"
 
@@ -4360,7 +4360,7 @@ msgstr "風"
 msgid "Winds aloft"
 msgstr "上空の風"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:122
+#: contents/ui/config/tabs/ConfigRadarTab.qml:120
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
 msgstr "ハイブリッドGPUシステムでのレーダーマップのクラッシュを回避（実験的）"
 

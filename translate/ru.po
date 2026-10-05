@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-10-04 10:48+0300\n"
+"POT-Creation-Date: 2026-10-05 10:50+0300\n"
 "PO-Revision-Date: 2026-08-26 16:30+0300\n"
 "Last-Translator: Polyakov Dmitry <dmitrypolyakov1337@gmail.com>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
@@ -136,7 +136,7 @@ msgstr "<b>Период:</b> %1"
 msgid "<b>Headline:</b> %1"
 msgstr "<b>Заголовок:</b> %1"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:141
+#: contents/ui/config/tabs/ConfigRadarTab.qml:139
 msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
@@ -571,7 +571,7 @@ msgstr "Положение:"
 msgid "Badge spacing:"
 msgstr "Промежуток:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:332
+#: contents/ui/config/tabs/ConfigRadarTab.qml:324
 msgid "Balanced (10 to 20 fps)"
 msgstr ""
 
@@ -684,7 +684,7 @@ msgstr "Цельсий (°C)"
 msgid "Changes staged. Click the main Apply button to save."
 msgstr "Настройки изменены. Нажмите кнопку Применить, чтобы сохранить изменения."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:163
+#: contents/ui/config/tabs/ConfigRadarTab.qml:161
 msgid "Check Status"
 msgstr "Проверить статус"
 
@@ -694,7 +694,7 @@ msgid "Checking location availability…"
 msgstr "Проверка доступности местоположения..."
 
 #: contents/ui/config/configGeneral.qml:231
-#: contents/ui/config/tabs/ConfigRadarTab.qml:163
+#: contents/ui/config/tabs/ConfigRadarTab.qml:161
 msgid "Checking…"
 msgstr "Проверка..."
 
@@ -1142,7 +1142,7 @@ msgstr "Каждое уведомление показывается тольк�
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "Каждый тип уведомления может быть включён раздельно, со своим собственным временем, где это возможно."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:328
+#: contents/ui/config/tabs/ConfigRadarTab.qml:320
 msgid "Economy (8 to 10 fps)"
 msgstr ""
 
@@ -1876,16 +1876,16 @@ msgstr "Макет"
 msgid "Layout type:"
 msgstr "Тип макета:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:286
+#: contents/ui/config/tabs/ConfigRadarTab.qml:294
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
 msgstr "Оставьте поле пустым, чтобы использовать общедоступный сервер. Укажите свой адрес, если вы запускаете LibreWXR на собственном сервере."
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:88
-#: contents/ui/config/tabs/ConfigRadarTab.qml:238
+#: contents/ui/config/tabs/ConfigRadarTab.qml:236
 msgid "LibreWXR"
 msgstr "LibreWXR"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:270
+#: contents/ui/config/tabs/ConfigRadarTab.qml:268
 msgid "LibreWXR server:"
 msgstr "Сервер LibreWXR:"
 
@@ -2037,8 +2037,8 @@ msgstr "Местоположение изменено. Нажмите кнопк
 msgid "Location:"
 msgstr "Местоположение:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:145
-#: contents/ui/config/tabs/ConfigRadarTab.qml:203
+#: contents/ui/config/tabs/ConfigRadarTab.qml:143
+#: contents/ui/config/tabs/ConfigRadarTab.qml:201
 msgid "Log Out Now…"
 msgstr "Выйти сейчас..."
 
@@ -2923,7 +2923,7 @@ msgstr "Радар"
 msgid "Radar + Satellite"
 msgstr "Радар + спутник"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:88
+#: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Radar Settings"
 msgstr ""
 
@@ -2931,15 +2931,15 @@ msgstr ""
 msgid "Radar only"
 msgstr "Только радар"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:221
+#: contents/ui/config/tabs/ConfigRadarTab.qml:219
 msgid "Radar provider:"
 msgstr "Провайдер радара:"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:263
+#: contents/ui/config/tabs/ConfigRadarTab.qml:261
 msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
 msgstr "Провайдер радара: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR — это бесплатный API погодного радара с открытым исходным кодом. Он объединяет реальные радиолокационные данные из NOAA, канадских и европейских источников с глобальной резервной моделью и предоставляет данные радара за последние 2 часа плюс короткую трансляцию. Также доступен бесплатный спутниковый (инфракрасный) слой.<br/><br/>Режим слоя, цветовая схема радара и стрелки движения выбираются непосредственно на вкладке Радар. Карта автоматически будет отображаться в соответствии с выбранной вами тематикой Plasma light/dark."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:253
+#: contents/ui/config/tabs/ConfigRadarTab.qml:251
 msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
 msgstr "Провайдер: <a href=\"https://www.rainviewer.com/\">Rain Viewer</a><br/><br/>Виджет использует бесплатный API RainViewer, который предоставляет данные о погодных радарах за последние 2 часа с интервалом в 10 минут. Радиолокационный прогноз не поддерживается.<br/><br/>Rain Viewer не гарантирует доступность радиолокационных данных. Они не заключают договоров с владельцами этих данных. Причина в том, что владельцы могут попросить их удалить свои данные из Rain Viewer, изменить формат или прекратить публикацию данных. Они пытаются сохранить данные радара как можно дольше, но иногда владельцы просто перестают предоставлять изображения."
 
@@ -2968,7 +2968,7 @@ msgstr "Дождь (днём)"
 msgid "Rain (night)"
 msgstr "Дождь (ночью)"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:234
+#: contents/ui/config/tabs/ConfigRadarTab.qml:232
 msgid "Rain Viewer"
 msgstr "Rain Viewer"
 
@@ -3226,7 +3226,7 @@ msgstr "Показать / скрыть значок-префикс"
 msgid "Show / hide the prefix icon on the panel"
 msgstr "Показать / скрыть значок-префикс на панели"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:104
+#: contents/ui/config/tabs/ConfigRadarTab.qml:102
 msgid "Show Radar tab in widget"
 msgstr "Показывать вкладку Радара в виджете"
 
@@ -3392,7 +3392,7 @@ msgstr "Легкий снегопад"
 msgid "Small circle  ⚬"
 msgstr "Маленький круг  ⚬"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:336
+#: contents/ui/config/tabs/ConfigRadarTab.qml:328
 msgid "Smooth (12 to 30 fps)"
 msgstr ""
 
@@ -3741,7 +3741,7 @@ msgstr "Текстовые метки (Температура, Ветер…)"
 msgid "Text will follow the system font and expand to fill the available space."
 msgstr "Текст будет следовать системному шрифту и расширяться, чтобы заполнить доступное пространство."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:320
+#: contents/ui/config/tabs/ConfigRadarTab.qml:341
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
 msgstr ""
 
@@ -4323,7 +4323,7 @@ msgstr ""
 msgid "Wind"
 msgstr "Ветер"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:304
+#: contents/ui/config/tabs/ConfigRadarTab.qml:303
 msgid "Wind animation:"
 msgstr ""
 
@@ -4354,7 +4354,7 @@ msgstr ""
 msgid "Winds aloft"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:122
+#: contents/ui/config/tabs/ConfigRadarTab.qml:120
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
 msgstr "Обходной путь для сбоев карты радаров на гибридных GPU-системах (ЭКСПЕРИМЕНТАЛЬНО)"
 

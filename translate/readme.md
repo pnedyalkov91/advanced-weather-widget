@@ -9,7 +9,7 @@
 | bg       | 1034/1034 |  100% |
 | cs_CZ    | 816/1034 |   78% |
 | de       | 1034/1034 |  100% |
-| es       | 890/1034 |   86% |
+| es       | 1034/1034 |  100% |
 | fr       | 1034/1034 |  100% |
 | hu_HU    | 1034/1034 |  100% |
 | it_IT    | 1034/1034 |  100% |
@@ -24,7 +24,6 @@
 | uk       | 889/1034 |   85% |
 | zh_CN    | 1034/1034 |  100% |
 | zh_TW    | 1034/1034 |  100% |
-
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.
 
