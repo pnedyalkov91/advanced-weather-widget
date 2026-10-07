@@ -275,9 +275,10 @@ QtObject {
     // Auto-retry for AEMET specifically, when it was the only provider
     // tried (explicit selection, no fallback) and failed outright. AEMET is
     // the one provider here with a real per-key rate limit, so - unlike
-    // every other provider's failure, which just waits for the next
+    // every other provider's failure, which gets the three quick retries
+    // of _totalFailureRetryTimer below and then waits for the next
     // scheduled refresh or a manual tap - a rate-limited or transient
-    // AEMET failure gets an automatic retry. The interval backs off
+    // AEMET failure keeps getting automatic retries. The interval backs off
     // exponentially with service._aemetRetryAttempt (set by _tryProvider
     // just before restart(); see there for the exact schedule and for why a
     // FIXED retry interval was itself a real contributor to hitting 429 in
@@ -293,13 +294,41 @@ QtObject {
         }
     }
 
+    // ── Auto-retry after a total provider-chain failure ─────────────────
+    // Waking the laptop fires the resume-detection refresh (see main.qml's
+    // heartbeat timer) before NetworkManager has actually reassociated with
+    // Wi-Fi and DNS is working again - every provider in the chain fails
+    // near-instantly (a connection/DNS error, not a slow per-request
+    // timeout), exhausting all 11 within a fraction of a second, well
+    // before the network is back. The widget was then stuck on
+    // "Failed: ..." until the next scheduled auto-refresh
+    // (refreshIntervalMinutes, commonly 15 min) or a manual tap. A short,
+    // bounded, backed-off retry covers this - and any other transient
+    // network blip - without hammering providers when genuinely offline
+    // for a long stretch (e.g. on a plane). The count is reset by any
+    // "real" refreshNow() call (manual, periodic, resume, config change)
+    // and only preserved across the timer's own auto-retry call, so it
+    // can't reset itself back to attempt 1 forever.
+    property int _totalFailureRetryCount: 0
+    readonly property var _totalFailureRetryDelaysMs: [5000, 15000, 45000]
+    property Timer _totalFailureRetryTimer: Timer {
+        interval: 5000
+        repeat: false
+        onTriggered: service.refreshNow(false, true)
+    }
+
     // ── Public methods ────────────────────────────────────────────────────
 
     /** Full weather refresh - current + daily forecast.
-     *  force=true bypasses the space weather fetch throttle (manual refresh). */
-    function refreshNow(force) {
+     *  force=true bypasses the space weather fetch throttle (manual refresh).
+     *  isAutoRetry=true marks a call made by _totalFailureRetryTimer itself -
+     *  it preserves _totalFailureRetryCount instead of resetting it, so the
+     *  timer's own retries don't reset their own backoff. */
+    function refreshNow(force, isAutoRetry) {
         _refreshGen++;
         _safetyTimer.stop();
+        _totalFailureRetryTimer.stop();
+        if (isAutoRetry !== true) _totalFailureRetryCount = 0;
         if (force) {
             // A manual refresh is the person actively asking "try again now"
             // (e.g. right after fixing an API key) - don't leave them
@@ -1104,7 +1133,14 @@ QtObject {
                 return _providerLabel(p);
             });
             service._clearUpdateMetadata();
-            weatherRoot.updateText = i18n("Failed: %1", names.join(", "));
+            if (_totalFailureRetryCount < _totalFailureRetryDelaysMs.length) {
+                _totalFailureRetryTimer.interval = _totalFailureRetryDelaysMs[_totalFailureRetryCount];
+                _totalFailureRetryCount++;
+                _totalFailureRetryTimer.restart();
+                weatherRoot.updateText = i18n("Failed: %1 — retrying…", names.join(", "));
+            } else {
+                weatherRoot.updateText = i18n("Failed: %1", names.join(", "));
+            }
             _failed = [];
             // Still fetch alerts even if all weather providers failed
             _fetchAlertsIfNeeded();
