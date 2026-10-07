@@ -35,19 +35,19 @@ msgstr "%1 - Завтра"
 
 #: contents/ui/main.qml:1897
 msgid "%1 is ending"
-msgstr ""
+msgstr "%1 прекращается"
 
 #: contents/ui/main.qml:1891
 msgid "%1 is expected"
-msgstr ""
+msgstr "%1 ожидается"
 
 #: contents/ui/main.qml:1898
 msgid "%1 is expected to end %2."
-msgstr ""
+msgstr "%1 может закончиться %2."
 
 #: contents/ui/main.qml:1892
 msgid "%1 is possible %2."
-msgstr ""
+msgstr "%1 может начаться %2."
 
 #: contents/ui/main.qml:1674
 msgid "%1 there will be %2 with a low of %3 and a high of %4."
@@ -65,11 +65,11 @@ msgstr "--"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:561
 msgid "-180 to 180 (e.g. 23.3219)"
-msgstr "-180 to 180 (напр. 37.6183)"
+msgstr "От −180 до 180 (напр. 37.6183)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:544
 msgid "-90 to 90 (e.g. 42.6977)"
-msgstr "-90 to 90 (напр. 55.7565)"
+msgstr "От −90 до 90 (напр. 55.7565)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1132
 msgid "0 = auto (120 px per chip). Increase if values are truncated."
@@ -109,7 +109,7 @@ msgstr "24ч"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:258
 msgid "256 px"
-msgstr ""
+msgstr "256 пкс"
 
 #: contents/ui/config/configAppearance.qml:265
 #: contents/ui/config/tabs/ConfigPanelTab.qml:419
@@ -122,7 +122,7 @@ msgstr "3D Oxygen (Встроено)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:262
 msgid "512 px"
-msgstr ""
+msgstr "512 пкс"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:179
 msgid "68°F"
@@ -140,7 +140,7 @@ msgstr "<b>Заголовок:</b> %1"
 msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
-msgstr ""
+msgstr "<b>Обход сбоя на системах с гибридной графикой / NVIDIA PRIME и Wayland</b><br/><br/>На некоторых ноутбуках с двумя графическими процессорами и Wayland встроенный браузер на вкладке «Радар» может вызвать аварийное завершение всей оболочки Plasma при первой отрисовке из-за конфликта между графическими процессорами на уровне драйверов. Этот параметр отключает аппаратное ускорение композитинга во встроенном браузере, чтобы избежать сбоя.<br/><br/>Включайте этот параметр только при возникновении такого сбоя: он снижает производительность отрисовки карты радара.<br/><br/><b>Чтобы изменение вступило в силу, нужно выйти из сеанса и войти снова</b>, поскольку параметр должен быть установлен до запуска Plasma. Он действует на весь сеанс, поэтому его будут учитывать и другие приложения со встроенным браузером на основе Chromium. Для полного отключения этого обходного решения также потребуется выйти из сеанса и войти снова.\n        <br/><br/>При включении этого параметра будет создан файл: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 
 #: contents/ui/main.qml:1392
 msgid "<b>Instruction:</b> %1"
@@ -161,44 +161,44 @@ msgstr "<b>Начинается:</b> %1"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:361
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
-msgstr ""
+msgstr "<b>Почему слои OWM могут отличаться от данных радара RainViewer</b><br/><br/>Слои осадков и облачности OWM — это <b>статические тайлы модели</b>: они показывают сглаженные результаты численного прогноза погоды (NWP), а не реальные радиолокационные измерения. Они отображают, где, по <i>оценке</i> модели, идёт дождь, на основе интерполяции данных метеостанций и расчётов модели.<br/><br/>RainViewer использует <b>реальные сводные данные метеорадаров</b> — измеренную отражаемость, обновляемую каждые 2–10 минут. Эти различия известны и ожидаемы."
 
 #: contents/ui/config/configGeneral.qml:596
 msgid "AEMET - Spain only (Key Required)"
-msgstr ""
+msgstr "AEMET — только Испания (нужен ключ)"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:251
 msgid "AEMET API Key:"
-msgstr ""
+msgstr "Ключ API AEMET:"
 
 #: contents/ui/config/configGeneral.qml:393
 #: contents/ui/config/configGeneral.qml:522
 msgid "AEMET error (code %1). Check your API key."
-msgstr ""
+msgstr "Ошибка AEMET (код %1). Проверьте ключ API."
 
 #: contents/ui/config/configGeneral.qml:361
 msgid "AEMET only covers Spain - this location has no coverage."
-msgstr ""
+msgstr "AEMET предоставляет данные только для Испании. Для этого местоположения данных нет."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:440
 msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
-msgstr ""
+msgstr "AEMET предоставляет данные только для местоположений в Испании. Для других местоположений отображается ошибка вместо переключения на другого провайдера. AEMET также намеренно исключён из адаптивного режима, поскольку это единственный провайдер здесь с отдельным лимитом запросов. Число запросов к API AEMET в минуту ограничено, поэтому не нажимайте кнопку обновления слишком часто: при достижении лимита придётся подождать не менее минуты перед следующим запросом. Неудачный запрос автоматически повторяется один раз.<br/><br/>Показатели, которые AEMET вообще не публикует, — давление, видимость, снежный покров и суточное количество осадков — отображаются как «Н/Д». Это не ошибка. УФ-индекс предоставляется только за день, без почасовых значений. Данные о ветре могут отсутствовать для более отдалённых дней, для которых прогноз AEMET менее достоверен.<br/><br/>Бесплатный ключ: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. Новые ключи действуют 3 месяца с момента создания (правила AEMET изменились в июле 2026 года). По истечении этого срока потребуется запросить новый ключ.<br/><br/>Не обновляйте данные слишком часто: AEMET ограничивает число запросов в минуту. При достижении лимита придётся подождать не менее минуты перед следующим запросом."
 
 #: contents/ui/ForecastView.qml:867
 msgid "AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date."
-msgstr ""
+msgstr "AEMET предоставляет почасовой прогноз на срок до 48 часов. Для этой даты доступен прогноз на день."
 
 #: contents/ui/WeatherService.qml:1094
 msgid "AEMET: request failed - retrying automatically."
-msgstr ""
+msgstr "AEMET: запрос не выполнен. Повторная попытка будет сделана автоматически."
 
 #: contents/ui/WeatherService.qml:1091
 msgid "AEMET: request limit reached - retrying automatically in a minute."
-msgstr ""
+msgstr "AEMET: достигнут лимит запросов. Повторная попытка будет сделана автоматически через минуту."
 
 #: contents/ui/ForecastView.qml:869
 msgid "AEMET: request limit reached for the moment. This will retry automatically - please wait a minute."
-msgstr ""
+msgstr "AEMET: достигнут лимит запросов. Запрос будет повторён автоматически. Подождите минуту."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:195
 msgid "AI-powered weather intelligence. API key required below."
@@ -262,7 +262,7 @@ msgstr "Качество Воздуха"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:483
 msgid "Air Quality index standard:"
-msgstr ""
+msgstr "Шкала индекса качества воздуха:"
 
 #: contents/ui/TooltipContent.qml:470
 msgid "Air Quality:"
@@ -280,7 +280,7 @@ msgstr "Качество воздуха допустимое."
 
 #: contents/ui/js/airQuality.js:103
 msgid "Air quality is acceptable; there may be a risk for people unusually sensitive to air pollution."
-msgstr ""
+msgstr "Качество воздуха приемлемое; возможен риск для людей с повышенной чувствительностью к загрязнению воздуха."
 
 #: contents/ui/js/airQuality.js:95
 msgid "Air quality is extremely poor."
@@ -296,7 +296,7 @@ msgstr "Качество воздуха — плохое."
 
 #: contents/ui/js/airQuality.js:102
 msgid "Air quality is satisfactory, and air pollution poses little or no risk."
-msgstr ""
+msgstr "Качество воздуха удовлетворительное; риск от загрязнения воздуха незначителен или отсутствует."
 
 #: contents/ui/js/airQuality.js:90
 msgid "Air quality is satisfactory."
@@ -317,7 +317,7 @@ msgstr "Ольха"
 
 #: contents/ui/config/configNotifications.qml:418
 msgid "Alert sound:"
-msgstr ""
+msgstr "Звук предупреждения:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:456
 #: contents/ui/config/configAppearance.qml:1897
@@ -357,7 +357,7 @@ msgstr "Все дни сначала свернуты"
 
 #: contents/ui/config/configNotifications.qml:473
 msgid "All files (*)"
-msgstr ""
+msgstr "Все файлы (*)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:349
 msgid "All tabs"
@@ -365,11 +365,11 @@ msgstr "Все вкладки"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1202
 msgid "Already-passed hours are removed from today's hourly forecast"
-msgstr ""
+msgstr "Прошедшие часы скрываются в почасовом прогнозе на сегодня"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1201
 msgid "Already-passed hours for today stay in place, greyed out, instead of being removed"
-msgstr ""
+msgstr "Прошедшие часы остаются в прогнозе на сегодня и отображаются серым цветом"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:354
 msgid "Alt: %1 %2"
@@ -405,7 +405,7 @@ msgstr "Анимировать прокрутку строк"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:435
 msgid "Animate the wind on the map (Open-Meteo)"
-msgstr ""
+msgstr "Показывать анимацию ветра на карте (Open-Meteo)"
 
 #: contents/ui/config/configAppearance.qml:1821
 msgid "Apparent (feels-like) temperature"
@@ -433,15 +433,15 @@ msgstr "Применить обнаруженное местоположение
 
 #: contents/ui/config/configAppearance.qml:490
 msgid "Apply everywhere"
-msgstr ""
+msgstr "Применить везде"
 
 #: contents/ui/config/configAppearance.qml:402
 msgid "Apply icon theme"
-msgstr ""
+msgstr "Применение стиля значков"
 
 #: contents/ui/config/configAppearance.qml:498
 msgid "Apply only here"
-msgstr ""
+msgstr "Применить только здесь"
 
 #: contents/ui/config/configLocation.qml:1445
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
@@ -449,11 +449,11 @@ msgstr "Вы уверены? Это ваше последнее сохранен
 
 #: contents/ui/DetailsView.qml:3614
 msgid "Around midnight - "
-msgstr ""
+msgstr "Около полуночи — "
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:415
 msgid "Arrows"
-msgstr ""
+msgstr "Стрелки"
 
 #: contents/ui/config/configAppearance.qml:1835
 #: contents/ui/config/configAppearance.qml:1937
@@ -463,7 +463,7 @@ msgstr "Атмосферное давление"
 
 #: contents/ui/config/configNotifications.qml:473
 msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
-msgstr ""
+msgstr "Аудиофайлы (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:720
 #: contents/ui/DetailsView.qml:2060
@@ -489,7 +489,7 @@ msgstr "Авто (обнаружение при сохранении)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:254
 msgid "Auto (device)"
-msgstr ""
+msgstr "Авто (по устройству)"
 
 #: contents/ui/config/configLocation.qml:1590
 msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
@@ -514,11 +514,11 @@ msgstr "Автоматически"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:495
 msgid "Automatic (based on location)"
-msgstr ""
+msgstr "Автоматически (по местоположению)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:524
 msgid "Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI based on your location's country."
-msgstr ""
+msgstr "В автоматическом режиме используется AQI США, а в зависимости от страны местоположения — европейский CAQI или канадский AQHI."
 
 #: contents/ui/config/configLocation.qml:1574
 msgid "Automatically detect location"
@@ -536,7 +536,7 @@ msgstr "Лавина"
 
 #: contents/ui/js/airQuality.js:123
 msgid "Avoid strenuous outdoor activities."
-msgstr ""
+msgstr "Избегайте интенсивных физических нагрузок на открытом воздухе."
 
 #: contents/ui/config/configGeneral.qml:560
 msgid "BBC Weather (free)"
@@ -573,7 +573,7 @@ msgstr "Промежуток:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:324
 msgid "Balanced (10 to 20 fps)"
-msgstr ""
+msgstr "Сбалансированная (10–20 кадр/с)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:291
 msgid "Behavior"
@@ -636,7 +636,7 @@ msgstr "Bz (Магнитное поле)"
 
 #: contents/ui/js/airQuality.js:172
 msgid "CAQI"
-msgstr ""
+msgstr "CAQI"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:594
 msgid "CO"
@@ -645,7 +645,7 @@ msgstr "CO"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:463
 #: contents/ui/config/tabs/ConfigMiscTab.qml:507
 msgid "Canadian AQHI (1-10+)"
-msgstr ""
+msgstr "Канадский AQHI (1–10+)"
 
 #: contents/ui/config/configAppearance.qml:506
 #: contents/ui/config/configAppearance.qml:1034
@@ -704,7 +704,7 @@ msgstr "Китайский погодный провайдер с глобаль
 
 #: contents/ui/config/configNotifications.qml:472
 msgid "Choose Alert Sound"
-msgstr ""
+msgstr "Выбор звука предупреждения"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1262
 msgid "Choose Simple Mode Font"
@@ -790,7 +790,7 @@ msgstr "Вместо фиксированного цвета используе�
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1027
 msgid "Colorful (KDE color icons)"
-msgstr "Цветной (цветные значки KDE)"
+msgstr "Цветной (Цветные значки KDE)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1574
 msgid "Compass in forecast:"
@@ -820,7 +820,7 @@ msgstr "Настроить параметры режима отображени�
 
 #: contents/ui/config/configAppearance.qml:1076
 msgid "Configure icon - %1"
-msgstr ""
+msgstr "Настройка значка — %1"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:368
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:388
@@ -866,7 +866,7 @@ msgstr "Успешное соединение! Ключ %1 действител�
 
 #: contents/ui/js/airQuality.js:121
 msgid "Consider reducing or rescheduling strenuous outdoor activities if you experience symptoms such as coughing or throat irritation."
-msgstr ""
+msgstr "При появлении таких симптомов, как кашель или раздражение горла, сократите или перенесите интенсивные физические нагрузки на открытом воздухе."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:331
 msgid "Coordinates"
@@ -874,7 +874,7 @@ msgstr "Координаты"
 
 #: contents/ui/config/configNotifications.qml:467
 msgid "Couldn't play that sound file: %1"
-msgstr ""
+msgstr "Не удалось воспроизвести аудиофайл: %1"
 
 #: contents/ui/config/configNotifications.qml:499
 msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
@@ -978,7 +978,7 @@ msgstr "Дата:"
 
 #: contents/ui/DetailsView.qml:3610
 msgid "Dawn approaching - "
-msgstr ""
+msgstr "Скоро рассвет — "
 
 #: contents/ui/DetailsView.qml:3590
 msgid "Day"
@@ -995,7 +995,7 @@ msgstr "По умолчанию"
 
 #: contents/ui/config/configNotifications.qml:425
 msgid "Default (built-in siren)"
-msgstr ""
+msgstr "По умолчанию (встроенная сирена)"
 
 #: contents/ui/config/configLocation.qml:1910
 msgid "Default location (click to unset)"
@@ -1144,7 +1144,7 @@ msgstr "Каждый тип уведомления может быть вклю�
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:320
 msgid "Economy (8 to 10 fps)"
-msgstr ""
+msgstr "Экономная (8–10 кадр/с)"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:495
 msgid "Edit Saved Location"
@@ -1212,7 +1212,7 @@ msgstr "Ввести вручную"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:289
 msgid "Enter your AEMET API key"
-msgstr ""
+msgstr "Введите ключ API AEMET"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:275
 msgid "Enter your OpenWeatherMap API key"
@@ -1253,15 +1253,15 @@ msgstr "Ошибка (код %1)"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:451
 #: contents/ui/config/tabs/ConfigMiscTab.qml:503
 msgid "European CAQI (0-100+)"
-msgstr ""
+msgstr "Европейский CAQI (0–100+)"
 
 #: contents/ui/DetailsView.qml:3612
 msgid "Evening - "
-msgstr ""
+msgstr "Вечер — "
 
 #: contents/ui/js/airQuality.js:105
 msgid "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
-msgstr ""
+msgstr "Возможно неблагоприятное воздействие на здоровье всех людей; для чувствительных групп последствия могут быть более серьёзными."
 
 #: contents/ui/js/spaceWeather.js:198
 msgid "Excellent"
@@ -1378,7 +1378,7 @@ msgstr "Туман"
 
 #: contents/ui/config/configAppearance.qml:259
 msgid "Font icons"
-msgstr ""
+msgstr "Шрифтовые значки"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1421
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:280
@@ -1417,7 +1417,7 @@ msgstr "Лесной пожар"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:510
 msgid "Format:"
-msgstr ""
+msgstr "Формат:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:207
 msgid "Free BBC Weather service (data from the Met Office). No API key needed."
@@ -1513,7 +1513,7 @@ msgstr "Трава"
 
 #: contents/ui/js/airQuality.js:107
 msgid "Hazardous"
-msgstr ""
+msgstr "Опасно"
 
 #: contents/ui/DetailsView.qml:2431
 msgid "Headline"
@@ -1521,11 +1521,11 @@ msgstr "Заголовок"
 
 #: contents/ui/js/airQuality.js:106
 msgid "Health alert: everyone may experience more serious health effects."
-msgstr ""
+msgstr "Предупреждение об угрозе здоровью: возможно более серьёзное воздействие на здоровье всех людей."
 
 #: contents/ui/js/airQuality.js:107
 msgid "Health warning of emergency conditions: everyone is more likely to be affected."
-msgstr ""
+msgstr "Предупреждение о чрезвычайной угрозе здоровью: повышена вероятность вредного воздействия на всех людей."
 
 #: contents/ui/components/RadarWebEngineView.qml:163
 #: contents/ui/components/RadarWebEngineView.qml:849
@@ -1584,7 +1584,7 @@ msgstr "Высок."
 
 #: contents/ui/js/airQuality.js:122
 msgid "High Risk"
-msgstr ""
+msgstr "Высокий риск"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:199
 msgid "High precision forecast provider. API key required below."
@@ -1596,7 +1596,7 @@ msgstr "Высокая температура"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:588
 msgid "Highlight snow and wintry precipitation with a distinct color"
-msgstr ""
+msgstr "Выделять снег и зимние осадки отдельным цветом"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:193
 msgid "Historical and forecast data provider. API key required below."
@@ -1679,7 +1679,7 @@ msgstr "Значки"
 
 #: contents/ui/js/airQuality.js:120
 msgid "Ideal air quality for outdoor activities."
-msgstr ""
+msgstr "Идеальное качество воздуха для занятий на открытом воздухе."
 
 #: contents/ui/config/configLocation.qml:1226
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
@@ -1759,7 +1759,7 @@ msgstr "Недействительный ответ"
 #: contents/ui/config/configGeneral.qml:398
 #: contents/ui/config/configGeneral.qml:527
 msgid "Invalid response from AEMET."
-msgstr ""
+msgstr "Некорректный ответ AEMET."
 
 #: contents/ui/config/configGeneral.qml:514
 msgid "Invalid response from QWeather."
@@ -1788,14 +1788,14 @@ msgstr "Стиль значков KDE"
 #: contents/ui/config/tabs/ConfigPanelTab.qml:403
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:69
 msgid "KDE Icon Theme (Colorful)"
-msgstr ""
+msgstr "Стиль значков KDE (Цветные)"
 
 #: contents/ui/config/configAppearance.qml:256
 #: contents/ui/config/tabs/ConfigPanelTab.qml:398
 #: contents/ui/config/tabs/ConfigPanelTab.qml:407
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:70
 msgid "KDE Icon Theme (Symbolic)"
-msgstr ""
+msgstr "Стиль значков KDE (Монохромные)"
 
 #: contents/ui/config/configAppearance.qml:903
 msgid "KDE System Icons (automatic, follows weather code)"
@@ -2027,7 +2027,7 @@ msgstr "Уведомление о пакетах для определения �
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:559
 msgid "Location search by %1 · Map data © %2"
-msgstr ""
+msgstr "Поиск местоположения: %1 · Данные карты © %2"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:655
 msgid "Location staged. Click the main Apply button to save."
@@ -2071,7 +2071,7 @@ msgstr "Низк."
 
 #: contents/ui/js/airQuality.js:120
 msgid "Low Risk"
-msgstr ""
+msgstr "Низкий риск"
 
 #: contents/ui/config/configNotifications.qml:79 contents/ui/main.qml:1073
 msgid "Low temperature"
@@ -2137,7 +2137,7 @@ msgstr "Провайдер морских и погодных данных. Ну
 
 #: contents/ui/js/airQuality.js:104
 msgid "Members of sensitive groups may experience health effects; the general public is less likely to be affected."
-msgstr ""
+msgstr "Возможно неблагоприятное воздействие на здоровье людей из чувствительных групп; для остальных вероятность такого воздействия ниже."
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:84
 msgid "MeteoAlarm + NOAA NWS (Native)"
@@ -2150,7 +2150,7 @@ msgstr "MeteoAlarm + NOAA NWS (Нативный)"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:64
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:74
 msgid "Meteocons (Bundled)"
-msgstr ""
+msgstr "Meteocons (Встроено)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:231
 msgid "Metric (°C, km/h, hPa, mm)"
@@ -2198,7 +2198,7 @@ msgstr "Умеренно"
 
 #: contents/ui/js/airQuality.js:121
 msgid "Moderate Risk"
-msgstr ""
+msgstr "Умеренный риск"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:622
 msgid "Moderate drizzle"
@@ -2346,7 +2346,7 @@ msgstr "Несколько строк (высокая панель)"
 #: contents/ui/main.qml:905 contents/ui/main.qml:913 contents/ui/main.qml:941
 #: contents/ui/main.qml:1004
 msgid "N/A"
-msgstr ""
+msgstr "Н/Д"
 
 #: contents/ui/config/configAppearance.qml:1891
 #: contents/ui/config/configAppearance.qml:2014
@@ -2364,7 +2364,7 @@ msgstr "Нужны координаты места? Вы можете их на�
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1236
 msgid "Negative spacing pulls panel items closer together than their natural gap and can make icons or text overlap."
-msgstr ""
+msgstr "Отрицательный интервал сближает элементы панели сильнее обычного, из-за чего значки или текст могут перекрываться."
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:370
 msgid "Network error"
@@ -2514,19 +2514,19 @@ msgstr "ОК"
 
 #: contents/ui/config/configGeneral.qml:143
 msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, and your system isn't systemd-managed, so there's no way to clear that live - it stays disabled (including anything you open freshly in this session) until you log out and back in."
-msgstr ""
+msgstr "Выключено: скрипт обхода сбоя удалён и не будет загружен при следующем входе. Однако текущий сеанс уже запущен с отключённым аппаратным ускорением композитинга. Поскольку ваша система не управляется systemd, отменить это в текущем сеансе невозможно. Ускорение останется отключённым, в том числе в приложениях, которые вы запустите сейчас, до выхода из сеанса и повторного входа."
 
 #: contents/ui/config/configGeneral.qml:145
 msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, so it stays that way (and anything already open, like a terminal, keeps showing the old value) until you log out and back in."
-msgstr ""
+msgstr "Выключено: скрипт обхода сбоя удалён и не будет загружен при следующем входе. Однако текущий сеанс уже запущен с отключённым аппаратным ускорением композитинга. Оно останется отключённым до выхода из сеанса и повторного входа. Уже открытые приложения, например терминал, также продолжат показывать прежнее значение."
 
 #: contents/ui/config/configGeneral.qml:141
 msgid "Off - the workaround script has been removed, so it won't load on your next login. Your system uses systemd, so anything launched fresh from here on may already reflect the cleared value - but anything already open (like a terminal you still have up) keeps showing the old one regardless, and a full log out and back in is the only guaranteed way to clear it everywhere."
-msgstr ""
+msgstr "Выключено: скрипт обхода сбоя удалён и не будет загружен при следующем входе. Ваша система использует systemd, поэтому вновь запускаемые приложения уже могут учитывать отмену параметра. Однако уже открытые приложения, например терминал, продолжат показывать прежнее значение. Только выход из сеанса и повторный вход гарантируют отмену параметра во всех приложениях."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:203
 msgid "Official Spanish meteorological agency - Spain locations only! API key required below."
-msgstr ""
+msgstr "Государственная метеорологическая служба Испании. Данные доступны только для местоположений в Испании! Укажите ключ API ниже."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:657
 #: contents/ui/DetailsView.qml:1526 contents/ui/main.qml:986
@@ -2552,23 +2552,23 @@ msgstr "Open-Meteo (рекомендуется, бесплатно)"
 
 #: contents/ui/components/MapBackgroundChoices.qml:51
 msgid "OpenFreeMap Dark"
-msgstr ""
+msgstr "OpenFreeMap Dark"
 
 #: contents/ui/components/MapBackgroundChoices.qml:50
 msgid "OpenFreeMap Fiord (dark)"
-msgstr ""
+msgstr "OpenFreeMap Fiord (тёмная)"
 
 #: contents/ui/components/MapBackgroundChoices.qml:49
 msgid "OpenFreeMap Liberty (light)"
-msgstr ""
+msgstr "OpenFreeMap Liberty (светлая)"
 
 #: contents/ui/components/MapBackgroundChoices.qml:48
 msgid "OpenFreeMap Positron (light)"
-msgstr ""
+msgstr "OpenFreeMap Positron (светлая)"
 
 #: contents/ui/components/MapBackgroundChoices.qml:44
 msgid "OpenStreetMap (dark)"
-msgstr ""
+msgstr "OpenStreetMap (тёмная)"
 
 #: contents/ui/components/MapBackgroundChoices.qml:43
 msgid "OpenStreetMap (standard)"
@@ -2611,7 +2611,7 @@ msgstr "Пасмурно"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:451
 msgid "Overlay detected storm cells on the map"
-msgstr ""
+msgstr "Показывать обнаруженные очаги гроз на карте"
 
 #: contents/ui/DetailsView.qml:1320
 msgid "Ozone (O₃)"
@@ -2631,7 +2631,7 @@ msgstr "PM2.5"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:391
 msgid "Palette:"
-msgstr ""
+msgstr "Палитра:"
 
 #: contents/ui/config/configAppearance.qml:2459
 #: contents/ui/config/tabs/ConfigMiscTab.qml:203
@@ -2660,15 +2660,15 @@ msgstr "Элементы панели:"
 
 #: contents/ui/config/configAppearance.qml:119
 msgid "Panel › Icon theme"
-msgstr ""
+msgstr "Панель › Стиль значков"
 
 #: contents/ui/config/configAppearance.qml:163
 msgid "Panel › Multi-line layout › Main icon style"
-msgstr ""
+msgstr "Панель › Несколько строк › Стиль основного значка"
 
 #: contents/ui/config/configAppearance.qml:133
 msgid "Panel › Simple layout › Weather icon style"
-msgstr ""
+msgstr "Панель › Простой режим › Стиль значков погоды"
 
 #: contents/ui/DetailsView.qml:1316
 msgid "Particulate Matter (PM10)"
@@ -2736,7 +2736,7 @@ msgstr "Воспроизвести"
 
 #: contents/ui/config/configNotifications.qml:403
 msgid "Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound."
-msgstr ""
+msgstr "Воспроизводит звук вместе с уведомлением о предупреждении этого уровня опасности. Недоступный переключатель означает, что соответствующий уровень отключён выше: уведомления о таких предупреждениях не показываются ни со звуком, ни без него. По умолчанию звук включён только для красного и фиолетового уровней."
 
 #: contents/ui/config/configAppearance.qml:1883
 #: contents/ui/config/configAppearance.qml:2006
@@ -2771,7 +2771,7 @@ msgstr "Кол-во осадков"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1412
 msgid "Precip probability:"
-msgstr ""
+msgstr "Вероятность осадков:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1274
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1480
@@ -2873,7 +2873,7 @@ msgid ""
 "Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 " If you want to choose a specific provider, please turn off Adaptive Mode.\n"
 "Open-Meteo is always tried first - it is free and requires no API key. AEMET is intentionally not part of this list, as it only covers Spain and is not suitable for global use."
-msgstr ""
+msgstr "Провайдеры проверяются по порядку до первого успешного запроса:\nOpen-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\nЧтобы выбрать конкретного провайдера, отключите адаптивный режим.\nOpen-Meteo всегда проверяется первым: он бесплатный и не требует ключа API. AEMET намеренно исключён из этого списка, поскольку предоставляет данные только для Испании и не подходит для использования по всему миру."
 
 #: contents/ui/config/configNotifications.qml:332
 #: contents/ui/config/configNotifications.qml:385
@@ -2925,7 +2925,7 @@ msgstr "Радар + спутник"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Radar Settings"
-msgstr ""
+msgstr "Настройки радара"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:352
 msgid "Radar only"
@@ -2982,7 +2982,7 @@ msgstr "Дождь/Гроза"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:163
 msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
-msgstr ""
+msgstr "При включённом адаптивном режиме выбор недоступен. Отключите его выше, чтобы выбрать провайдера."
 
 #: contents/ui/components/RadarWebEngineView.qml:158
 msgid "Real-time"
@@ -2994,7 +2994,7 @@ msgstr "Недавно"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:576
 msgid "Recommended - e.g. 560"
-msgstr ""
+msgstr "Рекомендуется указать, например 560"
 
 #: contents/ui/config/configNotifications.qml:327
 #: contents/ui/config/configNotifications.qml:378
@@ -3003,7 +3003,7 @@ msgstr "Красный"
 
 #: contents/ui/js/airQuality.js:122
 msgid "Reduce or reschedule strenuous outdoor activities, especially if you experience symptoms."
-msgstr ""
+msgstr "Сократите или перенесите интенсивные физические нагрузки на открытом воздухе, особенно при появлении симптомов."
 
 #: contents/ui/config/configLocation.qml:1609 contents/ui/FullView.qml:419
 #: contents/ui/main.qml:379
@@ -3195,7 +3195,7 @@ msgstr "Задать свои значки…"
 
 #: contents/ui/config/configAppearance.qml:480
 msgid "Settings where this theme is not available keep their current theme."
-msgstr ""
+msgstr "В настройках, для которых этот стиль недоступен, сохранится текущий стиль."
 
 #: contents/ui/js/spaceWeather.js:92
 msgid "Severe geomagnetic storm."
@@ -3236,11 +3236,11 @@ msgstr "Показывать Сегодня:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:464
 msgid "Show WMO alerts on the map"
-msgstr ""
+msgstr "Показывать предупреждения ВМО на карте"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:431
 msgid "Show air quality standards:"
-msgstr ""
+msgstr "Показывать шкалы качества воздуха:"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:121
 msgid "Show both units:"
@@ -3256,7 +3256,7 @@ msgstr "Показывать в:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:422
 msgid "Show motion arrows on the map"
-msgstr ""
+msgstr "Показывать стрелки движения на карте"
 
 #: contents/ui/components/RadarWebEngineView.qml:159
 msgid "Show my location"
@@ -3268,7 +3268,7 @@ msgstr "Показать или скрыть этот элемент подро�
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1185
 msgid "Show past weather info for today:"
-msgstr ""
+msgstr "Показывать погоду за прошедшие часы сегодня:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:626
 msgid "Show pollen types in expanded view:"
@@ -3294,11 +3294,11 @@ msgstr "Показывать единицу температуры:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:603
 msgid "Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m"
-msgstr ""
+msgstr "Показывать ветер на высоте около 3000 м (700 гПа), определяющий перемещение осадков, вместо приземного ветра на высоте 10 м"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:493
 msgid "Show tile options: smoothing, snow mask, format and tile size"
-msgstr ""
+msgstr "Показать настройки тайлов: сглаживание, выделение снега, формат и размер"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:380
 msgid "Show update time and provider"
@@ -3370,7 +3370,7 @@ msgstr "Размер:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:309
 msgid "Skipped - API key not configured"
-msgstr ""
+msgstr "Пропущено — ключ API не задан"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:628
 msgid "Slight rain"
@@ -3394,15 +3394,15 @@ msgstr "Маленький круг  ⚬"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:328
 msgid "Smooth (12 to 30 fps)"
-msgstr ""
+msgstr "Плавная (12–30 кадр/с)"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:574
 msgid "Smooth radar tile edges"
-msgstr ""
+msgstr "Сглаживать края тайлов радара"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:566
 msgid "Smoothing"
-msgstr ""
+msgstr "Сглаживание"
 
 #: contents/ui/config/configNotifications.qml:638
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:57
@@ -3443,23 +3443,23 @@ msgstr "Снежные зёрна"
 
 #: contents/ui/main.qml:1926
 msgid "Snow is ending"
-msgstr ""
+msgstr "Снег прекращается"
 
 #: contents/ui/main.qml:1921
 msgid "Snow is expected"
-msgstr ""
+msgstr "Ожидается снег"
 
 #: contents/ui/main.qml:1927
 msgid "Snow is expected to end %1."
-msgstr ""
+msgstr "Снег может закончиться %1."
 
 #: contents/ui/main.qml:1922
 msgid "Snow is possible %1."
-msgstr ""
+msgstr "Снег может начаться %1."
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:580
 msgid "Snow mask"
-msgstr ""
+msgstr "Выделение снега"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
 #: contents/ui/main.qml:2167
@@ -3477,7 +3477,7 @@ msgstr "Солнечный ветер"
 
 #: contents/ui/config/configNotifications.qml:358
 msgid "Sounds:"
-msgstr ""
+msgstr "Звуки:"
 
 #: contents/ui/config/configAppearance.qml:1890
 #: contents/ui/config/configAppearance.qml:2013
@@ -3510,7 +3510,7 @@ msgstr "Шторм"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:440
 msgid "Storm cells"
-msgstr ""
+msgstr "Очаги гроз"
 
 #: contents/ui/config/configGeneral.qml:584
 msgid "StormGlass (Key Required)"
@@ -3643,11 +3643,11 @@ msgstr "Сменить местоположение"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:61
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:71
 msgid "Symbolic (Bundled)"
-msgstr "Символьный (Встроено)"
+msgstr "Монохромный (Встроено)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1031
 msgid "Symbolic (follows theme colour)"
-msgstr "Символьный (Цвет выбранной темы)"
+msgstr "Монохромный (Цвет выбранной темы)"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:952
 msgid "System Tray Badge Background Color"
@@ -3671,11 +3671,11 @@ msgstr "Настройка значка системного лотка"
 
 #: contents/ui/config/configAppearance.qml:119
 msgid "System tray › Icon theme"
-msgstr ""
+msgstr "Системный лоток › Стиль значков"
 
 #: contents/ui/config/configAppearance.qml:133
 msgid "System tray › Simple layout › Weather icon style"
-msgstr ""
+msgstr "Системный лоток › Простой режим › Стиль значков погоды"
 
 #: contents/ui/components/RadarWebEngineView.qml:131
 #: contents/ui/config/configAppearance.qml:1798
@@ -3714,7 +3714,7 @@ msgstr "Температура:"
 
 #: contents/ui/config/configNotifications.qml:443
 msgid "Test"
-msgstr ""
+msgstr "Проверить"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:393
 msgid "Test API Key"
@@ -3743,7 +3743,7 @@ msgstr "Текст будет следовать системному шрифт
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:341
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
-msgstr ""
+msgstr "На вкладке «Радар» можно включить анимацию ветра в виде движущихся частиц. Данные о ветре поступают от <a href='https://open-meteo.com/'>Open-Meteo</a> независимо от сервера LibreWXR. Здесь задаётся частота кадров: уменьшите её на медленном компьютере или увеличьте, если при сильном ветре анимация выглядит прерывистой."
 
 #: contents/ui/RadarView.qml:166
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
@@ -3764,11 +3764,11 @@ msgstr "Прогноз геомагнитной активности (Kp/G) до
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:453
 msgid "The map could not be loaded. Check your internet connection."
-msgstr ""
+msgstr "Не удалось загрузить карту. Проверьте подключение к интернету."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:463
 msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
-msgstr ""
+msgstr "Для карты требуется QtWebEngine, который не установлен. Вы можете воспользоваться поиском местоположения выше."
 
 #: contents/ui/config/configLocation.qml:1160
 msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
@@ -3785,7 +3785,7 @@ msgstr "Цвет темы"
 #: contents/ui/config/configAppearance.qml:2507
 #: contents/ui/config/configAppearance.qml:2548
 msgid "These settings only apply when the widget is placed in a panel or the system tray - they have no effect on the desktop."
-msgstr ""
+msgstr "Эти настройки применяются только к виджету на панели или в системном лотке. На рабочем столе они не действуют."
 
 #: contents/ui/config/configLocation.qml:182
 msgid "This location is already in your saved list."
@@ -3830,11 +3830,11 @@ msgstr "Гроза, сильный град (ночью)"
 
 #: contents/ui/main.qml:1839
 msgid "Thunderstorms"
-msgstr "Грозы"
+msgstr "Гроза"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:538
 msgid "Tile size:"
-msgstr ""
+msgstr "Размер тайла:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:489
 msgid "Time format:"
@@ -3858,7 +3858,7 @@ msgstr "Часовой пояс:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:352
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
-msgstr ""
+msgstr "Чтобы включить дополнительные слои карты (дождь, облака, температура, ветер, давление), отключите адаптивный режим на вкладке «Провайдер», выберите OpenWeatherMap в качестве провайдера данных о погоде и укажите ключ API выше. После этого можно снова включить адаптивный режим."
 
 #: contents/ui/ForecastView.qml:533 contents/ui/main.qml:1688
 #: contents/ui/SimpleView.qml:423
@@ -3926,7 +3926,7 @@ msgstr "Ширина подсказки:"
 
 #: contents/ui/config/configAppearance.qml:225
 msgid "Tooltip › Icon theme"
-msgstr ""
+msgstr "Всплывающая подсказка › Стиль значков"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:78
 msgid "Tooltip:"
@@ -3954,11 +3954,11 @@ msgstr "Обрезать (одна строка)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:523
 msgid "Turn off all three switches above to pick a single standard here instead."
-msgstr ""
+msgstr "Отключите все три переключателя выше, чтобы выбрать здесь одну шкалу."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:474
 msgid "Turn on any combination to show them side by side instead of a single standard below."
-msgstr ""
+msgstr "Включите нужные шкалы, чтобы показывать их вместе вместо одной шкалы, выбранной ниже."
 
 #: contents/ui/main.qml:1371
 msgctxt "Alert severity"
@@ -3968,11 +3968,11 @@ msgstr "НЕИЗВЕСТНО"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:439
 #: contents/ui/config/tabs/ConfigMiscTab.qml:499
 msgid "US AQI (0-500)"
-msgstr ""
+msgstr "AQI США (0–500)"
 
 #: contents/ui/js/airQuality.js:104
 msgid "USG"
-msgstr ""
+msgstr "Вредно для чувств. групп"
 
 #: contents/ui/config/configAppearance.qml:1869
 #: contents/ui/config/configAppearance.qml:1992
@@ -4011,11 +4011,11 @@ msgstr "Не удалось определить местоположение. �
 
 #: contents/ui/js/airQuality.js:105
 msgid "Unhealthy"
-msgstr ""
+msgstr "Вредно"
 
 #: contents/ui/js/airQuality.js:104
 msgid "Unhealthy for Sensitive Groups"
-msgstr ""
+msgstr "Вредно для чувствительных групп"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:220
 msgid "Unit preset:"
@@ -4066,7 +4066,7 @@ msgstr "Предстоит: %1"
 
 #: contents/ui/WeatherService.qml:263
 msgid "Update timed out. Click the refresh button to retry."
-msgstr ""
+msgstr "Время ожидания обновления истекло. Нажмите кнопку обновления, чтобы повторить попытку."
 
 #: contents/ui/WeatherService.qml:962
 msgid "Updated %1 day ago"
@@ -4120,7 +4120,7 @@ msgstr "По умолчанию используются системные зн
 
 #: contents/ui/js/airQuality.js:123
 msgid "V.High"
-msgstr ""
+msgstr "Оч. высок."
 
 #: contents/ui/js/airQuality.js:94
 msgid "V.Poor"
@@ -4128,7 +4128,7 @@ msgstr "Оч.Плохо"
 
 #: contents/ui/js/airQuality.js:106
 msgid "V.Unhealthy"
-msgstr ""
+msgstr "Оч. вредно"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:91
 msgid "Values are rounded to whole numbers"
@@ -4149,7 +4149,7 @@ msgstr "Оч. Высокий"
 
 #: contents/ui/js/airQuality.js:123
 msgid "Very High Risk"
-msgstr ""
+msgstr "Очень высокий риск"
 
 #: contents/ui/js/airQuality.js:94
 msgid "Very Poor"
@@ -4157,7 +4157,7 @@ msgstr "Очень Плохо"
 
 #: contents/ui/js/airQuality.js:106
 msgid "Very Unhealthy"
-msgstr ""
+msgstr "Очень вредно"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:648
 msgid "Violent rain showers"
@@ -4220,7 +4220,7 @@ msgstr "Погодные предупреждения"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:68
 msgid "Weather Alerts Provider"
-msgstr ""
+msgstr "Провайдер погодных предупреждений"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:68
 msgid "Weather Provider"
@@ -4271,7 +4271,7 @@ msgid ""
 "🟣 Purple - Extreme: extraordinarily dangerous, take action immediately.\n"
 "\n"
 "Turn a level off to stop receiving notifications for alerts of that severity."
-msgstr ""
+msgstr "Уровни опасности погодных предупреждений, от низшего к высшему:\n\n🟡 Жёлтый — низкий: следите за погодными условиями.\n🟠 Оранжевый — умеренный: будьте готовы.\n🔴 Красный — высокий: примите меры.\n🟣 Фиолетовый — чрезвычайный: крайне опасно, немедленно примите меры.\n\nОтключите уровень, чтобы не получать уведомления о предупреждениях соответствующей опасности."
 
 #: contents/ui/config/configGeneral.qml:568
 msgid "WeatherAPI.com (Key Required)"
@@ -4308,11 +4308,11 @@ msgstr "Область панели виджета:"
 
 #: contents/ui/config/configAppearance.qml:210
 msgid "Widget › Details › Icon theme"
-msgstr ""
+msgstr "Виджет › Подробности › Стиль значков"
 
 #: contents/ui/config/configAppearance.qml:181
 msgid "Widget › General › Weather icon theme"
-msgstr ""
+msgstr "Виджет › Основные › Стиль значков погоды"
 
 #: contents/ui/components/RadarWebEngineView.qml:132
 #: contents/ui/config/configAppearance.qml:1812
@@ -4325,7 +4325,7 @@ msgstr "Ветер"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:303
 msgid "Wind animation:"
-msgstr ""
+msgstr "Анимация ветра:"
 
 #: contents/ui/config/configAppearance.qml:1944
 #: contents/ui/config/configAppearance.qml:2067
@@ -4348,11 +4348,11 @@ msgstr "Ветер:"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:427
 msgid "Winds"
-msgstr ""
+msgstr "Ветер"
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:594
 msgid "Winds aloft"
-msgstr ""
+msgstr "Ветер на высоте"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:120
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
@@ -4391,7 +4391,7 @@ msgstr "Вам нужно увеличить ширину виджета, что
 
 #: contents/ui/config/configAppearance.qml:435
 msgid "You selected <b>%1</b>. Apply it to every icon theme setting where it is available?"
-msgstr ""
+msgstr "Выбран стиль <b>%1</b>. Применить его ко всем настройкам значков, для которых он доступен?"
 
 #: contents/ui/components/LocationMapPickerView.qml:54
 msgid "Zoom in"
@@ -4411,7 +4411,7 @@ msgstr "пару облачков"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "already set"
-msgstr ""
+msgstr "уже выбрано"
 
 #: contents/ui/main.qml:1942
 msgid "an increase from yesterday"
@@ -4480,7 +4480,7 @@ msgstr "дюйм"
 
 #: contents/ui/main.qml:1844
 msgid "in the next few hours"
-msgstr ""
+msgstr "в ближайшие часы"
 
 #: contents/ui/components/RadarWebEngineView.qml:850 contents/ui/main.qml:900
 msgid "in/h"
@@ -4576,7 +4576,7 @@ msgstr "миль/ч"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "not available - left unchanged"
-msgstr ""
+msgstr "недоступно — без изменений"
 
 #: contents/ui/main.qml:1715
 msgid "overcast skies"
@@ -4606,7 +4606,7 @@ msgstr "дождь"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "selected here"
-msgstr ""
+msgstr "выбрано здесь"
 
 #: contents/ui/main.qml:1996
 msgid "severe"
@@ -4670,7 +4670,7 @@ msgstr "оч. высокий"
 
 #: contents/ui/config/configAppearance.qml:459
 msgid "will be changed"
-msgstr ""
+msgstr "будет изменено"
 
 #: contents/ui/main.qml:1335 contents/ui/main.qml:1686
 #: contents/ui/main.qml:1759
@@ -4681,6 +4681,21 @@ msgstr "ваше местоположение"
 msgid "µg/m³"
 msgstr "мкг/м³"
 
+#: contents/ui/DetailsView.qml:4261
+#, kde-format
+msgid "%1h"
+msgstr "%1 ч"
+
+#: contents/ui/DetailsView.qml:4257 contents/ui/DetailsView.qml:4260
+#, kde-format
+msgid "%1m"
+msgstr "%1 мин"
+
+#: contents/ui/DetailsView.qml:4262
+#, kde-format
+msgid "%1h %2m"
+msgstr "%1 ч %2 мин"
+
 #~ msgid ""
 #~ "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting.\n"
 #~ "                <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
@@ -4690,7 +4705,7 @@ msgstr "мкг/м³"
 #~ msgstr "Цветной"
 
 #~ msgid "KDE Symbolic"
-#~ msgstr "Символьный KDE"
+#~ msgstr "Монохромный KDE"
 
 #~ msgid ""
 #~ "Providers are tried in order until one succeeds:\n"
@@ -4708,7 +4723,7 @@ msgstr "мкг/м³"
 #~ msgstr "Пробел"
 
 #~ msgid "Symbolic"
-#~ msgstr "Символьный"
+#~ msgstr "Монохромный"
 
 #~ msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 #~ msgstr "Для разблокировки дополнительных слоев карты (дождь, облака, температура, ветер, давление):  отключите Адаптивный режим, выберите OpenWeatherMap в качестве провайдера данных и введите ключ API сверху. Когда все сделаете, включите Адаптивный режим снова."
