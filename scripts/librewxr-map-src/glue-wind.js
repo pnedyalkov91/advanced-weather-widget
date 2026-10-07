@@ -183,6 +183,22 @@ var WidgetWind = (function () {
       return { dx: u / s * px, dy: -v / s * px, speed: s };
     },
 
+    /** Particle speed (px/s) the frame rate is tuned on: the speed that
+        `fraction` of the first `count` particles do not exceed (nearest
+        rank). Reorders those values in place. */
+    cadenceSpeed: function (speeds, count, fraction) {
+      if (!count) return 0;
+      var s = speeds.subarray(0, count);
+      s.sort();
+      return s[Math.max(0, Math.ceil(fraction * count) - 1)];
+    },
+
+    /** Frame rate that moves a particle at pxPerSec by about stepPx per
+        frame, kept within [fps, maxFps]. */
+    targetFps: function (pxPerSec, fps, maxFps, stepPx) {
+      return Math.max(fps, Math.min(maxFps, pxPerSec / stepPx));
+    },
+
     /** Web Mercator world pixel at zoom z (256 px tiles), same convention as Leaflet's EPSG3857. */
     worldPx: function (lat, lon, z) {
       var scale = 256 * Math.pow(2, z);
@@ -402,7 +418,8 @@ var WidgetWind = (function () {
         pane: 'lv-wind-pane',
         fps: 10,             // base cadence; raised up to maxFps when particles move fast
         maxFps: 20,
-        stepPx: 2.5,         // target mean displacement per frame (CSS px)
+        stepPx: 2.5,         // target displacement per frame of the fast particles (CSS px)
+        cadenceFraction: 0.98, // the cadence follows the fastest 2% of the particles
         relief: true,
         reliefMinZoom: 9,
         sigma: 250,          // m: elevation similarity scale for the weighting
@@ -574,6 +591,7 @@ var WidgetWind = (function () {
         this._px = new Float32Array(count);
         this._py = new Float32Array(count);
         this._age = new Uint16Array(count);
+        this._spd = new Float32Array(count);   // per-frame screen speeds, for the cadence
         for (var i = 0; i < count; i++) this._spawn(i, true);
       },
 
@@ -605,10 +623,13 @@ var WidgetWind = (function () {
       },
 
       // Adaptive cadence: strong winds would jump several px per frame at
-      // 10 fps, so raise the rate until the mean step is about stepPx, never
-      // above maxFps. Smoothed so the rate does not flicker.
-      _adaptFps: function (meanPxPerSec) {
-        var want = Math.max(this.options.fps, Math.min(this.options.maxFps, meanPxPerSec / this.options.stepPx));
+      // 10 fps, so raise the rate until the fast particles step about stepPx,
+      // never above maxFps. Tuned on the fast ones (cadenceFraction) rather
+      // than the mean: zoomed out, calm air fills most of the view and kept
+      // the base rate while the storms jumped. Smoothed so the rate does not
+      // flicker.
+      _adaptFps: function (pxPerSec) {
+        var want = WindField.targetFps(pxPerSec, this.options.fps, this.options.maxFps, this.options.stepPx);
         this._fps = this._fps * 0.8 + want * 0.2;
       },
 
@@ -637,7 +658,7 @@ var WidgetWind = (function () {
         var dt = 1 / this._fps;
         // Keep the trail the same length in seconds whatever the cadence.
         var fade = Math.pow(this.options.fade, this.options.fps / this._fps);
-        var pxSum = 0, pxCount = 0;
+        var spd = this._spd, pxCount = 0;
         // Elevation weighting only makes sense for the surface wind.
         var level = this.options.level;
         var sigma = (this.options.relief && level === DEFAULT_LEVEL && this._zoom >= this.options.reliefMinZoom) ? this.options.sigma : 0;
@@ -660,7 +681,7 @@ var WidgetWind = (function () {
           if (!uv) { this._spawn(i, false); continue; }
           var sv = WindField.screenVelocity(uv.u, uv.v, this._velOpts);
           var vel = WindField.worldToScreenVector(frame, sv.dx, sv.dy);
-          pxSum += Math.sqrt(vel.dx * vel.dx + vel.dy * vel.dy); pxCount++;
+          spd[pxCount++] = Math.sqrt(vel.dx * vel.dx + vel.dy * vel.dy);
           var nx = x + vel.dx * dt, ny = y + vel.dy * dt;
           if (nx < 0 || nx >= w || ny < 0 || ny >= h) { this._spawn(i, false); continue; }
           var k = sv.speed < 2 ? 0 : (sv.speed < 6 ? 1 : 2);
@@ -675,7 +696,7 @@ var WidgetWind = (function () {
         var alphas = [0.35, 0.6, 0.9];
         for (var b = 0; b < 3; b++) { ctx.globalAlpha = alphas[b]; ctx.stroke(paths[b]); }
         ctx.globalAlpha = 1;
-        if (pxCount) this._adaptFps(pxSum / pxCount);
+        if (pxCount) this._adaptFps(WindField.cadenceSpeed(spd, pxCount, this.options.cadenceFraction));
         this._stat(performance.now() - t0);
       }
     });
