@@ -325,7 +325,7 @@ GridLayout {
                     value: "balanced"
                 },
                 {
-                    text: i18n("Smooth (12 to 30 fps)"),
+                    text: i18n("Smooth (20 to 30 fps)"),
                     value: "smooth"
                 }
             ]

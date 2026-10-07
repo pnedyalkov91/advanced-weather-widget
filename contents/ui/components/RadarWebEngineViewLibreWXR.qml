@@ -77,7 +77,7 @@ Item {
         if (q === "economy")
             return [8, 10];
         if (q === "smooth")
-            return [12, 30];
+            return [20, 30];
         return [10, 20];
     }
     readonly property string activeCells: Plasmoid.configuration.librewxrCells || ""
