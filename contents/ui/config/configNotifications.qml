@@ -19,7 +19,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import QtMultimedia
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 
@@ -443,10 +442,9 @@ KCM.SimpleKCM {
                         text: i18n("Test")
                         icon.name: "media-playback-start"
                         onClicked: {
-                            testMediaPlayer.source = root.cfg_alertNotificationsSoundFile.length > 0
+                            testSoundLoader.play(root.cfg_alertNotificationsSoundFile.length > 0
                                 ? root.cfg_alertNotificationsSoundFile
-                                : root.defaultAlertSoundUrl;
-                            testMediaPlayer.play();
+                                : root.defaultAlertSoundUrl);
                         }
                     }
 
@@ -463,8 +461,8 @@ KCM.SimpleKCM {
                 Layout.fillWidth: true
                 type: Kirigami.MessageType.Warning
                 showCloseButton: false
-                visible: testMediaPlayer.error !== MediaPlayer.NoError
-                text: i18n("Couldn't play that sound file: %1", testMediaPlayer.errorString)
+                visible: testSoundLoader.item ? testSoundLoader.item.hasError : false
+                text: i18n("Couldn't play that sound file: %1", testSoundLoader.item ? testSoundLoader.item.errorString : "")
             }
 
             FileDialog {
@@ -474,13 +472,25 @@ KCM.SimpleKCM {
                 onAccepted: root.cfg_alertNotificationsSoundFile = selectedFile.toString()
             }
 
-            // Mirrors main.qml's alertMediaPlayer: MediaPlayer rather than
+            // Mirrors main.qml's alertSoundLoader: MediaPlayer rather than
             // SoundEffect, since SoundEffect only supports uncompressed WAV
             // on Linux and this "Test" button needs to preview whatever
             // format the user picked (mp3/ogg included).
-            MediaPlayer {
-                id: testMediaPlayer
-                audioOutput: AudioOutput {}
+            //
+            // Loaded on the first click of "Test". See
+            // components/AlertSoundPlayer.qml for how the sound is played.
+            Loader {
+                id: testSoundLoader
+                visible: false
+                active: false
+                asynchronous: false
+                source: Qt.resolvedUrl("../components/AlertSoundPlayer.qml")
+
+                function play(url) {
+                    active = true;
+                    if (item)
+                        item.playUrl(url);
+                }
             }
 
             WrappingSwitch {

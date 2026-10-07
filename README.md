@@ -59,22 +59,22 @@ For the full functionality of this widget, please ensure you have the following 
 
 > ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh
 
+> **MangoHud and other `LD_PRELOAD` overlays:** starting plasmashell under MangoHud (`mangohud plasmashell --replace`) has been observed to crash the whole shell when the embedded radar starts. If the widget finds MangoHud in plasmashell's `LD_PRELOAD`, it does not load the embedded radar. The Radar tab then shows an **Open radar in browser** button and a **Load embedded radar anyway** button, so you can still try it at your own risk.
+
 ### 🔊 Alert Sounds
 *Required to play a sound alongside weather-alert notifications.*
 
-| Distribution | Package Name |
-|---|---|
-| **Fedora / RHEL** | `qt6-qtmultimedia` |
-| **openSUSE** | `qt6-multimedia` |
-| **Arch Linux** | `qt6-multimedia` `qt6-multimedia-ffmpeg` |
-| **Debian / Kubuntu / KDE Neon** | `qml6-module-qtmultimedia` |
+| Distribution | `pw-play` (PipeWire, preferred) | `paplay` (PulseAudio, fallback) |
+|---|---|---|
+| **Fedora / RHEL** | `pipewire-utils` | `pulseaudio-utils` |
+| **openSUSE** | `pipewire-tools` | `pulseaudio-utils` |
+| **Arch Linux** | `pipewire-audio` | `libpulse` |
+| **Debian / Kubuntu / KDE Neon** | `pipewire-bin` | `pulseaudio-utils` |
+
+> On a standard PipeWire desktop `pw-play` is usually installed already. Check with `command -v pw-play paplay`.
 
 > The default sound is located in `/home/<your username>/.local/share/plasma/plasmoids/org.kde.plasma.advanced-weather-widget/contents/sounds/alert-default.ogg`
-> The alert sounds support .wav, .ogg, and .mp3 formats. I haven’t tested other sound formats, but in theory, they should work as well. Please test your sound in the widget settings before applying it. You can do that using the "Test" button in the notification settings.
-
-> On Arch, `qt6-multimedia` alone has no playback backend - it needs either `qt6-multimedia-ffmpeg` (recommended) or `qt6-multimedia-gstreamer` alongside it.
-
-> **Note:** After installing QtMultimedia, restart your session or run `systemctl --user restart plasma-plasmashell`.
+> Both players decode through libsndfile, so `.wav`, `.ogg` and `.flac` files are reliable. `.mp3` only works if your distribution's libsndfile was built with MP3 support (libsndfile 1.1 or newer); if an MP3 does not play, convert it to `.ogg` or `.wav`. Please test your sound in the widget settings before applying it, using the "Test" button in the notification settings. If no player is found, the Test button shows an error.
 
 ## 🛍 Install from KDE Store (Recommended)
 1. Right-click your Panel or Desktop.

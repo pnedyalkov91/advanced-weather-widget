@@ -26,6 +26,26 @@ Item {
     readonly property bool radarReady: radarLoader.status === Loader.Ready && radarLoader.item !== null
     property bool loadEmbeddedRadar: false
 
+    // MangoHud (or a similar LD_PRELOAD overlay) injected into plasmashell is
+    // known to corrupt the heap while QtWebEngine/Chromium initialises its GL
+    // stack inside the same process. A widget cannot opt out of a preload, so
+    // when one is detected the embedded radar is withheld and the user gets an
+    // explicit "load anyway" button instead of a crash of the whole shell.
+    property bool forceEmbeddedRadar: false
+    property bool _probeRequested: false
+    // A probe that never answers (broken executable engine) must not keep the
+    // radar from loading forever, so give up after a short grace period.
+    property bool _probeTimedOut: false
+    readonly property bool probeDone: _probeTimedOut || probeLoader.status === Loader.Error
+        || (probeLoader.item !== null && probeLoader.item.done)
+    readonly property bool mangoHudDetected: probeLoader.item !== null && probeLoader.item.detected
+    readonly property bool blockedByPreload: mangoHudDetected && !forceEmbeddedRadar
+
+    onBlockedByPreloadChanged: {
+        if (blockedByPreload)
+            console.warn("[Advanced Weather Widget Radar] MangoHud found in LD_PRELOAD; embedded WebEngine radar withheld (it can crash plasmashell under the overlay)");
+    }
+
     readonly property double lat: Plasmoid.configuration.latitude || 0
     readonly property double lon: Plasmoid.configuration.longitude || 0
     readonly property string radarProvider: Plasmoid.configuration.radarProvider || "rainviewer"
@@ -51,6 +71,8 @@ Item {
         console.log("[Advanced Weather Widget Radar] wrapper maybeDeferLoad; visible=", visible,
                     "loadEmbeddedRadar=", loadEmbeddedRadar,
                     "loaderStatus=", _loaderStatusText(radarLoader.status));
+        if (visible)
+            _probeRequested = true;
         if (visible && !loadEmbeddedRadar)
             deferredLoadTimer.restart();
     }
@@ -70,10 +92,28 @@ Item {
         }
     }
 
+    Timer {
+        interval: 2000
+        running: radarRoot._probeRequested && !radarRoot.probeDone
+        repeat: false
+        onTriggered: radarRoot._probeTimedOut = true
+    }
+
+    // Kept in its own file so a missing Plasma5Support module can only ever
+    // disable the check (Loader.Error counts as "nothing detected").
+    Loader {
+        id: probeLoader
+        visible: false
+        active: radarRoot._probeRequested
+        asynchronous: false
+        source: Qt.resolvedUrl("components/MangoHudProbe.qml")
+    }
+
     Loader {
         id: radarLoader
         anchors.fill: parent
         active: radarRoot.visible && radarRoot.loadEmbeddedRadar
+            && radarRoot.probeDone && !radarRoot.blockedByPreload
         source: radarRoot.radarProvider === "librewxr"
             ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml")
             : Qt.resolvedUrl("components/RadarWebEngineView.qml")
@@ -105,7 +145,7 @@ Item {
             margins: Kirigami.Units.largeSpacing
         }
         spacing: Kirigami.Units.smallSpacing
-        visible: radarLoader.status === Loader.Null
+        visible: radarLoader.status === Loader.Null && !radarRoot.blockedByPreload
 
         Item {
             Layout.fillHeight: true
@@ -122,6 +162,71 @@ Item {
             color: Kirigami.Theme.textColor
             opacity: 0.72
             font: Kirigami.Theme.defaultFont
+        }
+
+        Item {
+            Layout.fillHeight: true
+        }
+    }
+
+    ColumnLayout {
+        anchors {
+            fill: parent
+            margins: Kirigami.Units.largeSpacing
+        }
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarRoot.blockedByPreload
+
+        Item {
+            Layout.fillHeight: true
+        }
+
+        Kirigami.Icon {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: Kirigami.Units.iconSizes.huge
+            Layout.preferredHeight: Kirigami.Units.iconSizes.huge
+            source: "dialog-warning"
+        }
+
+        Kirigami.Heading {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            level: 3
+            text: i18n("Embedded radar paused")
+            wrapMode: Text.WordWrap
+        }
+
+        TextEdit {
+            Layout.fillWidth: true
+            Layout.maximumWidth: Kirigami.Units.gridUnit * 24
+            Layout.alignment: Qt.AlignHCenter
+            horizontalAlignment: Text.AlignHCenter
+            color: Kirigami.Theme.textColor
+            text: i18n("Plasma was started with MangoHud injected into it. The overlay can crash the whole desktop shell when the web-based radar starts, so the radar was not loaded.")
+            readOnly: true
+            selectByMouse: true
+            wrapMode: Text.WordWrap
+            selectedTextColor: Kirigami.Theme.highlightedTextColor
+            selectionColor: Kirigami.Theme.highlightColor
+            font: Kirigami.Theme.defaultFont
+        }
+
+        Item {
+            Layout.preferredHeight: Kirigami.Units.smallSpacing
+        }
+
+        Button {
+            Layout.alignment: Qt.AlignHCenter
+            text: i18n("Open radar in browser")
+            icon.name: "internet-web-browser"
+            onClicked: Qt.openUrlExternally(radarRoot.externalRadarUrl)
+        }
+
+        Button {
+            Layout.alignment: Qt.AlignHCenter
+            text: i18n("Load embedded radar anyway")
+            icon.name: "dialog-warning"
+            onClicked: radarRoot.forceEmbeddedRadar = true
         }
 
         Item {

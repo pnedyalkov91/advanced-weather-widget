@@ -32,7 +32,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtPositioning
-import QtMultimedia
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.notification
@@ -455,8 +454,8 @@ PlasmoidItem {
         // button, or - when repeat is disabled - CloseOnTimeout. Without
         // this, a long custom sound file (a multi-minute song, say) just
         // keeps playing after the notification itself is gone, since
-        // nothing was ever telling alertMediaPlayer to stop.
-        onClosed: alertMediaPlayer.stop()
+        // nothing was ever telling the alert sound player to stop.
+        onClosed: alertSoundLoader.stop()
     }
 
     // One-time, non-critical heads-up for an alert that hasn't started yet.
@@ -488,11 +487,33 @@ PlasmoidItem {
     // everything. `source` is set right before each play() call in
     // _playAlertSound() rather than bound, since the user can change the
     // sound file at any time in the config UI.
-    MediaPlayer {
-        id: alertMediaPlayer
-        audioOutput: AudioOutput {}
-        onErrorOccurred: (error, errorString) => {
-            console.warn("[AdvancedWeatherWidget] alert sound failed to play:", errorString);
+    //
+    // Alert sounds are played by components/AlertSoundPlayer.qml, which hands
+    // the file to an external player (pw-play/paplay) instead of using
+    // QtMultimedia, so no multimedia backend is ever initialised inside
+    // plasmashell. Loaded on first use.
+    Loader {
+        id: alertSoundLoader
+        visible: false
+        active: false
+        asynchronous: false
+        source: Qt.resolvedUrl("components/AlertSoundPlayer.qml")
+
+        function play(url) {
+            active = true;          // synchronous load -> item is ready below
+            if (item)
+                item.playUrl(url);
+        }
+        function stop() {
+            if (item)
+                item.stop();
+        }
+    }
+
+    Connections {
+        target: alertSoundLoader.item
+        function onFailed(message) {
+            console.warn("[AdvancedWeatherWidget] alert sound failed to play:", message);
         }
     }
 
@@ -1233,8 +1254,8 @@ PlasmoidItem {
      *  relies on), so it doesn't depend on any system sound theme being
      *  installed. MediaPlayer (unlike SoundEffect) decodes Ogg fine - see
      *  the MediaPlayer comment above. If this file is ever missing/
-     *  unreadable, playback just fails silently (see alertMediaPlayer's
-     *  onErrorOccurred) - the notification itself is unaffected either way,
+     *  unreadable, playback just fails silently (see the
+     *  Connections on alertSoundLoader) - the notification itself is unaffected either way,
      *  since it's sent independently via KNotification. Keep this filename
      *  in sync with defaultAlertSoundUrl in configNotifications.qml, which
      *  uses the same bundled file for its "Test" button's fallback. */
@@ -1249,8 +1270,7 @@ PlasmoidItem {
         if (!_alertSoundAllowed(alert.color, alert.severity))
             return;
         var file = Plasmoid.configuration.alertNotificationsSoundFile || "";
-        alertMediaPlayer.source = file.length > 0 ? file : _defaultAlertSoundUrl();
-        alertMediaPlayer.play();
+        alertSoundLoader.play(file.length > 0 ? file : _defaultAlertSoundUrl());
     }
 
     function _isAlertActiveNow(a, now) {
