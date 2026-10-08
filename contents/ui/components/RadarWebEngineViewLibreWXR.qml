@@ -282,8 +282,22 @@ Item {
         return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
+    // Last url handed to the view; compared as built here, since webView.url
+    // comes back normalised by QUrl.
+    property string _lastPageUrl: ""
+
     function _loadPage(reason) {
         var url = _pageUrl();
+        // The coalesced timer only follows changes of the page parameters.
+        // Opening the Radar tab also asks for a load (FullView -> reload())
+        // within the timer's window: when the page already holds this exact
+        // url, loading it a second time only made the map, the radar and the
+        // wind show up twice in a row.
+        if (reason === "coalesced" && url === radarRoot._lastPageUrl) {
+            console.log("[Advanced Weather Widget Radar/LibreWXR] coalesced load skipped: page already at this url");
+            return;
+        }
+        radarRoot._lastPageUrl = url;
         console.log("[Advanced Weather Widget Radar/LibreWXR] loading page (" + reason + "); lat=", radarRoot.lat, "lon=", radarRoot.lon, "layer=", radarRoot.activeLayer, "theme=", radarRoot.mapTheme);
         // Assigning an unchanged url is not guaranteed to navigate - force a
         // real reload in that case (e.g. the header Refresh button).
