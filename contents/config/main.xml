@@ -193,7 +193,7 @@
     <!-- Wind level for the animated particles: "10m" (surface) or "700hPa" (aloft) -->
     <entry name="librewxrWindLevel"     type="String"><default>10m</default></entry>
     <!-- Frame-rate budget of the wind animation: "economy" (8-10 fps),
-         "balanced" (10-20 fps) or "smooth" (12-30 fps); the rate rises with
+         "balanced" (10-20 fps) or "smooth" (20-30 fps); the rate rises with
          the wind speed inside that range -->
     <entry name="librewxrWindQuality"   type="String"><default>balanced</default></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>

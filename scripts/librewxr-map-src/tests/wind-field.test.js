@@ -223,3 +223,25 @@ test('layer loop: restart while a frame is pending keeps a single chain', () => 
     global.requestAnimationFrame = saved.requestAnimationFrame;
   }
 });
+
+test('cadenceSpeed: nearest-rank percentile of the first count speeds', () => {
+  const speeds = new Float32Array([5, 1, 9, 3, 7, 2, 10, 4, 8, 6, 99, 99]);  // last two are stale
+  assert.equal(WindField.cadenceSpeed(speeds, 10, 0.9), 9);
+  assert.equal(WindField.cadenceSpeed(speeds, 10, 1), 10);
+  assert.equal(WindField.cadenceSpeed(speeds, 10, 0.5), 5);
+  assert.equal(WindField.cadenceSpeed(speeds, 0, 0.98), 0);
+});
+
+test('targetFps: a few fast streams in calm air raise the cadence', () => {
+  // Zoomed out: 95 particles drift at the 2 px/s floor, 5 sit in a storm
+  // at 55 px/s. The mean (4.65 px/s) would keep the base rate and let the
+  // storm jump 4.6 px per frame; the 98th percentile follows the storm.
+  const speeds = new Float32Array(100);
+  speeds.fill(2, 0, 95);
+  speeds.fill(55, 95);
+  const fast = WindField.cadenceSpeed(speeds, 100, 0.98);
+  assert.equal(fast, 55);
+  close(WindField.targetFps(fast, 12, 30, 2.5), 22);
+  assert.equal(WindField.targetFps(4.65, 12, 30, 2.5), 12);   // what the mean gave
+  assert.equal(WindField.targetFps(200, 12, 30, 2.5), 30);    // never above the ceiling
+});

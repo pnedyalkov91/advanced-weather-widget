@@ -3397,7 +3397,7 @@ msgid "Small circle  ⚬"
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:328
-msgid "Smooth (12 to 30 fps)"
+msgid "Smooth (20 to 30 fps)"
 msgstr ""
 
 #: contents/ui/components/RadarWebEngineViewLibreWXR.qml:574
