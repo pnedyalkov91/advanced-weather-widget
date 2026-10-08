@@ -63,6 +63,7 @@
     <entry name="aemetApiKey"  type="String"><default></default></entry>
     <entry name="aemetMuniId" type="String"> <default></default></entry>
     <entry name="aemetMuniKey" type="String"><default></default></entry>
+    
 
     <!-- ── Behaviour ─────────────────────────────────────────────────── -->
     <entry name="keepOpen"           type="Bool"><default>false</default></entry>
@@ -371,6 +372,8 @@
     <entry name="alertNotificationsSoundRedEnabled"    type="Bool"><default>false</default></entry>
     <entry name="alertNotificationsSoundPurpleEnabled" type="Bool"><default>true</default></entry>
     <entry name="alertNotificationsSoundFile" type="String"><default></default></entry>
+    <entry name="alertNotificationsIncludeTests" type="Bool">
+    <default>false</default></entry>
 
     <entry name="notificationTodayEnabled"   type="Bool"><default>true</default></entry>
     <entry name="notificationTodayTime"      type="String"><default>08:00</default></entry>

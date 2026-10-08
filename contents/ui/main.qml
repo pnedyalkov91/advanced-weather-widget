@@ -1196,6 +1196,54 @@ PlasmoidItem {
         return nowM >= t;
     }
 
+    /** True when the alert is a routine/exercise/test message rather than a
+     *  genuine warning. Structured provider fields are checked first (CAP
+     *  `status`/`msgType`/`scope`, event codes such as the US EAS tests RWT/RMT/
+     *  NPT/DMO/ADR, MeteoAlarm-style flags); the title is only a last-resort
+     *  fallback for providers that don't pass those fields through. */
+    function _isTestAlert(a) {
+        if (!a) return false;
+        function norm(v) { return (v === undefined || v === null) ? "" : String(v).trim().toLowerCase(); }
+
+        // 1. Explicit boolean flags, if a parser sets one.
+        if (a.isTest === true || a.test === true) return true;
+
+        // 2. CAP status / message type: "Test" and "Exercise" are never real warnings.
+        var status = norm(a.status);
+        if (status === "test" || status === "exercise" || status === "draft") return true;
+        var msgType = norm(a.messageType || a.msgType);
+        if (msgType === "test") return true;
+        // CAP scope "Private"/"Restricted" is used for internal exercises.
+        var scope = norm(a.scope);
+        if (scope === "private" || scope === "restricted") return true;
+
+        // 3. Event code (EAS/SAME-style test codes).
+        var codes = [a.eventCode, a.code, a.event_code, a.sameCode];
+        for (var i = 0; i < codes.length; i++) {
+            var c = norm(codes[i]);
+            if (c === "rwt" || c === "rmt" || c === "npt" || c === "dmo" || c === "adr" || c === "tst")
+                return true;
+        }
+
+        // 4. Title fallback: whole-phrase match on the event/headline text,
+        //    so e.g. "Required Weekly Test" or "Monthly Test of the Alert
+        //    System" are caught, while real warnings that merely contain the
+        //    word "test" somewhere are not (the phrase needs a routine-test
+        //    shape, not just the word).
+        var titles = [a.event, a.displayName, a.headline];
+        var testRe = /\b(required\s+(weekly|monthly|annual)\s+test|(weekly|monthly|routine|national|periodic|scheduled)\s+(test|exercise|drill)|test\s+(alert|message|warning)|(alert|warning|emergency)\s+system\s+test|this\s+is\s+a\s+test|test\s+of\s+the\s+\w+(\s+\w+){0,3}\s+(system|network))\b/i;
+        for (var j = 0; j < titles.length; j++) {
+            var t = norm(titles[j]);
+            if (t.length > 0 && testRe.test(t)) return true;
+        }
+        return false;
+    }
+
+    /** Whether test/exercise alerts should be delivered at all (default: no). */
+    function _alertTestsAllowed() {
+        return Plasmoid.configuration.alertNotificationsIncludeTests === true;
+    }
+
     function _alertColorAllowed(color, severity) {
         var c = (color || "").toLowerCase();
         var s = (severity || "").toLowerCase();
@@ -1267,6 +1315,10 @@ PlasmoidItem {
      *  enabled. Only called for the main/active alert notification - the
      *  "upcoming" heads-up is deliberately silent (see its own comment). */
     function _playAlertSound(alert) {
+        // A routine test must never sound the siren, even if the user opted in
+        // to seeing test notifications.
+        if (_isTestAlert(alert))
+            return;
         if (!_alertSoundAllowed(alert.color, alert.severity))
             return;
         var file = Plasmoid.configuration.alertNotificationsSoundFile || "";
@@ -1615,6 +1667,12 @@ PlasmoidItem {
 
         for (var i = 0; i < alerts.length; i++) {
             var a = alerts[i];
+            // Routine tests (e.g. "Required Weekly Test") are skipped unless the
+            // user explicitly opted in. Checked first: they usually arrive as
+            // "unknown" type/severity, which the filters below deliberately let
+            // through.
+            if (!_alertTestsAllowed() && _isTestAlert(a))
+                continue;
             if (!_alertColorAllowed(a.color, a.severity))
                 continue;
             if (!_alertTypeEnabled(a.awarenessType))
@@ -3041,6 +3099,9 @@ PlasmoidItem {
             root._evaluateNotifications();
         }
         function onAlertNotificationsRepeatEnabledChanged() {
+            root._evaluateNotifications();
+        }
+        function onAlertNotificationsIncludeTestsChanged() {
             root._evaluateNotifications();
         }
         function onNotificationAlertsRepeatMinutesChanged() {

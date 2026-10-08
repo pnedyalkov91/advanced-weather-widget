@@ -33,6 +33,7 @@ KCM.SimpleKCM {
     property bool cfg_alertNotificationsCriticalEnabled: true
     property bool cfg_alertNotificationsUpcomingEnabled: true
     property bool cfg_alertNotificationsRepeatEnabled: true
+    property bool cfg_alertNotificationsIncludeTests: false
     property string cfg_alertNotificationsTypeSettings: "{}"
 
     // Per-severity sound toggle, independent from the visual severity
@@ -539,6 +540,24 @@ KCM.SimpleKCM {
                 showCloseButton: true
                 visible: root.cfg_alertNotificationsEnabled && !root.cfg_alertNotificationsRepeatEnabled
                 text: i18n("Each alert is shown only once, without Dismiss and Postpone buttons.")
+            }
+
+            WrappingSwitch {
+                enabled: root.cfg_alertNotificationsEnabled
+                opacity: enabled ? 1.0 : 0.5
+                text: i18n("Also notify about routine test alerts")
+                checked: root.cfg_alertNotificationsIncludeTests
+                onToggled: root.cfg_alertNotificationsIncludeTests = checked
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                type: Kirigami.MessageType.Information
+                showCloseButton: true
+                visible: root.cfg_alertNotificationsEnabled
+                text: root.cfg_alertNotificationsIncludeTests
+                    ? i18n("Routine tests (for example \"Required Weekly Test\") will show a notification, but never play an alert sound.")
+                    : i18n("Routine tests (for example \"Required Weekly Test\") are ignored: no notification and no sound.")
             }
 
             // ── Per-type overrides ─────────────────────────────────────────
