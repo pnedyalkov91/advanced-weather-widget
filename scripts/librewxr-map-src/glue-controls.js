@@ -96,6 +96,7 @@ window.fixViewport = function () {
   // The view is final now: the wind may start drawing.
   viewportSettled = true;
   if (windLayer) windLayer.settle();
+  document.body.classList.add('lv-ready');   // fade the whole view in (overrides.css)
   // Timeout rearm: the engine's moveend restarts a quiet background preload,
   // which the cancelling 1px nudge (never a real view change) safely ignores.
   setTimeout(function () { m.invalidateSize(false); }, 400);
@@ -154,6 +155,9 @@ window.setWindActive = function (active) {
 };
 
 if (WIND_ON) window.setWind(true);
+
+// Fade-in fallback when nothing calls fixViewport (the page opened on its own).
+setTimeout(function () { document.body.classList.add('lv-ready'); }, 1500);
 
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');
