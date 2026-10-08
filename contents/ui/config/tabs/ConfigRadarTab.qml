@@ -343,6 +343,31 @@ GridLayout {
         }
     }
 
+    Label {
+        text: i18n("Particle width:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        Slider {
+            Layout.preferredWidth: 220
+            from: 0.5
+            to: 2
+            stepSize: 0.1
+            value: radarTab.configRoot.cfg_librewxrWindLineWidth
+            onMoved: radarTab.configRoot.cfg_librewxrWindLineWidth = Math.round(value * 10) / 10
+        }
+        Label {
+            text: i18n("%1 px", Number(radarTab.configRoot.cfg_librewxrWindLineWidth).toLocaleString(Qt.locale(), "f", 1))
+        }
+    }
+
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true

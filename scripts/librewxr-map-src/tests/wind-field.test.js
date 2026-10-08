@@ -245,3 +245,13 @@ test('targetFps: a few fast streams in calm air raise the cadence', () => {
   assert.equal(WindField.targetFps(4.65, 12, 30, 2.5), 12);   // what the mean gave
   assert.equal(WindField.targetFps(200, 12, 30, 2.5), 30);    // never above the ceiling
 });
+
+test('lineWidth: particle width kept within 0.5..2 px, 1 px when unset', () => {
+  assert.equal(WindField.lineWidth(0.8), 0.8);
+  assert.equal(WindField.lineWidth(1.6), 1.6);
+  assert.equal(WindField.lineWidth(0.1), 0.5);
+  assert.equal(WindField.lineWidth(5), 2);
+  assert.equal(WindField.lineWidth(NaN), 1);
+  assert.equal(WindField.lineWidth(undefined), 1);
+  assert.equal(WindField.lineWidth(0), 1);
+});

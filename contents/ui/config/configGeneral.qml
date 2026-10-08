@@ -48,6 +48,7 @@ KCM.AbstractKCM {
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
     property string cfg_librewxrWindQuality: "balanced"
+    property real cfg_librewxrWindLineWidth: 1
     property bool cfg_radarGpuWorkaround: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"

@@ -25,6 +25,7 @@
  *   window.setWindActive(true | false)    // pause the wind while the popup is collapsed
  *   window.setWindLevel("10m" | "700hPa") // surface wind or the flow aloft that steers the rain
  *   window.setWindRate(fps, maxFps)       // frame-rate budget from the settings
+ *   window.setWindWidth(px)               // particle width from the settings
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
  *   window.setAlerts(true | false)        // WMO alerts overlay
  *   window.setSmooth(true | false)        // radar tile edge smoothing
@@ -80,6 +81,8 @@ Item {
             return [20, 30];
         return [10, 20];
     }
+    // Particle width from the settings, in CSS px (the page clamps it to 0.5-2).
+    readonly property real windLineWidth: Plasmoid.configuration.librewxrWindLineWidth > 0 ? Plasmoid.configuration.librewxrWindLineWidth : 1
     readonly property string activeCells: Plasmoid.configuration.librewxrCells || ""
     readonly property bool alertsOn: Plasmoid.configuration.librewxrAlerts === true
     readonly property bool smoothOn: Plasmoid.configuration.librewxrSmooth !== false
@@ -276,7 +279,7 @@ Item {
             "apiError": i18n("API error"),
             "connFailed": i18n("Connection failed")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     function _loadPage(reason) {
@@ -718,6 +721,9 @@ Item {
                 }
                 function onWindRateChanged() {
                     webView.runJavaScript("if (window.setWindRate) window.setWindRate(" + radarRoot.windRate[0] + "," + radarRoot.windRate[1] + ");");
+                }
+                function onWindLineWidthChanged() {
+                    webView.runJavaScript("if (window.setWindWidth) window.setWindWidth(" + radarRoot.windLineWidth + ");");
                 }
                 function onMapBackgroundChanged() {
                     if (radarRoot._backgroundFromMap) {
