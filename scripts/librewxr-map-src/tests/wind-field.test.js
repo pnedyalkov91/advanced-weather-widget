@@ -202,6 +202,7 @@ test('layer loop: restart while a frame is pending keeps a single chain', () => 
   try {
     const layer = new (createWindLayer(L))();
     layer.initialize(null, null, {});
+    layer._settled = true;        // drawing starts once the map settled (see settle())
     let frames = 0;
     layer._frame = () => { frames++; };
     const pending = () => timers.filter(Boolean).length;
@@ -254,4 +255,51 @@ test('lineWidth: particle width kept within 0.5..2 px, 1 px when unset', () => {
   assert.equal(WindField.lineWidth(NaN), 1);
   assert.equal(WindField.lineWidth(undefined), 1);
   assert.equal(WindField.lineWidth(0), 1);
+});
+
+test('warmUpFrames: enough frames for the trails to reach 95% of their length', () => {
+  assert.equal(WindField.warmUpFrames(0.9), 29);    // 0.9^29 < 0.05 <= 0.9^28
+  assert.equal(WindField.warmUpFrames(0.8), 14);
+  assert.equal(WindField.warmUpFrames(0.99), 60);   // capped: never stall the page
+  assert.equal(WindField.warmUpFrames(1), 0);
+  assert.equal(WindField.warmUpFrames(0), 0);
+  assert.equal(WindField.warmUpFrames(undefined), 0);
+});
+
+
+// Right after a page load the widget recalibrates the viewport: nothing is
+// drawn before settle(), and its 1 px pan-and-back (nudging) is no move.
+test('layer: no drawing before settle, the fixViewport nudge restarts nothing', () => {
+  const { createWindLayer } = require('../glue-wind.js');
+  const L = {
+    Layer: { extend: (proto) => { function C() {} C.prototype = proto; return C; } },
+    setOptions: (o, opts) => { o.options = Object.assign(Object.create(o.options || {}), opts || {}); }
+  };
+  const saved = { setTimeout, clearTimeout };
+  const timers = [];
+  global.setTimeout = (fn) => { timers.push(fn); return timers.length; };
+  global.clearTimeout = (id) => { timers[id - 1] = null; };
+  try {
+    const layer = new (createWindLayer(L))();
+    layer.initialize(null, null, {});
+    layer._settled = false;
+    layer._start();
+    assert.equal(timers.filter(Boolean).length, 0, 'drew before settle');
+    layer._settled = true;
+    layer._start();
+    assert.equal(timers.filter(Boolean).length, 1);
+
+    let stops = 0, resets = 0;
+    layer._stop = () => { stops++; };
+    layer._reset = () => { resets++; };
+    layer.nudging = true;
+    layer._onMoveStart(); layer._onMoveEnd();
+    assert.equal(stops + resets, 0, 'the nudge restarted the particles');
+    layer.nudging = false;
+    layer._onMoveStart(); layer._onMoveEnd();
+    assert.equal(stops, 1); assert.equal(resets, 1);
+  } finally {
+    global.setTimeout = saved.setTimeout;
+    global.clearTimeout = saved.clearTimeout;
+  }
 });

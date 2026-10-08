@@ -89,8 +89,13 @@ window.fixViewport = function () {
   // container size and do an invisible 1px pan-and-back, which forces Leaflet
   // to reset its view and Chromium to repaint the damaged surface.
   m.invalidateSize(false);
+  if (windLayer) windLayer.nudging = true;
   m.panBy([1, 0], { animate: false });
   m.panBy([-1, 0], { animate: false });
+  if (windLayer) windLayer.nudging = false;
+  // The view is final now: the wind may start drawing.
+  viewportSettled = true;
+  if (windLayer) windLayer.settle();
   // Timeout rearm: the engine's moveend restarts a quiet background preload,
   // which the cancelling 1px nudge (never a real view change) safely ignores.
   setTimeout(function () { m.invalidateSize(false); }, 400);
@@ -104,6 +109,7 @@ var windLayer = null;
 var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
 var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
 var windLineWidth = WIND_LINE_WIDTH;
+var viewportSettled = false;   // set by the first window.fixViewport()
 
 function windColor(theme) { return theme === 'dark' ? '#ffffff' : '#1a237e'; }
 
@@ -116,6 +122,8 @@ window.setWind = function (on) {
       lineWidth: windLineWidth
     });
     windLayer.addTo(m);
+    // Switched on after the page settled: nothing left to wait for.
+    if (viewportSettled) windLayer.settle();
   } else if (!on && windLayer) {
     m.removeLayer(windLayer);
     windLayer = null;
