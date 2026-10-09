@@ -197,6 +197,8 @@
          "balanced" (10-20 fps) or "smooth" (20-30 fps); the rate rises with
          the wind speed inside that range -->
     <entry name="librewxrWindQuality"   type="String"><default>balanced</default></entry>
+    <!-- Width of the wind particles, in CSS pixels -->
+    <entry name="librewxrWindLineWidth" type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
     <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
     <entry name="librewxrCells"         type="String"><default></default></entry>

@@ -199,6 +199,13 @@ var WidgetWind = (function () {
       return Math.max(fps, Math.min(maxFps, pxPerSec / stepPx));
     },
 
+    /** Particle stroke width (CSS px) from the settings, kept within the
+        range the settings slider offers; 1 px when unset or invalid. */
+    lineWidth: function (w) {
+      if (!(w > 0)) return 1;
+      return Math.max(0.5, Math.min(2, w));
+    },
+
     /** Web Mercator world pixel at zoom z (256 px tiles), same convention as Leaflet's EPSG3857. */
     worldPx: function (lat, lon, z) {
       var scale = 256 * Math.pow(2, z);
@@ -428,7 +435,7 @@ var WidgetWind = (function () {
         density: 300,        // CSS px^2 per particle
         minParticles: 200,
         maxParticles: 800,
-        lineWidth: 1.2,      // CSS px
+        lineWidth: 1,        // CSS px, set from the widget settings
         color: '#ffffff',
         speedScale: 3,       // px/s per m/s
         minPx: 2,
@@ -439,6 +446,7 @@ var WidgetWind = (function () {
 
       initialize: function (source, dem, options) {
         L.setOptions(this, options);
+        this.options.lineWidth = WindField.lineWidth(this.options.lineWidth);
         this._source = source;
         this._dem = dem;
         this._active = true;
@@ -495,6 +503,11 @@ var WidgetWind = (function () {
         this.options.fps = Math.max(4, Math.min(30, fps || 10));
         this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
         this._fps = this.options.fps;
+      },
+
+      /** Particle width from the settings; the next frame draws with it. */
+      setLineWidth: function (w) {
+        this.options.lineWidth = WindField.lineWidth(w);
       },
 
       /** Switch the wind level; the grid already holds every level, so this
