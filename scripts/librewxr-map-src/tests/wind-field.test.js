@@ -290,7 +290,7 @@ test('layer: no drawing before settle, the fixViewport nudge restarts nothing', 
     assert.equal(timers.filter(Boolean).length, 1);
 
     let stops = 0, resets = 0;
-    layer._stop = () => { stops++; };
+    layer._stop = () => { stops++; layer._running = false; };
     layer._reset = () => { resets++; };
     layer.nudging = true;
     layer._onMoveStart(); layer._onMoveEnd();
@@ -302,4 +302,44 @@ test('layer: no drawing before settle, the fixViewport nudge restarts nothing', 
     global.setTimeout = saved.setTimeout;
     global.clearTimeout = saved.clearTimeout;
   }
+});
+
+test('sameView: a 1 px resize or shift is the same view, a pan or a zoom is not', () => {
+  const frame = (ox, oy) => WindField.viewFrame({ x: ox, y: oy }, { x: ox + 1, y: oy }, { x: ox, y: oy + 1 });
+  const v = (zoom, w, h, ox, oy) => ({ zoom, w, h, frame: frame(ox, oy) });
+  const a = v(7, 843, 473, 1000, 2000);
+  assert.ok(WindField.sameView(a, v(7, 843, 472, 1000, 2001), 2), 'repaint nudge');
+  assert.ok(!WindField.sameView(a, v(7, 843, 473, 1010, 2000), 2), 'pan');
+  assert.ok(!WindField.sameView(a, v(8, 843, 473, 1000, 2000), 2), 'zoom');
+  assert.ok(!WindField.sameView(a, v(7, 700, 473, 1000, 2000), 2), 'real resize');
+  assert.ok(!WindField.sameView(null, a, 2));
+});
+
+// The widget nudges the view by 1 px to make Chromium repaint, and each
+// nudge resizes the map: a running layer must not respawn its particles
+// for that, or the wind visibly restarts several times on every opening.
+test('layer: a map event that leaves the view in place restarts nothing', () => {
+  const { createWindLayer } = require('../glue-wind.js');
+  const L = {
+    Layer: { extend: (proto) => { function C() {} C.prototype = proto; return C; } },
+    setOptions: (o, opts) => { o.options = Object.assign(Object.create(o.options || {}), opts || {}); }
+  };
+  const layer = new (createWindLayer(L))();
+  layer.initialize(null, null, {});
+  const frame = (ox, oy) => WindField.viewFrame({ x: ox, y: oy }, { x: ox + 1, y: oy }, { x: ox, y: oy + 1 });
+  let now = { zoom: 7, w: 843, h: 473, frame: frame(1000, 2000) };
+  layer._viewNow = () => now;
+  let resets = 0;
+  layer._reset = () => { resets++; layer._lastView = layer._viewNow(); };
+  layer._reset();
+  layer._running = true;
+  now = { zoom: 7, w: 843, h: 472, frame: frame(1000, 2001) };
+  layer._onMoveEnd();
+  assert.equal(resets, 1, 'the 1 px nudge restarted the particles');
+  now = { zoom: 8, w: 843, h: 472, frame: frame(2000, 4002) };
+  layer._onMoveEnd();
+  assert.equal(resets, 2);
+  layer._running = false;      // stopped (popup closed, pan): any event restarts
+  layer._onMoveEnd();
+  assert.equal(resets, 3);
 });

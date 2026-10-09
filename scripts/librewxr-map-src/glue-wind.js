@@ -236,6 +236,17 @@ var WidgetWind = (function () {
       return { ox: o.x, oy: o.y, axx: px.x - o.x, axy: px.y - o.y, ayx: py.x - o.x, ayy: py.y - o.y };
     },
 
+    /** Whether two layer views {zoom, w, h, frame} are the same within tol
+        px: same zoom and rotation, size and screen origin barely moved. */
+    sameView: function (a, b, tol) {
+      if (!a || !b || a.zoom !== b.zoom) return false;
+      if (Math.abs(a.w - b.w) > tol || Math.abs(a.h - b.h) > tol) return false;
+      var fa = a.frame, fb = b.frame, eps = 1e-6;
+      return Math.abs(fa.ox - fb.ox) <= tol && Math.abs(fa.oy - fb.oy) <= tol &&
+        Math.abs(fa.axx - fb.axx) < eps && Math.abs(fa.axy - fb.axy) < eps &&
+        Math.abs(fa.ayx - fb.ayx) < eps && Math.abs(fa.ayy - fb.ayy) < eps;
+    },
+
     screenToWorld: function (f, x, y) {
       return { x: f.ox + x * f.axx + y * f.ayx, y: f.oy + x * f.axy + y * f.ayy };
     },
@@ -546,7 +557,21 @@ var WidgetWind = (function () {
       // `nudging` is set by fixViewport around its 1 px pan-and-back, which
       // is no view change: restarting the particles for it would only show.
       _onMoveStart: function () { if (!this.nudging) this._stop(true); },
-      _onMoveEnd: function () { if (!this.nudging) this._reset(); },
+      // The widget also nudges the view by 1 px to make Chromium repaint,
+      // which resizes the map: a running layer keeps its particles when the
+      // view did not really change, instead of visibly starting over.
+      _onMoveEnd: function () {
+        if (this.nudging) return;
+        if (this._running && WindField.sameView(this._lastView, this._viewNow(), 2)) return;
+        this._reset();
+      },
+
+      /** Zoom, size and screen -> world frame of the map right now. */
+      _viewNow: function () {
+        var map = this._map, size = map.getSize(), origin = map.getPixelOrigin();
+        var wp = function (x, y) { return map.containerPointToLayerPoint([x, y]).add(origin); };
+        return { zoom: map.getZoom(), w: size.x, h: size.y, frame: WindField.viewFrame(wp(0, 0), wp(1, 0), wp(0, 1)) };
+      },
       _onVisibilityChange: function () {
         if (document.hidden) this._stop(false);
         else this._reset();
@@ -583,12 +608,11 @@ var WidgetWind = (function () {
         this._canvas.height = Math.round(size.y * dpr);
         this._canvas.style.width = size.x + 'px';
         this._canvas.style.height = size.y + 'px';
-        var zoom = map.getZoom();
-        this._zoom = zoom;
         // Screen -> world frame (handles map rotation, see WindField.viewFrame).
-        var origin = map.getPixelOrigin();
-        var wp = function (x, y) { return map.containerPointToLayerPoint([x, y]).add(origin); };
-        this._view = WindField.viewFrame(wp(0, 0), wp(1, 0), wp(0, 1));
+        this._lastView = this._viewNow();
+        var zoom = this._lastView.zoom;
+        this._zoom = zoom;
+        this._view = this._lastView.frame;
         this._demZoom = Math.min(10, Math.max(9, Math.round(zoom)));
         this._demScale = Math.pow(2, this._demZoom - zoom);
         this._stop(true);
