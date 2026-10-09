@@ -41,6 +41,15 @@ test('pointLists: n*n coordinates, row-major (lat rows, lon columns)', () => {
   assert.equal(pl.longitude, '6.5,6.6,6.5,6.6');
 });
 
+test('pointLists: longitudes past the antimeridian are wrapped into -180..180 for Open-Meteo', () => {
+  // Zoomed out on the whole world, the widened box runs past +-180.
+  const spec = WindField.gridSpec({ west: -200, east: 160, south: -70, north: 80 });
+  assert.ok(spec.west < -180 && spec.east > 180, 'the spec itself stays unwrapped');
+  const lons = WindField.pointLists(spec).longitude.split(',').map(Number);
+  assert.ok(lons.every((x) => x >= -180 && x < 180), lons.join(','));
+  assert.equal(lons[0], 52);   // -308 is the same meridian as 52
+});
+
 test('timeWeights: hour index and fraction, clamped at both ends', () => {
   const t = [0, 3600, 7200];
   assert.deepEqual(WindField.timeWeights(t, 1800), { i: 0, frac: 0.5 });
