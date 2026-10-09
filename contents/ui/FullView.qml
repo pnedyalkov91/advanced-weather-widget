@@ -118,6 +118,11 @@ Rectangle {
     // popup is open and always on the desktop (Planar), which has no popup.
     readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
 
+    // "Keep the radar loaded": once built, the Radar tab is never unloaded,
+    // popup closed or not.
+    readonly property bool _keepRadarLoaded: Plasmoid.configuration.radarKeepLoaded === true
+        && _hasLocation && showRadarTab && !isSimpleMode
+
     // Reset to the configured default tab every time the popup opens
     property int activeTab: _resolvedDefaultTab()
 
@@ -136,6 +141,10 @@ Rectangle {
                     var fv = tabContent.forecastViewItem;
                     if (fullView.activeTab === 1 && fv && !fv._autoOpenDone)
                         fv.activateForecast();
+                    // Reopening straight onto a radar kept loaded: refresh
+                    // it only if it has gone stale.
+                    if (fullView.activeTab === 2 && radarLoader.item)
+                        radarLoader.item.reloadIfStale();
                 });
             }
         }
@@ -639,7 +648,7 @@ Rectangle {
                 // here too - doing so caused the first switch to Forecast to reset
                 // state and fetch the hourly data twice.
                 if (currentIndex === 2 && radarLoader.item)
-                    radarLoader.item.reload();
+                    radarLoader.item.reloadIfStale();
             }
 
             // ── Details tab ───────────────────────────────────────────
@@ -711,9 +720,11 @@ Rectangle {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: radarTab.StackLayout.isCurrentItem
+                        || (item !== null && (fullView._keepHiddenTabs || fullView._keepRadarLoaded))
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
+                        keepLoaded: fullView._keepRadarLoaded
                     }
                 }
                 BusyIndicator {

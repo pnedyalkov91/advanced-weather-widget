@@ -25,6 +25,11 @@ Item {
     property var weatherRoot
     readonly property bool radarReady: radarLoader.status === Loader.Ready && radarLoader.item !== null
     property bool loadEmbeddedRadar: false
+    // Set by FullView when "Keep the radar loaded" is on: once built, the map
+    // stays while the tab or the popup is hidden.
+    property bool keepLoaded: false
+    // When the current page was (re)loaded, for reloadIfStale().
+    property double _loadedAt: 0
 
     readonly property double lat: Plasmoid.configuration.latitude || 0
     readonly property double lon: Plasmoid.configuration.longitude || 0
@@ -73,7 +78,7 @@ Item {
     Loader {
         id: radarLoader
         anchors.fill: parent
-        active: radarRoot.visible && radarRoot.loadEmbeddedRadar
+        active: (radarRoot.visible || radarRoot.keepLoaded) && radarRoot.loadEmbeddedRadar
         source: radarRoot.radarProvider === "librewxr"
             ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml")
             : Qt.resolvedUrl("components/RadarWebEngineView.qml")
@@ -95,6 +100,7 @@ Item {
 
         onLoaded: {
             console.log("[Advanced Weather Widget Radar] RadarWebEngineView loaded; syncing weatherRoot");
+            radarRoot._loadedAt = Date.now();
             radarRoot._syncLoadedItem();
         }
     }
@@ -219,10 +225,28 @@ Item {
     function reload() {
         if (radarReady) {
             console.log("[Advanced Weather Widget Radar] reload requested");
+            _loadedAt = Date.now();
             radarLoader.item.reload();
         } else {
             console.log("[Advanced Weather Widget Radar] reload requested before radarReady; status=", _loaderStatusText(radarLoader.status));
         }
+    }
+
+    /**
+     * Reload only a page older than ten minutes. Called when the Radar tab
+     * comes back into view: a page kept loaded is reused as is while it is
+     * recent, and a page built a moment ago for this very showing is not
+     * loaded a second time.
+     */
+    function reloadIfStale() {
+        if (!radarReady)
+            return;
+        var age = Date.now() - _loadedAt;
+        if (age < 10 * 60 * 1000) {
+            console.log("[Advanced Weather Widget Radar] page is recent, no reload; ageMs=", age);
+            return;
+        }
+        reload();
     }
 
     function _syncLoadedItem() {

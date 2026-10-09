@@ -114,6 +114,36 @@ GridLayout {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
+    ColumnLayout {
+        Layout.columnSpan: radarTab.columns
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarTab.configRoot.cfg_radarEnabled
+
+        WrappingSwitch {
+            text: i18n("Keep the radar loaded in the background")
+            checked: radarTab.configRoot.cfg_radarKeepLoaded
+            onToggled: radarTab.configRoot.cfg_radarKeepLoaded = checked
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("Once opened, the radar map stays ready while the popup is closed, so the Radar tab shows again at once. It uses more memory.")
+        }
+    }
+
+    Item {
+        // empty label cell: keeps the control in the second column
+        visible: radarTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Item {
+        Layout.preferredHeight: Kirigami.Units.smallSpacing
+    }
+
     WrappingSwitch {
         Layout.columnSpan: radarTab.columns
         visible: radarTab.configRoot.cfg_radarEnabled

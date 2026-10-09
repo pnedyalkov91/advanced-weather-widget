@@ -211,6 +211,10 @@
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->
     <entry name="radarGpuWorkaround"    type="Bool"><default>false</default></entry>
+    <!-- Keep the Radar tab loaded once it has been opened, popup closed or
+         not, so it shows again at once. Off by default: it keeps QtWebEngine
+         and its memory around for the whole session. -->
+    <entry name="radarKeepLoaded"       type="Bool"><default>false</default></entry>
 
     <!-- ── Widget - details view ──────────────────────────────────────── -->
     <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>
