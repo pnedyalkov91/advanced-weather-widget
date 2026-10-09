@@ -120,6 +120,44 @@ window.fixViewport = function () {
   setTimeout(function () { m.invalidateSize(false); }, 400);
 };
 
+// Called by the widget when a page kept loaded comes back into view: answer
+// with document.title 'ready:<token>' once the map has its real size and the
+// layers on screen have their tiles, so the view fades in on a full map.
+// Built hidden, the page had a 0 px map and has loaded nothing yet, and the
+// popup goes through a smaller layout before its final one: wait for a size
+// that holds still for 200 ms, then for its tiles. A tile
+// that fails counts as done (a server down does not hold the fade), and the
+// answer comes after 1.5 s at the latest, so a wind request that fails
+// (Open-Meteo down, rate limit) does not hold the fade either. Hidden layers
+// (radar frames preloaded at opacity 0) are not waited for.
+window.signalWhenLoaded = function (token) {
+  var m = _widgetAdapter ? _widgetAdapter.getMap() : null;
+  var start = Date.now(), lastSize = '', still = 0;
+  var answer = function () { document.title = 'ready:' + token; };
+  if (!m) { answer(); return; }
+  var busy = function () {
+    var loading = false;
+    m.eachLayer(function (l) {
+      if (l.isLoading && (l.options.opacity === undefined || l.options.opacity > 0) && l.isLoading()) loading = true;
+      var gl = l.getMaplibreMap && l.getMaplibreMap();
+      if (gl && gl.areTilesLoaded && !gl.areTilesLoaded()) loading = true;
+    });
+    // The wind draws once its grid is in, from memory or from Open-Meteo.
+    if (windLayer && !windLayer.isDrawing()) loading = true;
+    return loading;
+  };
+  var check = function () {
+    if (Date.now() - start > 1500) { answer(); return; }
+    // Leaflet requests the tiles of a new size a moment after it gets it.
+    var size = m.getSize(), key = size.x + 'x' + size.y;
+    still = size.x > 0 && key === lastSize ? still + 1 : 0;
+    lastSize = key;
+    if (still >= 4 && !busy()) { answer(); return; }
+    setTimeout(check, 50);
+  };
+  setTimeout(check, 50);
+};
+
 // === WIND LAYER (Open-Meteo particles, glue-wind.js) ===
 var WindLayerClass = WidgetWind.createWindLayer(L);
 var _windSource = new WidgetWind.WindSource({});

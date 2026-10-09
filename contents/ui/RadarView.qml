@@ -59,31 +59,74 @@ Item {
     // A map kept loaded is already built when it comes back into view, and
     // Chromium first shows the frame it had when it was hidden, before the
     // wind restarts: fade it in rather than letting it jump. It stays
-    // transparent for a moment first, so the fade does not reveal the old one.
+    // transparent for at least 150 ms, so the fade does not reveal the old
+    // frame, and until the page says its map is loaded: built hidden, it has
+    // loaded nothing before its first showing. The page answers even when a
+    // server is down, after 1.5 s at the latest; the 2 s here only covers a
+    // page that does not answer at all.
     onShownChanged: {
         if (shown && keepLoaded && radarReady) {
             console.log("[Advanced Weather Widget Radar] fading the kept radar in");
-            radarFadeIn.restart();
+            _fadeIn();
         }
     }
 
-    SequentialAnimation {
-        id: radarFadeIn
-        PropertyAction {
-            target: radarLoader
-            property: "opacity"
-            value: 0
+    property bool _fadePending: false
+    property bool _fadeReady: false
+
+    function _fadeIn() {
+        radarFadeAnim.stop();
+        radarLoader.opacity = 0;
+        _fadePending = true;
+        _fadeReady = false;
+        fadeHoldTimer.restart();
+        fadeCapTimer.restart();
+        var view = radarLoader.item;
+        if (view && view.awaitReady) {
+            view.awaitReady(function () {
+                radarRoot._fadeReady = true;
+                radarRoot._fadeMaybeStart();
+            });
+        } else {
+            _fadeReady = true;
         }
-        PauseAnimation {
-            duration: 150
+    }
+
+    function _fadeMaybeStart() {
+        if (_fadePending && _fadeReady && !fadeHoldTimer.running)
+            _fadeStart();
+    }
+
+    function _fadeStart() {
+        if (!_fadePending)
+            return;
+        _fadePending = false;
+        fadeCapTimer.stop();
+        radarFadeAnim.restart();
+    }
+
+    Timer {
+        id: fadeHoldTimer
+        interval: 150
+        onTriggered: radarRoot._fadeMaybeStart()
+    }
+
+    Timer {
+        id: fadeCapTimer
+        interval: 2000
+        onTriggered: {
+            console.log("[Advanced Weather Widget Radar] no answer from the page after 2 s, fading in anyway");
+            radarRoot._fadeStart();
         }
-        NumberAnimation {
-            target: radarLoader
-            property: "opacity"
-            to: 1
-            duration: 400
-            easing.type: Easing.OutCubic
-        }
+    }
+
+    NumberAnimation {
+        id: radarFadeAnim
+        target: radarLoader
+        property: "opacity"
+        to: 1
+        duration: 400
+        easing.type: Easing.OutCubic
     }
 
     // Created already-visible when the parent tab Loader builds us on first

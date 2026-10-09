@@ -202,6 +202,16 @@ Item {
         }
     }
 
+    // awaitReady(): the page answers through its title once the map shown
+    // again has its tiles (window.signalWhenLoaded), for RadarView's fade.
+    property int _readyToken: 0
+    property var _readyCallback: null
+    function awaitReady(callback) {
+        _readyToken++;
+        _readyCallback = callback;
+        webView.runJavaScript("if (window.signalWhenLoaded) window.signalWhenLoaded(" + _readyToken + "); else document.title = 'ready:" + _readyToken + "';");
+    }
+
     Component.onCompleted: {
         console.log("[Advanced Weather Widget Radar/LibreWXR] component completed; lat=", lat, "lon=", lon, "layer=", activeLayer, "zoom=", initialZoom, "colorScheme=", colorScheme, "arrows=", arrowsOn, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
         themeGuardTimer.restart();
@@ -700,7 +710,13 @@ Item {
             }
 
             onTitleChanged: {
-                if (title.indexOf("zoom:") === 0) {
+                if (title.indexOf("ready:") === 0) {
+                    if (parseInt(title.substring(6)) === radarRoot._readyToken && radarRoot._readyCallback) {
+                        var cb = radarRoot._readyCallback;
+                        radarRoot._readyCallback = null;
+                        cb();
+                    }
+                } else if (title.indexOf("zoom:") === 0) {
                     var z = parseInt(title.substring(5));
                     if (!isNaN(z) && z !== Plasmoid.configuration.radarZoom) {
                         Plasmoid.configuration.radarZoom = z;

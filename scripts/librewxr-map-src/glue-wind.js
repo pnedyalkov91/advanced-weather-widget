@@ -558,6 +558,9 @@ var WidgetWind = (function () {
         this._reset();
       },
 
+      /** Whether particles are on screen, for the widget's fade-in. */
+      isDrawing: function () { return !!this._running; },
+
       /** Frame-rate budget: base cadence and the ceiling the adaptive rate may reach. */
       setRate: function (fps, maxFps) {
         this.options.fps = Math.max(4, Math.min(30, fps || 10));
