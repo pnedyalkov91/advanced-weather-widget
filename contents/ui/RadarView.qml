@@ -273,13 +273,20 @@ Item {
 
     /**
      * Reload only a page older than ten minutes. Called when the Radar tab
-     * comes back into view: a page kept loaded is reused as is while it is
-     * recent, and a page built a moment ago for this very showing is not
-     * loaded a second time.
+     * comes back into view: a page built a moment ago for this very showing
+     * is not loaded a second time. A page kept loaded is never reloaded
+     * here: it catches up by itself when it is shown again (the radar
+     * catalog once older than its 5 min refresh, the wind grids once older
+     * than an hour), and reloading it would rebuild the map in front of the
+     * user.
      */
     function reloadIfStale() {
         if (!radarReady)
             return;
+        if (keepLoaded) {
+            console.log("[Advanced Weather Widget Radar] kept radar shown again, no reload");
+            return;
+        }
         var age = Date.now() - _loadedAt;
         if (age < 10 * 60 * 1000) {
             console.log("[Advanced Weather Widget Radar] page is recent, no reload; ageMs=", age);
