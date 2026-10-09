@@ -25,8 +25,8 @@ Item {
     property var weatherRoot
     readonly property bool radarReady: radarLoader.status === Loader.Ready && radarLoader.item !== null
     property bool loadEmbeddedRadar: false
-    // Set by FullView when "Keep the radar loaded" is on: once built, the map
-    // stays while the tab or the popup is hidden.
+    // Set by FullView when "Keep the radar loaded" is on: build the map even
+    // while the tab or the popup is hidden, and keep it across hide/show.
     property bool keepLoaded: false
     // When the current page was (re)loaded, for reloadIfStale().
     property double _loadedAt: 0
@@ -46,6 +46,9 @@ Item {
 
     onWeatherRootChanged: _syncLoadedItem()
     onVisibleChanged: _maybeDeferLoad()
+    // Built in the background by FullView: load the map even though the
+    // tab is not shown.
+    onKeepLoadedChanged: _maybeDeferLoad()
 
     // Created already-visible when the parent tab Loader builds us on first
     // visit, so onVisibleChanged may never fire - kick the deferred load here
@@ -56,7 +59,7 @@ Item {
         console.log("[Advanced Weather Widget Radar] wrapper maybeDeferLoad; visible=", visible,
                     "loadEmbeddedRadar=", loadEmbeddedRadar,
                     "loaderStatus=", _loaderStatusText(radarLoader.status));
-        if (visible && !loadEmbeddedRadar)
+        if ((visible || keepLoaded) && !loadEmbeddedRadar)
             deferredLoadTimer.restart();
     }
 
@@ -70,7 +73,7 @@ Item {
                         "layer=", Plasmoid.configuration.radarLayer || "rainviewer",
                         "zoom=", Plasmoid.configuration.radarZoom || 9,
                         "qt=", Qt.version, "platform=", Qt.platform.os);
-            if (radarRoot.visible)
+            if (radarRoot.visible || radarRoot.keepLoaded)
                 radarRoot.loadEmbeddedRadar = true;
         }
     }

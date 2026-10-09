@@ -130,7 +130,7 @@ GridLayout {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            text: i18n("Once opened, the radar map stays ready while the popup is closed, so the Radar tab shows again at once. It uses more memory.")
+            text: i18n("The radar map is prepared in the background after login and stays ready while the popup is closed, so the Radar tab opens at once. It uses more memory and starts QtWebEngine with Plasma.")
         }
     }
 

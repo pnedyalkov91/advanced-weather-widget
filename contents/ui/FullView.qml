@@ -118,10 +118,12 @@ Rectangle {
     // popup is open and always on the desktop (Planar), which has no popup.
     readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
 
-    // "Keep the radar loaded": once built, the Radar tab is never unloaded,
+    // "Keep the radar loaded": the Radar tab is built in the background once
+    // main.qml says startup is over, and is never unloaded afterwards,
     // popup closed or not.
-    readonly property bool _keepRadarLoaded: Plasmoid.configuration.radarKeepLoaded === true
+    readonly property bool _keepRadarLoaded: !!weatherRoot && weatherRoot.radarKeepLoaded === true
         && _hasLocation && showRadarTab && !isSimpleMode
+    readonly property bool _preloadRadar: _keepRadarLoaded && weatherRoot.radarBackgroundReady === true
 
     // Reset to the configured default tab every time the popup opens
     property int activeTab: _resolvedDefaultTab()
@@ -720,7 +722,7 @@ Rectangle {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem
+                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar
                         || (item !== null && (fullView._keepHiddenTabs || fullView._keepRadarLoaded))
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
