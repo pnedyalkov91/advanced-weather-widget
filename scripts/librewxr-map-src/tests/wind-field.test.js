@@ -343,3 +343,20 @@ test('layer: a map event that leaves the view in place restarts nothing', () => 
   layer._onMoveEnd();
   assert.equal(resets, 3);
 });
+
+test('afterEnsure: draw a grid covering most of the view, ask again while it does not serve all of it', () => {
+  const view = { bounds: { west: 0, south: 40, east: 20, north: 50 }, zoom: 5 };
+  const ttl = 3600 * 1000, now = 10000;
+  const entry = (bounds, zoom) => ({ spec: WindField.gridSpec(bounds), zoom, fetchedAt: now, grid: {} });
+  // Fetched for this very view: draw it, nothing more to ask.
+  assert.deepEqual(WindField.afterEnsure(view, entry(view.bounds, 5), now, ttl), { draw: true, retry: false });
+  // The grid of the previous zoom level, handed back during the rate limit:
+  // covers most of the view, so draw it, but ask again for the full one.
+  const prev = entry({ west: 5, south: 42.5, east: 15, north: 47.5 }, 6);
+  assert.ok(WindField.coverage(view.bounds, prev.spec) >= 0.5);
+  assert.deepEqual(WindField.afterEnsure(view, prev, now, ttl), { draw: true, retry: true });
+  // Too small a patch, or nothing at all: wait and ask again.
+  const far = entry({ west: 8, south: 44, east: 12, north: 46 }, 7);
+  assert.deepEqual(WindField.afterEnsure(view, far, now, ttl), { draw: false, retry: true });
+  assert.deepEqual(WindField.afterEnsure(view, null, now, ttl), { draw: false, retry: true });
+});
