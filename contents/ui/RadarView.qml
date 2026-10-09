@@ -18,6 +18,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
 
 Item {
     id: radarRoot
@@ -28,6 +29,11 @@ Item {
     // Set by FullView when "Keep the radar loaded" is on: build the map even
     // while the tab or the popup is hidden, and keep it across hide/show.
     property bool keepLoaded: false
+    // Whether the map can be seen right now. A closed popup does not hide
+    // its items, so the expanded state is checked too (the desktop has no
+    // popup and is always shown).
+    readonly property bool shown: visible && (Plasmoid.formFactor === PlasmaCore.Types.Planar
+        || !weatherRoot || weatherRoot.expanded === true)
     // When the current page was (re)loaded, for reloadIfStale().
     property double _loadedAt: 0
 
@@ -49,6 +55,36 @@ Item {
     // Built in the background by FullView: load the map even though the
     // tab is not shown.
     onKeepLoadedChanged: _maybeDeferLoad()
+
+    // A map kept loaded is already built when it comes back into view, and
+    // Chromium first shows the frame it had when it was hidden, before the
+    // wind restarts: fade it in rather than letting it jump. It stays
+    // transparent for a moment first, so the fade does not reveal the old one.
+    onShownChanged: {
+        if (shown && keepLoaded && radarReady) {
+            console.log("[Advanced Weather Widget Radar] fading the kept radar in");
+            radarFadeIn.restart();
+        }
+    }
+
+    SequentialAnimation {
+        id: radarFadeIn
+        PropertyAction {
+            target: radarLoader
+            property: "opacity"
+            value: 0
+        }
+        PauseAnimation {
+            duration: 150
+        }
+        NumberAnimation {
+            target: radarLoader
+            property: "opacity"
+            to: 1
+            duration: 400
+            easing.type: Easing.OutCubic
+        }
+    }
 
     // Created already-visible when the parent tab Loader builds us on first
     // visit, so onVisibleChanged may never fire - kick the deferred load here
