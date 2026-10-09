@@ -588,7 +588,9 @@ var WidgetWind = (function () {
       // view did not really change, instead of visibly starting over.
       _onMoveEnd: function () {
         if (this.nudging) return;
-        if (this._running && WindField.sameView(this._lastView, this._viewNow(), 2)) return;
+        // Nor does it delay a grid request already on its way for this view:
+        // the popup settles its size by 1 px steps right after opening.
+        if ((this._running || this._fetchTimer) && WindField.sameView(this._lastView, this._viewNow(), 2)) return;
         this._reset();
       },
 
@@ -661,10 +663,13 @@ var WidgetWind = (function () {
         if (this._entry && this._entry.grid && WindField.coverage(view.bounds, this._entry.spec) >= 0.5) this._start();
         var self = this, token = ++this._resetToken;
         if (this._fetchTimer) clearTimeout(this._fetchTimer);
+        // Without any grid yet (a page just built, nothing in storage) there
+        // is no run of pans to wait for: ask at once.
+        var hasGrid = !!(this._entry && this._entry.grid);
         this._fetchTimer = setTimeout(function () {
           self._fetchTimer = null;
           self._ensureFor(view, zoom, token);
-        }, this.options.fetchDelayMs);
+        }, hasGrid ? this.options.fetchDelayMs : 0);
       },
 
       /** Get a grid for the view of reset `token` and draw with it. While the
