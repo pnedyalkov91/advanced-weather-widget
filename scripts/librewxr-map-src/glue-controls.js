@@ -103,6 +103,7 @@ var _windDem = new WidgetWind.DemTiles({});
 var windLayer = null;
 var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
 var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
+var windLineWidth = WIND_LINE_WIDTH;
 
 function windColor(theme) { return theme === 'dark' ? '#ffffff' : '#1a237e'; }
 
@@ -111,7 +112,8 @@ window.setWind = function (on) {
   if (!m) return;
   if (on && !windLayer) {
     windLayer = new WindLayerClass(_windSource, _windDem, {
-      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, color: windColor(currentTheme()), level: windLevel
+      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, color: windColor(currentTheme()), level: windLevel,
+      lineWidth: windLineWidth
     });
     windLayer.addTo(m);
   } else if (!on && windLayer) {
@@ -124,6 +126,12 @@ window.setWind = function (on) {
 window.setWindRate = function (fps, maxFps) {
   windFps = fps; windMaxFps = maxFps;
   if (windLayer) windLayer.setRate(fps, maxFps);
+};
+
+// Particle width chosen in the widget settings (CSS px).
+window.setWindWidth = function (w) {
+  windLineWidth = w;
+  if (windLayer) windLayer.setLineWidth(w);
 };
 
 // '10m' (surface, relief-aware) or '700hPa' (the flow that steers the rain).

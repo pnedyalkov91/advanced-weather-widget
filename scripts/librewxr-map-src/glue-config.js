@@ -96,5 +96,6 @@ var BG_CURRENT = PARAMS.get('bg') || 'auto';
 var WIND_ON = PARAMS.get('wind') === '1';
 var WIND_FPS = Math.max(4, Math.min(30, paramNum('windfps', 10)));
 var WIND_MAX_FPS = Math.max(WIND_FPS, Math.min(30, paramNum('windmaxfps', 20)));
+var WIND_LINE_WIDTH = paramNum('windwidth', 1);   // CSS px, clamped by the layer
 var WIND_RELIEF = PARAMS.get('windrelief') !== '0';
 var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
