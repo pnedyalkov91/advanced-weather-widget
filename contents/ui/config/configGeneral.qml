@@ -50,6 +50,7 @@ KCM.AbstractKCM {
     property string cfg_librewxrWindQuality: "balanced"
     property real cfg_librewxrWindLineWidth: 1
     property bool cfg_radarGpuWorkaround: false
+    property bool cfg_radarKeepLoaded: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
     property bool cfg_autoRefresh: true
