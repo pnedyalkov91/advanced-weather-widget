@@ -36,8 +36,7 @@ Item {
     // A probe that never answers (broken executable engine) must not keep the
     // radar from loading forever, so give up after a short grace period.
     property bool _probeTimedOut: false
-    readonly property bool probeDone: _probeTimedOut || probeLoader.status === Loader.Error
-        || (probeLoader.item !== null && probeLoader.item.done)
+    readonly property bool probeDone: _probeTimedOut || probeLoader.status === Loader.Error || (probeLoader.item !== null && probeLoader.item.done)
     readonly property bool mangoHudDetected: probeLoader.item !== null && probeLoader.item.detected
     readonly property bool blockedByPreload: mangoHudDetected && !forceEmbeddedRadar
 
@@ -51,7 +50,7 @@ Item {
     readonly property string radarProvider: Plasmoid.configuration.radarProvider || "rainviewer"
     readonly property string externalRadarUrl: {
         if (radarProvider === "librewxr")
-            return "https://librewxr.net/examples/";
+            return "https://librewxr.net/examples/maplibre";
         if (!lat || !lon)
             return "https://www.rainviewer.com/map.html";
         return "https://www.rainviewer.com/map.html?loc=" + lat + "," + lon + "," + (Plasmoid.configuration.radarZoom || 9);
@@ -68,9 +67,7 @@ Item {
     Component.onCompleted: _maybeDeferLoad()
 
     function _maybeDeferLoad() {
-        console.log("[Advanced Weather Widget Radar] wrapper maybeDeferLoad; visible=", visible,
-                    "loadEmbeddedRadar=", loadEmbeddedRadar,
-                    "loaderStatus=", _loaderStatusText(radarLoader.status));
+        console.log("[Advanced Weather Widget Radar] wrapper maybeDeferLoad; visible=", visible, "loadEmbeddedRadar=", loadEmbeddedRadar, "loaderStatus=", _loaderStatusText(radarLoader.status));
         if (visible)
             _probeRequested = true;
         if (visible && !loadEmbeddedRadar)
@@ -82,11 +79,7 @@ Item {
         interval: 250
         repeat: false
         onTriggered: {
-            console.log("[Advanced Weather Widget Radar] deferred WebEngine activation tick; visible=", radarRoot.visible,
-                        "lat=", radarRoot.lat, "lon=", radarRoot.lon,
-                        "layer=", Plasmoid.configuration.radarLayer || "rainviewer",
-                        "zoom=", Plasmoid.configuration.radarZoom || 9,
-                        "qt=", Qt.version, "platform=", Qt.platform.os);
+            console.log("[Advanced Weather Widget Radar] deferred WebEngine activation tick; visible=", radarRoot.visible, "lat=", radarRoot.lat, "lon=", radarRoot.lon, "layer=", Plasmoid.configuration.radarLayer || "rainviewer", "zoom=", Plasmoid.configuration.radarZoom || 9, "qt=", Qt.version, "platform=", Qt.platform.os);
             if (radarRoot.visible)
                 radarRoot.loadEmbeddedRadar = true;
         }
@@ -112,11 +105,8 @@ Item {
     Loader {
         id: radarLoader
         anchors.fill: parent
-        active: radarRoot.visible && radarRoot.loadEmbeddedRadar
-            && radarRoot.probeDone && !radarRoot.blockedByPreload
-        source: radarRoot.radarProvider === "librewxr"
-            ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml")
-            : Qt.resolvedUrl("components/RadarWebEngineView.qml")
+        active: radarRoot.visible && radarRoot.loadEmbeddedRadar && radarRoot.probeDone && !radarRoot.blockedByPreload
+        source: radarRoot.radarProvider === "librewxr" ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml") : Qt.resolvedUrl("components/RadarWebEngineView.qml")
         // Load synchronously: QtWebEngine has GUI-thread requirements during
         // init and is historically fragile when created via an async Loader,
         // so for this crash-sensitive component we prefer the conventional
@@ -126,9 +116,7 @@ Item {
         asynchronous: false
 
         onStatusChanged: {
-            console.log("[Advanced Weather Widget Radar] loader status:", radarRoot._loaderStatusText(status),
-                        "active=", active, "visible=", radarRoot.visible,
-                        "loadEmbeddedRadar=", radarRoot.loadEmbeddedRadar);
+            console.log("[Advanced Weather Widget Radar] loader status:", radarRoot._loaderStatusText(status), "active=", active, "visible=", radarRoot.visible, "loadEmbeddedRadar=", radarRoot.loadEmbeddedRadar);
             if (status === Loader.Error)
                 console.warn("[Advanced Weather Widget Radar] failed to load RadarWebEngineView:", radarLoader.source);
         }
@@ -202,7 +190,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             horizontalAlignment: Text.AlignHCenter
             color: Kirigami.Theme.textColor
-            text: i18n("Plasma was started with MangoHud injected into it. The overlay can crash the whole desktop shell when the web-based radar starts, so the radar was not loaded.")
+            text: i18n("KDE Plasma was started with MangoHud injected into it. The overlay can crash the whole desktop shell when the web-based radar starts, so the radar was not loaded.")
             readOnly: true
             selectByMouse: true
             wrapMode: Text.WordWrap
@@ -338,10 +326,14 @@ Item {
     }
 
     function _loaderStatusText(status) {
-        if (status === Loader.Null) return "Null";
-        if (status === Loader.Ready) return "Ready";
-        if (status === Loader.Loading) return "Loading";
-        if (status === Loader.Error) return "Error";
+        if (status === Loader.Null)
+            return "Null";
+        if (status === Loader.Ready)
+            return "Ready";
+        if (status === Loader.Loading)
+            return "Loading";
+        if (status === Loader.Error)
+            return "Error";
         return "Unknown(" + status + ")";
     }
 }
