@@ -63,7 +63,10 @@ var WidgetWind = (function () {
     pointLists: function (spec) {
       var la = [], lo = [];
       for (var i = 0; i < spec.n; i++) {
-        for (var j = 0; j < spec.n; j++) { la.push(spec.lats[i]); lo.push(spec.lons[j]); }
+        // Zoomed out on the whole world the widened box runs past +-180,
+        // which Open-Meteo rejects (HTTP 400): ask for the same meridian
+        // inside -180..180. The grid keeps its unwrapped geometry.
+        for (var j = 0; j < spec.n; j++) { la.push(spec.lats[i]); lo.push(round4(((spec.lons[j] + 180) % 360 + 360) % 360 - 180)); }
       }
       return { latitude: la.join(','), longitude: lo.join(',') };
     },
@@ -76,6 +79,14 @@ var WidgetWind = (function () {
       if (Math.abs(view.zoom - cached.zoom) >= 1) return true;
       var b = view.bounds, s = cached.spec;
       return b.west < s.west || b.east > s.east || b.south < s.south || b.north > s.north;
+    },
+
+    /** After WindSource.ensure(): draw the entry when it covers most of the
+        view, and ask again later while it does not fully serve the view (an
+        older grid handed back during the rate limit or after a failure). */
+    afterEnsure: function (view, entry, nowMs, ttlMs) {
+      var draw = !!(entry && entry.grid) && WindField.coverage(view.bounds, entry.spec) >= 0.5;
+      return { draw: draw, retry: !draw || WindField.needsFetch(view, entry, nowMs, ttlMs) };
     },
 
     /** Fraction (0..1) of the view area that a grid spec covers. */
@@ -206,6 +217,14 @@ var WidgetWind = (function () {
       return Math.max(0.5, Math.min(2, w));
     },
 
+    /** Frames to draw at once when the particles start over, so their trails
+        already reach 95% of their steady length: each frame keeps `fade` of
+        the previous one. Capped so a slow fade never stalls the page. */
+    warmUpFrames: function (fade) {
+      if (!(fade > 0 && fade < 1)) return 0;
+      return Math.min(60, Math.ceil(Math.log(0.05) / Math.log(fade)));
+    },
+
     /** Web Mercator world pixel at zoom z (256 px tiles), same convention as Leaflet's EPSG3857. */
     worldPx: function (lat, lon, z) {
       var scale = 256 * Math.pow(2, z);
@@ -226,6 +245,17 @@ var WidgetWind = (function () {
         (leaflet-rotate) needs no knowledge of the plugin's conventions. */
     viewFrame: function (o, px, py) {
       return { ox: o.x, oy: o.y, axx: px.x - o.x, axy: px.y - o.y, ayx: py.x - o.x, ayy: py.y - o.y };
+    },
+
+    /** Whether two layer views {zoom, w, h, frame} are the same within tol
+        px: same zoom and rotation, size and screen origin barely moved. */
+    sameView: function (a, b, tol) {
+      if (!a || !b || a.zoom !== b.zoom) return false;
+      if (Math.abs(a.w - b.w) > tol || Math.abs(a.h - b.h) > tol) return false;
+      var fa = a.frame, fb = b.frame, eps = 1e-6;
+      return Math.abs(fa.ox - fb.ox) <= tol && Math.abs(fa.oy - fb.oy) <= tol &&
+        Math.abs(fa.axx - fb.axx) < eps && Math.abs(fa.axy - fb.axy) < eps &&
+        Math.abs(fa.ayx - fb.ayx) < eps && Math.abs(fa.ayy - fb.ayy) < eps;
     },
 
     screenToWorld: function (f, x, y) {
@@ -441,6 +471,7 @@ var WidgetWind = (function () {
         minPx: 2,
         maxPx: 60,
         fetchDelayMs: 600,   // settle time after a move before asking for data
+        settleMs: 1500,      // longest wait for the page's first viewport fix
         level: DEFAULT_LEVEL // '10m' | '700hPa' (see LEVELS)
       },
 
@@ -475,11 +506,16 @@ var WidgetWind = (function () {
         map.on('moveend zoomend resize rotate', this._onMoveEnd, this);
         this._onVisibility = L.bind(this._onVisibilityChange, this);
         document.addEventListener('visibilitychange', this._onVisibility);
+        // Nothing is drawn before settle(): see there.
+        this._settled = false;
+        var self = this;
+        this._settleTimer = setTimeout(function () { self.settle(); }, this.options.settleMs);
         this._reset();
       },
 
       onRemove: function (map) {
         this._stop(true);
+        if (this._settleTimer) { clearTimeout(this._settleTimer); this._settleTimer = null; }
         map.off('movestart zoomstart', this._onMoveStart, this);
         map.off('moveend zoomend resize rotate', this._onMoveEnd, this);
         document.removeEventListener('visibilitychange', this._onVisibility);
@@ -497,6 +533,18 @@ var WidgetWind = (function () {
       },
 
       setColor: function (color) { this.options.color = color; },
+
+      /** The map has its final size: start drawing. Right after a page
+          load the widget recalibrates the viewport (window.fixViewport);
+          particles drawn before that land in a provisional frame and start
+          over a moment later, which looks like a scramble. Called by
+          fixViewport, or after settleMs when nothing calls it. */
+      settle: function () {
+        if (this._settleTimer) { clearTimeout(this._settleTimer); this._settleTimer = null; }
+        if (this._settled) return;
+        this._settled = true;
+        this._reset();
+      },
 
       /** Frame-rate budget: base cadence and the ceiling the adaptive rate may reach. */
       setRate: function (fps, maxFps) {
@@ -517,8 +565,24 @@ var WidgetWind = (function () {
         if (this._map) this._reset();
       },
 
-      _onMoveStart: function () { this._stop(true); },
-      _onMoveEnd: function () { this._reset(); },
+      // `nudging` is set by fixViewport around its 1 px pan-and-back, which
+      // is no view change: restarting the particles for it would only show.
+      _onMoveStart: function () { if (!this.nudging) this._stop(true); },
+      // The widget also nudges the view by 1 px to make Chromium repaint,
+      // which resizes the map: a running layer keeps its particles when the
+      // view did not really change, instead of visibly starting over.
+      _onMoveEnd: function () {
+        if (this.nudging) return;
+        if (this._running && WindField.sameView(this._lastView, this._viewNow(), 2)) return;
+        this._reset();
+      },
+
+      /** Zoom, size and screen -> world frame of the map right now. */
+      _viewNow: function () {
+        var map = this._map, size = map.getSize(), origin = map.getPixelOrigin();
+        var wp = function (x, y) { return map.containerPointToLayerPoint([x, y]).add(origin); };
+        return { zoom: map.getZoom(), w: size.x, h: size.y, frame: WindField.viewFrame(wp(0, 0), wp(1, 0), wp(0, 1)) };
+      },
       _onVisibilityChange: function () {
         if (document.hidden) this._stop(false);
         else this._reset();
@@ -555,12 +619,11 @@ var WidgetWind = (function () {
         this._canvas.height = Math.round(size.y * dpr);
         this._canvas.style.width = size.x + 'px';
         this._canvas.style.height = size.y + 'px';
-        var zoom = map.getZoom();
-        this._zoom = zoom;
         // Screen -> world frame (handles map rotation, see WindField.viewFrame).
-        var origin = map.getPixelOrigin();
-        var wp = function (x, y) { return map.containerPointToLayerPoint([x, y]).add(origin); };
-        this._view = WindField.viewFrame(wp(0, 0), wp(1, 0), wp(0, 1));
+        this._lastView = this._viewNow();
+        var zoom = this._lastView.zoom;
+        this._zoom = zoom;
+        this._view = this._lastView.frame;
         this._demZoom = Math.min(10, Math.max(9, Math.round(zoom)));
         this._demScale = Math.pow(2, this._demZoom - zoom);
         this._stop(true);
@@ -568,6 +631,14 @@ var WidgetWind = (function () {
         if (!this._active || document.hidden) return;
         var b = map.getBounds();
         var view = { bounds: { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() }, zoom: zoom };
+        // A page that was just recreated (the popup reopened) has the last
+        // grid in storage: use it at once when it is still fresh and covers
+        // the view, instead of waiting fetchDelayMs for ensure() to say so.
+        if (!this._entry) {
+          var stored = this._source.restore();
+          if (stored && stored.grid && !WindField.needsFetch(view, stored, this._source.now(), this._source.ttlMs))
+            this._entry = stored;
+        }
         // Draw right away with the grid we have when it still covers most of
         // the view (a patch in a corner after a zoom-out looks broken), and
         // settle the data a moment later so a run of pans does not fire one
@@ -577,24 +648,33 @@ var WidgetWind = (function () {
         if (this._fetchTimer) clearTimeout(this._fetchTimer);
         this._fetchTimer = setTimeout(function () {
           self._fetchTimer = null;
-          self._source.ensure(view).then(function (entry) {
-            if (token !== self._resetToken || !self._map) return;   // superseded by a later reset
-            if (!entry || !entry.grid || WindField.coverage(view.bounds, entry.spec) < 0.5) {
-              // No usable grid (fetch failed or the source is backing off):
-              // try again by ourselves once the backoff is over, since the
-              // user may not move the map again.
-              var wait = Math.max(1000, self._source.blockedUntil - self._source.now() + 200);
-              self._retryTimer = setTimeout(function () {
-                self._retryTimer = null;
-                if (token === self._resetToken && self._map) self._reset();
-              }, wait);
-              return;
-            }
+          self._ensureFor(view, zoom, token);
+        }, this.options.fetchDelayMs);
+      },
+
+      /** Get a grid for the view of reset `token` and draw with it. While the
+          source only has a grid that does not serve the whole view (rate
+          limit, failed fetch), draw with what covers most of it and ask again
+          by ourselves once the source allows it, since the user may not move
+          the map again. The particles keep running across the swap. */
+      _ensureFor: function (view, zoom, token) {
+        var self = this;
+        this._source.ensure(view).then(function (entry) {
+          if (token !== self._resetToken || !self._map) return;   // superseded by a later reset
+          var next = WindField.afterEnsure(view, entry, self._source.now(), self._source.ttlMs);
+          if (next.draw) {
             self._entry = entry;
             if (self.options.relief && zoom >= self.options.reliefMinZoom) self._dem.ensure(entry.spec, self._demZoom);
             self._start();
-          });
-        }, this.options.fetchDelayMs);
+          }
+          if (next.retry) {
+            var wait = Math.max(1000, self._source.blockedUntil - self._source.now() + 200);
+            self._retryTimer = setTimeout(function () {
+              self._retryTimer = null;
+              if (token === self._resetToken && self._map) self._ensureFor(view, zoom, token);
+            }, wait);
+          }
+        });
       },
 
       _spawnAll: function () {
@@ -606,6 +686,7 @@ var WidgetWind = (function () {
         this._age = new Uint16Array(count);
         this._spd = new Float32Array(count);   // per-frame screen speeds, for the cadence
         for (var i = 0; i < count; i++) this._spawn(i, true);
+        this._fresh = true;   // trails to rebuild: _start() warms them up
       },
 
       _spawn: function (i, randomAge) {
@@ -615,9 +696,22 @@ var WidgetWind = (function () {
       },
 
       _start: function () {
-        if (this._running) return;
+        if (this._running || !this._settled) return;
         this._running = true;
+        if (this._fresh) this._warmUp();
         this._schedule();
+      },
+
+      // Freshly spawned particles have no trail and took a second or two to
+      // look like wind, every time the popup reopened or the map moved. Draw
+      // the first frames at once, off the timer, so the first frame shown
+      // already has full trails.
+      _warmUp: function () {
+        this._fresh = false;
+        var n = WindField.warmUpFrames(this.options.fade);
+        this._warming = true;
+        for (var i = 0; i < n; i++) this._frame();
+        this._warming = false;
       },
 
       // One frame every 1000/fps ms: a timer, then a single rAF to draw. Never
@@ -710,7 +804,7 @@ var WidgetWind = (function () {
         for (var b = 0; b < 3; b++) { ctx.globalAlpha = alphas[b]; ctx.stroke(paths[b]); }
         ctx.globalAlpha = 1;
         if (pxCount) this._adaptFps(WindField.cadenceSpeed(spd, pxCount, this.options.cadenceFraction));
-        this._stat(performance.now() - t0);
+        if (!this._warming) this._stat(performance.now() - t0);
       }
     });
   }

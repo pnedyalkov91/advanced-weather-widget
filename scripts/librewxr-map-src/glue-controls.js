@@ -82,6 +82,24 @@ window.setBackground = function (id) {
   renderBgMenu(); // keep the picker's active mark in sync with config-driven changes
 };
 
+// The widget nudges the view by 1 px to make Chromium repaint (repaint
+// nudge in RadarWebEngineViewLibreWXR.qml). Leaflet keeps the map centred
+// when it is resized, so each nudge moved the whole map by a pixel and back.
+// A change of 2 px or less now resizes without recentring.
+(function () {
+  var invalidateSize = L.Map.prototype.invalidateSize;
+  L.Map.include({
+    invalidateSize: function (options) {
+      if (this._loaded) {
+        var size = this.getSize(), c = this.getContainer();
+        if (Math.abs(c.clientWidth - size.x) <= 2 && Math.abs(c.clientHeight - size.y) <= 2)
+          options = L.extend({}, options === true ? { animate: true } : options, { pan: false });
+      }
+      return invalidateSize.call(this, options);
+    }
+  });
+})();
+
 window.fixViewport = function () {
   var m = _widgetAdapter ? _widgetAdapter.getMap() : null;
   if (!m) return;
@@ -89,8 +107,14 @@ window.fixViewport = function () {
   // container size and do an invisible 1px pan-and-back, which forces Leaflet
   // to reset its view and Chromium to repaint the damaged surface.
   m.invalidateSize(false);
+  if (windLayer) windLayer.nudging = true;
   m.panBy([1, 0], { animate: false });
   m.panBy([-1, 0], { animate: false });
+  if (windLayer) windLayer.nudging = false;
+  // The view is final now: the wind may start drawing.
+  viewportSettled = true;
+  if (windLayer) windLayer.settle();
+  document.body.classList.add('lv-ready');   // fade the whole view in (overrides.css)
   // Timeout rearm: the engine's moveend restarts a quiet background preload,
   // which the cancelling 1px nudge (never a real view change) safely ignores.
   setTimeout(function () { m.invalidateSize(false); }, 400);
@@ -104,6 +128,7 @@ var windLayer = null;
 var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
 var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
 var windLineWidth = WIND_LINE_WIDTH;
+var viewportSettled = false;   // set by the first window.fixViewport()
 
 function windColor(theme) { return theme === 'dark' ? '#ffffff' : '#1a237e'; }
 
@@ -116,6 +141,8 @@ window.setWind = function (on) {
       lineWidth: windLineWidth
     });
     windLayer.addTo(m);
+    // Switched on after the page settled: nothing left to wait for.
+    if (viewportSettled) windLayer.settle();
   } else if (!on && windLayer) {
     m.removeLayer(windLayer);
     windLayer = null;
@@ -146,6 +173,9 @@ window.setWindActive = function (active) {
 };
 
 if (WIND_ON) window.setWind(true);
+
+// Fade-in fallback when nothing calls fixViewport (the page opened on its own).
+setTimeout(function () { document.body.classList.add('lv-ready'); }, 1500);
 
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');

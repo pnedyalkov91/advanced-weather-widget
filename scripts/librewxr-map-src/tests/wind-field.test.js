@@ -41,6 +41,15 @@ test('pointLists: n*n coordinates, row-major (lat rows, lon columns)', () => {
   assert.equal(pl.longitude, '6.5,6.6,6.5,6.6');
 });
 
+test('pointLists: longitudes past the antimeridian are wrapped into -180..180 for Open-Meteo', () => {
+  // Zoomed out on the whole world, the widened box runs past +-180.
+  const spec = WindField.gridSpec({ west: -200, east: 160, south: -70, north: 80 });
+  assert.ok(spec.west < -180 && spec.east > 180, 'the spec itself stays unwrapped');
+  const lons = WindField.pointLists(spec).longitude.split(',').map(Number);
+  assert.ok(lons.every((x) => x >= -180 && x < 180), lons.join(','));
+  assert.equal(lons[0], 52);   // -308 is the same meridian as 52
+});
+
 test('timeWeights: hour index and fraction, clamped at both ends', () => {
   const t = [0, 3600, 7200];
   assert.deepEqual(WindField.timeWeights(t, 1800), { i: 0, frac: 0.5 });
@@ -202,6 +211,7 @@ test('layer loop: restart while a frame is pending keeps a single chain', () => 
   try {
     const layer = new (createWindLayer(L))();
     layer.initialize(null, null, {});
+    layer._settled = true;        // drawing starts once the map settled (see settle())
     let frames = 0;
     layer._frame = () => { frames++; };
     const pending = () => timers.filter(Boolean).length;
@@ -254,4 +264,108 @@ test('lineWidth: particle width kept within 0.5..2 px, 1 px when unset', () => {
   assert.equal(WindField.lineWidth(NaN), 1);
   assert.equal(WindField.lineWidth(undefined), 1);
   assert.equal(WindField.lineWidth(0), 1);
+});
+
+test('warmUpFrames: enough frames for the trails to reach 95% of their length', () => {
+  assert.equal(WindField.warmUpFrames(0.9), 29);    // 0.9^29 < 0.05 <= 0.9^28
+  assert.equal(WindField.warmUpFrames(0.8), 14);
+  assert.equal(WindField.warmUpFrames(0.99), 60);   // capped: never stall the page
+  assert.equal(WindField.warmUpFrames(1), 0);
+  assert.equal(WindField.warmUpFrames(0), 0);
+  assert.equal(WindField.warmUpFrames(undefined), 0);
+});
+
+
+// Right after a page load the widget recalibrates the viewport: nothing is
+// drawn before settle(), and its 1 px pan-and-back (nudging) is no move.
+test('layer: no drawing before settle, the fixViewport nudge restarts nothing', () => {
+  const { createWindLayer } = require('../glue-wind.js');
+  const L = {
+    Layer: { extend: (proto) => { function C() {} C.prototype = proto; return C; } },
+    setOptions: (o, opts) => { o.options = Object.assign(Object.create(o.options || {}), opts || {}); }
+  };
+  const saved = { setTimeout, clearTimeout };
+  const timers = [];
+  global.setTimeout = (fn) => { timers.push(fn); return timers.length; };
+  global.clearTimeout = (id) => { timers[id - 1] = null; };
+  try {
+    const layer = new (createWindLayer(L))();
+    layer.initialize(null, null, {});
+    layer._settled = false;
+    layer._start();
+    assert.equal(timers.filter(Boolean).length, 0, 'drew before settle');
+    layer._settled = true;
+    layer._start();
+    assert.equal(timers.filter(Boolean).length, 1);
+
+    let stops = 0, resets = 0;
+    layer._stop = () => { stops++; layer._running = false; };
+    layer._reset = () => { resets++; };
+    layer.nudging = true;
+    layer._onMoveStart(); layer._onMoveEnd();
+    assert.equal(stops + resets, 0, 'the nudge restarted the particles');
+    layer.nudging = false;
+    layer._onMoveStart(); layer._onMoveEnd();
+    assert.equal(stops, 1); assert.equal(resets, 1);
+  } finally {
+    global.setTimeout = saved.setTimeout;
+    global.clearTimeout = saved.clearTimeout;
+  }
+});
+
+test('sameView: a 1 px resize or shift is the same view, a pan or a zoom is not', () => {
+  const frame = (ox, oy) => WindField.viewFrame({ x: ox, y: oy }, { x: ox + 1, y: oy }, { x: ox, y: oy + 1 });
+  const v = (zoom, w, h, ox, oy) => ({ zoom, w, h, frame: frame(ox, oy) });
+  const a = v(7, 843, 473, 1000, 2000);
+  assert.ok(WindField.sameView(a, v(7, 843, 472, 1000, 2001), 2), 'repaint nudge');
+  assert.ok(!WindField.sameView(a, v(7, 843, 473, 1010, 2000), 2), 'pan');
+  assert.ok(!WindField.sameView(a, v(8, 843, 473, 1000, 2000), 2), 'zoom');
+  assert.ok(!WindField.sameView(a, v(7, 700, 473, 1000, 2000), 2), 'real resize');
+  assert.ok(!WindField.sameView(null, a, 2));
+});
+
+// The widget nudges the view by 1 px to make Chromium repaint, and each
+// nudge resizes the map: a running layer must not respawn its particles
+// for that, or the wind visibly restarts several times on every opening.
+test('layer: a map event that leaves the view in place restarts nothing', () => {
+  const { createWindLayer } = require('../glue-wind.js');
+  const L = {
+    Layer: { extend: (proto) => { function C() {} C.prototype = proto; return C; } },
+    setOptions: (o, opts) => { o.options = Object.assign(Object.create(o.options || {}), opts || {}); }
+  };
+  const layer = new (createWindLayer(L))();
+  layer.initialize(null, null, {});
+  const frame = (ox, oy) => WindField.viewFrame({ x: ox, y: oy }, { x: ox + 1, y: oy }, { x: ox, y: oy + 1 });
+  let now = { zoom: 7, w: 843, h: 473, frame: frame(1000, 2000) };
+  layer._viewNow = () => now;
+  let resets = 0;
+  layer._reset = () => { resets++; layer._lastView = layer._viewNow(); };
+  layer._reset();
+  layer._running = true;
+  now = { zoom: 7, w: 843, h: 472, frame: frame(1000, 2001) };
+  layer._onMoveEnd();
+  assert.equal(resets, 1, 'the 1 px nudge restarted the particles');
+  now = { zoom: 8, w: 843, h: 472, frame: frame(2000, 4002) };
+  layer._onMoveEnd();
+  assert.equal(resets, 2);
+  layer._running = false;      // stopped (popup closed, pan): any event restarts
+  layer._onMoveEnd();
+  assert.equal(resets, 3);
+});
+
+test('afterEnsure: draw a grid covering most of the view, ask again while it does not serve all of it', () => {
+  const view = { bounds: { west: 0, south: 40, east: 20, north: 50 }, zoom: 5 };
+  const ttl = 3600 * 1000, now = 10000;
+  const entry = (bounds, zoom) => ({ spec: WindField.gridSpec(bounds), zoom, fetchedAt: now, grid: {} });
+  // Fetched for this very view: draw it, nothing more to ask.
+  assert.deepEqual(WindField.afterEnsure(view, entry(view.bounds, 5), now, ttl), { draw: true, retry: false });
+  // The grid of the previous zoom level, handed back during the rate limit:
+  // covers most of the view, so draw it, but ask again for the full one.
+  const prev = entry({ west: 5, south: 42.5, east: 15, north: 47.5 }, 6);
+  assert.ok(WindField.coverage(view.bounds, prev.spec) >= 0.5);
+  assert.deepEqual(WindField.afterEnsure(view, prev, now, ttl), { draw: true, retry: true });
+  // Too small a patch, or nothing at all: wait and ask again.
+  const far = entry({ west: 8, south: 44, east: 12, north: 46 }, 7);
+  assert.deepEqual(WindField.afterEnsure(view, far, now, ttl), { draw: false, retry: true });
+  assert.deepEqual(WindField.afterEnsure(view, null, now, ttl), { draw: false, retry: true });
 });

@@ -232,3 +232,9 @@
           position: absolute;
           pointer-events: none;
         }
+
+      /* Whole-view fade-in: the page shows once the widget has settled the
+         viewport (window.fixViewport), so the map, the radar and the wind
+         come up together instead of popping in one after the other. */
+      body { opacity: 0; transition: opacity 400ms ease-out; }
+      body.lv-ready { opacity: 1; }
