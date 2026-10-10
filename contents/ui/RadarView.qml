@@ -18,6 +18,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
 
 Item {
     id: radarRoot
@@ -25,6 +26,16 @@ Item {
     property var weatherRoot
     readonly property bool radarReady: radarLoader.status === Loader.Ready && radarLoader.item !== null
     property bool loadEmbeddedRadar: false
+    // Set by FullView when "Keep the radar loaded" is on: build the map even
+    // while the tab or the popup is hidden, and keep it across hide/show.
+    property bool keepLoaded: false
+    // Whether the map can be seen right now. A closed popup does not hide
+    // its items, so the expanded state is checked too (the desktop has no
+    // popup and is always shown).
+    readonly property bool shown: visible && (Plasmoid.formFactor === PlasmaCore.Types.Planar
+        || !weatherRoot || weatherRoot.expanded === true)
+    // When the current page was (re)loaded, for reloadIfStale().
+    property double _loadedAt: 0
 
     readonly property double lat: Plasmoid.configuration.latitude || 0
     readonly property double lon: Plasmoid.configuration.longitude || 0
@@ -41,6 +52,82 @@ Item {
 
     onWeatherRootChanged: _syncLoadedItem()
     onVisibleChanged: _maybeDeferLoad()
+    // Built in the background by FullView: load the map even though the
+    // tab is not shown.
+    onKeepLoadedChanged: _maybeDeferLoad()
+
+    // A map kept loaded is already built when it comes back into view, and
+    // Chromium first shows the frame it had when it was hidden, before the
+    // wind restarts: fade it in rather than letting it jump. It stays
+    // transparent for at least 150 ms, so the fade does not reveal the old
+    // frame, and until the page says its map is loaded: built hidden, it has
+    // loaded nothing before its first showing. The page answers even when a
+    // server is down, after 1.5 s at the latest; the 2 s here only covers a
+    // page that does not answer at all.
+    onShownChanged: {
+        if (shown && keepLoaded && radarReady) {
+            console.log("[Advanced Weather Widget Radar] fading the kept radar in");
+            _fadeIn();
+        }
+    }
+
+    property bool _fadePending: false
+    property bool _fadeReady: false
+
+    function _fadeIn() {
+        radarFadeAnim.stop();
+        radarLoader.opacity = 0;
+        _fadePending = true;
+        _fadeReady = false;
+        fadeHoldTimer.restart();
+        fadeCapTimer.restart();
+        var view = radarLoader.item;
+        if (view && view.awaitReady) {
+            view.awaitReady(function () {
+                radarRoot._fadeReady = true;
+                radarRoot._fadeMaybeStart();
+            });
+        } else {
+            _fadeReady = true;
+        }
+    }
+
+    function _fadeMaybeStart() {
+        if (_fadePending && _fadeReady && !fadeHoldTimer.running)
+            _fadeStart();
+    }
+
+    function _fadeStart() {
+        if (!_fadePending)
+            return;
+        _fadePending = false;
+        fadeCapTimer.stop();
+        radarFadeAnim.restart();
+    }
+
+    Timer {
+        id: fadeHoldTimer
+        interval: 150
+        onTriggered: radarRoot._fadeMaybeStart()
+    }
+
+    Timer {
+        id: fadeCapTimer
+        interval: 2000
+        onTriggered: {
+            console.log("[Advanced Weather Widget Radar] no answer from the page after 2 s, fading in anyway");
+            radarRoot._fadeStart();
+        }
+    }
+
+    NumberAnimation {
+        id: radarFadeAnim
+        target: radarLoader
+        property: "opacity"
+        to: 1
+        duration: 400
+        easing.type: Easing.OutCubic
+    }
 
     // Created already-visible when the parent tab Loader builds us on first
     // visit, so onVisibleChanged may never fire - kick the deferred load here
@@ -51,7 +138,7 @@ Item {
         console.log("[Advanced Weather Widget Radar] wrapper maybeDeferLoad; visible=", visible,
                     "loadEmbeddedRadar=", loadEmbeddedRadar,
                     "loaderStatus=", _loaderStatusText(radarLoader.status));
-        if (visible && !loadEmbeddedRadar)
+        if ((visible || keepLoaded) && !loadEmbeddedRadar)
             deferredLoadTimer.restart();
     }
 
@@ -65,7 +152,7 @@ Item {
                         "layer=", Plasmoid.configuration.radarLayer || "rainviewer",
                         "zoom=", Plasmoid.configuration.radarZoom || 9,
                         "qt=", Qt.version, "platform=", Qt.platform.os);
-            if (radarRoot.visible)
+            if (radarRoot.visible || radarRoot.keepLoaded)
                 radarRoot.loadEmbeddedRadar = true;
         }
     }
@@ -73,7 +160,7 @@ Item {
     Loader {
         id: radarLoader
         anchors.fill: parent
-        active: radarRoot.visible && radarRoot.loadEmbeddedRadar
+        active: (radarRoot.visible || radarRoot.keepLoaded) && radarRoot.loadEmbeddedRadar
         source: radarRoot.radarProvider === "librewxr"
             ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml")
             : Qt.resolvedUrl("components/RadarWebEngineView.qml")
@@ -95,6 +182,7 @@ Item {
 
         onLoaded: {
             console.log("[Advanced Weather Widget Radar] RadarWebEngineView loaded; syncing weatherRoot");
+            radarRoot._loadedAt = Date.now();
             radarRoot._syncLoadedItem();
         }
     }
@@ -219,10 +307,35 @@ Item {
     function reload() {
         if (radarReady) {
             console.log("[Advanced Weather Widget Radar] reload requested");
+            _loadedAt = Date.now();
             radarLoader.item.reload();
         } else {
             console.log("[Advanced Weather Widget Radar] reload requested before radarReady; status=", _loaderStatusText(radarLoader.status));
         }
+    }
+
+    /**
+     * Reload only a page older than ten minutes. Called when the Radar tab
+     * comes back into view: a page built a moment ago for this very showing
+     * is not loaded a second time. A page kept loaded is never reloaded
+     * here: it catches up by itself when it is shown again (the radar
+     * catalog once older than its 5 min refresh, the wind grids once older
+     * than an hour), and reloading it would rebuild the map in front of the
+     * user.
+     */
+    function reloadIfStale() {
+        if (!radarReady)
+            return;
+        if (keepLoaded) {
+            console.log("[Advanced Weather Widget Radar] kept radar shown again, no reload");
+            return;
+        }
+        var age = Date.now() - _loadedAt;
+        if (age < 10 * 60 * 1000) {
+            console.log("[Advanced Weather Widget Radar] page is recent, no reload; ageMs=", age);
+            return;
+        }
+        reload();
     }
 
     function _syncLoadedItem() {

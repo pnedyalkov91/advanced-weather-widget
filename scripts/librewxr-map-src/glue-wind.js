@@ -297,6 +297,11 @@ var WidgetWind = (function () {
     // allowance, so a 12 x 12 grid at most every 15 s keeps a pan-happy user
     // well under it. The layer retries by itself once the interval is over.
     this.minIntervalMs = opts.minIntervalMs == null ? 15 * 1000 : opts.minIntervalMs;
+    // A request that never answers (seen when Open-Meteo stalls) would stay
+    // in flight forever, and every later ensure() would wait on it: the wind
+    // then never comes back until the page reloads, which a radar kept
+    // loaded in the background may not do for hours. Count it as a failure.
+    this.timeoutMs = opts.timeoutMs || 20 * 1000;
     this.failures = 0;
     this.cached = null;       // { spec, zoom, fetchedAt, points, grid }
     this.restored = false;
@@ -351,10 +356,16 @@ var WidgetWind = (function () {
     var spec = WindField.gridSpec(view.bounds);
     var url = this.url(spec);
     var t0 = now;
-    this.inflight = this.fetch(url).then(function (r) {
+    var timer = null;
+    var timeout = new Promise(function (resolve, reject) {
+      timer = setTimeout(function () { reject(new Error('no answer after ' + Math.round(self.timeoutMs / 1000) + ' s')); }, self.timeoutMs);
+    });
+    var request = this.fetch(url).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
-    }).then(function (points) {
+    });
+    this.inflight = Promise.race([request, timeout]).then(function (points) {
+      clearTimeout(timer);
       var entry = { spec: spec, zoom: view.zoom, fetchedAt: self.now(), points: points };
       entry.grid = WindField.buildGrid(spec, points);
       self.cached = entry;
@@ -365,6 +376,7 @@ var WidgetWind = (function () {
       if (typeof console !== 'undefined') console.log('[wind] grid ' + spec.n + 'x' + spec.n + ' fetched in ' + (self.now() - t0) + ' ms');
       return entry;
     }).catch(function (err) {
+      clearTimeout(timer);
       self.inflight = null;
       self.failures++;
       var delay = Math.min(self.maxBackoffMs, self.backoffMs * Math.pow(2, self.failures - 1));
@@ -546,6 +558,9 @@ var WidgetWind = (function () {
         this._reset();
       },
 
+      /** Whether particles are on screen, for the widget's fade-in. */
+      isDrawing: function () { return !!this._running; },
+
       /** Frame-rate budget: base cadence and the ceiling the adaptive rate may reach. */
       setRate: function (fps, maxFps) {
         this.options.fps = Math.max(4, Math.min(30, fps || 10));
@@ -573,7 +588,9 @@ var WidgetWind = (function () {
       // view did not really change, instead of visibly starting over.
       _onMoveEnd: function () {
         if (this.nudging) return;
-        if (this._running && WindField.sameView(this._lastView, this._viewNow(), 2)) return;
+        // Nor does it delay a grid request already on its way for this view:
+        // the popup settles its size by 1 px steps right after opening.
+        if ((this._running || this._fetchTimer) && WindField.sameView(this._lastView, this._viewNow(), 2)) return;
         this._reset();
       },
 
@@ -646,10 +663,13 @@ var WidgetWind = (function () {
         if (this._entry && this._entry.grid && WindField.coverage(view.bounds, this._entry.spec) >= 0.5) this._start();
         var self = this, token = ++this._resetToken;
         if (this._fetchTimer) clearTimeout(this._fetchTimer);
+        // Without any grid yet (a page just built, nothing in storage) there
+        // is no run of pans to wait for: ask at once.
+        var hasGrid = !!(this._entry && this._entry.grid);
         this._fetchTimer = setTimeout(function () {
           self._fetchTimer = null;
           self._ensureFor(view, zoom, token);
-        }, this.options.fetchDelayMs);
+        }, hasGrid ? this.options.fetchDelayMs : 0);
       },
 
       /** Get a grid for the view of reset `token` and draw with it. While the

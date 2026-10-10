@@ -98,6 +98,25 @@ test('ensure: a failed fetch backs off and keeps the previous grid', async () =>
   assert.equal(log.length, 3);
 });
 
+test('ensure: a fetch that never answers times out, backs off, then the next try goes through', { timeout: 2000 }, async () => {
+  const log = [];
+  let t = 1000;
+  let hang = true;
+  const answer = fakeFetch(log);
+  const src = new WindSource({
+    fetch: (url) => (hang ? (log.push(url), new Promise(() => {})) : answer(url)),
+    storage: null, now: () => t, timeoutMs: 20,
+  });
+  assert.equal(await src.ensure(view), null, 'gives up instead of waiting forever');
+  assert.equal(src.inflight, null);
+  assert.ok(src.blockedUntil > t, 'backs off like any failure');
+  hang = false;
+  t = src.blockedUntil + 1;
+  const e = await src.ensure(view);
+  assert.equal(log.length, 2);
+  assert.ok(e && e.grid);
+});
+
 test('ensure: the retry delay doubles on repeated failures and resets on success', async () => {
   const log = [];
   let t = 0;

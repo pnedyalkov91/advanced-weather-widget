@@ -69,6 +69,41 @@ PlasmoidItem {
 
     hideOnWindowDeactivate: !Plasmoid.configuration.keepOpen
 
+    // "Keep the radar loaded": build the radar page in the background once
+    // Plasma has finished starting up and the first weather data is in, so
+    // the network is up for the map too. Plasma may build the full view at
+    // startup on its own (applets opened often get preloaded), so FullView
+    // waits for radarBackgroundReady rather than for the view to exist.
+    readonly property bool radarKeepLoaded: Plasmoid.configuration.radarKeepLoaded === true
+        && Plasmoid.configuration.radarEnabled !== false
+    readonly property bool _shellStarted: {
+        var corona = Plasmoid.containment ? Plasmoid.containment.corona : null;
+        return !corona || corona.isStartupCompleted === true;
+    }
+    readonly property bool _radarPreloadReady: radarKeepLoaded && _shellStarted
+        && ((!loading && !isNaN(temperatureC)) || _radarPreloadWaited)
+    // A weather request that fails (rate limit, provider down) must not hold
+    // the radar back for good: give up waiting for it after a minute.
+    property bool _radarPreloadWaited: false
+    Timer {
+        interval: 60000
+        running: root.radarKeepLoaded && root._shellStarted && !root.radarBackgroundReady
+        onTriggered: root._radarPreloadWaited = true
+    }
+    // Latched: later weather refreshes must not unload the radar.
+    property bool radarBackgroundReady: false
+    on_RadarPreloadReadyChanged: {
+        if (_radarPreloadReady && !radarBackgroundReady) {
+            console.log("[Advanced Weather Widget Radar] Plasma started, preparing the radar in the background; weather loaded=", !isNaN(temperatureC));
+            radarBackgroundReady = true;
+            preloadFullRepresentation = true;
+        }
+    }
+    onRadarKeepLoadedChanged: {
+        if (!radarKeepLoaded)
+            radarBackgroundReady = false;
+    }
+
     // System tray status - keeps the widget visible in the notification area.
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
 
