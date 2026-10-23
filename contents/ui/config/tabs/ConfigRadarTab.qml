@@ -24,6 +24,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kquickcontrols as KQuickControls
+import org.kde.plasma.plasmoid
+import "../../js/weather.js" as W
 
 GridLayout {
     id: radarTab
@@ -41,6 +44,38 @@ GridLayout {
 
     /** Reference to the root KCM (configGeneral) for cfg_* properties, functions and state */
     required property var configRoot
+
+    /** The default wind palette (the Beaufort scale grouped), upper bounds in
+        m/s as the map page has them; the last level is open. */
+    readonly property var defaultWindPalette: [[5, "#ffffff"], [12, "#2ecc40"], [20, "#7fdbff"], [38, "#1e64ff"], [50, "#ffdc00"], [75, "#ff851b"], [118, "#ff2020"], [0, "#8a5cff"]].map(function (b, i) {
+        return {
+            max: i === 7 ? 0 : Math.round(b[0] / 3.6 * 1000) / 1000,
+            color: b[1]
+        };
+    })
+    /** The wind palettes made here: [{ name, levels: [{ max, color }] x 8 }]. */
+    readonly property var windPalettes: {
+        try {
+            var list = JSON.parse(radarTab.configRoot.cfg_librewxrWindPalettes || "[]");
+            return Array.isArray(list) ? list : [];
+        } catch (e) {
+            return [];
+        }
+    }
+    readonly property string windUnit: Plasmoid.configuration.windSpeedUnit || "kmh"
+
+    /** A wind speed in m/s, in the wind unit of the settings; and back. */
+    function windToUnit(ms) {
+        return Number(W.formatWindValue(ms * 3.6, radarTab.windUnit));
+    }
+    function windFromUnit(value) {
+        var perKmh = radarTab.windUnit === "mph" ? 0.621371 : (radarTab.windUnit === "ms" ? 1 / 3.6 : (radarTab.windUnit === "kn" ? 0.539957 : 1));
+        return value / perKmh / 3.6;
+    }
+    function saveWindPalettes(list, selected) {
+        radarTab.configRoot.cfg_librewxrWindPalettes = JSON.stringify(list);
+        radarTab.configRoot.cfg_librewxrWindPalette = selected;
+    }
 
     // Section title with a thin rule, same look as the Notifications page.
     component SectionHeader: RowLayout {
@@ -395,6 +430,198 @@ GridLayout {
         }
         Label {
             text: i18n("%1 px", Number(radarTab.configRoot.cfg_librewxrWindLineWidth).toLocaleString(Qt.locale(), "f", 1))
+        }
+    }
+
+    // Wind palettes: the default one, and the ones made here, kept by name.
+    Label {
+        text: i18n("Wind palette:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        ComboBox {
+            id: windPaletteCombo
+            Layout.preferredWidth: 200
+            model: [i18n("Default")].concat(radarTab.windPalettes.map(function (p) {
+                return p.name;
+            }))
+            currentIndex: {
+                var name = radarTab.configRoot.cfg_librewxrWindPalette;
+                for (var i = 0; i < radarTab.windPalettes.length; i++) {
+                    if (radarTab.windPalettes[i].name === name)
+                        return i + 1;
+                }
+                return 0;
+            }
+            onActivated: radarTab.configRoot.cfg_librewxrWindPalette = currentIndex === 0 ? "" : radarTab.windPalettes[currentIndex - 1].name
+        }
+        Button {
+            icon.name: "list-add"
+            text: i18n("New…")
+            onClicked: windPaletteDialog.openFor(-1)
+        }
+        Button {
+            icon.name: "document-edit"
+            text: i18n("Edit…")
+            enabled: windPaletteCombo.currentIndex > 0
+            onClicked: windPaletteDialog.openFor(windPaletteCombo.currentIndex - 1)
+        }
+        Button {
+            icon.name: "edit-delete"
+            text: i18n("Delete")
+            enabled: windPaletteCombo.currentIndex > 0
+            onClicked: {
+                var list = radarTab.windPalettes.slice();
+                list.splice(windPaletteCombo.currentIndex - 1, 1);
+                radarTab.saveWindPalettes(list, "");
+            }
+        }
+    }
+
+    // Editor of one palette: its name, then 8 levels, each a color and the
+    // speed it goes up to (the last one has no limit).
+    Dialog {
+        id: windPaletteDialog
+
+        property int index: -1       // palette edited; -1 for a new one
+        property var levels: []
+        readonly property string unitLabel: i18n(W.windUnitLabel(radarTab.windUnit))
+
+        function openFor(i) {
+            index = i;
+            var from = i >= 0 ? radarTab.windPalettes[i].levels : (windPaletteCombo.currentIndex > 0 ? radarTab.windPalettes[windPaletteCombo.currentIndex - 1].levels : radarTab.defaultWindPalette);
+            levels = from.map(function (l) {
+                return {
+                    max: Number(l.max),
+                    color: String(l.color)
+                };
+            });
+            nameField.text = i >= 0 ? radarTab.windPalettes[i].name : "";
+            check();
+            open();
+        }
+        function setLevel(i, key, value) {
+            var list = levels.slice(), level = {
+                max: list[i].max,
+                color: list[i].color
+            };
+            level[key] = value;
+            list[i] = level;
+            levels = list;
+            check();
+        }
+        // The OK button waits for a free name and limits that go up.
+        function check() {
+            var name = nameField.text.trim(), problem = "";
+            if (!name)
+                problem = i18n("Give the palette a name.");
+            for (var k = 0; k < radarTab.windPalettes.length && !problem; k++) {
+                if (k !== index && radarTab.windPalettes[k].name === name)
+                    problem = i18n("Another palette has this name.");
+            }
+            for (var j = 0; j < 7 && !problem; j++) {
+                if (!(levels[j].max > (j > 0 ? levels[j - 1].max : 0)))
+                    problem = i18n("Each level must go higher than the one before.");
+            }
+            errorLabel.text = problem;
+            var ok = standardButton(Dialog.Ok);
+            if (ok)
+                ok.enabled = problem === "";
+        }
+
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        modal: true
+        title: index < 0 ? i18n("New wind palette") : i18n("Edit wind palette")
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        onAccepted: {
+            var entry = {
+                name: nameField.text.trim(),
+                levels: levels.map(function (l, i) {
+                    return {
+                        max: i === 7 ? 0 : Math.round(l.max * 1000) / 1000,
+                        color: l.color
+                    };
+                })
+            };
+            var list = radarTab.windPalettes.slice();
+            if (index >= 0)
+                list[index] = entry;
+            else
+                list.push(entry);
+            radarTab.saveWindPalettes(list, entry.name);
+        }
+
+        ColumnLayout {
+            spacing: Kirigami.Units.smallSpacing
+
+            TextField {
+                id: nameField
+                Layout.fillWidth: true
+                placeholderText: i18n("Palette name")
+                onTextChanged: windPaletteDialog.check()
+            }
+            Repeater {
+                model: 8
+                delegate: RowLayout {
+                    id: levelRow
+                    required property int index
+                    spacing: Kirigami.Units.smallSpacing
+
+                    KQuickControls.ColorButton {
+                        showAlphaChannel: false
+                        dialogTitle: i18n("Wind color")
+                        color: windPaletteDialog.levels.length ? windPaletteDialog.levels[levelRow.index].color : "white"
+                        onAccepted: picked => windPaletteDialog.setLevel(levelRow.index, "color", picked.toString())
+                    }
+                    Label {
+                        text: levelRow.index < 7 ? i18n("up to") : (windPaletteDialog.levels.length ? i18n("above %1 %2", radarTab.windToUnit(windPaletteDialog.levels[6].max), windPaletteDialog.unitLabel) : "")
+                    }
+                    TextField {
+                        visible: levelRow.index < 7
+                        Layout.preferredWidth: Kirigami.Units.gridUnit * 4
+                        text: windPaletteDialog.levels.length && levelRow.index < 7 ? String(radarTab.windToUnit(windPaletteDialog.levels[levelRow.index].max)) : ""
+                        validator: DoubleValidator {
+                            bottom: 0
+                            decimals: 1
+                            notation: DoubleValidator.StandardNotation
+                        }
+                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        onEditingFinished: windPaletteDialog.setLevel(levelRow.index, "max", radarTab.windFromUnit(Number(text.replace(",", "."))))
+                    }
+                    Label {
+                        visible: levelRow.index < 7
+                        text: windPaletteDialog.unitLabel
+                    }
+                }
+            }
+            Button {
+                icon.name: "edit-reset"
+                text: i18n("Default colors and limits")
+                onClicked: {
+                    windPaletteDialog.levels = radarTab.defaultWindPalette.map(function (l) {
+                        return {
+                            max: l.max,
+                            color: l.color
+                        };
+                    });
+                    windPaletteDialog.check();
+                }
+            }
+            Label {
+                id: errorLabel
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Kirigami.Theme.negativeTextColor
+                visible: text !== ""
+            }
         }
     }
 

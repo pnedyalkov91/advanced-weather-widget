@@ -144,6 +144,8 @@ var windLayer = null;
 var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
 var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
 var windLineWidth = WIND_LINE_WIDTH;
+// A palette that does not parse (a broken settings entry) gives the default one.
+var windPalette = WidgetWind.WindField.parsePalette(WIND_PALETTE_PARAM);
 var viewportSettled = false;   // set by the first window.fixViewport()
 
 window.setWind = function (on) {
@@ -152,7 +154,7 @@ window.setWind = function (on) {
   if (on && !windLayer) {
     windLayer = _widgetAdapter.createWindLayer(_windSource, _windOpen, _windDem, {
       fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: windLevel,
-      lineWidth: windLineWidth
+      lineWidth: windLineWidth, palette: windPalette
     });
     if (!windLayer) return;
     windLayer.addTo(m);
@@ -174,6 +176,12 @@ window.setWindRate = function (fps, maxFps) {
 window.setWindWidth = function (w) {
   windLineWidth = w;
   if (windLayer) windLayer.setLineWidth(w);
+};
+
+// Wind palette chosen in the widget settings, in the "max:rrggbb" x 8 form.
+window.setWindPalette = function (s) {
+  windPalette = WidgetWind.WindField.parsePalette(s);
+  if (windLayer) windLayer.setPalette(windPalette);
 };
 
 // '10m' (surface, relief-aware) or '700hPa' (the flow that steers the rain).
