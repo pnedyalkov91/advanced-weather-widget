@@ -192,6 +192,30 @@ if (WIND_ON) window.setWind(true);
 // Fade-in fallback when nothing calls fixViewport (the page opened on its own).
 setTimeout(function () { document.body.classList.add('lv-ready'); }, 1500);
 
+// === PROJECTION (MapLibre page: flat map or globe) ===
+// The globe button sits under the base-map picker and is lit while the globe
+// shows. A switch is reported to QML through the title ("proj:"), which keeps
+// it in the settings; QML can also set it through window.setProjection().
+var projBtn = document.getElementById('lv-proj');
+function renderProjBtn() {
+  if (projBtn) projBtn.classList.toggle('active', _widgetAdapter.getProjection() === 'globe');
+}
+window.setProjection = function (p) {
+  p = p === 'globe' ? 'globe' : 'flat';
+  if (p === _widgetAdapter.getProjection()) return;
+  _widgetAdapter.setProjection(p);
+  renderProjBtn();
+  // The new projection is in place on the next frames: rebuild the wind table then.
+  if (windLayer && windLayer.refresh) setTimeout(function () { if (windLayer) windLayer.refresh(); }, 300);
+};
+if (projBtn) {
+  projBtn.addEventListener('click', function () {
+    window.setProjection(_widgetAdapter.getProjection() === 'globe' ? 'flat' : 'globe');
+    document.title = 'proj:' + _widgetAdapter.getProjection();
+  });
+  renderProjBtn();
+}
+
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');
 var bgBtn = document.getElementById('bgBtn');

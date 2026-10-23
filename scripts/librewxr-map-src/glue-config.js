@@ -79,6 +79,8 @@ function hasWebGL() {
   return webglOk;
 }
 
+// Map projection on the MapLibre page: 'flat' (Web Mercator) or 'globe'.
+var PROJECTION_INIT = PARAMS.get('proj') === 'globe' ? 'globe' : 'flat';
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';

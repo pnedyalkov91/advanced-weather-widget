@@ -208,6 +208,8 @@
     <entry name="librewxrWindQuality"   type="String"><default>balanced</default></entry>
     <!-- Width of the wind particles, in CSS pixels -->
     <entry name="librewxrWindLineWidth" type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
+    <!-- Radar map projection: "flat" (Web Mercator) or "globe"; switched from the globe button on the map -->
+    <entry name="librewxrProjection"    type="String"><default>flat</default></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
     <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
     <entry name="librewxrCells"         type="String"><default></default></entry>

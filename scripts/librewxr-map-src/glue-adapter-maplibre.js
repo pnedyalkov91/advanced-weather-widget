@@ -16,7 +16,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var appliedKey = null;       // base map now drawn
   var desired = null;          // { key, style } wanted
   var swapInProgress = false;
-  var projection = 'flat';     // 'flat' | 'globe'
+  var projection = PROJECTION_INIT;   // 'flat' | 'globe'
+  var skyTheme = PARAMS.get('theme') === 'light' ? 'light' : 'dark';
 
   // The widget counts zoom levels on 256 px tiles, as Leaflet does; MapLibre
   // counts them on 512 px tiles, one level lower for the same scale.
@@ -124,8 +125,30 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     map.on('click', popupHandler);
   }
 
+  // While the map moves, frames preloading out of sight (opacity 0) fetch
+  // no tiles: on a small CPU, decoding theirs is what slowed a zoom down,
+  // more than the wind. They go on when the map stops.
+  var moving = false;
+  function holdHiddenFrames(hold) {
+    moving = hold;
+    for (var i = 0; i < frameRegistry.length; i++) {
+      var e = frameRegistry[i];
+      if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', hold && !(e.opacity > 0) ? 'none' : 'visible');
+    }
+  }
+
+  // Around the globe, space in the page's colors and an atmosphere at the
+  // rim that fades out as the map zooms in (gone at MapLibre zoom 7).
+  var SKY = {
+    dark: { 'sky-color': '#05070b', 'horizon-color': '#1d3557', 'fog-color': '#05070b' },
+    light: { 'sky-color': '#e8eef5', 'horizon-color': '#9fb6d0', 'fog-color': '#e8eef5' }
+  };
   function applyProjection() {
     map.setProjection({ type: projection === 'globe' ? 'globe' : 'mercator' });
+    var sky = {}, base = SKY[skyTheme] || SKY.dark;
+    for (var k in base) sky[k] = base[k];
+    sky['atmosphere-blend'] = ['interpolate', ['linear'], ['zoom'], 0, 0.9, 4, 0.6, 7, 0];
+    map.setSky(sky);
   }
 
   // A new style drops every source and layer the page added, and the
@@ -173,10 +196,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
       new maplibregl.Marker().setLngLat([view.lon, view.lat]).addTo(map);
       map.once('load', function () { styleReady = true; applyProjection(); });
+      map.on('movestart', function () { holdHiddenFrames(true); });
+      map.on('moveend', function () { holdHiddenFrames(false); });
       return map;
     },
 
     setBasemap: function (theme) {
+      skyTheme = theme;
       desired = baseFor(theme);
       if (!styleReady) { map.once('load', function () { adapter.setBasemap(theme); }); return; }
       if (swapInProgress || desired.key === appliedKey) return;
@@ -227,7 +253,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       for (var i = 0; i < frameRegistry.length; i++) {
         if (frameRegistry[i].layerId === handle.layerId) frameRegistry[i].opacity = v;
       }
-      if (map.getLayer(handle.layerId)) map.setPaintProperty(handle.layerId, 'raster-opacity', v);
+      if (map.getLayer(handle.layerId)) {
+        map.setPaintProperty(handle.layerId, 'raster-opacity', v);
+        if (moving) map.setLayoutProperty(handle.layerId, 'visibility', v > 0 ? 'visible' : 'none');
+      }
     },
 
     destroyFrameLayer: function (handle) {
