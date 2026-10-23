@@ -10,6 +10,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var maxZoom = 12;
   var frameSeq = 0;
   var frameRegistry = [];      // runtime frame entries, creation order
+  var pendingReady = {};       // source id -> finishers of onLayerReady still waiting
   var alertsEntry = null;      // { geojson } while the alerts overlay is on
   var popupHandler = null;
   var alertClickCb = null;
@@ -294,6 +295,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         map.off('sourcedata', onData);
         map.off('error', onError);
         clearTimeout(waiter);
+        var list = pendingReady[handle.sourceId];
+        if (list) list.splice(list.indexOf(finish), 1);
         cb();
       }
       function onData(e) {
@@ -308,7 +311,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       }
       map.on('sourcedata', onData);
       map.on('error', onError);
-      waiter = setTimeout(finish, 25000);
+      (pendingReady[handle.sourceId] = pendingReady[handle.sourceId] || []).push(finish);
+      waiter = setTimeout(function () {
+        console.warn('[librewxr] frame layer not settled after 25 s: ' + handle.sourceId);
+        finish();
+      }, 25000);
       if (map.getSource(handle.sourceId) && map.isSourceLoaded(handle.sourceId)) finish();
     },
 
@@ -324,6 +331,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     destroyFrameLayer: function (handle) {
       if (!handle) return;
+      // A layer destroyed while loading gets no more source events: settle
+      // its waiters now. Left to their 25 s timeout, the viewer's late
+      // callback found the frame rebuilt under the same path and faded the
+      // shown radar out for this dead layer. A tick later, once the viewer
+      // has finished clearing its cache, before any new layer can be ready.
+      var waiting = pendingReady[handle.sourceId];
+      delete pendingReady[handle.sourceId];
+      if (waiting && waiting.length) setTimeout(function () { waiting.slice().forEach(function (f) { f(); }); }, 0);
       for (var i = 0; i < frameRegistry.length; i++) {
         if (frameRegistry[i].layerId === handle.layerId) { frameRegistry.splice(i, 1); break; }
       }
