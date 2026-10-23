@@ -99,3 +99,7 @@ var WIND_MAX_FPS = Math.max(WIND_FPS, Math.min(30, paramNum('windmaxfps', 20)));
 var WIND_LINE_WIDTH = paramNum('windwidth', 1);   // CSS px, clamped by the layer
 var WIND_RELIEF = PARAMS.get('windrelief') !== '0';
 var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
+// Test knobs, never set by the widget: another base for the Open-Meteo API
+// (a caching proxy, so tests spare the quota) and for the open-data files.
+var WIND_API_BASE = PARAMS.get('omapi') || '';
+var WIND_FILES_BASE = PARAMS.get('omfiles') || '';

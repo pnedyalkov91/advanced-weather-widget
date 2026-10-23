@@ -3,6 +3,24 @@
 // Implements the viewer-core.js adapter contract with Leaflet 1.x primitives,
 // wired to the widget's query-param basemap selection.
 // ==========================================================================
+// The widget nudges the view by 1 px to make Chromium repaint (repaint
+// nudge in RadarWebEngineViewLibreWXR.qml). Leaflet keeps the map centred
+// when it is resized, so each nudge moved the whole map by a pixel and back.
+// A change of 2 px or less now resizes without recentring.
+(function () {
+  var invalidateSize = L.Map.prototype.invalidateSize;
+  L.Map.include({
+    invalidateSize: function (options) {
+      if (this._loaded) {
+        var size = this.getSize(), c = this.getContainer();
+        if (Math.abs(c.clientWidth - size.x) <= 2 && Math.abs(c.clientHeight - size.y) <= 2)
+          options = L.extend({}, options === true ? { animate: true } : options, { pan: false });
+      }
+      return invalidateSize.call(this, options);
+    }
+  });
+})();
+
 var WidgetLeafletAdapter = function () {
   var map = null;
   var maxZoom = 12;
@@ -323,7 +341,45 @@ var WidgetLeafletAdapter = function () {
     },
 
     // WIDGET PATCH: expose the Leaflet map for fixViewport().
-    getMap: function () { return map; }
+    getMap: function () { return map; },
+
+    /* What glue-controls.js asks of any map. */
+    resize: function () { if (map) map.invalidateSize(false); },
+
+    // An invisible 1 px pan and back forces Leaflet to reset its view and
+    // Chromium to repaint the damaged surface.
+    nudge: function () {
+      if (!map) return;
+      map.panBy([1, 0], { animate: false });
+      map.panBy([-1, 0], { animate: false });
+    },
+
+    sizeKey: function () {
+      var s = map ? map.getSize() : { x: 0, y: 0 };
+      return s.x + 'x' + s.y;
+    },
+
+    // Tiles still loading in the layers on screen; hidden radar frames
+    // (preloaded at opacity 0) do not count.
+    tilesBusy: function () {
+      var loading = false;
+      if (!map) return false;
+      map.eachLayer(function (l) {
+        if (l.isLoading && (l.options.opacity === undefined || l.options.opacity > 0) && l.isLoading()) loading = true;
+        var gl = l.getMaplibreMap && l.getMaplibreMap();
+        if (gl && gl.areTilesLoaded && !gl.areTilesLoaded()) loading = true;
+      });
+      return loading;
+    },
+
+    // Leaflet draws Web Mercator only.
+    setProjection: function () {},
+    getProjection: function () { return 'flat'; },
+
+    createWindLayer: function (source, openData, dem, options) {
+      var Layer = WidgetWind.createWindLayer(L);
+      return new Layer(source, dem, options);
+    }
     // /WIDGET PATCH
   };
 };
