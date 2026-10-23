@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-10-23 21:11+0200\n"
+"POT-Creation-Date: 2026-10-23 21:24+0200\n"
 "PO-Revision-Date: 2026-08-04 09:53+0200\n"
 "Last-Translator: rcspam\n"
 "Language-Team: French\n"
@@ -56,7 +56,7 @@ msgstr "%1 px"
 msgid "%1 there will be %2 with a low of %3 and a high of %4."
 msgstr "%1, le temps sera %2 avec un minimum de %3 et un maximum de %4."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:653
+#: contents/ui/config/tabs/ConfigRadarTab.qml:690
 msgid "%1. Right-click to copy or paste it, drag it onto another level."
 msgstr "%1. Clic droit pour la copier ou la coller, glissez-la sur un autre niveau."
 
@@ -180,7 +180,7 @@ msgstr "<b>Gravité :</b> %1%2"
 msgid "<b>Starts:</b> %1"
 msgstr "<b>Début :</b> %1"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:777
+#: contents/ui/config/tabs/ConfigRadarTab.qml:816
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
 msgstr "<b>Pourquoi les couches OWM peuvent ne pas correspondre au radar RainViewer</b><br/><br/>Les couches de précipitations/nuages d'OWM sont des <b>tuiles de modèle statiques</b> - elles montrent une sortie lissée de prévision numérique (NWP), pas de véritables retours radar. Elles représentent les zones où le modèle <i>pense</i> qu'il pleut, en se basant sur l'interpolation entre stations météo et exécutions du modèle.<br/><br/>RainViewer utilise de <b>véritables composites radar météo</b> issus de stations radar - réflectivité réellement mesurée et mise à jour toutes les 2 à 10 minutes. Cette divergence est attendue et connue."
 
@@ -432,7 +432,7 @@ msgstr "Animer le défilement des lignes"
 msgid "Animate the wind on the map (Open-Meteo)"
 msgstr "Animer le vent sur la carte (Open-Meteo)"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:584
+#: contents/ui/config/tabs/ConfigRadarTab.qml:600
 msgid "Another palette has this name."
 msgstr "Une autre palette porte déjà ce nom."
 
@@ -901,7 +901,7 @@ msgstr "Envisager de réduire ou de reporter les activités extérieures intense
 msgid "Coordinates"
 msgstr "Coordonnées"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:707
+#: contents/ui/config/tabs/ConfigRadarTab.qml:746
 msgid "Copy color"
 msgstr "Copier la couleur"
 
@@ -1031,7 +1031,7 @@ msgstr "Par défaut"
 msgid "Default (built-in siren)"
 msgstr "Par défaut (sirène intégrée)"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:741
+#: contents/ui/config/tabs/ConfigRadarTab.qml:780
 msgid "Default colors and limits"
 msgstr "Couleurs et seuils par défaut"
 
@@ -1180,7 +1180,7 @@ msgstr "Chaque projet QWeather possède un hôte d'API unique. Trouvez le vôtre
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
 msgstr "Chaque alerte n'est affichée qu'une seule fois, sans les boutons Ignorer et Reporter."
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:588
+#: contents/ui/config/tabs/ConfigRadarTab.qml:604
 msgid "Each level must go higher than the one before."
 msgstr "Chaque niveau doit aller plus haut que le précédent."
 
@@ -1200,7 +1200,7 @@ msgstr "Modifier la localisation enregistrée"
 msgid "Edit location details"
 msgstr "Modifier les détails de la localisation"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:599
+#: contents/ui/config/tabs/ConfigRadarTab.qml:615
 msgid "Edit wind palette"
 msgstr "Modifier la palette de vent"
 
@@ -1560,7 +1560,7 @@ msgstr "Activité géomagnétique"
 msgid "Geomagnetic activity is expected to be %1 (Kp %2)"
 msgstr "L'activité géomagnétique devrait être %1 (Kp %2)"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:581
+#: contents/ui/config/tabs/ConfigRadarTab.qml:597
 msgid "Give the palette a name."
 msgstr "Donnez un nom à la palette."
 
@@ -2454,7 +2454,7 @@ msgstr "Erreur réseau"
 msgid "New Moon"
 msgstr "Nouvelle lune"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:599
+#: contents/ui/config/tabs/ConfigRadarTab.qml:615
 msgid "New wind palette"
 msgstr "Nouvelle palette de vent"
 
@@ -2715,7 +2715,7 @@ msgstr "PM10"
 msgid "PM2.5"
 msgstr "PM2.5"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:625
+#: contents/ui/config/tabs/ConfigRadarTab.qml:641
 msgid "Palette name"
 msgstr "Nom de la palette"
 
@@ -2790,7 +2790,7 @@ msgstr "Partiellement nuageux (jour)"
 msgid "Partly cloudy (night)"
 msgstr "Partiellement nuageux (nuit)"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:712
+#: contents/ui/config/tabs/ConfigRadarTab.qml:751
 msgid "Paste color"
 msgstr "Coller la couleur"
 
@@ -3974,7 +3974,7 @@ msgstr "Délai dépassé"
 msgid "Timezone:"
 msgstr "Fuseau horaire :"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:768
+#: contents/ui/config/tabs/ConfigRadarTab.qml:807
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr "Pour débloquer des couches de carte supplémentaires (Pluie, Nuages, Température, Vent, Pression) : désactivez le mode Adaptatif dans l'onglet « Fournisseur », sélectionnez OpenWeatherMap comme fournisseur météo et saisissez votre clé API ci-dessus. Lorsque vous êtes prêt, vous pouvez réactiver le mode Adaptatif."
 
@@ -4446,7 +4446,8 @@ msgstr "Vent"
 msgid "Wind animation:"
 msgstr "Animation du vent :"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:648
+#: contents/ui/config/tabs/ConfigRadarTab.qml:668
+#: contents/ui/config/tabs/ConfigRadarTab.qml:677
 msgid "Wind color"
 msgstr "Couleur du vent"
 
@@ -4536,7 +4537,7 @@ msgstr "une baisse par rapport à hier"
 msgid "a few clouds"
 msgstr "quelques nuages"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:719
+#: contents/ui/config/tabs/ConfigRadarTab.qml:758
 msgid "above %1 %2"
 msgstr "au-delà de %1 %2"
 
@@ -4795,7 +4796,7 @@ msgstr "jusqu'à %1"
 msgid "until dawn"
 msgstr "jusqu'à l'aube"
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:719
+#: contents/ui/config/tabs/ConfigRadarTab.qml:758
 msgid "up to"
 msgstr "jusqu'à"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-10-23 21:11+0200\n"
+"POT-Creation-Date: 2026-10-23 21:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,7 +58,7 @@ msgstr ""
 msgid "%1 there will be %2 with a low of %3 and a high of %4."
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:653
+#: contents/ui/config/tabs/ConfigRadarTab.qml:690
 msgid "%1. Right-click to copy or paste it, drag it onto another level."
 msgstr ""
 
@@ -180,7 +180,7 @@ msgstr ""
 msgid "<b>Starts:</b> %1"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:777
+#: contents/ui/config/tabs/ConfigRadarTab.qml:816
 msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
 msgstr ""
 
@@ -432,7 +432,7 @@ msgstr ""
 msgid "Animate the wind on the map (Open-Meteo)"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:584
+#: contents/ui/config/tabs/ConfigRadarTab.qml:600
 msgid "Another palette has this name."
 msgstr ""
 
@@ -901,7 +901,7 @@ msgstr ""
 msgid "Coordinates"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:707
+#: contents/ui/config/tabs/ConfigRadarTab.qml:746
 msgid "Copy color"
 msgstr ""
 
@@ -1031,7 +1031,7 @@ msgstr ""
 msgid "Default (built-in siren)"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:741
+#: contents/ui/config/tabs/ConfigRadarTab.qml:780
 msgid "Default colors and limits"
 msgstr ""
 
@@ -1180,7 +1180,7 @@ msgstr ""
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:588
+#: contents/ui/config/tabs/ConfigRadarTab.qml:604
 msgid "Each level must go higher than the one before."
 msgstr ""
 
@@ -1200,7 +1200,7 @@ msgstr ""
 msgid "Edit location details"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:599
+#: contents/ui/config/tabs/ConfigRadarTab.qml:615
 msgid "Edit wind palette"
 msgstr ""
 
@@ -1560,7 +1560,7 @@ msgstr ""
 msgid "Geomagnetic activity is expected to be %1 (Kp %2)"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:581
+#: contents/ui/config/tabs/ConfigRadarTab.qml:597
 msgid "Give the palette a name."
 msgstr ""
 
@@ -2442,7 +2442,7 @@ msgstr ""
 msgid "New Moon"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:599
+#: contents/ui/config/tabs/ConfigRadarTab.qml:615
 msgid "New wind palette"
 msgstr ""
 
@@ -2703,7 +2703,7 @@ msgstr ""
 msgid "PM2.5"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:625
+#: contents/ui/config/tabs/ConfigRadarTab.qml:641
 msgid "Palette name"
 msgstr ""
 
@@ -2778,7 +2778,7 @@ msgstr ""
 msgid "Partly cloudy (night)"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:712
+#: contents/ui/config/tabs/ConfigRadarTab.qml:751
 msgid "Paste color"
 msgstr ""
 
@@ -3958,7 +3958,7 @@ msgstr ""
 msgid "Timezone:"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:768
+#: contents/ui/config/tabs/ConfigRadarTab.qml:807
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
 msgstr ""
 
@@ -4422,7 +4422,8 @@ msgstr ""
 msgid "Wind animation:"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:648
+#: contents/ui/config/tabs/ConfigRadarTab.qml:668
+#: contents/ui/config/tabs/ConfigRadarTab.qml:677
 msgid "Wind color"
 msgstr ""
 
@@ -4512,7 +4513,7 @@ msgstr ""
 msgid "a few clouds"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:719
+#: contents/ui/config/tabs/ConfigRadarTab.qml:758
 msgid "above %1 %2"
 msgstr ""
 
@@ -4771,7 +4772,7 @@ msgstr ""
 msgid "until dawn"
 msgstr ""
 
-#: contents/ui/config/tabs/ConfigRadarTab.qml:719
+#: contents/ui/config/tabs/ConfigRadarTab.qml:758
 msgid "up to"
 msgstr ""
 

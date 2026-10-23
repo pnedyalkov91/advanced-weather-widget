@@ -24,7 +24,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
-import org.kde.kquickcontrols as KQuickControls
+import QtQuick.Dialogs as QtDialogs
 import org.kde.plasma.plasmoid
 import "../../js/configUtils.js" as ConfigUtils
 import "../../js/weather.js" as W
@@ -574,6 +574,22 @@ GridLayout {
             }
             return event.hasText ? ConfigUtils.colorFromText(event.text) : "";
         }
+        // A dropped color goes to level i; false when the drop has none.
+        function dropColor(i, event) {
+            var c = droppedColor(event);
+            if (!c)
+                return false;
+            setLevel(i, "color", c);
+            quietColorButtons();
+            return true;
+        }
+        // Qt follows a drag and drop with a click on a color button, which
+        // would open the color window for nothing: the buttons ignore
+        // clicks for a moment after a drag or a drop.
+        property real _colorClicksFrom: 0
+        function quietColorButtons() {
+            _colorClicksFrom = Date.now() + 500;
+        }
         // The OK button waits for a free name and limits that go up.
         function check() {
             var name = nameField.text.trim(), problem = "";
@@ -638,16 +654,37 @@ GridLayout {
                     property url dragImage
                     spacing: Kirigami.Units.smallSpacing
 
-                    // Right-click copies or pastes the color, and so do
-                    // Ctrl+C and Ctrl+V on the focused button. A color dragged
-                    // onto another level, or dropped from another
-                    // application, becomes that level's color.
-                    KQuickControls.ColorButton {
+                    // The color button of KQuickControls, plus: right-click
+                    // copies or pastes the color, and so do Ctrl+C and Ctrl+V
+                    // on the focused button. A color dragged onto another
+                    // level, or dropped from another application, becomes
+                    // that level's color. A click opens the color window,
+                    // except the one Qt sends at the end of a drag.
+                    Button {
                         id: levelColorButton
-                        showAlphaChannel: false
-                        dialogTitle: i18n("Wind color")
-                        color: levelRow.levelColor
-                        onAccepted: picked => windPaletteDialog.setLevel(levelRow.index, "color", picked.toString())
+                        objectName: "windLevelColor"
+                        property bool dragged: false   // a drag left from this press
+                        implicitWidth: 48
+                        Accessible.name: i18n("Wind color")
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            color: levelRow.levelColor
+                        }
+                        QtDialogs.ColorDialog {
+                            id: levelColorDialog
+                            title: i18n("Wind color")
+                            parentWindow: levelColorButton.Window.window
+                            onAccepted: windPaletteDialog.setLevel(levelRow.index, "color", ConfigUtils.colorFromText(selectedColor.toString()) || levelRow.levelColor)
+                        }
+                        onPressed: dragged = false
+                        onClicked: {
+                            if (dragged || Date.now() < windPaletteDialog._colorClicksFrom)
+                                return;
+                            levelColorDialog.selectedColor = levelRow.levelColor;
+                            levelColorDialog.open();
+                        }
 
                         ToolTip.visible: hovered && !levelColorDrag.active && !levelColorMenu.visible
                         ToolTip.text: i18n("%1. Right-click to copy or paste it, drag it onto another level.", levelRow.levelColor)
@@ -678,6 +715,10 @@ GridLayout {
                         DragHandler {
                             id: levelColorDrag
                             target: null
+                            onActiveChanged: {
+                                if (active)
+                                    levelColorButton.dragged = true;
+                            }
                         }
                         Drag.active: levelColorDrag.active
                         Drag.dragType: Drag.Automatic
@@ -686,16 +727,14 @@ GridLayout {
                                 "text/plain": levelRow.levelColor
                             })
                         Drag.imageSource: levelRow.dragImage
+                        Drag.onDragFinished: windPaletteDialog.quietColorButtons()
 
                         DropArea {
                             anchors.fill: parent
                             onEntered: drag => drag.accepted = windPaletteDialog.droppedColor(drag) !== ""
                             onDropped: drop => {
-                                var c = windPaletteDialog.droppedColor(drop);
-                                if (!c)
-                                    return;
-                                windPaletteDialog.setLevel(levelRow.index, "color", c);
-                                drop.accept(Qt.CopyAction);
+                                if (windPaletteDialog.dropColor(levelRow.index, drop))
+                                    drop.accept(Qt.CopyAction);
                             }
                         }
 
