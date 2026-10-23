@@ -256,6 +256,13 @@ Item {
     }
 
     // -- Wi-font icon loader -------------------------------------------------
+    // The map's own storage, see MapWebProfile.qml; null where it cannot load.
+    Loader {
+        id: mapProfileLoader
+        source: "MapWebProfile.qml"
+    }
+    readonly property var mapProfile: mapProfileLoader.item ? mapProfileLoader.item.instance() : null
+
     FontLoader {
         id: wiFont
         source: Qt.resolvedUrl("../../fonts/weathericons-regular-webfont.ttf")
@@ -673,6 +680,11 @@ Item {
         // ── WebEngine map ─────────────────────────────────────────────
         WebEngineView {
             id: webView
+            // Set before the first page load (pageLoadTimer).
+            Binding on profile {
+                when: radarRoot.mapProfile !== null
+                value: radarRoot.mapProfile
+            }
             // Match the page's --bg so the uninitialized web surface does not flash white
             backgroundColor: radarRoot.isDark ? "#0f1117" : "#f0f2f5"
             Layout.fillWidth: true
