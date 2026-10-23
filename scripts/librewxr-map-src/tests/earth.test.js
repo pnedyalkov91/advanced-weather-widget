@@ -94,3 +94,35 @@ test('wholeEarthZoom: no size, no zoom', () => {
   assert.equal(E.wholeEarthZoom('globe', 0, 300), null);
   assert.equal(E.wholeEarthZoom('flat', 800, 0), null);
 });
+
+test('dayGeoJSON: the area where the Sun is above the horizon', () => {
+  for (const sun of [{ lat: 23.4, lon: -60 }, { lat: -11.5, lon: -150 }, { lat: 0.2, lon: 179 }]) {
+    const fc = E.dayGeoJSON(sun);
+    assert.equal(fc.features.length, 1);
+    const ring = fc.features[0].geometry.coordinates[0];
+    assert.deepEqual(ring[0], ring[ring.length - 1], 'closed ring');
+    for (let lat = -84; lat <= 84; lat += 6) {
+      for (let lon = -180; lon < 180; lon += 6) {
+        const alt = E.sunAltitude(sun, lat, lon);
+        if (Math.abs(alt) < 1.5) continue;
+        assert.equal(inRing(ring, lat, lon), alt > 0, `sun ${sun.lat},${sun.lon}: point ${lat},${lon} (sun at ${alt.toFixed(1)})`);
+      }
+    }
+  }
+});
+
+test('sunLightPosition: MapLibre light (anchor map) pointing from the Sun', () => {
+  // MapLibre turns the light position [r, azimuthal, polar] into the
+  // direction (sin az sin p, -cos az sin p, -cos p) in its globe frame, where
+  // a place is (sin lon cos lat, sin lat, cos lon cos lat). Checked on the
+  // page: the lit rim of the atmosphere sits over the day side.
+  const R = Math.PI / 180;
+  for (const sun of [{ lat: 23.4, lon: -60 }, { lat: -11.6, lon: -132.7 }, { lat: 0, lon: 0 }, { lat: 5, lon: 179 }]) {
+    const [r, az, p] = E.sunLightPosition(sun);
+    assert.equal(r, 1);
+    assert.ok(p >= 0 && p <= 180, 'polar within 0..180');
+    const dir = [Math.sin(az * R) * Math.sin(p * R), -Math.cos(az * R) * Math.sin(p * R), -Math.cos(p * R)];
+    const want = [Math.sin(sun.lon * R) * Math.cos(sun.lat * R), Math.sin(sun.lat * R), Math.cos(sun.lon * R) * Math.cos(sun.lat * R)];
+    dir.forEach((v, i) => near(v, want[i], 1e-9, `sun ${sun.lat},${sun.lon} axis ${i}`));
+  }
+});

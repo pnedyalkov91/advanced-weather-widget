@@ -63,46 +63,56 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     return undefined;
   }
 
-  // First layer the page added over the base map and its night: satellite
+  // First layer the page added over the base map, its day and its night: satellite
   // frames go right below it.
   function firstRuntimeLayerId() {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) {
       var id = layers[i].id;
-      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night') return id;
+      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night' && id !== 'lv-day') return id;
     }
     return undefined;
   }
 
   // Night and twilights (glue-earth.js): four nested areas under the same
-  // light veil, so the shade deepens band by band. Right over the base map,
-  // under the satellite, the alerts and the radar. Moved every minute.
-  var NIGHT_VEIL = 0.13;
+  // light veil, so the shade deepens band by band; on a dark map the day
+  // gets a light veil of its own. Right over the base map, under the
+  // satellite, the alerts and the radar. The map's light stands at the Sun,
+  // so the globe's atmosphere glows over the day side. Moved every minute.
+  var NIGHT_VEIL = 0.13, DAY_VEIL = 0.07;
   var dayNight = DAYNIGHT_INIT;
-  var nightTimer = null;
-  function nightData() { return WidgetEarth.nightGeoJSON(WidgetEarth.subsolarPoint(new Date())); }
-  function addNightLayer() {
-    if (!dayNight || map.getLayer('lv-night')) return;
-    if (!map.getSource('lv-night')) map.addSource('lv-night', { type: 'geojson', data: nightData() });
+  var sunTimer = null;
+  function addVeil(id, data, color, opacity) {
+    if (map.getLayer(id)) return;
+    if (!map.getSource(id)) map.addSource(id, { type: 'geojson', data: data });
     map.addLayer({
-      id: 'lv-night', type: 'fill', source: 'lv-night',
-      paint: { 'fill-color': '#000000', 'fill-opacity': NIGHT_VEIL, 'fill-antialias': false }
-    }, firstRuntimeLayerId());
+      id: id, type: 'fill', source: id,
+      paint: { 'fill-color': color, 'fill-opacity': opacity, 'fill-antialias': false }
+    }, id === 'lv-day' && map.getLayer('lv-night') ? 'lv-night' : firstRuntimeLayerId());
+  }
+  function dropVeil(id) {
+    if (map.getLayer(id)) map.removeLayer(id);
+    if (map.getSource(id)) map.removeSource(id);
+  }
+  // The veils the setting and the map theme ask for; after a style swap too.
+  function addSunLayers() {
+    var sun = WidgetEarth.subsolarPoint(new Date());
+    if (dayNight && skyTheme === 'dark') addVeil('lv-day', WidgetEarth.dayGeoJSON(sun), '#ffffff', DAY_VEIL);
+    else dropVeil('lv-day');
+    if (dayNight) addVeil('lv-night', WidgetEarth.nightGeoJSON(sun), '#000000', NIGHT_VEIL);
+    else dropVeil('lv-night');
+  }
+  function moveSun() {
+    var sun = WidgetEarth.subsolarPoint(new Date());
+    map.setLight({ anchor: 'map', position: WidgetEarth.sunLightPosition(sun) });
+    var night = map.getSource('lv-night'), day = map.getSource('lv-day');
+    if (night) night.setData(WidgetEarth.nightGeoJSON(sun));
+    if (day) day.setData(WidgetEarth.dayGeoJSON(sun));
   }
   function applyDayNight() {
-    if (dayNight) {
-      addNightLayer();
-      if (!nightTimer) {
-        nightTimer = setInterval(function () {
-          var src = map.getSource('lv-night');
-          if (src && !document.hidden) src.setData(nightData());
-        }, 60000);
-      }
-    } else {
-      if (map.getLayer('lv-night')) map.removeLayer('lv-night');
-      if (map.getSource('lv-night')) map.removeSource('lv-night');
-      if (nightTimer) { clearInterval(nightTimer); nightTimer = null; }
-    }
+    addSunLayers();
+    moveSun();
+    if (!sunTimer) sunTimer = setInterval(function () { if (!document.hidden && !swapInProgress) moveSun(); }, 60000);
   }
 
   // The widest zoom shows the whole Earth (glue-earth.js): the world fills
@@ -183,8 +193,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     }
   }
 
-  // Around the globe, space in the page's colors and an atmosphere at the
-  // rim that fades out as the map zooms in (gone at MapLibre zoom 7).
+  // Around the globe, space in the page's colors and an atmosphere lit by
+  // the Sun (moveSun), which fades out as the map zooms in (gone at
+  // MapLibre zoom 7).
   var SKY = {
     dark: { 'sky-color': '#05070b', 'horizon-color': '#1d3557', 'fog-color': '#05070b' },
     light: { 'sky-color': '#e8eef5', 'horizon-color': '#9fb6d0', 'fog-color': '#e8eef5' }
@@ -193,7 +204,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     map.setProjection({ type: projection === 'globe' ? 'globe' : 'mercator' });
     var sky = {}, base = SKY[skyTheme] || SKY.dark;
     for (var k in base) sky[k] = base[k];
-    sky['atmosphere-blend'] = ['interpolate', ['linear'], ['zoom'], 0, 0.9, 4, 0.6, 7, 0];
+    sky['atmosphere-blend'] = ['interpolate', ['linear'], ['zoom'], 0, 0.5, 4, 0.35, 7, 0];
     map.setSky(sky);
   }
 
@@ -208,12 +219,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function restoreRuntimeStyle(key) {
     appliedKey = key;
     var i;
-    addNightLayer();
+    addSunLayers();
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind === 'satellite') addFrameEntry(frameRegistry[i]);
     if (alertsEntry) { addAlertsLayers(); registerAlertsPopup(); }
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind !== 'satellite') addFrameEntry(frameRegistry[i]);
     assertAlertsPosition();
     applyProjection();
+    moveSun();
     swapInProgress = false;
     if (desired && desired.key !== appliedKey) swapToStyle(desired);
   }
@@ -253,8 +265,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       skyTheme = theme;
       desired = baseFor(theme);
       if (!styleReady) { map.once('load', function () { adapter.setBasemap(theme); }); return; }
-      if (swapInProgress || desired.key === appliedKey) return;
-      swapToStyle(desired);
+      if (swapInProgress) return;
+      if (desired.key !== appliedKey) { swapToStyle(desired); return; }
+      // Same base map, other theme: the space around the globe and the day veil follow.
+      applyProjection();
+      addSunLayers();
     },
 
     createFrameLayer: function (url, kind) {

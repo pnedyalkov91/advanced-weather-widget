@@ -110,6 +110,30 @@ var WidgetEarth = (function () {
     };
   }
 
+  /** Where the Sun is above the horizon: the cap of radius 90 around the
+      subsolar point, that is where the Sun of the antipode is below it. */
+  function dayGeoJSON(sun, step) {
+    var antipode = { lat: -sun.lat, lon: wrap180(sun.lon + 180) };
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: { altitude: 0 },
+        geometry: { type: 'Polygon', coordinates: [capRing(antipode, 0, step || 1)] }
+      }]
+    };
+  }
+
+  /** MapLibre light position [radial, azimuthal, polar] (anchor 'map') that
+      lights the globe's atmosphere from the Sun. MapLibre makes it the
+      direction (sin az sin p, -cos az sin p, -cos p) in its globe frame,
+      where a place is (sin lon cos lat, sin lat, cos lon cos lat). */
+  function sunLightPosition(sun) {
+    var x = Math.sin(sun.lon * RAD) * Math.cos(sun.lat * RAD), y = Math.sin(sun.lat * RAD);
+    var z = Math.cos(sun.lon * RAD) * Math.cos(sun.lat * RAD);
+    return [1, Math.atan2(x, -y) * DEG, Math.acos(Math.max(-1, Math.min(1, -z))) * DEG];
+  }
+
   /** MapLibre's camera stands this many map heights from the point in the
       middle of the map (its 36.87 degree field of view). */
   var CAMERA = 1.5;
@@ -138,7 +162,8 @@ var WidgetEarth = (function () {
 
   return {
     BANDS: BANDS, GLOBE_FILL: GLOBE_FILL, subsolarPoint: subsolarPoint, sunAltitude: sunAltitude,
-    nightGeoJSON: nightGeoJSON, globeApparentRadius: globeApparentRadius, wholeEarthZoom: wholeEarthZoom
+    nightGeoJSON: nightGeoJSON, dayGeoJSON: dayGeoJSON, sunLightPosition: sunLightPosition,
+    globeApparentRadius: globeApparentRadius, wholeEarthZoom: wholeEarthZoom
   };
 })();
 
