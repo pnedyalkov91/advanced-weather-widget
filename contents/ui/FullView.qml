@@ -51,11 +51,12 @@ Rectangle {
     // auto/manual/simple/advanced/tray logic.
     readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
     readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
+    readonly property bool _isHistoryTab: _hasLocation && activeTab === 3 && showHistoryTab
     readonly property bool isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
     Layout.preferredWidth:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
-    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
+    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : ((_isRadarTab || _isHistoryTab) ? 680 : 550)) : 220
     width:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
-    height: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
+    height: _hasLocation ? (isSimpleMode ? 550 : ((_isRadarTab || _isHistoryTab) ? 680 : 550)) : 220
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -99,19 +100,25 @@ Rectangle {
     readonly property bool showDetailsTab:  visibleTabs === "both" || visibleTabs === "details"
     readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
     readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && (visibleTabs === "both" || visibleTabs === "radar")
-    readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab
+    readonly property bool showHistoryTab:  visibleTabs === "both" || visibleTabs === "history"
+    readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab || showHistoryTab
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
-    // Returns 0 = Details, 1 = Forecast, 2 = Radar
+    // Returns 0 = Details, 1 = Forecast, 2 = Radar, 3 = History
     function _resolvedDefaultTab() {
+        var shown = [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab, fullView.showHistoryTab];
         var want = 0;
         var pref = Plasmoid.configuration.widgetDefaultTab || "details";
         if (pref === "forecast") want = 1;
         else if (pref === "radar") want = 2;
-        if (want === 0 && !fullView.showDetailsTab)  want = fullView.showForecastTab ? 1 : (fullView.showRadarTab ? 2 : 0);
-        if (want === 1 && !fullView.showForecastTab) want = fullView.showDetailsTab  ? 0 : (fullView.showRadarTab ? 2 : 0);
-        if (want === 2 && !fullView.showRadarTab)    want = fullView.showDetailsTab  ? 0 : (fullView.showForecastTab ? 1 : 0);
-        return want;
+        else if (pref === "history") want = 3;
+        if (shown[want])
+            return want;
+        // The preferred tab is hidden: first visible tab in display order.
+        for (var i = 0; i < shown.length; ++i)
+            if (shown[i])
+                return i;
+        return 0;
     }
 
     // Whether not-currently-shown tabs stay instantiated. True while the
@@ -147,6 +154,9 @@ Rectangle {
                     // it only if it has gone stale.
                     if (fullView.activeTab === 2 && radarLoader.item)
                         radarLoader.item.reloadIfStale();
+                    // Same for History: pick up a new day / location.
+                    if (fullView.activeTab === 3 && historyLoader.item)
+                        historyLoader.item.reloadIfStale();
                 });
             }
         }
@@ -435,6 +445,9 @@ Rectangle {
                     // Refresh button is consistent across all tabs.
                     if (fullView.activeTab === 2 && radarLoader.item)
                         radarLoader.item.reload()
+                    // ...and the History tab refetches its archive data.
+                    if (fullView.activeTab === 3 && historyLoader.item)
+                        historyLoader.item.reload()
                 }
             }
         }
@@ -565,7 +578,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
             radius: 17
-            visible: !fullView.isSimpleMode && [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab].filter(Boolean).length > 1
+            visible: !fullView.isSimpleMode && [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab, fullView.showHistoryTab].filter(Boolean).length > 1
             // #2: tab bar background adapts to theme
             color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
@@ -582,6 +595,7 @@ Rectangle {
                         if (fullView.showDetailsTab)  tabs.push({ label: i18n("Details"),  logicalIdx: 0 });
                         if (fullView.showForecastTab) tabs.push({ label: i18n("Forecast"), logicalIdx: 1 });
                         if (fullView.showRadarTab)    tabs.push({ label: i18n("Radar"),    logicalIdx: 2 });
+                        if (fullView.showHistoryTab)  tabs.push({ label: i18n("History"),  logicalIdx: 3 });
                         return tabs;
                     }
                     delegate: Rectangle {
@@ -651,6 +665,10 @@ Rectangle {
                 // state and fetch the hourly data twice.
                 if (currentIndex === 2 && radarLoader.item)
                     radarLoader.item.reloadIfStale();
+                // A History tab that is still alive may be showing an old day
+                // or another location; a fresh one loads itself on creation.
+                if (currentIndex === 3 && historyLoader.item)
+                    historyLoader.item.reloadIfStale();
             }
 
             // ── Details tab ───────────────────────────────────────────
@@ -735,6 +753,31 @@ Rectangle {
                     visible: running
                 }
             }
+
+            // ── History tab ───────────────────────────────────────────
+            // Open-Meteo archive data for the active location. Index 3 -
+            // keep this the LAST child: StackLayout index == logicalIdx.
+            Item {
+                id: historyTab
+                // The view scrolls internally, so give it the room the popup has
+                // (popup height minus the hero/tab-bar chrome above and the footer below).
+                implicitHeight: Math.max(300, fullView.height - 260)
+                Loader {
+                    id: historyLoader
+                    anchors.fill: parent
+                    asynchronous: true
+                    active: historyTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    sourceComponent: HistoryView {
+                        weatherRoot: fullView.weatherRoot
+                        resolveConditionIconFn: fullView.resolveConditionIcon
+                    }
+                }
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: historyLoader.status === Loader.Loading
+                    visible: running
+                }
+            }
         }
 
         // ── Footer: "Updated X ago · Weather provider: <link>" ─────────
@@ -752,6 +795,8 @@ Rectangle {
                     else
                         t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
                 }
+                if (fullView._isHistoryTab)
+                    t += " · " + i18n("History:") + " <a href='https://open-meteo.com/'>Open-Meteo.com</a>";
                 return t;
             }
             textFormat: Text.RichText
