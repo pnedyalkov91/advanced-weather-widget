@@ -40,18 +40,6 @@ var WidgetLeafletAdapter = function () {
   // VM, software rendering off - creating the layer throws, and the throw
   // lands after the old base layer was removed, leaving the map with no
   // background at all. Check first and stay on raster tiles instead.
-  var webglOk = null;
-  function hasWebGL() {
-    if (webglOk !== null) return webglOk;
-    try {
-      var c = document.createElement('canvas');
-      webglOk = !!(c.getContext('webgl2') || c.getContext('webgl'));
-    } catch (e) {
-      webglOk = false;
-    }
-    return webglOk;
-  }
-
   // Fetched only when a vector background is actually selected: it is an
   // 800 kB script and every raster background works without it. A vector
   // entry picked before it lands shows its raster fallback, and setBasemap

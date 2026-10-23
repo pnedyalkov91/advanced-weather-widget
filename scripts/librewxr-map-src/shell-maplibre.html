@@ -105,6 +105,9 @@
 
     <script>
 /*@__WIDGET_GLUE_CONFIG__*/
+// Without WebGL MapLibre cannot draw: hand over to the Leaflet page, with
+// the same parameters.
+if (!hasWebGL()) location.replace('librewxr-map-leaflet.html' + location.search);
 //__VIEWER_CORE__
 
     </script>
