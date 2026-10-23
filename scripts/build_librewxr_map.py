@@ -35,6 +35,7 @@ GLUE_WIND_TOKEN = "/*@__WIDGET_GLUE_WIND__*/"
 GLUE_CONTROLS_TOKEN = "/*@__WIDGET_GLUE_CONTROLS__*/"
 GLUE_WIND_OPEN_TOKEN = "/*@__WIDGET_GLUE_WIND_OPEN__*/"
 GLUE_WIND_TABLE_TOKEN = "/*@__WIDGET_GLUE_WIND_TABLE__*/"
+GLUE_EARTH_TOKEN = "/*@__WIDGET_GLUE_EARTH__*/"
 
 # Vendored in this repository under scripts/librewxr-map-src/. shell.html is
 # the assembly base and carries no token of its own; the remaining fragments
@@ -58,6 +59,7 @@ PAGES = [
         ("glue-wind.js", GLUE_WIND_TOKEN),
         ("glue-wind-open.js", GLUE_WIND_OPEN_TOKEN),
         ("glue-wind-table.js", GLUE_WIND_TABLE_TOKEN),
+        ("glue-earth.js", GLUE_EARTH_TOKEN),
         ("glue-controls.js", GLUE_CONTROLS_TOKEN),
     ]),
     ("librewxr-map-leaflet.html", "shell.html", LOCAL_SOURCES[1:]),

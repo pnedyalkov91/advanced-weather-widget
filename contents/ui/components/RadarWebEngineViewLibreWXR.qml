@@ -27,6 +27,7 @@
  *   window.setWindRate(fps, maxFps)       // frame-rate budget from the settings
  *   window.setWindWidth(px)               // particle width from the settings
  *   window.setProjection("flat" | "globe") // map projection (the map's globe button reports "proj:")
+ *   window.setDayNight(true | false)      // night and twilights (the map's button reports "night:")
  *   window.setWindPalette("max:rrggbb,...") // wind palette from the settings; "" = the default one
  *   window.setWindDensity(factor)         // particle density from the settings (1 = default)
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
@@ -90,6 +91,8 @@ Item {
     readonly property real windDensity: Plasmoid.configuration.librewxrWindDensity > 0 ? Plasmoid.configuration.librewxrWindDensity : 1
     // Flat map or globe, switched from the globe button on the map.
     readonly property string projection: Plasmoid.configuration.librewxrProjection === "globe" ? "globe" : "flat"
+    // Night and twilights on the map, switched from the button under the globe one.
+    readonly property bool dayNight: Plasmoid.configuration.librewxrDayNight !== false
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
     // m/s, "inf" for the last level). Empty for the default palette, and for
     // an entry that does not read: the page then uses the default one.
@@ -349,9 +352,11 @@ Item {
             "noRadarData": i18n("No radar data"),
             "noSatData": i18n("No satellite data"),
             "apiError": i18n("API error"),
-            "connFailed": i18n("Connection failed")
+            "connFailed": i18n("Connection failed"),
+            "globe": i18n("Globe"),
+            "dayNight": i18n("Day and night")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -789,6 +794,12 @@ Item {
                     if (proj !== Plasmoid.configuration.librewxrProjection) {
                         Plasmoid.configuration.librewxrProjection = proj;
                     }
+                } else if (title.indexOf("night:") === 0) {
+                    // Switched with the day and night button: the page already shows it.
+                    var night = title.substring(6) === "1";
+                    if (night !== (Plasmoid.configuration.librewxrDayNight !== false)) {
+                        Plasmoid.configuration.librewxrDayNight = night;
+                    }
                 } else if (title.indexOf("bg:") === 0) {
                     // Picked from the in-map picker: the page already swapped
                     // its tiles, so persist the choice without reloading.
@@ -831,6 +842,9 @@ Item {
                 }
                 function onProjectionChanged() {
                     webView.runJavaScript("if (window.setProjection) window.setProjection(" + JSON.stringify(radarRoot.projection) + ");");
+                }
+                function onDayNightChanged() {
+                    webView.runJavaScript("if (window.setDayNight) window.setDayNight(" + radarRoot.dayNight + ");");
                 }
                 function onMapBackgroundChanged() {
                     if (radarRoot._backgroundFromMap) {

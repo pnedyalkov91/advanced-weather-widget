@@ -63,14 +63,57 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     return undefined;
   }
 
-  // First layer the page added: satellite frames go right below it, on top
-  // of the base map.
+  // First layer the page added over the base map and its night: satellite
+  // frames go right below it.
   function firstRuntimeLayerId() {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) {
-      if (layers[i].id.indexOf('lv-') === 0 && layers[i].id !== 'lv-base') return layers[i].id;
+      var id = layers[i].id;
+      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night') return id;
     }
     return undefined;
+  }
+
+  // Night and twilights (glue-earth.js): four nested areas under the same
+  // light veil, so the shade deepens band by band. Right over the base map,
+  // under the satellite, the alerts and the radar. Moved every minute.
+  var NIGHT_VEIL = 0.13;
+  var dayNight = DAYNIGHT_INIT;
+  var nightTimer = null;
+  function nightData() { return WidgetEarth.nightGeoJSON(WidgetEarth.subsolarPoint(new Date())); }
+  function addNightLayer() {
+    if (!dayNight || map.getLayer('lv-night')) return;
+    if (!map.getSource('lv-night')) map.addSource('lv-night', { type: 'geojson', data: nightData() });
+    map.addLayer({
+      id: 'lv-night', type: 'fill', source: 'lv-night',
+      paint: { 'fill-color': '#000000', 'fill-opacity': NIGHT_VEIL, 'fill-antialias': false }
+    }, firstRuntimeLayerId());
+  }
+  function applyDayNight() {
+    if (dayNight) {
+      addNightLayer();
+      if (!nightTimer) {
+        nightTimer = setInterval(function () {
+          var src = map.getSource('lv-night');
+          if (src && !document.hidden) src.setData(nightData());
+        }, 60000);
+      }
+    } else {
+      if (map.getLayer('lv-night')) map.removeLayer('lv-night');
+      if (map.getSource('lv-night')) map.removeSource('lv-night');
+      if (nightTimer) { clearInterval(nightTimer); nightTimer = null; }
+    }
+  }
+
+  // The widest zoom shows the whole Earth (glue-earth.js): the world fills
+  // the map's height when flat, the globe its smaller side. It depends on
+  // the map's size only; MapLibre takes no minimum below -2.
+  function fitMinZoom() {
+    var c = map.getContainer();
+    var z = WidgetEarth.wholeEarthZoom(projection, c.clientWidth, c.clientHeight);
+    if (z === null) return;
+    z = Math.max(-2, Math.min(z, map.getMaxZoom()));
+    if (Math.abs(z - map.getMinZoom()) > 0.001) map.setMinZoom(z);
   }
 
   // Alerts sit right below the radar frames, above satellite frames.
@@ -165,6 +208,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function restoreRuntimeStyle(key) {
     appliedKey = key;
     var i;
+    addNightLayer();
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind === 'satellite') addFrameEntry(frameRegistry[i]);
     if (alertsEntry) { addAlertsLayers(); registerAlertsPopup(); }
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind !== 'satellite') addFrameEntry(frameRegistry[i]);
@@ -198,9 +242,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       // Zoom buttons and compass, where the Leaflet page has them.
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
       new maplibregl.Marker().setLngLat([view.lon, view.lat]).addTo(map);
-      map.once('load', function () { styleReady = true; applyProjection(); });
+      map.once('load', function () { styleReady = true; applyProjection(); applyDayNight(); fitMinZoom(); });
       map.on('movestart', function () { holdHiddenFrames(true); });
       map.on('moveend', function () { holdHiddenFrames(false); });
+      map.on('resize', fitMinZoom);
       return map;
     },
 
@@ -348,9 +393,17 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     setProjection: function (p) {
       projection = p === 'globe' ? 'globe' : 'flat';
       if (styleReady && !swapInProgress) applyProjection();
+      if (styleReady) fitMinZoom();
     },
 
     getProjection: function () { return projection; },
+
+    setDayNight: function (on) {
+      dayNight = !!on;
+      if (styleReady && !swapInProgress) applyDayNight();
+    },
+
+    getDayNight: function () { return dayNight; },
 
     // The table-based wind layer (glue-wind-table.js), when the page has it.
     createWindLayer: function (source, openData, dem, options) {

@@ -224,11 +224,32 @@ window.setProjection = function (p) {
   if (windLayer && windLayer.refresh) setTimeout(function () { if (windLayer) windLayer.refresh(); }, 300);
 };
 if (projBtn) {
+  projBtn.title = tr('globe', 'Globe');
   projBtn.addEventListener('click', function () {
     window.setProjection(_widgetAdapter.getProjection() === 'globe' ? 'flat' : 'globe');
     document.title = 'proj:' + _widgetAdapter.getProjection();
   });
   renderProjBtn();
+}
+
+// === DAY AND NIGHT (MapLibre page: night and twilights on the map) ===
+// Same pattern as the globe button: lit while on, reported to QML through
+// the title ("night:1" or "night:0"), set by QML through window.setDayNight().
+var nightBtn = document.getElementById('lv-night');
+function renderNightBtn() {
+  if (nightBtn) nightBtn.classList.toggle('active', _widgetAdapter.getDayNight());
+}
+window.setDayNight = function (on) {
+  _widgetAdapter.setDayNight(!!on);
+  renderNightBtn();
+};
+if (nightBtn) {
+  nightBtn.title = tr('dayNight', 'Day and night');
+  nightBtn.addEventListener('click', function () {
+    window.setDayNight(!_widgetAdapter.getDayNight());
+    document.title = 'night:' + (_widgetAdapter.getDayNight() ? '1' : '0');
+  });
+  renderNightBtn();
 }
 
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===

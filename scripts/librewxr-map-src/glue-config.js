@@ -81,6 +81,8 @@ function hasWebGL() {
 
 // Map projection on the MapLibre page: 'flat' (Web Mercator) or 'globe'.
 var PROJECTION_INIT = PARAMS.get('proj') === 'globe' ? 'globe' : 'flat';
+// Night and twilights on the MapLibre page; on unless the widget says no.
+var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';
