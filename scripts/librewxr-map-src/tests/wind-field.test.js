@@ -412,6 +412,77 @@ test('lineWidth: particle width kept within 0.5..2 px, 1 px when unset', () => {
   assert.equal(WindField.lineWidth(0), 1);
 });
 
+test('parsePalette: round trip of the default palette', () => {
+  const s = WindField.formatPalette(WindField.DEFAULT_PALETTE);
+  assert.deepEqual(WindField.parsePalette(s), WindField.DEFAULT_PALETTE);
+  assert.equal(WindField.DEFAULT_PALETTE.length, 8);
+  close(WindField.DEFAULT_PALETTE[4].max, 50 / 3.6, 1e-3);
+  assert.equal(WindField.DEFAULT_PALETTE[7].max, Infinity);
+  assert.equal(WindField.DEFAULT_PALETTE[1].color, '#2ecc40');
+});
+
+test('parsePalette: null on wrong count, decreasing thresholds or bad colour', () => {
+  const s = WindField.formatPalette(WindField.DEFAULT_PALETTE);
+  assert.equal(WindField.parsePalette('1:ffffff,inf:000000'), null);
+  assert.equal(WindField.parsePalette(s.replace('3.333', '0.5')), null);
+  assert.equal(WindField.parsePalette(s.replace('2ecc40', 'zzzzzz')), null);
+  assert.equal(WindField.parsePalette(''), null);
+  assert.equal(WindField.parsePalette(null), null);
+});
+
+test('paletteBand: bounds are inclusive upper limits in m/s', () => {
+  const p = WindField.DEFAULT_PALETTE;
+  assert.equal(WindField.paletteBand(0, p), 0);
+  assert.equal(WindField.paletteBand(5 / 3.6, p), 0);
+  assert.equal(WindField.paletteBand(6 / 3.6, p), 1);
+  assert.equal(WindField.paletteBand(100 / 3.6, p), 6);
+  assert.equal(WindField.paletteBand(150 / 3.6, p), 7);
+});
+
+test('bandColor: white turns indigo on a light map', () => {
+  const p = WindField.DEFAULT_PALETTE;
+  assert.equal(WindField.bandColor(p, 0, 'light'), '#1a237e');
+  assert.equal(WindField.bandColor(p, 0, 'dark'), '#ffffff');
+  assert.equal(WindField.bandColor(p, 4, 'light'), '#ffdc00');
+});
+
+test('particleCount: one particle per 300 px2 times the density, within 200..max', () => {
+  assert.equal(WindField.particleCount(800 * 330, 1, 1500), 880);
+  assert.equal(WindField.particleCount(800 * 330, 0.5, 1500), 440);
+  assert.equal(WindField.particleCount(800 * 330, 2, 1500), 1500);
+  assert.equal(WindField.particleCount(100 * 100, 1, 1500), 200);
+});
+
+test('wantApi: the API only once its grid is finer than the file', () => {
+  assert.equal(WindField.wantApi({ lonStep: 0.352 }, 0.25), false);
+  assert.equal(WindField.wantApi({ lonStep: 0.176 }, 0.25), true);
+});
+
+test('pow2Steps round: steps are 360/2^k and 90/2^k', () => {
+  const saved = WindField.pow2Steps;
+  WindField.pow2Steps = 'round';
+  try {
+    for (const b of [{ west: -5, east: 15, south: 40, north: 55 }, { west: 100, east: 103, south: 10, north: 12 }]) {
+      const s = WindField.gridSpec(b);
+      close(Math.log2(360 / s.lonStep) % 1, 0, 1e-9);
+      close(Math.log2(90 / s.latStep) % 1, 0, 1e-9);
+    }
+  } finally { WindField.pow2Steps = saved; }
+});
+
+test('pow2Steps round: a coarser kept grid is fetched again, an equal one is reused', () => {
+  const saved = WindField.pow2Steps;
+  WindField.pow2Steps = 'round';
+  try {
+    const view = { bounds: { west: -5, east: 15, south: 40, north: 55 }, zoom: 6 };
+    const entry = (b) => ({ spec: WindField.gridSpec(b), grid: {}, fetchedAt: 0, zoom: view.zoom });
+    const coarse = entry({ west: -60, east: 70, south: -10, north: 80 });
+    assert.ok(coarse.spec.lonStep > WindField.gridSpec(view.bounds).lonStep);
+    assert.equal(WindField.needsFetch(view, coarse, 0, 1e9), true);
+    assert.equal(WindField.needsFetch(view, entry(view.bounds), 0, 1e9), false);
+  } finally { WindField.pow2Steps = saved; }
+});
+
 test('warmUpFrames: enough frames for the trails to reach 95% of their length', () => {
   assert.equal(WindField.warmUpFrames(0.9), 29);    // 0.9^29 < 0.05 <= 0.9^28
   assert.equal(WindField.warmUpFrames(0.8), 14);

@@ -26,7 +26,7 @@ var config = {
     // The QML chrome only knows arrows on/off; the page derives the arrow
     // color from the map theme, so re-derive it whenever the theme moves.
     if (arrowsOn) viewer.setArrows(theme === 'dark' ? 'light' : 'dark');
-    if (windLayer) windLayer.setColor(windColor(theme));
+    if (windLayer) windLayer.setTheme(theme);
   }
 };
 
@@ -168,14 +168,12 @@ var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
 var windLineWidth = WIND_LINE_WIDTH;
 var viewportSettled = false;   // set by the first window.fixViewport()
 
-function windColor(theme) { return theme === 'dark' ? '#ffffff' : '#1a237e'; }
-
 window.setWind = function (on) {
   var m = _widgetAdapter.getMap();
   if (!m) return;
   if (on && !windLayer) {
     windLayer = new WindLayerClass(_windSource, _windDem, {
-      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, color: windColor(currentTheme()), level: windLevel,
+      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: windLevel,
       lineWidth: windLineWidth
     });
     windLayer.addTo(m);
