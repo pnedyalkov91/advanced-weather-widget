@@ -160,7 +160,149 @@ var WidgetOpenData = (function () {
     return { lats: lats, lons: lons, elev: null, times: [validMs / 1000], u: lv.u, v: lv.v, levels: levels, res: res };
   }
 
-  return { BASE: BASE, fileUrl: fileUrl, varNames: varNames, mergeRanges: mergeRanges, TailBackend: TailBackend, toGrid: toGrid };
+  var TAIL_BYTES = 262144;    // the file's end read at once (headers and chunk indexes)
+  var KEEP_HOURS = 3;          // a kept wind further from now than this is not shown
+
+  /** Key of a kept wind: one per model and level. */
+  function cacheKey(model, level) { return model + ':' + level; }
+
+  /** Whether a kept wind is close enough to now to be shown. */
+  function usableKept(entry, nowMs, maxHours) {
+    if (!entry || !(entry.validMs >= 0)) return false;
+    return Math.abs(nowMs - entry.validMs) <= (maxHours || KEEP_HOURS) * 3600e3;
+  }
+
+  /** The browser's IndexedDB as a small key/value store. Storage can be
+      missing or refused (a private profile): every call then gives null and
+      the wind is read from the file each time. */
+  function idbStore(dbName) {
+    var opening = null;
+    function open() {
+      if (!opening) {
+        opening = new Promise(function (resolve, reject) {
+          var r = indexedDB.open(dbName || 'awwOpenData', 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore('wind'); };
+          r.onsuccess = function () { resolve(r.result); };
+          r.onerror = function () { reject(r.error); };
+        });
+      }
+      return opening;
+    }
+    function run(mode, op) {
+      return Promise.resolve().then(open).then(function (db) {
+        return new Promise(function (resolve, reject) {
+          var tx = db.transaction('wind', mode), req = op(tx.objectStore('wind'));
+          tx.oncomplete = function () { resolve(req.result === undefined ? null : req.result); };
+          tx.onerror = function () { reject(tx.error); };
+        });
+      }).catch(function () { return null; });
+    }
+    return {
+      get: function (key) { return run('readonly', function (s) { return s.get(key); }); },
+      put: function (key, value) { return run('readwrite', function (s) { return s.put(value, key); }); }
+    };
+  }
+
+  /* The open-data wind of one model, per level: the kept wind straight away
+     (kept), then the latest file when it is newer (load). latest.json is read
+     at most every recheckMs. Every failure gives null, and the map then keeps
+     the API grids at every zoom, as before. */
+  function Loader(opts) {
+    opts = opts || {};
+    this.model = opts.model || 'ecmwf_ifs025';
+    this.base = opts.base || BASE;
+    this.store = opts.store || idbStore();
+    this.fetch = opts.fetchFn || function (u, init) { return fetch(u, init); };
+    this.importReader = opts.importReader;
+    this.recheckMs = opts.recheckMs == null ? 600000 : opts.recheckMs;
+    this.now = opts.now || function () { return Date.now(); };
+    this.res = 0.25;             // degrees; read from the file once one is in
+    this.grids = {};
+    this.urls = {};
+    this.checkedAt = {};
+    this.loading = {};
+  }
+
+  Loader.prototype._use = function (level, entry) {
+    var grid = toGrid(entry.du, entry.dv, entry.ny, entry.nx, entry.validMs, level);
+    this.res = grid.res;
+    this.grids[level] = grid;
+    this.urls[level] = entry.url;
+    return grid;
+  };
+
+  /** The kept wind of a level when recent enough, else null. */
+  Loader.prototype.kept = function (level) {
+    var self = this;
+    return Promise.resolve(this.store.get(cacheKey(this.model, level))).then(function (entry) {
+      return usableKept(entry, self.now()) ? self._use(level, entry) : null;
+    }).catch(function () { return null; });
+  };
+
+  /** { grid, changed } with the latest file's wind, changed when it was
+      read now; null on failure. */
+  Loader.prototype.load = function (level) {
+    var self = this, now = this.now();
+    if (this.loading[level]) return this.loading[level];
+    if (this.grids[level] && now - this.checkedAt[level] < this.recheckMs) {
+      return Promise.resolve({ grid: this.grids[level], changed: false });
+    }
+    var t0 = now;
+    this.loading[level] = this.fetch(this.base + this.model + '/latest.json', { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('latest.json ' + r.status);
+      return r.json();
+    }).then(function (latest) {
+      self.checkedAt[level] = now;
+      var f = fileUrl(latest, self.model, now, self.base);
+      if (f.url === self.urls[level] && self.grids[level]) return { grid: self.grids[level], changed: false };
+      return self._read(f, level).then(function (entry) {
+        entry.ref = latest.reference_time;
+        self.store.put(cacheKey(self.model, level), entry);
+        var grid = self._use(level, entry);
+        console.log('[wind] open data: ' + f.url.split('/').slice(-3).join('/') + ' ' + level + ' read in ' + (self.now() - t0) + ' ms');
+        return { grid: grid, changed: true };
+      });
+    }).catch(function (err) {
+      console.warn('[wind] open data: ' + err);
+      return null;
+    }).then(function (res) {
+      self.loading[level] = null;
+      return res;
+    });
+    return this.loading[level];
+  };
+
+  /** The u and v fields of a level in one file: { url, validMs, ny, nx, du, dv }. */
+  Loader.prototype._read = function (f, level) {
+    var self = this, lib = null, names = varNames(level);
+    return this.importReader().then(function (m) {
+      lib = m;
+      return lib.OmFileReader.create(new TailBackend(f.url, TAIL_BYTES, self.fetch));
+    }).then(function (root) {
+      var kids = [];
+      for (var i = 0; i < root.numberOfChildren(); i++) kids.push(root.getChild(i));
+      return Promise.all(kids);
+    }).then(function (kids) {
+      var find = function (n) { return kids.filter(function (k) { return k && k.getName() === n; })[0]; };
+      var u = find(names[0]), v = find(names[1]);
+      if (!u || !v) throw new Error('no ' + names[0] + ' in ' + f.url);
+      var dims = u.getDimensions(), ny = Number(dims[0]), nx = Number(dims[1]);
+      var args = {
+        type: lib.OmDataType.FloatArray,
+        ranges: [{ start: 0, end: ny }, { start: 0, end: nx }],
+        ioSizeMax: BigInt(1048576),
+        ioSizeMerge: BigInt(65536)
+      };
+      return Promise.all([u.read(args), v.read(args)]).then(function (d) {
+        return { url: f.url, validMs: f.validMs, ny: ny, nx: nx, du: d[0], dv: d[1] };
+      });
+    });
+  };
+
+  return {
+    BASE: BASE, fileUrl: fileUrl, varNames: varNames, mergeRanges: mergeRanges, TailBackend: TailBackend,
+    toGrid: toGrid, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
+  };
 })();
 
 if (typeof module !== 'undefined' && module.exports) { module.exports = WidgetOpenData; }

@@ -79,3 +79,65 @@ test('toGrid: rows flipped to north-first, antimeridian column added', () => {
   assert.deepEqual(g.times, [3600]);
   assert.equal(g.u, g.levels['10m'].u);
 });
+
+test('cacheKey and usableKept: kept wind per model and level, shown up to 3 h from now', () => {
+  assert.equal(WidgetOpenData.cacheKey('ecmwf_ifs025', '700hPa'), 'ecmwf_ifs025:700hPa');
+  const now = Date.parse('2026-10-23T15:00:00Z');
+  assert.equal(WidgetOpenData.usableKept({ validMs: now - (3 * 3600 - 60) * 1000 }, now), true);
+  assert.equal(WidgetOpenData.usableKept({ validMs: now + (3 * 3600 + 60) * 1000 }, now), false);
+  assert.equal(WidgetOpenData.usableKept(null, now), false);
+});
+
+/** Open-Meteo's reader stand-in: two 3 x 2 fields named for both levels. */
+function fakeReader() {
+  const field = (name, k) => ({ getName: () => name, getDimensions: () => [3, 2],
+    read: async () => Float32Array.from([1, 2, 3, 4, 5, 6].map((x) => x * k)) });
+  const kids = [field('cape', 0), field('wind_u_component_10m', 1), field('wind_v_component_10m', 2),
+    field('wind_u_component_700hPa', 3), field('wind_v_component_700hPa', 4)];
+  return { OmDataType: { FloatArray: 20 },
+    OmFileReader: { create: async () => ({ numberOfChildren: () => kids.length, getChild: async (i) => kids[i] }) } };
+}
+
+function memStore() {
+  const m = new Map();
+  return { m, get: async (k) => m.get(k) || null, put: async (k, v) => { m.set(k, v); } };
+}
+
+function loaderWith(nowMs, store) {
+  let latestCalls = 0;
+  const fetchFn = async (url) => {
+    if (/latest\.json$/.test(url)) { latestCalls++; return { ok: true, json: async () => latest }; }
+    throw new Error('unexpected ' + url);
+  };
+  const loader = new WidgetOpenData.Loader({ store, fetchFn, importReader: async () => fakeReader(), now: () => nowMs });
+  return { loader, calls: () => latestCalls };
+}
+
+test('Loader.load: reads the level asked for, keeps it, and skips latest.json for 10 minutes', async () => {
+  const store = memStore(), now = Date.parse('2026-10-23T15:20:00Z');
+  const { loader, calls } = loaderWith(now, store);
+  const a = await loader.load('700hPa');
+  assert.equal(a.changed, true);
+  assert.equal(a.grid.levels['700hPa'].u[0][0], 15);   // north row first: 5 * 3
+  assert.equal(loader.res, 90);
+  assert.ok(store.m.has('ecmwf_ifs025:700hPa'));
+  const b = await loader.load('700hPa');
+  assert.equal(b.changed, false);
+  assert.equal(calls(), 1);
+});
+
+test('Loader.load: null when the network fails', async () => {
+  const loader = new WidgetOpenData.Loader({ store: memStore(), fetchFn: async () => { throw new Error('offline'); },
+    importReader: async () => fakeReader(), now: () => 0 });
+  const warn = console.warn; console.warn = () => {};
+  try { assert.equal(await loader.load('10m'), null); } finally { console.warn = warn; }
+});
+
+test('Loader.kept: the kept wind when recent enough, else null', async () => {
+  const store = memStore(), now = Date.parse('2026-10-23T15:20:00Z');
+  await loaderWith(now, store).loader.load('10m');
+  const g = await loaderWith(now + 3600e3, store).loader.kept('10m');
+  assert.equal(g.levels['10m'].u[0][0], 5);
+  assert.equal(await loaderWith(now + 4 * 3600e3, store).loader.kept('10m'), null);
+  assert.equal(await loaderWith(now, store).loader.kept('700hPa'), null);
+});
