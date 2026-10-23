@@ -28,6 +28,7 @@
  *   window.setWindWidth(px)               // particle width from the settings
  *   window.setProjection("flat" | "globe") // map projection (the map's globe button reports "proj:")
  *   window.setWindPalette("max:rrggbb,...") // wind palette from the settings; "" = the default one
+ *   window.setWindDensity(factor)         // particle density from the settings (1 = default)
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
  *   window.setAlerts(true | false)        // WMO alerts overlay
  *   window.setSmooth(true | false)        // radar tile edge smoothing
@@ -85,6 +86,8 @@ Item {
     }
     // Particle width from the settings, in CSS px (the page clamps it to 0.5-2).
     readonly property real windLineWidth: Plasmoid.configuration.librewxrWindLineWidth > 0 ? Plasmoid.configuration.librewxrWindLineWidth : 1
+    // Particle density factor from the settings (the page keeps it within 0.5-2 by clamping the count).
+    readonly property real windDensity: Plasmoid.configuration.librewxrWindDensity > 0 ? Plasmoid.configuration.librewxrWindDensity : 1
     // Flat map or globe, switched from the globe button on the map.
     readonly property string projection: Plasmoid.configuration.librewxrProjection === "globe" ? "globe" : "flat"
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
@@ -324,7 +327,7 @@ Item {
             "apiError": i18n("API error"),
             "connFailed": i18n("Connection failed")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -795,6 +798,9 @@ Item {
                 }
                 function onWindLineWidthChanged() {
                     webView.runJavaScript("if (window.setWindWidth) window.setWindWidth(" + radarRoot.windLineWidth + ");");
+                }
+                function onWindDensityChanged() {
+                    webView.runJavaScript("if (window.setWindDensity) window.setWindDensity(" + radarRoot.windDensity + ");");
                 }
                 function onWindPaletteChanged() {
                     webView.runJavaScript("if (window.setWindPalette) window.setWindPalette(" + JSON.stringify(radarRoot.windPalette) + ");");

@@ -210,6 +210,8 @@
     <entry name="librewxrWindLineWidth" type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
     <!-- Radar map projection: "flat" (Web Mercator) or "globe"; switched from the globe button on the map -->
     <entry name="librewxrProjection"    type="String"><default>flat</default></entry>
+    <!-- Wind particle density: 1 = one particle per 300 CSS px^2 -->
+    <entry name="librewxrWindDensity"   type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
     <!-- Wind palettes made in the settings: JSON [{ "name", "levels": [{ "max" (m/s), "color" }] x 8 }] -->
     <entry name="librewxrWindPalettes"  type="String"><default>[]</default></entry>
     <!-- Name of the wind palette in use; empty for the default one -->

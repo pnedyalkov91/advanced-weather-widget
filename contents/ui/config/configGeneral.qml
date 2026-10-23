@@ -49,6 +49,7 @@ KCM.AbstractKCM {
     property string cfg_librewxrUrl: "https://api.librewxr.net"
     property string cfg_librewxrWindQuality: "balanced"
     property real cfg_librewxrWindLineWidth: 1
+    property real cfg_librewxrWindDensity: 1
     property string cfg_librewxrWindPalettes: "[]"
     property string cfg_librewxrWindPalette: ""
     property bool cfg_radarGpuWorkaround: false
