@@ -256,12 +256,14 @@ Item {
     }
 
     // -- Wi-font icon loader -------------------------------------------------
-    // The map's own storage, see MapWebProfile.qml; null where it cannot load.
-    Loader {
-        id: mapProfileLoader
-        source: "MapWebProfile.qml"
+    // The map's own storage (QtWebEngine 6.9 and later): the wind kept from
+    // the open-data files and the map tiles survive a Plasma restart. The
+    // view gets it when it is created: setting a profile on a view that
+    // already has one crashes QtWebEngine (plasmashell, 2026-10-23).
+    WebEngineProfilePrototype {
+        id: mapProfile
+        storageName: "advanced-weather-widget-map"
     }
-    readonly property var mapProfile: mapProfileLoader.item ? mapProfileLoader.item.instance() : null
 
     FontLoader {
         id: wiFont
@@ -680,11 +682,7 @@ Item {
         // ── WebEngine map ─────────────────────────────────────────────
         WebEngineView {
             id: webView
-            // Set before the first page load (pageLoadTimer).
-            Binding on profile {
-                when: radarRoot.mapProfile !== null
-                value: radarRoot.mapProfile
-            }
+            profile: mapProfile.instance()
             // Match the page's --bg so the uninitialized web surface does not flash white
             backgroundColor: radarRoot.isDark ? "#0f1117" : "#f0f2f5"
             Layout.fillWidth: true
