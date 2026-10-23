@@ -26,6 +26,7 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.kquickcontrols as KQuickControls
 import org.kde.plasma.plasmoid
+import "../../js/configUtils.js" as ConfigUtils
 import "../../js/weather.js" as W
 
 GridLayout {
@@ -543,6 +544,36 @@ GridLayout {
             levels = list;
             check();
         }
+
+        // Colors go through the clipboard as "#rrggbb" text, readable by
+        // other applications and from them, by way of a hidden text field
+        // (clipboardText below). clipboardColor is read when the menu opens.
+        property string clipboardColor: ""
+        function readClipboardColor() {
+            clipboardText.text = "";
+            clipboardText.paste();
+            clipboardColor = ConfigUtils.colorFromText(clipboardText.text);
+            return clipboardColor;
+        }
+        function copyColor(i) {
+            clipboardText.text = levels[i].color;
+            clipboardText.selectAll();
+            clipboardText.copy();
+        }
+        function pasteColor(i) {
+            var c = readClipboardColor();
+            if (c)
+                setLevel(i, "color", c);
+        }
+        // The color a drag carries: a color (KDE color buttons and
+        // pickers) or a text such as "#1e64ff"; "" when it has none.
+        function droppedColor(event) {
+            if (event.hasColor) {
+                var c = event.colorData;
+                return ConfigUtils.colorFromText(Qt.rgba(c.r, c.g, c.b, 1).toString());
+            }
+            return event.hasText ? ConfigUtils.colorFromText(event.text) : "";
+        }
         // The OK button waits for a free name and limits that go up.
         function check() {
             var name = nameField.text.trim(), problem = "";
@@ -594,18 +625,95 @@ GridLayout {
                 placeholderText: i18n("Palette name")
                 onTextChanged: windPaletteDialog.check()
             }
+            TextEdit {
+                id: clipboardText
+                visible: false
+            }
             Repeater {
                 model: 8
                 delegate: RowLayout {
                     id: levelRow
                     required property int index
+                    readonly property string levelColor: windPaletteDialog.levels.length ? windPaletteDialog.levels[levelRow.index].color : "#ffffff"
+                    property url dragImage
                     spacing: Kirigami.Units.smallSpacing
 
+                    // Right-click copies or pastes the color, and so do
+                    // Ctrl+C and Ctrl+V on the focused button. A color dragged
+                    // onto another level, or dropped from another
+                    // application, becomes that level's color.
                     KQuickControls.ColorButton {
+                        id: levelColorButton
                         showAlphaChannel: false
                         dialogTitle: i18n("Wind color")
-                        color: windPaletteDialog.levels.length ? windPaletteDialog.levels[levelRow.index].color : "white"
+                        color: levelRow.levelColor
                         onAccepted: picked => windPaletteDialog.setLevel(levelRow.index, "color", picked.toString())
+
+                        ToolTip.visible: hovered && !levelColorDrag.active && !levelColorMenu.visible
+                        ToolTip.text: i18n("%1. Right-click to copy or paste it, drag it onto another level.", levelRow.levelColor)
+                        ToolTip.delay: Kirigami.Units.toolTipDelay
+
+                        Keys.onPressed: event => {
+                            if (event.matches(StandardKey.Copy)) {
+                                windPaletteDialog.copyColor(levelRow.index);
+                                event.accepted = true;
+                            } else if (event.matches(StandardKey.Paste)) {
+                                windPaletteDialog.pasteColor(levelRow.index);
+                                event.accepted = true;
+                            }
+                        }
+
+                        TapHandler {
+                            acceptedButtons: Qt.RightButton
+                            onTapped: levelColorMenu.popup()
+                        }
+                        // The picture under the pointer while dragging, taken
+                        // beforehand: the drag starts at once.
+                        HoverHandler {
+                            onHoveredChanged: {
+                                if (hovered)
+                                    levelColorButton.grabToImage(result => levelRow.dragImage = result.url);
+                            }
+                        }
+                        DragHandler {
+                            id: levelColorDrag
+                            target: null
+                        }
+                        Drag.active: levelColorDrag.active
+                        Drag.dragType: Drag.Automatic
+                        Drag.supportedActions: Qt.CopyAction
+                        Drag.mimeData: ({
+                                "text/plain": levelRow.levelColor
+                            })
+                        Drag.imageSource: levelRow.dragImage
+
+                        DropArea {
+                            anchors.fill: parent
+                            onEntered: drag => drag.accepted = windPaletteDialog.droppedColor(drag) !== ""
+                            onDropped: drop => {
+                                var c = windPaletteDialog.droppedColor(drop);
+                                if (!c)
+                                    return;
+                                windPaletteDialog.setLevel(levelRow.index, "color", c);
+                                drop.accept(Qt.CopyAction);
+                            }
+                        }
+
+                        Menu {
+                            id: levelColorMenu
+                            onAboutToShow: windPaletteDialog.readClipboardColor()
+                            MenuItem {
+                                icon.name: "edit-copy"
+                                text: i18n("Copy color")
+                                onTriggered: windPaletteDialog.copyColor(levelRow.index)
+                            }
+                            MenuItem {
+                                icon.name: "edit-paste"
+                                text: i18n("Paste color")
+                                enabled: windPaletteDialog.clipboardColor !== ""
+                                onTriggered: windPaletteDialog.pasteColor(levelRow.index)
+                            }
+                        }
                     }
                     Label {
                         text: levelRow.index < 7 ? i18n("up to") : (windPaletteDialog.levels.length ? i18n("above %1 %2", radarTab.windToUnit(windPaletteDialog.levels[6].max), windPaletteDialog.unitLabel) : "")

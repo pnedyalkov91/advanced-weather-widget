@@ -139,3 +139,20 @@ function resolveCustomConditionIcon(code, isNight, iconSize, iconsBaseDir, iconT
     }
     return resolveConditionFn(code, isNight, iconSize, iconsBaseDir, iconTheme);
 }
+
+/**
+ * Reads a color out of a text, as copied from a color picker or an editor:
+ * "#rrggbb", "rrggbb" or "#rgb", spaces around allowed.
+ *
+ * @param {string} text - The text to read
+ * @returns {string} - The color as "#rrggbb" in lower case, "" when the text is no color
+ */
+function colorFromText(text) {
+    var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(text === null || text === undefined ? "" : text).trim());
+    if (!m)
+        return "";
+    var hex = m[1].toLowerCase();
+    if (hex.length === 3)
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    return "#" + hex;
+}
