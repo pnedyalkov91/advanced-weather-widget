@@ -33,12 +33,15 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // A base-map entry of the widget's list as a MapLibre style: vector
   // entries by their style URL, raster ones as a one-layer style. Inverted
   // entries get the look of the Leaflet page's CSS filter (invert, hue
-  // turned back, a little darker and duller).
+  // turned back, a little darker and duller). The swapped brightness bounds
+  // invert each channel, which turns parks purple and roads blue: the hue
+  // rotation brings them back to green and orange.
   function baseFor(theme) {
     var entry = resolveBg(BG_CURRENT, theme);
     if (entry.vector && entry.styleUrl) return { key: entry.styleUrl, style: entry.styleUrl };
     var url = entry.url || FALLBACK_BG[theme].url;
     var paint = entry.invert ? {
+      'raster-hue-rotate': 180,
       'raster-brightness-min': 0.9, 'raster-brightness-max': 0,
       'raster-contrast': -0.1, 'raster-saturation': -0.2
     } : {};
