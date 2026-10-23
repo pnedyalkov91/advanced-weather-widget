@@ -252,17 +252,32 @@ Item {
 
     Component.onCompleted: {
         console.log("[Advanced Weather Widget Radar/LibreWXR] component completed; lat=", lat, "lon=", lon, "layer=", activeLayer, "zoom=", initialZoom, "colorScheme=", colorScheme, "arrows=", arrowsOn, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
+        _applyMapProfile();
         themeGuardTimer.restart();
     }
 
     // -- Wi-font icon loader -------------------------------------------------
-    // The map's own storage (QtWebEngine 6.9 and later): the wind kept from
-    // the open-data files and the map tiles survive a Plasma restart. The
-    // view gets it when it is created: setting a profile on a view that
-    // already has one crashes QtWebEngine (plasmashell, 2026-10-23).
-    WebEngineProfilePrototype {
-        id: mapProfile
-        storageName: "advanced-weather-widget-map"
+    // The map's own storage, see MapWebProfile.qml; no item where it cannot load.
+    Loader {
+        id: mapProfileLoader
+        source: "MapWebProfile.qml"
+        onLoaded: radarRoot._applyMapProfile()
+    }
+
+    // Hands the map's profile to the view once, before the first page load.
+    // instance() is null until the prototype's component is complete, and
+    // QtWebEngine dereferences a null profile in setProfile: plasmashell
+    // crashed on it (2026-10-23), so a null one is never written.
+    property bool _mapProfileSet: false
+    function _applyMapProfile() {
+        if (_mapProfileSet || radarRoot._lastPageUrl !== "" || !mapProfileLoader.item)
+            return;
+        var p = mapProfileLoader.item.instance();
+        if (!p)
+            return;
+        webView.profile = p;
+        _mapProfileSet = true;
+        console.log("[Advanced Weather Widget Radar/LibreWXR] map profile:", p.storageName);
     }
 
     FontLoader {
@@ -682,7 +697,6 @@ Item {
         // ── WebEngine map ─────────────────────────────────────────────
         WebEngineView {
             id: webView
-            profile: mapProfile.instance()
             // Match the page's --bg so the uninitialized web surface does not flash white
             backgroundColor: radarRoot.isDark ? "#0f1117" : "#f0f2f5"
             Layout.fillWidth: true
