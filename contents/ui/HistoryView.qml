@@ -21,8 +21,10 @@
  *
  *   • Period picker: presets (yesterday … this year), a single day, or a
  *     custom range (HistoryDatePicker).
+ *   • < / > step the period back and forth (see _navigate()).
  *   • Summary tiles, a temperature + precipitation chart (hover for the day's
- *     values) and an expandable newest-first daily list.
+ *     values; zoom buttons make it scroll sideways) and an expandable
+ *     newest-first daily list.
  *
  * All requests/parsing live in providers/openMeteoHistory.js; unit
  * conversion and fonts go through weatherRoot like every other tab, so the
@@ -89,10 +91,7 @@ Item {
 
     // ── Helpers ───────────────────────────────────────────────────────────
     function _f(px, bold) {
-        return weatherRoot ? weatherRoot.wf(px, bold) : Qt.font({
-            pixelSize: px,
-            bold: !!bold
-        });
+        return weatherRoot ? weatherRoot.wf(px, bold) : Qt.font({ pixelSize: px, bold: !!bold });
     }
     function _isNum(v) {
         return typeof v === "number" && isFinite(v);
@@ -173,12 +172,7 @@ Item {
     function _icon(itemId, size) {
         var sz = size || _rowIconSz;
         if (_iconTheme === "kde" && itemId in _customIcons && _customIcons[itemId].length > 0)
-            return {
-                type: "kde",
-                source: _customIcons[itemId],
-                svgFallback: "",
-                isMask: false
-            };
+            return { type: "kde", source: _customIcons[itemId], svgFallback: "", isMask: false };
         return IconResolver.resolve(itemId, sz, iconsBaseDir, _iconTheme);
     }
 
@@ -187,89 +181,33 @@ Item {
         if (!s || s.count === 0)
             return t;
         if (_isNum(s.avgMeanC))
-            t.push({
-                icon: "temperature",
-                label: i18n("Average"),
-                value: _temp(s.avgMeanC),
-                sub: i18n("High %1 · Low %2", _temp(s.avgMaxC), _temp(s.avgMinC))
-            });
+            t.push({ icon: "temperature", label: i18n("Average"), value: _temp(s.avgMeanC),
+                     sub: i18n("High %1 · Low %2", _temp(s.avgMaxC), _temp(s.avgMinC)) });
         if (s.hottest)
-            t.push({
-                icon: "temperature",
-                label: i18n("Warmest day"),
-                value: _temp(s.hottest.v),
-                sub: _day(s.hottest.date, false)
-            });
+            t.push({ icon: "temperature", label: i18n("Warmest day"), value: _temp(s.hottest.v), sub: _day(s.hottest.date, false) });
         if (s.coldest)
-            t.push({
-                icon: "temperature",
-                label: i18n("Coldest night"),
-                value: _temp(s.coldest.v),
-                sub: _day(s.coldest.date, false)
-            });
+            t.push({ icon: "temperature", label: i18n("Coldest night"), value: _temp(s.coldest.v), sub: _day(s.coldest.date, false) });
         if (_isNum(s.totalPrecipMm))
-            t.push({
-                icon: "precipsum",
-                label: i18n("Precipitation"),
-                value: _precip(s.totalPrecipMm),
-                sub: i18np("%1 wet day", "%1 wet days", s.wetDays)
-            });
+            t.push({ icon: "precipsum", label: i18n("Precipitation"), value: _precip(s.totalPrecipMm),
+                     sub: i18np("%1 wet day", "%1 wet days", s.wetDays) });
         if (s.wettest && s.wettest.v > 0)
-            t.push({
-                icon: "umbrella",
-                label: i18n("Wettest day"),
-                value: _precip(s.wettest.v),
-                sub: _day(s.wettest.date, false)
-            });
+            t.push({ icon: "umbrella", label: i18n("Wettest day"), value: _precip(s.wettest.v), sub: _day(s.wettest.date, false) });
         if (_isNum(s.totalSnowCm) && s.totalSnowCm > 0)
-            t.push({
-                icon: "snowcover",
-                label: i18n("Snowfall"),
-                value: _snow(s.totalSnowCm),
-                sub: i18np("%1 snowy day", "%1 snowy days", s.snowDays)
-            });
+            t.push({ icon: "snowcover", label: i18n("Snowfall"), value: _snow(s.totalSnowCm),
+                     sub: i18np("%1 snowy day", "%1 snowy days", s.snowDays) });
         if (s.maxWind)
-            t.push({
-                icon: "wind",
-                label: i18n("Strongest wind"),
-                value: _wind(s.maxWind.v),
-                sub: _day(s.maxWind.date, false)
-            });
+            t.push({ icon: "wind", label: i18n("Strongest wind"), value: _wind(s.maxWind.v), sub: _day(s.maxWind.date, false) });
         if (s.maxGust)
-            t.push({
-                icon: "wind",
-                label: i18n("Strongest gust"),
-                value: _wind(s.maxGust.v),
-                sub: _day(s.maxGust.date, false)
-            });
+            t.push({ icon: "wind", label: i18n("Strongest gust"), value: _wind(s.maxGust.v), sub: _day(s.maxGust.date, false) });
         if (_isNum(s.totalSunshineHours))
-            t.push({
-                icon: "suntimes",
-                label: i18n("Sunshine"),
-                value: _hours(s.totalSunshineHours),
-                sub: i18n("%1 per day", _hours(s.totalSunshineHours / s.count))
-            });
+            t.push({ icon: "suntimes", label: i18n("Sunshine"), value: _hours(s.totalSunshineHours),
+                     sub: i18n("%1 per day", _hours(s.totalSunshineHours / s.count)) });
         if (_isNum(s.avgHumidity))
-            t.push({
-                icon: "humidity",
-                label: i18n("Humidity"),
-                value: _percent(s.avgHumidity),
-                sub: i18n("average")
-            });
+            t.push({ icon: "humidity", label: i18n("Humidity"), value: _percent(s.avgHumidity), sub: i18n("average") });
         if (_isNum(s.avgPressureHpa))
-            t.push({
-                icon: "pressure",
-                label: i18n("Pressure"),
-                value: _pressure(s.avgPressureHpa),
-                sub: i18n("average")
-            });
+            t.push({ icon: "pressure", label: i18n("Pressure"), value: _pressure(s.avgPressureHpa), sub: i18n("average") });
         if (_isNum(s.avgCloudPercent))
-            t.push({
-                icon: "condition",
-                label: i18n("Cloud cover"),
-                value: _percent(s.avgCloudPercent),
-                sub: i18n("average")
-            });
+            t.push({ icon: "condition", label: i18n("Cloud cover"), value: _percent(s.avgCloudPercent), sub: i18n("average") });
         return t;
     }
 
@@ -305,42 +243,15 @@ Item {
     }
 
     readonly property var _presetModel: [
-        {
-            value: "yesterday",
-            label: i18n("Yesterday")
-        },
-        {
-            value: "last7",
-            label: i18n("Last 7 days")
-        },
-        {
-            value: "last30",
-            label: i18n("Last 30 days")
-        },
-        {
-            value: "last90",
-            label: i18n("Last 90 days")
-        },
-        {
-            value: "thisMonth",
-            label: i18n("This month")
-        },
-        {
-            value: "lastMonth",
-            label: i18n("Last month")
-        },
-        {
-            value: "thisYear",
-            label: i18n("This year")
-        },
-        {
-            value: "single",
-            label: i18n("Single day…")
-        },
-        {
-            value: "custom",
-            label: i18n("Custom range…")
-        }
+        { value: "yesterday",  label: i18n("Yesterday") },
+        { value: "last7",      label: i18n("Last 7 days") },
+        { value: "last30",     label: i18n("Last 30 days") },
+        { value: "last90",     label: i18n("Last 90 days") },
+        { value: "thisMonth",  label: i18n("This month") },
+        { value: "lastMonth",  label: i18n("Last month") },
+        { value: "thisYear",   label: i18n("This year") },
+        { value: "single",     label: i18n("Single day…") },
+        { value: "custom",     label: i18n("Custom range…") }
     ]
 
     // ── Persistence ───────────────────────────────────────────────────────
@@ -348,10 +259,7 @@ Item {
         var p = Plasmoid.configuration.historyPeriod || "last30";
         var known = false;
         for (var i = 0; i < _presetModel.length; ++i)
-            if (_presetModel[i].value === p) {
-                known = true;
-                break;
-            }
+            if (_presetModel[i].value === p) { known = true; break; }
         preset = known ? p : "last30";
         var s = Plasmoid.configuration.historyStartDate || "";
         var e = Plasmoid.configuration.historyEndDate || "";
@@ -421,54 +329,6 @@ Item {
         return day ? i18n("Next day") : i18n("Next period");
     }
 
-    // ── Chart zoom ────────────────────────────────────────────────────────
-    // The chart always shows days[_visibleStart .. _visibleStart + _visibleCount).
-    // _zoomCount = 0 means "everything".
-    readonly property int _minZoomDays: 3
-    property int _zoomStart: 0
-    property int _zoomCount: 0
-    readonly property int _visibleCount: (_zoomCount > 0 && _zoomCount < days.length) ? _zoomCount : days.length
-    readonly property int _visibleStart: Math.max(0, Math.min(_zoomStart, days.length - _visibleCount))
-    readonly property bool _zoomed: _visibleCount < days.length
-    readonly property bool _canZoomIn: _visibleCount > _minZoomDays
-    readonly property var _chartDays: _zoomed ? days.slice(_visibleStart, _visibleStart + _visibleCount) : days
-
-    function _resetZoom() {
-        _zoomStart = 0;
-        _zoomCount = 0;
-    }
-
-    /** factor < 1 zooms in, > 1 zooms out; anchor (0..1) is the point of the
-     *  chart that stays put (the buttons use the middle). */
-    function _zoomBy(factor, anchor) {
-        var n = days.length;
-        if (n <= _minZoomDays)
-            return;
-        var cur = _visibleCount;
-        var a = (typeof anchor === "number") ? Math.max(0, Math.min(1, anchor)) : 0.5;
-        var next = Math.round(cur * factor);
-        if (factor < 1 && next >= cur)
-            next = cur - 1;
-            // always make progress
-        else if (factor > 1 && next <= cur)
-            next = cur + 1;
-        next = Math.max(_minZoomDays, Math.min(n, next));
-        if (next === cur)
-            return;
-        var focus = _visibleStart + a * cur;
-        _zoomStart = Math.max(0, Math.min(n - next, Math.round(focus - a * next)));
-        _zoomCount = next >= n ? 0 : next;
-    }
-
-    /** Moves the zoomed window by whole days (+ = later). */
-    function _panBy(deltaDays) {
-        if (!_zoomed)
-            return;
-        _zoomStart = Math.max(0, Math.min(days.length - _visibleCount, _visibleStart + deltaDays));
-    }
-
-    onDaysChanged: _resetZoom()
-
     // ── Loading ───────────────────────────────────────────────────────────
     function _abortPending() {
         if (_handle) {
@@ -514,12 +374,14 @@ Item {
                 root.status = "error";
                 return;
             }
+            list.rememberScroll();           // keep the page where the user left it
             root.days = res.days;
             root.summary = res.summary;
             root.missingDays = res.missingDays;
             root._loadedKey = key;
             root._loadedAt = Date.now();
             root.status = "ok";
+            Qt.callLater(list.restoreScroll);
         });
     }
 
@@ -568,10 +430,12 @@ Item {
         anchors.fill: parent
         spacing: 8
 
-        // ── Period controls:  <  [ preset ▾ ]  > ──────────────────────
+        // ── Period controls:  <  ……  [ preset ▾ ] [ date ] [ date ]  ……  > ──
+        // The arrows sit at the two ends of the widget; the preset box and,
+        // for "single day" / "custom range", the date buttons are centred.
         RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 4
+            Layout.fillWidth: true
+            spacing: 6
 
             ToolButton {
                 id: olderButton
@@ -583,6 +447,8 @@ Item {
                 ToolTip.text: root._stepTip(-1)
                 Accessible.name: root._stepTip(-1)
             }
+
+            Item { Layout.fillWidth: true }
 
             ComboBox {
                 id: presetBox
@@ -596,32 +462,18 @@ Item {
                             return i;
                     return 2;
                 }
+                // Stepped back from "Yesterday" with <: show which day it is.
+                displayText: (root.preset === "yesterday" && root._offset > 0)
+                    ? root._day(root._period.start, false) : currentText
                 font: root._f(11, false)
                 onActivated: function (idx) {
                     root._setPreset(root._presetModel[idx].value);
                 }
             }
 
-            ToolButton {
-                id: newerButton
-                icon.name: "go-next"
-                display: AbstractButton.IconOnly
-                enabled: root._canGoNewer
-                onClicked: root._navigate(1)
-                ToolTip.visible: hovered
-                ToolTip.text: root._stepTip(1)
-                Accessible.name: root._stepTip(1)
-            }
-        }
-
-        // ── Date pickers (single day / custom range only) ─────────────
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            visible: root._isPicked
-            spacing: 6
-
             Button {
                 id: startButton
+                visible: root._isPicked
                 icon.name: "view-calendar"
                 text: root._date(root._period.start)
                 font: root._f(11, false)
@@ -651,9 +503,22 @@ Item {
                     datePopup.open();
                 }
             }
+
+            Item { Layout.fillWidth: true }
+
+            ToolButton {
+                id: newerButton
+                icon.name: "go-next"
+                display: AbstractButton.IconOnly
+                enabled: root._canGoNewer
+                onClicked: root._navigate(1)
+                ToolTip.visible: hovered
+                ToolTip.text: root._stepTip(1)
+                Accessible.name: root._stepTip(1)
+            }
         }
 
-        // ── Location name + date range, centred under the box ─────────
+        // ── Location name · selected date / period, centred ───────────
         ColumnLayout {
             Layout.fillWidth: true
             visible: root._hasLocation
@@ -661,23 +526,21 @@ Item {
 
             Label {
                 Layout.fillWidth: true
-                visible: text.length > 0
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
+                textFormat: Text.StyledText
                 color: Kirigami.Theme.textColor
-                font: root._f(12, true)
-                text: root.weatherRoot ? root.weatherRoot._locName() : ""
-            }
-            Label {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WordWrap
-                color: Kirigami.Theme.textColor
-                opacity: 0.7
-                font: root._f(10, false)
+                font: root._f(11, false)
                 text: {
                     var p = root._period;
-                    return p.start === p.end ? root._day(p.start, false) : root._day(p.start, false) + " – " + root._day(p.end, false);
+                    var range = p.start === p.end
+                        ? root._day(p.start, false)
+                        : root._day(p.start, false) + " – " + root._day(p.end, false);
+                    var place = root.weatherRoot ? String(root.weatherRoot._locName()) : "";
+                    if (place.length === 0)
+                        return range;
+                    place = place.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    return "<b>" + place + "</b> · " + range;
                 }
             }
             Label {
@@ -761,14 +624,34 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 // Dim while a refresh is running behind the old data.
                 opacity: root.status === "loading" ? 0.5 : 1.0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 120
-                    }
-                }
+                Behavior on opacity { NumberAnimation { duration: 120 } }
 
-                ScrollBar.vertical: ScrollBar {
-                    policy: ScrollBar.AsNeeded
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+                // New data replaces the model, which makes a ListView jump to
+                // the top. Changing the period (dropdown, < / >) should leave
+                // the page where it is, so the scroll offset is remembered
+                // across the swap and put back (the header may change height
+                // a moment later, hence the short window).
+                property real _keepOffset: -1
+                function rememberScroll() {
+                    _keepOffset = (visible && contentHeight > height) ? contentY - originY : -1;
+                    if (_keepOffset >= 0)
+                        _keepTimer.restart();
+                }
+                function restoreScroll() {
+                    if (_keepOffset < 0)
+                        return;
+                    contentY = originY + Math.max(0, Math.min(_keepOffset, contentHeight - height));
+                }
+                onContentHeightChanged: {
+                    if (_keepOffset >= 0)
+                        Qt.callLater(restoreScroll);
+                }
+                Timer {
+                    id: _keepTimer
+                    interval: 400
+                    onTriggered: list._keepOffset = -1
                 }
 
                 // ── Summary + chart ───────────────────────────────────
@@ -778,7 +661,12 @@ Item {
                     // The header grows when the data arrives; without this the
                     // view keeps its old scroll offset and shows only the bottom
                     // of it.
-                    onHeightChanged: Qt.callLater(list.positionViewAtBeginning)
+                    onHeightChanged: {
+                        if (list._keepOffset >= 0)
+                            Qt.callLater(list.restoreScroll);
+                        else
+                            Qt.callLater(list.positionViewAtBeginning);
+                    }
 
                     ColumnLayout {
                         id: headerColumn
@@ -847,11 +735,13 @@ Item {
                             }
                         }
 
-                        // Zoom toolbar: the range shown while zoomed, then - / + / restore.
+                        // Zoom toolbar: the days in view while zoomed, then - / + / restore.
+                        // The chart owns the zoom state; zooming in makes it
+                        // wider than the popup and scrolls sideways.
                         RowLayout {
                             Layout.fillWidth: true
                             Layout.topMargin: 4
-                            visible: root.days.length > root._minZoomDays
+                            visible: root.days.length > 3
                             spacing: 2
 
                             Label {
@@ -860,13 +750,20 @@ Item {
                                 color: Kirigami.Theme.textColor
                                 opacity: 0.7
                                 font: root._f(9, false)
-                                text: root._zoomed ? root._date(root._chartDays[0].dateStr) + " – " + root._date(root._chartDays[root._chartDays.length - 1].dateStr) : ""
+                                text: {
+                                    var c = chartLoader.item;
+                                    if (!c || c.zoomed !== true || root.days.length === 0)
+                                        return "";
+                                    var a = root.days[Math.min(c.visibleFirst, root.days.length - 1)];
+                                    var b = root.days[Math.min(c.visibleLast, root.days.length - 1)];
+                                    return root._date(a.dateStr) + " – " + root._date(b.dateStr);
+                                }
                             }
                             ToolButton {
                                 icon.name: "zoom-out"
                                 display: AbstractButton.IconOnly
-                                enabled: root._zoomed
-                                onClicked: root._zoomBy(2, 0.5)
+                                enabled: !!chartLoader.item && chartLoader.item.zoomed === true
+                                onClicked: chartLoader.item.zoomOut()
                                 ToolTip.visible: hovered
                                 ToolTip.text: i18n("Zoom out")
                                 Accessible.name: i18n("Zoom out")
@@ -874,8 +771,8 @@ Item {
                             ToolButton {
                                 icon.name: "zoom-in"
                                 display: AbstractButton.IconOnly
-                                enabled: root._canZoomIn
-                                onClicked: root._zoomBy(0.5, 0.5)
+                                enabled: !!chartLoader.item && chartLoader.item.canZoomIn === true
+                                onClicked: chartLoader.item.zoomIn()
                                 ToolTip.visible: hovered
                                 ToolTip.text: i18n("Zoom in")
                                 Accessible.name: i18n("Zoom in")
@@ -883,8 +780,8 @@ Item {
                             ToolButton {
                                 icon.name: "zoom-original"
                                 display: AbstractButton.IconOnly
-                                enabled: root._zoomed
-                                onClicked: root._resetZoom()
+                                enabled: !!chartLoader.item && chartLoader.item.zoomed === true
+                                onClicked: chartLoader.item.resetZoom()
                                 ToolTip.visible: hovered
                                 ToolTip.text: i18n("Restore")
                                 Accessible.name: i18n("Restore")
@@ -897,32 +794,18 @@ Item {
                             Layout.fillWidth: true
                             Layout.topMargin: 4
                             visible: root.days.length > 1
-                            source: root._graphsOk ? "components/HistoryChartGraphs.qml" : "components/HistoryChartCanvas.qml"
+                            source: root._graphsOk ? "components/HistoryChartGraphs.qml"
+                                                   : "components/HistoryChartCanvas.qml"
                             onLoaded: {
                                 item.view = root;
-                                item.days = Qt.binding(function () {
-                                    return root._chartDays;
-                                });
-                                item.canPan = Qt.binding(function () {
-                                    return root._zoomed;
-                                });
+                                item.outerFlickable = list;
+                                item.days = Qt.binding(function () { return root.days; });
                             }
                             onStatusChanged: {
                                 if (status === Loader.Error && root._graphsOk) {
                                     console.warn("History: Qt Graphs chart unavailable, using the Canvas fallback");
                                     root._graphsOk = false;
                                 }
-                            }
-                        }
-
-                        Connections {
-                            target: chartLoader.item
-                            ignoreUnknownSignals: true
-                            function onPanRequested(deltaDays) {
-                                root._panBy(deltaDays);
-                            }
-                            function onZoomRequested(factor, anchor) {
-                                root._zoomBy(factor, anchor);
                             }
                         }
 
@@ -946,14 +829,11 @@ Item {
                     height: rowColumn.implicitHeight + 12
                     radius: 8
                     color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, open ? 0.11 : 0.05)
-                    Behavior on height {
-                        NumberAnimation {
-                            duration: 120
-                        }
-                    }
+                    Behavior on height { NumberAnimation { duration: 120 } }
                     clip: true
 
-                    readonly property var _icon: (modelData.hasData && root._isNum(modelData.code) && root.resolveConditionIconFn) ? root.resolveConditionIconFn(modelData.code, false, 26) : null
+                    readonly property var _icon: (modelData.hasData && root._isNum(modelData.code) && root.resolveConditionIconFn)
+                        ? root.resolveConditionIconFn(modelData.code, false, 26) : null
 
                     ColumnLayout {
                         id: rowColumn
@@ -1124,7 +1004,8 @@ Item {
             spacing: 6
             Label {
                 Layout.fillWidth: true
-                text: root.preset === "single" ? i18n("Select day") : (datePopup.target === "end" ? i18n("Select end date") : i18n("Select start date"))
+                text: root.preset === "single" ? i18n("Select day")
+                    : (datePopup.target === "end" ? i18n("Select end date") : i18n("Select start date"))
                 color: Kirigami.Theme.textColor
                 font: root._f(11, true)
             }

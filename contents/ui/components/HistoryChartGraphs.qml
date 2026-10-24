@@ -22,24 +22,35 @@
  *
  *   • GraphsView + SplineSeries for the temperature lines, styled with
  *     Kirigami.Theme (no background / grid from the Qt Graphs theme)
- *   • Custom axis labels, grid and legend drawn with Kirigami units/fonts
- *     (Qt Graphs cannot size labels or put them on both sides itself)
+ *   • Custom grid, axis labels and legend drawn with Kirigami units/fonts
+ *     (Qt Graphs cannot size labels or put them on both sides itself). The
+ *     axis labels sit inside the plot, so the graph uses the full width.
  *   • A hover cursor in the highlight colour with a value badge per series
  *     that is pushed apart when badges would overlap
- *   • Daily precipitation bars in a strip below, sharing the same x scale
+ *   • Daily precipitation bars in a strip below, sharing the same x scale,
+ *     with the period's rain total in its corner
+ *
+ * Zoom: the chart owns it. zoom = 1 fits the whole period into the width; at
+ * zoom = 4 the plot is four times as wide and scrolls sideways (drag, mouse
+ * wheel, touchpad swipe or the scroll bar below the chart). The axis labels
+ * sit in a gutter on the left and stay put. Implementation: a transparent horizontal Flickable provides the
+ * scrolling and its content is one "pinned" item that follows contentX, so
+ * only the visible part is ever drawn - the Qt Graphs view is never wider
+ * than the popup, however many days are zoomed into.
  *
  * Only loaded through a Loader (see HistoryView.qml): when the Qt Graphs QML
  * module is missing or too old to compile this file, the Loader reports an
  * error and the view falls back to HistoryChartCanvas.qml.
  *
  * Interface (shared with HistoryChartCanvas.qml):
- *   view  the HistoryView - provides _temp()/_precip()/_day()/_date()/_isNum()
- *   days  array of day objects from openMeteoHistory.js (the visible slice)
- *   canPan  true while zoomed in: dragging then emits panRequested()
- *   panRequested(days)            whole days to move the window (+ = later)
- *   zoomRequested(factor, anchor) Ctrl+wheel; factor < 1 zooms in, anchor is
- *                                 the pointer position across the plot (0..1)
- * The chart only reports gestures; HistoryView owns the zoom state.
+ *   view          the HistoryView - provides _temp()/_precip()/_day()/_date()
+ *   days          array of day objects from openMeteoHistory.js
+ *   zoomed / canZoomIn      state for the toolbar buttons
+ *   visibleFirst / visibleLast  indices of the days currently in view
+ *   zoomIn() / zoomOut() / resetZoom() / zoomTo(zoom, anchor)
+ *   Ctrl + wheel zooms around the pointer. While zoomed in, the wheel and
+ *   sideways touchpad swipes scroll the chart; at either end (and for
+ *   vertical touchpad swipes) they fall through to the day list.
  */
 import QtQuick
 import QtQuick.Controls
@@ -52,10 +63,8 @@ ColumnLayout {
 
     property var view: null
     property var days: []
-    property bool canPan: false
-
-    signal panRequested(int days)
-    signal zoomRequested(real factor, real anchor)
+    /** The Flickable (day list) the chart sits in; the wheel falls through to it. */
+    property var outerFlickable: null
 
     // Index of the day under the pointer, -1 when none.
     property int hoverIndex: -1
@@ -66,9 +75,70 @@ ColumnLayout {
     readonly property color meanColor: Kirigami.Theme.textColor
     readonly property color precipColor: "#26c6da"
 
+    // ── Zoom ──────────────────────────────────────────────────────────────
+    // 1 = whole period fits; the plot is `zoom` times as wide as the chart.
+    property real zoom: 1
+    readonly property int minZoomDays: 3                 // most zoomed-in view
+    readonly property real maxZoom: Math.max(1, dayCount / minZoomDays)
+    readonly property bool zoomed: zoom > 1.001
+    readonly property bool canZoomIn: zoom < maxZoom - 0.001
+    readonly property int visibleFirst: (dayCount > 0 && area.slot > 0)
+        ? Math.max(0, Math.min(dayCount - 1, Math.floor(scroller.contentX / area.slot + 0.001))) : 0
+    readonly property int visibleLast: (dayCount > 0 && area.slot > 0)
+        ? Math.max(visibleFirst, Math.min(dayCount - 1, Math.ceil((scroller.contentX + area.vw) / area.slot - 0.001) - 1)) : 0
+
+    /** Zoom to `z` (1 … maxZoom); `anchor` (0..1 across the chart) stays put. */
+    function zoomTo(z, anchor) {
+        var a = (typeof anchor === "number") ? Math.max(0, Math.min(1, anchor)) : 0.5;
+        var nz = Math.max(1, Math.min(maxZoom, z));
+        if (nz < 1.05)
+            nz = 1;
+        if (Math.abs(nz - zoom) < 0.001)
+            return;
+        var vw = area.vw;
+        var focus = (scroller.contentX + a * vw) / (vw * zoom);
+        zoom = nz;
+        scroller.contentX = Math.max(0, Math.min(vw * nz - vw, focus * vw * nz - a * vw));
+    }
+    /** Mouse wheel / touchpad over the zoomed chart. A wheel notch, a sideways
+     *  touchpad swipe or Shift+wheel scrolls the chart; a vertical touchpad
+     *  swipe, or any wheel movement once the chart is at its end, scrolls the
+     *  day list behind it instead (outerFlickable). */
+    function wheelPan(event) {
+        var tp = event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0;
+        var dx = tp ? event.pixelDelta.x : event.angleDelta.x;
+        var dy = tp ? event.pixelDelta.y : event.angleDelta.y;
+        var d = 0;
+        if (Math.abs(dx) > Math.abs(dy))
+            d = dx;
+        else if (!tp || (event.modifiers & Qt.ShiftModifier))
+            d = dy;
+        var maxX = scroller.contentWidth - scroller.width;
+        var nx = Math.max(0, Math.min(maxX, scroller.contentX - d));
+        event.accepted = true;
+        if (d === 0 || nx === scroller.contentX) {
+            // Nothing to pan: a WheelHandler cannot pass the event on, so
+            // scroll the page behind the chart by hand.
+            var f = outerFlickable;
+            if (f) {
+                var wy = tp ? event.pixelDelta.y : event.angleDelta.y / 2;
+                f.contentY = Math.max(f.originY, Math.min(f.originY + f.contentHeight - f.height, f.contentY - wy));
+            }
+            return;
+        }
+        root.hoverIndex = -1;
+        scroller.contentX = nx;
+    }
+
+    function zoomIn() { zoomTo(zoom * 2, 0.5); }
+    function zoomOut() { zoomTo(zoom / 2, 0.5); }
+    function resetZoom() {
+        zoom = 1;
+        scroller.contentX = 0;
+    }
+
     // ── Geometry ──────────────────────────────────────────────────────────
     readonly property real marginV: Kirigami.Units.largeSpacing
-    readonly property real marginH: Kirigami.Units.largeSpacing
     readonly property real tempPlotH: Kirigami.Units.gridUnit * 6
     readonly property real precipPlotH: Kirigami.Units.gridUnit * 2.5
     readonly property real badgeH: Kirigami.Units.gridUnit + 4
@@ -110,17 +180,13 @@ ColumnLayout {
         return _niceStep(m / 2) * 2;     // 5, 10, 20, 50 …
     }
 
-    // x positions of the date labels / vertical grid lines (indices into days)
-    readonly property var dateIdx: {
-        var n = days.length;
-        var k = Math.min(5, n);
-        var out = [];
-        for (var i = 0; i < k; ++i) {
-            var idx = k === 1 ? 0 : Math.round(i * (n - 1) / (k - 1));
-            if (out.length === 0 || out[out.length - 1] !== idx)
-                out.push(idx);
-        }
-        return out;
+    // Rain total of the days currently in view.
+    readonly property real visiblePrecipSum: {
+        var s = 0;
+        for (var i = visibleFirst; i <= visibleLast && i < days.length; ++i)
+            if (isFinite(days[i].precipMm))
+                s += days[i].precipMm;
+        return s;
     }
 
     function _fmtTemp(v) { return view ? view._temp(v) : String(v); }
@@ -165,61 +231,383 @@ ColumnLayout {
         id: area
         Layout.fillWidth: true
 
-        // Widest axis label decides the left gutter (like the KDE applet's
-        // ForecastGraphLabels, which sizes itself to its widest label).
+        TextMetrics { id: tmDate; font: Kirigami.Theme.smallFont; text: root.view && root.dayCount > 0 ? root.view._date(root.days[0].dateStr) : "00.00.0000" }
+        TextMetrics { id: tmH; font: Kirigami.Theme.smallFont; text: "Wg" }
         TextMetrics { id: tmLo; font: Kirigami.Theme.smallFont; text: root._fmtTemp(root.tempScale.lo) }
         TextMetrics { id: tmHi; font: Kirigami.Theme.smallFont; text: root._fmtTemp(root.tempScale.hi) }
         TextMetrics { id: tmP; font: Kirigami.Theme.smallFont; text: root._fmtPrecip(root.precipMax) }
-        TextMetrics { id: tmDate; font: Kirigami.Theme.smallFont; text: "Wg" }
 
-        readonly property real labelW: Math.ceil(Math.max(tmLo.width, tmHi.width, tmP.width)) + Kirigami.Units.smallSpacing
-        readonly property real dateLabelH: Math.ceil(tmDate.height) + Kirigami.Units.smallSpacing
+        // Left gutter for the axis labels (widest label + a little air), so
+        // the plot starts clear of them. The plot ("viewport") is `vw` wide.
+        readonly property real plotX: Math.ceil(Math.max(tmLo.width, tmHi.width, tmP.width)) + Kirigami.Units.largeSpacing * 2
+        readonly property real vw: Math.max(1, width - plotX)
 
-        // Qt Graphs view rectangle and its plot area (view minus margins)
-        readonly property real gvX: labelW + Kirigami.Units.smallSpacing
-        readonly property real gvW: width - gvX
+        readonly property real dateLabelH: Math.ceil(tmH.height) + Kirigami.Units.smallSpacing
+
+        // Vertical layout (the Qt Graphs view is the temperature band)
         readonly property real gvY: dateLabelH
         readonly property real gvH: root.tempPlotH + 2 * root.marginV
-        readonly property real px: gvX + root.marginH           // plot left
-        readonly property real pw: Math.max(1, gvW - 2 * root.marginH)
         readonly property real py: gvY + root.marginV           // plot top
         readonly property real ph: root.tempPlotH
-
         readonly property real precipTop: gvY + gvH + Kirigami.Units.largeSpacing
         readonly property real precipBottom: precipTop + root.precipPlotH
+        readonly property real plotBottom: precipBottom + Kirigami.Units.smallSpacing
 
-        implicitHeight: precipBottom + Kirigami.Units.smallSpacing
+        // Room for the scroll bar. Always reserved: the view sits in a ListView
+        // header, and a header that changes height makes the list jump.
+        readonly property real sbH: hbar.implicitHeight
+        implicitHeight: plotBottom + sbH
 
-        function xOf(i) { return px + (i + 0.5) / Math.max(1, root.dayCount) * pw; }
+        // Horizontal layout: the whole period is `contentW` wide, `slot` per
+        // day; only the part starting at scroller.contentX is on screen.
+        readonly property real contentW: vw * root.zoom
+        readonly property real slot: contentW / Math.max(1, root.dayCount)
+
+        /** x of day i's centre, in chart (viewport) coordinates */
+        function xOf(i) { return (i + 0.5) * slot - scroller.contentX; }
         function yOf(v) { return py + (root.tempScale.hi - v) / (root.tempScale.hi - root.tempScale.lo) * ph; }
 
-        // ── grid ──────────────────────────────────────────────────────
+        // Date labels / vertical grid lines: whole multiples of `step` days
+        // that are in view, plus the last day when there is room for it.
+        readonly property var labelIdx: {
+            var n = root.dayCount;
+            if (n < 2)
+                return [];
+            var step = Math.max(1, Math.ceil((tmDate.width + Kirigami.Units.gridUnit * 1.5) / slot));
+            var first = Math.max(0, Math.floor(scroller.contentX / slot) - 1);
+            var last = Math.min(n - 1, Math.ceil((scroller.contentX + vw) / slot));
+            var out = [];
+            var i = Math.ceil(first / step) * step;
+            for (; i <= last; i += step)
+                out.push(i);
+            var lastIdx = out.length > 0 ? out[out.length - 1] : -step;
+            if (n - 1 <= last && n - 1 - lastIdx >= step * 0.75)
+                out.push(n - 1);
+            return out;
+        }
+
+        // ── horizontal grid (fixed) ───────────────────────────────────
         Repeater {
             model: root.dayCount > 1 ? root.tempScale.ticks : 0
             delegate: Rectangle {
                 required property int index
-                x: area.px
-                width: area.pw
+                x: area.plotX
+                width: area.vw
                 height: 1
                 y: area.py + index / (root.tempScale.ticks - 1) * area.ph - 0.5
                 color: Kirigami.Theme.textColor
                 opacity: 0.12
             }
         }
-        Repeater {
-            model: root.dayCount > 1 ? root.dateIdx : []
-            delegate: Rectangle {
-                required property int modelData
-                width: 1
-                x: area.xOf(modelData) - 0.5
-                y: area.py
-                height: area.ph
-                color: Kirigami.Theme.textColor
-                opacity: 0.12
+        Rectangle {
+            x: area.plotX
+            width: area.vw
+            height: 1
+            y: area.precipTop
+            visible: root.dayCount > 1
+            color: Kirigami.Theme.textColor
+            opacity: 0.12
+        }
+        Rectangle {
+            x: area.plotX
+            width: area.vw
+            height: 1
+            y: area.precipBottom
+            color: Kirigami.Theme.textColor
+            opacity: 0.25
+        }
+
+        // ── scrolling surface ─────────────────────────────────────────
+        // Transparent: it only supplies drag/flick/scroll-bar behaviour. The
+        // content below is pinned to the viewport (x follows contentX).
+        Flickable {
+            id: scroller
+            anchors.left: parent.left
+            anchors.leftMargin: area.plotX
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: area.plotBottom
+            contentWidth: area.contentW
+            contentHeight: height
+            flickableDirection: Flickable.HorizontalFlick
+            boundsBehavior: Flickable.StopAtBounds
+            interactive: false          // see "drag to scroll" below
+            clip: true
+
+            ScrollBar.horizontal: ScrollBar {
+                id: hbar
+                parent: scroller.parent
+                anchors.left: scroller.left
+                anchors.right: scroller.right
+                anchors.top: scroller.bottom
+                visible: root.zoomed
+                policy: ScrollBar.AlwaysOn
+            }
+
+            Item {
+                id: pinned
+                x: scroller.contentX
+                width: area.vw
+                height: scroller.height
+
+                // ── vertical grid + date labels ────────────────────────
+                Repeater {
+                    model: area.labelIdx
+                    delegate: Rectangle {
+                        required property int modelData
+                        width: 1
+                        x: area.xOf(modelData) - 0.5
+                        y: area.py
+                        height: area.ph
+                        color: Kirigami.Theme.textColor
+                        opacity: 0.12
+                    }
+                }
+                Repeater {
+                    model: area.labelIdx
+                    delegate: Label {
+                        required property int modelData
+                        visible: root.hoverIndex < 0 && modelData < root.dayCount
+                        text: root.view && modelData < root.dayCount ? root.view._date(root.days[modelData].dateStr) : ""
+                        font: Kirigami.Theme.smallFont
+                        color: Kirigami.Theme.textColor
+                        opacity: 0.75
+                        x: Math.max(0, Math.min(area.vw - width, area.xOf(modelData) - width / 2))
+                        y: 0
+                    }
+                }
+
+                // ── Qt Graphs: the three temperature splines ───────────
+                // Always viewport-sized; scrolling just moves the x range.
+                Graphs.GraphsView {
+                    id: gv
+                    x: 0
+                    y: area.gvY
+                    width: area.vw
+                    height: area.gvH
+                    marginLeft: 0
+                    marginRight: 0
+                    marginTop: root.marginV
+                    marginBottom: root.marginV
+
+                    // The view does not clip the plot area; clip here so lines
+                    // never spill over neighbouring items.
+                    clip: true
+
+                    theme: Graphs.GraphsTheme {
+                        gridVisible: false
+                        backgroundVisible: false
+                        plotAreaBackgroundVisible: false
+                    }
+
+                    axisX: Graphs.ValueAxis {
+                        visible: false
+                        lineVisible: false
+                        min: -0.5 + scroller.contentX / area.slot
+                        max: -0.5 + (scroller.contentX + area.vw) / area.slot
+                    }
+                    axisY: Graphs.ValueAxis {
+                        visible: false
+                        lineVisible: false
+                        min: root.tempScale.lo
+                        max: root.tempScale.hi
+                    }
+
+                    Graphs.SplineSeries { id: highSeries; color: root.highColor; width: 3 }
+                    Graphs.SplineSeries { id: meanSeries; color: root.meanColor; width: 2 }
+                    Graphs.SplineSeries { id: lowSeries; color: root.lowColor; width: 3 }
+                }
+
+                // ── precipitation bars ─────────────────────────────────
+                Repeater {
+                    model: root.dayCount > 1 ? root.days : []
+                    delegate: Rectangle {
+                        required property var modelData
+                        required property int index
+                        readonly property real bw: Math.max(1, Math.min(area.slot * 0.62, 14))
+                        readonly property bool has: isFinite(modelData.precipMm) && modelData.precipMm > 0
+                        readonly property real bx: index * area.slot + (area.slot - bw) / 2 - scroller.contentX
+                        visible: has && bx + bw > 0 && bx < area.vw
+                        x: bx
+                        width: bw
+                        height: has ? Math.max(1, modelData.precipMm / root.precipMax * root.precipPlotH) : 0
+                        y: area.precipBottom - height
+                        radius: Math.min(2, bw / 2)
+                        color: root.precipColor
+                        opacity: root.hoverIndex < 0 || root.hoverIndex === index ? 0.9 : 0.55
+                    }
+                }
+
+                // ── hover cursor + value badges ────────────────────────
+                readonly property bool hovering: root.hoverIndex >= 0 && root.hoverIndex < root.dayCount
+                readonly property var hoverDay: hovering ? root.days[root.hoverIndex] : null
+                readonly property real cursorX: hovering ? area.xOf(root.hoverIndex) : 0
+                readonly property bool badgesRight: cursorX < area.vw / 2
+
+                Rectangle {
+                    visible: pinned.hovering
+                    x: pinned.cursorX - 1
+                    y: area.py - root.marginV / 2
+                    width: 2
+                    height: area.precipBottom - y
+                    color: Kirigami.Theme.highlightColor
+                }
+
+                Label {
+                    visible: pinned.hovering
+                    text: pinned.hoverDay && root.view ? root.view._day(pinned.hoverDay.dateStr, false) : ""
+                    font: Kirigami.Theme.smallFont
+                    color: Kirigami.Theme.textColor
+                    x: Math.max(0, Math.min(area.vw - width, pinned.cursorX - width / 2))
+                    y: 0
+                }
+
+                // De-overlap the temperature badges (same idea as the KDE applet's
+                // ForecastGraphLine.positionLabelsY): sort, push apart, keep centred.
+                readonly property var badgeYs: {
+                    if (!hovering)
+                        return [0, 0, 0];
+                    var d = hoverDay;
+                    var vals = [d.maxC, d.meanC, d.minC];
+                    var items = [];
+                    for (var i = 0; i < 3; ++i)
+                        if (isFinite(vals[i]))
+                            items.push({ i: i, y: area.yOf(vals[i]) - root.badgeH / 2 });
+                    items.sort(function (a, b) { return a.y - b.y; });
+                    var pref = items.map(function (it) { return it.y; });
+                    for (var k = 1; k < items.length; ++k) {
+                        var minY = items[k - 1].y + root.badgeH + Kirigami.Units.smallSpacing;
+                        if (items[k].y < minY)
+                            items[k].y = minY;
+                    }
+                    if (items.length > 0) {
+                        var c1 = (pref[0] + pref[pref.length - 1]) / 2;
+                        var c2 = (items[0].y + items[items.length - 1].y) / 2;
+                        var shift = c1 - c2;
+                        for (var m = 0; m < items.length; ++m)
+                            items[m].y += shift;
+                        var top = area.gvY, bottom = area.gvY + area.gvH;
+                        if (items[0].y < top)
+                            shift = top - items[0].y;
+                        else if (items[items.length - 1].y + root.badgeH > bottom)
+                            shift = bottom - root.badgeH - items[items.length - 1].y;
+                        else
+                            shift = 0;
+                        for (var n2 = 0; n2 < items.length; ++n2)
+                            items[n2].y += shift;
+                    }
+                    var out = [0, 0, 0];
+                    for (var j = 0; j < items.length; ++j)
+                        out[items[j].i] = items[j].y;
+                    return out;
+                }
+
+                Repeater {
+                    model: [
+                        { color: root.highColor, text: pinned.hoverDay ? root._fmtTemp(pinned.hoverDay.maxC) : "", ok: !!pinned.hoverDay && isFinite(pinned.hoverDay.maxC) },
+                        { color: root.meanColor, text: pinned.hoverDay ? root._fmtTemp(pinned.hoverDay.meanC) : "", ok: !!pinned.hoverDay && isFinite(pinned.hoverDay.meanC) },
+                        { color: root.lowColor, text: pinned.hoverDay ? root._fmtTemp(pinned.hoverDay.minC) : "", ok: !!pinned.hoverDay && isFinite(pinned.hoverDay.minC) }
+                    ]
+                    delegate: Rectangle {
+                        id: badge
+                        required property var modelData
+                        required property int index
+                        visible: pinned.hovering && modelData.ok
+                        width: badgeText.implicitWidth + 8
+                        height: root.badgeH
+                        radius: 4
+                        color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(modelData.color, 0.18))
+                        border.width: 1
+                        border.color: Qt.alpha(modelData.color, 0.6)
+                        x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing
+                                              : pinned.cursorX - Kirigami.Units.largeSpacing - width
+                        y: pinned.badgeYs[index]
+                        Label {
+                            id: badgeText
+                            anchors.centerIn: parent
+                            text: badge.modelData.text
+                            font: Kirigami.Theme.smallFont
+                            color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
+                        }
+                    }
+                }
+
+                // Precipitation badge, sitting on top of the hovered bar
+                Rectangle {
+                    id: precipBadge
+                    visible: pinned.hovering && !!pinned.hoverDay && isFinite(pinned.hoverDay.precipMm)
+                    width: precipBadgeText.implicitWidth + 8
+                    height: root.badgeH
+                    radius: 4
+                    color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(root.precipColor, 0.18))
+                    border.width: 1
+                    border.color: Qt.alpha(root.precipColor, 0.6)
+                    x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing
+                                          : pinned.cursorX - Kirigami.Units.largeSpacing - width
+                    y: {
+                        var pm = pinned.hoverDay && isFinite(pinned.hoverDay.precipMm) ? pinned.hoverDay.precipMm : 0;
+                        var barTop = area.precipBottom - pm / root.precipMax * root.precipPlotH;
+                        return Math.max(area.precipTop - root.badgeH / 2, Math.min(area.precipBottom - root.badgeH, barTop - root.badgeH / 2));
+                    }
+                    Label {
+                        id: precipBadgeText
+                        anchors.centerIn: parent
+                        text: pinned.hoverDay ? root._fmtPrecip(pinned.hoverDay.precipMm) : ""
+                        font: Kirigami.Theme.smallFont
+                        color: root.precipColor
+                    }
+                }
+
+                // ── hover tracking + Ctrl+wheel zoom ───────────────────
+                HoverHandler {
+                    id: hoverHandler
+                    cursorShape: root.zoomed ? Qt.OpenHandCursor : Qt.ArrowCursor
+                    onPointChanged: {
+                        if (!hovered || root.dayCount < 1 || panDrag.active) {
+                            root.hoverIndex = -1;
+                            return;
+                        }
+                        var xIn = point.position.x;
+                        var yIn = point.position.y;
+                        if (xIn < 0 || xIn > area.vw || yIn < area.gvY || yIn > area.precipBottom) {
+                            root.hoverIndex = -1;
+                            return;
+                        }
+                        root.hoverIndex = Math.max(0, Math.min(root.dayCount - 1, Math.floor((xIn + scroller.contentX) / area.slot)));
+                    }
+                    onHoveredChanged: {
+                        if (!hovered)
+                            root.hoverIndex = -1;
+                    }
+                }
+                WheelHandler {
+                    enabled: root.zoomed
+                    acceptedModifiers: Qt.NoModifier
+                    onWheel: function (event) { root.wheelPan(event); }
+                }
+                WheelHandler {
+                    enabled: root.zoomed
+                    acceptedModifiers: Qt.ShiftModifier
+                    onWheel: function (event) { root.wheelPan(event); }
+                }
+                WheelHandler {
+                    // sideways touchpad swipes / tilt wheels
+                    enabled: root.zoomed
+                    orientation: Qt.Horizontal
+                    onWheel: function (event) { root.wheelPan(event); }
+                }
+                WheelHandler {
+                    acceptedModifiers: Qt.ControlModifier
+                    onWheel: function (event) {
+                        root.hoverIndex = -1;
+                        root.zoomTo(root.zoom * (event.angleDelta.y > 0 ? 1.4 : 1 / 1.4),
+                                    Math.max(0, Math.min(1, point.position.x / area.vw)));
+                    }
+                }
             }
         }
 
-        // ── temperature axis labels ───────────────────────────────────
+        // ── axis labels, in the left gutter (fixed) ───────────────────
         Repeater {
             model: root.dayCount > 1 ? root.tempScale.ticks : 0
             delegate: Label {
@@ -228,65 +616,67 @@ ColumnLayout {
                 text: root._fmtTemp(value)
                 font: Kirigami.Theme.smallFont
                 color: Kirigami.Theme.textColor
-                opacity: 0.75
-                x: area.labelW - width - Kirigami.Units.smallSpacing / 2
+                opacity: 0.8
+                x: area.plotX - width - Kirigami.Units.largeSpacing
                 y: area.py + index / (root.tempScale.ticks - 1) * area.ph - height / 2
             }
         }
-
-        // ── date labels (hidden while hovering - the cursor shows its own)
         Repeater {
-            model: root.dayCount > 1 ? root.dateIdx : []
+            model: root.dayCount > 1 ? [
+                { v: root.precipMax, y: area.precipTop },
+                { v: 0, y: area.precipBottom }
+            ] : []
             delegate: Label {
-                required property int modelData
-                visible: root.hoverIndex < 0
-                text: root.view ? root.view._date(root.days[modelData].dateStr) : ""
+                id: pLabel
+                required property var modelData
+                text: root._fmtPrecip(modelData.v)
                 font: Kirigami.Theme.smallFont
                 color: Kirigami.Theme.textColor
-                opacity: 0.75
-                x: Math.max(area.gvX, Math.min(area.width - width, area.xOf(modelData) - width / 2))
-                y: 0
+                opacity: 0.8
+                x: area.plotX - width - Kirigami.Units.largeSpacing
+                y: Math.min(modelData.y - height / 2, area.precipBottom - height)
             }
         }
 
-        // ── Qt Graphs: the three temperature splines ──────────────────
-        Graphs.GraphsView {
-            id: gv
-            x: area.gvX
-            y: area.gvY
-            width: area.gvW
-            height: area.gvH
-            marginLeft: root.marginH
-            marginRight: root.marginH
-            marginTop: root.marginV
-            marginBottom: root.marginV
-
-            // The view does not clip the plot area; clip here so lines never
-            // spill over neighbouring items.
-            clip: true
-
-            theme: Graphs.GraphsTheme {
-                gridVisible: false
-                backgroundVisible: false
-                plotAreaBackgroundVisible: false
+        // Rain total of what is in view, in the corner of the precipitation strip
+        Rectangle {
+            visible: root.dayCount > 1 && root.hoverIndex < 0
+            x: area.width - width
+            y: area.precipTop - height / 2
+            width: totalText.implicitWidth + 8
+            height: totalText.implicitHeight
+            radius: 3
+            color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.6)
+            Label {
+                id: totalText
+                anchors.centerIn: parent
+                text: i18nc("@label rain total shown in the chart", "Total: %1", root._fmtPrecip(root.visiblePrecipSum))
+                font: Kirigami.Theme.smallFont
+                color: root.precipColor
             }
+        }
 
-            axisX: Graphs.ValueAxis {
-                visible: false
-                lineVisible: false
-                min: -0.5
-                max: Math.max(root.dayCount, 1) - 0.5
+        // ── drag to scroll while zoomed in ────────────────────────────
+        // The Flickable is deliberately not interactive: a Flickable swallows
+        // the plain mouse wheel, and the wheel should keep scrolling the day
+        // list behind the chart. Dragging and the scroll bar move contentX.
+        DragHandler {
+            id: panDrag
+            enabled: root.zoomed
+            target: null
+            xAxis.enabled: true
+            yAxis.enabled: false
+            property real _startX: 0
+            onActiveChanged: {
+                if (active) {
+                    _startX = scroller.contentX;
+                    root.hoverIndex = -1;
+                }
             }
-            axisY: Graphs.ValueAxis {
-                visible: false
-                lineVisible: false
-                min: root.tempScale.lo
-                max: root.tempScale.hi
+            onTranslationChanged: {
+                if (active)
+                    scroller.contentX = Math.max(0, Math.min(scroller.contentWidth - scroller.width, _startX - translation.x));
             }
-
-            Graphs.SplineSeries { id: highSeries; color: root.highColor; width: 3 }
-            Graphs.SplineSeries { id: meanSeries; color: root.meanColor; width: 2 }
-            Graphs.SplineSeries { id: lowSeries; color: root.lowColor; width: 3 }
         }
 
         function rebuild() {
@@ -309,234 +699,10 @@ ColumnLayout {
             target: root
             function onDaysChanged() {
                 root.hoverIndex = -1;
+                root.resetZoom();
                 area.rebuild();
             }
         }
         Component.onCompleted: rebuild()
-
-        // ── precipitation bars ────────────────────────────────────────
-        Rectangle {
-            x: area.px
-            y: area.precipBottom
-            width: area.pw
-            height: 1
-            color: Kirigami.Theme.textColor
-            opacity: 0.25
-        }
-        Repeater {
-            model: root.dayCount > 1 ? root.days : []
-            delegate: Rectangle {
-                required property var modelData
-                required property int index
-                readonly property real slot: area.pw / root.dayCount
-                readonly property real bw: Math.max(1, Math.min(slot * 0.62, 14))
-                readonly property bool has: isFinite(modelData.precipMm) && modelData.precipMm > 0
-                visible: has
-                x: area.px + index * slot + (slot - bw) / 2
-                width: bw
-                height: has ? Math.max(1, modelData.precipMm / root.precipMax * root.precipPlotH) : 0
-                y: area.precipBottom - height
-                radius: Math.min(2, bw / 2)
-                color: root.precipColor
-                opacity: root.hoverIndex < 0 || root.hoverIndex === index ? 0.9 : 0.55
-            }
-        }
-        Label {
-            text: root._fmtPrecip(root.precipMax)
-            font: Kirigami.Theme.smallFont
-            color: Kirigami.Theme.textColor
-            opacity: 0.75
-            x: area.labelW - width - Kirigami.Units.smallSpacing / 2
-            y: area.precipTop - height / 2
-            visible: root.dayCount > 1
-        }
-        Label {
-            text: root._fmtPrecip(0)
-            font: Kirigami.Theme.smallFont
-            color: Kirigami.Theme.textColor
-            opacity: 0.75
-            x: area.labelW - width - Kirigami.Units.smallSpacing / 2
-            y: area.precipBottom - height / 2
-            visible: root.dayCount > 1
-        }
-
-        // ── hover cursor + value badges ───────────────────────────────
-        readonly property bool hovering: root.hoverIndex >= 0 && root.hoverIndex < root.dayCount
-        readonly property var hoverDay: hovering ? root.days[root.hoverIndex] : null
-        readonly property real cursorX: hovering ? xOf(root.hoverIndex) : 0
-        readonly property bool badgesRight: cursorX < area.width / 2
-
-        Rectangle {
-            visible: area.hovering
-            x: area.cursorX - 1
-            y: area.py - root.marginV / 2
-            width: 2
-            height: area.precipBottom - y
-            color: Kirigami.Theme.highlightColor
-        }
-
-        Label {
-            visible: area.hovering
-            text: area.hoverDay && root.view ? root.view._day(area.hoverDay.dateStr, false) : ""
-            font: Kirigami.Theme.smallFont
-            color: Kirigami.Theme.textColor
-            x: Math.max(area.gvX, Math.min(area.width - width, area.cursorX - width / 2))
-            y: 0
-        }
-
-        // De-overlap the temperature badges (same idea as the KDE applet's
-        // ForecastGraphLine.positionLabelsY): sort, push apart, keep centred.
-        readonly property var badgeYs: {
-            if (!hovering)
-                return [0, 0, 0];
-            var d = hoverDay;
-            var vals = [d.maxC, d.meanC, d.minC];
-            var items = [];
-            for (var i = 0; i < 3; ++i)
-                if (isFinite(vals[i]))
-                    items.push({ i: i, y: yOf(vals[i]) - root.badgeH / 2 });
-            items.sort(function (a, b) { return a.y - b.y; });
-            var pref = items.map(function (it) { return it.y; });
-            for (var k = 1; k < items.length; ++k) {
-                var minY = items[k - 1].y + root.badgeH + Kirigami.Units.smallSpacing;
-                if (items[k].y < minY)
-                    items[k].y = minY;
-            }
-            if (items.length > 0) {
-                var c1 = (pref[0] + pref[pref.length - 1]) / 2;
-                var c2 = (items[0].y + items[items.length - 1].y) / 2;
-                var shift = c1 - c2;
-                for (var m = 0; m < items.length; ++m)
-                    items[m].y += shift;
-                var top = gvY, bottom = gvY + gvH;
-                if (items[0].y < top)
-                    shift = top - items[0].y;
-                else if (items[items.length - 1].y + root.badgeH > bottom)
-                    shift = bottom - root.badgeH - items[items.length - 1].y;
-                else
-                    shift = 0;
-                for (var n2 = 0; n2 < items.length; ++n2)
-                    items[n2].y += shift;
-            }
-            var out = [0, 0, 0];
-            for (var j = 0; j < items.length; ++j)
-                out[items[j].i] = items[j].y;
-            return out;
-        }
-
-        Repeater {
-            model: [
-                { color: root.highColor, text: area.hoverDay ? root._fmtTemp(area.hoverDay.maxC) : "", ok: !!area.hoverDay && isFinite(area.hoverDay.maxC) },
-                { color: root.meanColor, text: area.hoverDay ? root._fmtTemp(area.hoverDay.meanC) : "", ok: !!area.hoverDay && isFinite(area.hoverDay.meanC) },
-                { color: root.lowColor, text: area.hoverDay ? root._fmtTemp(area.hoverDay.minC) : "", ok: !!area.hoverDay && isFinite(area.hoverDay.minC) }
-            ]
-            delegate: Rectangle {
-                id: badge
-                required property var modelData
-                required property int index
-                visible: area.hovering && modelData.ok
-                width: badgeText.implicitWidth + 8
-                height: root.badgeH
-                radius: 4
-                color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(modelData.color, 0.18))
-                border.width: 1
-                border.color: Qt.alpha(modelData.color, 0.6)
-                x: area.badgesRight ? area.cursorX + Kirigami.Units.largeSpacing
-                                    : area.cursorX - Kirigami.Units.largeSpacing - width
-                y: area.badgeYs[index]
-                Label {
-                    id: badgeText
-                    anchors.centerIn: parent
-                    text: badge.modelData.text
-                    font: Kirigami.Theme.smallFont
-                    color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
-                }
-            }
-        }
-
-        // Precipitation badge, sitting on top of the hovered bar
-        Rectangle {
-            id: precipBadge
-            visible: area.hovering && !!area.hoverDay && isFinite(area.hoverDay.precipMm)
-            width: precipBadgeText.implicitWidth + 8
-            height: root.badgeH
-            radius: 4
-            color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(root.precipColor, 0.18))
-            border.width: 1
-            border.color: Qt.alpha(root.precipColor, 0.6)
-            x: area.badgesRight ? area.cursorX + Kirigami.Units.largeSpacing
-                                : area.cursorX - Kirigami.Units.largeSpacing - width
-            y: {
-                var pm = area.hoverDay && isFinite(area.hoverDay.precipMm) ? area.hoverDay.precipMm : 0;
-                var barTop = area.precipBottom - pm / root.precipMax * root.precipPlotH;
-                return Math.max(area.precipTop - root.badgeH / 2, Math.min(area.precipBottom - root.badgeH, barTop - root.badgeH / 2));
-            }
-            Label {
-                id: precipBadgeText
-                anchors.centerIn: parent
-                text: area.hoverDay ? root._fmtPrecip(area.hoverDay.precipMm) : ""
-                font: Kirigami.Theme.smallFont
-                color: root.precipColor
-            }
-        }
-
-        // ── hover tracking over the plot columns ──────────────────────
-        HoverHandler {
-            id: hoverHandler
-            cursorShape: root.canPan ? Qt.OpenHandCursor : Qt.ArrowCursor
-            onPointChanged: {
-                if (!hovered || root.dayCount < 1) {
-                    root.hoverIndex = -1;
-                    return;
-                }
-                var xIn = point.position.x - area.px;
-                var yIn = point.position.y;
-                if (xIn < 0 || xIn > area.pw || yIn < area.gvY || yIn > area.precipBottom) {
-                    root.hoverIndex = -1;
-                    return;
-                }
-                root.hoverIndex = Math.max(0, Math.min(root.dayCount - 1, Math.floor(xIn / area.pw * root.dayCount)));
-            }
-            onHoveredChanged: {
-                if (!hovered)
-                    root.hoverIndex = -1;
-            }
-        }
-
-        // ── zoom / pan gestures ───────────────────────────────────────
-        // Drag sideways while zoomed in to move the window; Ctrl+wheel zooms
-        // around the pointer. Plain wheel still scrolls the day list.
-        DragHandler {
-            id: panDrag
-            enabled: root.canPan
-            target: null
-            xAxis.enabled: true
-            yAxis.enabled: false
-            property real _last: 0
-            property real _acc: 0
-            onActiveChanged: {
-                _last = 0;
-                _acc = 0;
-            }
-            onTranslationChanged: {
-                if (!active)
-                    return;
-                _acc += translation.x - _last;
-                _last = translation.x;
-                var slot = area.pw / Math.max(1, root.dayCount);
-                var steps = Math.trunc(_acc / slot);
-                if (steps !== 0) {
-                    _acc -= steps * slot;
-                    root.panRequested(-steps);
-                }
-            }
-        }
-        WheelHandler {
-            acceptedModifiers: Qt.ControlModifier
-            onWheel: function (event) {
-                var a = Math.max(0, Math.min(1, (point.position.x - area.px) / area.pw));
-                root.zoomRequested(event.angleDelta.y > 0 ? 0.7 : 1 / 0.7, a);
-            }
-        }
     }
 }
