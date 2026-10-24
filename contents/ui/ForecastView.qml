@@ -548,9 +548,7 @@ Item {
                                         var ds = weatherRoot.dailyData[dataIndex].dateStr || "";
                                         if (!ds)
                                             return "";
-                                        var d = new Date(ds);
-                                        var fmt = Qt.locale().dateFormat(Locale.ShortFormat);
-                                        return Qt.formatDate(d, fmt);
+                                        return weatherRoot.formatIsoDate(ds, true);
                                     }
                                     color: forecastRoot.themeTextColor
                                     font: weatherRoot.wf(9, false)
@@ -1053,7 +1051,7 @@ Item {
                                                             if (parts.length < 2) return modelData.hour;
                                                             var d = new Date();
                                                             d.setHours(parseInt(parts[0],10), parseInt(parts[1],10), 0, 0);
-                                                            return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
+                                                            return weatherRoot ? weatherRoot.formatTimeObj(d) : "--";
                                                         }
                                                         color: forecastRoot.themeTextColor
                                                         font: weatherRoot ? weatherRoot.wf(9, modelData.isSunrise || modelData.isSunset) : Qt.font({})
@@ -1940,7 +1938,7 @@ Item {
                                                                         return modelData.hour;
                                                                     var d = new Date();
                                                                     d.setHours(h, m, 0, 0);
-                                                                    return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
+                                                                    return weatherRoot ? weatherRoot.formatTimeObj(d) : "--";
                                                                 }
                                                                 color: forecastRoot.themeTextColor
                                                                 font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})

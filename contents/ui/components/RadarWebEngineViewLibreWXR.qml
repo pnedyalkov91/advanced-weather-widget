@@ -153,7 +153,10 @@ Item {
         }
     }
 
+    // 12/24-hour clock follows Settings → Misc → Date and Time.
     readonly property bool is24h: {
+        if (weatherRoot)
+            return weatherRoot.timeIs24h;
         var f = Qt.locale().timeFormat(Locale.ShortFormat);
         return f.indexOf('H') !== -1 || f.indexOf('k') !== -1;
     }

@@ -477,170 +477,20 @@ ColumnLayout {
                 }
             }
 
+            Item {
+                // empty label cell: keeps the hint in the second column
+                visible: _form1.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
             Label {
-                text: i18n("Date format:")
-                visible: widgetTab.configRoot.cfg_headerShowDateTime
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_headerShowDateTime
-                spacing: Kirigami.Units.smallSpacing
-                ComboBox {
-                    id: headerDateFormatCombo
-                    Layout.preferredWidth: 200
-                    textRole: "text"
-                    readonly property var _presets: [
-                        { text: i18n("Region default (long)"),  value: "locale-long"  },
-                        { text: i18n("Region default (short)"), value: "locale-short" },
-                        { text: "Mon, Jan 1  (ddd, MMM d)",     value: "ddd, MMM d"   },
-                        { text: "Monday, Jan 1  (dddd, MMM d)", value: "dddd, MMM d"  },
-                        { text: "01/01/2025  (dd/MM/yyyy)",     value: "dd/MM/yyyy"   },
-                        { text: "01.01.2025  (dd.MM.yyyy)",     value: "dd.MM.yyyy"   },
-                        { text: "2025-01-01  (yyyy-MM-dd)",     value: "yyyy-MM-dd"   },
-                        { text: i18n("Custom…"),                value: "__custom__"   }
-                    ]
-                    model: _presets
-                    Component.onCompleted: {
-                        var v = widgetTab.configRoot.cfg_headerDateFormat || "locale-long";
-                        for (var i = 0; i < _presets.length - 1; ++i) {
-                            if (_presets[i].value === v) { currentIndex = i; return; }
-                        }
-                        currentIndex = _presets.length - 1;
-                    }
-                    onActivated: {
-                        var val = _presets[currentIndex].value;
-                        if (val !== "__custom__")
-                            widgetTab.configRoot.cfg_headerDateFormat = val;
-                    }
-                }
-                TextField {
-                    id: headerDateCustomField
-                    visible: headerDateFormatCombo.currentIndex === headerDateFormatCombo._presets.length - 1
-                    Layout.preferredWidth: 140
-                    placeholderText: "ddd, MMM d"
-                    text: {
-                        var v = widgetTab.configRoot.cfg_headerDateFormat;
-                        var presets = headerDateFormatCombo._presets;
-                        for (var i = 0; i < presets.length - 1; ++i)
-                            if (presets[i].value === v) return "";
-                        return v;
-                    }
-                    onEditingFinished: {
-                        if (text.trim().length > 0)
-                            widgetTab.configRoot.cfg_headerDateFormat = text.trim();
-                    }
-                }
-            }
-
-            Kirigami.InlineMessage {
-                Layout.columnSpan: _form1.columns
                 Layout.fillWidth: true
-                visible: widgetTab.configRoot.cfg_headerShowDateTime &&
-                         headerDateFormatCombo.currentIndex === headerDateFormatCombo._presets.length - 1
-                type: Kirigami.MessageType.Information
-                text: i18n("You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>")
-                onLinkActivated: link => Qt.openUrlExternally(link)
-            }
-
-            Label {
-                text: i18n("Time format:")
-                visible: widgetTab.configRoot.cfg_headerShowDateTime
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_headerShowDateTime
-                spacing: Kirigami.Units.smallSpacing
-                ComboBox {
-                    id: headerTimeFormatCombo
-                    Layout.preferredWidth: 200
-                    textRole: "text"
-                    readonly property var _presets: [
-                        { text: i18n("Region default"), value: "locale"    },
-                        { text: "14:30  (HH:mm)",       value: "HH:mm"    },
-                        { text: "14:30:05  (HH:mm:ss)", value: "HH:mm:ss" },
-                        { text: "2:30 PM  (h:mm AP)",   value: "h:mm AP"  },
-                        { text: "2:30:05 PM  (h:mm:ss AP)", value: "h:mm:ss AP" },
-                        { text: i18n("Custom…"),         value: "__custom__" }
-                    ]
-                    model: _presets
-                    Component.onCompleted: {
-                        var v = widgetTab.configRoot.cfg_headerTimeFormat || "locale";
-                        for (var i = 0; i < _presets.length - 1; ++i) {
-                            if (_presets[i].value === v) { currentIndex = i; return; }
-                        }
-                        currentIndex = _presets.length - 1;
-                    }
-                    onActivated: {
-                        var val = _presets[currentIndex].value;
-                        if (val !== "__custom__")
-                            widgetTab.configRoot.cfg_headerTimeFormat = val;
-                    }
-                }
-                TextField {
-                    id: headerTimeCustomField
-                    visible: headerTimeFormatCombo.currentIndex === headerTimeFormatCombo._presets.length - 1
-                    Layout.preferredWidth: 140
-                    placeholderText: "HH:mm"
-                    text: {
-                        var v = widgetTab.configRoot.cfg_headerTimeFormat;
-                        var presets = headerTimeFormatCombo._presets;
-                        for (var i = 0; i < presets.length - 1; ++i)
-                            if (presets[i].value === v) return "";
-                        return v;
-                    }
-                    onEditingFinished: {
-                        if (text.trim().length > 0)
-                            widgetTab.configRoot.cfg_headerTimeFormat = text.trim();
-                    }
-                }
-                Label {
-                    visible: !headerTimeCustomField.visible && widgetTab.configRoot.cfg_headerTimeFormat !== "locale"
-                    text: i18n("Use 24-hour format:")
-                    opacity: 0.8
-                }
-                Switch {
-                    id: header24hSwitch
-                    visible: !headerTimeCustomField.visible && widgetTab.configRoot.cfg_headerTimeFormat !== "locale"
-                    readonly property bool _is24h: {
-                        var v = widgetTab.configRoot.cfg_headerTimeFormat;
-                        return v === "locale" || v === "HH:mm" || v === "HH:mm:ss";
-                    }
-                    checked: _is24h
-                    onToggled: {
-                        var cur = headerTimeFormatCombo.currentIndex;
-                        var presets = headerTimeFormatCombo._presets;
-                        if (cur >= presets.length - 1) return;
-                        var v = presets[cur].value;
-                        if (v === "locale" || v === "") return;
-                        if (checked) {
-                            if (v === "h:mm AP")       widgetTab.configRoot.cfg_headerTimeFormat = "HH:mm";
-                            else if (v === "h:mm:ss AP") widgetTab.configRoot.cfg_headerTimeFormat = "HH:mm:ss";
-                        } else {
-                            if (v === "HH:mm")    widgetTab.configRoot.cfg_headerTimeFormat = "h:mm AP";
-                            else if (v === "HH:mm:ss") widgetTab.configRoot.cfg_headerTimeFormat = "h:mm:ss AP";
-                        }
-                        var newV = widgetTab.configRoot.cfg_headerTimeFormat;
-                        for (var i = 0; i < presets.length - 1; ++i) {
-                            if (presets[i].value === newV) { headerTimeFormatCombo.currentIndex = i; break; }
-                        }
-                    }
-                }
-            }
-
-            Kirigami.InlineMessage {
-                Layout.columnSpan: _form1.columns
-                Layout.fillWidth: true
-                visible: widgetTab.configRoot.cfg_headerShowDateTime &&
-                         headerTimeFormatCombo.currentIndex === headerTimeFormatCombo._presets.length - 1
-                type: Kirigami.MessageType.Information
-                text: i18n("You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>")
-                onLinkActivated: link => Qt.openUrlExternally(link)
+                Layout.minimumWidth: 0
+                Layout.maximumWidth: 340
+                wrapMode: Text.WordWrap
+                opacity: 0.65
+                font: Kirigami.Theme.smallFont
+                text: i18n("Date and time formats are set in Misc → Date and Time.")
             }
 
             // ═══════════════════════════════════════════════════════════════

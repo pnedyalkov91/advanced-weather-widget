@@ -291,6 +291,11 @@
     <entry name="headerShowDateTime" type="Bool"><default>false</default></entry>
     <entry name="headerDateFormat"   type="String"><default>locale-long</default></entry>
     <entry name="headerTimeFormat"   type="String"><default>locale</default></entry>
+    <!-- Global date / time format (Settings > Misc > Date and Time). Used by the panel,
+         tooltip, header and every tab. Empty = not chosen yet: the older header-only
+         headerDateFormat / headerTimeFormat values are used instead. -->
+    <entry name="displayDateFormat"  type="String"><default></default></entry>
+    <entry name="displayTimeFormat"  type="String"><default></default></entry>
 
     <!-- ── Widget - simple mode options ──────────────────────────────── -->
     <entry name="simpleShowForecast"     type="Bool"><default>true</default></entry>

@@ -1590,6 +1590,8 @@ KCM.AbstractKCM {
     property bool cfg_headerShowDateTime: false
     property string cfg_headerDateFormat: "locale-long"
     property string cfg_headerTimeFormat: "locale"
+    property string cfg_displayDateFormat: ""
+    property string cfg_displayTimeFormat: ""
     property bool cfg_simpleShowForecast: true
     property bool cfg_simpleShowSunriseSunset: true
     property bool cfg_simpleShowForecastCompass: true

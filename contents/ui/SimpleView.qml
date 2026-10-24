@@ -445,8 +445,9 @@ ColumnLayout {
                             text: {
                                 if (!day) return "";
                                 var ds = day.dateStr || "";
-                                var d2 = ds ? new Date(ds) : new Date(day.time * 1000);
-                                return Qt.formatDate(d2, Qt.locale().dateFormat(Locale.ShortFormat));
+                                if (ds)
+                                    return weatherRoot.formatIsoDate(ds, true);
+                                return weatherRoot.formatDateObj(new Date(day.time * 1000), true);
                             }
                             color: Kirigami.Theme.textColor
                             opacity: 0.5

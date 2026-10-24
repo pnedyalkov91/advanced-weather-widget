@@ -619,9 +619,7 @@ Item {
             ];
         }
         if (tok === "datetime") {
-            var dtTxt = r._formatItemDateTime(
-                Plasmoid.configuration.tooltipDateTimeFormat,
-                Plasmoid.configuration.tooltipTimeFormat);
+            var dtTxt = r.formatDateTimeNow(false);
             return [row("datetime", dtTxt, i18n("Date/Time:") + " " + dtTxt)];
         }
 

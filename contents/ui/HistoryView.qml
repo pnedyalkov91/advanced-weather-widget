@@ -89,7 +89,10 @@ Item {
 
     // ── Helpers ───────────────────────────────────────────────────────────
     function _f(px, bold) {
-        return weatherRoot ? weatherRoot.wf(px, bold) : Qt.font({ pixelSize: px, bold: !!bold });
+        return weatherRoot ? weatherRoot.wf(px, bold) : Qt.font({
+            pixelSize: px,
+            bold: !!bold
+        });
     }
     function _isNum(v) {
         return typeof v === "number" && isFinite(v);
@@ -170,7 +173,12 @@ Item {
     function _icon(itemId, size) {
         var sz = size || _rowIconSz;
         if (_iconTheme === "kde" && itemId in _customIcons && _customIcons[itemId].length > 0)
-            return { type: "kde", source: _customIcons[itemId], svgFallback: "", isMask: false };
+            return {
+                type: "kde",
+                source: _customIcons[itemId],
+                svgFallback: "",
+                isMask: false
+            };
         return IconResolver.resolve(itemId, sz, iconsBaseDir, _iconTheme);
     }
 
@@ -179,33 +187,89 @@ Item {
         if (!s || s.count === 0)
             return t;
         if (_isNum(s.avgMeanC))
-            t.push({ icon: "temperature", label: i18n("Average"), value: _temp(s.avgMeanC),
-                     sub: i18n("High %1 · Low %2", _temp(s.avgMaxC), _temp(s.avgMinC)) });
+            t.push({
+                icon: "temperature",
+                label: i18n("Average"),
+                value: _temp(s.avgMeanC),
+                sub: i18n("High %1 · Low %2", _temp(s.avgMaxC), _temp(s.avgMinC))
+            });
         if (s.hottest)
-            t.push({ icon: "temperature", label: i18n("Warmest day"), value: _temp(s.hottest.v), sub: _day(s.hottest.date, false) });
+            t.push({
+                icon: "temperature",
+                label: i18n("Warmest day"),
+                value: _temp(s.hottest.v),
+                sub: _day(s.hottest.date, false)
+            });
         if (s.coldest)
-            t.push({ icon: "temperature", label: i18n("Coldest night"), value: _temp(s.coldest.v), sub: _day(s.coldest.date, false) });
+            t.push({
+                icon: "temperature",
+                label: i18n("Coldest night"),
+                value: _temp(s.coldest.v),
+                sub: _day(s.coldest.date, false)
+            });
         if (_isNum(s.totalPrecipMm))
-            t.push({ icon: "precipsum", label: i18n("Precipitation"), value: _precip(s.totalPrecipMm),
-                     sub: i18np("%1 wet day", "%1 wet days", s.wetDays) });
+            t.push({
+                icon: "precipsum",
+                label: i18n("Precipitation"),
+                value: _precip(s.totalPrecipMm),
+                sub: i18np("%1 wet day", "%1 wet days", s.wetDays)
+            });
         if (s.wettest && s.wettest.v > 0)
-            t.push({ icon: "umbrella", label: i18n("Wettest day"), value: _precip(s.wettest.v), sub: _day(s.wettest.date, false) });
+            t.push({
+                icon: "umbrella",
+                label: i18n("Wettest day"),
+                value: _precip(s.wettest.v),
+                sub: _day(s.wettest.date, false)
+            });
         if (_isNum(s.totalSnowCm) && s.totalSnowCm > 0)
-            t.push({ icon: "snowcover", label: i18n("Snowfall"), value: _snow(s.totalSnowCm),
-                     sub: i18np("%1 snowy day", "%1 snowy days", s.snowDays) });
+            t.push({
+                icon: "snowcover",
+                label: i18n("Snowfall"),
+                value: _snow(s.totalSnowCm),
+                sub: i18np("%1 snowy day", "%1 snowy days", s.snowDays)
+            });
         if (s.maxWind)
-            t.push({ icon: "wind", label: i18n("Strongest wind"), value: _wind(s.maxWind.v), sub: _day(s.maxWind.date, false) });
+            t.push({
+                icon: "wind",
+                label: i18n("Strongest wind"),
+                value: _wind(s.maxWind.v),
+                sub: _day(s.maxWind.date, false)
+            });
         if (s.maxGust)
-            t.push({ icon: "wind", label: i18n("Strongest gust"), value: _wind(s.maxGust.v), sub: _day(s.maxGust.date, false) });
+            t.push({
+                icon: "wind",
+                label: i18n("Strongest gust"),
+                value: _wind(s.maxGust.v),
+                sub: _day(s.maxGust.date, false)
+            });
         if (_isNum(s.totalSunshineHours))
-            t.push({ icon: "suntimes", label: i18n("Sunshine"), value: _hours(s.totalSunshineHours),
-                     sub: i18n("%1 per day", _hours(s.totalSunshineHours / s.count)) });
+            t.push({
+                icon: "suntimes",
+                label: i18n("Sunshine"),
+                value: _hours(s.totalSunshineHours),
+                sub: i18n("%1 per day", _hours(s.totalSunshineHours / s.count))
+            });
         if (_isNum(s.avgHumidity))
-            t.push({ icon: "humidity", label: i18n("Humidity"), value: _percent(s.avgHumidity), sub: i18n("average") });
+            t.push({
+                icon: "humidity",
+                label: i18n("Humidity"),
+                value: _percent(s.avgHumidity),
+                sub: i18n("average")
+            });
         if (_isNum(s.avgPressureHpa))
-            t.push({ icon: "pressure", label: i18n("Pressure"), value: _pressure(s.avgPressureHpa), sub: i18n("average") });
+            t.push({
+                icon: "pressure",
+                label: i18n("Pressure"),
+                value: _pressure(s.avgPressureHpa),
+                sub: i18n("average")
+            });
         if (_isNum(s.avgCloudPercent))
-            t.push({ icon: "condition", label: i18n("Cloud cover"), value: _percent(s.avgCloudPercent), sub: i18n("average") });
+            t.push({
+                icon: "condition",
+                label: i18n("Cloud cover"),
+                value: _percent(s.avgCloudPercent),
+                sub: i18n("average")
+            });
         return t;
     }
 
@@ -241,15 +305,42 @@ Item {
     }
 
     readonly property var _presetModel: [
-        { value: "yesterday",  label: i18n("Yesterday") },
-        { value: "last7",      label: i18n("Last 7 days") },
-        { value: "last30",     label: i18n("Last 30 days") },
-        { value: "last90",     label: i18n("Last 90 days") },
-        { value: "thisMonth",  label: i18n("This month") },
-        { value: "lastMonth",  label: i18n("Last month") },
-        { value: "thisYear",   label: i18n("This year") },
-        { value: "single",     label: i18n("Single day…") },
-        { value: "custom",     label: i18n("Custom range…") }
+        {
+            value: "yesterday",
+            label: i18n("Yesterday")
+        },
+        {
+            value: "last7",
+            label: i18n("Last 7 days")
+        },
+        {
+            value: "last30",
+            label: i18n("Last 30 days")
+        },
+        {
+            value: "last90",
+            label: i18n("Last 90 days")
+        },
+        {
+            value: "thisMonth",
+            label: i18n("This month")
+        },
+        {
+            value: "lastMonth",
+            label: i18n("Last month")
+        },
+        {
+            value: "thisYear",
+            label: i18n("This year")
+        },
+        {
+            value: "single",
+            label: i18n("Single day…")
+        },
+        {
+            value: "custom",
+            label: i18n("Custom range…")
+        }
     ]
 
     // ── Persistence ───────────────────────────────────────────────────────
@@ -257,7 +348,10 @@ Item {
         var p = Plasmoid.configuration.historyPeriod || "last30";
         var known = false;
         for (var i = 0; i < _presetModel.length; ++i)
-            if (_presetModel[i].value === p) { known = true; break; }
+            if (_presetModel[i].value === p) {
+                known = true;
+                break;
+            }
         preset = known ? p : "last30";
         var s = Plasmoid.configuration.historyStartDate || "";
         var e = Plasmoid.configuration.historyEndDate || "";
@@ -354,7 +448,8 @@ Item {
         var a = (typeof anchor === "number") ? Math.max(0, Math.min(1, anchor)) : 0.5;
         var next = Math.round(cur * factor);
         if (factor < 1 && next >= cur)
-            next = cur - 1;                  // always make progress
+            next = cur - 1;
+            // always make progress
         else if (factor > 1 && next <= cur)
             next = cur + 1;
         next = Math.max(_minZoomDays, Math.min(n, next));
@@ -582,9 +677,7 @@ Item {
                 font: root._f(10, false)
                 text: {
                     var p = root._period;
-                    return p.start === p.end
-                        ? root._day(p.start, false)
-                        : root._day(p.start, false) + " – " + root._day(p.end, false);
+                    return p.start === p.end ? root._day(p.start, false) : root._day(p.start, false) + " – " + root._day(p.end, false);
                 }
             }
             Label {
@@ -668,9 +761,15 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 // Dim while a refresh is running behind the old data.
                 opacity: root.status === "loading" ? 0.5 : 1.0
-                Behavior on opacity { NumberAnimation { duration: 120 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 120
+                    }
+                }
 
-                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
 
                 // ── Summary + chart ───────────────────────────────────
                 header: Item {
@@ -761,10 +860,7 @@ Item {
                                 color: Kirigami.Theme.textColor
                                 opacity: 0.7
                                 font: root._f(9, false)
-                                text: root._zoomed
-                                    ? root._date(root._chartDays[0].dateStr) + " – "
-                                        + root._date(root._chartDays[root._chartDays.length - 1].dateStr)
-                                    : ""
+                                text: root._zoomed ? root._date(root._chartDays[0].dateStr) + " – " + root._date(root._chartDays[root._chartDays.length - 1].dateStr) : ""
                             }
                             ToolButton {
                                 icon.name: "zoom-out"
@@ -801,12 +897,15 @@ Item {
                             Layout.fillWidth: true
                             Layout.topMargin: 4
                             visible: root.days.length > 1
-                            source: root._graphsOk ? "components/HistoryChartGraphs.qml"
-                                                   : "components/HistoryChartCanvas.qml"
+                            source: root._graphsOk ? "components/HistoryChartGraphs.qml" : "components/HistoryChartCanvas.qml"
                             onLoaded: {
                                 item.view = root;
-                                item.days = Qt.binding(function () { return root._chartDays; });
-                                item.canPan = Qt.binding(function () { return root._zoomed; });
+                                item.days = Qt.binding(function () {
+                                    return root._chartDays;
+                                });
+                                item.canPan = Qt.binding(function () {
+                                    return root._zoomed;
+                                });
                             }
                             onStatusChanged: {
                                 if (status === Loader.Error && root._graphsOk) {
@@ -819,8 +918,12 @@ Item {
                         Connections {
                             target: chartLoader.item
                             ignoreUnknownSignals: true
-                            function onPanRequested(deltaDays) { root._panBy(deltaDays); }
-                            function onZoomRequested(factor, anchor) { root._zoomBy(factor, anchor); }
+                            function onPanRequested(deltaDays) {
+                                root._panBy(deltaDays);
+                            }
+                            function onZoomRequested(factor, anchor) {
+                                root._zoomBy(factor, anchor);
+                            }
                         }
 
                         Label {
@@ -843,11 +946,14 @@ Item {
                     height: rowColumn.implicitHeight + 12
                     radius: 8
                     color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, open ? 0.11 : 0.05)
-                    Behavior on height { NumberAnimation { duration: 120 } }
+                    Behavior on height {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
                     clip: true
 
-                    readonly property var _icon: (modelData.hasData && root._isNum(modelData.code) && root.resolveConditionIconFn)
-                        ? root.resolveConditionIconFn(modelData.code, false, 26) : null
+                    readonly property var _icon: (modelData.hasData && root._isNum(modelData.code) && root.resolveConditionIconFn) ? root.resolveConditionIconFn(modelData.code, false, 26) : null
 
                     ColumnLayout {
                         id: rowColumn
@@ -1018,8 +1124,7 @@ Item {
             spacing: 6
             Label {
                 Layout.fillWidth: true
-                text: root.preset === "single" ? i18n("Select day")
-                    : (datePopup.target === "end" ? i18n("Select end date") : i18n("Select start date"))
+                text: root.preset === "single" ? i18n("Select day") : (datePopup.target === "end" ? i18n("Select end date") : i18n("Select start date"))
                 color: Kirigami.Theme.textColor
                 font: root._f(11, true)
             }

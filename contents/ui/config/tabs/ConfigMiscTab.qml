@@ -61,6 +61,23 @@ GridLayout {
         }
     }
 
+    // Effective values. The new keys are empty until chosen; the older
+    // header-only keys are the fallback, so an existing setting carries over.
+    readonly property string dateFormatValue: configRoot.cfg_displayDateFormat || configRoot.cfg_headerDateFormat || "locale-long"
+    readonly property string timeFormatValue: configRoot.cfg_displayTimeFormat || configRoot.cfg_headerTimeFormat || "locale"
+
+    /** Preview text for the Date and Time section, built with plain Qt. */
+    function previewText() {
+        var now = new Date();
+        var df = dateFormatValue;
+        var tf = timeFormatValue;
+        var ds = df === "locale-long" ? now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
+               : df === "locale-short" ? now.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+               : Qt.formatDate(now, df);
+        var ts = Qt.formatTime(now, tf === "locale" ? Qt.locale().timeFormat(Locale.ShortFormat) : tf);
+        return ds + "  " + ts;
+    }
+
     function setCombo(combo, value) {
         for (var i = 0; i < combo.model.length; ++i)
             if (combo.model[i].value === value) {
@@ -110,6 +127,196 @@ GridLayout {
             text: showTempUnitSwitch.checked ? i18n("Showing °C / °F after values") : i18n("Showing ° only")
             opacity: 0.8
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SECTION: Date and Time - applies everywhere (panel, tooltip, header,
+    // Details, Forecast, Radar, History)
+    // ═══════════════════════════════════════════════════════════════════
+    SectionHeader {
+        title: i18n("Date and Time")
+        Layout.columnSpan: miscTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+    }
+    Label {
+        text: i18n("Date format:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        spacing: Kirigami.Units.smallSpacing
+        ComboBox {
+            id: dateFormatCombo
+            Layout.preferredWidth: 200
+            textRole: "text"
+            readonly property var _presets: [
+                { text: i18n("Region default (long)"),  value: "locale-long"  },
+                { text: i18n("Region default (short)"), value: "locale-short" },
+                { text: "Mon, Jan 1  (ddd, MMM d)",     value: "ddd, MMM d"   },
+                { text: "Monday, Jan 1  (dddd, MMM d)", value: "dddd, MMM d"  },
+                { text: "01/01/2025  (dd/MM/yyyy)",     value: "dd/MM/yyyy"   },
+                { text: "01.01.2025  (dd.MM.yyyy)",     value: "dd.MM.yyyy"   },
+                { text: "2025-01-01  (yyyy-MM-dd)",     value: "yyyy-MM-dd"   },
+                { text: i18n("Custom…"),                value: "__custom__"   }
+            ]
+            model: _presets
+            Component.onCompleted: {
+                var v = miscTab.dateFormatValue;
+                for (var i = 0; i < _presets.length - 1; ++i) {
+                    if (_presets[i].value === v) { currentIndex = i; return; }
+                }
+                currentIndex = _presets.length - 1;
+            }
+            onActivated: {
+                var val = _presets[currentIndex].value;
+                if (val !== "__custom__")
+                    miscTab.configRoot.cfg_displayDateFormat = val;
+            }
+        }
+        TextField {
+            id: dateCustomField
+            visible: dateFormatCombo.currentIndex === dateFormatCombo._presets.length - 1
+            Layout.preferredWidth: 140
+            placeholderText: "ddd, MMM d"
+            text: {
+                var v = miscTab.dateFormatValue;
+                var presets = dateFormatCombo._presets;
+                for (var i = 0; i < presets.length - 1; ++i)
+                    if (presets[i].value === v) return "";
+                return v;
+            }
+            onEditingFinished: {
+                if (text.trim().length > 0)
+                    miscTab.configRoot.cfg_displayDateFormat = text.trim();
+            }
+        }
+    }
+    Kirigami.InlineMessage {
+        Layout.columnSpan: miscTab.columns
+        Layout.fillWidth: true
+        visible: dateCustomField.visible
+        type: Kirigami.MessageType.Information
+        text: i18n("You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>")
+        onLinkActivated: link => Qt.openUrlExternally(link)
+    }
+
+    Label {
+        text: i18n("Time format:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        spacing: Kirigami.Units.smallSpacing
+        ComboBox {
+            id: timeFormatCombo
+            Layout.preferredWidth: 200
+            textRole: "text"
+            readonly property var _presets: [
+                { text: i18n("Region default"), value: "locale"    },
+                { text: "14:30  (HH:mm)",       value: "HH:mm"    },
+                { text: "14:30:05  (HH:mm:ss)", value: "HH:mm:ss" },
+                { text: "2:30 PM  (h:mm AP)",   value: "h:mm AP"  },
+                { text: "2:30:05 PM  (h:mm:ss AP)", value: "h:mm:ss AP" },
+                { text: i18n("Custom…"),         value: "__custom__" }
+            ]
+            model: _presets
+            Component.onCompleted: {
+                var v = miscTab.timeFormatValue;
+                for (var i = 0; i < _presets.length - 1; ++i) {
+                    if (_presets[i].value === v) { currentIndex = i; return; }
+                }
+                currentIndex = _presets.length - 1;
+            }
+            onActivated: {
+                var val = _presets[currentIndex].value;
+                if (val !== "__custom__")
+                    miscTab.configRoot.cfg_displayTimeFormat = val;
+            }
+        }
+        TextField {
+            id: timeCustomField
+            visible: timeFormatCombo.currentIndex === timeFormatCombo._presets.length - 1
+            Layout.preferredWidth: 140
+            placeholderText: "HH:mm"
+            text: {
+                var v = miscTab.timeFormatValue;
+                var presets = timeFormatCombo._presets;
+                for (var i = 0; i < presets.length - 1; ++i)
+                    if (presets[i].value === v) return "";
+                return v;
+            }
+            onEditingFinished: {
+                if (text.trim().length > 0)
+                    miscTab.configRoot.cfg_displayTimeFormat = text.trim();
+            }
+        }
+        Label {
+            visible: !timeCustomField.visible && miscTab.timeFormatValue !== "locale"
+            text: i18n("Use 24-hour format:")
+            opacity: 0.8
+        }
+        Switch {
+            id: time24hSwitch
+            visible: !timeCustomField.visible && miscTab.timeFormatValue !== "locale"
+            checked: {
+                var v = miscTab.timeFormatValue;
+                return v === "locale" || v === "HH:mm" || v === "HH:mm:ss";
+            }
+            onToggled: {
+                var v = miscTab.timeFormatValue;
+                var map = checked
+                    ? { "h:mm AP": "HH:mm", "h:mm:ss AP": "HH:mm:ss" }
+                    : { "HH:mm": "h:mm AP", "HH:mm:ss": "h:mm:ss AP" };
+                if (!(v in map))
+                    return;
+                miscTab.configRoot.cfg_displayTimeFormat = map[v];
+                var presets = timeFormatCombo._presets;
+                for (var i = 0; i < presets.length - 1; ++i)
+                    if (presets[i].value === map[v]) { timeFormatCombo.currentIndex = i; break; }
+            }
+        }
+    }
+    Kirigami.InlineMessage {
+        Layout.columnSpan: miscTab.columns
+        Layout.fillWidth: true
+        visible: timeCustomField.visible
+        type: Kirigami.MessageType.Information
+        text: i18n("You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>")
+        onLinkActivated: link => Qt.openUrlExternally(link)
+    }
+
+    Label {
+        text: i18n("Preview:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    Label {
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        wrapMode: Text.WordWrap
+        opacity: 0.8
+        text: miscTab.previewText()
+    }
+    Item {
+        // empty label cell: keeps the hint in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Label {
+        text: i18n("Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar and History. Where space is tight (panel, forecast and history lists), \"Region default (long)\" is shown in its short form.")
+        wrapMode: Text.WordWrap
+        opacity: 0.65
+        font: Kirigami.Theme.smallFont
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        Layout.maximumWidth: 340
     }
 
     SectionHeader {

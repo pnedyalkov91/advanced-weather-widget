@@ -968,23 +968,72 @@ PlasmoidItem {
     // Value formatters - delegate pure math to weather.js, inject config here
     // ══════════════════════════════════════════════════════════════════════
 
-    // ── Date/time item formatter ─────────────────────────────────────────────
+    // ── Global date / time format ────────────────────────────────────────────
+    // Settings → Misc → Date and Time. Every date or time the widget shows (panel,
+    // tooltip, header, Details, Forecast, History, Simple view, alerts) goes
+    // through the helpers below, so one setting changes them all. The old
+    // header-only keys are the fallback until the new setting has been chosen.
+    readonly property string dateFormatSetting: Plasmoid.configuration.displayDateFormat
+        || Plasmoid.configuration.headerDateFormat || "locale-long"
+    readonly property string timeFormatSetting: Plasmoid.configuration.displayTimeFormat
+        || Plasmoid.configuration.headerTimeFormat || "locale"
+
+    /** True when the chosen time format shows a 24-hour clock. */
+    readonly property bool timeIs24h: {
+        var f = timeFormatSetting === "locale" ? Qt.locale().timeFormat(Locale.ShortFormat) : timeFormatSetting;
+        f = f.replace(/'[^']*'/g, "");
+        return f.indexOf("H") !== -1 || f.indexOf("k") !== -1;
+    }
+
+    /** Date part of a Date. compact = tight place: long region format becomes short. */
+    function formatDateObj(d, compact) {
+        if (!(d instanceof Date) || isNaN(d.getTime()))
+            return "";
+        var fmt = dateFormatSetting;
+        if (fmt === "locale-long")
+            return d.toLocaleDateString(Qt.locale(), compact === true ? Locale.ShortFormat : Locale.LongFormat);
+        if (fmt === "locale-short")
+            return d.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+        return Qt.formatDate(d, fmt);
+    }
+    /** Time part of a Date ("locale" = the system's short time format). */
+    function formatTimeObj(d) {
+        if (!(d instanceof Date) || isNaN(d.getTime()))
+            return "";
+        var fmt = timeFormatSetting;
+        return Qt.formatTime(d, fmt === "locale" ? Qt.locale().timeFormat(Locale.ShortFormat) : fmt);
+    }
+    /** "<date>  <time>" of a Date. */
+    function formatDateTimeObj(d, compact) {
+        var ds = formatDateObj(d, compact);
+        var ts = formatTimeObj(d);
+        return ds + ((ds.length > 0 && ts.length > 0) ? "  " : "") + ts;
+    }
+    /** "<date>  <time>" of right now (the Date / Time item and the header clock). */
+    function formatDateTimeNow(compact) {
+        return formatDateTimeObj(new Date(), compact);
+    }
+    /** Date of a "yyyy-MM-dd" string, as a local date (empty text when it is not a date). */
+    function formatIsoDate(iso, compact) {
+        var p = (typeof iso === "string" ? iso.substring(0, 10) : "").split("-");
+        if (p.length !== 3)
+            return "";
+        var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        return formatDateObj(d, compact);
+    }
+    /** True when the chosen date format already contains the weekday name. */
+    function dateHasWeekday(compact) {
+        var fmt = dateFormatSetting;
+        if (fmt === "locale-long")
+            return compact !== true;
+        if (fmt === "locale-short")
+            return false;
+        return /ddd/.test(fmt.replace(/'[^']*'/g, ""));
+    }
+
+    // Kept for any caller still passing per-item formats: they are ignored now.
     function _formatItemDateTime(dateFmt, timeFmt) {
-        var now = new Date();
-        var dateStr = "";
-        if (dateFmt === "locale-long")
-            dateStr = now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
-        else if (dateFmt === "locale-short")
-            dateStr = now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
-        else if (dateFmt && dateFmt !== "")
-            dateStr = Qt.formatDate(now, dateFmt);
-        var timeStr = "";
-        if (timeFmt === "locale")
-            timeStr = now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
-        else if (timeFmt && timeFmt !== "")
-            timeStr = Qt.formatTime(now, timeFmt);
-        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
-        return dateStr + sep + timeStr;
+        return formatDateTimeNow(false);
     }
 
     // Returns the effective temperature unit, respecting "kde" locale mode.
@@ -1634,7 +1683,7 @@ PlasmoidItem {
         var d = new Date(raw);
         if (isNaN(d.getTime()))
             return "";
-        return d.toLocaleDateString(Qt.locale(), Locale.ShortFormat) + " " + d.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
+        return formatDateObj(d, true) + " " + formatTimeObj(d);
     }
 
     /** "<onset> - <expires>" / "until <expires>" / "from <onset>" / "". */
@@ -2859,11 +2908,10 @@ PlasmoidItem {
     }
 
     /**
-     * Re-formats an internal "HH:mm" (24 h) string to the system locale short
-     * time format.  Qt.locale().timeFormat(Locale.ShortFormat) returns the
-     * platform time format string, e.g. "h:mm AP" (12 h) or "HH:mm" (24 h).
-     * Using Qt.formatTime on a synthetic Date applies that format correctly
-     * without any manual AM/PM logic.
+     * Re-formats an internal "HH:mm" (24 h) string with the global time format
+     * (Settings → Misc → Date and Time; "Region default" = the system's short
+     * time format, e.g. "h:mm AP" or "HH:mm").  A synthetic Date lets
+     * Qt.formatTime apply it without any manual AM/PM logic.
      */
     function formatTimeForDisplay(hhmmStr) {
         if (!hhmmStr || hhmmStr === "--")
@@ -2877,7 +2925,7 @@ PlasmoidItem {
             return hhmmStr;
         var d = new Date();
         d.setHours(h, m, 0, 0);
-        return Qt.formatTime(d, Qt.locale().timeFormat(Locale.ShortFormat));
+        return formatTimeObj(d);
     }
 
     function parsePanelItemIcons() {
@@ -3277,7 +3325,7 @@ PlasmoidItem {
         if (tok === "snowcover")
             return snowDepthText(snowDepthCm);
         if (tok === "datetime")
-            return _formatItemDateTime(Plasmoid.configuration.panelDateTimeFormat, Plasmoid.configuration.panelTimeFormat);
+            return formatDateTimeNow(true);
         return "";
     }
 

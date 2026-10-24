@@ -339,23 +339,7 @@ Rectangle {
                 opacity: 1
                 font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
 
-                readonly property string _dateFmt: Plasmoid.configuration.headerDateFormat || "locale-long"
-                readonly property string _timeFmt: Plasmoid.configuration.headerTimeFormat || "locale"
-
-                function _formatDate(now) {
-                    var fmt = _dateFmt;
-                    if (fmt === "locale-long")  return now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
-                    if (fmt === "locale-short") return now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
-                    if (fmt === "")             return "";
-                    return Qt.formatDate(now, fmt);
-                }
-
-                function _formatTime(now) {
-                    var fmt = _timeFmt;
-                    if (fmt === "locale") return now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
-                    if (fmt === "")       return "";
-                    return Qt.formatTime(now, fmt);
-                }
+                // Format comes from Settings → Misc → Date and Time (weatherRoot.formatDateTimeNow).
 
                 Timer {
                     id: _dtTimer
@@ -363,13 +347,7 @@ Rectangle {
                     repeat: true
                     running: headerDateTimeLabel.visible
                     triggeredOnStart: true
-                    onTriggered: {
-                        var now = new Date();
-                        var dateStr = headerDateTimeLabel._formatDate(now);
-                        var timeStr = headerDateTimeLabel._formatTime(now);
-                        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
-                        headerDateTimeLabel.text = dateStr + sep + timeStr;
-                    }
+                    onTriggered: headerDateTimeLabel.text = fullView.weatherRoot ? fullView.weatherRoot.formatDateTimeNow(false) : ""
                 }
             }
 

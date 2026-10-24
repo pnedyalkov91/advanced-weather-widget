@@ -66,7 +66,33 @@ Item {
 
     function _pushApiToPage() {
         if (!webViewPageReady || !rainviewerApiJson) return;
-        webView.runJavaScript("window.applyRainviewerApi && window.applyRainviewerApi(" + JSON.stringify(rainviewerApiJson) + ");");
+        webView.runJavaScript("window.applyRainviewerApi && window.applyRainviewerApi(" + JSON.stringify(rainviewerApiJson) + "," + JSON.stringify(_frameLabels(rainviewerApiJson)) + ");");
+    }
+
+    // The time shown for each radar frame follows Settings → Misc → Date and
+    // Time. Qt formats it here (the page cannot read Qt date patterns); the
+    // page looks the text up by frame timestamp and falls back to its own
+    // formatting for a timestamp it was not given.
+    function _frameLabels(jsonText) {
+        var out = {};
+        if (!weatherRoot || !jsonText)
+            return out;
+        try {
+            var radar = JSON.parse(jsonText).radar || {};
+            var frames = (radar.past || []).concat(radar.nowcast || []);
+            for (var i = 0; i < frames.length; i++) {
+                var d = new Date(frames[i].time * 1000);
+                out[frames[i].time] = weatherRoot.formatDateObj(d, true) + ", " + weatherRoot.formatTimeObj(d);
+            }
+        } catch (e) {}
+        return out;
+    }
+
+    // Changing the format re-labels the frames without rebuilding the map.
+    readonly property string _formatKey: weatherRoot ? (weatherRoot.dateFormatSetting + "|" + weatherRoot.timeFormatSetting) : ""
+    on_FormatKeyChanged: {
+        if (webViewPageReady && rainviewerApiJson)
+            webView.runJavaScript("window.setTimeLabels && window.setTimeLabels(" + JSON.stringify(_frameLabels(rainviewerApiJson)) + ");");
     }
 
     function _fetchRainviewerApi() {
@@ -274,6 +300,7 @@ var RADAR_OPACITY = 0.6;\
 var OWM_OPACITY  = 1.00;\
 var ANIM_DELAY = 500;\
 var API_URL = "https://api.rainviewer.com/public/weather-maps.json";\
+var TIME_LABELS = {};\
 \
 var map = L.map("map", { zoomControl: true, attributionControl: true })\
            .setView([LAT, LON], INIT_ZOOM);\
@@ -322,6 +349,7 @@ function wrapPos(p, wrap) {\
 }\
 \
 function fmtTime(ts) {\
+    if (TIME_LABELS[ts]) return TIME_LABELS[ts];\
     var d = new Date(ts * 1000);\
     var dd = d.getDate();\
     var mm = d.getMonth() + 1;\
@@ -481,7 +509,8 @@ function loadApi() {\
  * kill the in-page XHR above (e.g. the opaque origin QtWebEngine sometimes\
  * assigns to pages created via loadHtml()). radarRoot fetches\
  * weather-maps.json itself and calls this once it has the data. */\
-window.applyRainviewerApi = function(jsonText) {\
+window.applyRainviewerApi = function(jsonText, labels) {\
+    if (labels) TIME_LABELS = labels;\
     cachedApiJson = jsonText;\
     if (ACTIVE_LAYER !== "rainviewer") return;\
     try {\
@@ -490,6 +519,11 @@ window.applyRainviewerApi = function(jsonText) {\
     } catch(e) {\
         console.error("[radar] applyRainviewerApi parse failed: " + e);\
     }\
+};\
+\
+window.setTimeLabels = function(labels) {\
+    TIME_LABELS = labels || {};\
+    if (mapFrames.length > 0) updateUI();\
 };\
 \
 var TITLE_PLAY  = ' + titlePlay  + ';\

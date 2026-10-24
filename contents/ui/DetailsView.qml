@@ -403,7 +403,7 @@ Item {
         case "snowcover":
             return weatherRoot.snowDepthText(weatherRoot.snowDepthCm);
         case "datetime":
-            return weatherRoot._formatItemDateTime(Plasmoid.configuration.detailsDateTimeFormat, Plasmoid.configuration.detailsTimeFormat);
+            return weatherRoot.formatDateTimeNow(false);
         case "wind":
             // Wind is handled specially in the card
             return "";
@@ -483,7 +483,7 @@ Item {
         var _ = root._dateTimeTick;
         if (!weatherRoot)
             return "--";
-        return weatherRoot._formatItemDateTime(Plasmoid.configuration.detailsDateTimeFormat, Plasmoid.configuration.detailsTimeFormat);
+        return weatherRoot.formatDateTimeNow(false);
     }
 
     function _detailValue(id) {
@@ -2375,7 +2375,7 @@ Item {
                                             var d = new Date(iso);
                                             if (isNaN(d.getTime()))
                                                 return "";
-                                            return Qt.formatDate(d, "MMM d");
+                                            return root.weatherRoot ? root.weatherRoot.formatDateObj(d, true) : Qt.formatDate(d, "MMM d");
                                         }
                                         function alertDateRange(a) {
                                             var from = formatAlertDate(a.onset);
@@ -2394,7 +2394,7 @@ Item {
                                             var d = new Date(iso);
                                             if (isNaN(d.getTime()))
                                                 return "";
-                                            return Qt.formatDateTime(d, "MMM d, hh:mm");
+                                            return root.weatherRoot ? (root.weatherRoot.formatDateObj(d, true) + ", " + root.weatherRoot.formatTimeObj(d)) : Qt.formatDateTime(d, "MMM d, hh:mm");
                                         }
                                         function alertTooltipTitle(a) {
                                             var town = (Plasmoid.configuration.locationName || "").split(",")[0].trim();
@@ -2991,7 +2991,7 @@ Item {
                                             Label {
                                                 text: {
                                                     var _ = datetimeCard._tick;
-                                                    return weatherRoot ? weatherRoot._formatItemDateTime(Plasmoid.configuration.detailsDateTimeFormat, Plasmoid.configuration.detailsTimeFormat) : "--";
+                                                    return weatherRoot ? weatherRoot.formatDateTimeNow(false) : "--";
                                                 }
                                                 color: root.valueColor
                                                 font: weatherRoot ? weatherRoot.wf(12, true) : Qt.font({
