@@ -1,6 +1,6 @@
 'use strict';
-// Unit tests for glue-earth.js: the Sun's position, the night and twilight
-// areas, and the zoom at which the whole Earth fits in the map.
+// Unit tests for glue-earth.js: the Sun's position, the day and night
+// image, and the zoom at which the whole Earth fits in the map.
 // Run: node --test scripts/librewxr-map-src/tests/*.test.js
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -29,46 +29,6 @@ test('sunAltitude: overhead at the subsolar point, under the far side', () => {
   near(E.sunAltitude(sun, 0, 130), -E.sunAltitude(sun, 0, -50), 1e-9, 'symmetry');
 });
 
-/** Whether (lat, lon) lies in a ring of [lon, lat] whose longitudes may run past +-180. */
-function inRing(ring, lat, lon) {
-  for (const shift of [-360, 0, 360]) {
-    const x = lon + shift;
-    let inside = false;
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const [xi, yi] = ring[i], [xj, yj] = ring[j];
-      if ((yi > lat) !== (yj > lat) && x < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside;
-    }
-    if (inside) return true;
-  }
-  return false;
-}
-
-test('nightGeoJSON: nested areas every degree, from the horizon to 18 degrees below', () => {
-  const suns = [
-    { lat: 23.4, lon: -60 },     // June solstice: the north pole in daylight
-    { lat: -23.4, lon: 120 },    // December solstice
-    { lat: 0.2, lon: 10 },       // near an equinox: the deep night reaches no pole
-    { lat: -8, lon: 178 },       // night across the antimeridian
-  ];
-  for (const sun of suns) {
-    const fc = E.nightGeoJSON(sun);
-    assert.equal(fc.type, 'FeatureCollection');
-    assert.deepEqual(fc.features.map((f) => f.properties.altitude), [0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18]);
-    fc.features.forEach((f) => {
-      const ring = f.geometry.coordinates[0];
-      assert.deepEqual(ring[0], ring[ring.length - 1], 'closed ring');
-      for (let lat = -84; lat <= 84; lat += 6) {
-        for (let lon = -180; lon < 180; lon += 6) {
-          const alt = E.sunAltitude(sun, lat, lon), h = f.properties.altitude;
-          if (Math.abs(alt - h) < 1.5) continue;   // too close to the edge to judge
-          assert.equal(inRing(ring, lat, lon), alt < h,
-            `sun ${sun.lat},${sun.lon} altitude ${h}: point ${lat},${lon} (sun at ${alt.toFixed(1)})`);
-        }
-      }
-    });
-  }
-});
-
 test('wholeEarthZoom: flat, the world fills the height of the map', () => {
   // MapLibre zoom: 512 px for the whole world at zoom 0.
   near(E.wholeEarthZoom('flat', 800, 330), Math.log2(330 / 512), 1e-9, 'flat');
@@ -95,24 +55,6 @@ test('wholeEarthZoom: no size, no zoom', () => {
   assert.equal(E.wholeEarthZoom('flat', 800, 0), null);
 });
 
-test('dayGeoJSON: nested areas every degree, from the horizon to 18 degrees above', () => {
-  for (const sun of [{ lat: 23.4, lon: -60 }, { lat: -11.5, lon: -150 }, { lat: 0.2, lon: 179 }]) {
-    const fc = E.dayGeoJSON(sun);
-    assert.deepEqual(fc.features.map((f) => f.properties.altitude), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
-    fc.features.forEach((f) => {
-      const ring = f.geometry.coordinates[0], h = f.properties.altitude;
-      assert.deepEqual(ring[0], ring[ring.length - 1], 'closed ring');
-      for (let lat = -84; lat <= 84; lat += 6) {
-        for (let lon = -180; lon < 180; lon += 6) {
-          const alt = E.sunAltitude(sun, lat, lon);
-          if (Math.abs(alt - h) < 1.5) continue;
-          assert.equal(inRing(ring, lat, lon), alt > h, `sun ${sun.lat},${sun.lon} altitude ${h}: point ${lat},${lon} (sun at ${alt.toFixed(1)})`);
-        }
-      }
-    });
-  }
-});
-
 test('sunLightPosition: MapLibre light (anchor map) pointing from the Sun', () => {
   // MapLibre turns the light position [r, azimuthal, polar] into the
   // direction (sin az sin p, -cos az sin p, -cos p) in its globe frame, where
@@ -126,5 +68,71 @@ test('sunLightPosition: MapLibre light (anchor map) pointing from the Sun', () =
     const dir = [Math.sin(az * R) * Math.sin(p * R), -Math.cos(az * R) * Math.sin(p * R), -Math.cos(p * R)];
     const want = [Math.sin(sun.lon * R) * Math.cos(sun.lat * R), Math.sin(sun.lat * R), Math.cos(sun.lon * R) * Math.cos(sun.lat * R)];
     dir.forEach((v, i) => near(v, want[i], 1e-9, `sun ${sun.lat},${sun.lon} axis ${i}`));
+  }
+});
+
+/** The whole world as one Web Mercator tile. */
+const WORLD = { z: 0, x: 0, y: 0 };
+
+/** Latitude and longitude of the centre of pixel (col, row) of a square Web Mercator world. */
+function pixelLatLon(col, row, size) {
+  const lon = (col + 0.5) / size * 360 - 180;
+  const lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (row + 0.5) / size))) * 180 / Math.PI;
+  return { lat, lon };
+}
+
+test('shadeTile: black over the night, as deep as asked, fading in over 18 degrees', () => {
+  const sun = { lat: -11.6, lon: 30 }, size = 64, depth = 0.4;
+  const img = E.shadeTile(sun, WORLD, size, depth, 0);
+  assert.equal(img.length, size * size * 4);
+  let night = 0, twilight = 0, day = 0;
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const { lat, lon } = pixelLatLon(col, row, size), h = E.sunAltitude(sun, lat, lon);
+      const k = (row * size + col) * 4, a = img[k + 3] / 255;
+      const want = h < 0 ? 1 - Math.pow(1 - depth, Math.min(1, -h / 18)) : 0;
+      assert.ok(Math.abs(a - want) <= 1.5 / 255, `pixel ${col},${row} at ${h.toFixed(1)} degrees: alpha ${a} for ${want}`);
+      if (h < 0) assert.deepEqual([img[k], img[k + 1], img[k + 2]], [0, 0, 0], 'black');
+      if (h < -18) night++; else if (h < 0) twilight++; else day++;
+    }
+  }
+  assert.ok(night > 100 && twilight > 100 && day > 100, `${night} ${twilight} ${day}`);
+});
+
+test('shadeTile: a light veil over the day, fading in over its first 18 degrees', () => {
+  const sun = { lat: 20, lon: -100 }, size = 64, veil = 0.07;
+  const img = E.shadeTile(sun, WORLD, size, 0.4, veil);
+  for (let row = 0; row < size; row += 3) {
+    for (let col = 0; col < size; col += 3) {
+      const { lat, lon } = pixelLatLon(col, row, size), h = E.sunAltitude(sun, lat, lon);
+      if (h <= 0) continue;
+      const k = (row * size + col) * 4, a = img[k + 3] / 255;
+      const want = 1 - Math.pow(1 - veil, Math.min(1, h / 18));
+      assert.ok(Math.abs(a - want) <= 1.5 / 255, `pixel ${col},${row} at ${h.toFixed(1)} degrees`);
+      if (img[k + 3] > 0) assert.deepEqual([img[k], img[k + 1], img[k + 2]], [255, 255, 255], 'white');
+    }
+  }
+});
+
+test('shadeTile: the middle rows of the world tile lie on the equator, the top one near 85 degrees north', () => {
+  // Sun over the equator at 0: the antisolar point (equator, 180) is the deepest night.
+  const sun = { lat: 0, lon: 0 }, size = 64;
+  const img = E.shadeTile(sun, WORLD, size, 0.5, 0);
+  const at = (col, row) => img[(row * size + col) * 4 + 3];
+  assert.ok(Math.abs(at(size - 1, size / 2) - 0.5 * 255) <= 1, 'deep night at the equator, far east');
+  assert.equal(at(size / 2, size / 2), 0, 'noon at the equator');
+  assert.ok(pixelLatLon(0, 0, size).lat > 84, 'top row');
+});
+
+test('shadeTile: a tile of zoom 1 is a quarter of the world at twice the detail', () => {
+  const sun = { lat: 8, lon: -40 }, world = E.shadeTile(sun, WORLD, 64, 0.4, 0.07);
+  for (const [x, y] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+    const tile = E.shadeTile(sun, { z: 1, x, y }, 32, 0.4, 0.07);
+    for (let r = 0; r < 32; r += 5) {
+      for (let c = 0; c < 32; c += 5) {
+        const k = (r * 32 + c) * 4, w = ((y * 32 + r) * 64 + x * 32 + c) * 4;
+        assert.deepEqual([...tile.slice(k, k + 4)], [...world.slice(w, w + 4)], `tile ${x},${y} pixel ${c},${r}`);
+      }
+    }
   }
 });

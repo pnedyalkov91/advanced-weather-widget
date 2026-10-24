@@ -22,10 +22,16 @@ class FakeMap {
   fire(e, data) { (this.handlers[e] || []).slice().forEach((f) => f(data || {})); }
   addControl() {}
   getSource(id) { return this.sources[id]; }
-  addSource(id, s) { this.sources[id] = Object.assign({ setData(d) { this.data = d; } }, s); }
+  addSource(id, s) {
+    this.sources[id] = Object.assign({
+      uploads: 0,
+      setData(d) { this.data = d; },
+      setTiles(t) { this.tiles = t; }
+    }, s);
+  }
   removeSource(id) { delete this.sources[id]; }
   getLayer(id) { return this.layers.find((l) => l.id === id); }
-  addLayer(l) { this.layers.push(Object.assign({ layout: {} }, l)); }
+  addLayer(l) { this.layers.push(Object.assign({ layout: {} }, l, { layout: Object.assign({}, l.layout) })); }
   removeLayer(id) { this.layers = this.layers.filter((l) => l.id !== id); }
   moveLayer() {}
   getStyle() { return { layers: this.layers, sources: this.sources }; }
@@ -62,20 +68,27 @@ function loadAdapter(globals) {
     FALLBACK_BG: { dark: { url: 'https://tiles/{z}/{x}/{y}.png' }, light: { url: 'https://tiles/{z}/{x}/{y}.png' } },
     resolveBg: (id) => ({ url: 'https://' + id + '/{z}/{x}/{y}.png' }),
     WidgetEarth: require('../glue-earth.js'),
-    document: { hidden: false, addEventListener() {} },
+    document: {
+      hidden: false,
+      addEventListener() {},
+    },
+    ImageData: function (data, w, h) { this.data = data; this.width = w; this.height = h; },
+    createImageBitmap: (img) => Promise.resolve(img),
     GLOW_INIT: null, NIGHTDEPTH_INIT: null,
   };
   Object.assign(ctx, globals);
   vm.runInNewContext(src + '\nthis.WidgetMapLibreAdapter = WidgetMapLibreAdapter;', ctx);
+  const protocols = {};
   const maplibregl = {
     Map: function () { map = new FakeMap(); return map; },
+    addProtocol: (name, handler) => { protocols[name] = handler; },
     NavigationControl: function () {},
     Marker: function () { this.setLngLat = () => this; this.addTo = () => this; },
   };
   const adapter = ctx.WidgetMapLibreAdapter(maplibregl);
   adapter.createMap('lv-map', { lat: 48, lon: 6, zoom: 6, maxZoom: 12 });
   map.fire('load');
-  return { adapter, map, ctx };
+  return { adapter, map, ctx, protocols };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
@@ -115,30 +128,43 @@ test('a base map change on the globe loads the new style already on the globe', 
   assert.ok(map.loadedStyle.sources['lv-base'], 'the base map is still there');
 });
 
-/** How dark the deepest night is: the veils of all the steps one over the other. */
-const nightDepth = (map) => 1 - Math.pow(1 - map.getLayer('lv-night').paint['fill-opacity'], map.getSource('lv-night').data.features.length);
+/** The darkest night and the lightest day in the shade tile of the whole world, 0..1. */
+async function shadeOf(map, protocols) {
+  const url = map.getSource('lv-night').tiles[0].replace('{z}/{x}/{y}', '0/0/0');
+  const name = url.slice(0, url.indexOf('://'));
+  const px = (await protocols[name]({ url, type: 'image' }, new AbortController())).data.data;
+  let night = 0, day = 0;
+  for (let k = 0; k < px.length; k += 4) {
+    if (px[k] === 0) night = Math.max(night, px[k + 3]);
+    else day = Math.max(day, px[k + 3]);
+  }
+  return { night: night / 255, day: day / 255 };
+}
 
-test('day and night on: a night in fine steps, 40 % dark at its deepest by default; the glow follows the Sun', () => {
-  const { adapter, map } = loadAdapter();
+test('day and night on: one raster of tiles made by the page, 40 % dark at its deepest by default; the glow follows the Sun', async () => {
+  const { adapter, map, protocols } = loadAdapter();
   adapter.setDayNight(true);
-  const steps = map.getSource('lv-night').data.features.length;
-  assert.ok(steps >= 10, steps + ' steps');
-  assert.ok(Math.abs(nightDepth(map) - 0.4) < 1e-9, 'deep night ' + nightDepth(map));
+  assert.equal(map.getLayer('lv-night').type, 'raster');
+  assert.equal(map.getSource('lv-night').type, 'raster', 'tiles: the globe extends them to the poles');
+  assert.equal(map.getLayer('lv-day'), undefined, 'no layer of its own for the day');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.4) <= 1 / 255);
   assert.equal(map.light.anchor, 'map');
 });
 
-test('the darkness of the night comes from the widget, and changes live', () => {
-  const { adapter, map } = loadAdapter({ NIGHTDEPTH_INIT: '60' });
+test('the darkness of the night comes from the widget, and changes live', async () => {
+  const { adapter, map, protocols } = loadAdapter({ NIGHTDEPTH_INIT: '60' });
   adapter.setDayNight(true);
-  assert.ok(Math.abs(nightDepth(map) - 0.6) < 1e-9, 'from the page address');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.6) <= 1 / 255, 'from the page address');
+  const tiles = map.getSource('lv-night').tiles[0];
   adapter.setNightDepth(25);
-  assert.ok(Math.abs(nightDepth(map) - 0.25) < 1e-9, 'live');
+  assert.notEqual(map.getSource('lv-night').tiles[0], tiles, 'new tiles asked for');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.25) <= 1 / 255, 'live');
   adapter.setNightDepth('x');
-  assert.ok(Math.abs(nightDepth(map) - 0.25) < 1e-9, 'unreadable: unchanged');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.25) <= 1 / 255, 'unreadable: unchanged');
   adapter.setDayNight(false);
   adapter.setNightDepth(50);
   adapter.setDayNight(true);
-  assert.ok(Math.abs(nightDepth(map) - 0.5) < 1e-9, 'kept while off');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.5) <= 1 / 255, 'kept while off');
   assert.equal(adapter.getNightDepth(), 50);
 });
 
@@ -147,17 +173,14 @@ test('day and night off: no night, and the glow no longer follows the Sun', () =
   adapter.setDayNight(true);
   adapter.setDayNight(false);
   assert.equal(map.getLayer('lv-night'), undefined);
+  assert.equal(map.getSource('lv-night'), undefined);
   assert.equal(map.light.anchor, 'viewport');
 });
 
-test('day and night on a dark map: the day brightens in fine steps, as much as before', () => {
-  const { adapter, map } = loadAdapter();
+test('day and night on a dark map: a light veil over the day, as much as before', async () => {
+  const { adapter, map, protocols } = loadAdapter();
   adapter.setDayNight(true);
-  const opacity = map.getLayer('lv-day').paint['fill-opacity'];
-  const steps = map.getSource('lv-day').data.features.length;
-  assert.ok(steps >= 10, steps + ' steps');
-  const depth = 1 - Math.pow(1 - opacity, steps);
-  assert.ok(Math.abs(depth - 0.07) < 0.005, 'full day ' + depth);
+  assert.ok(Math.abs((await shadeOf(map, protocols)).day - 0.07) <= 1 / 255);
 });
 
 /** How much the globe's atmosphere blends in with the widest view (zoom 0). */
@@ -178,4 +201,76 @@ test('setGlow sets the glow live, from none to full strength', () => {
   adapter.setGlow(250);
   assert.equal(blendAtZoom0(map), 0.5, 'held within 0..100');
   assert.equal(adapter.getGlow(), 100);
+});
+
+/** Frame layers the map draws now (not held back with visibility none). */
+const shownFrames = (map) => map.layers.filter((l) => /^lv-layer-/.test(l.id) && l.layout.visibility !== 'none').map((l) => l.id);
+function sixFrames(adapter) {
+  const handles = [0, 1, 2, 3, 4, 5].map(() => adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar'));
+  adapter.setFrameOpacity(handles[0], 0.8);
+  return handles;
+}
+
+test('after a move, the hidden frames come back two at a time, each pair once the map is idle', () => {
+  const { adapter, map } = loadAdapter();
+  sixFrames(adapter);
+  map.fire('movestart');
+  assert.equal(shownFrames(map).length, 1, 'only the frame on screen while moving');
+  map.fire('moveend');
+  assert.equal(shownFrames(map).length, 1, 'not before the map has its own tiles: a zoom goes on by steps');
+  map.fire('idle');
+  assert.equal(shownFrames(map).length, 3);
+  map.fire('idle');
+  assert.equal(shownFrames(map).length, 5);
+  map.fire('idle');
+  assert.equal(shownFrames(map).length, 6);
+});
+
+test('a new move cuts the frames coming back short', () => {
+  const { adapter, map } = loadAdapter();
+  sixFrames(adapter);
+  map.fire('movestart');
+  map.fire('moveend');
+  map.fire('idle');
+  map.fire('movestart');
+  assert.equal(shownFrames(map).length, 1);
+  map.fire('moveend');
+  map.fire('idle');
+  assert.equal(shownFrames(map).length, 3, 'one pair per idle, not two');
+});
+
+test('a frame the viewer waits for or shows comes back at once', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  map.fire('movestart');
+  map.fire('moveend');
+  adapter.onLayerReady(h[5], () => {});
+  assert.ok(shownFrames(map).includes(h[5].layerId), 'waited for');
+  adapter.setFrameOpacity(h[4], 0.5);
+  assert.ok(shownFrames(map).includes(h[4].layerId), 'shown');
+  map.fire('idle');
+  map.fire('idle');
+  assert.equal(shownFrames(map).length, 6);
+});
+
+test('a frame held back stays so when a base map change puts the layers back', () => {
+  const { adapter, map, ctx } = loadAdapter();
+  sixFrames(adapter);
+  map.fire('movestart');
+  map.fire('moveend');
+  map.fire('idle');
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('dark');
+  map.layers = [];
+  map.fire('style.load');
+  assert.equal(shownFrames(map).length, 3);
+});
+
+test('a light theme on the same base map takes the light veil off the day', async () => {
+  const { adapter, map, protocols } = loadAdapter();
+  adapter.setDayNight(true);
+  const tiles = map.getSource('lv-night').tiles[0];
+  adapter.setBasemap('light');
+  assert.notEqual(map.getSource('lv-night').tiles[0], tiles, 'new tiles asked for');
+  assert.equal((await shadeOf(map, protocols)).day, 0);
 });

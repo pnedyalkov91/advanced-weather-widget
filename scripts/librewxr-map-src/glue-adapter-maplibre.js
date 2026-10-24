@@ -64,13 +64,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     return undefined;
   }
 
-  // First layer the page added over the base map, its day and its night: satellite
-  // frames go right below it.
+  // First layer the page added over the base map and its day and night:
+  // satellite frames go right below it.
   function firstRuntimeLayerId() {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) {
       var id = layers[i].id;
-      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night' && id !== 'lv-day') return id;
+      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night') return id;
     }
     return undefined;
   }
@@ -81,55 +81,68 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     return isNaN(n) ? null : Math.max(0, Math.min(100, n));
   }
 
-  // Day and night (glue-earth.js): nested areas, one per degree of
-  // twilight, under the same light veil, so the night fades in like the
-  // glow of the globe's atmosphere; the deep night as dark as the widget's
-  // setting says (percent of black, 40 by default). On a dark
-  // map the day gets a light veil of its own, fading in the same way. Right
-  // over the base map, under the satellite, the alerts and the radar. The
-  // map's light stands at the Sun, so the atmosphere glows over the day side;
-  // with day and night off it comes from the viewer and the globe glows
-  // evenly. Moved every minute.
+  // Day and night (glue-earth.js): raster tiles the page draws itself, from
+  // the Sun and the setting, through a tile protocol of its own. Black over
+  // the night, fading in over the 18 degrees of twilight down to the
+  // widget's darkness (percent of black, 40 by default); on a dark map, a
+  // light veil over the day, fading in the same way. One layer for the GPU
+  // where nested areas made the night side 19 translucent layers deep (38
+  // with the day), and tiles, which the globe extends to the poles as it
+  // does the base map's: an image source stops at 85 degrees there. At most
+  // 16 tiles of 128 px (zoom 2, smooth enough for a fade over 18 degrees),
+  // drawn again once a minute. Right over the base map, under the
+  // satellite, the alerts and the radar. The map's light stands at the Sun,
+  // so the atmosphere glows over the day side; with day and night off it
+  // comes from the viewer and the globe glows evenly.
+  var SHADE_TILE = 128, SHADE_MAXZOOM = 2, DAY_VEIL = 0.07;
+  var EVEN_LIGHT = { anchor: 'viewport', position: [1, 0, 0] };
   var nightDepth = percent(NIGHTDEPTH_INIT);
   if (nightDepth === null) nightDepth = 40;
-  function nightVeil() {
-    return 1 - Math.pow(1 - nightDepth / 100, 1 / WidgetEarth.BANDS.length);
-  }
-  var DAY_VEIL = 1 - Math.pow(1 - 0.07, 1 / WidgetEarth.BANDS.length);
-  var EVEN_LIGHT = { anchor: 'viewport', position: [1, 0, 0] };
   var dayNight = DAYNIGHT_INIT;
   var sunTimer = null;
-  function addVeil(id, data, color, opacity) {
-    if (map.getLayer(id)) return;
-    if (!map.getSource(id)) map.addSource(id, { type: 'geojson', data: data });
-    map.addLayer({
-      id: id, type: 'fill', source: id,
-      paint: { 'fill-color': color, 'fill-opacity': opacity, 'fill-antialias': false }
-    }, id === 'lv-day' && map.getLayer('lv-night') ? 'lv-night' : firstRuntimeLayerId());
+  var shade = { sun: WidgetEarth.subsolarPoint(new Date()), version: 0 };
+  maplibregl.addProtocol('lvshade', function (params) {
+    var m = /^lvshade:\/\/\d+\/(\d+)\/(\d+)\/(\d+)/.exec(params.url);
+    var img = WidgetEarth.shadeTile(shade.sun, { z: +m[1], x: +m[2], y: +m[3] }, SHADE_TILE,
+      nightDepth / 100, skyTheme === 'dark' ? DAY_VEIL : 0);
+    return createImageBitmap(new ImageData(img, SHADE_TILE, SHADE_TILE)).then(function (bitmap) {
+      return { data: bitmap };
+    });
+  });
+  function shadeTiles() { return ['lvshade://' + shade.version + '/{z}/{x}/{y}']; }
+  // New tiles for the Sun now, the darkness and the theme; the shown ones
+  // stay until they arrive.
+  function drawShade(sun) {
+    shade.sun = sun;
+    shade.version++;
+    var src = map.getSource('lv-night');
+    if (src) src.setTiles(shadeTiles());
   }
-  function dropVeil(id) {
-    if (map.getLayer(id)) map.removeLayer(id);
-    if (map.getSource(id)) map.removeSource(id);
-  }
-  // The veils the setting and the map theme ask for; after a style swap too.
+  // The shade the setting asks for; after a style swap too.
   function addSunLayers() {
-    var sun = WidgetEarth.subsolarPoint(new Date());
-    if (dayNight && skyTheme === 'dark') addVeil('lv-day', WidgetEarth.dayGeoJSON(sun), '#ffffff', DAY_VEIL);
-    else dropVeil('lv-day');
-    if (dayNight) addVeil('lv-night', WidgetEarth.nightGeoJSON(sun), '#000000', nightVeil());
-    else dropVeil('lv-night');
+    if (!dayNight) {
+      if (map.getLayer('lv-night')) map.removeLayer('lv-night');
+      if (map.getSource('lv-night')) map.removeSource('lv-night');
+      return;
+    }
+    if (!map.getSource('lv-night')) {
+      map.addSource('lv-night', { type: 'raster', tiles: shadeTiles(), tileSize: 256, maxzoom: SHADE_MAXZOOM });
+    }
+    if (!map.getLayer('lv-night')) {
+      map.addLayer({ id: 'lv-night', type: 'raster', source: 'lv-night', paint: { 'raster-fade-duration': 0 } },
+        firstRuntimeLayerId());
+    }
   }
   function moveSun() {
     var sun = WidgetEarth.subsolarPoint(new Date());
     map.setLight(dayNight ? { anchor: 'map', position: WidgetEarth.sunLightPosition(sun) } : EVEN_LIGHT);
-    var night = map.getSource('lv-night'), day = map.getSource('lv-day');
-    if (night) night.setData(WidgetEarth.nightGeoJSON(sun));
-    if (day) day.setData(WidgetEarth.dayGeoJSON(sun));
+    drawShade(sun);
   }
   function applyDayNight() {
     addSunLayers();
     moveSun();
-    if (!sunTimer) sunTimer = setInterval(function () { if (!document.hidden && !swapInProgress) moveSun(); }, 60000);
+    // Not while the map moves: the tiles wait for the next minute.
+    if (!sunTimer) sunTimer = setInterval(function () { if (!document.hidden && !swapInProgress && !moving) moveSun(); }, 60000);
   }
 
   // The widest zoom shows the whole Earth (glue-earth.js): the world fills
@@ -160,6 +173,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       id: entry.layerId,
       type: 'raster',
       source: entry.sourceId,
+      layout: { visibility: entry.held ? 'none' : 'visible' },
       paint: {
         'raster-opacity': entry.opacity,
         'raster-opacity-transition': { duration: 0, delay: 0 },
@@ -200,14 +214,39 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
   // While the map moves, frames preloading out of sight (opacity 0) fetch
   // no tiles: on a small CPU, decoding theirs is what slowed a zoom down,
-  // more than the wind. They go on when the map stops.
-  var moving = false;
+  // more than the wind. When it stops they come back two at a time, in the
+  // order the viewer made them (nearest the shown time first), each pair
+  // once the map is idle, the first too: a zoom by the wheel goes on by
+  // steps, and all 17 at once made it stutter (9 to 13 frames over 33 ms
+  // per zoom on one core, 1 with the shown frame only).
+  // A new move cuts that short; a frame the viewer shows or waits for
+  // comes back at once.
+  var REVEAL_BATCH = 2;
+  var moving = false, revealJob = 0;
+  function holdFrame(e, held) {
+    e.held = held;
+    if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', held ? 'none' : 'visible');
+  }
+  function entryOf(handle) {
+    for (var i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].layerId === handle.layerId) return frameRegistry[i];
+    return null;
+  }
   function holdHiddenFrames(hold) {
     moving = hold;
-    for (var i = 0; i < frameRegistry.length; i++) {
-      var e = frameRegistry[i];
-      if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', hold && !(e.opacity > 0) ? 'none' : 'visible');
+    var job = ++revealJob, i;
+    if (hold) {
+      for (i = 0; i < frameRegistry.length; i++) if (!(frameRegistry[i].opacity > 0)) holdFrame(frameRegistry[i], true);
+      return;
     }
+    var next = function () {
+      if (job !== revealJob) return;
+      var n = 0;
+      for (i = 0; i < frameRegistry.length && n < REVEAL_BATCH; i++) {
+        if (frameRegistry[i].held) { holdFrame(frameRegistry[i], false); n++; }
+      }
+      if (n) map.once('idle', next);
+    };
+    map.once('idle', next);
   }
 
   // Around the globe, space in the page's colors and an atmosphere lit by
@@ -302,6 +341,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       // Same base map, other theme: the space around the globe and the day veil follow.
       applyProjection();
       addSunLayers();
+      drawShade(WidgetEarth.subsolarPoint(new Date()));
     },
 
     createFrameLayer: function (url, kind) {
@@ -342,6 +382,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       }
       map.on('sourcedata', onData);
       map.on('error', onError);
+      var e = entryOf(handle);
+      if (e && e.held && !moving) holdFrame(e, false);
       (pendingReady[handle.sourceId] = pendingReady[handle.sourceId] || []).push(finish);
       waiter = setTimeout(function () {
         console.warn('[librewxr] frame layer not settled after 25 s: ' + handle.sourceId);
@@ -351,13 +393,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     },
 
     setFrameOpacity: function (handle, v) {
-      for (var i = 0; i < frameRegistry.length; i++) {
-        if (frameRegistry[i].layerId === handle.layerId) frameRegistry[i].opacity = v;
-      }
-      if (map.getLayer(handle.layerId)) {
-        map.setPaintProperty(handle.layerId, 'raster-opacity', v);
-        if (moving) map.setLayoutProperty(handle.layerId, 'visibility', v > 0 ? 'visible' : 'none');
-      }
+      var e = entryOf(handle);
+      if (e) e.opacity = v;
+      if (map.getLayer(handle.layerId)) map.setPaintProperty(handle.layerId, 'raster-opacity', v);
+      if (e && v > 0 && e.held) holdFrame(e, false);
+      else if (e && moving && !(v > 0)) holdFrame(e, true);
     },
 
     destroyFrameLayer: function (handle) {
@@ -479,7 +519,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       var d = percent(value);
       if (d === null) return;
       nightDepth = d;
-      if (styleReady && map.getLayer('lv-night')) map.setPaintProperty('lv-night', 'fill-opacity', nightVeil());
+      if (styleReady && map.getLayer('lv-night')) drawShade(WidgetEarth.subsolarPoint(new Date()));
     },
 
     getNightDepth: function () { return nightDepth; },

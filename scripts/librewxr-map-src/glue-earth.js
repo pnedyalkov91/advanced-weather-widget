@@ -1,20 +1,13 @@
 // ==========================================================================
 // Glue script 2e: the Earth as a whole on the MapLibre map. Where the Sun is
-// overhead, the night as areas in longitude and latitude, darker degree by
-// degree through the twilight (the map projects them itself, flat or globe),
-// and the zoom at which the whole Earth fits in the map. Loadable under Node
-// for tests.
+// overhead, the day and the night as Web Mercator tiles the page draws (the
+// map lays them over the Earth, flat or globe), and the zoom at which the
+// whole Earth fits in the map. Loadable under Node for tests.
 // ==========================================================================
 var WidgetEarth = (function () {
   'use strict';
 
   var RAD = Math.PI / 180, DEG = 180 / Math.PI;
-
-  /** Sun altitudes (degrees) bounding the areas: every degree from the
-      horizon to the end of the astronomical twilight, 18 below, so the night
-      fades in instead of falling in steps. */
-  var BANDS = [];
-  for (var b = 0; b >= -18; b--) BANDS.push(b);
 
   /** Share of the map's smaller side the globe takes at the widest zoom. */
   var GLOBE_FILL = 0.94;
@@ -58,77 +51,36 @@ var WidgetEarth = (function () {
     return Math.asin(Math.max(-1, Math.min(1, s))) * DEG;
   }
 
-  /* Where the Sun is lower than h degrees: a cap of angular radius 90 + h
-     around the antisolar point, as one ring of [lon, lat]. */
-  function capRing(sun, h, step) {
-    var cLat = -sun.lat, cLon = wrap180(sun.lon + 180), r = (90 + h) * RAD;
-    // Exactly at an equinox the night touches both poles: nudge it.
-    if (Math.abs(cLat) < 1e-6) cLat = 1e-6;
-    var pole = cLat > 0 ? 90 : -90, ring = [], i;
-    if (90 - Math.abs(cLat) < 90 + h) {
-      // The cap holds a pole: every meridian crosses its edge once. The
-      // edge for each longitude, then along the pole back to the start.
-      var a = Math.sin(cLat * RAD), cr = Math.cos(r);
-      for (var lon = -180; lon <= 180; lon += step) {
-        // a sin(lat) + b cos(lat) = cos r, solved as A cos(lat - lat0) = cos r
-        var b = Math.cos(cLat * RAD) * Math.cos((lon - cLon) * RAD);
-        var A = Math.sqrt(a * a + b * b), lat0 = Math.atan2(a, b);
-        var d = Math.acos(Math.max(-1, Math.min(1, cr / A)));
-        var lat = wrap180((lat0 + d) * DEG);
-        if (Math.abs(lat) > 90) lat = wrap180((lat0 - d) * DEG);
-        ring.push([lon, Math.max(-90, Math.min(90, lat))]);
+  /** Degrees over which the night, and the day veil, fade in. */
+  var TWILIGHT = 18;
+
+  /** The day and the night for a Sun position as the RGBA pixels of one Web
+      Mercator tile ({ z, x, y }, `size` pixels square), for the map to lay
+      over the Earth. Over the night, black, fading in from the horizon to 18
+      degrees below, where it is `depth` opaque (0..1); over the day, white,
+      fading in the same way over the first 18 degrees above, up to
+      `dayVeil`. The opacity grows as veils laid one over the other would:
+      1 - (1 - depth)^share. */
+  function shadeTile(sun, tile, size, depth, dayVeil) {
+    var img = new Uint8ClampedArray(size * size * 4), n = Math.pow(2, tile.z);
+    var sinD = Math.sin(sun.lat * RAD), cosD = Math.cos(sun.lat * RAD);
+    var lnNight = Math.log(1 - Math.min(depth, 0.999)), lnDay = Math.log(1 - Math.min(dayVeil, 0.999));
+    var cosH = new Float64Array(size), c;
+    for (c = 0; c < size; c++) cosH[c] = Math.cos(((tile.x + (c + 0.5) / size) / n * 360 - 180 - sun.lon) * RAD);
+    for (var r = 0; r < size; r++) {
+      var lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (tile.y + (r + 0.5) / size) / n)));
+      var a = Math.sin(lat) * sinD, b = Math.cos(lat) * cosD;
+      for (c = 0; c < size; c++) {
+        var h = Math.asin(Math.max(-1, Math.min(1, a + b * cosH[c]))) * DEG, k = (r * size + c) * 4;
+        if (h < 0) {
+          img[k + 3] = 255 * (1 - Math.exp(lnNight * Math.min(1, -h / TWILIGHT)));
+        } else if (dayVeil > 0) {
+          img[k] = img[k + 1] = img[k + 2] = 255;
+          img[k + 3] = 255 * (1 - Math.exp(lnDay * Math.min(1, h / TWILIGHT)));
+        }
       }
-      ring.push([180, pole], [-180, pole], ring[0]);
-      return ring;
     }
-    // A cap clear of the poles: its edge point by point around the centre,
-    // longitudes kept continuous (past +-180 when it crosses the antimeridian).
-    var sinC = Math.sin(cLat * RAD), cosC = Math.cos(cLat * RAD), prev = null;
-    for (i = 0; i <= 360; i += step) {
-      var th = i * RAD;
-      var sinLat = sinC * Math.cos(r) + cosC * Math.sin(r) * Math.cos(th);
-      var pLat = Math.asin(sinLat);
-      var pLon = cLon + Math.atan2(Math.sin(th) * Math.sin(r) * cosC, Math.cos(r) - sinC * sinLat) * DEG;
-      if (prev !== null) pLon = prev + wrap180(pLon - prev);
-      prev = pLon;
-      ring.push([pLon, pLat * DEG]);
-    }
-    ring[ring.length - 1] = ring[0];
-    return ring;
-  }
-
-  /** The night and its twilight for a Sun position: one polygon per
-      altitude of BANDS, each holding the next, deepest last. Drawn one over
-      the other with the same light veil, they darken degree by degree. */
-  function nightGeoJSON(sun, step) {
-    return {
-      type: 'FeatureCollection',
-      features: BANDS.map(function (h) {
-        return {
-          type: 'Feature',
-          properties: { altitude: h },
-          geometry: { type: 'Polygon', coordinates: [capRing(sun, h, step || 1)] }
-        };
-      })
-    };
-  }
-
-  /** The day for a Sun position, fading in like the night: one polygon per
-      degree from the horizon to 18 above, each holding the next. Where the
-      Sun stands higher than h is where the Sun of the antipode stands lower
-      than -h. */
-  function dayGeoJSON(sun, step) {
-    var antipode = { lat: -sun.lat, lon: wrap180(sun.lon + 180) };
-    return {
-      type: 'FeatureCollection',
-      features: BANDS.map(function (h) {
-        return {
-          type: 'Feature',
-          properties: { altitude: Math.abs(h) },
-          geometry: { type: 'Polygon', coordinates: [capRing(antipode, h, step || 1)] }
-        };
-      })
-    };
+    return img;
   }
 
   /** MapLibre light position [radial, azimuthal, polar] (anchor 'map') that
@@ -168,8 +120,8 @@ var WidgetEarth = (function () {
   }
 
   return {
-    BANDS: BANDS, GLOBE_FILL: GLOBE_FILL, subsolarPoint: subsolarPoint, sunAltitude: sunAltitude,
-    nightGeoJSON: nightGeoJSON, dayGeoJSON: dayGeoJSON, sunLightPosition: sunLightPosition,
+    GLOBE_FILL: GLOBE_FILL, subsolarPoint: subsolarPoint, sunAltitude: sunAltitude,
+    shadeTile: shadeTile, sunLightPosition: sunLightPosition,
     globeApparentRadius: globeApparentRadius, wholeEarthZoom: wholeEarthZoom
   };
 })();
