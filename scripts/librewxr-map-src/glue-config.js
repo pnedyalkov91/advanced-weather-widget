@@ -85,6 +85,8 @@ var PROJECTION_INIT = PARAMS.get('proj') === 'globe' ? 'globe' : 'flat';
 var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
 // Glow of the globe's atmosphere, in percent; the adapter reads and bounds it.
 var GLOW_INIT = PARAMS.get('glow');
+// Darkness of the deep night, in percent of black; the adapter reads and bounds it.
+var NIGHTDEPTH_INIT = PARAMS.get('nightdepth');
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';

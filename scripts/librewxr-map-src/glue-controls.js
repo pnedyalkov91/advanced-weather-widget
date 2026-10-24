@@ -254,6 +254,8 @@ if (nightBtn) {
 
 // Glow of the globe's atmosphere, from the widget's slider (percent).
 window.setGlow = function (percent) { _widgetAdapter.setGlow(percent); };
+// Darkness of the deep night, from the widget's settings (percent of black).
+window.setNightDepth = function (percent) { _widgetAdapter.setNightDepth(percent); };
 
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');

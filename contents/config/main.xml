@@ -212,8 +212,10 @@
     <entry name="librewxrProjection"    type="String"><default>flat</default></entry>
     <!-- Day and night shaded on the radar map; switched from the day and night button on the map -->
     <entry name="librewxrDayNight"      type="Bool"><default>true</default></entry>
-    <!-- Glow of the globe's atmosphere, percent of full strength; set from the Options panel of the Radar tab -->
+    <!-- Glow of the globe's atmosphere, percent of full strength; set in the Radar settings -->
     <entry name="librewxrGlow"          type="Int"><default>30</default><min>0</min><max>100</max></entry>
+    <!-- Darkness of the deep night on the radar map, percent of black; set in the Radar settings -->
+    <entry name="librewxrNightDepth"    type="Int"><default>40</default><min>10</min><max>80</max></entry>
     <!-- Wind particle density: 1 = one particle per 300 CSS px^2 -->
     <entry name="librewxrWindDensity"   type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
     <!-- Wind palettes made in the settings: JSON [{ "name", "levels": [{ "max" (m/s), "color" }] x 8 }] -->

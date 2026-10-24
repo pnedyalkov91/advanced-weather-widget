@@ -63,7 +63,7 @@ function loadAdapter(globals) {
     resolveBg: (id) => ({ url: 'https://' + id + '/{z}/{x}/{y}.png' }),
     WidgetEarth: require('../glue-earth.js'),
     document: { hidden: false, addEventListener() {} },
-    GLOW_INIT: null,
+    GLOW_INIT: null, NIGHTDEPTH_INIT: null,
   };
   Object.assign(ctx, globals);
   vm.runInNewContext(src + '\nthis.WidgetMapLibreAdapter = WidgetMapLibreAdapter;', ctx);
@@ -115,16 +115,31 @@ test('a base map change on the globe loads the new style already on the globe', 
   assert.ok(map.loadedStyle.sources['lv-base'], 'the base map is still there');
 });
 
-test('day and night on: a night in fine steps, as deep as before; the glow follows the Sun', () => {
+/** How dark the deepest night is: the veils of all the steps one over the other. */
+const nightDepth = (map) => 1 - Math.pow(1 - map.getLayer('lv-night').paint['fill-opacity'], map.getSource('lv-night').data.features.length);
+
+test('day and night on: a night in fine steps, 40 % dark at its deepest by default; the glow follows the Sun', () => {
   const { adapter, map } = loadAdapter();
   adapter.setDayNight(true);
-  const opacity = map.getLayer('lv-night').paint['fill-opacity'];
   const steps = map.getSource('lv-night').data.features.length;
   assert.ok(steps >= 10, steps + ' steps');
-  // Deep night: as dark as the four bands of 0.13 it replaces.
-  const depth = 1 - Math.pow(1 - opacity, steps);
-  assert.ok(Math.abs(depth - (1 - Math.pow(0.87, 4))) < 0.01, 'deep night ' + depth);
+  assert.ok(Math.abs(nightDepth(map) - 0.4) < 1e-9, 'deep night ' + nightDepth(map));
   assert.equal(map.light.anchor, 'map');
+});
+
+test('the darkness of the night comes from the widget, and changes live', () => {
+  const { adapter, map } = loadAdapter({ NIGHTDEPTH_INIT: '60' });
+  adapter.setDayNight(true);
+  assert.ok(Math.abs(nightDepth(map) - 0.6) < 1e-9, 'from the page address');
+  adapter.setNightDepth(25);
+  assert.ok(Math.abs(nightDepth(map) - 0.25) < 1e-9, 'live');
+  adapter.setNightDepth('x');
+  assert.ok(Math.abs(nightDepth(map) - 0.25) < 1e-9, 'unreadable: unchanged');
+  adapter.setDayNight(false);
+  adapter.setNightDepth(50);
+  adapter.setDayNight(true);
+  assert.ok(Math.abs(nightDepth(map) - 0.5) < 1e-9, 'kept while off');
+  assert.equal(adapter.getNightDepth(), 50);
 });
 
 test('day and night off: no night, and the glow no longer follows the Sun', () => {

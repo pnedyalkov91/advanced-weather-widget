@@ -361,6 +361,86 @@ GridLayout {
         }
     }
 
+    // How dark the night gets on the map at its deepest, when day and night
+    // are shown (the button on the map switches them).
+    Label {
+        text: i18n("Night darkness:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+
+            Slider {
+                objectName: "nightDepthSlider"
+                Layout.preferredWidth: 220
+                from: 10
+                to: 80
+                stepSize: 5
+                value: radarTab.configRoot.cfg_librewxrNightDepth
+                onMoved: radarTab.configRoot.cfg_librewxrNightDepth = Math.round(value)
+            }
+            Label {
+                text: i18n("%1 %", radarTab.configRoot.cfg_librewxrNightDepth)
+            }
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("How dark the deep night is on the radar map when day and night are shown (button on the map).")
+        }
+    }
+
+    // The globe's atmosphere lights its day side; at full strength it washes
+    // the map out.
+    Label {
+        text: i18n("Globe glow:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+
+            Slider {
+                objectName: "globeGlowSlider"
+                Layout.preferredWidth: 220
+                from: 0
+                to: 100
+                stepSize: 5
+                value: radarTab.configRoot.cfg_librewxrGlow
+                onMoved: radarTab.configRoot.cfg_librewxrGlow = Math.round(value)
+            }
+            Label {
+                text: i18n("%1 %", radarTab.configRoot.cfg_librewxrGlow)
+            }
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("Glow of the atmosphere around the globe (globe button on the map). Lower it if the day side looks washed out.")
+        }
+    }
+
     // The animated wind layer of the LibreWXR map. Its data comes from
     // Open-Meteo, not from the LibreWXR server. It redraws the map at
     // every frame, so the frame-rate budget is what the CPU cost

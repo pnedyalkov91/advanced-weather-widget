@@ -75,16 +75,26 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     return undefined;
   }
 
+  // A percentage from the widget, held within 0..100; null if unreadable.
+  function percent(v) {
+    var n = parseFloat(v);
+    return isNaN(n) ? null : Math.max(0, Math.min(100, n));
+  }
+
   // Day and night (glue-earth.js): nested areas, one per degree of
   // twilight, under the same light veil, so the night fades in like the
-  // glow of the globe's atmosphere; deep night as dark as before. On a dark
+  // glow of the globe's atmosphere; the deep night as dark as the widget's
+  // setting says (percent of black, 40 by default). On a dark
   // map the day gets a light veil of its own, fading in the same way. Right
   // over the base map, under the satellite, the alerts and the radar. The
   // map's light stands at the Sun, so the atmosphere glows over the day side;
   // with day and night off it comes from the viewer and the globe glows
   // evenly. Moved every minute.
-  var NIGHT_DEPTH = 1 - Math.pow(0.87, 4);
-  var NIGHT_VEIL = 1 - Math.pow(1 - NIGHT_DEPTH, 1 / WidgetEarth.BANDS.length);
+  var nightDepth = percent(NIGHTDEPTH_INIT);
+  if (nightDepth === null) nightDepth = 40;
+  function nightVeil() {
+    return 1 - Math.pow(1 - nightDepth / 100, 1 / WidgetEarth.BANDS.length);
+  }
   var DAY_VEIL = 1 - Math.pow(1 - 0.07, 1 / WidgetEarth.BANDS.length);
   var EVEN_LIGHT = { anchor: 'viewport', position: [1, 0, 0] };
   var dayNight = DAYNIGHT_INIT;
@@ -106,7 +116,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var sun = WidgetEarth.subsolarPoint(new Date());
     if (dayNight && skyTheme === 'dark') addVeil('lv-day', WidgetEarth.dayGeoJSON(sun), '#ffffff', DAY_VEIL);
     else dropVeil('lv-day');
-    if (dayNight) addVeil('lv-night', WidgetEarth.nightGeoJSON(sun), '#000000', NIGHT_VEIL);
+    if (dayNight) addVeil('lv-night', WidgetEarth.nightGeoJSON(sun), '#000000', nightVeil());
     else dropVeil('lv-night');
   }
   function moveSun() {
@@ -210,13 +220,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // The glow of the atmosphere, in percent of its full strength (blend 0.5
   // with the whole Earth in view): full, it washes the day side out. Set
   // from the widget's slider; 30 by default.
-  var GLOW_DEFAULT = 30;
-  function glowPercent(v) {
-    var n = parseFloat(v);
-    return isNaN(n) ? null : Math.max(0, Math.min(100, n));
-  }
-  var glow = glowPercent(GLOW_INIT);
-  if (glow === null) glow = GLOW_DEFAULT;
+  var glow = percent(GLOW_INIT);
+  if (glow === null) glow = 30;
   function applyProjection() {
     map.setProjection({ type: projection === 'globe' ? 'globe' : 'mercator' });
     var sky = {}, base = SKY[skyTheme] || SKY.dark, g = glow / 100;
@@ -461,14 +466,23 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     getDayNight: function () { return dayNight; },
 
-    setGlow: function (percent) {
-      var g = glowPercent(percent);
+    setGlow: function (value) {
+      var g = percent(value);
       if (g === null) return;
       glow = g;
       if (styleReady && !swapInProgress) applyProjection();
     },
 
     getGlow: function () { return glow; },
+
+    setNightDepth: function (value) {
+      var d = percent(value);
+      if (d === null) return;
+      nightDepth = d;
+      if (styleReady && map.getLayer('lv-night')) map.setPaintProperty('lv-night', 'fill-opacity', nightVeil());
+    },
+
+    getNightDepth: function () { return nightDepth; },
 
     // The table-based wind layer (glue-wind-table.js), when the page has it.
     createWindLayer: function (source, openData, dem, options) {
