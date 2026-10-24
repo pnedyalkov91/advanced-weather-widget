@@ -6,3 +6,4 @@ MapBackgroundChoices 1.0 MapBackgroundChoices.qml
 RadarWebEngineView 1.0 RadarWebEngineView.qml
 RadarWebEngineViewLibreWXR 1.0 RadarWebEngineViewLibreWXR.qml
 LocationMapPickerView 1.0 LocationMapPickerView.qml
+HistoryDatePicker 1.0 HistoryDatePicker.qml

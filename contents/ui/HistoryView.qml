@@ -21,12 +21,18 @@
  *
  *   • Period picker: presets (yesterday … this year), a single day, or a
  *     custom range (HistoryDatePicker).
- *   • Summary tiles, a temperature-range + precipitation chart (hover for
- *     the day's values) and an expandable newest-first daily list.
+ *   • Summary tiles, a temperature + precipitation chart (hover for the day's
+ *     values) and an expandable newest-first daily list.
  *
  * All requests/parsing live in providers/openMeteoHistory.js; unit
  * conversion and fonts go through weatherRoot like every other tab, so the
- * user's unit settings are honoured.
+ * user's unit settings are honoured. Dates use the system (KDE/Qt) locale
+ * formats, like the Forecast tab, and the tile / detail icons follow
+ * Appearance → Widget → Details → Icon theme.
+ *
+ * The chart is components/HistoryChartGraphs.qml (Qt Graphs, styled after
+ * the KDE Plasma Weather applet). Where Qt Graphs is unavailable the Loader
+ * falls back to components/HistoryChartCanvas.qml.
  */
 import QtQuick
 import QtQuick.Controls
@@ -35,6 +41,8 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
 import "providers/openMeteoHistory.js" as H
+import "js/iconResolver.js" as IconResolver
+import "js/configUtils.js" as ConfigUtils
 import "components"
 
 Item {
@@ -56,7 +64,6 @@ Item {
     // across midnight does not keep requesting the old range.
     property string _latest: H.latestAvailable()
     readonly property var _period: H.resolvePeriod(preset, customStart, customEnd, _latest)
-    readonly property bool _sameYear: _period.start.substring(0, 4) === _period.end.substring(0, 4)
 
     // ── Data state ────────────────────────────────────────────────────────
     property string status: "idle"          // idle | loading | ok | error
@@ -111,11 +118,18 @@ Item {
             return "--";
         return weatherRoot.formatTimeForDisplay(iso.substring(11, 16));
     }
-    function _day(iso, withYear) {
-        return Qt.formatDate(H.parseIso(iso), withYear ? "ddd, d MMM yyyy" : "ddd, d MMM");
-    }
+    // Dates follow the system (KDE/Qt) locale, exactly like ForecastView:
+    // Qt.locale().dateFormat(Locale.ShortFormat) for the date and
+    // Qt.locale().dayName() for the weekday.
     function _date(iso) {
-        return H.isIso(iso) ? Qt.formatDate(H.parseIso(iso), "d MMM yyyy") : "--";
+        return H.isIso(iso) ? Qt.formatDate(H.parseIso(iso), Qt.locale().dateFormat(Locale.ShortFormat)) : "--";
+    }
+    /** Weekday + locale date, e.g. "Tue, 20.10.26". longName -> full weekday name. */
+    function _day(iso, longName) {
+        if (!H.isIso(iso))
+            return "--";
+        var wd = Qt.locale().dayName(H.parseIso(iso).getDay(), longName ? Locale.LongFormat : Locale.ShortFormat);
+        return wd + ", " + _date(iso);
     }
     function _compass(deg) {
         if (!_isNum(deg))
@@ -127,69 +141,99 @@ Item {
         return _isNum(code) && weatherRoot ? weatherRoot.weatherCodeToText(code, false) : "";
     }
 
+    // ── Icons: Appearance → Widget → Details → Icon theme ─────────────────
+    // Same resolution as DetailsView / ForecastView's stat items: the
+    // widgetIconTheme setting ("wi-font" is the legacy name for symbolic),
+    // per-item custom icons when the theme is "kde", and the configured size.
+    readonly property url iconsBaseDir: Qt.resolvedUrl("../icons/")
+    readonly property string _iconTheme: {
+        var t = Plasmoid.configuration.widgetIconTheme || "symbolic";
+        return (t === "wi-font") ? "symbolic" : t;
+    }
+    // Bundled SVGs only exist at 16/22/24/32 px; snap to the nearest.
+    readonly property int _iconSz: {
+        var want = Plasmoid.configuration.widgetIconSize || 16;
+        var sizes = [16, 22, 24, 32];
+        var best = sizes[0];
+        for (var i = 1; i < sizes.length; ++i)
+            if (Math.abs(sizes[i] - want) < Math.abs(best - want))
+                best = sizes[i];
+        return best;
+    }
+    // History rows are denser than the Details cards, so cap at 22 px.
+    readonly property int _rowIconSz: Math.min(_iconSz, 22)
+    readonly property var _customIcons: ConfigUtils.parseConfigMap(Plasmoid.configuration.widgetDetailsCustomIcons || "")
+
+    function _icon(itemId, size) {
+        var sz = size || _rowIconSz;
+        if (_iconTheme === "kde" && itemId in _customIcons && _customIcons[itemId].length > 0)
+            return { type: "kde", source: _customIcons[itemId], svgFallback: "", isMask: false };
+        return IconResolver.resolve(itemId, sz, iconsBaseDir, _iconTheme);
+    }
+
     function _buildTiles(s) {
         var t = [];
         if (!s || s.count === 0)
             return t;
         if (_isNum(s.avgMeanC))
-            t.push({ label: i18n("Average"), value: _temp(s.avgMeanC),
+            t.push({ icon: "temperature", label: i18n("Average"), value: _temp(s.avgMeanC),
                      sub: i18n("High %1 · Low %2", _temp(s.avgMaxC), _temp(s.avgMinC)) });
         if (s.hottest)
-            t.push({ label: i18n("Warmest day"), value: _temp(s.hottest.v), sub: _day(s.hottest.date, false) });
+            t.push({ icon: "temperature", label: i18n("Warmest day"), value: _temp(s.hottest.v), sub: _day(s.hottest.date, false) });
         if (s.coldest)
-            t.push({ label: i18n("Coldest night"), value: _temp(s.coldest.v), sub: _day(s.coldest.date, false) });
+            t.push({ icon: "temperature", label: i18n("Coldest night"), value: _temp(s.coldest.v), sub: _day(s.coldest.date, false) });
         if (_isNum(s.totalPrecipMm))
-            t.push({ label: i18n("Precipitation"), value: _precip(s.totalPrecipMm),
+            t.push({ icon: "precipsum", label: i18n("Precipitation"), value: _precip(s.totalPrecipMm),
                      sub: i18np("%1 wet day", "%1 wet days", s.wetDays) });
         if (s.wettest && s.wettest.v > 0)
-            t.push({ label: i18n("Wettest day"), value: _precip(s.wettest.v), sub: _day(s.wettest.date, false) });
+            t.push({ icon: "umbrella", label: i18n("Wettest day"), value: _precip(s.wettest.v), sub: _day(s.wettest.date, false) });
         if (_isNum(s.totalSnowCm) && s.totalSnowCm > 0)
-            t.push({ label: i18n("Snowfall"), value: _snow(s.totalSnowCm),
+            t.push({ icon: "snowcover", label: i18n("Snowfall"), value: _snow(s.totalSnowCm),
                      sub: i18np("%1 snowy day", "%1 snowy days", s.snowDays) });
         if (s.maxWind)
-            t.push({ label: i18n("Strongest wind"), value: _wind(s.maxWind.v), sub: _day(s.maxWind.date, false) });
+            t.push({ icon: "wind", label: i18n("Strongest wind"), value: _wind(s.maxWind.v), sub: _day(s.maxWind.date, false) });
         if (s.maxGust)
-            t.push({ label: i18n("Strongest gust"), value: _wind(s.maxGust.v), sub: _day(s.maxGust.date, false) });
+            t.push({ icon: "wind", label: i18n("Strongest gust"), value: _wind(s.maxGust.v), sub: _day(s.maxGust.date, false) });
         if (_isNum(s.totalSunshineHours))
-            t.push({ label: i18n("Sunshine"), value: _hours(s.totalSunshineHours),
+            t.push({ icon: "suntimes", label: i18n("Sunshine"), value: _hours(s.totalSunshineHours),
                      sub: i18n("%1 per day", _hours(s.totalSunshineHours / s.count)) });
         if (_isNum(s.avgHumidity))
-            t.push({ label: i18n("Humidity"), value: _percent(s.avgHumidity), sub: i18n("average") });
+            t.push({ icon: "humidity", label: i18n("Humidity"), value: _percent(s.avgHumidity), sub: i18n("average") });
         if (_isNum(s.avgPressureHpa))
-            t.push({ label: i18n("Pressure"), value: _pressure(s.avgPressureHpa), sub: i18n("average") });
+            t.push({ icon: "pressure", label: i18n("Pressure"), value: _pressure(s.avgPressureHpa), sub: i18n("average") });
         if (_isNum(s.avgCloudPercent))
-            t.push({ label: i18n("Cloud cover"), value: _percent(s.avgCloudPercent), sub: i18n("average") });
+            t.push({ icon: "condition", label: i18n("Cloud cover"), value: _percent(s.avgCloudPercent), sub: i18n("average") });
         return t;
     }
 
     function _detailPairs(d) {
         var p = [];
         if (_isNum(d.meanC))
-            p.push([i18n("Mean temperature"), _temp(d.meanC)]);
+            p.push([i18n("Mean temperature"), _temp(d.meanC), "temperature"]);
         if (_isNum(d.apparentMaxC) || _isNum(d.apparentMinC))
-            p.push([i18n("Feels like"), _temp(d.apparentMaxC) + " / " + _temp(d.apparentMinC)]);
+            p.push([i18n("Feels like"), _temp(d.apparentMaxC) + " / " + _temp(d.apparentMinC), "feelslike"]);
         if (_isNum(d.rainMm))
-            p.push([i18n("Rain"), _precip(d.rainMm)]);
+            p.push([i18n("Rain"), _precip(d.rainMm), "precipsum"]);
         if (_isNum(d.snowCm) && d.snowCm > 0)
-            p.push([i18n("Snowfall"), _snow(d.snowCm)]);
+            p.push([i18n("Snowfall"), _snow(d.snowCm), "snowcover"]);
         if (_isNum(d.precipHours))
-            p.push([i18n("Precipitation hours"), Math.round(d.precipHours) + " " + i18n("h")]);
+            p.push([i18n("Precipitation hours"), Math.round(d.precipHours) + " " + i18n("h"), "umbrella"]);
         if (_isNum(d.windKmh))
-            p.push([i18n("Wind"), (_wind(d.windKmh) + " " + _compass(d.windDir)).trim()]);
+            p.push([i18n("Wind"), (_wind(d.windKmh) + " " + _compass(d.windDir)).trim(), "wind"]);
         if (_isNum(d.gustKmh))
-            p.push([i18n("Gusts"), _wind(d.gustKmh)]);
+            p.push([i18n("Gusts"), _wind(d.gustKmh), "wind"]);
         if (_isNum(d.sunshineSec))
-            p.push([i18n("Sunshine"), _hours(d.sunshineSec / 3600)]);
+            p.push([i18n("Sunshine"), _hours(d.sunshineSec / 3600), "suntimes"]);
         if (_isNum(d.cloudPercent))
-            p.push([i18n("Cloud cover"), _percent(d.cloudPercent)]);
+            p.push([i18n("Cloud cover"), _percent(d.cloudPercent), "condition"]);
         if (_isNum(d.humidity))
-            p.push([i18n("Humidity"), _percent(d.humidity)]);
+            p.push([i18n("Humidity"), _percent(d.humidity), "humidity"]);
         if (_isNum(d.pressureHpa))
-            p.push([i18n("Pressure"), _pressure(d.pressureHpa)]);
+            p.push([i18n("Pressure"), _pressure(d.pressureHpa), "pressure"]);
         if (d.sunrise)
-            p.push([i18n("Sunrise"), _time(d.sunrise)]);
+            p.push([i18n("Sunrise"), _time(d.sunrise), "sunrise"]);
         if (d.sunset)
-            p.push([i18n("Sunset"), _time(d.sunset)]);
+            p.push([i18n("Sunset"), _time(d.sunset), "sunset"]);
         return p;
     }
 
@@ -301,7 +345,6 @@ Item {
             root.missingDays = res.missingDays;
             root._loadedKey = key;
             root._loadedAt = Date.now();
-            root.hoverIndex = -1;
             root.status = "ok";
         });
     }
@@ -341,8 +384,8 @@ Item {
         _abortPending();
     }
 
-    // ── Chart hover ───────────────────────────────────────────────────────
-    property int hoverIndex: -1
+    // Chart implementation: Qt Graphs when available (see header comment).
+    property bool _graphsOk: true
 
     // ══════════════════════════════════════════════════════════════════════
     // UI
@@ -422,8 +465,8 @@ Item {
                 var p = root._period;
                 var place = root.weatherRoot ? root.weatherRoot._locName() : "";
                 var range = p.start === p.end
-                    ? root._day(p.start, true)
-                    : root._day(p.start, true) + " – " + root._day(p.end, true);
+                    ? root._day(p.start, false)
+                    : root._day(p.start, false) + " – " + root._day(p.end, false);
                 var t = place.length > 0 ? place + " · " + range : range;
                 if (p.clamped)
                     t += " · " + i18n("Range limited to %1 days", H.MAX_RANGE_DAYS);
@@ -539,13 +582,21 @@ Item {
                                             margins: 8
                                         }
                                         spacing: 1
-                                        Label {
+                                        RowLayout {
                                             Layout.fillWidth: true
-                                            text: tile.modelData.label
-                                            elide: Text.ElideRight
-                                            color: Kirigami.Theme.textColor
-                                            opacity: 0.6
-                                            font: root._f(9, false)
+                                            spacing: 4
+                                            WeatherIcon {
+                                                iconInfo: root._icon(tile.modelData.icon)
+                                                iconSize: root._rowIconSz
+                                            }
+                                            Label {
+                                                Layout.fillWidth: true
+                                                text: tile.modelData.label
+                                                elide: Text.ElideRight
+                                                color: Kirigami.Theme.textColor
+                                                opacity: 0.6
+                                                font: root._f(9, false)
+                                            }
                                         }
                                         Label {
                                             Layout.fillWidth: true
@@ -567,187 +618,23 @@ Item {
                             }
                         }
 
-                        // Chart legend / hover readout
-                        Label {
+                        // Chart: Qt Graphs (KDE weather applet style), Canvas fallback.
+                        Loader {
+                            id: chartLoader
                             Layout.fillWidth: true
                             Layout.topMargin: 4
-                            elide: Text.ElideRight
-                            color: Kirigami.Theme.textColor
-                            font: root._f(10, root.hoverIndex >= 0)
                             visible: root.days.length > 1
-                            text: {
-                                var i = root.hoverIndex;
-                                if (i < 0 || i >= root.days.length)
-                                    return i18n("Temperature range and daily precipitation");
-                                var d = root.days[i];
-                                if (!d.hasData)
-                                    return root._day(d.dateStr, true) + " · " + i18n("No data");
-                                return root._day(d.dateStr, true) + " · "
-                                    + root._temp(d.maxC) + " / " + root._temp(d.minC)
-                                    + " · " + root._precip(d.precipMm);
+                            source: root._graphsOk ? "components/HistoryChartGraphs.qml"
+                                                   : "components/HistoryChartCanvas.qml"
+                            onLoaded: {
+                                item.view = root;
+                                item.days = Qt.binding(function () { return root.days; });
                             }
-                        }
-
-                        Canvas {
-                            id: chart
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 150
-                            visible: root.days.length > 1
-                            renderTarget: Canvas.Image
-
-                            readonly property real tempFrac: 0.68
-                            readonly property var _days: root.days
-                            readonly property int _hover: root.hoverIndex
-
-                            on_DaysChanged: requestPaint()
-                            on_HoverChanged: requestPaint()
-                            onWidthChanged: requestPaint()
-                            onHeightChanged: requestPaint()
-
-                            readonly property color _textColor: Kirigami.Theme.textColor
-                            on_TextColorChanged: requestPaint()
-
-                            function _tc(a) {
-                                var c = Kirigami.Theme.textColor;
-                                return Qt.rgba(c.r, c.g, c.b, a);
-                            }
-
-                            onPaint: {
-                                var ctx = getContext("2d");
-                                ctx.reset();
-                                var days = chart._days;
-                                var n = days.length;
-                                var cw = width, ch = height;
-                                if (n < 2 || cw <= 0 || ch <= 0)
-                                    return;
-
-                                var slot = cw / n;
-                                var tempH = Math.round(ch * tempFrac);
-                                var precipTop = tempH + 10;
-                                var precipH = ch - precipTop;
-
-                                // Temperature scale
-                                var lo = Infinity, hi = -Infinity;
-                                for (var i = 0; i < n; ++i) {
-                                    var d = days[i];
-                                    if (isFinite(d.maxC)) { hi = Math.max(hi, d.maxC); lo = Math.min(lo, d.maxC); }
-                                    if (isFinite(d.minC)) { hi = Math.max(hi, d.minC); lo = Math.min(lo, d.minC); }
+                            onStatusChanged: {
+                                if (status === Loader.Error && root._graphsOk) {
+                                    console.warn("History: Qt Graphs chart unavailable, using the Canvas fallback");
+                                    root._graphsOk = false;
                                 }
-                                if (!isFinite(lo) || !isFinite(hi))
-                                    return;
-                                if (hi - lo < 4) {
-                                    var mid = (hi + lo) / 2;
-                                    hi = mid + 2;
-                                    lo = mid - 2;
-                                }
-                                var padT = 6, padB = 6;
-                                var span = hi - lo;
-                                function ty(v) {
-                                    return padT + (hi - v) / span * (tempH - padT - padB);
-                                }
-
-                                // Hover column
-                                if (chart._hover >= 0 && chart._hover < n) {
-                                    ctx.fillStyle = chart._tc(0.08);
-                                    ctx.fillRect(chart._hover * slot, 0, slot, ch);
-                                }
-
-                                // Freezing line
-                                if (lo < 0 && hi > 0) {
-                                    ctx.strokeStyle = chart._tc(0.35);
-                                    ctx.lineWidth = 1;
-                                    ctx.setLineDash([3, 3]);
-                                    ctx.beginPath();
-                                    ctx.moveTo(0, Math.round(ty(0)) + 0.5);
-                                    ctx.lineTo(cw, Math.round(ty(0)) + 0.5);
-                                    ctx.stroke();
-                                    ctx.setLineDash([]);
-                                }
-
-                                // Range bars: colour runs hot -> cold over the plot height
-                                var grad = ctx.createLinearGradient(0, padT, 0, tempH - padB);
-                                grad.addColorStop(0.0, "#ef5350");
-                                grad.addColorStop(1.0, "#42a5f5");
-                                ctx.fillStyle = grad;
-                                var bw = Math.max(1, Math.min(slot * 0.62, 14));
-                                for (var j = 0; j < n; ++j) {
-                                    var dj = days[j];
-                                    if (!isFinite(dj.maxC) || !isFinite(dj.minC))
-                                        continue;
-                                    var y1 = ty(dj.maxC), y2 = ty(dj.minC);
-                                    ctx.globalAlpha = 0.85;
-                                    ctx.fillRect(j * slot + (slot - bw) / 2, y1, bw, Math.max(2, y2 - y1));
-                                }
-                                ctx.globalAlpha = 1.0;
-
-                                // Mean line (broken at missing days)
-                                ctx.strokeStyle = chart._tc(0.9);
-                                ctx.lineWidth = 1.5;
-                                ctx.beginPath();
-                                var pen = false;
-                                for (var k = 0; k < n; ++k) {
-                                    var m = days[k].meanC;
-                                    if (!isFinite(m)) { pen = false; continue; }
-                                    var px = k * slot + slot / 2, py = ty(m);
-                                    if (pen) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-                                    pen = true;
-                                }
-                                ctx.stroke();
-
-                                // Precipitation bars
-                                var pmax = 5;
-                                for (var q = 0; q < n; ++q)
-                                    if (isFinite(days[q].precipMm))
-                                        pmax = Math.max(pmax, days[q].precipMm);
-                                ctx.fillStyle = "#42a5f5";
-                                for (var r = 0; r < n; ++r) {
-                                    var pm = days[r].precipMm;
-                                    if (!isFinite(pm) || pm <= 0)
-                                        continue;
-                                    var h = Math.max(1, pm / pmax * precipH);
-                                    ctx.globalAlpha = 0.8;
-                                    ctx.fillRect(r * slot + (slot - bw) / 2, precipTop + precipH - h, bw, h);
-                                }
-                                ctx.globalAlpha = 1.0;
-
-                                // Baseline under the precipitation bars
-                                ctx.strokeStyle = chart._tc(0.25);
-                                ctx.lineWidth = 1;
-                                ctx.beginPath();
-                                ctx.moveTo(0, precipTop + precipH + 0.5);
-                                ctx.lineTo(cw, precipTop + precipH + 0.5);
-                                ctx.stroke();
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                acceptedButtons: Qt.NoButton
-                                onPositionChanged: function (mouse) {
-                                    var n = root.days.length;
-                                    if (n < 1)
-                                        return;
-                                    root.hoverIndex = Math.max(0, Math.min(n - 1, Math.floor(mouse.x / width * n)));
-                                }
-                                onExited: root.hoverIndex = -1
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            visible: root.days.length > 1
-                            Label {
-                                text: root.days.length > 0 ? root._date(root.days[0].dateStr) : ""
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.6
-                                font: root._f(9, false)
-                            }
-                            Item { Layout.fillWidth: true }
-                            Label {
-                                text: root.days.length > 0 ? root._date(root.days[root.days.length - 1].dateStr) : ""
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.6
-                                font: root._f(9, false)
                             }
                         }
 
@@ -809,7 +696,7 @@ Item {
                                 spacing: 0
                                 Label {
                                     Layout.fillWidth: true
-                                    text: root._day(row.modelData.dateStr, !root._sameYear)
+                                    text: root._day(row.modelData.dateStr, true)
                                     elide: Text.ElideRight
                                     color: Kirigami.Theme.textColor
                                     font: root._f(11, true)
@@ -865,10 +752,18 @@ Item {
                                     Layout.columnSpan: 2
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 100
-                                    Layout.preferredHeight: Math.max(pairLabel.implicitHeight, pairValue.implicitHeight)
+                                    Layout.preferredHeight: Math.max(16, pairLabel.implicitHeight, pairValue.implicitHeight)
+                                    WeatherIcon {
+                                        id: pairIcon
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        iconInfo: root._icon(pair.modelData[2], 16)
+                                        iconSize: 16
+                                    }
                                     Label {
                                         id: pairLabel
-                                        anchors.left: parent.left
+                                        anchors.left: pairIcon.right
+                                        anchors.leftMargin: 6
                                         anchors.right: pairValue.left
                                         anchors.rightMargin: 6
                                         text: pair.modelData[0]
