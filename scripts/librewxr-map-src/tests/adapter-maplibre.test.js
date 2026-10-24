@@ -40,7 +40,7 @@ class FakeMap {
   setStyle(style, opts) {
     this.loadedStyle = opts && opts.transformStyle ? opts.transformStyle(this.getStyle(), style) : style;
   }
-  setSky() {}
+  setSky(sky) { this.sky = sky; }
   setLight(l) { this.light = l; }
   getContainer() { return { clientWidth: 800, clientHeight: 330 }; }
   getMinZoom() { return 0; }
@@ -49,7 +49,7 @@ class FakeMap {
   getCenter() { return { lat: 48, lng: 6 }; }
 }
 
-function loadAdapter() {
+function loadAdapter(globals) {
   const src = fs.readFileSync(path.join(__dirname, '../glue-adapter-maplibre.js'), 'utf8');
   let map = null;
   const ctx = {
@@ -63,7 +63,9 @@ function loadAdapter() {
     resolveBg: (id) => ({ url: 'https://' + id + '/{z}/{x}/{y}.png' }),
     WidgetEarth: require('../glue-earth.js'),
     document: { hidden: false, addEventListener() {} },
+    GLOW_INIT: null,
   };
+  Object.assign(ctx, globals);
   vm.runInNewContext(src + '\nthis.WidgetMapLibreAdapter = WidgetMapLibreAdapter;', ctx);
   const maplibregl = {
     Map: function () { map = new FakeMap(); return map; },
@@ -141,4 +143,24 @@ test('day and night on a dark map: the day brightens in fine steps, as much as b
   assert.ok(steps >= 10, steps + ' steps');
   const depth = 1 - Math.pow(1 - opacity, steps);
   assert.ok(Math.abs(depth - 0.07) < 0.005, 'full day ' + depth);
+});
+
+/** How much the globe's atmosphere blends in with the widest view (zoom 0). */
+const blendAtZoom0 = (map) => map.sky['atmosphere-blend'][4];
+
+test('the glow of the atmosphere is 30 % of full strength unless the widget says otherwise', () => {
+  assert.ok(Math.abs(blendAtZoom0(loadAdapter().map) - 0.15) < 1e-9);
+  assert.ok(Math.abs(blendAtZoom0(loadAdapter({ GLOW_INIT: '80' }).map) - 0.4) < 1e-9);
+  assert.ok(Math.abs(blendAtZoom0(loadAdapter({ GLOW_INIT: 'x' }).map) - 0.15) < 1e-9, 'unreadable: default');
+});
+
+test('setGlow sets the glow live, from none to full strength', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setGlow(100);
+  assert.equal(blendAtZoom0(map), 0.5);
+  adapter.setGlow(0);
+  assert.equal(blendAtZoom0(map), 0);
+  adapter.setGlow(250);
+  assert.equal(blendAtZoom0(map), 0.5, 'held within 0..100');
+  assert.equal(adapter.getGlow(), 100);
 });

@@ -83,6 +83,8 @@ function hasWebGL() {
 var PROJECTION_INIT = PARAMS.get('proj') === 'globe' ? 'globe' : 'flat';
 // Day and night on the MapLibre page; on unless the widget says no.
 var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
+// Glow of the globe's atmosphere, in percent; the adapter reads and bounds it.
+var GLOW_INIT = PARAMS.get('glow');
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';

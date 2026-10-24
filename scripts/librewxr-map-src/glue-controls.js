@@ -252,6 +252,9 @@ if (nightBtn) {
   renderNightBtn();
 }
 
+// Glow of the globe's atmosphere, from the widget's slider (percent).
+window.setGlow = function (percent) { _widgetAdapter.setGlow(percent); };
+
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');
 var bgBtn = document.getElementById('bgBtn');

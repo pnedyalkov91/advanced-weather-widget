@@ -91,8 +91,10 @@ Item {
     readonly property real windDensity: Plasmoid.configuration.librewxrWindDensity > 0 ? Plasmoid.configuration.librewxrWindDensity : 1
     // Flat map or globe, switched from the globe button on the map.
     readonly property string projection: Plasmoid.configuration.librewxrProjection === "globe" ? "globe" : "flat"
-    // Night and twilights on the map, switched from the button under the globe one.
+    // Day and night on the map, switched from the button under the globe one.
     readonly property bool dayNight: Plasmoid.configuration.librewxrDayNight !== false
+    // Glow of the globe's atmosphere, in percent of full strength (Options panel).
+    readonly property int glow: Plasmoid.configuration.librewxrGlow
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
     // m/s, "inf" for the last level). Empty for the default palette, and for
     // an entry that does not read: the page then uses the default one.
@@ -356,7 +358,7 @@ Item {
             "globe": i18n("Globe"),
             "dayNight": i18n("Day and night")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -697,6 +699,39 @@ Item {
                 ToolTip.text: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
                 ToolTip.delay: Kirigami.Units.toolTipDelay
             }
+
+            // The globe's atmosphere lights its day side; at full strength it
+            // washes the map out, so it is set here, where the effect shows.
+            RowLayout {
+                visible: radarRoot.projection === "globe"
+                spacing: Kirigami.Units.smallSpacing
+
+                Label {
+                    text: i18n("Glow:")
+                    color: Kirigami.Theme.textColor
+                    opacity: 0.72
+                    font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                }
+                PlasmaComponents.Slider {
+                    id: glowSlider
+                    Layout.preferredWidth: Kirigami.Units.gridUnit * 6
+                    from: 0
+                    to: 100
+                    stepSize: 5
+                    value: radarRoot.glow
+                    onMoved: Plasmoid.configuration.librewxrGlow = Math.round(value)
+
+                    PlasmaComponents.ToolTip.visible: hovered
+                    PlasmaComponents.ToolTip.text: i18n("Glow of the atmosphere on the globe: lower it if the day side looks washed out")
+                    PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
+                }
+                Label {
+                    text: i18n("%1 %", radarRoot.glow)
+                    color: Kirigami.Theme.textColor
+                    opacity: 0.72
+                    font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
+                }
+            }
         }
 
         // ── WebEngine map ─────────────────────────────────────────────
@@ -845,6 +880,9 @@ Item {
                 }
                 function onDayNightChanged() {
                     webView.runJavaScript("if (window.setDayNight) window.setDayNight(" + radarRoot.dayNight + ");");
+                }
+                function onGlowChanged() {
+                    webView.runJavaScript("if (window.setGlow) window.setGlow(" + radarRoot.glow + ");");
                 }
                 function onMapBackgroundChanged() {
                     if (radarRoot._backgroundFromMap) {
