@@ -209,12 +209,22 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     map.setSky(sky);
   }
 
-  // A new style drops every source and layer the page added, and the
-  // projection: put them back once it has loaded.
+  // A new style drops every source and layer the page added: put them back
+  // once it has loaded. It comes with the projection: a style without one is
+  // a flat map, where MapLibre holds the globe's minimum zoom as a flat one,
+  // and the globe came back bigger than it was.
   function swapToStyle(next) {
     swapInProgress = true;
     map.once('style.load', function () { restoreRuntimeStyle(next.key); });
-    map.setStyle(next.style, { diff: false });
+    map.setStyle(next.style, {
+      diff: false,
+      transformStyle: function (previous, style) {
+        var s = {};
+        for (var k in style) s[k] = style[k];
+        s.projection = { type: projection === 'globe' ? 'globe' : 'mercator' };
+        return s;
+      }
+    });
   }
 
   function restoreRuntimeStyle(key) {

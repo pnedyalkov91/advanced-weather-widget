@@ -36,6 +36,10 @@ class FakeMap {
   setPaintProperty(id, k, v) { const l = this.getLayer(id); if (l) l.paint[k] = v; }
   setLayoutProperty(id, k, v) { const l = this.getLayer(id); if (l) l.layout[k] = v; }
   setProjection() {}
+  // The style MapLibre loads: the one given, through transformStyle if any.
+  setStyle(style, opts) {
+    this.loadedStyle = opts && opts.transformStyle ? opts.transformStyle(this.getStyle(), style) : style;
+  }
   setSky() {}
   setLight() {}
   getContainer() { return { clientWidth: 800, clientHeight: 330 }; }
@@ -56,7 +60,7 @@ function loadAdapter() {
     PARAMS: new URLSearchParams(''),
     PROJECTION_INIT: 'flat', DAYNIGHT_INIT: false, BG_CURRENT: 'osm-dark',
     FALLBACK_BG: { dark: { url: 'https://tiles/{z}/{x}/{y}.png' }, light: { url: 'https://tiles/{z}/{x}/{y}.png' } },
-    resolveBg: () => ({ url: 'https://tiles/{z}/{x}/{y}.png' }),
+    resolveBg: (id) => ({ url: 'https://' + id + '/{z}/{x}/{y}.png' }),
     WidgetEarth: require('../glue-earth.js'),
     document: { hidden: false, addEventListener() {} },
   };
@@ -69,7 +73,7 @@ function loadAdapter() {
   const adapter = ctx.WidgetMapLibreAdapter(maplibregl);
   adapter.createMap('lv-map', { lat: 48, lon: 6, zoom: 6, maxZoom: 12 });
   map.fire('load');
-  return { adapter, map };
+  return { adapter, map, ctx };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
@@ -96,4 +100,15 @@ test('a frame layer that loads settles once, on its source data', async () => {
   adapter.destroyFrameLayer(handle);
   await tick();
   assert.equal(calls, 1);
+});
+
+test('a base map change on the globe loads the new style already on the globe', () => {
+  // A style without projection is a flat map: MapLibre would hold the
+  // globe's minimum zoom as a flat one there, and the globe came back bigger.
+  const { adapter, map, ctx } = loadAdapter();
+  adapter.setProjection('globe');
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('light');
+  assert.equal(map.loadedStyle.projection.type, 'globe');
+  assert.ok(map.loadedStyle.sources['lv-base'], 'the base map is still there');
 });
