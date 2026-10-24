@@ -1589,8 +1589,8 @@ KCM.AbstractKCM {
     property bool cfg_simpleShowSunriseSunset: true
     property bool cfg_simpleShowForecastCompass: true
     property bool cfg_simpleShowStatsChips: true
-    property string cfg_widgetDefaultTab: "details"  // "details" | "forecast"
-    property string cfg_widgetVisibleTabs: "both"      // "both" | "details" | "forecast" | "none"
+    property string cfg_widgetDefaultTab: "details"  // "details" | "forecast" | "radar" | "history"
+    property string cfg_widgetVisibleTabs: "both"      // "both" | "details" | "forecast" | "radar" | "history" | "none"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
     property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set
