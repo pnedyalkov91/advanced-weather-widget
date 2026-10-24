@@ -95,12 +95,23 @@ Rectangle {
     readonly property string _fvLow:        (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
     readonly property var    _fvCondIcon:   weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
 
-    // Per-tab visibility flags (both visible by default)
+    // Per-tab visibility flags (all visible by default).
+    // widgetVisibleTabs is a semicolon-separated list ("details;forecast;radar;history").
+    // Legacy values are still understood: "both" = all tabs, "none" = no tabs,
+    // and a single tab id ("details", "forecast", ...) = just that tab.
     readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
-    readonly property bool showDetailsTab:  visibleTabs === "both" || visibleTabs === "details"
-    readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
-    readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && (visibleTabs === "both" || visibleTabs === "radar")
-    readonly property bool showHistoryTab:  visibleTabs === "both" || visibleTabs === "history"
+    readonly property var _visibleTabList: {
+        var v = visibleTabs;
+        if (v === "both")
+            return ["details", "forecast", "radar", "history"];
+        if (v === "none")
+            return [];
+        return v.split(";").map(function (t) { return t.trim(); });
+    }
+    readonly property bool showDetailsTab:  _visibleTabList.indexOf("details") >= 0
+    readonly property bool showForecastTab: _visibleTabList.indexOf("forecast") >= 0
+    readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && _visibleTabList.indexOf("radar") >= 0
+    readonly property bool showHistoryTab:  _visibleTabList.indexOf("history") >= 0
     readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab || showHistoryTab
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
@@ -120,6 +131,25 @@ Rectangle {
                 return i;
         return 0;
     }
+
+    // ── Header element visibility (Widget > General > Header) ─────────────
+    // Each element can be switched off in the settings; the existing
+    // placement rules (tray / desktop / saved locations) still apply on top.
+    readonly property bool _hasMultipleLocations: {
+        try {
+            var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
+            return Array.isArray(locs) && locs.length > 1;
+        } catch (e) { return false; }
+    }
+    readonly property bool _hdrShowLocation: Plasmoid.configuration.headerShowLocation !== false
+    readonly property bool _hdrShowDateTime: Plasmoid.configuration.headerShowDateTime === true
+    readonly property bool _hdrShowSwitcher: Plasmoid.configuration.headerShowSwitchLocation !== false && _hasMultipleLocations
+    readonly property bool _hdrShowPin: Plasmoid.configuration.headerShowPinButton !== false && !inSystemTray && Plasmoid.formFactor !== 0
+    readonly property bool _hdrShowDetect: Plasmoid.configuration.headerShowDetectButton !== false && !inSystemTray
+    readonly property bool _hdrShowRefresh: Plasmoid.configuration.headerShowRefreshButton !== false && !inSystemTray
+    readonly property bool _hdrShowUpdating: !inSystemTray && !!weatherRoot && weatherRoot.loading === true
+    readonly property bool _headerHasContent: _hdrShowLocation || _hdrShowDateTime || _hdrShowSwitcher
+        || _hdrShowPin || _hdrShowDetect || _hdrShowRefresh || _hdrShowUpdating
 
     // Whether not-currently-shown tabs stay instantiated. True while the
     // popup is open and always on the desktop (Planar), which has no popup.
@@ -272,8 +302,10 @@ Rectangle {
         visible: weatherRoot && weatherRoot.hasSelectedTown
 
         // ── Header: location pin + name + switcher + detect + refresh ────────────
+        // Every element can be switched off in Widget > General > Header.
         RowLayout {
             Layout.fillWidth: true
+            visible: fullView._headerHasContent
             spacing: 4
 
             Kirigami.Icon {
@@ -281,9 +313,12 @@ Rectangle {
                 width: 13
                 height: 13
                 Layout.alignment: Qt.AlignVCenter
+                visible: fullView._hdrShowLocation
             }
 
             Label {
+                id: headerLocationLabel
+                visible: fullView._hdrShowLocation
                 Layout.fillWidth: !headerDateTimeLabel.visible
                 text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
                 // #2
@@ -297,7 +332,7 @@ Rectangle {
             Label {
                 id: headerDateTimeLabel
                 Layout.fillWidth: true
-                visible: Plasmoid.configuration.headerShowDateTime === true
+                visible: fullView._hdrShowDateTime
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 color: Kirigami.Theme.textColor
@@ -338,6 +373,13 @@ Rectangle {
                 }
             }
 
+            // Spacer: keeps the buttons right-aligned when neither the location
+            // name nor the date/time label is there to take up the free width.
+            Item {
+                Layout.fillWidth: true
+                visible: !headerLocationLabel.visible && !headerDateTimeLabel.visible
+            }
+
             // ── Location switcher dropdown ────────────────────────────────
             ToolButton {
                 id: locationSwitcherBtn
@@ -346,12 +388,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 20
                 height: 20
-                visible: {
-                    try {
-                        var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-                        return Array.isArray(locs) && locs.length > 1;
-                    } catch (e) { return false; }
-                }
+                visible: fullView._hdrShowSwitcher
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Switch location")
                 onClicked: locationMenu.open()
@@ -398,7 +435,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 26
                 height: 26
-                visible: !fullView.inSystemTray && Plasmoid.formFactor !== 0  // hide on desktop (Planar) and in tray (Plasma's own pin is in native header)
+                visible: fullView._hdrShowPin  // never on desktop (Planar) or in tray (Plasma's own pin is in native header)
                 ToolTip.visible: hovered
                 ToolTip.text: checked ? i18n("Unpin widget") : i18n("Keep widget open")
                 onToggled: {
@@ -412,7 +449,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 22
                 height: 22
-                visible: !fullView.inSystemTray
+                visible: fullView._hdrShowDetect
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Detect / change location…")
                 onClicked: if (weatherRoot)
@@ -420,7 +457,7 @@ Rectangle {
             }
 
             Label {
-                visible: !fullView.inSystemTray && weatherRoot && weatherRoot.loading
+                visible: fullView._hdrShowUpdating
                 text: i18n("Updating…")
                 // #2
                 color: Kirigami.Theme.textColor
@@ -435,7 +472,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 26
                 height: 26
-                visible: !fullView.inSystemTray
+                visible: fullView._hdrShowRefresh
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Refresh")
                 onClicked: {
@@ -454,7 +491,7 @@ Rectangle {
 
         Item {
             Layout.preferredHeight: 8
-            visible: !fullView.isSimpleMode
+            visible: !fullView.isSimpleMode && fullView._headerHasContent
         }
 
         // ── Simple mode ───────────────────────────────────────────────

@@ -1582,6 +1582,11 @@ KCM.AbstractKCM {
     property string cfg_widgetLayoutMode: "advanced"  // "advanced" | "simple"
     property string cfg_widgetSimpleDetailsOrder: "humidity;pressure;preciprate;precipsum"
     property string cfg_widgetSimpleDetailsItemIcons: "humidity=1;pressure=1;preciprate=1;precipsum=1"
+    property bool cfg_headerShowLocation: true
+    property bool cfg_headerShowSwitchLocation: true
+    property bool cfg_headerShowPinButton: true
+    property bool cfg_headerShowDetectButton: true
+    property bool cfg_headerShowRefreshButton: true
     property bool cfg_headerShowDateTime: false
     property string cfg_headerDateFormat: "locale-long"
     property string cfg_headerTimeFormat: "locale"
@@ -1590,7 +1595,9 @@ KCM.AbstractKCM {
     property bool cfg_simpleShowForecastCompass: true
     property bool cfg_simpleShowStatsChips: true
     property string cfg_widgetDefaultTab: "details"  // "details" | "forecast" | "radar" | "history"
-    property string cfg_widgetVisibleTabs: "both"      // "both" | "details" | "forecast" | "radar" | "history" | "none"
+    // Semicolon-separated tab ids ("details;forecast;radar;history"), "none" = all hidden.
+    // Legacy values "both" (= all) and a single tab id are still understood.
+    property string cfg_widgetVisibleTabs: "details;forecast;radar;history"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
     property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set

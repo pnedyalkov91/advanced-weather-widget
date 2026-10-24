@@ -89,6 +89,36 @@ ColumnLayout {
         return 0;
     }
 
+    // ── Visible tabs ──────────────────────────────────────────────────────
+    // cfg_widgetVisibleTabs holds a semicolon-separated list of tab ids
+    // ("details;forecast;radar;history", or "none"). Older configs may still
+    // hold "both" (= all tabs) or a single tab id; those are read as-is and
+    // rewritten in the list form on the next toggle.
+    readonly property var tabIds: ["details", "forecast", "radar", "history"]
+
+    function visibleTabList() {
+        var v = configRoot.cfg_widgetVisibleTabs || "both";
+        if (v === "both")
+            return tabIds.slice();
+        if (v === "none")
+            return [];
+        return v.split(";").map(function (t) { return t.trim(); });
+    }
+    function isTabVisible(id) {
+        return visibleTabList().indexOf(id) >= 0;
+    }
+    function setTabVisible(id, on) {
+        var cur = visibleTabList();
+        var idx = cur.indexOf(id);
+        if (on && idx < 0)
+            cur.push(id);
+        else if (!on && idx >= 0)
+            cur.splice(idx, 1);
+        // Keep the canonical display order whatever order the switches were flipped in.
+        var out = tabIds.filter(function (t) { return cur.indexOf(t) >= 0; });
+        configRoot.cfg_widgetVisibleTabs = out.length === 0 ? "none" : out.join(";");
+    }
+
     // Refresh both icon theme combos (General > Weather icon theme, Details >
     // Icon theme) after the icon theme scope dialog (configAppearance.qml)
     // applied a theme from another tab, or was cancelled.
@@ -284,11 +314,34 @@ ColumnLayout {
                 }
             }
 
+            Label {
+                text: i18n("Footer:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            RowLayout {
+                Switch {
+                    id: footerSwitch
+                    checked: widgetTab.configRoot.cfg_showUpdateText
+                    onToggled: widgetTab.configRoot.cfg_showUpdateText = checked
+                }
+                Label {
+                    text: i18n("Show update time and provider")
+                    opacity: 0.8
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: footerSwitch.toggle()
+                    }
+                }
+            }
+
             // ═══════════════════════════════════════════════════════════════
-            // SECTION: Behavior
+            // SECTION: Tabs & Header behavior
             // ═══════════════════════════════════════════════════════════════
             SectionHeader {
-                title: i18n("Behavior")
+                title: i18n("Tabs & Header Behavior")
                 Layout.columnSpan: _form1.columns
                 Layout.topMargin: Kirigami.Units.largeSpacing
             }
@@ -319,12 +372,14 @@ ColumnLayout {
                     model: [
                         { text: i18n("Details"),  value: "details"  },
                         { text: i18n("Forecast"), value: "forecast" },
-                        { text: i18n("Radar"),    value: "radar"    }
+                        { text: i18n("Radar"),    value: "radar"    },
+                        { text: i18n("History"),  value: "history"  }
                     ]
                     Component.onCompleted: {
                         var v = widgetTab.configRoot.cfg_widgetDefaultTab || "details";
                         if (v === "forecast") currentIndex = 1;
                         else if (v === "radar") currentIndex = 2;
+                        else if (v === "history") currentIndex = 3;
                         else currentIndex = 0;
                     }
                     onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
@@ -338,54 +393,31 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
                 Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
             }
-            RowLayout {
+            Flow {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Layout.fillWidth: true
                 spacing: Kirigami.Units.largeSpacing
-                ComboBox {
-                    id: visibleTabsCombo
-                    Layout.preferredWidth: 200
-                    textRole: "text"
-                    model: [
-                        { text: i18n("All tabs"),      value: "both"     },
-                        { text: i18n("Details only"),  value: "details"  },
-                        { text: i18n("Forecast only"), value: "forecast" },
-                        { text: i18n("Radar only"),    value: "radar"    },
-                        { text: i18n("None"),          value: "none"     }
-                    ]
-                    Component.onCompleted: {
-                        var v = widgetTab.configRoot.cfg_widgetVisibleTabs || "both";
-                        if (v === "details") currentIndex = 1;
-                        else if (v === "forecast") currentIndex = 2;
-                        else if (v === "radar") currentIndex = 3;
-                        else if (v === "none") currentIndex = 4;
-                        else currentIndex = 0;
-                    }
-                    onActivated: widgetTab.configRoot.cfg_widgetVisibleTabs = model[currentIndex].value
-                }
-            }
-            Label {
-                text: i18n("Footer:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
                 Switch {
-                    id: footerSwitch
-                    checked: widgetTab.configRoot.cfg_showUpdateText
-                    onToggled: widgetTab.configRoot.cfg_showUpdateText = checked
+                    text: i18n("Details")
+                    checked: widgetTab.isTabVisible("details")
+                    onToggled: widgetTab.setTabVisible("details", checked)
                 }
-                Label {
-                    text: i18n("Show update time and provider")
-                    opacity: 0.8
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: footerSwitch.toggle()
-                    }
+                Switch {
+                    text: i18n("Forecast")
+                    checked: widgetTab.isTabVisible("forecast")
+                    onToggled: widgetTab.setTabVisible("forecast", checked)
+                }
+                Switch {
+                    text: i18n("Radar")
+                    checked: widgetTab.isTabVisible("radar")
+                    onToggled: widgetTab.setTabVisible("radar", checked)
+                }
+                Switch {
+                    text: i18n("History")
+                    checked: widgetTab.isTabVisible("history")
+                    onToggled: widgetTab.setTabVisible("history", checked)
                 }
             }
-
             Label {
                 text: i18n("Sunrise / Sunset:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
@@ -403,17 +435,45 @@ ColumnLayout {
             }
 
             Label {
-                text: i18n("Date and time in header:")
+                text: i18n("Header:")
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
             }
-            RowLayout {
+            Flow {
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.largeSpacing
                 Switch {
                     id: headerDateTimeSwitch
+                    text: i18n("Date and time")
                     checked: widgetTab.configRoot.cfg_headerShowDateTime
                     onToggled: widgetTab.configRoot.cfg_headerShowDateTime = checked
+                }
+                Switch {
+                    text: i18n("Location name")
+                    checked: widgetTab.configRoot.cfg_headerShowLocation
+                    onToggled: widgetTab.configRoot.cfg_headerShowLocation = checked
+                }
+                Switch {
+                    text: i18n("Switch location")
+                    checked: widgetTab.configRoot.cfg_headerShowSwitchLocation
+                    onToggled: widgetTab.configRoot.cfg_headerShowSwitchLocation = checked
+                }
+                Switch {
+                    text: i18n("Keep widget open")
+                    checked: widgetTab.configRoot.cfg_headerShowPinButton
+                    onToggled: widgetTab.configRoot.cfg_headerShowPinButton = checked
+                }
+                Switch {
+                    text: i18n("Detect location")
+                    checked: widgetTab.configRoot.cfg_headerShowDetectButton
+                    onToggled: widgetTab.configRoot.cfg_headerShowDetectButton = checked
+                }
+                Switch {
+                    text: i18n("Refresh")
+                    checked: widgetTab.configRoot.cfg_headerShowRefreshButton
+                    onToggled: widgetTab.configRoot.cfg_headerShowRefreshButton = checked
                 }
             }
 

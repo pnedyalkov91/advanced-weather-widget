@@ -174,7 +174,10 @@
     <entry name="widgetMinHeightMode" type="String"><default>auto</default></entry>
     <entry name="widgetMinHeight"     type="Int"><default>750</default><min>200</min><max>2000</max></entry>
     <entry name="widgetDefaultTab" type="String"><default>details</default></entry>
-    <entry name="widgetVisibleTabs" type="String"><default>both</default></entry>
+    <!-- Visible popup tabs: semicolon-separated list of details;forecast;radar;history
+         ("none" = all hidden). The legacy values "both" (= all tabs) and a single
+         tab id ("details", "forecast", ...) are still understood. -->
+    <entry name="widgetVisibleTabs" type="String"><default>details;forecast;radar;history</default></entry>
     <!-- History tab (Open-Meteo archive): last chosen period. historyPeriod is one of
          yesterday|last7|last30|last90|thisMonth|lastMonth|thisYear|single|custom;
          the two dates (YYYY-MM-DD) are only used by "single" and "custom". -->
@@ -279,7 +282,12 @@
     <entry name="dualTempInTooltip"  type="Bool"><default>true</default></entry>
     <entry name="dualTempSwapOrder"  type="Bool"><default>false</default></entry>
 
-    <!-- ── Widget - header date/time ─────────────────────────────────── -->
+    <!-- ── Widget - header ────────────────────────────────────────────── -->
+    <entry name="headerShowLocation"       type="Bool"><default>true</default></entry>
+    <entry name="headerShowSwitchLocation" type="Bool"><default>true</default></entry>
+    <entry name="headerShowPinButton"      type="Bool"><default>true</default></entry>
+    <entry name="headerShowDetectButton"   type="Bool"><default>true</default></entry>
+    <entry name="headerShowRefreshButton"  type="Bool"><default>true</default></entry>
     <entry name="headerShowDateTime" type="Bool"><default>false</default></entry>
     <entry name="headerDateFormat"   type="String"><default>locale-long</default></entry>
     <entry name="headerTimeFormat"   type="String"><default>locale</default></entry>
