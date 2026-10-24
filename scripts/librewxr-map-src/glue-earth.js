@@ -1,17 +1,20 @@
 // ==========================================================================
 // Glue script 2e: the Earth as a whole on the MapLibre map. Where the Sun is
-// overhead, the night and its three twilights as areas in longitude and
-// latitude (the map projects them itself, flat or globe), and the zoom at
-// which the whole Earth fits in the map. Loadable under Node for tests.
+// overhead, the night as areas in longitude and latitude, darker degree by
+// degree through the twilight (the map projects them itself, flat or globe),
+// and the zoom at which the whole Earth fits in the map. Loadable under Node
+// for tests.
 // ==========================================================================
 var WidgetEarth = (function () {
   'use strict';
 
   var RAD = Math.PI / 180, DEG = 180 / Math.PI;
 
-  /** Sun altitudes (degrees) bounding the areas: night, then civil,
-      nautical and astronomical twilight ending. */
-  var BANDS = [0, -6, -12, -18];
+  /** Sun altitudes (degrees) bounding the areas: every degree from the
+      horizon to the end of the astronomical twilight, 18 below, so the night
+      fades in instead of falling in steps. */
+  var BANDS = [];
+  for (var b = 0; b >= -18; b--) BANDS.push(b);
 
   /** Share of the map's smaller side the globe takes at the widest zoom. */
   var GLOBE_FILL = 0.94;
@@ -94,9 +97,9 @@ var WidgetEarth = (function () {
     return ring;
   }
 
-  /** The night and its twilights for a Sun position: one polygon per
+  /** The night and its twilight for a Sun position: one polygon per
       altitude of BANDS, each holding the next, deepest last. Drawn one over
-      the other with the same light veil, they darken step by step. */
+      the other with the same light veil, they darken degree by degree. */
   function nightGeoJSON(sun, step) {
     return {
       type: 'FeatureCollection',
@@ -110,17 +113,21 @@ var WidgetEarth = (function () {
     };
   }
 
-  /** Where the Sun is above the horizon: the cap of radius 90 around the
-      subsolar point, that is where the Sun of the antipode is below it. */
+  /** The day for a Sun position, fading in like the night: one polygon per
+      degree from the horizon to 18 above, each holding the next. Where the
+      Sun stands higher than h is where the Sun of the antipode stands lower
+      than -h. */
   function dayGeoJSON(sun, step) {
     var antipode = { lat: -sun.lat, lon: wrap180(sun.lon + 180) };
     return {
       type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        properties: { altitude: 0 },
-        geometry: { type: 'Polygon', coordinates: [capRing(antipode, 0, step || 1)] }
-      }]
+      features: BANDS.map(function (h) {
+        return {
+          type: 'Feature',
+          properties: { altitude: Math.abs(h) },
+          geometry: { type: 'Polygon', coordinates: [capRing(antipode, h, step || 1)] }
+        };
+      })
     };
   }
 

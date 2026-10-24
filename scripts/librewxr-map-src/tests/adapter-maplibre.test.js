@@ -22,7 +22,7 @@ class FakeMap {
   fire(e, data) { (this.handlers[e] || []).slice().forEach((f) => f(data || {})); }
   addControl() {}
   getSource(id) { return this.sources[id]; }
-  addSource(id, s) { this.sources[id] = s; }
+  addSource(id, s) { this.sources[id] = Object.assign({ setData(d) { this.data = d; } }, s); }
   removeSource(id) { delete this.sources[id]; }
   getLayer(id) { return this.layers.find((l) => l.id === id); }
   addLayer(l) { this.layers.push(Object.assign({ layout: {} }, l)); }
@@ -41,7 +41,7 @@ class FakeMap {
     this.loadedStyle = opts && opts.transformStyle ? opts.transformStyle(this.getStyle(), style) : style;
   }
   setSky() {}
-  setLight() {}
+  setLight(l) { this.light = l; }
   getContainer() { return { clientWidth: 800, clientHeight: 330 }; }
   getMinZoom() { return 0; }
   getMaxZoom() { return 12; }
@@ -111,4 +111,34 @@ test('a base map change on the globe loads the new style already on the globe', 
   adapter.setBasemap('light');
   assert.equal(map.loadedStyle.projection.type, 'globe');
   assert.ok(map.loadedStyle.sources['lv-base'], 'the base map is still there');
+});
+
+test('day and night on: a night in fine steps, as deep as before; the glow follows the Sun', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  const opacity = map.getLayer('lv-night').paint['fill-opacity'];
+  const steps = map.getSource('lv-night').data.features.length;
+  assert.ok(steps >= 10, steps + ' steps');
+  // Deep night: as dark as the four bands of 0.13 it replaces.
+  const depth = 1 - Math.pow(1 - opacity, steps);
+  assert.ok(Math.abs(depth - (1 - Math.pow(0.87, 4))) < 0.01, 'deep night ' + depth);
+  assert.equal(map.light.anchor, 'map');
+});
+
+test('day and night off: no night, and the glow no longer follows the Sun', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  adapter.setDayNight(false);
+  assert.equal(map.getLayer('lv-night'), undefined);
+  assert.equal(map.light.anchor, 'viewport');
+});
+
+test('day and night on a dark map: the day brightens in fine steps, as much as before', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  const opacity = map.getLayer('lv-day').paint['fill-opacity'];
+  const steps = map.getSource('lv-day').data.features.length;
+  assert.ok(steps >= 10, steps + ' steps');
+  const depth = 1 - Math.pow(1 - opacity, steps);
+  assert.ok(Math.abs(depth - 0.07) < 0.005, 'full day ' + depth);
 });

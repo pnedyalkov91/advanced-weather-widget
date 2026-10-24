@@ -43,7 +43,7 @@ function inRing(ring, lat, lon) {
   return false;
 }
 
-test('nightGeoJSON: four nested areas, sun 0, 6, 12 and 18 degrees below the horizon', () => {
+test('nightGeoJSON: nested areas every degree, from the horizon to 18 degrees below', () => {
   const suns = [
     { lat: 23.4, lon: -60 },     // June solstice: the north pole in daylight
     { lat: -23.4, lon: 120 },    // December solstice
@@ -53,7 +53,7 @@ test('nightGeoJSON: four nested areas, sun 0, 6, 12 and 18 degrees below the hor
   for (const sun of suns) {
     const fc = E.nightGeoJSON(sun);
     assert.equal(fc.type, 'FeatureCollection');
-    assert.deepEqual(fc.features.map((f) => f.properties.altitude), [0, -6, -12, -18]);
+    assert.deepEqual(fc.features.map((f) => f.properties.altitude), [0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18]);
     fc.features.forEach((f) => {
       const ring = f.geometry.coordinates[0];
       assert.deepEqual(ring[0], ring[ring.length - 1], 'closed ring');
@@ -95,19 +95,21 @@ test('wholeEarthZoom: no size, no zoom', () => {
   assert.equal(E.wholeEarthZoom('flat', 800, 0), null);
 });
 
-test('dayGeoJSON: the area where the Sun is above the horizon', () => {
+test('dayGeoJSON: nested areas every degree, from the horizon to 18 degrees above', () => {
   for (const sun of [{ lat: 23.4, lon: -60 }, { lat: -11.5, lon: -150 }, { lat: 0.2, lon: 179 }]) {
     const fc = E.dayGeoJSON(sun);
-    assert.equal(fc.features.length, 1);
-    const ring = fc.features[0].geometry.coordinates[0];
-    assert.deepEqual(ring[0], ring[ring.length - 1], 'closed ring');
-    for (let lat = -84; lat <= 84; lat += 6) {
-      for (let lon = -180; lon < 180; lon += 6) {
-        const alt = E.sunAltitude(sun, lat, lon);
-        if (Math.abs(alt) < 1.5) continue;
-        assert.equal(inRing(ring, lat, lon), alt > 0, `sun ${sun.lat},${sun.lon}: point ${lat},${lon} (sun at ${alt.toFixed(1)})`);
+    assert.deepEqual(fc.features.map((f) => f.properties.altitude), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    fc.features.forEach((f) => {
+      const ring = f.geometry.coordinates[0], h = f.properties.altitude;
+      assert.deepEqual(ring[0], ring[ring.length - 1], 'closed ring');
+      for (let lat = -84; lat <= 84; lat += 6) {
+        for (let lon = -180; lon < 180; lon += 6) {
+          const alt = E.sunAltitude(sun, lat, lon);
+          if (Math.abs(alt - h) < 1.5) continue;
+          assert.equal(inRing(ring, lat, lon), alt > h, `sun ${sun.lat},${sun.lon} altitude ${h}: point ${lat},${lon} (sun at ${alt.toFixed(1)})`);
+        }
       }
-    }
+    });
   }
 });
 

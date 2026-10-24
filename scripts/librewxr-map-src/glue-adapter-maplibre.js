@@ -75,12 +75,18 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     return undefined;
   }
 
-  // Night and twilights (glue-earth.js): four nested areas under the same
-  // light veil, so the shade deepens band by band; on a dark map the day
-  // gets a light veil of its own. Right over the base map, under the
-  // satellite, the alerts and the radar. The map's light stands at the Sun,
-  // so the globe's atmosphere glows over the day side. Moved every minute.
-  var NIGHT_VEIL = 0.13, DAY_VEIL = 0.07;
+  // Day and night (glue-earth.js): nested areas, one per degree of
+  // twilight, under the same light veil, so the night fades in like the
+  // glow of the globe's atmosphere; deep night as dark as before. On a dark
+  // map the day gets a light veil of its own, fading in the same way. Right
+  // over the base map, under the satellite, the alerts and the radar. The
+  // map's light stands at the Sun, so the atmosphere glows over the day side;
+  // with day and night off it comes from the viewer and the globe glows
+  // evenly. Moved every minute.
+  var NIGHT_DEPTH = 1 - Math.pow(0.87, 4);
+  var NIGHT_VEIL = 1 - Math.pow(1 - NIGHT_DEPTH, 1 / WidgetEarth.BANDS.length);
+  var DAY_VEIL = 1 - Math.pow(1 - 0.07, 1 / WidgetEarth.BANDS.length);
+  var EVEN_LIGHT = { anchor: 'viewport', position: [1, 0, 0] };
   var dayNight = DAYNIGHT_INIT;
   var sunTimer = null;
   function addVeil(id, data, color, opacity) {
@@ -105,7 +111,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   }
   function moveSun() {
     var sun = WidgetEarth.subsolarPoint(new Date());
-    map.setLight({ anchor: 'map', position: WidgetEarth.sunLightPosition(sun) });
+    map.setLight(dayNight ? { anchor: 'map', position: WidgetEarth.sunLightPosition(sun) } : EVEN_LIGHT);
     var night = map.getSource('lv-night'), day = map.getSource('lv-day');
     if (night) night.setData(WidgetEarth.nightGeoJSON(sun));
     if (day) day.setData(WidgetEarth.dayGeoJSON(sun));

@@ -232,7 +232,7 @@ if (projBtn) {
   renderProjBtn();
 }
 
-// === DAY AND NIGHT (MapLibre page: night and twilights on the map) ===
+// === DAY AND NIGHT (MapLibre page: the night fading in on the map) ===
 // Same pattern as the globe button: lit while on, reported to QML through
 // the title ("night:1" or "night:0"), set by QML through window.setDayNight().
 var nightBtn = document.getElementById('lv-night');
