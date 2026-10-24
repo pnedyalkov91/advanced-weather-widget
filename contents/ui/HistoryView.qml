@@ -63,7 +63,10 @@ Item {
     // Newest selectable day; refreshed on every load so a popup left open
     // across midnight does not keep requesting the old range.
     property string _latest: H.latestAvailable()
-    readonly property var _period: H.resolvePeriod(preset, customStart, customEnd, _latest)
+    // How many steps the "<" arrow has moved a preset back in time (0 = the
+    // preset as is). "single" / "custom" are stepped by editing their dates.
+    property int _offset: 0
+    readonly property var _period: H.resolvePeriod(preset, customStart, customEnd, _latest, _offset)
 
     // ── Data state ────────────────────────────────────────────────────────
     property string status: "idle"          // idle | loading | ok | error
@@ -275,6 +278,7 @@ Item {
             customStart = p.start;
             customEnd = value === "single" ? p.start : p.end;
         }
+        _offset = 0;
         if (value === "custom" && !H.isIso(customEnd))
             customEnd = _latest;
         preset = value;
@@ -295,6 +299,81 @@ Item {
         _reloadTimer.restart();
     }
 
+    // ── Period navigation (< and > beside the preset box) ─────────────────
+    readonly property bool _isPicked: preset === "single" || preset === "custom"
+    readonly property bool _canGoOlder: _period.start > H.EARLIEST_DATE
+    // Nothing is newer than the latest complete day (yesterday).
+    readonly property bool _canGoNewer: _isPicked ? _period.end < _latest : _offset > 0
+
+    /** dir < 0: one period older, dir > 0: one period newer. */
+    function _navigate(dir) {
+        if (dir < 0 ? !_canGoOlder : !_canGoNewer)
+            return;
+        if (_isPicked) {
+            var r = H.shiftRange(_period.start, _period.end, dir, _latest);
+            customStart = r.start;
+            customEnd = r.end;
+            _persist();
+        } else {
+            _offset = Math.max(0, _offset - dir);
+        }
+        _reloadTimer.restart();
+    }
+
+    function _stepTip(dir) {
+        var day = preset === "yesterday" || preset === "single";
+        if (dir < 0)
+            return day ? i18n("Previous day") : i18n("Previous period");
+        return day ? i18n("Next day") : i18n("Next period");
+    }
+
+    // ── Chart zoom ────────────────────────────────────────────────────────
+    // The chart always shows days[_visibleStart .. _visibleStart + _visibleCount).
+    // _zoomCount = 0 means "everything".
+    readonly property int _minZoomDays: 3
+    property int _zoomStart: 0
+    property int _zoomCount: 0
+    readonly property int _visibleCount: (_zoomCount > 0 && _zoomCount < days.length) ? _zoomCount : days.length
+    readonly property int _visibleStart: Math.max(0, Math.min(_zoomStart, days.length - _visibleCount))
+    readonly property bool _zoomed: _visibleCount < days.length
+    readonly property bool _canZoomIn: _visibleCount > _minZoomDays
+    readonly property var _chartDays: _zoomed ? days.slice(_visibleStart, _visibleStart + _visibleCount) : days
+
+    function _resetZoom() {
+        _zoomStart = 0;
+        _zoomCount = 0;
+    }
+
+    /** factor < 1 zooms in, > 1 zooms out; anchor (0..1) is the point of the
+     *  chart that stays put (the buttons use the middle). */
+    function _zoomBy(factor, anchor) {
+        var n = days.length;
+        if (n <= _minZoomDays)
+            return;
+        var cur = _visibleCount;
+        var a = (typeof anchor === "number") ? Math.max(0, Math.min(1, anchor)) : 0.5;
+        var next = Math.round(cur * factor);
+        if (factor < 1 && next >= cur)
+            next = cur - 1;                  // always make progress
+        else if (factor > 1 && next <= cur)
+            next = cur + 1;
+        next = Math.max(_minZoomDays, Math.min(n, next));
+        if (next === cur)
+            return;
+        var focus = _visibleStart + a * cur;
+        _zoomStart = Math.max(0, Math.min(n - next, Math.round(focus - a * next)));
+        _zoomCount = next >= n ? 0 : next;
+    }
+
+    /** Moves the zoomed window by whole days (+ = later). */
+    function _panBy(deltaDays) {
+        if (!_zoomed)
+            return;
+        _zoomStart = Math.max(0, Math.min(days.length - _visibleCount, _visibleStart + deltaDays));
+    }
+
+    onDaysChanged: _resetZoom()
+
     // ── Loading ───────────────────────────────────────────────────────────
     function _abortPending() {
         if (_handle) {
@@ -311,7 +390,7 @@ Item {
             status = "idle";
             return;
         }
-        var p = H.resolvePeriod(preset, customStart, customEnd, _latest);
+        var p = H.resolvePeriod(preset, customStart, customEnd, _latest, _offset);
         var lat = weatherRoot._locLat();
         var lon = weatherRoot._locLon();
         var key = lat + "|" + lon + "|" + p.start + "|" + p.end;
@@ -394,10 +473,21 @@ Item {
         anchors.fill: parent
         spacing: 8
 
-        // ── Period controls ───────────────────────────────────────────
+        // ── Period controls:  <  [ preset ▾ ]  > ──────────────────────
         RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 4
+
+            ToolButton {
+                id: olderButton
+                icon.name: "go-previous"
+                display: AbstractButton.IconOnly
+                enabled: root._canGoOlder
+                onClicked: root._navigate(-1)
+                ToolTip.visible: hovered
+                ToolTip.text: root._stepTip(-1)
+                Accessible.name: root._stepTip(-1)
+            }
 
             ComboBox {
                 id: presetBox
@@ -417,9 +507,26 @@ Item {
                 }
             }
 
+            ToolButton {
+                id: newerButton
+                icon.name: "go-next"
+                display: AbstractButton.IconOnly
+                enabled: root._canGoNewer
+                onClicked: root._navigate(1)
+                ToolTip.visible: hovered
+                ToolTip.text: root._stepTip(1)
+                Accessible.name: root._stepTip(1)
+            }
+        }
+
+        // ── Date pickers (single day / custom range only) ─────────────
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            visible: root._isPicked
+            spacing: 6
+
             Button {
                 id: startButton
-                visible: root.preset === "single" || root.preset === "custom"
                 icon.name: "view-calendar"
                 text: root._date(root._period.start)
                 font: root._f(11, false)
@@ -449,30 +556,53 @@ Item {
                     datePopup.open();
                 }
             }
-
-            Item { Layout.fillWidth: true }
         }
 
-        // ── Range caption / notes ─────────────────────────────────────
-        Label {
+        // ── Location name + date range, centred under the box ─────────
+        ColumnLayout {
             Layout.fillWidth: true
             visible: root._hasLocation
-            wrapMode: Text.WordWrap
-            color: Kirigami.Theme.textColor
-            opacity: 0.7
-            font: root._f(9, false)
-            text: {
-                var p = root._period;
-                var place = root.weatherRoot ? root.weatherRoot._locName() : "";
-                var range = p.start === p.end
-                    ? root._day(p.start, false)
-                    : root._day(p.start, false) + " – " + root._day(p.end, false);
-                var t = place.length > 0 ? place + " · " + range : range;
-                if (p.clamped)
-                    t += " · " + i18n("Range limited to %1 days", H.MAX_RANGE_DAYS);
-                if (root.status === "ok" && root.missingDays > 0)
-                    t += " · " + i18np("%1 day has no data yet", "%1 days have no data yet", root.missingDays);
-                return t;
+            spacing: 0
+
+            Label {
+                Layout.fillWidth: true
+                visible: text.length > 0
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                color: Kirigami.Theme.textColor
+                font: root._f(12, true)
+                text: root.weatherRoot ? root.weatherRoot._locName() : ""
+            }
+            Label {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                color: Kirigami.Theme.textColor
+                opacity: 0.7
+                font: root._f(10, false)
+                text: {
+                    var p = root._period;
+                    return p.start === p.end
+                        ? root._day(p.start, false)
+                        : root._day(p.start, false) + " – " + root._day(p.end, false);
+                }
+            }
+            Label {
+                Layout.fillWidth: true
+                visible: text.length > 0
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                color: Kirigami.Theme.textColor
+                opacity: 0.55
+                font: root._f(9, false)
+                text: {
+                    var notes = [];
+                    if (root._period.clamped)
+                        notes.push(i18n("Range limited to %1 days", H.MAX_RANGE_DAYS));
+                    if (root.status === "ok" && root.missingDays > 0)
+                        notes.push(i18np("%1 day has no data yet", "%1 days have no data yet", root.missingDays));
+                    return notes.join(" · ");
+                }
             }
         }
 
@@ -618,6 +748,53 @@ Item {
                             }
                         }
 
+                        // Zoom toolbar: the range shown while zoomed, then - / + / restore.
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 4
+                            visible: root.days.length > root._minZoomDays
+                            spacing: 2
+
+                            Label {
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                color: Kirigami.Theme.textColor
+                                opacity: 0.7
+                                font: root._f(9, false)
+                                text: root._zoomed
+                                    ? root._date(root._chartDays[0].dateStr) + " – "
+                                        + root._date(root._chartDays[root._chartDays.length - 1].dateStr)
+                                    : ""
+                            }
+                            ToolButton {
+                                icon.name: "zoom-out"
+                                display: AbstractButton.IconOnly
+                                enabled: root._zoomed
+                                onClicked: root._zoomBy(2, 0.5)
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Zoom out")
+                                Accessible.name: i18n("Zoom out")
+                            }
+                            ToolButton {
+                                icon.name: "zoom-in"
+                                display: AbstractButton.IconOnly
+                                enabled: root._canZoomIn
+                                onClicked: root._zoomBy(0.5, 0.5)
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Zoom in")
+                                Accessible.name: i18n("Zoom in")
+                            }
+                            ToolButton {
+                                icon.name: "zoom-original"
+                                display: AbstractButton.IconOnly
+                                enabled: root._zoomed
+                                onClicked: root._resetZoom()
+                                ToolTip.visible: hovered
+                                ToolTip.text: i18n("Restore")
+                                Accessible.name: i18n("Restore")
+                            }
+                        }
+
                         // Chart: Qt Graphs (KDE weather applet style), Canvas fallback.
                         Loader {
                             id: chartLoader
@@ -628,7 +805,8 @@ Item {
                                                    : "components/HistoryChartCanvas.qml"
                             onLoaded: {
                                 item.view = root;
-                                item.days = Qt.binding(function () { return root.days; });
+                                item.days = Qt.binding(function () { return root._chartDays; });
+                                item.canPan = Qt.binding(function () { return root._zoomed; });
                             }
                             onStatusChanged: {
                                 if (status === Loader.Error && root._graphsOk) {
@@ -636,6 +814,13 @@ Item {
                                     root._graphsOk = false;
                                 }
                             }
+                        }
+
+                        Connections {
+                            target: chartLoader.item
+                            ignoreUnknownSignals: true
+                            function onPanRequested(deltaDays) { root._panBy(deltaDays); }
+                            function onZoomRequested(factor, anchor) { root._zoomBy(factor, anchor); }
                         }
 
                         Label {

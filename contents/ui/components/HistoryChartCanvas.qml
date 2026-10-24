@@ -21,7 +21,9 @@
  * Plain Canvas drawing, used only when the Qt Graphs QML module is not
  * available (or too old) for HistoryChartGraphs.qml. Same interface:
  *   view  the HistoryView - provides _temp()/_precip()/_day()/_date()
- *   days  array of day objects from openMeteoHistory.js
+ *   days  array of day objects from openMeteoHistory.js (the visible slice)
+ *   canPan / panRequested(days) / zoomRequested(factor, anchor): see
+ *   HistoryChartGraphs.qml - drag pans while zoomed in, Ctrl+wheel zooms.
  */
 import QtQuick
 import QtQuick.Controls
@@ -34,6 +36,12 @@ ColumnLayout {
     property var view: null
     property var days: []
     property int hoverIndex: -1
+    property bool canPan: false
+
+    signal panRequested(int days)
+    signal zoomRequested(real factor, real anchor)
+
+    onDaysChanged: hoverIndex = -1
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -182,6 +190,7 @@ ColumnLayout {
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
+            cursorShape: root.canPan ? Qt.OpenHandCursor : Qt.ArrowCursor
             acceptedButtons: Qt.NoButton
             onPositionChanged: function (mouse) {
                 var n = root.days.length;
@@ -190,6 +199,38 @@ ColumnLayout {
                 root.hoverIndex = Math.max(0, Math.min(n - 1, Math.floor(mouse.x / width * n)));
             }
             onExited: root.hoverIndex = -1
+        }
+
+        DragHandler {
+            enabled: root.canPan
+            target: null
+            xAxis.enabled: true
+            yAxis.enabled: false
+            property real _last: 0
+            property real _acc: 0
+            onActiveChanged: {
+                _last = 0;
+                _acc = 0;
+            }
+            onTranslationChanged: {
+                if (!active)
+                    return;
+                _acc += translation.x - _last;
+                _last = translation.x;
+                var slot = chart.width / Math.max(1, root.days.length);
+                var steps = Math.trunc(_acc / slot);
+                if (steps !== 0) {
+                    _acc -= steps * slot;
+                    root.panRequested(-steps);
+                }
+            }
+        }
+        WheelHandler {
+            acceptedModifiers: Qt.ControlModifier
+            onWheel: function (event) {
+                var a = Math.max(0, Math.min(1, point.position.x / chart.width));
+                root.zoomRequested(event.angleDelta.y > 0 ? 0.7 : 1 / 0.7, a);
+            }
         }
     }
 

@@ -101,31 +101,49 @@ function clampIso(iso, lo, hi) {
  *         thisYear | single | custom
  * startIso/endIso are only used by "single" (start) and "custom".
  * latestIso is the newest selectable day (see latestAvailable()).
+ * offset (optional, default 0) pages a preset back in time, one step per unit:
+ *   yesterday          1 day per step        (yesterday, 2 days ago, 3 days ago …)
+ *   last7/30/90        one whole window      (the 7/30/90 days before the last window)
+ *   thisMonth          one calendar month    (a full month once offset > 0)
+ *   lastMonth          one calendar month
+ *   thisYear           one calendar year     (a full year once offset > 0)
+ * "single" and "custom" ignore it - those are stepped with shiftRange().
  */
-function resolvePeriod(preset, startIso, endIso, latestIso) {
+function resolvePeriod(preset, startIso, endIso, latestIso, offset) {
     var latest = latestIso || latestAvailable();
+    var off = (typeof offset === "number" && offset > 0) ? Math.floor(offset) : 0;
     var start = latest;
     var end = latest;
     var now = parseIso(latest);
+    var y = now.getFullYear();
+    var m = now.getMonth();
 
     switch (preset) {
     case "yesterday":
+        end = addDays(latest, -off);
+        start = end;
         break;
     case "last7":
-        start = addDays(latest, -6);
+        end = addDays(latest, -7 * off);
+        start = addDays(end, -6);
         break;
     case "last90":
-        start = addDays(latest, -89);
+        end = addDays(latest, -90 * off);
+        start = addDays(end, -89);
         break;
     case "thisMonth":
-        start = toIso(new Date(now.getFullYear(), now.getMonth(), 1));
+        start = toIso(new Date(y, m - off, 1));
+        if (off > 0)
+            end = toIso(new Date(y, m - off + 1, 0));
         break;
     case "lastMonth":
-        start = toIso(new Date(now.getFullYear(), now.getMonth() - 1, 1));
-        end = toIso(new Date(now.getFullYear(), now.getMonth(), 0));
+        start = toIso(new Date(y, m - 1 - off, 1));
+        end = toIso(new Date(y, m - off, 0));
         break;
     case "thisYear":
-        start = toIso(new Date(now.getFullYear(), 0, 1));
+        start = toIso(new Date(y - off, 0, 1));
+        if (off > 0)
+            end = toIso(new Date(y - off, 11, 31));
         break;
     case "single":
         start = isIso(startIso) ? startIso : latest;
@@ -137,7 +155,8 @@ function resolvePeriod(preset, startIso, endIso, latestIso) {
         break;
     case "last30":
     default:
-        start = addDays(latest, -29);
+        end = addDays(latest, -30 * off);
+        start = addDays(end, -29);
         break;
     }
 
@@ -152,6 +171,36 @@ function resolvePeriod(preset, startIso, endIso, latestIso) {
         clamped = true;
     }
     return { start: start, end: end, clamped: clamped };
+}
+
+/**
+ * Moves a picked date range (the "single" / "custom" presets) one range-length
+ * older (dir < 0) or newer (dir > 0), keeping its length, and never past
+ * [EARLIEST_DATE, latestIso]. A single day therefore steps one day at a time.
+ * Returns { start, end }.
+ */
+function shiftRange(startIso, endIso, dir, latestIso) {
+    var latest = latestIso || latestAvailable();
+    var start = isIso(startIso) ? startIso : latest;
+    var end = isIso(endIso) ? endIso : start;
+    if (start > end) {
+        var t = start;
+        start = end;
+        end = t;
+    }
+    var span = daysBetween(start, end) + 1;
+    var step = dir < 0 ? -span : span;
+    start = addDays(start, step);
+    end = addDays(end, step);
+    if (end > latest) {
+        end = latest;
+        start = addDays(end, -(span - 1));
+    }
+    if (start < EARLIEST_DATE) {
+        start = EARLIEST_DATE;
+        end = addDays(start, span - 1);
+    }
+    return { start: start, end: end };
 }
 
 // ── Value helpers ─────────────────────────────────────────────────────────

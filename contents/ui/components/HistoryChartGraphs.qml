@@ -34,7 +34,12 @@
  *
  * Interface (shared with HistoryChartCanvas.qml):
  *   view  the HistoryView - provides _temp()/_precip()/_day()/_date()/_isNum()
- *   days  array of day objects from openMeteoHistory.js
+ *   days  array of day objects from openMeteoHistory.js (the visible slice)
+ *   canPan  true while zoomed in: dragging then emits panRequested()
+ *   panRequested(days)            whole days to move the window (+ = later)
+ *   zoomRequested(factor, anchor) Ctrl+wheel; factor < 1 zooms in, anchor is
+ *                                 the pointer position across the plot (0..1)
+ * The chart only reports gestures; HistoryView owns the zoom state.
  */
 import QtQuick
 import QtQuick.Controls
@@ -47,6 +52,10 @@ ColumnLayout {
 
     property var view: null
     property var days: []
+    property bool canPan: false
+
+    signal panRequested(int days)
+    signal zoomRequested(real factor, real anchor)
 
     // Index of the day under the pointer, -1 when none.
     property int hoverIndex: -1
@@ -298,7 +307,10 @@ ColumnLayout {
         }
         Connections {
             target: root
-            function onDaysChanged() { area.rebuild(); }
+            function onDaysChanged() {
+                root.hoverIndex = -1;
+                area.rebuild();
+            }
         }
         Component.onCompleted: rebuild()
 
@@ -471,6 +483,7 @@ ColumnLayout {
         // ── hover tracking over the plot columns ──────────────────────
         HoverHandler {
             id: hoverHandler
+            cursorShape: root.canPan ? Qt.OpenHandCursor : Qt.ArrowCursor
             onPointChanged: {
                 if (!hovered || root.dayCount < 1) {
                     root.hoverIndex = -1;
@@ -487,6 +500,42 @@ ColumnLayout {
             onHoveredChanged: {
                 if (!hovered)
                     root.hoverIndex = -1;
+            }
+        }
+
+        // ── zoom / pan gestures ───────────────────────────────────────
+        // Drag sideways while zoomed in to move the window; Ctrl+wheel zooms
+        // around the pointer. Plain wheel still scrolls the day list.
+        DragHandler {
+            id: panDrag
+            enabled: root.canPan
+            target: null
+            xAxis.enabled: true
+            yAxis.enabled: false
+            property real _last: 0
+            property real _acc: 0
+            onActiveChanged: {
+                _last = 0;
+                _acc = 0;
+            }
+            onTranslationChanged: {
+                if (!active)
+                    return;
+                _acc += translation.x - _last;
+                _last = translation.x;
+                var slot = area.pw / Math.max(1, root.dayCount);
+                var steps = Math.trunc(_acc / slot);
+                if (steps !== 0) {
+                    _acc -= steps * slot;
+                    root.panRequested(-steps);
+                }
+            }
+        }
+        WheelHandler {
+            acceptedModifiers: Qt.ControlModifier
+            onWheel: function (event) {
+                var a = Math.max(0, Math.min(1, (point.position.x - area.px) / area.pw));
+                root.zoomRequested(event.angleDelta.y > 0 ? 0.7 : 1 / 0.7, a);
             }
         }
     }
