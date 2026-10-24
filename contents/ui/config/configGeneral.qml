@@ -622,7 +622,7 @@ KCM.AbstractKCM {
             text: i18n("Radar")
         }
         PlasmaComponents.TabButton {
-            icon.name: "task-attention"
+            icon.name: "dialog-warning"
             text: i18n("Weather Alerts")
         }
     }
