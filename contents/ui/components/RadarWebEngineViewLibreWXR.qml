@@ -663,21 +663,17 @@ Item {
                 checked: radarRoot.optionsExpanded
                 onToggled: Plasmoid.configuration.librewxrOptionsExpanded = checked
             }
-        }
 
-        // -- Options panel: smoothing + snow mask (radar modes) + tile format + tile size --
-        // Revealed by the Options toggle above; smoothing/snow only affect radar
-        // tiles (see librewxr-map.html's buildTileUrl - the satellite branch
-        // never reads state.smooth/state.snow), so those two switches hide for
-        // the Satellite layer the same way the color scheme combo does above.
-        // Format and tile size apply to both radar and satellite tiles.
-        Flow {
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing * 2
-            visible: radarRoot.optionsExpanded
-
+            // -- Options: tile format + tile size + smoothing + snow mask (radar modes) --
+            // On the same row, revealed by the Options toggle; smoothing/snow only
+            // affect radar tiles (see librewxr-map.html's buildTileUrl - the
+            // satellite branch never reads state.smooth/state.snow), so those two
+            // switches hide for the Satellite layer the same way the color scheme
+            // combo does above. Format and tile size apply to both radar and
+            // satellite tiles.
             PlasmaComponents.ComboBox {
                 id: formatCombo
+                visible: radarRoot.optionsExpanded
                 implicitHeight: 24
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 12
                 model: radarRoot.tileFormats
@@ -701,6 +697,7 @@ Item {
 
             PlasmaComponents.ComboBox {
                 id: tileSizeCombo
+                visible: radarRoot.optionsExpanded
                 implicitHeight: 24
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 9
                 model: radarRoot.tileSizes
@@ -723,7 +720,7 @@ Item {
             }
 
             MapToggle {
-                visible: radarRoot.activeLayer !== "satellite"
+                visible: radarRoot.optionsExpanded && radarRoot.activeLayer !== "satellite"
                 icon.name: "blur-symbolic"
                 title: i18n("Smoothing")
                 tip: i18n("Smooth radar tile edges")
@@ -735,7 +732,7 @@ Item {
             }
 
             MapToggle {
-                visible: radarRoot.activeLayer !== "satellite"
+                visible: radarRoot.optionsExpanded && radarRoot.activeLayer !== "satellite"
                 iconInfo: radarRoot.barIcon("snowflake-cold")
                 title: i18n("Snow mask")
                 tip: i18n("Highlight snow and wintry precipitation with a distinct color")
@@ -747,7 +744,7 @@ Item {
             }
 
             MapToggle {
-                visible: radarRoot.windOn
+                visible: radarRoot.optionsExpanded && radarRoot.windOn
                 iconInfo: radarRoot.barIcon("strong-wind")
                 badge: "\uF058"
                 badgeFamily: radarRoot.wiFontFamily
