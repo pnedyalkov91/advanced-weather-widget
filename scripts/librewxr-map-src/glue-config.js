@@ -87,6 +87,9 @@ var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
 var GLOW_INIT = PARAMS.get('glow');
 // Darkness of the deep night, in percent of black; the adapter reads and bounds it.
 var NIGHTDEPTH_INIT = PARAMS.get('nightdepth');
+// What the map prepares while hidden: 'none', 'first' (the latest image) or
+// 'all' (the whole animation).
+var PREPARE_MODE = /^(first|all)$/.test(PARAMS.get('prepare')) ? PARAMS.get('prepare') : 'none';
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';
