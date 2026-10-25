@@ -24,6 +24,7 @@
  *   days          array of day objects from openMeteoHistory.js
  *   zoomed / canZoomIn / visibleFirst / visibleLast
  *   zoomIn() / zoomOut() / resetZoom() / zoomTo(zoom, anchor)
+ * Double click zooms in around the pointer.
  * Zooming makes the plot wider than the chart and scrolls it sideways (drag,
  * mouse wheel, touchpad swipe, scroll bar), see
  * HistoryChartGraphs.qml (same transparent-Flickable + pinned-item scheme).
@@ -382,6 +383,23 @@ ColumnLayout {
                 } else {
                     root.wheelPan(wheel);
                 }
+            }
+        }
+
+        // ── double click: zoom in around the pointer ──────────────────
+        // At the closest zoom a further double click restores the full view.
+        TapHandler {
+            acceptedButtons: Qt.LeftButton
+            onDoubleTapped: function (eventPoint, button) {
+                var x = eventPoint.position.x;
+                var y = eventPoint.position.y;
+                if (x < 0 || x > stage.width || y < 0 || y > stage.plotH || root.dayCount < 2)
+                    return;
+                root.hoverIndex = -1;
+                if (root.canZoomIn)
+                    root.zoomTo(root.zoom * 2, x / stage.width);
+                else
+                    root.resetZoom();
             }
         }
 

@@ -51,7 +51,7 @@
  *   zoomed / canZoomIn      state for the toolbar buttons
  *   visibleFirst / visibleLast  indices of the days currently in view
  *   zoomIn() / zoomOut() / resetZoom() / zoomTo(zoom, anchor)
- *   Ctrl + wheel zooms around the pointer. While zoomed in, the wheel and
+ *   Double click (or Ctrl + wheel) zooms around the pointer. While zoomed in, the wheel and
  *   sideways touchpad swipes scroll the chart; at either end (and for
  *   vertical touchpad swipes) they fall through to the day list.
  */
@@ -770,6 +770,23 @@ ColumnLayout {
                 } else {
                     root.wheelPan(wheel);
                 }
+            }
+        }
+
+        // ── double click: zoom in around the pointer ──────────────────
+        // At the closest zoom a further double click restores the full view.
+        TapHandler {
+            acceptedButtons: Qt.LeftButton
+            onDoubleTapped: function (eventPoint, button) {
+                var x = eventPoint.position.x - area.plotX;
+                var y = eventPoint.position.y;
+                if (x < 0 || x > area.vw || y < 0 || y > area.plotBottom || root.dayCount < 2)
+                    return;
+                root.hoverIndex = -1;
+                if (root.canZoomIn)
+                    root.zoomTo(root.zoom * 2, x / area.vw);
+                else
+                    root.resetZoom();
             }
         }
 
