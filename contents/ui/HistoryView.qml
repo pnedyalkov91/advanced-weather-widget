@@ -35,6 +35,12 @@
  * The chart is components/HistoryChartGraphs.qml (Qt Graphs, styled after
  * the KDE Plasma Weather applet). Where Qt Graphs is unavailable the Loader
  * falls back to components/HistoryChartCanvas.qml.
+ *
+ * EXPERIMENTAL: the "Chart engine" box above the chart can switch to
+ * components/HistoryChartKQC.qml, the same chart drawn with KDE's
+ * KQuickCharts (org.kde.quickcharts), or to the Canvas chart, to compare
+ * them. If the KQuickCharts module is not installed the view goes back to
+ * Qt Graphs.
  */
 import QtQuick
 import QtQuick.Controls
@@ -422,6 +428,13 @@ Item {
 
     // Chart implementation: Qt Graphs when available (see header comment).
     property bool _graphsOk: true
+    // Experimental chart engine: "graphs" (Qt Graphs), "kquickcharts" or
+    // "canvas". Not persisted: the box is for trying them out.
+    property string _chartEngine: "graphs"
+    property bool _kqcOk: true
+    readonly property string _chartSource: _chartEngine === "canvas" ? "components/HistoryChartCanvas.qml"
+        : (_chartEngine === "kquickcharts" && _kqcOk) ? "components/HistoryChartKQC.qml"
+        : (_graphsOk ? "components/HistoryChartGraphs.qml" : "components/HistoryChartCanvas.qml")
 
     // ══════════════════════════════════════════════════════════════════════
     // UI
@@ -790,23 +803,77 @@ Item {
                             }
                         }
 
-                        // Chart: Qt Graphs (KDE weather applet style), Canvas fallback.
+                        // Experimental: choose the chart engine
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 4
+                            visible: root.days.length > 1
+                            spacing: 6
+
+                            Label {
+                                text: i18n("Chart engine (experimental):")
+                                color: Kirigami.Theme.textColor
+                                opacity: 0.7
+                                font: root._f(9, false)
+                            }
+                            ComboBox {
+                                id: engineBox
+                                model: [
+                                    { value: "graphs", label: i18n("Qt Graphs") },
+                                    { value: "kquickcharts", label: i18n("KDE Quick Charts") },
+                                    { value: "canvas", label: i18n("Canvas") }
+                                ]
+                                textRole: "label"
+                                valueRole: "value"
+                                font: root._f(9, false)
+                                currentIndex: root._chartEngine === "canvas" ? 2
+                                    : (root._chartEngine === "kquickcharts" && root._kqcOk ? 1 : 0)
+                                onActivated: function (idx) {
+                                    root._kqcOk = true;          // try again if it failed earlier
+                                    root._chartEngine = model[idx].value;
+                                }
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                visible: !root._kqcOk
+                                elide: Text.ElideRight
+                                color: Kirigami.Theme.negativeTextColor
+                                font: root._f(9, false)
+                                text: i18n("KDE Quick Charts is not installed")
+                            }
+                            Item {
+                                Layout.fillWidth: true
+                                visible: root._kqcOk
+                            }
+                        }
+
+                        // Chart: Qt Graphs (KDE weather applet style) or KQuickCharts
+                        // (experimental), with a Canvas fallback.
                         Loader {
                             id: chartLoader
                             Layout.fillWidth: true
                             Layout.topMargin: 4
                             visible: root.days.length > 1
-                            source: root._graphsOk ? "components/HistoryChartGraphs.qml"
-                                                   : "components/HistoryChartCanvas.qml"
+                            source: root._chartSource
                             onLoaded: {
                                 item.view = root;
                                 item.outerFlickable = list;
                                 item.days = Qt.binding(function () { return root.days; });
                             }
                             onStatusChanged: {
-                                if (status === Loader.Error && root._graphsOk) {
+                                // Switching the source from inside its own status change
+                                // would be a binding loop, so do it a moment later.
+                                if (status === Loader.Error && root._chartEngine === "kquickcharts" && root._kqcOk) {
+                                    console.warn("History: KDE Quick Charts (org.kde.quickcharts) unavailable, using Qt Graphs");
+                                    Qt.callLater(function () {
+                                        root._kqcOk = false;
+                                        root._chartEngine = "graphs";
+                                    });
+                                    return;
+                                }
+                                if (status === Loader.Error && root._chartEngine === "graphs" && root._graphsOk) {
                                     console.warn("History: Qt Graphs chart unavailable, using the Canvas fallback");
-                                    root._graphsOk = false;
+                                    Qt.callLater(function () { root._graphsOk = false; });
                                 }
                             }
                         }
