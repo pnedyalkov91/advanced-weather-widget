@@ -176,47 +176,63 @@ test('a frame that throws does not stop the others', async () => {
   assert.equal(ran, 1);
 });
 
-/** A document whose `hidden` comes from its prototype, as in a browser. */
-function withHidden(p) {
-  const doc = Object.create({ get hidden() { return this.visibilityState === 'hidden'; } });
-  Object.assign(doc, p.doc);
-  p.doc = doc;
-  const intervals = [];
+
+/** A page whose timers the test fires, and a server whose latest image the
+    test sets; reload() counts the viewer reloads asked for. */
+function watched(state) {
+  const p = page(state), intervals = [];
   p.win.setInterval = (fn, ms) => { intervals.push({ fn, ms }); return intervals.length; };
-  p.intervals = intervals;
+  p.server = { latest: 1000, asked: 0 };
+  p.reloads = 0;
+  p.prep = P.create(p.win, p.doc, {
+    latest: () => { p.server.asked++; return Promise.resolve(p.server.latest); },
+    reload: () => { p.reloads++; }
+  });
+  p.tick = async () => { intervals.filter((i) => i.ms === P.REFRESH).forEach((i) => i.fn()); await settle(); };
   return p;
 }
 
-test('hidden page: the viewer refresh runs every REFRESH ms, seeing a visible page', async () => {
-  const p = withHidden(page('hidden')), prep = P.create(p.win, p.doc);
-  const seen = [];
-  function refreshCatalog() { seen.push(p.doc.hidden); }
-  p.win.setInterval(refreshCatalog, 300000);
-  const ours = p.intervals.find((i) => i.fn !== refreshCatalog);
-  assert.ok(ours, 'a timer of its own');
-  assert.equal(ours.ms, P.REFRESH);
-  ours.fn();
-  assert.deepEqual(seen, [false], 'run once, the page looking visible');
-  assert.equal(p.doc.hidden, true, 'hidden again right after');
-  prep.end();
-  ours.fn();
-  assert.equal(seen.length, 2, 'also out of a preparation: the image must stay current');
+test('hidden page: a newer radar image has the viewer reload onto it', async () => {
+  // The viewer keeps the image it shows when its list grows: hidden, it
+  // would open on the image of login time.
+  const p = watched('hidden');
+  await settle();
+  await p.tick();
+  assert.equal(p.reloads, 0, 'same image as at load');
+  p.server.latest = 1600;
+  await p.tick();
+  assert.equal(p.reloads, 1);
+  await p.tick();
+  assert.equal(p.reloads, 1, 'once per new image');
 });
 
-test('visible page: the viewer refreshes by itself, no second refresh', () => {
-  const p = withHidden(page('visible')); P.create(p.win, p.doc);
-  let runs = 0;
-  function refreshCatalog() { runs++; }
-  p.win.setInterval(refreshCatalog, 300000);
-  p.intervals.find((i) => i.fn !== refreshCatalog).fn();
-  assert.equal(runs, 0);
+test('hidden page: the list is read every REFRESH ms, out of a preparation too', async () => {
+  const p = watched('hidden');
+  await settle();
+  p.prep.end();
+  const before = p.server.asked;
+  p.server.latest = 1600;
+  await p.tick();
+  assert.equal(p.server.asked, before + 1);
+  assert.equal(p.reloads, 1);
 });
 
-test('other timers are left alone', () => {
-  const p = withHidden(page('hidden')); P.create(p.win, p.doc);
-  let runs = 0;
-  const other = () => runs++;
-  assert.equal(typeof p.win.setInterval(other, 300000), 'number');
-  p.intervals.filter((i) => i.fn !== other).forEach((i) => i.fn());
-  assert.equal(runs, 0, 'only a function named refreshCatalog is the viewer refresh');
+test('visible page: the viewer keeps its own pace', async () => {
+  const p = watched('visible');
+  await settle();
+  const before = p.server.asked;
+  p.server.latest = 1600;
+  await p.tick();
+  assert.equal(p.server.asked, before, 'nothing read');
+  assert.equal(p.reloads, 0);
+});
+
+test('a list that cannot be read changes nothing', async () => {
+  const p = watched('hidden');
+  await settle();
+  p.server.latest = null;
+  await p.tick();
+  p.server.latest = 1000;
+  await p.tick();
+  assert.equal(p.reloads, 0, 'the image of the load is still the latest');
 });

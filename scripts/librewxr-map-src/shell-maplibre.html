@@ -119,8 +119,21 @@
     <script>
 /*@__WIDGET_GLUE_CONFIG__*/
 /*@__WIDGET_GLUE_PREPARE__*/
-// Kept loaded behind a closed popup, the map prepares in the hidden page.
-var widgetPrepare = PREPARE_MODE !== 'none' ? WidgetPrepare.create(window, document) : null;
+// Kept loaded behind a closed popup, the map prepares in the hidden page and
+// follows the new radar images; the hidden retry button reloads the
+// viewer's list (glue-prepare.js).
+var widgetPrepare = PREPARE_MODE !== 'none' ? WidgetPrepare.create(window, document, {
+  latest: function () {
+    return fetch(API_BASE + '/public/weather-maps.json').then(function (r) { return r.json(); }).then(function (d) {
+      var past = d && d.radar && d.radar.past;
+      return past && past.length ? past[past.length - 1].time : null;
+    });
+  },
+  reload: function () {
+    var retry = document.getElementById('lv-error-retry');
+    if (retry) retry.click();
+  }
+}) : null;
 // Without WebGL MapLibre cannot draw: hand over to the Leaflet page, with
 // the same parameters.
 if (!hasWebGL()) location.replace('librewxr-map-leaflet.html' + location.search);

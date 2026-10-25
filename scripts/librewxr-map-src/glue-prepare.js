@@ -5,7 +5,8 @@
 // loads nothing. While a preparation runs and the page is hidden, frames come
 // from here instead, GAP ms apart at most; otherwise from the browser. A
 // frame asked of the browser before the page hid is taken back, since the map
-// asks once and waits. Loadable under Node for tests.
+// asks once and waits. A hidden page also follows the new radar images.
+// Loadable under Node for tests.
 // ==========================================================================
 var WidgetPrepare = (function () {
   'use strict';
@@ -20,9 +21,11 @@ var WidgetPrepare = (function () {
   var REFRESH = 5 * 60 * 1000;
 
   /** Takes over win.requestAnimationFrame and cancelAnimationFrame. A page
-      hidden from the start prepares at once. Returns { begin, end,
-      preparing }. */
-  function create(win, doc) {
+      hidden from the start prepares at once. With `watch` ({ latest: a
+      promise of the latest radar image time, reload: has the viewer reload
+      its list }), a hidden page follows the new images. Returns { begin,
+      end, preparing }. */
+  function create(win, doc, watch) {
     var nativeRequest = win.requestAnimationFrame.bind(win);
     var nativeCancel = win.cancelAnimationFrame.bind(win);
     var calls = new Map(), nextId = 1, active = false, since = 0;
@@ -95,25 +98,23 @@ var WidgetPrepare = (function () {
       schedule();
     });
 
-    // The viewer skips its catalog refresh while the page is hidden and
-    // catches up when it shows: the image prepared at login would be hours
-    // old at opening. Its refresh is found by name as it starts its timer,
-    // and run from here while hidden, the page looking visible to it alone.
-    var viewerRefresh = null;
-    var nativeSetInterval = win.setInterval.bind(win);
-    win.setInterval = function (fn) {
-      if (typeof fn === 'function' && fn.name === 'refreshCatalog') viewerRefresh = fn;
-      return nativeSetInterval.apply(win, arguments);
-    };
-    nativeSetInterval(function () {
-      if (!hidden() || !viewerRefresh) return;
-      Object.defineProperty(doc, 'hidden', { configurable: true, get: function () { return false; } });
-      try {
-        viewerRefresh();
-      } finally {
-        delete doc.hidden;
-      }
-    }, REFRESH);
+    // The viewer skips its catalog refresh while the page is hidden, and when
+    // its list grows it keeps the image it shows: the image prepared at login
+    // would be hours old at opening. Hidden, the latest image time is read
+    // here every REFRESH ms; a newer one has the viewer reload its list,
+    // which puts it on the latest image, as at load.
+    if (watch) {
+      var seen = null;
+      var check = function () {
+        watch.latest().then(function (t) {
+          if (t == null) return;
+          if (seen !== null && t > seen) watch.reload();
+          if (seen === null || t > seen) seen = t;
+        }, function () {});
+      };
+      check();
+      win.setInterval(function () { if (hidden()) check(); }, REFRESH);
+    }
 
     var api = {
       /** Starts (or restarts) a preparation: a hidden page gets frames. */
