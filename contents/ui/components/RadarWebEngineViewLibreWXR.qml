@@ -48,6 +48,8 @@
  * - Smoothing, snow mask, tile format and tile size live behind a
  *   collapsible "Options" toggle (native controls, same as the row above);
  *   collapsed state persists via librewxrOptionsExpanded
+ * - The switches show as icons in the popup's icon theme (widgetIconTheme),
+ *   their name and use in the tooltip; the combos lost their labels to it
  * - "auto" base map follows the KDE Plasma light/dark theme; any explicit
  *   choice pins a fixed light/dark style and locks the Dark map switch
  * - The page reports only zoom ("zoom:") and in-map background picks
@@ -61,6 +63,7 @@ import QtWebEngine
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
+import "../js/iconResolver.js" as IconResolver
 
 Item {
     id: radarRoot
@@ -299,6 +302,91 @@ Item {
 
     readonly property int miniControlHeight: 24
 
+    // Icons of the bars above the map follow the icon theme of the popup
+    // (widgetIconTheme), as the Details tab does; "kde" takes the bundled
+    // flat-color set, as the Details tab does for the moon.
+    readonly property string barIconTheme: {
+        var t = Plasmoid.configuration.widgetIconTheme || "symbolic";
+        if (t === "wi-font")
+            return "symbolic";
+        return t === "kde" ? "flat-color" : t;
+    }
+    readonly property url iconsBaseDir: Qt.resolvedUrl("../../icons/")
+
+    // A bundled weather icon in the bar's theme. Meteocons lacks some of
+    // them: meteoconsStem stands in, or the flat-color icon (colored too)
+    // when it is "".
+    function barIcon(stem, meteoconsStem) {
+        var theme = radarRoot.barIconTheme;
+        if (theme === "meteocons" && meteoconsStem !== undefined) {
+            if (meteoconsStem)
+                stem = meteoconsStem;
+            else
+                theme = "flat-color";
+        }
+        return {
+            source: IconResolver.svgUrl(stem, 22, radarRoot.iconsBaseDir, theme),
+            isMask: theme === "symbolic"
+        };
+    }
+
+    // An on/off control of the bars above the map, shown as an icon to save
+    // room: a weather icon (iconInfo, from barIcon()), or the Plasma icon in
+    // icon.name. Dimmed while off; the tooltip gives the name, then what it
+    // does. Ids of this file are out of reach here, hence badgeFamily.
+    component MapToggle: PlasmaComponents.ToolButton {
+        id: mapToggle
+
+        property var iconInfo: null
+        // The weather drawings leave a wide margin in their box: drawn larger
+        // than a Plasma icon, larger still for a small one (the arrow).
+        property int iconSize: 26
+        property string badge: ""        // small Weather Icons glyph in the top right corner
+        property string badgeFamily: ""
+        property string title: ""
+        property string tip: ""
+
+        checkable: true
+        implicitWidth: 28
+        implicitHeight: 24
+
+        contentItem: Item {
+            opacity: mapToggle.checked ? 1.0 : 0.8
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 140
+                }
+            }
+
+            Kirigami.Icon {
+                anchors.centerIn: parent
+                readonly property int size: mapToggle.iconInfo ? mapToggle.iconSize : Kirigami.Units.iconSizes.small
+                implicitWidth: size
+                implicitHeight: size
+                // Kirigami would round 26 down to 22.
+                roundToIconSize: false
+                source: mapToggle.iconInfo ? mapToggle.iconInfo.source : mapToggle.icon.name
+                isMask: mapToggle.iconInfo ? mapToggle.iconInfo.isMask : false
+                color: isMask ? Kirigami.Theme.textColor : "transparent"
+            }
+            Text {
+                anchors {
+                    right: parent.right
+                    top: parent.top
+                }
+                visible: mapToggle.badge !== "" && mapToggle.badgeFamily !== ""
+                text: mapToggle.badge
+                font.family: mapToggle.badgeFamily
+                font.pixelSize: 10
+                color: Kirigami.Theme.textColor
+            }
+        }
+
+        ToolTip.visible: hovered
+        ToolTip.text: "<b>" + title + "</b><br>" + tip
+        ToolTip.delay: Kirigami.Units.toolTipDelay
+    }
+
     // -- Layer modes (matching the LibreWXR example) -------------------------
     readonly property var layers: [
         {
@@ -482,20 +570,10 @@ Item {
         }
 
         // -- Options: color scheme + switches (arrows, wind, cells, alerts, map theme) --
-        // row stays compact enough to fit one line above the map at widget width.
+        // Icons with tooltips rather than labels, so the row stays short.
         Flow {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing * 2
-
-            Label {
-                visible: radarRoot.activeLayer !== "satellite"
-                text: i18n("Palette:")
-                color: Kirigami.Theme.textColor
-                opacity: 0.72
-                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
-                height: schemeCombo.height
-                verticalAlignment: Text.AlignVCenter
-            }
 
             PlasmaComponents.ComboBox {
                 id: schemeCombo
@@ -509,36 +587,40 @@ Item {
                     Plasmoid.configuration.librewxrColorScheme = currentIndex;
                     webView.runJavaScript("window.setColorScheme(" + currentIndex + ");");
                 }
+
+                ToolTip.visible: hovered && !popup.visible
+                ToolTip.text: i18n("Palette:") + " " + currentText
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
+            MapToggle {
                 visible: radarRoot.activeLayer !== "satellite"
-                text: i18n("Arrows")
+                iconInfo: radarRoot.barIcon("direction-right", "")
+                iconSize: 36
+                title: i18n("Arrows")
+                tip: i18n("Show motion arrows on the map")
                 checked: radarRoot.arrowsOn
                 onToggled: {
                     Plasmoid.configuration.librewxrArrows = checked;
                     webView.runJavaScript("window.setArrows(" + (checked ? "true" : "false") + ");");
                 }
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Show motion arrows on the map")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
-                text: i18n("Winds")
+            MapToggle {
+                iconInfo: radarRoot.barIcon("strong-wind")
+                title: i18n("Winds")
+                tip: i18n("Animate the wind on the map (Open-Meteo)")
                 checked: radarRoot.windOn
                 onToggled: {
                     Plasmoid.configuration.librewxrWind = checked;
                     webView.runJavaScript("if (window.setWind) window.setWind(" + (checked ? "true" : "false") + ");");
                 }
-
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Animate the wind on the map (Open-Meteo)")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
-                text: i18n("Storm cells")
+            MapToggle {
+                iconInfo: radarRoot.barIcon("lightning", "")
+                title: i18n("Storm cells")
+                tip: i18n("Overlay detected storm cells on the map")
                 checked: radarRoot.activeCells !== ""
                 onToggled: {
                     // The stored value is the storm-cell overlay theme; pick
@@ -547,27 +629,23 @@ Item {
                     Plasmoid.configuration.librewxrCells = cells;
                     webView.runJavaScript("if (window.setCells) window.setCells(" + JSON.stringify(cells) + ");");
                 }
-
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Overlay detected storm cells on the map")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
-                text: i18n("Alerts")
+            MapToggle {
+                iconInfo: radarRoot.barIcon("storm-warning", "small-craft-advisory")
+                title: i18n("Alerts")
+                tip: i18n("Show WMO alerts on the map")
                 checked: radarRoot.alertsOn
                 onToggled: {
                     Plasmoid.configuration.librewxrAlerts = checked;
                     webView.runJavaScript("if (window.setAlerts) window.setAlerts(" + (checked ? "true" : "false") + ");");
                 }
-
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Show WMO alerts on the map")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
-                text: i18n("Dark map")
+            MapToggle {
+                iconInfo: radarRoot.barIcon("night-clear")
+                title: i18n("Dark map")
+                tip: radarRoot.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
                 checked: radarRoot.mapTheme === "dark"
                 enabled: !radarRoot.darkMapLocked
                 onToggled: {
@@ -576,23 +654,14 @@ Item {
                     Plasmoid.configuration.librewxrTheme = checked ? "dark" : "light";
                     webView.runJavaScript("window.setTheme(" + JSON.stringify(checked ? "dark" : "light") + ");");
                 }
-
-                ToolTip.visible: hovered
-                ToolTip.text: radarRoot.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            PlasmaComponents.ToolButton {
+            MapToggle {
                 icon.name: "configure"
-                text: i18n("Options")
-                checkable: true
+                title: i18n("Options")
+                tip: i18n("Show tile options: smoothing, snow mask, format and tile size")
                 checked: radarRoot.optionsExpanded
-                implicitHeight: radarRoot.miniControlHeight
                 onToggled: Plasmoid.configuration.librewxrOptionsExpanded = checked
-
-                PlasmaComponents.ToolTip.visible: hovered
-                PlasmaComponents.ToolTip.text: i18n("Show tile options: smoothing, snow mask, format and tile size")
-                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
         }
 
@@ -606,15 +675,6 @@ Item {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing * 2
             visible: radarRoot.optionsExpanded
-
-            Label {
-                text: i18n("Format:")
-                color: Kirigami.Theme.textColor
-                opacity: 0.72
-                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
-                height: formatCombo.height
-                verticalAlignment: Text.AlignVCenter
-            }
 
             PlasmaComponents.ComboBox {
                 id: formatCombo
@@ -633,19 +693,15 @@ Item {
                     Plasmoid.configuration.librewxrFormat = v;
                     webView.runJavaScript("if (window.setFormat) window.setFormat(" + JSON.stringify(v) + ");");
                 }
-            }
 
-            Label {
-                text: i18n("Tile size:")
-                color: Kirigami.Theme.textColor
-                opacity: 0.72
-                font: weatherRoot ? weatherRoot.wf(11, false) : Kirigami.Theme.smallFont
-                height: tileSizeCombo.height
-                verticalAlignment: Text.AlignVCenter
+                ToolTip.visible: hovered && !popup.visible
+                ToolTip.text: i18n("Format:") + " " + currentText
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
             PlasmaComponents.ComboBox {
                 id: tileSizeCombo
+                implicitHeight: 24
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 9
                 model: radarRoot.tileSizes
                 textRole: "label"
@@ -660,49 +716,49 @@ Item {
                     Plasmoid.configuration.librewxrTileSize = v;
                     webView.runJavaScript("if (window.setTileSize) window.setTileSize(" + JSON.stringify(v) + ");");
                 }
+
+                ToolTip.visible: hovered && !popup.visible
+                ToolTip.text: i18n("Tile size:") + " " + currentText
+                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
+            MapToggle {
                 visible: radarRoot.activeLayer !== "satellite"
-                text: i18n("Smoothing")
+                icon.name: "blur-symbolic"
+                title: i18n("Smoothing")
+                tip: i18n("Smooth radar tile edges")
                 checked: radarRoot.smoothOn
                 onToggled: {
                     Plasmoid.configuration.librewxrSmooth = checked;
                     webView.runJavaScript("if (window.setSmooth) window.setSmooth(" + (checked ? "true" : "false") + ");");
                 }
-
-                PlasmaComponents.ToolTip.visible: hovered
-                PlasmaComponents.ToolTip.text: i18n("Smooth radar tile edges")
-                PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
+            MapToggle {
                 visible: radarRoot.activeLayer !== "satellite"
-                text: i18n("Snow mask")
+                iconInfo: radarRoot.barIcon("snowflake-cold")
+                title: i18n("Snow mask")
+                tip: i18n("Highlight snow and wintry precipitation with a distinct color")
                 checked: radarRoot.snowOn
                 onToggled: {
                     Plasmoid.configuration.librewxrSnow = checked;
                     webView.runJavaScript("if (window.setSnow) window.setSnow(" + (checked ? "true" : "false") + ");");
                 }
-
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Highlight snow and wintry precipitation with a distinct color")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
 
-            Switch {
+            MapToggle {
                 visible: radarRoot.windOn
-                text: i18n("Winds aloft")
+                iconInfo: radarRoot.barIcon("strong-wind")
+                badge: "\uF058"
+                badgeFamily: radarRoot.wiFontFamily
+                title: i18n("Winds aloft")
+                tip: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
                 checked: radarRoot.windLevel === "700hPa"
                 onToggled: {
                     var level = checked ? "700hPa" : "10m";
                     Plasmoid.configuration.librewxrWindLevel = level;
                     webView.runJavaScript("if (window.setWindLevel) window.setWindLevel(" + JSON.stringify(level) + ");");
                 }
-
-                ToolTip.visible: hovered
-                ToolTip.text: i18n("Show the wind at about 3000 m (700 hPa), the flow that steers the rain, instead of the surface wind at 10 m")
-                ToolTip.delay: Kirigami.Units.toolTipDelay
             }
         }
 
