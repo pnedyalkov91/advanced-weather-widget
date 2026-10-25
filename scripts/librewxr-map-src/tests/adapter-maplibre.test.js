@@ -53,6 +53,7 @@ class FakeMap {
   getMaxZoom() { return 12; }
   setMinZoom() {}
   getCenter() { return { lat: 48, lng: 6 }; }
+  getZoom() { return 5; }
 }
 
 function loadAdapter(globals) {
@@ -273,4 +274,93 @@ test('a light theme on the same base map takes the light veil off the day', asyn
   adapter.setBasemap('light');
   assert.notEqual(map.getSource('lv-night').tiles[0], tiles, 'new tiles asked for');
   assert.equal((await shadeOf(map, protocols)).day, 0);
+});
+
+/** What glue-prepare.js gives the page: a preparation the test can watch. */
+function preparation(active) {
+  return { active, begins: 0, ends: 0,
+    begin() { this.active = true; this.begins++; },
+    end() { this.active = false; this.ends++; },
+    preparing() { return this.active; } };
+}
+/** An adapter on a hidden page that prepares in `mode`, with the viewer's
+    moveend callback counted. */
+function hiddenPage(mode) {
+  const prep = preparation(true);
+  const page = loadAdapter({ PREPARE_MODE: mode, widgetPrepare: prep,
+    document: { hidden: true, visibilityState: 'hidden', addEventListener() {} } });
+  page.prep = prep;
+  page.moves = 0;
+  page.adapter.onViewportChange(() => page.moves++);
+  return page;
+}
+/** Every source loaded, as when the map has its tiles. */
+function allLoaded(map) { for (const id in map.sources) map.loadedSources[id] = true; }
+
+test('first image: the preparation ends once the shown image and the base map are in', () => {
+  const { adapter, map, prep } = hiddenPage('first');
+  const h = adapter.createFrameLayer('https://radar/1/{z}/{x}/{y}.webp', 'radar');
+  map.fire('render');
+  assert.equal(prep.ends, 0, 'no image shown yet');
+  adapter.setFrameOpacity(h, 0.8);
+  map.fire('render');
+  assert.equal(prep.ends, 0, 'tiles still loading');
+  allLoaded(map);
+  map.fire('render');
+  assert.equal(prep.ends, 1);
+  map.fire('render');
+  assert.equal(prep.ends, 1, 'once');
+});
+
+test('first image: a hidden page does not pass map moves to the viewer', () => {
+  // A move restarts the viewer's preload of every image: page hidden, only
+  // the shown image is prepared.
+  const page = hiddenPage('first');
+  page.map.fire('moveend');
+  assert.equal(page.moves, 0);
+  page.ctx.document.visibilityState = 'visible';
+  page.ctx.document.hidden = false;
+  page.map.fire('moveend');
+  assert.equal(page.moves, 1, 'on screen, as before');
+});
+
+test('whole animation: once the shown image is in, the viewer preloads all, and the preparation waits for them', () => {
+  const page = hiddenPage('all'), { adapter, map, prep } = page;
+  const shown = adapter.createFrameLayer('https://radar/1/{z}/{x}/{y}.webp', 'radar');
+  adapter.setFrameOpacity(shown, 0.8);
+  allLoaded(map);
+  map.fire('render');
+  assert.equal(page.moves, 1, 'the preload is asked');
+  assert.equal(prep.ends, 0);
+  const other = adapter.createFrameLayer('https://radar/2/{z}/{x}/{y}.webp', 'radar');
+  adapter.onLayerReady(other, () => {});
+  map.fire('render');
+  assert.equal(prep.ends, 0, 'an image still loading');
+  allLoaded(map);
+  map.fire('sourcedata', { sourceId: other.sourceId });
+  map.fire('render');
+  assert.equal(prep.ends, 1);
+  assert.equal(page.moves, 1, 'asked once');
+});
+
+test('a new image while hidden, after a preparation, starts another one', () => {
+  const { adapter, map, prep } = hiddenPage('first');
+  const h = adapter.createFrameLayer('https://radar/1/{z}/{x}/{y}.webp', 'radar');
+  adapter.setFrameOpacity(h, 0.8);
+  allLoaded(map);
+  map.fire('render');
+  assert.equal(prep.active, false);
+  adapter.createFrameLayer('https://radar/2/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(prep.begins, 1);
+  assert.equal(prep.active, true);
+});
+
+test('no preparation asked: map moves reach the viewer as before', () => {
+  const page = loadAdapter({ document: { hidden: true, visibilityState: 'hidden', addEventListener() {} } });
+  let moves = 0;
+  page.adapter.onViewportChange(() => moves++);
+  page.map.fire('moveend');
+  assert.equal(moves, 1);
+  page.adapter.createFrameLayer('https://radar/1/{z}/{x}/{y}.webp', 'radar');
+  page.map.fire('render');
 });
