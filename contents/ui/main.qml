@@ -1031,6 +1031,35 @@ PlasmoidItem {
         return /ddd/.test(fmt.replace(/'[^']*'/g, ""));
     }
 
+    /** The chosen formats as Qt patterns plus the locale's day / month names,
+     *  as JSON. The radar map pages cannot read Qt formats, so they format their
+     *  own timestamps from this (names and patterns still come from Qt). */
+    function dateTimeSpecJson() {
+        var loc = Qt.locale();
+        var days = [], daysShort = [], months = [], monthsShort = [];
+        for (var i = 0; i < 7; i++) {
+            days.push(loc.dayName(i, Locale.LongFormat));
+            daysShort.push(loc.dayName(i, Locale.ShortFormat));
+        }
+        for (var m = 0; m < 12; m++) {
+            months.push(loc.monthName(m, Locale.LongFormat));
+            monthsShort.push(loc.monthName(m, Locale.ShortFormat));
+        }
+        var df = dateFormatSetting;
+        var tf = timeFormatSetting;
+        return JSON.stringify({
+            date: df === "locale-long" ? loc.dateFormat(Locale.LongFormat) : (df === "locale-short" ? loc.dateFormat(Locale.ShortFormat) : df),
+            time: tf === "locale" ? loc.timeFormat(Locale.ShortFormat) : tf,
+            days: days,
+            daysShort: daysShort,
+            months: months,
+            monthsShort: monthsShort,
+            am: loc.amText,
+            pm: loc.pmText
+        });
+    }
+    readonly property string dateTimeSpec: dateTimeSpecJson()
+
     // Kept for any caller still passing per-item formats: they are ignored now.
     function _formatItemDateTime(dateFmt, timeFmt) {
         return formatDateTimeNow(false);
@@ -3325,7 +3354,7 @@ PlasmoidItem {
         if (tok === "snowcover")
             return snowDepthText(snowDepthCm);
         if (tok === "datetime")
-            return formatDateTimeNow(true);
+            return formatDateTimeNow(false);
         return "";
     }
 

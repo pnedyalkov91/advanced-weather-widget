@@ -1437,6 +1437,83 @@ var API_BASE = PARAMS.get('server') || 'https://api.librewxr.net';
 var HOUR12 = PARAMS.get('hour12') === '1';
 var SYS_LOCALE = PARAMS.get('locale') || undefined;
 
+// Date / time format chosen in Settings -> Misc -> Date and Time. The widget
+// sends Qt format patterns plus the locale's day and month names (all from
+// Qt); qtFormat() renders a Date with them. null = use the browser locale.
+function parseDtFmt(text) {
+  if (!text) return null;
+  try {
+    var o = typeof text === 'string' ? JSON.parse(text) : text;
+    return (o && o.time && o.date) ? o : null;
+  } catch (e) { return null; }
+}
+var DTFMT = parseDtFmt(PARAMS.get('dtfmt'));
+
+function qtPad(n, w) {
+  var s = String(n);
+  while (s.length < w) s = '0' + s;
+  return s;
+}
+
+// Qt date/time pattern: d dd ddd dddd M MM MMM MMMM yy yyyy h hh H HH m mm
+// s ss z zzz AP A ap a, 'quoted text'. h/hh are 12-hour when AP/ap is present.
+function qtFormat(d, pat, n) {
+  var toks = [], i = 0, L = pat.length, ampm = false;
+  while (i < L) {
+    var c = pat.charAt(i), j;
+    if (c === "'") {
+      if (pat.charAt(i + 1) === "'") { toks.push(['l', "'"]); i += 2; continue; }
+      var lit = '';
+      j = i + 1;
+      while (j < L) {
+        if (pat.charAt(j) === "'") {
+          if (pat.charAt(j + 1) === "'") { lit += "'"; j += 2; continue; }
+          break;
+        }
+        lit += pat.charAt(j);
+        j++;
+      }
+      toks.push(['l', lit]);
+      i = j + 1;
+      continue;
+    }
+    if (c === 'A' || c === 'a') {
+      var p = c === 'A' ? 'P' : 'p';
+      i += pat.charAt(i + 1) === p ? 2 : 1;
+      toks.push(['p', c === 'A']);
+      ampm = true;
+      continue;
+    }
+    if ('dMyhHmszt'.indexOf(c) >= 0) {
+      j = i;
+      while (j < L && pat.charAt(j) === c) j++;
+      toks.push([c, j - i]);
+      i = j;
+      continue;
+    }
+    toks.push(['l', c]);
+    i++;
+  }
+  var out = '', hr = d.getHours();
+  for (var k = 0; k < toks.length; k++) {
+    var t = toks[k][0], v = toks[k][1];
+    switch (t) {
+      case 'l': out += v; break;
+      case 'p': out += hr < 12 ? (v ? n.am : String(n.am).toLowerCase()) : (v ? n.pm : String(n.pm).toLowerCase()); break;
+      case 'd': out += v === 1 ? d.getDate() : v === 2 ? qtPad(d.getDate(), 2) : v === 3 ? n.daysShort[d.getDay()] : n.days[d.getDay()]; break;
+      case 'M': out += v === 1 ? d.getMonth() + 1 : v === 2 ? qtPad(d.getMonth() + 1, 2) : v === 3 ? n.monthsShort[d.getMonth()] : n.months[d.getMonth()]; break;
+      case 'y': out += v === 2 ? qtPad(d.getFullYear() % 100, 2) : d.getFullYear(); break;
+      case 'h': { var h12 = ampm ? (hr % 12 === 0 ? 12 : hr % 12) : hr; out += v >= 2 ? qtPad(h12, 2) : h12; break; }
+      case 'H': out += v >= 2 ? qtPad(hr, 2) : hr; break;
+      case 'm': out += v >= 2 ? qtPad(d.getMinutes(), 2) : d.getMinutes(); break;
+      case 's': out += v >= 2 ? qtPad(d.getSeconds(), 2) : d.getSeconds(); break;
+      case 'z': out += v >= 3 ? qtPad(d.getMilliseconds(), 3) : d.getMilliseconds(); break;
+      default: break;
+    }
+  }
+  return out;
+}
+
 var STRINGS = {};
 try { STRINGS = JSON.parse(PARAMS.get('strings') || '{}'); } catch (e) {}
 
@@ -1595,6 +1672,7 @@ var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
         strings: null,
         locale: null,
         hour12: null,
+        dtfmt: null,             // { date, time, days, ... } Qt patterns (widget); null = browser locale
         onThemeChange: null,
         locateMode: null
     };
@@ -1847,6 +1925,7 @@ var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
         }
 
         function formatTime(timestamp) {
+            if (config.dtfmt) return qtFormat(new Date(timestamp * 1000), config.dtfmt.time, config.dtfmt);
             return new Date(timestamp * 1000).toLocaleTimeString(config.locale || [], {
                 hour: 'numeric',
                 minute: '2-digit',
@@ -2428,6 +2507,14 @@ var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
             });
         }
 
+        /* === DATE / TIME FORMAT (widget: Settings -> Misc -> Date and Time) === */
+        function applyDateTimeFormat(spec) {
+            config.dtfmt = spec || null;
+            buildScrubber();
+            var cur = state.mapFrames[state.animationPosition];
+            if (cur) updateTimestamp(cur, state.animationPosition);
+        }
+
         /* === THEME === */
         function setTheme(theme) {
             state.theme = theme;
@@ -2916,6 +3003,7 @@ var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
         function formatAlertTime(v) {
             var d = (typeof v === 'number') ? new Date(v * 1000) : new Date(v);
             if (isNaN(d.getTime())) return String(v);
+            if (config.dtfmt) return qtFormat(d, config.dtfmt.date, config.dtfmt) + ', ' + qtFormat(d, config.dtfmt.time, config.dtfmt);
             return d.toLocaleString((config.locale || undefined), {
                 weekday: 'short',
                 month: 'short',
@@ -3501,6 +3589,7 @@ var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
             setFormat: applyFormat,
             setTileSize: applyTileSize,
             setAlertsEnabled: setAlertsEnabled,
+            setDateTimeFormat: applyDateTimeFormat,
             setTheme: setTheme
         };
     }
@@ -4855,6 +4944,7 @@ var config = {
   nowMarkerLabel: true,
   locale: SYS_LOCALE,
   hour12: HOUR12,
+  dtfmt: DTFMT,
   onThemeChange: function (theme) {
     // The QML chrome only knows arrows on/off; the page derives the arrow
     // color from the map theme, so re-derive it whenever the theme moves.
@@ -4885,6 +4975,10 @@ window.setCells = function (mode) { viewer.setCells(mode); };
 window.setAlerts = function (on) { viewer.setAlertsEnabled(!!on); };
 
 window.setTheme = function (theme) { viewer.setTheme(theme); };
+
+// WIDGET PATCH: the date/time format of Settings -> Misc -> Date and Time.
+window.setDateTimeFormat = function (spec) { viewer.setDateTimeFormat(parseDtFmt(spec)); };
+// /WIDGET PATCH
 
 // WIDGET PATCH: live tile-options bridge for the Options panel (Smoothing /
 // Snow mask / Format / Tile size). The engine already exposes these on

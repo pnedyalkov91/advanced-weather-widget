@@ -310,7 +310,7 @@ GridLayout {
         implicitHeight: 0
     }
     Label {
-        text: i18n("Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar and History. Where space is tight (panel, forecast and history lists), \"Region default (long)\" is shown in its short form.")
+        text: i18n("Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar and History. Where space is tight (forecast and history lists, alerts), \"Region default (long)\" is shown in its short form.")
         wrapMode: Text.WordWrap
         opacity: 0.65
         font: Kirigami.Theme.smallFont

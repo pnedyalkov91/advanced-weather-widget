@@ -82,7 +82,7 @@ Item {
             var frames = (radar.past || []).concat(radar.nowcast || []);
             for (var i = 0; i < frames.length; i++) {
                 var d = new Date(frames[i].time * 1000);
-                out[frames[i].time] = weatherRoot.formatDateObj(d, true) + ", " + weatherRoot.formatTimeObj(d);
+                out[frames[i].time] = weatherRoot.formatDateObj(d, false) + ", " + weatherRoot.formatTimeObj(d);
             }
         } catch (e) {}
         return out;

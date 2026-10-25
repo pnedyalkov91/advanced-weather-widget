@@ -30,11 +30,14 @@
  *   • Daily precipitation bars in a strip below, sharing the same x scale,
  *     with the period's rain total in its corner
  *
+ * The first day sits at the left edge of the plot and the last day at the right
+ * edge (a few pixels of padding keep the end points and bars from being cut).
+ *
  * Zoom: the chart owns it. zoom = 1 fits the whole period into the width; at
  * zoom = 4 the plot is four times as wide and scrolls sideways (drag, mouse
  * wheel, touchpad swipe or the scroll bar below the chart). The axis labels
- * sit in a gutter on the left and stay put. Implementation: a transparent horizontal Flickable provides the
- * scrolling and its content is one "pinned" item that follows contentX, so
+ * sit in a gutter on the left and stay put. Implementation: a transparent
+ * horizontal Flickable provides the scrolling and its content is one "pinned" item that follows contentX, so
  * only the visible part is ever drawn - the Qt Graphs view is never wider
  * than the popup, however many days are zoomed into.
  *
@@ -82,10 +85,11 @@ ColumnLayout {
     readonly property real maxZoom: Math.max(1, dayCount / minZoomDays)
     readonly property bool zoomed: zoom > 1.001
     readonly property bool canZoomIn: zoom < maxZoom - 0.001
-    readonly property int visibleFirst: (dayCount > 0 && area.slot > 0)
-        ? Math.max(0, Math.min(dayCount - 1, Math.floor(scroller.contentX / area.slot + 0.001))) : 0
-    readonly property int visibleLast: (dayCount > 0 && area.slot > 0)
-        ? Math.max(visibleFirst, Math.min(dayCount - 1, Math.ceil((scroller.contentX + area.vw) / area.slot - 0.001) - 1)) : 0
+    // Days whose point is within half a step of the viewport.
+    readonly property int visibleFirst: dayCount > 0
+        ? Math.max(0, Math.min(dayCount - 1, Math.round((scroller.contentX - area.pad) / area.step))) : 0
+    readonly property int visibleLast: dayCount > 0
+        ? Math.max(visibleFirst, Math.min(dayCount - 1, Math.round((scroller.contentX + area.vw - area.pad) / area.step))) : 0
 
     /** Zoom to `z` (1 … maxZoom); `anchor` (0..1 across the chart) stays put. */
     function zoomTo(z, anchor) {
@@ -95,15 +99,18 @@ ColumnLayout {
             nz = 1;
         if (Math.abs(nz - zoom) < 0.001)
             return;
+        wheelAnim.stop();
         var vw = area.vw;
         var focus = (scroller.contentX + a * vw) / (vw * zoom);
         zoom = nz;
         scroller.contentX = Math.max(0, Math.min(vw * nz - vw, focus * vw * nz - a * vw));
     }
-    /** Mouse wheel / touchpad over the zoomed chart. A wheel notch, a sideways
-     *  touchpad swipe or Shift+wheel scrolls the chart; a vertical touchpad
-     *  swipe, or any wheel movement once the chart is at its end, scrolls the
-     *  day list behind it instead (outerFlickable). */
+    /** Mouse wheel / touchpad over the chart (called from the MouseArea
+     *  `wheelArea`, the same approach ForecastView uses for its hourly strip).
+     *  While zoomed in, a wheel notch, a sideways touchpad swipe or
+     *  Shift+wheel scrolls the chart; a vertical touchpad swipe, or any wheel
+     *  movement once the chart is at its end (or not zoomed), scrolls the day
+     *  list behind it instead (outerFlickable). */
     function wheelPan(event) {
         var tp = event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0;
         var dx = tp ? event.pixelDelta.x : event.angleDelta.x;
@@ -113,12 +120,17 @@ ColumnLayout {
             d = dx;
         else if (!tp || (event.modifiers & Qt.ShiftModifier))
             d = dy;
-        var maxX = scroller.contentWidth - scroller.width;
-        var nx = Math.max(0, Math.min(maxX, scroller.contentX - d));
         event.accepted = true;
-        if (d === 0 || nx === scroller.contentX) {
-            // Nothing to pan: a WheelHandler cannot pass the event on, so
-            // scroll the page behind the chart by hand.
+        var base = wheelAnim.running ? wheelAnim.to : scroller.contentX;
+        var maxX = scroller.contentWidth - scroller.width;
+        var nx = base;
+        if (zoomed && d !== 0) {
+            // A notch (120) moves about two days; a touchpad moves 1:1.
+            var move = tp ? d : d / 120 * Math.max(area.step * 2, Kirigami.Units.gridUnit * 2);
+            nx = Math.max(0, Math.min(maxX, base - move));
+        }
+        if (nx === base) {
+            // Nothing to pan: scroll the page behind the chart instead.
             var f = outerFlickable;
             if (f) {
                 var wy = tp ? event.pixelDelta.y : event.angleDelta.y / 2;
@@ -127,12 +139,21 @@ ColumnLayout {
             return;
         }
         root.hoverIndex = -1;
-        scroller.contentX = nx;
+        if (tp) {
+            wheelAnim.stop();
+            scroller.contentX = nx;
+        } else {
+            wheelAnim.stop();
+            wheelAnim.from = scroller.contentX;
+            wheelAnim.to = nx;
+            wheelAnim.start();
+        }
     }
 
     function zoomIn() { zoomTo(zoom * 2, 0.5); }
     function zoomOut() { zoomTo(zoom / 2, 0.5); }
     function resetZoom() {
+        wheelAnim.stop();
         zoom = 1;
         scroller.contentX = 0;
     }
@@ -258,31 +279,61 @@ ColumnLayout {
         readonly property real sbH: hbar.implicitHeight
         implicitHeight: plotBottom + sbH
 
-        // Horizontal layout: the whole period is `contentW` wide, `slot` per
+        // Horizontal layout: the whole period is `contentW` wide, `step` per
         // day; only the part starting at scroller.contentX is on screen.
+        // The first day sits `pad` from the left end of the content and the
+        // last day `pad` from the right end, so at zoom 1 the graph runs from
+        // edge to edge. `step` is the distance between two days.
         readonly property real contentW: vw * root.zoom
-        readonly property real slot: contentW / Math.max(1, root.dayCount)
+        readonly property real pad: root.dayCount > 1 ? Math.max(8, Kirigami.Units.smallSpacing * 2) : vw / 2
+        readonly property real step: root.dayCount > 1 ? Math.max(0.001, (contentW - 2 * pad) / (root.dayCount - 1)) : 1
 
-        /** x of day i's centre, in chart (viewport) coordinates */
-        function xOf(i) { return (i + 0.5) * slot - scroller.contentX; }
+        /** x of day i's point, in chart (viewport) coordinates */
+        function xOf(i) { return pad + i * step - scroller.contentX; }
         function yOf(v) { return py + (root.tempScale.hi - v) / (root.tempScale.hi - root.tempScale.lo) * ph; }
 
         // Date labels / vertical grid lines: whole multiples of `step` days
-        // that are in view, plus the last day when there is room for it.
+        // whose label fits completely inside the view (the two end days may
+        // sit against the edge), thinned so that no two labels touch.
         readonly property var labelIdx: {
             var n = root.dayCount;
             if (n < 2)
                 return [];
-            var step = Math.max(1, Math.ceil((tmDate.width + Kirigami.Units.gridUnit * 1.5) / slot));
-            var first = Math.max(0, Math.floor(scroller.contentX / slot) - 1);
-            var last = Math.min(n - 1, Math.ceil((scroller.contentX + vw) / slot));
+            var w = tmDate.width;
+            var gap = Kirigami.Units.largeSpacing * 2;
+            var every = Math.max(1, Math.ceil((w + gap) / step));
+            var first = Math.max(0, Math.floor((scroller.contentX - pad) / step) - 1);
+            var last = Math.min(n - 1, Math.ceil((scroller.contentX + vw - pad) / step) + 1);
+            var cand = [];
+            for (var i = Math.ceil(first / every) * every; i <= last; i += every)
+                cand.push(i);
+            if (cand.length === 0 || cand[cand.length - 1] !== n - 1)
+                cand.push(n - 1);
             var out = [];
-            var i = Math.ceil(first / step) * step;
-            for (; i <= last; i += step)
-                out.push(i);
-            var lastIdx = out.length > 0 ? out[out.length - 1] : -step;
-            if (n - 1 <= last && n - 1 - lastIdx >= step * 0.75)
-                out.push(n - 1);
+            var prevRight = -1e9;
+            for (var k = 0; k < cand.length; ++k) {
+                var idx = cand[k];
+                var c = xOf(idx);
+                if (c < 0 || c > vw)
+                    continue;               // point not in view
+                var isEnd = idx === 0 || idx === n - 1;
+                if (!isEnd && (c - w / 2 < 0 || c + w / 2 > vw))
+                    continue;               // label would be cut or pushed
+                var left = Math.max(0, Math.min(vw - w, c - w / 2));
+                if (left < prevRight + gap) {
+                    // collides with the previous label: the last day wins
+                    if (idx === n - 1 && out.length > 0 && out[out.length - 1] !== 0) {
+                        out.pop();
+                        prevRight = out.length > 0 ? Math.max(0, Math.min(vw - w, xOf(out[out.length - 1]) - w / 2)) + w : -1e9;
+                        if (left < prevRight + gap)
+                            continue;
+                    } else {
+                        continue;
+                    }
+                }
+                out.push(idx);
+                prevRight = left + w;
+            }
             return out;
         }
 
@@ -315,6 +366,15 @@ ColumnLayout {
             y: area.precipBottom
             color: Kirigami.Theme.textColor
             opacity: 0.25
+        }
+
+        // Smooth mouse-wheel scrolling (same feel as ForecastView's hourly strip)
+        NumberAnimation {
+            id: wheelAnim
+            target: scroller
+            property: "contentX"
+            duration: 140
+            easing.type: Easing.OutCubic
         }
 
         // ── scrolling surface ─────────────────────────────────────────
@@ -403,8 +463,8 @@ ColumnLayout {
                     axisX: Graphs.ValueAxis {
                         visible: false
                         lineVisible: false
-                        min: -0.5 + scroller.contentX / area.slot
-                        max: -0.5 + (scroller.contentX + area.vw) / area.slot
+                        min: (scroller.contentX - area.pad) / area.step
+                        max: (scroller.contentX + area.vw - area.pad) / area.step
                     }
                     axisY: Graphs.ValueAxis {
                         visible: false
@@ -424,9 +484,9 @@ ColumnLayout {
                     delegate: Rectangle {
                         required property var modelData
                         required property int index
-                        readonly property real bw: Math.max(1, Math.min(area.slot * 0.62, 14))
+                        readonly property real bw: Math.max(1, Math.min(area.step * 0.62, 14))
                         readonly property bool has: isFinite(modelData.precipMm) && modelData.precipMm > 0
-                        readonly property real bx: index * area.slot + (area.slot - bw) / 2 - scroller.contentX
+                        readonly property real bx: area.xOf(index) - bw / 2
                         visible: has && bx + bw > 0 && bx < area.vw
                         x: bx
                         width: bw
@@ -435,6 +495,39 @@ ColumnLayout {
                         radius: Math.min(2, bw / 2)
                         color: root.precipColor
                         opacity: root.hoverIndex < 0 || root.hoverIndex === index ? 0.9 : 0.55
+                    }
+                }
+
+                // ── dots on the lines ──────────────────────────────────
+                // One dot per day and series, left out when the days are too
+                // close together for them to read as dots.
+                readonly property real dotSize: Kirigami.Units.gridUnit * 0.4
+                readonly property bool showDots: area.step >= dotSize * 2.4
+                Repeater {
+                    model: pinned.showDots ? [
+                        { key: "maxC", color: root.highColor },
+                        { key: "meanC", color: root.meanColor },
+                        { key: "minC", color: root.lowColor }
+                    ] : []
+                    delegate: Repeater {
+                        id: dotSeries
+                        required property var modelData
+                        model: root.days
+                        delegate: Rectangle {
+                            required property var modelData
+                            required property int index
+                            readonly property real v: modelData[dotSeries.modelData.key]
+                            readonly property real cx: area.xOf(index)
+                            visible: isFinite(v) && cx > -width && cx < area.vw + width
+                            width: pinned.dotSize
+                            height: width
+                            radius: width / 2
+                            x: cx - width / 2
+                            y: isFinite(v) ? area.yOf(v) - height / 2 : 0
+                            color: dotSeries.modelData.color
+                            border.width: 1
+                            border.color: Kirigami.Theme.backgroundColor
+                        }
                     }
                 }
 
@@ -451,6 +544,29 @@ ColumnLayout {
                     width: 2
                     height: area.precipBottom - y
                     color: Kirigami.Theme.highlightColor
+                }
+
+                // Larger dots where the cursor crosses each line (as in the KDE
+                // weather applet's forecast graph)
+                Repeater {
+                    model: [
+                        { key: "maxC", color: root.highColor },
+                        { key: "meanC", color: root.meanColor },
+                        { key: "minC", color: root.lowColor }
+                    ]
+                    delegate: Rectangle {
+                        required property var modelData
+                        readonly property real v: pinned.hoverDay ? pinned.hoverDay[modelData.key] : NaN
+                        visible: pinned.hovering && isFinite(v)
+                        width: Kirigami.Units.gridUnit * 0.6
+                        height: width
+                        radius: width / 2
+                        x: pinned.cursorX - width / 2
+                        y: isFinite(v) ? area.yOf(v) - height / 2 : 0
+                        color: modelData.color
+                        border.width: 2
+                        border.color: Kirigami.Theme.backgroundColor
+                    }
                 }
 
                 Label {
@@ -573,35 +689,11 @@ ColumnLayout {
                             root.hoverIndex = -1;
                             return;
                         }
-                        root.hoverIndex = Math.max(0, Math.min(root.dayCount - 1, Math.floor((xIn + scroller.contentX) / area.slot)));
+                        root.hoverIndex = Math.max(0, Math.min(root.dayCount - 1, Math.round((xIn + scroller.contentX - area.pad) / area.step)));
                     }
                     onHoveredChanged: {
                         if (!hovered)
                             root.hoverIndex = -1;
-                    }
-                }
-                WheelHandler {
-                    enabled: root.zoomed
-                    acceptedModifiers: Qt.NoModifier
-                    onWheel: function (event) { root.wheelPan(event); }
-                }
-                WheelHandler {
-                    enabled: root.zoomed
-                    acceptedModifiers: Qt.ShiftModifier
-                    onWheel: function (event) { root.wheelPan(event); }
-                }
-                WheelHandler {
-                    // sideways touchpad swipes / tilt wheels
-                    enabled: root.zoomed
-                    orientation: Qt.Horizontal
-                    onWheel: function (event) { root.wheelPan(event); }
-                }
-                WheelHandler {
-                    acceptedModifiers: Qt.ControlModifier
-                    onWheel: function (event) {
-                        root.hoverIndex = -1;
-                        root.zoomTo(root.zoom * (event.angleDelta.y > 0 ? 1.4 : 1 / 1.4),
-                                    Math.max(0, Math.min(1, point.position.x / area.vw)));
                     }
                 }
             }
@@ -656,6 +748,31 @@ ColumnLayout {
             }
         }
 
+        // ── wheel / touchpad ──────────────────────────────────────────
+        // A MouseArea above the plot, as ForecastView does for its hourly
+        // strip: it takes only wheel events (no buttons), so hover and the
+        // drag below still work, and nothing underneath (the Qt Graphs view,
+        // the Flickable) gets to swallow the wheel first.
+        MouseArea {
+            id: wheelArea
+            x: area.plotX
+            y: 0
+            width: area.vw
+            height: area.plotBottom
+            z: 20
+            acceptedButtons: Qt.NoButton
+            onWheel: function (wheel) {
+                if (wheel.modifiers & Qt.ControlModifier) {
+                    root.hoverIndex = -1;
+                    root.zoomTo(root.zoom * (wheel.angleDelta.y > 0 ? 1.4 : 1 / 1.4),
+                                Math.max(0, Math.min(1, wheel.x / area.vw)));
+                    wheel.accepted = true;
+                } else {
+                    root.wheelPan(wheel);
+                }
+            }
+        }
+
         // ── drag to scroll while zoomed in ────────────────────────────
         // The Flickable is deliberately not interactive: a Flickable swallows
         // the plain mouse wheel, and the wheel should keep scrolling the day
@@ -669,6 +786,7 @@ ColumnLayout {
             property real _startX: 0
             onActiveChanged: {
                 if (active) {
+                    wheelAnim.stop();
                     _startX = scroller.contentX;
                     root.hoverIndex = -1;
                 }
