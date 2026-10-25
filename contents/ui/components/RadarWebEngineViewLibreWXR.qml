@@ -97,6 +97,9 @@ Item {
     readonly property int glow: Plasmoid.configuration.librewxrGlow
     // Darkness of the deep night, in percent of black (Radar settings).
     readonly property int nightDepth: Plasmoid.configuration.librewxrNightDepth
+    // "Prepare the radar in advance" (Radar settings): kept loaded, the
+    // hidden page prepares the latest image and the whole animation.
+    readonly property string prepareMode: Plasmoid.configuration.radarKeepLoaded === true ? "all" : "none"
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
     // m/s, "inf" for the last level). Empty for the default palette, and for
     // an entry that does not read: the page then uses the default one.
@@ -360,7 +363,7 @@ Item {
             "globe": i18n("Globe"),
             "dayNight": i18n("Day and night")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&prepare=" + radarRoot.prepareMode + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -826,6 +829,9 @@ Item {
                     pageLoadTimer.restart();
                 }
                 function onServerUrlChanged() {
+                    pageLoadTimer.restart();
+                }
+                function onPrepareModeChanged() {
                     pageLoadTimer.restart();
                 }
                 function onMapThemeChanged() {
