@@ -752,6 +752,8 @@ Item {
                                 font: root._f(9, false)
                                 text: {
                                     var c = chartLoader.item;
+                                    if (c && c.canZoomIn === true && c.zoomed !== true)
+                                        return i18n("Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in");
                                     if (!c || c.zoomed !== true || root.days.length === 0)
                                         return "";
                                     var a = root.days[Math.min(c.visibleFirst, root.days.length - 1)];
@@ -774,7 +776,7 @@ Item {
                                 enabled: !!chartLoader.item && chartLoader.item.canZoomIn === true
                                 onClicked: chartLoader.item.zoomIn()
                                 ToolTip.visible: hovered
-                                ToolTip.text: i18n("Zoom in")
+                                ToolTip.text: i18n("Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)")
                                 Accessible.name: i18n("Zoom in")
                             }
                             ToolButton {
@@ -1022,6 +1024,17 @@ Item {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 text: i18n("Data is available from %1 until yesterday.", root._date(H.EARLIEST_DATE))
+                color: Kirigami.Theme.textColor
+                opacity: 0.55
+                font: root._f(9, false)
+            }
+            Label {
+                Layout.fillWidth: true
+                visible: root.preset === "custom"
+                wrapMode: Text.WordWrap
+                // Example: a start date of 1 Jan 2015 gives an end date of 1 Jan 2016.
+                text: i18n("Range limited to %1 days: if the chosen range is longer, the end date is set automatically (for example, start date %2 gives end date %3).",
+                           H.MAX_RANGE_DAYS, root._date("2015-01-01"), root._date(H.addDays("2015-01-01", H.MAX_RANGE_DAYS - 1)))
                 color: Kirigami.Theme.textColor
                 opacity: 0.55
                 font: root._f(9, false)
