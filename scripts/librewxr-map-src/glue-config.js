@@ -79,6 +79,14 @@ function hasWebGL() {
   return webglOk;
 }
 
+// Map projection on the MapLibre page: 'flat' (Web Mercator) or 'globe'.
+var PROJECTION_INIT = PARAMS.get('proj') === 'globe' ? 'globe' : 'flat';
+// Day and night on the MapLibre page; on unless the widget says no.
+var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
+// Glow of the globe's atmosphere, in percent; the adapter reads and bounds it.
+var GLOW_INIT = PARAMS.get('glow');
+// Darkness of the deep night, in percent of black; the adapter reads and bounds it.
+var NIGHTDEPTH_INIT = PARAMS.get('nightdepth');
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';
@@ -111,6 +119,8 @@ var WIND_ON = PARAMS.get('wind') === '1';
 var WIND_FPS = Math.max(4, Math.min(30, paramNum('windfps', 10)));
 var WIND_MAX_FPS = Math.max(WIND_FPS, Math.min(30, paramNum('windmaxfps', 20)));
 var WIND_LINE_WIDTH = paramNum('windwidth', 1);   // CSS px, clamped by the layer
+var WIND_DENSITY = paramNum('winddensity', 1);   // particle density factor, 1 = one per 300 px2
+var WIND_PALETTE_PARAM = PARAMS.get('windpalette') || '';   // 8 "max:rrggbb", empty: the default palette
 var WIND_RELIEF = PARAMS.get('windrelief') !== '0';
 var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
 // Test knobs, never set by the widget: another base for the Open-Meteo API

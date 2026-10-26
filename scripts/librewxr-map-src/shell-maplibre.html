@@ -76,6 +76,19 @@
           <line x1="18" y1="12" x2="22" y2="12"></line>
         </svg>
       </button>
+      <button class="locate-btn proj-btn" id="lv-proj" title="Globe">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"></circle>
+          <ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+        </svg>
+      </button>
+      <button class="locate-btn night-btn" id="lv-night" title="Day and night">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3a9 9 0 1 0 0 18z"></path>
+          <circle cx="12" cy="12" r="9"></circle>
+        </svg>
+      </button>
       <div class="bg-picker" id="bgPicker">
         <button class="bg-btn" id="bgBtn" title="Map background">
           <svg viewBox="0 0 24 24">
@@ -116,6 +129,7 @@ if (!hasWebGL()) location.replace('librewxr-map-leaflet.html' + location.search)
 /*@__WIDGET_GLUE_WIND__*/
 /*@__WIDGET_GLUE_WIND_OPEN__*/
 /*@__WIDGET_GLUE_WIND_TABLE__*/
+/*@__WIDGET_GLUE_EARTH__*/
 
     </script>
 
@@ -125,6 +139,8 @@ import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.13.0/dist/maplibre-
 maplibregl.setWorkerUrl('https://unpkg.com/maplibre-gl@6.13.0/dist/maplibre-gl-worker.mjs');
 /*@__WIDGET_GLUE_ADAPTER__*/
 var _widgetAdapter = new WidgetMapLibreAdapter(maplibregl);
+// Module code is not global: tests reach the map through remote debugging.
+window._widgetAdapter = _widgetAdapter;
 /*@__WIDGET_GLUE_CONTROLS__*/
 
     </script>

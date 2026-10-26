@@ -363,6 +363,12 @@ var WidgetLeafletAdapter = function () {
     // Leaflet draws Web Mercator only.
     setProjection: function () {},
     getProjection: function () { return 'flat'; },
+    setDayNight: function () {},
+    getDayNight: function () { return false; },
+    setGlow: function () {},
+    getGlow: function () { return 0; },
+    setNightDepth: function () {},
+    getNightDepth: function () { return 0; },
 
     createWindLayer: function (source, openData, dem, options) {
       var Layer = WidgetWind.createWindLayer(L);

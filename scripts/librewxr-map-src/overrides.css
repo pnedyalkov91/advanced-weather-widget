@@ -188,6 +188,26 @@
 
       /* Base-map picker: button stacks below the 38px locate button; the
          menu opens downward over the map. */
+      /* MapLibre page: the globe button, under the base-map picker. */
+      .proj-btn {
+        top: calc(var(--space-2) + 2 * (38px + var(--space-1)));
+      }
+      .proj-btn.active {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      /* Day and night button, under the globe one. */
+      .night-btn {
+        top: calc(var(--space-2) + 3 * (38px + var(--space-1)));
+      }
+      .night-btn svg path {
+        fill: var(--text-secondary);
+        stroke: none;
+      }
+      .night-btn.active {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
       .bg-picker {
         position: absolute;
         top: calc(var(--space-2) + 38px + var(--space-1));

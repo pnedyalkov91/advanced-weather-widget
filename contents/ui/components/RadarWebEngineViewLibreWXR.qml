@@ -26,6 +26,10 @@
  *   window.setWindLevel("10m" | "700hPa") // surface wind or the flow aloft that steers the rain
  *   window.setWindRate(fps, maxFps)       // frame-rate budget from the settings
  *   window.setWindWidth(px)               // particle width from the settings
+ *   window.setProjection("flat" | "globe") // map projection (the map's globe button reports "proj:")
+ *   window.setDayNight(true | false)      // night and twilights (the map's button reports "night:")
+ *   window.setWindPalette("max:rrggbb,...") // wind palette from the settings; "" = the default one
+ *   window.setWindDensity(factor)         // particle density from the settings (1 = default)
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
  *   window.setAlerts(true | false)        // WMO alerts overlay
  *   window.setSmooth(true | false)        // radar tile edge smoothing
@@ -83,6 +87,39 @@ Item {
     }
     // Particle width from the settings, in CSS px (the page clamps it to 0.5-2).
     readonly property real windLineWidth: Plasmoid.configuration.librewxrWindLineWidth > 0 ? Plasmoid.configuration.librewxrWindLineWidth : 1
+    // Particle density factor from the settings (the page keeps it within 0.5-2 by clamping the count).
+    readonly property real windDensity: Plasmoid.configuration.librewxrWindDensity > 0 ? Plasmoid.configuration.librewxrWindDensity : 1
+    // Flat map or globe, switched from the globe button on the map.
+    readonly property string projection: Plasmoid.configuration.librewxrProjection === "globe" ? "globe" : "flat"
+    // Day and night on the map, switched from the button under the globe one.
+    readonly property bool dayNight: Plasmoid.configuration.librewxrDayNight !== false
+    // Glow of the globe's atmosphere, in percent of full strength (Radar settings).
+    readonly property int glow: Plasmoid.configuration.librewxrGlow
+    // Darkness of the deep night, in percent of black (Radar settings).
+    readonly property int nightDepth: Plasmoid.configuration.librewxrNightDepth
+    // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
+    // m/s, "inf" for the last level). Empty for the default palette, and for
+    // an entry that does not read: the page then uses the default one.
+    readonly property string windPalette: {
+        var name = Plasmoid.configuration.librewxrWindPalette || "";
+        if (!name)
+            return "";
+        var list = [];
+        try {
+            list = JSON.parse(Plasmoid.configuration.librewxrWindPalettes || "[]");
+        } catch (e) {
+            return "";
+        }
+        for (var i = 0; i < list.length; i++) {
+            var levels = list[i].levels;
+            if (list[i].name !== name || !levels || levels.length !== 8)
+                continue;
+            return levels.map(function (l, k) {
+                return (k === 7 ? "inf" : String(Math.round(Number(l.max) * 1000) / 1000)) + ":" + String(l.color).replace("#", "");
+            }).join(",");
+        }
+        return "";
+    }
     readonly property string activeCells: Plasmoid.configuration.librewxrCells || ""
     readonly property bool alertsOn: Plasmoid.configuration.librewxrAlerts === true
     readonly property bool smoothOn: Plasmoid.configuration.librewxrSmooth !== false
@@ -222,10 +259,34 @@ Item {
 
     Component.onCompleted: {
         console.log("[Advanced Weather Widget Radar/LibreWXR] component completed; lat=", lat, "lon=", lon, "layer=", activeLayer, "zoom=", initialZoom, "colorScheme=", colorScheme, "arrows=", arrowsOn, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
+        _applyMapProfile();
         themeGuardTimer.restart();
     }
 
     // -- Wi-font icon loader -------------------------------------------------
+    // The map's own storage, see MapWebProfile.qml; no item where it cannot load.
+    Loader {
+        id: mapProfileLoader
+        source: "MapWebProfile.qml"
+        onLoaded: radarRoot._applyMapProfile()
+    }
+
+    // Hands the map's profile to the view once, before the first page load.
+    // instance() is null until the prototype's component is complete, and
+    // QtWebEngine dereferences a null profile in setProfile: plasmashell
+    // crashed on it (2026-10-23), so a null one is never written.
+    property bool _mapProfileSet: false
+    function _applyMapProfile() {
+        if (_mapProfileSet || radarRoot._lastPageUrl !== "" || !mapProfileLoader.item)
+            return;
+        var p = mapProfileLoader.item.instance();
+        if (!p)
+            return;
+        webView.profile = p;
+        _mapProfileSet = true;
+        console.log("[Advanced Weather Widget Radar/LibreWXR] map profile:", p.storageName);
+    }
+
     FontLoader {
         id: wiFont
         source: Qt.resolvedUrl("../../fonts/weathericons-regular-webfont.ttf")
@@ -295,9 +356,11 @@ Item {
             "noRadarData": i18n("No radar data"),
             "noSatData": i18n("No satellite data"),
             "apiError": i18n("API error"),
-            "connFailed": i18n("Connection failed")
+            "connFailed": i18n("Connection failed"),
+            "globe": i18n("Globe"),
+            "dayNight": i18n("Day and night")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -729,6 +792,18 @@ Item {
                     if (!isNaN(z) && z !== Plasmoid.configuration.radarZoom) {
                         Plasmoid.configuration.radarZoom = z;
                     }
+                } else if (title.indexOf("proj:") === 0) {
+                    // Switched with the globe button: the page already shows it.
+                    var proj = title.substring(5) === "globe" ? "globe" : "flat";
+                    if (proj !== Plasmoid.configuration.librewxrProjection) {
+                        Plasmoid.configuration.librewxrProjection = proj;
+                    }
+                } else if (title.indexOf("night:") === 0) {
+                    // Switched with the day and night button: the page already shows it.
+                    var night = title.substring(6) === "1";
+                    if (night !== (Plasmoid.configuration.librewxrDayNight !== false)) {
+                        Plasmoid.configuration.librewxrDayNight = night;
+                    }
                 } else if (title.indexOf("bg:") === 0) {
                     // Picked from the in-map picker: the page already swapped
                     // its tiles, so persist the choice without reloading.
@@ -762,6 +837,24 @@ Item {
                 }
                 function onWindLineWidthChanged() {
                     webView.runJavaScript("if (window.setWindWidth) window.setWindWidth(" + radarRoot.windLineWidth + ");");
+                }
+                function onWindDensityChanged() {
+                    webView.runJavaScript("if (window.setWindDensity) window.setWindDensity(" + radarRoot.windDensity + ");");
+                }
+                function onWindPaletteChanged() {
+                    webView.runJavaScript("if (window.setWindPalette) window.setWindPalette(" + JSON.stringify(radarRoot.windPalette) + ");");
+                }
+                function onProjectionChanged() {
+                    webView.runJavaScript("if (window.setProjection) window.setProjection(" + JSON.stringify(radarRoot.projection) + ");");
+                }
+                function onDayNightChanged() {
+                    webView.runJavaScript("if (window.setDayNight) window.setDayNight(" + radarRoot.dayNight + ");");
+                }
+                function onGlowChanged() {
+                    webView.runJavaScript("if (window.setGlow) window.setGlow(" + radarRoot.glow + ");");
+                }
+                function onNightDepthChanged() {
+                    webView.runJavaScript("if (window.setNightDepth) window.setNightDepth(" + radarRoot.nightDepth + ");");
                 }
                 function onMapBackgroundChanged() {
                     if (radarRoot._backgroundFromMap) {

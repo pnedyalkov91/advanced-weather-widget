@@ -144,6 +144,9 @@ var windLayer = null;
 var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
 var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
 var windLineWidth = WIND_LINE_WIDTH;
+var windDensity = WIND_DENSITY;
+// A palette that does not parse (a broken settings entry) gives the default one.
+var windPalette = WidgetWind.WindField.parsePalette(WIND_PALETTE_PARAM);
 var viewportSettled = false;   // set by the first window.fixViewport()
 
 window.setWind = function (on) {
@@ -152,7 +155,7 @@ window.setWind = function (on) {
   if (on && !windLayer) {
     windLayer = _widgetAdapter.createWindLayer(_windSource, _windOpen, _windDem, {
       fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: windLevel,
-      lineWidth: windLineWidth
+      lineWidth: windLineWidth, palette: windPalette, density: windDensity
     });
     if (!windLayer) return;
     windLayer.addTo(m);
@@ -176,6 +179,18 @@ window.setWindWidth = function (w) {
   if (windLayer) windLayer.setLineWidth(w);
 };
 
+// Particle density chosen in the widget settings (1 = one particle per 300 px2).
+window.setWindDensity = function (d) {
+  windDensity = d;
+  if (windLayer) windLayer.setDensity(d);
+};
+
+// Wind palette chosen in the widget settings, in the "max:rrggbb" x 8 form.
+window.setWindPalette = function (s) {
+  windPalette = WidgetWind.WindField.parsePalette(s);
+  if (windLayer) windLayer.setPalette(windPalette);
+};
+
 // '10m' (surface, relief-aware) or '700hPa' (the flow that steers the rain).
 window.setWindLevel = function (level) {
   windLevel = level === '700hPa' ? '700hPa' : '10m';
@@ -191,6 +206,56 @@ if (WIND_ON) window.setWind(true);
 
 // Fade-in fallback when nothing calls fixViewport (the page opened on its own).
 setTimeout(function () { document.body.classList.add('lv-ready'); }, 1500);
+
+// === PROJECTION (MapLibre page: flat map or globe) ===
+// The globe button sits under the base-map picker and is lit while the globe
+// shows. A switch is reported to QML through the title ("proj:"), which keeps
+// it in the settings; QML can also set it through window.setProjection().
+var projBtn = document.getElementById('lv-proj');
+function renderProjBtn() {
+  if (projBtn) projBtn.classList.toggle('active', _widgetAdapter.getProjection() === 'globe');
+}
+window.setProjection = function (p) {
+  p = p === 'globe' ? 'globe' : 'flat';
+  if (p === _widgetAdapter.getProjection()) return;
+  _widgetAdapter.setProjection(p);
+  renderProjBtn();
+  // The new projection is in place on the next frames: rebuild the wind table then.
+  if (windLayer && windLayer.refresh) setTimeout(function () { if (windLayer) windLayer.refresh(); }, 300);
+};
+if (projBtn) {
+  projBtn.title = tr('globe', 'Globe');
+  projBtn.addEventListener('click', function () {
+    window.setProjection(_widgetAdapter.getProjection() === 'globe' ? 'flat' : 'globe');
+    document.title = 'proj:' + _widgetAdapter.getProjection();
+  });
+  renderProjBtn();
+}
+
+// === DAY AND NIGHT (MapLibre page: the night fading in on the map) ===
+// Same pattern as the globe button: lit while on, reported to QML through
+// the title ("night:1" or "night:0"), set by QML through window.setDayNight().
+var nightBtn = document.getElementById('lv-night');
+function renderNightBtn() {
+  if (nightBtn) nightBtn.classList.toggle('active', _widgetAdapter.getDayNight());
+}
+window.setDayNight = function (on) {
+  _widgetAdapter.setDayNight(!!on);
+  renderNightBtn();
+};
+if (nightBtn) {
+  nightBtn.title = tr('dayNight', 'Day and night');
+  nightBtn.addEventListener('click', function () {
+    window.setDayNight(!_widgetAdapter.getDayNight());
+    document.title = 'night:' + (_widgetAdapter.getDayNight() ? '1' : '0');
+  });
+  renderNightBtn();
+}
+
+// Glow of the globe's atmosphere, from the widget's slider (percent).
+window.setGlow = function (percent) { _widgetAdapter.setGlow(percent); };
+// Darkness of the deep night, from the widget's settings (percent of black).
+window.setNightDepth = function (percent) { _widgetAdapter.setNightDepth(percent); };
 
 // === BASE MAP PICKER (in-map, 1.7.2 style) ===
 var bgMenu = document.getElementById('bgMenu');

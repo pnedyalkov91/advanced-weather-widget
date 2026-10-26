@@ -24,6 +24,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import QtQuick.Dialogs as QtDialogs
+import org.kde.plasma.plasmoid
+import "../../js/configUtils.js" as ConfigUtils
+import "../../js/weather.js" as W
 
 GridLayout {
     id: radarTab
@@ -41,6 +45,38 @@ GridLayout {
 
     /** Reference to the root KCM (configGeneral) for cfg_* properties, functions and state */
     required property var configRoot
+
+    /** The default wind palette (the Beaufort scale grouped), upper bounds in
+        m/s as the map page has them; the last level is open. */
+    readonly property var defaultWindPalette: [[5, "#ffffff"], [12, "#2ecc40"], [20, "#7fdbff"], [38, "#1e64ff"], [50, "#ffdc00"], [75, "#ff851b"], [118, "#ff2020"], [0, "#8a5cff"]].map(function (b, i) {
+        return {
+            max: i === 7 ? 0 : Math.round(b[0] / 3.6 * 1000) / 1000,
+            color: b[1]
+        };
+    })
+    /** The wind palettes made here: [{ name, levels: [{ max, color }] x 8 }]. */
+    readonly property var windPalettes: {
+        try {
+            var list = JSON.parse(radarTab.configRoot.cfg_librewxrWindPalettes || "[]");
+            return Array.isArray(list) ? list : [];
+        } catch (e) {
+            return [];
+        }
+    }
+    readonly property string windUnit: Plasmoid.configuration.windSpeedUnit || "kmh"
+
+    /** A wind speed in m/s, in the wind unit of the settings; and back. */
+    function windToUnit(ms) {
+        return Number(W.formatWindValue(ms * 3.6, radarTab.windUnit));
+    }
+    function windFromUnit(value) {
+        var perKmh = radarTab.windUnit === "mph" ? 0.621371 : (radarTab.windUnit === "ms" ? 1 / 3.6 : (radarTab.windUnit === "kn" ? 0.539957 : 1));
+        return value / perKmh / 3.6;
+    }
+    function saveWindPalettes(list, selected) {
+        radarTab.configRoot.cfg_librewxrWindPalettes = JSON.stringify(list);
+        radarTab.configRoot.cfg_librewxrWindPalette = selected;
+    }
 
     // Section title with a thin rule, same look as the Notifications page.
     component SectionHeader: RowLayout {
@@ -325,6 +361,86 @@ GridLayout {
         }
     }
 
+    // How dark the night gets on the map at its deepest, when day and night
+    // are shown (the button on the map switches them).
+    Label {
+        text: i18n("Night darkness:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+
+            Slider {
+                objectName: "nightDepthSlider"
+                Layout.preferredWidth: 220
+                from: 10
+                to: 80
+                stepSize: 5
+                value: radarTab.configRoot.cfg_librewxrNightDepth
+                onMoved: radarTab.configRoot.cfg_librewxrNightDepth = Math.round(value)
+            }
+            Label {
+                text: i18n("%1 %", radarTab.configRoot.cfg_librewxrNightDepth)
+            }
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("How dark the deep night is on the radar map when day and night are shown (button on the map).")
+        }
+    }
+
+    // The globe's atmosphere lights its day side; at full strength it washes
+    // the map out.
+    Label {
+        text: i18n("Globe glow:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+
+            Slider {
+                objectName: "globeGlowSlider"
+                Layout.preferredWidth: 220
+                from: 0
+                to: 100
+                stepSize: 5
+                value: radarTab.configRoot.cfg_librewxrGlow
+                onMoved: radarTab.configRoot.cfg_librewxrGlow = Math.round(value)
+            }
+            Label {
+                text: i18n("%1 %", radarTab.configRoot.cfg_librewxrGlow)
+            }
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("Glow of the atmosphere around the globe (globe button on the map). Lower it if the day side looks washed out.")
+        }
+    }
+
     // The animated wind layer of the LibreWXR map. Its data comes from
     // Open-Meteo, not from the LibreWXR server. It redraws the map at
     // every frame, so the frame-rate budget is what the CPU cost
@@ -395,6 +511,370 @@ GridLayout {
         }
         Label {
             text: i18n("%1 px", Number(radarTab.configRoot.cfg_librewxrWindLineWidth).toLocaleString(Qt.locale(), "f", 1))
+        }
+    }
+
+    // More particles show the flow better and cost more CPU.
+    Label {
+        text: i18n("Particle density:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        Slider {
+            Layout.preferredWidth: 220
+            from: 0.5
+            to: 2
+            stepSize: 0.1
+            value: radarTab.configRoot.cfg_librewxrWindDensity
+            onMoved: radarTab.configRoot.cfg_librewxrWindDensity = Math.round(value * 10) / 10
+        }
+        Label {
+            text: i18n("×%1", Number(radarTab.configRoot.cfg_librewxrWindDensity).toLocaleString(Qt.locale(), "f", 1))
+        }
+    }
+
+    // Wind palettes: the default one, and the ones made here, kept by name.
+    Label {
+        text: i18n("Wind palette:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+
+        ComboBox {
+            id: windPaletteCombo
+            Layout.preferredWidth: 200
+            model: [i18n("Default")].concat(radarTab.windPalettes.map(function (p) {
+                return p.name;
+            }))
+            currentIndex: {
+                var name = radarTab.configRoot.cfg_librewxrWindPalette;
+                for (var i = 0; i < radarTab.windPalettes.length; i++) {
+                    if (radarTab.windPalettes[i].name === name)
+                        return i + 1;
+                }
+                return 0;
+            }
+            onActivated: radarTab.configRoot.cfg_librewxrWindPalette = currentIndex === 0 ? "" : radarTab.windPalettes[currentIndex - 1].name
+        }
+        Button {
+            icon.name: "list-add"
+            text: i18n("New…")
+            onClicked: windPaletteDialog.openFor(-1)
+        }
+        Button {
+            icon.name: "document-edit"
+            text: i18n("Edit…")
+            enabled: windPaletteCombo.currentIndex > 0
+            onClicked: windPaletteDialog.openFor(windPaletteCombo.currentIndex - 1)
+        }
+        Button {
+            icon.name: "edit-delete"
+            text: i18n("Delete")
+            enabled: windPaletteCombo.currentIndex > 0
+            onClicked: {
+                var list = radarTab.windPalettes.slice();
+                list.splice(windPaletteCombo.currentIndex - 1, 1);
+                radarTab.saveWindPalettes(list, "");
+            }
+        }
+    }
+
+    // Editor of one palette: its name, then 8 levels, each a color and the
+    // speed it goes up to (the last one has no limit).
+    Dialog {
+        id: windPaletteDialog
+
+        property int index: -1       // palette edited; -1 for a new one
+        property var levels: []
+        readonly property string unitLabel: i18n(W.windUnitLabel(radarTab.windUnit))
+
+        function openFor(i) {
+            index = i;
+            var from = i >= 0 ? radarTab.windPalettes[i].levels : (windPaletteCombo.currentIndex > 0 ? radarTab.windPalettes[windPaletteCombo.currentIndex - 1].levels : radarTab.defaultWindPalette);
+            levels = from.map(function (l) {
+                return {
+                    max: Number(l.max),
+                    color: String(l.color)
+                };
+            });
+            nameField.text = i >= 0 ? radarTab.windPalettes[i].name : "";
+            check();
+            open();
+        }
+        function setLevel(i, key, value) {
+            var list = levels.slice(), level = {
+                max: list[i].max,
+                color: list[i].color
+            };
+            level[key] = value;
+            list[i] = level;
+            levels = list;
+            check();
+        }
+
+        // Colors go through the clipboard as "#rrggbb" text, readable by
+        // other applications and from them, by way of a hidden text field
+        // (clipboardText below). clipboardColor is read when the menu opens.
+        property string clipboardColor: ""
+        function readClipboardColor() {
+            clipboardText.text = "";
+            clipboardText.paste();
+            clipboardColor = ConfigUtils.colorFromText(clipboardText.text);
+            return clipboardColor;
+        }
+        function copyColor(i) {
+            clipboardText.text = levels[i].color;
+            clipboardText.selectAll();
+            clipboardText.copy();
+        }
+        function pasteColor(i) {
+            var c = readClipboardColor();
+            if (c)
+                setLevel(i, "color", c);
+        }
+        // The color a drag carries: a color (KDE color buttons and
+        // pickers) or a text such as "#1e64ff"; "" when it has none.
+        function droppedColor(event) {
+            if (event.hasColor) {
+                var c = event.colorData;
+                return ConfigUtils.colorFromText(Qt.rgba(c.r, c.g, c.b, 1).toString());
+            }
+            return event.hasText ? ConfigUtils.colorFromText(event.text) : "";
+        }
+        // A dropped color goes to level i; false when the drop has none.
+        function dropColor(i, event) {
+            var c = droppedColor(event);
+            if (!c)
+                return false;
+            setLevel(i, "color", c);
+            quietColorButtons();
+            return true;
+        }
+        // Qt follows a drag and drop with a click on a color button, which
+        // would open the color window for nothing: the buttons ignore
+        // clicks for a moment after a drag or a drop.
+        property real _colorClicksFrom: 0
+        function quietColorButtons() {
+            _colorClicksFrom = Date.now() + 500;
+        }
+        // The OK button waits for a free name and limits that go up.
+        function check() {
+            var name = nameField.text.trim(), problem = "";
+            if (!name)
+                problem = i18n("Give the palette a name.");
+            for (var k = 0; k < radarTab.windPalettes.length && !problem; k++) {
+                if (k !== index && radarTab.windPalettes[k].name === name)
+                    problem = i18n("Another palette has this name.");
+            }
+            for (var j = 0; j < 7 && !problem; j++) {
+                if (!(levels[j].max > (j > 0 ? levels[j - 1].max : 0)))
+                    problem = i18n("Each level must go higher than the one before.");
+            }
+            errorLabel.text = problem;
+            var ok = standardButton(Dialog.Ok);
+            if (ok)
+                ok.enabled = problem === "";
+        }
+
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        modal: true
+        title: index < 0 ? i18n("New wind palette") : i18n("Edit wind palette")
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        onAccepted: {
+            var entry = {
+                name: nameField.text.trim(),
+                levels: levels.map(function (l, i) {
+                    return {
+                        max: i === 7 ? 0 : Math.round(l.max * 1000) / 1000,
+                        color: l.color
+                    };
+                })
+            };
+            var list = radarTab.windPalettes.slice();
+            if (index >= 0)
+                list[index] = entry;
+            else
+                list.push(entry);
+            radarTab.saveWindPalettes(list, entry.name);
+        }
+
+        ColumnLayout {
+            spacing: Kirigami.Units.smallSpacing
+
+            TextField {
+                id: nameField
+                Layout.fillWidth: true
+                placeholderText: i18n("Palette name")
+                onTextChanged: windPaletteDialog.check()
+            }
+            TextEdit {
+                id: clipboardText
+                visible: false
+            }
+            Repeater {
+                model: 8
+                delegate: RowLayout {
+                    id: levelRow
+                    required property int index
+                    readonly property string levelColor: windPaletteDialog.levels.length ? windPaletteDialog.levels[levelRow.index].color : "#ffffff"
+                    property url dragImage
+                    spacing: Kirigami.Units.smallSpacing
+
+                    // The color button of KQuickControls, plus: right-click
+                    // copies or pastes the color, and so do Ctrl+C and Ctrl+V
+                    // on the focused button. A color dragged onto another
+                    // level, or dropped from another application, becomes
+                    // that level's color. A click opens the color window,
+                    // except the one Qt sends at the end of a drag.
+                    Button {
+                        id: levelColorButton
+                        objectName: "windLevelColor"
+                        property bool dragged: false   // a drag left from this press
+                        implicitWidth: 48
+                        Accessible.name: i18n("Wind color")
+
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            color: levelRow.levelColor
+                        }
+                        QtDialogs.ColorDialog {
+                            id: levelColorDialog
+                            title: i18n("Wind color")
+                            parentWindow: levelColorButton.Window.window
+                            onAccepted: windPaletteDialog.setLevel(levelRow.index, "color", ConfigUtils.colorFromText(selectedColor.toString()) || levelRow.levelColor)
+                        }
+                        onPressed: dragged = false
+                        onClicked: {
+                            if (dragged || Date.now() < windPaletteDialog._colorClicksFrom)
+                                return;
+                            levelColorDialog.selectedColor = levelRow.levelColor;
+                            levelColorDialog.open();
+                        }
+
+                        ToolTip.visible: hovered && !levelColorDrag.active && !levelColorMenu.visible
+                        ToolTip.text: i18n("%1. Right-click to copy or paste it, drag it onto another level.", levelRow.levelColor)
+                        ToolTip.delay: Kirigami.Units.toolTipDelay
+
+                        Keys.onPressed: event => {
+                            if (event.matches(StandardKey.Copy)) {
+                                windPaletteDialog.copyColor(levelRow.index);
+                                event.accepted = true;
+                            } else if (event.matches(StandardKey.Paste)) {
+                                windPaletteDialog.pasteColor(levelRow.index);
+                                event.accepted = true;
+                            }
+                        }
+
+                        TapHandler {
+                            acceptedButtons: Qt.RightButton
+                            onTapped: levelColorMenu.popup()
+                        }
+                        // The picture under the pointer while dragging, taken
+                        // beforehand: the drag starts at once.
+                        HoverHandler {
+                            onHoveredChanged: {
+                                if (hovered)
+                                    levelColorButton.grabToImage(result => levelRow.dragImage = result.url);
+                            }
+                        }
+                        DragHandler {
+                            id: levelColorDrag
+                            target: null
+                            onActiveChanged: {
+                                if (active)
+                                    levelColorButton.dragged = true;
+                            }
+                        }
+                        Drag.active: levelColorDrag.active
+                        Drag.dragType: Drag.Automatic
+                        Drag.supportedActions: Qt.CopyAction
+                        Drag.mimeData: ({
+                                "text/plain": levelRow.levelColor
+                            })
+                        Drag.imageSource: levelRow.dragImage
+                        Drag.onDragFinished: windPaletteDialog.quietColorButtons()
+
+                        DropArea {
+                            anchors.fill: parent
+                            onEntered: drag => drag.accepted = windPaletteDialog.droppedColor(drag) !== ""
+                            onDropped: drop => {
+                                if (windPaletteDialog.dropColor(levelRow.index, drop))
+                                    drop.accept(Qt.CopyAction);
+                            }
+                        }
+
+                        Menu {
+                            id: levelColorMenu
+                            onAboutToShow: windPaletteDialog.readClipboardColor()
+                            MenuItem {
+                                icon.name: "edit-copy"
+                                text: i18n("Copy color")
+                                onTriggered: windPaletteDialog.copyColor(levelRow.index)
+                            }
+                            MenuItem {
+                                icon.name: "edit-paste"
+                                text: i18n("Paste color")
+                                enabled: windPaletteDialog.clipboardColor !== ""
+                                onTriggered: windPaletteDialog.pasteColor(levelRow.index)
+                            }
+                        }
+                    }
+                    Label {
+                        text: levelRow.index < 7 ? i18n("up to") : (windPaletteDialog.levels.length ? i18n("above %1 %2", radarTab.windToUnit(windPaletteDialog.levels[6].max), windPaletteDialog.unitLabel) : "")
+                    }
+                    TextField {
+                        visible: levelRow.index < 7
+                        Layout.preferredWidth: Kirigami.Units.gridUnit * 4
+                        text: windPaletteDialog.levels.length && levelRow.index < 7 ? String(radarTab.windToUnit(windPaletteDialog.levels[levelRow.index].max)) : ""
+                        validator: DoubleValidator {
+                            bottom: 0
+                            decimals: 1
+                            notation: DoubleValidator.StandardNotation
+                        }
+                        inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        onEditingFinished: windPaletteDialog.setLevel(levelRow.index, "max", radarTab.windFromUnit(Number(text.replace(",", "."))))
+                    }
+                    Label {
+                        visible: levelRow.index < 7
+                        text: windPaletteDialog.unitLabel
+                    }
+                }
+            }
+            Button {
+                icon.name: "edit-reset"
+                text: i18n("Default colors and limits")
+                onClicked: {
+                    windPaletteDialog.levels = radarTab.defaultWindPalette.map(function (l) {
+                        return {
+                            max: l.max,
+                            color: l.color
+                        };
+                    });
+                    windPaletteDialog.check();
+                }
+            }
+            Label {
+                id: errorLabel
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Kirigami.Theme.negativeTextColor
+                visible: text !== ""
+            }
         }
     }
 
