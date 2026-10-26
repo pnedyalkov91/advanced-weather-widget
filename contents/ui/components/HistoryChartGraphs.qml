@@ -43,9 +43,9 @@
  *
  * Only loaded through a Loader (see HistoryView.qml): when the Qt Graphs QML
  * module is missing or too old to compile this file, the Loader reports an
- * error and the view falls back to HistoryChartCanvas.qml.
+ * error and the view falls back to HistoryChartKQC.qml.
  *
- * Interface (shared with HistoryChartCanvas.qml):
+ * Interface (shared with HistoryChartKQC.qml):
  *   view          the HistoryView - provides _temp()/_precip()/_day()/_date()
  *   days          array of day objects from openMeteoHistory.js
  *   zoomed / canZoomIn      state for the toolbar buttons
@@ -292,6 +292,17 @@ ColumnLayout {
         function xOf(i) { return pad + i * step - scroller.contentX; }
         function yOf(v) { return py + (root.tempScale.hi - v) / (root.tempScale.hi - root.tempScale.lo) * ph; }
 
+        /** Left edge of day idx's date label. Labels are centred on their
+         *  vertical line; the first day's label starts at its line and the last
+         *  day's ends at it (so the line never sits off to one side of a label
+         *  that is pushed in from the edge); all are kept inside the view. */
+        function labelLeft(idx) {
+            var w = tmDate.width;
+            var c = xOf(idx);
+            var l = idx === 0 ? c : (idx === root.dayCount - 1 ? c - w : c - w / 2);
+            return Math.max(0, Math.min(vw - w, l));
+        }
+
         // Date labels / vertical grid lines: whole multiples of `step` days
         // whose label fits completely inside the view (the two end days may
         // sit against the edge), thinned so that no two labels touch.
@@ -319,12 +330,12 @@ ColumnLayout {
                 var isEnd = idx === 0 || idx === n - 1;
                 if (!isEnd && (c - w / 2 < 0 || c + w / 2 > vw))
                     continue;               // label would be cut or pushed
-                var left = Math.max(0, Math.min(vw - w, c - w / 2));
+                var left = labelLeft(idx);
                 if (left < prevRight + gap) {
                     // collides with the previous label: the last day wins
                     if (idx === n - 1 && out.length > 0 && out[out.length - 1] !== 0) {
                         out.pop();
-                        prevRight = out.length > 0 ? Math.max(0, Math.min(vw - w, xOf(out[out.length - 1]) - w / 2)) + w : -1e9;
+                        prevRight = out.length > 0 ? labelLeft(out[out.length - 1]) + w : -1e9;
                         if (left < prevRight + gap)
                             continue;
                     } else {
@@ -415,10 +426,13 @@ ColumnLayout {
                     model: area.labelIdx
                     delegate: Rectangle {
                         required property int modelData
+                        // runs through the precipitation strip too, so the bars
+                        // can be read against the same dates; snapped to a whole
+                        // pixel so every line is equally crisp
                         width: 1
-                        x: area.xOf(modelData) - 0.5
+                        x: Math.round(area.xOf(modelData) - 0.5)
                         y: area.py
-                        height: area.ph
+                        height: area.precipBottom - area.py
                         color: Kirigami.Theme.textColor
                         opacity: 0.12
                     }
@@ -432,7 +446,8 @@ ColumnLayout {
                         font: Kirigami.Theme.smallFont
                         color: Kirigami.Theme.textColor
                         opacity: 0.75
-                        x: Math.max(0, Math.min(area.vw - width, area.xOf(modelData) - width / 2))
+                        x: Math.max(0, Math.min(area.vw - width, area.xOf(modelData)
+                            - (modelData === 0 ? 0 : (modelData === root.dayCount - 1 ? width : width / 2))))
                         y: 0
                     }
                 }

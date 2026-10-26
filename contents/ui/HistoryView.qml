@@ -34,13 +34,9 @@
  *
  * The chart is components/HistoryChartGraphs.qml (Qt Graphs, styled after
  * the KDE Plasma Weather applet). Where Qt Graphs is unavailable the Loader
- * falls back to components/HistoryChartCanvas.qml.
- *
- * EXPERIMENTAL: the "Chart engine" box above the chart can switch to
- * components/HistoryChartKQC.qml, the same chart drawn with KDE's
- * KQuickCharts (org.kde.quickcharts), or to the Canvas chart, to compare
- * them. If the KQuickCharts module is not installed the view goes back to
- * Qt Graphs.
+ * falls back to components/HistoryChartKQC.qml, the same chart drawn with
+ * KDE's KQuickCharts (org.kde.quickcharts). If neither module is installed a
+ * short message is shown instead of the chart.
  */
 import QtQuick
 import QtQuick.Controls
@@ -87,6 +83,7 @@ Item {
     property double _loadedAt: 0
     property int _gen: 0
     property var _handle: null
+    property var _timesHandle: null
 
     readonly property bool _hasLocation: !!weatherRoot && weatherRoot.hasSelectedTown === true
     // Re-fetch when the active location changes while the tab is alive.
@@ -142,6 +139,11 @@ Item {
         var wd = Qt.locale().dayName(H.parseIso(iso).getDay(), longName ? Locale.LongFormat : Locale.ShortFormat);
         return wd + ", " + _date(iso);
     }
+    /** "Tue, 20.10.26" or, when Open-Meteo's hourly data gave the hour, "Tue, 20.10.26, 14:00". */
+    function _when(entry) {
+        var d = _day(entry.date, false);
+        return entry.time ? d + ", " + _time(entry.time) : d;
+    }
     function _compass(deg) {
         if (!_isNum(deg))
             return "";
@@ -190,9 +192,9 @@ Item {
             t.push({ icon: "temperature", label: i18n("Average"), value: _temp(s.avgMeanC),
                      sub: i18n("High %1 · Low %2", _temp(s.avgMaxC), _temp(s.avgMinC)) });
         if (s.hottest)
-            t.push({ icon: "temperature", label: i18n("Warmest day"), value: _temp(s.hottest.v), sub: _day(s.hottest.date, false) });
+            t.push({ icon: "temperature", label: i18n("Warmest day"), value: _temp(s.hottest.v), sub: _when(s.hottest) });
         if (s.coldest)
-            t.push({ icon: "temperature", label: i18n("Coldest night"), value: _temp(s.coldest.v), sub: _day(s.coldest.date, false) });
+            t.push({ icon: "temperature", label: i18n("Coldest night"), value: _temp(s.coldest.v), sub: _when(s.coldest) });
         if (_isNum(s.totalPrecipMm))
             t.push({ icon: "precipsum", label: i18n("Precipitation"), value: _precip(s.totalPrecipMm),
                      sub: i18np("%1 wet day", "%1 wet days", s.wetDays) });
@@ -202,9 +204,9 @@ Item {
             t.push({ icon: "snowcover", label: i18n("Snowfall"), value: _snow(s.totalSnowCm),
                      sub: i18np("%1 snowy day", "%1 snowy days", s.snowDays) });
         if (s.maxWind)
-            t.push({ icon: "wind", label: i18n("Strongest wind"), value: _wind(s.maxWind.v), sub: _day(s.maxWind.date, false) });
+            t.push({ icon: "wind", label: i18n("Strongest wind"), value: _wind(s.maxWind.v), sub: _when(s.maxWind) });
         if (s.maxGust)
-            t.push({ icon: "wind", label: i18n("Strongest gust"), value: _wind(s.maxGust.v), sub: _day(s.maxGust.date, false) });
+            t.push({ icon: "wind", label: i18n("Strongest gust"), value: _wind(s.maxGust.v), sub: _when(s.maxGust) });
         if (_isNum(s.totalSunshineHours))
             t.push({ icon: "suntimes", label: i18n("Sunshine"), value: _hours(s.totalSunshineHours),
                      sub: i18n("%1 per day", _hours(s.totalSunshineHours / s.count)) });
@@ -341,6 +343,22 @@ Item {
             _handle.abort();
             _handle = null;
         }
+        if (_timesHandle) {
+            _timesHandle.abort();
+            _timesHandle = null;
+        }
+    }
+
+    /** Second step after the daily data: the hour of the warmest / coldest /
+     *  windiest moments (see openMeteoHistory.js). Tiles first show just the
+     *  date and gain the time when this arrives; if it fails they stay as is. */
+    function _loadTimes(summary, gen, opts) {
+        _timesHandle = H.fetchExtremeTimes(opts, summary, function (withTimes) {
+            if (gen !== root._gen)
+                return;
+            root._timesHandle = null;
+            root.summary = withTimes;
+        });
     }
 
     function load(force) {
@@ -387,6 +405,7 @@ Item {
             root._loadedKey = key;
             root._loadedAt = Date.now();
             root.status = "ok";
+            root._loadTimes(res.summary, my, { latitude: lat, longitude: lon, timezone: weatherRoot._activeLocTz || "", start: p.start, end: p.end });
             Qt.callLater(list.restoreScroll);
         });
     }
@@ -426,15 +445,13 @@ Item {
         _abortPending();
     }
 
-    // Chart implementation: Qt Graphs when available (see header comment).
+    // Chart implementation (see header comment): Qt Graphs first, KQuickCharts
+    // when the Qt Graphs module could not be loaded. The flags turn false when
+    // the Loader reports an error for that chart.
     property bool _graphsOk: true
-    // Experimental chart engine: "graphs" (Qt Graphs), "kquickcharts" or
-    // "canvas". Not persisted: the box is for trying them out.
-    property string _chartEngine: "graphs"
     property bool _kqcOk: true
-    readonly property string _chartSource: _chartEngine === "canvas" ? "components/HistoryChartCanvas.qml"
-        : (_chartEngine === "kquickcharts" && _kqcOk) ? "components/HistoryChartKQC.qml"
-        : (_graphsOk ? "components/HistoryChartGraphs.qml" : "components/HistoryChartCanvas.qml")
+    readonly property string _chartSource: _graphsOk ? "components/HistoryChartGraphs.qml"
+        : (_kqcOk ? "components/HistoryChartKQC.qml" : "")
 
     // ══════════════════════════════════════════════════════════════════════
     // UI
@@ -699,7 +716,7 @@ Item {
                                     required property var modelData
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 100
-                                    Layout.preferredHeight: tileCol.implicitHeight + 14
+                                    Layout.preferredHeight: tileCol.implicitHeight + 10
                                     radius: 8
                                     color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
@@ -709,9 +726,10 @@ Item {
                                             left: parent.left
                                             right: parent.right
                                             verticalCenter: parent.verticalCenter
-                                            margins: 8
+                                            leftMargin: 8
+                                            rightMargin: 8
                                         }
-                                        spacing: 1
+                                        spacing: 0
                                         RowLayout {
                                             Layout.fillWidth: true
                                             spacing: 4
@@ -728,20 +746,25 @@ Item {
                                                 font: root._f(9, false)
                                             }
                                         }
-                                        Label {
+                                        // <value> (details): on one line, wrapping the
+                                        // details below the value only if they do not fit
+                                        Flow {
+                                            id: tileValueLine
                                             Layout.fillWidth: true
-                                            text: tile.modelData.value
-                                            elide: Text.ElideRight
-                                            color: Kirigami.Theme.textColor
-                                            font: root._f(13, true)
-                                        }
-                                        Label {
-                                            Layout.fillWidth: true
-                                            text: tile.modelData.sub
-                                            elide: Text.ElideRight
-                                            color: Kirigami.Theme.textColor
-                                            opacity: 0.6
-                                            font: root._f(9, false)
+                                            spacing: 4
+                                            Label {
+                                                text: tile.modelData.value
+                                                color: Kirigami.Theme.textColor
+                                                font: root._f(13, true)
+                                            }
+                                            Label {
+                                                width: Math.min(implicitWidth, tileValueLine.width)
+                                                text: "(" + tile.modelData.sub + ")"
+                                                elide: Text.ElideRight
+                                                color: Kirigami.Theme.textColor
+                                                opacity: 0.6
+                                                font: root._f(9, false)
+                                            }
                                         }
                                     }
                                 }
@@ -803,57 +826,13 @@ Item {
                             }
                         }
 
-                        // Experimental: choose the chart engine
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.topMargin: 4
-                            visible: root.days.length > 1
-                            spacing: 6
-
-                            Label {
-                                text: i18n("Chart engine (experimental):")
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.7
-                                font: root._f(9, false)
-                            }
-                            ComboBox {
-                                id: engineBox
-                                model: [
-                                    { value: "graphs", label: i18n("Qt Graphs") },
-                                    { value: "kquickcharts", label: i18n("KDE Quick Charts") },
-                                    { value: "canvas", label: i18n("Canvas") }
-                                ]
-                                textRole: "label"
-                                valueRole: "value"
-                                font: root._f(9, false)
-                                currentIndex: root._chartEngine === "canvas" ? 2
-                                    : (root._chartEngine === "kquickcharts" && root._kqcOk ? 1 : 0)
-                                onActivated: function (idx) {
-                                    root._kqcOk = true;          // try again if it failed earlier
-                                    root._chartEngine = model[idx].value;
-                                }
-                            }
-                            Label {
-                                Layout.fillWidth: true
-                                visible: !root._kqcOk
-                                elide: Text.ElideRight
-                                color: Kirigami.Theme.negativeTextColor
-                                font: root._f(9, false)
-                                text: i18n("KDE Quick Charts is not installed")
-                            }
-                            Item {
-                                Layout.fillWidth: true
-                                visible: root._kqcOk
-                            }
-                        }
-
-                        // Chart: Qt Graphs (KDE weather applet style) or KQuickCharts
-                        // (experimental), with a Canvas fallback.
+                        // Chart: Qt Graphs (KDE weather applet style); KQuickCharts
+                        // when Qt Graphs is not available.
                         Loader {
                             id: chartLoader
                             Layout.fillWidth: true
                             Layout.topMargin: 4
-                            visible: root.days.length > 1
+                            visible: root.days.length > 1 && root._chartSource !== ""
                             source: root._chartSource
                             onLoaded: {
                                 item.view = root;
@@ -863,19 +842,29 @@ Item {
                             onStatusChanged: {
                                 // Switching the source from inside its own status change
                                 // would be a binding loop, so do it a moment later.
-                                if (status === Loader.Error && root._chartEngine === "kquickcharts" && root._kqcOk) {
-                                    console.warn("History: KDE Quick Charts (org.kde.quickcharts) unavailable, using Qt Graphs");
-                                    Qt.callLater(function () {
-                                        root._kqcOk = false;
-                                        root._chartEngine = "graphs";
-                                    });
+                                if (status !== Loader.Error)
                                     return;
-                                }
-                                if (status === Loader.Error && root._chartEngine === "graphs" && root._graphsOk) {
-                                    console.warn("History: Qt Graphs chart unavailable, using the Canvas fallback");
+                                if (root._graphsOk) {
+                                    console.warn("History: Qt Graphs chart unavailable, using KDE Quick Charts");
                                     Qt.callLater(function () { root._graphsOk = false; });
+                                } else if (root._kqcOk) {
+                                    console.warn("History: KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
+                                    Qt.callLater(function () { root._kqcOk = false; });
                                 }
                             }
+                        }
+
+                        // Neither chart module could be loaded
+                        Label {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 4
+                            visible: root.days.length > 1 && root._chartSource === ""
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            color: Kirigami.Theme.textColor
+                            opacity: 0.7
+                            font: root._f(9, false)
+                            text: i18n("The chart needs the Qt Graphs or the KDE Quick Charts QML module.")
                         }
 
                         Label {

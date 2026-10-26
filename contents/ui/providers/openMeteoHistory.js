@@ -437,3 +437,139 @@ function fetchHistory(opts, callback) {
     attempt(DAILY_CORE.concat(DAILY_EXTRA), true);
     return handle;
 }
+
+// ── Time of the extremes ─────────────────────────────────────────────────
+// The daily endpoint only says how warm / windy a day got, not when. Open-Meteo
+// computes its daily maxima and minima from the hourly values, so the hour of
+// an extreme can be read from the hourly series of that one day. This is done
+// for the few days the summary tiles point at (warmest, coldest, strongest
+// wind, strongest gust): up to four tiny requests, made after the daily data
+// has arrived. If any of them fails, the tile just has no time.
+var HOURLY_VARS = ["temperature_2m", "wind_speed_10m", "wind_gusts_10m"];
+var _hourlyCache = {};
+
+function _hourlyUrl(opts, date) {
+    var tz = (opts.timezone && opts.timezone.length > 0) ? opts.timezone : "auto";
+    return ARCHIVE_URL
+        + "?latitude=" + Number(opts.latitude).toFixed(4)
+        + "&longitude=" + Number(opts.longitude).toFixed(4)
+        + "&start_date=" + date
+        + "&end_date=" + date
+        + "&timezone=" + encodeURIComponent(tz)
+        + "&hourly=" + HOURLY_VARS.join(",");
+}
+
+/** First hour holding the largest (dir=1) / smallest (dir=-1) value, as { v, t }, or null. */
+function _peak(times, vals, dir) {
+    var best = null;
+    if (!times || !vals)
+        return null;
+    for (var i = 0; i < times.length; ++i) {
+        var v = _num(vals[i]);
+        if (!_isNum(v))
+            continue;
+        if (best === null || (dir > 0 ? v > best.v : v < best.v))
+            best = { v: v, t: String(times[i]) };
+    }
+    return best;
+}
+
+function parseHourlyPeaks(d) {
+    var h = d && d.hourly ? d.hourly : null;
+    if (!h || !h.time)
+        return null;
+    return {
+        maxT: _peak(h.time, h.temperature_2m, 1),
+        minT: _peak(h.time, h.temperature_2m, -1),
+        wind: _peak(h.time, h.wind_speed_10m, 1),
+        gust: _peak(h.time, h.wind_gusts_10m, 1)
+    };
+}
+
+/** A copy of `summary` whose hottest / coldest / maxWind / maxGust entries
+ *  carry `time` ("YYYY-MM-DDTHH:MM", local to the place) where the hourly data
+ *  confirms the daily value. peaks: { "<date>": parseHourlyPeaks(...) }. */
+function withTimes(summary, peaks) {
+    var out = {};
+    for (var k in summary)
+        out[k] = summary[k];
+    function stamp(entry, field) {
+        var p = entry ? peaks[entry.date] : null;
+        var hit = p ? p[field] : null;
+        // The hourly extreme must be the daily value (rounding aside);
+        // otherwise the hour would belong to something else.
+        if (!hit || Math.abs(hit.v - entry.v) > 0.25)
+            return entry;
+        return { v: entry.v, date: entry.date, time: hit.t };
+    }
+    out.hottest = stamp(summary.hottest, "maxT");
+    out.coldest = stamp(summary.coldest, "minT");
+    out.maxWind = stamp(summary.maxWind, "wind");
+    out.maxGust = stamp(summary.maxGust, "gust");
+    return out;
+}
+
+/**
+ * Looks up the hour of the summary's extremes.
+ * callback(summaryWithTimes) is called once, only if at least one time was
+ * found; returns a handle with abort() (an aborted lookup never calls back).
+ */
+function fetchExtremeTimes(opts, summary, callback) {
+    var dates = [];
+    var entries = [summary.hottest, summary.coldest, summary.maxWind, summary.maxGust];
+    for (var i = 0; i < entries.length; ++i)
+        if (entries[i] && dates.indexOf(entries[i].date) < 0)
+            dates.push(entries[i].date);
+
+    var handle = {
+        aborted: false,
+        _reqs: [],
+        abort: function () {
+            this.aborted = true;
+            for (var r = 0; r < this._reqs.length; ++r)
+                this._reqs[r].abort();
+        }
+    };
+    var peaks = {};
+    var pending = dates.length;
+    if (pending === 0)
+        return handle;
+
+    function oneDone() {
+        if (--pending > 0 || handle.aborted)
+            return;
+        var s = withTimes(summary, peaks);
+        if (s.hottest !== summary.hottest || s.coldest !== summary.coldest
+                || s.maxWind !== summary.maxWind || s.maxGust !== summary.maxGust)
+            callback(s);
+    }
+
+    dates.forEach(function (date) {
+        var url = _hourlyUrl(opts, date);
+        var hit = _hourlyCache[url];
+        if (hit && Date.now() - hit.t < CACHE_TTL_MS) {
+            peaks[date] = hit.peaks;
+            oneDone();
+            return;
+        }
+        var req = new XMLHttpRequest();
+        handle._reqs.push(req);
+        req.open("GET", url);
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE)
+                return;
+            if (req.status === 200) {
+                try {
+                    var p = parseHourlyPeaks(JSON.parse(req.responseText));
+                    if (p) {
+                        peaks[date] = p;
+                        _hourlyCache[url] = { t: Date.now(), peaks: p };
+                    }
+                } catch (e) {}
+            }
+            oneDone();
+        };
+        req.send();
+    });
+    return handle;
+}
