@@ -1,8 +1,6 @@
 // ==========================================================================
 // Glue script 3: create the viewer and expose the QML-facing window.* API.
 // ==========================================================================
-var _widgetAdapter = new WidgetLeafletAdapter();
-
 var config = {
   apiFixed: API_BASE,
   strings: STRINGS,
@@ -26,7 +24,7 @@ var config = {
     // The QML chrome only knows arrows on/off; the page derives the arrow
     // color from the map theme, so re-derive it whenever the theme moves.
     if (arrowsOn) viewer.setArrows(theme === 'dark' ? 'light' : 'dark');
-    if (windLayer) windLayer.setColor(windColor(theme));
+    if (windLayer) windLayer.setTheme(theme);
   }
 };
 
@@ -82,34 +80,15 @@ window.setBackground = function (id) {
   renderBgMenu(); // keep the picker's active mark in sync with config-driven changes
 };
 
-// The widget nudges the view by 1 px to make Chromium repaint (repaint
-// nudge in RadarWebEngineViewLibreWXR.qml). Leaflet keeps the map centred
-// when it is resized, so each nudge moved the whole map by a pixel and back.
-// A change of 2 px or less now resizes without recentring.
-(function () {
-  var invalidateSize = L.Map.prototype.invalidateSize;
-  L.Map.include({
-    invalidateSize: function (options) {
-      if (this._loaded) {
-        var size = this.getSize(), c = this.getContainer();
-        if (Math.abs(c.clientWidth - size.x) <= 2 && Math.abs(c.clientHeight - size.y) <= 2)
-          options = L.extend({}, options === true ? { animate: true } : options, { pan: false });
-      }
-      return invalidateSize.call(this, options);
-    }
-  });
-})();
-
 window.fixViewport = function () {
   var m = _widgetAdapter ? _widgetAdapter.getMap() : null;
   if (!m) return;
   // Reproduce the old cure for the plasmoid's WebEngineView: recalculate the
   // container size and do an invisible 1px pan-and-back, which forces Leaflet
   // to reset its view and Chromium to repaint the damaged surface.
-  m.invalidateSize(false);
+  _widgetAdapter.resize();
   if (windLayer) windLayer.nudging = true;
-  m.panBy([1, 0], { animate: false });
-  m.panBy([-1, 0], { animate: false });
+  _widgetAdapter.nudge();
   if (windLayer) windLayer.nudging = false;
   // The view is final now: the wind may start drawing.
   viewportSettled = true;
@@ -117,7 +96,7 @@ window.fixViewport = function () {
   document.body.classList.add('lv-ready');   // fade the whole view in (overrides.css)
   // Timeout rearm: the engine's moveend restarts a quiet background preload,
   // which the cancelling 1px nudge (never a real view change) safely ignores.
-  setTimeout(function () { m.invalidateSize(false); }, 400);
+  setTimeout(function () { _widgetAdapter.resize(); }, 400);
 };
 
 // Called by the widget when a page kept loaded comes back into view: answer
@@ -136,12 +115,7 @@ window.signalWhenLoaded = function (token) {
   var answer = function () { document.title = 'ready:' + token; };
   if (!m) { answer(); return; }
   var busy = function () {
-    var loading = false;
-    m.eachLayer(function (l) {
-      if (l.isLoading && (l.options.opacity === undefined || l.options.opacity > 0) && l.isLoading()) loading = true;
-      var gl = l.getMaplibreMap && l.getMaplibreMap();
-      if (gl && gl.areTilesLoaded && !gl.areTilesLoaded()) loading = true;
-    });
+    var loading = _widgetAdapter.tilesBusy();
     // The wind draws once its grid is in, from memory or from Open-Meteo.
     if (windLayer && !windLayer.isDrawing()) loading = true;
     return loading;
@@ -149,8 +123,8 @@ window.signalWhenLoaded = function (token) {
   var check = function () {
     if (Date.now() - start > 1500) { answer(); return; }
     // Leaflet requests the tiles of a new size a moment after it gets it.
-    var size = m.getSize(), key = size.x + 'x' + size.y;
-    still = size.x > 0 && key === lastSize ? still + 1 : 0;
+    var key = _widgetAdapter.sizeKey();
+    still = key.indexOf('0x') !== 0 && key === lastSize ? still + 1 : 0;
     lastSize = key;
     if (still >= 4 && !busy()) { answer(); return; }
     setTimeout(check, 50);
@@ -159,8 +133,12 @@ window.signalWhenLoaded = function (token) {
 };
 
 // === WIND LAYER (Open-Meteo particles, glue-wind.js) ===
-var WindLayerClass = WidgetWind.createWindLayer(L);
-var _windSource = new WidgetWind.WindSource({});
+var _windSource = new WidgetWind.WindSource(WIND_API_BASE ? { apiBase: WIND_API_BASE } : {});
+// The open-data wind (glue-wind-open.js), on the pages that have it.
+var _windOpen = typeof WidgetOpenData === 'undefined' ? null : new WidgetOpenData.Loader({
+  base: WIND_FILES_BASE || undefined,
+  importReader: function () { return import('./vendor/index.browser.js'); }
+});
 var _windDem = new WidgetWind.DemTiles({});
 var windLayer = null;
 var windLevel = WIND_LEVEL;   // '10m' | '700hPa'
@@ -168,21 +146,20 @@ var windFps = WIND_FPS, windMaxFps = WIND_MAX_FPS;
 var windLineWidth = WIND_LINE_WIDTH;
 var viewportSettled = false;   // set by the first window.fixViewport()
 
-function windColor(theme) { return theme === 'dark' ? '#ffffff' : '#1a237e'; }
-
 window.setWind = function (on) {
   var m = _widgetAdapter.getMap();
   if (!m) return;
   if (on && !windLayer) {
-    windLayer = new WindLayerClass(_windSource, _windDem, {
-      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, color: windColor(currentTheme()), level: windLevel,
+    windLayer = _widgetAdapter.createWindLayer(_windSource, _windOpen, _windDem, {
+      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: windLevel,
       lineWidth: windLineWidth
     });
+    if (!windLayer) return;
     windLayer.addTo(m);
     // Switched on after the page settled: nothing left to wait for.
     if (viewportSettled) windLayer.settle();
   } else if (!on && windLayer) {
-    m.removeLayer(windLayer);
+    windLayer.remove();
     windLayer = null;
   }
 };

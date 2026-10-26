@@ -107,6 +107,43 @@
         background: var(--btn-bg) !important;
       }
 
+      /* MapLibre page: zoom buttons and compass (NavigationControl) with the
+         look of the Leaflet controls above. Their icons are dark data-URI
+         SVGs drawn for a light page: inverted on the dark theme. */
+      .maplibregl-ctrl-top-left .maplibregl-ctrl {
+        margin: var(--space-2) 0 0 var(--space-2);
+      }
+      .maplibregl-ctrl-group {
+        background: var(--btn-bg);
+        border: 1px solid var(--btn-border);
+        border-radius: 8px;
+        box-shadow: none;
+      }
+      .maplibregl-ctrl-group button {
+        width: 32px;
+        height: 32px;
+      }
+      .maplibregl-ctrl-group button + button {
+        border-top: 1px solid var(--btn-border);
+      }
+      .maplibregl-ctrl-group button:not(:disabled):hover {
+        background-color: var(--btn-hover);
+      }
+      body[data-theme="dark"] .maplibregl-ctrl-group .maplibregl-ctrl-icon {
+        filter: invert(1) brightness(0.85);
+      }
+      /* Credits folded behind the (i) button, in the page's colors. */
+      .maplibregl-ctrl-attrib.maplibregl-compact {
+        background: var(--btn-bg);
+        color: var(--text-secondary);
+      }
+      .maplibregl-ctrl-attrib a {
+        color: var(--text-secondary);
+      }
+      body[data-theme="dark"] .maplibregl-ctrl-attrib-button {
+        filter: invert(1) brightness(0.85);
+      }
+
       /* Leaflet rotate control (leaflet-rotate plugin, loaded in shell.html):
          compact sizing to match the zoom control above it. Both controls
          default to the 'topleft' corner, so Leaflet stacks this one right

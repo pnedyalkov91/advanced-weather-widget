@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>LibreWXR Radar</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <!--
+      Advanced Weather Widget: LibreWXR radar tile viewer, MapLibre build
+      (single-file, flat map or globe). Adapted from the official LibreWXR
+      MapLibre example (https://librewxr.net/examples/maplibre) for the
+      Advanced Weather Widget. Same page contract as the Leaflet build
+      (librewxr-map-leaflet.html, see its header): the initial state comes
+      from URL query parameters, live changes through the window.* functions,
+      reports go back through document.title. Without WebGL this page hands
+      over to the Leaflet build with the same parameters.
+
+      SPDX-License-Identifier: GPL-2.0-or-later
+      Copyright (C) 2026 Joshua Kimsey
+
+      Assembled into the KDE Plasma widget by its scripts/build_librewxr_map.py; edit these sources, not the built page.
+      MIT Notice (vendored example viewer):
+        Copyright (c) 2026 Joshua Kimsey
+        Permission is hereby granted, free of charge, to any person obtaining
+        a copy of this software and associated documentation files (the
+        "Software"), to deal in the Software without restriction, including
+        without limitation the rights to use, copy, modify, merge, publish,
+        distribute, sublicense, and/or sell copies of the Software, and to
+        permit persons to whom the Software is furnished to do so, subject to
+        the following conditions:
+        The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+        IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+        CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+        TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+      -->
+    <link
+      href="https://unpkg.com/maplibre-gl@6.13.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <!--
+      Open-Meteo's file reader (vendor/, GPL-2.0-only) imports its WebAssembly
+      decoder by package name; the import map points it at the vendored copy.
+      Served from unpkg the .wasm arrives truncated in QtWebEngine.
+    -->
+    <script type="importmap">
+      { "imports": { "@openmeteo/file-format-wasm": "./vendor/om_file_format.web.js" } }
+    </script>
+    <style>
+/*__VIEWER_CSS__*/
+/*__WIDGET_OVERRIDES_CSS__*/
+    </style>
+  </head>
+  <body data-theme="dark">
+
+    <!-- Map -->
+    <div id="lv-map">
+      <div class="preload-indicator" id="lv-preload">
+        <span id="lv-preload-text">Loading frames 0/0</span>
+        <div class="preload-bar"><div class="preload-fill" id="lv-preload-fill"></div></div>
+      </div>
+      <div class="error-overlay" id="lv-error" role="alert">
+        <div class="error-msg" id="lv-error-msg"></div>
+        <button type="button" class="retry-btn" id="lv-error-retry" style="display:none">Retry</button>
+      </div>
+      <div class="refresh-status" id="lv-refresh-status" role="status"></div>
+      <button class="locate-btn" id="lv-locate" title="Return to widget location">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"></circle>
+          <line x1="12" y1="2" x2="12" y2="6"></line>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
+          <line x1="2" y1="12" x2="6" y2="12"></line>
+          <line x1="18" y1="12" x2="22" y2="12"></line>
+        </svg>
+      </button>
+      <div class="bg-picker" id="bgPicker">
+        <button class="bg-btn" id="bgBtn" title="Map background">
+          <svg viewBox="0 0 24 24">
+            <polygon points="12,3 21,7.5 12,12 3,7.5"></polygon>
+            <polyline points="3,12 12,16.5 21,12"></polyline>
+            <polyline points="3,16.5 12,21 21,16.5"></polyline>
+          </svg>
+        </button>
+        <div class="bg-menu" id="bgMenu"></div>
+      </div>
+    </div>
+
+    <!-- Replayer / Scrubber -->
+    <div class="replayer">
+      <div class="replayer-top">
+        <button type="button" class="play-btn" id="lv-play" aria-label="Play playback">
+          <svg id="lv-play-icon" viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14"/></svg>
+          <svg id="lv-pause-icon" viewBox="0 0 16 16" style="display:none"><rect x="3" y="2" width="3.5" height="12"/><rect x="9.5" y="2" width="3.5" height="12"/></svg>
+        </button>
+        <div class="scrubber-wrap">
+          <div class="scrubber-track" id="lv-scrubber-track"></div>
+          <div class="scrubber-ticks" id="lv-scrubber-ticks"></div>
+        </div>
+        <div class="timestamp-display" id="lv-timestamp">Loading...</div>
+      </div>
+    </div>
+
+    <script>
+/*@__WIDGET_GLUE_CONFIG__*/
+// Without WebGL MapLibre cannot draw: hand over to the Leaflet page, with
+// the same parameters.
+if (!hasWebGL()) location.replace('librewxr-map-leaflet.html' + location.search);
+//__VIEWER_CORE__
+
+    </script>
+
+    <script>
+/*@__WIDGET_GLUE_WIND__*/
+/*@__WIDGET_GLUE_WIND_OPEN__*/
+/*@__WIDGET_GLUE_WIND_TABLE__*/
+
+    </script>
+
+    <script type="module">
+// MapLibre 6 only ships as an ES module; its worker is a module too.
+import * as maplibregl from 'https://unpkg.com/maplibre-gl@6.13.0/dist/maplibre-gl.mjs';
+maplibregl.setWorkerUrl('https://unpkg.com/maplibre-gl@6.13.0/dist/maplibre-gl-worker.mjs');
+/*@__WIDGET_GLUE_ADAPTER__*/
+var _widgetAdapter = new WidgetMapLibreAdapter(maplibregl);
+/*@__WIDGET_GLUE_CONTROLS__*/
+
+    </script>
+  </body>
+</html>

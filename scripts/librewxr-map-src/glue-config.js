@@ -65,6 +65,20 @@ function resolveBg(id, theme) {
   return bgEntry(id) || FALLBACK_BG[theme] || FALLBACK_BG.dark;
 }
 
+// WebGL: MapLibre needs it (the vector base maps, the whole MapLibre page).
+var webglOk = null;
+function hasWebGL() {
+  if (webglOk !== null) return webglOk;
+  if (PARAMS.get('webgl') === '0') return (webglOk = false);   // test knob
+  try {
+    var c = document.createElement('canvas');
+    webglOk = !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch (e) {
+    webglOk = false;
+  }
+  return webglOk;
+}
+
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';
@@ -99,3 +113,7 @@ var WIND_MAX_FPS = Math.max(WIND_FPS, Math.min(30, paramNum('windmaxfps', 20)));
 var WIND_LINE_WIDTH = paramNum('windwidth', 1);   // CSS px, clamped by the layer
 var WIND_RELIEF = PARAMS.get('windrelief') !== '0';
 var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
+// Test knobs, never set by the widget: another base for the Open-Meteo API
+// (a caching proxy, so tests spare the quota) and for the open-data files.
+var WIND_API_BASE = PARAMS.get('omapi') || '';
+var WIND_FILES_BASE = PARAMS.get('omfiles') || '';
