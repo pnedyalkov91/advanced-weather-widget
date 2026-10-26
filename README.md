@@ -61,6 +61,32 @@ For the full functionality of this widget, please ensure you have the following 
 
 > **MangoHud and other `LD_PRELOAD` overlays:** starting plasmashell under MangoHud (`mangohud plasmashell --replace`) has been observed to crash the whole shell when the embedded radar starts. If the widget finds MangoHud in plasmashell's `LD_PRELOAD`, it does not load the embedded radar. The Radar tab then shows an **Open radar in browser** button and a **Load embedded radar anyway** button, so you can still try it at your own risk.
 
+### 📈 History Charts
+*Required for the charts in the History tab. You only need **one** of the two modules below.*
+
+The History tab draws its charts with **Qt Graphs** when it is available. If Qt Graphs is not installed (or your Qt is older than 6.8), the widget automatically falls back to **KDE Quick Charts**. If neither module is installed, the History tab still shows the summary tiles, but the chart is replaced by a short message.
+
+**Qt Graphs** (preferred, needs Qt 6.8 or newer):
+
+| Distribution | Package Name |
+|---|---|
+| **Fedora / RHEL** | `qt6-qtgraphs` |
+| **openSUSE** | `qt6-graphs-imports` |
+| **Arch Linux** | `qt6-graphs` |
+| **Debian / Kubuntu / KDE Neon** | `qml6-module-qtgraphs` |
+
+**KDE Quick Charts** (fallback):
+
+| Distribution | Package Name |
+|---|---|
+| **Fedora / RHEL** | `kf6-kquickcharts` |
+| **openSUSE** | `kf6-kquickcharts` |
+| **Arch Linux** | `kquickcharts` |
+| **Debian / Kubuntu / KDE Neon** | `libquickcharts1` |
+
+> KDE Quick Charts is part of KDE Frameworks, so it is already installed on most Plasma 6 systems. Qt Graphs is a separate Qt module and is usually the one you need to install. Distributions that ship an older Qt (for example Kubuntu 24.04 with Qt 6.4) do not provide Qt Graphs 6.8, so the widget uses KDE Quick Charts there.
+> Restart Plasma after installing a module (`systemctl --user restart plasma-plasmashell`) so the widget can find it.
+
 ### 🔊 Alert Sounds
 *Required to play a sound alongside weather-alert notifications.*
 
@@ -194,12 +220,17 @@ For providers that require an API key, you can enter it in the widget's settings
 - **Astronomy:** Configurable Sun Arc (Sunrise/Set) and Moon Path (Phases/Rise/Set).
 - **Alerts:** Real-time push notifications from MeteoAlarm, NOAA NWS, LibreWXR, KDE's FOSS Public Alert Server, and provider-specific sources, including a dedicated "Purple" tier for extreme-severity alerts. Starting with version 1.8.0, the widget supports sounds for alert notifications, which are fully configurable.
 
+### 📈 History
+- **Past weather:** Browse earlier days, weeks and months for your exact location, using the [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) (free, no key needed, independent of the provider you picked for the forecast).
+- **Interactive charts:** Temperature, precipitation, wind and more, with zoom (mouse wheel, double-click, buttons) and drag to move through the period. Drawn with **Qt Graphs**, with **KDE Quick Charts** as an automatic fallback (see [Prerequisites](#-history-charts)).
+- **Summary tiles:** Average temperature, warmest day, coldest night, total precipitation, wettest day, strongest wind and gust, sunshine, humidity, pressure and cloud cover. Where Open-Meteo provides the hour, the tile also shows when it happened.
+
 ### 🖥 Customization
 - **Dual Temperature:** Option to display two different temperature metrics simultaneously (e.g., Actual + Apparent).
 - **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
-- **Widget Layouts:** Advanced (Details, Forecast and Radar tabs) and Simple (no tabs)
+- **Widget Layouts:** Advanced (Details, Forecast, History and Radar tabs) and Simple (no tabs)
 - **Themes:** 7 icon themes (Symbolic, Font, Flat, 3D, Meteocons, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
-- **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, and hourly weather forecast.
+- **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, hourly weather forecast, and interactive History charts.
 
 ---
 
@@ -298,6 +329,13 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
 
   Copyright © Vladimir Agafonkin.  
   Licensed under the **BSD License**.
+
+- The **History** tab uses the **Open-Meteo Historical Weather API** for past weather data:  
+  https://open-meteo.com/en/docs/historical-weather-api
+
+  Open-Meteo data is offered under the **CC BY 4.0** license.
+
+- The **History** charts are drawn with **Qt Graphs** (https://doc.qt.io/qt-6/qtgraphs-index.html) and, as a fallback, **KDE Quick Charts** (https://api.kde.org/frameworks/kquickcharts/html/index.html).
 
 - This project uses the **RainViewer API** for weather radar data:  
   https://www.rainviewer.com/
