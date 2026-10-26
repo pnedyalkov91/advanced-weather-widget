@@ -249,6 +249,40 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     map.once('idle', next);
   }
 
+  // Kept loaded behind a closed popup, the page prepares what the popup
+  // will open on (glue-prepare.js gives it frames meanwhile): the base map
+  // and the image shown, or every image for the whole animation. The
+  // preparation ends there, so the wind does not run on in a hidden page.
+  // Hidden, map moves do not reach the viewer, whose answer to one is to
+  // preload every image; a new image starts another preparation.
+  var prepare = typeof widgetPrepare !== 'undefined' ? widgetPrepare : null;
+  var prepareMode = typeof PREPARE_MODE !== 'undefined' ? PREPARE_MODE : 'none';
+  var viewportCb = null, preloadAsked = false;
+  function pageHidden() { return document.visibilityState === 'hidden'; }
+  function framesSettled() {
+    for (var id in pendingReady) if (pendingReady[id].length) return false;
+    for (var i = 0; i < frameRegistry.length; i++) {
+      var e = frameRegistry[i];
+      if (map.getSource(e.sourceId) && !map.isSourceLoaded(e.sourceId)) return false;
+    }
+    return true;
+  }
+  function checkPrepared() {
+    if (!prepare || !prepare.preparing() || adapter.tilesBusy()) return;
+    if (!frameRegistry.some(function (e) { return e.opacity > 0; })) return;
+    if (prepareMode === 'all') {
+      if (!preloadAsked) { preloadAsked = true; if (viewportCb) viewportCb(); return; }
+      if (!framesSettled()) return;
+    }
+    prepare.end();
+    console.log('[librewxr] radar prepared in the hidden page (' + prepareMode + ')');
+  }
+  function prepareNewFrame() {
+    if (!prepare || prepareMode === 'none' || !pageHidden() || prepare.preparing()) return;
+    preloadAsked = false;
+    prepare.begin();
+  }
+
   // Around the globe, space in the page's colors and an atmosphere lit by
   // the Sun (moveSun), which fades out as the map zooms in (gone at
   // MapLibre zoom 7).
@@ -329,6 +363,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.on('movestart', function () { holdHiddenFrames(true); });
       map.on('moveend', function () { holdHiddenFrames(false); });
       map.on('resize', fitMinZoom);
+      map.on('render', checkPrepared);
       return map;
     },
 
@@ -352,6 +387,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         kind: kind, url: url, maxZoom: maxZoom, opacity: 0
       };
       frameRegistry.push(entry);
+      prepareNewFrame();
       // The handle is due now; only the map change waits for the style.
       if (!styleReady) map.once('load', function () { addFrameEntry(entry); });
       else if (!swapInProgress) addFrameEntry(entry);
@@ -455,8 +491,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     },
 
     onViewportChange: function (cb) {
+      viewportCb = cb;
       map.on('moveend', function () {
-        if (cb) cb();
+        if (cb && !(prepare && pageHidden())) cb();
         // Report the zoom to QML via the page title, on the widget's scale.
         document.title = 'zoom:' + Math.round(fromGl(map.getZoom()));
       });

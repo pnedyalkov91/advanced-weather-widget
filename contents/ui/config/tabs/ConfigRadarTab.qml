@@ -157,7 +157,8 @@ GridLayout {
         visible: radarTab.configRoot.cfg_radarEnabled
 
         WrappingSwitch {
-            text: i18n("Keep the radar loaded in the background")
+            objectName: "radarPrepareSwitch"
+            text: i18n("Prepare the radar in advance")
             checked: radarTab.configRoot.cfg_radarKeepLoaded
             onToggled: radarTab.configRoot.cfg_radarKeepLoaded = checked
         }
@@ -166,7 +167,7 @@ GridLayout {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            text: i18n("The radar map is prepared in the background after login and stays ready while the popup is closed, so the Radar tab opens at once. It uses more memory and starts QtWebEngine with Plasma.")
+            text: i18n("The Radar tab opens at once on the most recent radar image, and the animation plays at once. It uses about 200 MB more memory: leave it off on a computer with little memory.")
         }
     }
 
