@@ -1556,6 +1556,8 @@ KCM.AbstractKCM {
     property bool cfg_forecastShowUvIndex: false
     property bool cfg_forecastShowPrecipSum: false
     property bool cfg_forecastShowVisibility: false
+    property string cfg_forecastGraphOrder: "wind;pressure;kp;uv;precip;vis"
+    property string cfg_forecastHourlyGraphOrder: "wind;pressure;kp;uv;precip;vis"
     property bool cfg_forecastHourlyShowPrecipProb: true
     property bool cfg_forecastHourlyShowWind: true
     property bool cfg_forecastHourlyShowPressure: false

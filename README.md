@@ -230,7 +230,7 @@ For providers that require an API key, you can enter it in the widget's settings
 - **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
 - **Widget Layouts:** Advanced (Details, Forecast, History and Radar tabs) and Simple (no tabs)
 - **Themes:** 7 icon themes (Symbolic, Font, Flat, 3D, Meteocons, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
-- **Forecast layouts:** The daily forecast can be shown as **Standard** rows or as **Graphs** (high/low temperature lines, precipitation bars and a weather icon per day; click a day to open its hours). The hourly forecast can be **Cards**, **Strip** or **Graphs** (temperature line, chance of precipitation or amount, sunrise/sunset marks). In the **Graphs** layouts every stat you switch on in the forecast settings (wind, pressure, Kp index with its G scale, UV index, precipitation sum, visibility) gets a graph of its own below the temperature graph, for both the daily and the hourly forecast. The graphs line up and zoom together; an opened day is headed by an *Hourly forecast for <date>* separator (click it to close the day). Set the layouts in *Appearance → Widget → Forecast*.
+- **Forecast layouts:** The daily forecast can be shown as **Standard** rows or as **Graphs** (high/low temperature lines, precipitation bars and a weather icon per day; click a day to open its hours). The hourly forecast can be **Cards**, **Strip** or **Graphs** (temperature line, chance of precipitation or amount, sunrise/sunset marks). In the **Graphs** layouts every stat you switch on in the forecast settings (wind, pressure, Kp index with its G scale, UV index, precipitation sum, visibility) gets a graph of its own below the temperature graph, for both the daily and the hourly forecast. The graphs line up and zoom together; an opened day is headed by an *Hourly forecast for <date>* separator (click it to fold or unfold that day's hours). The order of the graphs below the temperature graph can be changed in *Appearance → Widget → Forecast* (up/down buttons, separately for the daily and the hourly forecast, shown when the *Graphs* layout is chosen and two or more details are switched on). Set the layouts in *Appearance → Widget → Forecast*.
 - **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, hourly weather forecast, and interactive History charts.
 
 ---
@@ -386,4 +386,4 @@ If you enjoy using it, you can support the project:
 
 ## 📜 License
 
-This project is licensed under the **GNU General Public License v3.0 or later**.
+This project is licensed under the **GNU General Public License v2.0 or later**.

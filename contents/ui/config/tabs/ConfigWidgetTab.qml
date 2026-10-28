@@ -50,6 +50,149 @@ ColumnLayout {
         }
     }
 
+    // The forecast detail switches on ONE line (they wrap only when the page is too narrow),
+    // plus - for the "Graphs" layout, when two or more graphs are switched on - an up/down
+    // list that sets the order the graphs are stacked in.
+    component StatSwitches: ColumnLayout {
+        id: ss
+        /** The KCM root that owns the cfg_* properties */
+        required property var cfgRoot
+        /** [{key, label, cfg, orderable?}] */
+        property var defs: []
+        /** Name of the cfg_* string property that holds the graph order ("wind;pressure;...") */
+        property string orderProp: ""
+        /** True while the "Graphs" layout is chosen */
+        property bool reorderable: false
+        spacing: Kirigami.Units.smallSpacing
+
+        // the saved order, completed with any detail that is missing from it
+        function _fullOrder() {
+            var raw = String(ss.cfgRoot[ss.orderProp] || "").split(";");
+            var out = [];
+            function known(k) {
+                for (var i = 0; i < ss.defs.length; ++i)
+                    if (ss.defs[i].key === k && ss.defs[i].orderable !== false)
+                        return true;
+                return false;
+            }
+            for (var i = 0; i < raw.length; ++i) {
+                var k = raw[i].trim();
+                if (k.length > 0 && out.indexOf(k) < 0 && known(k))
+                    out.push(k);
+            }
+            for (var j = 0; j < ss.defs.length; ++j)
+                if (ss.defs[j].orderable !== false && out.indexOf(ss.defs[j].key) < 0)
+                    out.push(ss.defs[j].key);
+            return out;
+        }
+        function _def(k) {
+            for (var i = 0; i < ss.defs.length; ++i)
+                if (ss.defs[i].key === k)
+                    return ss.defs[i];
+            return null;
+        }
+        // the switched-on details, in the saved order
+        readonly property var _enabled: {
+            var full = ss._fullOrder();
+            var out = [];
+            for (var i = 0; i < full.length; ++i) {
+                var d = ss._def(full[i]);
+                if (d && ss.cfgRoot[d.cfg] === true)
+                    out.push(d);
+            }
+            return out;
+        }
+        function _move(pos, delta) {
+            var en = ss._enabled;
+            var to = pos + delta;
+            if (to < 0 || to >= en.length)
+                return;
+            var full = ss._fullOrder();
+            var a = full.indexOf(en[pos].key);
+            var b = full.indexOf(en[to].key);
+            var t = full[a];
+            full[a] = full[b];
+            full[b] = t;
+            ss.cfgRoot[ss.orderProp] = full.join(";");
+        }
+
+        Flow {
+            Layout.fillWidth: true
+            spacing: Kirigami.Units.smallSpacing
+            Repeater {
+                model: ss.defs
+                delegate: Switch {
+                    required property var modelData
+                    text: modelData.label
+                    checked: ss.cfgRoot[modelData.cfg] === true
+                    onToggled: ss.cfgRoot[modelData.cfg] = checked
+                }
+            }
+        }
+
+        Label {
+            visible: {
+                var d = ss._def("kp");
+                return d !== null && ss.cfgRoot[d.cfg] === true;
+            }
+            Layout.fillWidth: true
+            text: i18n("The geomagnetic (Kp/G) forecast is only available up to 3 days ahead")
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+        }
+
+        ColumnLayout {
+            id: orderBox
+            visible: ss.reorderable && ss.orderProp.length > 0 && ss._enabled.length >= 2
+            Layout.fillWidth: true
+            spacing: 0
+
+            Label {
+                text: i18n("Graph order (below the temperature graph):")
+                Layout.topMargin: Kirigami.Units.smallSpacing
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                opacity: 0.7
+            }
+            Repeater {
+                model: ss._enabled
+                delegate: RowLayout {
+                    id: orderRow
+                    required property var modelData
+                    required property int index
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+                    Label {
+                        text: (orderRow.index + 1) + "."
+                        opacity: 0.6
+                        Layout.preferredWidth: Kirigami.Units.gridUnit * 1.2
+                    }
+                    Label {
+                        text: orderRow.modelData.label
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                    }
+                    ToolButton {
+                        icon.name: "go-up"
+                        enabled: orderRow.index > 0
+                        onClicked: ss._move(orderRow.index, -1)
+                        ToolTip.text: i18n("Move up")
+                        ToolTip.visible: hovered
+                        ToolTip.delay: Kirigami.Units.toolTipDelay
+                    }
+                    ToolButton {
+                        icon.name: "go-down"
+                        enabled: orderRow.index < ss._enabled.length - 1
+                        onClicked: ss._move(orderRow.index, 1)
+                        ToolTip.text: i18n("Move down")
+                        ToolTip.visible: hovered
+                        ToolTip.delay: Kirigami.Units.toolTipDelay
+                    }
+                }
+            }
+        }
+    }
+
     /** Emitted when the user clicks Configure… to push the details sub-page */
     signal pushSubPage
     /** Emitted when the user clicks Configure… to push the simple items sub-page */
@@ -1295,91 +1438,45 @@ ColumnLayout {
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastLayout = _opts[currentIndex].value
             }
-            Label {
-                text: i18n("Pressure forecast:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastShowPressure
-                    onToggled: widgetTab.configRoot.cfg_forecastShowPressure = checked
-                }
-            }
-            Label {
-                text: i18n("Kp index/G forecast:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                Switch {
-                    id: forecastShowKpIndexSwitch
-                    checked: widgetTab.configRoot.cfg_forecastShowKpIndex
-                    onToggled: widgetTab.configRoot.cfg_forecastShowKpIndex = checked
-                }
-                Label {
-                    visible: forecastShowKpIndexSwitch.checked
-                    text: i18n("The geomagnetic (Kp/G) forecast is only available up to 3 days ahead")
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
-                    opacity: 0.7
-                }
-            }
-            Label {
-                text: i18n("UV index forecast:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastShowUvIndex
-                    onToggled: widgetTab.configRoot.cfg_forecastShowUvIndex = checked
-                }
-            }
-            Label {
-                text: i18n("Precip sum:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastShowPrecipSum
-                    onToggled: widgetTab.configRoot.cfg_forecastShowPrecipSum = checked
-                }
-            }
-            Label {
-                text: i18n("Visibility:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastShowVisibility
-                    onToggled: widgetTab.configRoot.cfg_forecastShowVisibility = checked
-                }
-            }
-            Label {
-                text: i18n("Wind:")
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastShowWind
-                    onToggled: widgetTab.configRoot.cfg_forecastShowWind = checked
-                }
+            StatSwitches {
+                // the switches use the whole width of the page: all on ONE line (they wrap only when it is too narrow)
+                Layout.columnSpan: _form3.columns
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                orderProp: "cfg_forecastGraphOrder"
+                reorderable: widgetTab.configRoot.cfg_forecastLayout === "graphs"
+                defs: [
+                    {
+                        key: "wind",
+                        label: i18n("Wind"),
+                        cfg: "cfg_forecastShowWind"
+                    },
+                    {
+                        key: "pressure",
+                        label: i18n("Pressure"),
+                        cfg: "cfg_forecastShowPressure"
+                    },
+                    {
+                        key: "kp",
+                        label: i18n("Kp index/G"),
+                        cfg: "cfg_forecastShowKpIndex"
+                    },
+                    {
+                        key: "uv",
+                        label: i18n("UV index"),
+                        cfg: "cfg_forecastShowUvIndex"
+                    },
+                    {
+                        key: "precip",
+                        label: i18n("Precip sum"),
+                        cfg: "cfg_forecastShowPrecipSum"
+                    },
+                    {
+                        key: "vis",
+                        label: i18n("Visibility"),
+                        cfg: "cfg_forecastShowVisibility"
+                    }
+                ]
             }
 
             Kirigami.InlineMessage {
@@ -1486,118 +1583,52 @@ ColumnLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
-            Label {
-                text: i18n("Precip probability:")
+            StatSwitches {
+                // the switches use the whole width of the page: all on ONE line (they wrap only when it is too narrow)
+                Layout.columnSpan: _form3.columns
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowPrecipProb
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPrecipProb = checked
-                }
-            }
-            Label {
-                text: i18n("Pressure forecast:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowPressure
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPressure = checked
-                }
-            }
-            Label {
-                text: i18n("Kp index/G forecast:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    id: forecastHourlyShowKpIndexSwitch
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowKpIndex
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowKpIndex = checked
-                }
-                Label {
-                    visible: forecastHourlyShowKpIndexSwitch.checked
-                    text: i18n("The geomagnetic (Kp/G) forecast is only available up to 3 days ahead")
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
-                    opacity: 0.7
-                }
-            }
-            Label {
-                text: i18n("UV index forecast:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowUvIndex
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowUvIndex = checked
-                }
-            }
-            Label {
-                text: i18n("Precip sum:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowPrecipSum
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowPrecipSum = checked
-                }
-            }
-            Label {
-                text: i18n("Visibility:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowVisibility
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowVisibility = checked
-                }
-            }
-            Label {
-                text: i18n("Wind:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-            }
-            RowLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Switch {
-                    checked: widgetTab.configRoot.cfg_forecastHourlyShowWind
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyShowWind = checked
-                }
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                orderProp: "cfg_forecastHourlyGraphOrder"
+                reorderable: widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
+                defs: [
+                    {
+                        key: "precipprob",
+                        label: i18n("Precip probability"),
+                        cfg: "cfg_forecastHourlyShowPrecipProb",
+                        orderable: false
+                    },
+                    {
+                        key: "wind",
+                        label: i18n("Wind"),
+                        cfg: "cfg_forecastHourlyShowWind"
+                    },
+                    {
+                        key: "pressure",
+                        label: i18n("Pressure"),
+                        cfg: "cfg_forecastHourlyShowPressure"
+                    },
+                    {
+                        key: "kp",
+                        label: i18n("Kp index/G"),
+                        cfg: "cfg_forecastHourlyShowKpIndex"
+                    },
+                    {
+                        key: "uv",
+                        label: i18n("UV index"),
+                        cfg: "cfg_forecastHourlyShowUvIndex"
+                    },
+                    {
+                        key: "precip",
+                        label: i18n("Precip sum"),
+                        cfg: "cfg_forecastHourlyShowPrecipSum"
+                    },
+                    {
+                        key: "vis",
+                        label: i18n("Visibility"),
+                        cfg: "cfg_forecastHourlyShowVisibility"
+                    }
+                ]
             }
 
             Item {

@@ -61,6 +61,12 @@ ColumnLayout {
     property var days: []
     /** The Flickable (day list) the chart sits in; the wheel falls through to it. */
     property var outerFlickable: null
+    /** function(wheelEvent) -> bool: scrolls the page behind the chart (preferred over
+     *  outerFlickable, which is not always reachable) */
+    property var outerScroll: null
+    /** Labels are thinned as if they were at least this wide (the graphs of a stack share the
+     *  icon width of the top graph, so that all of them show the same dates) */
+    property real labelMinWidth: 0
 
     // ── Options (the Forecast tab uses them; the defaults are the History chart) ──
     property var seriesDefs: [
@@ -98,7 +104,7 @@ ColumnLayout {
     property string style: "line"
     /** function(v) -> text for the axis labels and the hover badges (default: view._temp) */
     property var valueFormat: null
-    /** function(index, key, v) -> text of a hover badge (default: valueFormat) */
+    /** function(index, key, v, entry) -> text of a hover badge (default: valueFormat) */
     property var badgeFormat: null
     /** function(index) -> colour of one bar ("bars" style; default: the series colour) */
     property var barColorAt: null
@@ -176,6 +182,10 @@ ColumnLayout {
         }
         if (nx === base) {
             // Nothing to pan: scroll the page behind the chart instead.
+            if (outerScroll) {
+                outerScroll(event);
+                return;
+            }
             var f = outerFlickable;
             if (f) {
                 var wy = tp ? event.pixelDelta.y : event.angleDelta.y / 2;
@@ -301,7 +311,7 @@ ColumnLayout {
         return valueFormat ? valueFormat(v) : (view ? view._temp(v) : String(v));
     }
     function _badgeText(i, key, v) {
-        return badgeFormat ? badgeFormat(i, key, v) : _fmtTemp(v);
+        return badgeFormat ? badgeFormat(i, key, v, (i >= 0 && i < days.length) ? days[i] : null) : _fmtTemp(v);
     }
     function _fmtPrecip(v) {
         return view ? view._precip(v) : String(v);
@@ -411,6 +421,7 @@ ColumnLayout {
     Item {
         id: area
         Layout.fillWidth: true
+        clip: true      // the plot may be a moment wider than the item while it is resized
 
         TextMetrics {
             id: tmDate
@@ -442,7 +453,22 @@ ColumnLayout {
         // the plot starts clear of them. The plot ("viewport") is `vw` wide.
         readonly property real naturalX: Math.ceil(Math.max(tmLo.width, tmHi.width, root.showPrecip ? tmP.width : 0)) + Kirigami.Units.largeSpacing * 2
         readonly property real plotX: Math.max(root.minPlotX, naturalX)
-        readonly property real vw: Math.max(1, width - plotX)
+        // The plot follows the item's width only once it has stopped changing for a moment:
+        // resizing the widget makes the width change on every frame, and re-laying out (and
+        // re-rendering) the plots of up to a dozen graphs each time made Plasma lag.
+        property real settledW: 0
+        onWidthChanged: {
+            if (settledW <= 0 || !visible)
+                settledW = width;
+            else
+                settleTimer.restart();
+        }
+        Timer {
+            id: settleTimer
+            interval: 90
+            onTriggered: area.settledW = area.width
+        }
+        readonly property real vw: Math.max(1, (settledW > 0 ? settledW : width) - plotX)
 
         readonly property real dateLabelH: Math.ceil(tmH.height) + Kirigami.Units.smallSpacing
 
@@ -501,13 +527,15 @@ ColumnLayout {
         // Date labels / vertical grid lines: whole multiples of `step` days
         // whose label fits completely inside the view (the two end days may
         // sit against the edge), thinned so that no two labels touch.
-        readonly property var labelIdx: {
+        readonly property var _labelIdxRaw: {
             var n = root.dayCount;
             if (n < 2)
                 return [];
             var w = tmDate.width;
             var gap = Kirigami.Units.largeSpacing * 2;
-            var every = Math.max(1, Math.ceil((w + gap) / step));
+            // with icons, an icon sits over every label: a cell is as wide as the wider of the two
+            var cw = Math.max(w, root.labelMinWidth, root.showIcons ? root.iconSize : 0);
+            var every = Math.max(1, Math.ceil((cw + gap) / step));
             var first = Math.max(0, Math.floor((scroller.contentX - pad) / step) - 1);
             var last = Math.min(n - 1, Math.ceil((scroller.contentX + vw - pad) / step) + 1);
             var cand = [];
@@ -541,6 +569,22 @@ ColumnLayout {
                 prevRight = left + w;
             }
             return out;
+        }
+
+        // The label indices only change when the set of labels does: a new array each time
+        // the view scrolls or the width changes would rebuild every label and icon.
+        property var labelIdx: []
+        property string _labelSig: ""
+        on_LabelIdxRawChanged: {
+            var sig = _labelIdxRaw.join(",");
+            if (sig !== _labelSig) {
+                _labelSig = sig;
+                labelIdx = _labelIdxRaw;
+            }
+        }
+        Component.onCompleted: {
+            _labelSig = _labelIdxRaw.join(",");
+            labelIdx = _labelIdxRaw;
         }
 
         // ── horizontal grid (fixed) ───────────────────────────────────
@@ -840,7 +884,7 @@ ColumnLayout {
                         y: has ? Math.min(area.py + area.ph - 1, area.yOf(Math.min(v, root.tempScale.hi))) : 0
                         height: has ? area.py + area.ph - y : 0
                         radius: Math.min(2, bw / 2)
-                        color: root.barColorAt ? root.barColorAt(index) : root.seriesDefs[0].color
+                        color: root.barColorAt ? root.barColorAt(index, (index >= 0 && index < root.days.length) ? root.days[index] : null) : root.seriesDefs[0].color
                         opacity: root.hoverIndex < 0 || root.hoverIndex === index ? 0.9 : 0.55
                     }
                 }
@@ -858,18 +902,16 @@ ColumnLayout {
 
                 // ── one icon per entry, thinned out when they would touch ──
                 Repeater {
-                    model: root.showIcons && root.dayCount > 0 ? root.dayCount : 0
+                    model: root.showIcons && root.dayCount > 0 ? area.labelIdx : []
                     delegate: Item {
                         id: iconSlot
-                        required property int index
-                        readonly property int every: Math.max(1, Math.ceil((root.iconSize + Kirigami.Units.smallSpacing) / area.step))
-                        readonly property real cx: area.xOf(index)
-                        readonly property var info: root.iconAt ? root.iconAt(index) : null
-                        // the first and last icon are pushed in from the edge rather than cut -
-                        // unless the icons are so close that this would make them touch
-                        readonly property bool roomAtEdge: area.step >= root.iconSize + Kirigami.Units.smallSpacing
-                        visible: index % every === 0 && cx >= 0 && cx <= area.vw && (roomAtEdge || (cx - root.iconSize / 2 >= 0 && cx + root.iconSize / 2 <= area.vw))
-                        x: Math.max(0, Math.min(area.vw - root.iconSize, cx - root.iconSize / 2))
+                        required property int modelData
+                        readonly property int index: modelData
+                        readonly property var info: root.iconAt ? root.iconAt(modelData) : null
+                        // centred over its date label (the labels are the ones that are thinned
+                        // out to fit, so the icons stay on the same days)
+                        visible: modelData < root.dayCount
+                        x: Math.max(0, Math.min(area.vw - root.iconSize, area.labelLeft(modelData) + tmDate.width / 2 - root.iconSize / 2))
                         y: 0
                         width: root.iconSize
                         height: root.iconSize

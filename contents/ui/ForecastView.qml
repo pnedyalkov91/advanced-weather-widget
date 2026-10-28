@@ -57,6 +57,10 @@ Item {
     property var weatherRoot
     property var verticalScrollView
     property int expandedIndex: -1
+    // Daily layout "Graphs", one day open at a time: the open day's hourly forecast is folded
+    // away (only its "Hourly forecast for ..." separator stays) - click the separator to toggle
+    property bool hourlyCollapsed: false
+    onExpandedIndexChanged: hourlyCollapsed = false
 
     // ── Auto-open: expand the first available day's hourly forecast ────────
     readonly property bool autoOpen: Plasmoid.configuration.forecastAutoOpen !== false
@@ -271,6 +275,7 @@ Item {
     // "graphs" = the days as one graph (Daily layout); anything else = the standard rows
     readonly property bool dailyGraphs: Plasmoid.configuration.forecastLayout === "graphs"
     readonly property bool hourlyGraphs: hourlyLayout === "graphs"
+    onDailyGraphsChanged: hourlyCollapsed = false
     readonly property bool _forecastDualTemp: Plasmoid.configuration.dualTempEnabled === true && Plasmoid.configuration.dualTempInWidget !== false
     readonly property bool _forecastShowTempUnit: Plasmoid.configuration.showTempUnit === true
     readonly property int _forecastWindColumnWidth: 104
@@ -312,7 +317,11 @@ Item {
     readonly property int _hourlyStripHeight: _hourlyStripContentHeight + 8 + _hourlyStripScrollbarReserve
     // Height of an opened day's graph panel until its chart is loaded (the panel then
     // takes the chart's own height)
-    readonly property real _hourlyGraphGuess: Kirigami.Units.gridUnit * 16
+    // (the height of the last chart that was measured: opening another day then does not
+    // change the page's height a second time when its chart is ready)
+    property real _hourlyGraphGuess: Kirigami.Units.gridUnit * 16
+    // ... per number of graphs (a day without Kp data has one graph less than the others)
+    property var _hourlyGuessByCount: ({})
     // Size of the weather icons above the graphs
     readonly property real _graphIconSize: 40
     readonly property int _hourlyCardWidth: {
@@ -452,8 +461,8 @@ Item {
 
     /** Open the hourly forecast of the day at delegate index `index` - the same as
      *  clicking its row in the standard layout. Clicking the day that is already
-     *  open does nothing here (a double click on the graph zooms; the separator
-     *  above the open day's hourly forecast closes it). */
+     *  open only unfolds it when it was folded (a double click on the graph zooms; the
+     *  separator above the open day's hourly forecast folds / unfolds it). */
     function _selectDay(index) {
         if (!weatherRoot)
             return;
@@ -470,8 +479,11 @@ Item {
             }
             return;
         }
-        if (expandedIndex === index)
+        if (expandedIndex === index) {
+            // the day is already the open one: a click on its graph unfolds it again
+            hourlyCollapsed = false;
             return;
+        }
         expandedIndex = index;
         weatherRoot.hourlyData = [];
         weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[di].dateStr || "");
@@ -589,12 +601,11 @@ Item {
                 fmt: function (v) {
                     return String(Math.round(v));
                 },
-                badge: function (i, key, v) {
-                    var e = items[i];
+                badge: function (i, key, v, e) {
                     return "Kp " + v.toFixed(1) + " (" + ((e && e.gScale) || "G0") + ")";
                 },
-                barColorAt: function (i) {
-                    return forecastRoot._kpColor(items[i] ? items[i].gScale : "G0");
+                barColorAt: function (i, e) {
+                    return forecastRoot._kpColor(e ? e.gScale : "G0");
                 },
                 scaleMin: 0,
                 scaleMax: 9,
@@ -636,6 +647,28 @@ Item {
                 scaleMin: 0,
                 minSpan: 10
             });
+        // the order chosen in the settings (Forecast → details), the rest keeps its place
+        var order = String((hourly ? cfg.forecastHourlyGraphOrder : cfg.forecastGraphOrder) || "wind;pressure;kp;uv;precip;vis").split(";");
+        var tok = {
+            windKmh: "wind",
+            pressureHpa: "pressure",
+            kp: "kp",
+            uv: "uv",
+            precipSum: "precip",
+            visibilityKm: "vis"
+        };
+        function rank(m) {
+            var r = order.indexOf(tok[m.key]);
+            return r < 0 ? 99 : r;
+        }
+        for (var a = 1; a < out.length; ++a) {
+            var cur = out[a], b = a - 1;
+            while (b >= 0 && rank(out[b]) > rank(cur)) {
+                out[b + 1] = out[b];
+                b--;
+            }
+            out[b + 1] = cur;
+        }
         return out;
     }
 
@@ -907,6 +940,7 @@ Item {
                     days: forecastRoot._dailyChartDays
                     metrics: forecastRoot._dailyMetrics
                     outerFlickable: forecastRoot._outerFlickable
+                    outerScroll: forecastRoot._scrollParentVertically
                     selectable: true
                     selectedIndex: forecastRoot.expandAll ? -1 : forecastRoot.expandedIndex
                     onDaySelected: function (i) {
@@ -969,7 +1003,10 @@ Item {
                 spacing: 0
 
                 // Whether this day's hourly forecast is open
-                readonly property bool _isExpanded: (forecastRoot.expandAll && !forecastRoot._collapsedDays[(weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex].dateStr : "") || ""]) || forecastRoot.expandedIndex === index
+                readonly property bool _isExpanded: forecastRoot.expandAll ? !forecastRoot._collapsedDays[(weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex].dateStr : "") || ""] : (forecastRoot.expandedIndex === index && !forecastRoot.hourlyCollapsed)
+                // The day has an hourly forecast section (its separator is shown in the
+                // "Graphs" layout), whether that is unfolded or folded
+                readonly property bool _isOpenDay: forecastRoot.expandAll || forecastRoot.expandedIndex === index
 
                 // Per-delegate hourly data: in expandAll mode pulls from the
                 // per-day cache; in single-expand mode uses weatherRoot.hourlyData
@@ -1408,11 +1445,11 @@ Item {
                 }
 
                 // ── Daily layout "Graphs": heading of an opened day's hourly forecast ──
-                // A line, "Hourly forecast for <date>" and a line. Clicking it closes the day.
+                // A line, "Hourly forecast for <date>" and a line. Clicking it folds / unfolds the day.
                 Item {
                     id: hourlySeparator
                     width: parent.width
-                    visible: forecastRoot.dailyGraphs && _isExpanded
+                    visible: forecastRoot.dailyGraphs && _isOpenDay
                     height: visible ? Math.max(34, sepLabel.implicitHeight + 16) : 0
 
                     MouseArea {
@@ -1422,15 +1459,18 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         ToolTip.visible: containsMouse
                         ToolTip.delay: 600
-                        ToolTip.text: i18n("Click to hide the hourly forecast")
+                        ToolTip.text: _isExpanded ? i18n("Click to hide the hourly forecast") : i18n("Click to show the hourly forecast")
                         onClicked: {
                             var dateStr = weatherRoot.dailyData[dataIndex].dateStr || "";
                             if (forecastRoot.expandAll) {
                                 var col = Object.assign({}, forecastRoot._collapsedDays);
-                                col[dateStr] = true;
+                                if (col[dateStr])
+                                    delete col[dateStr];
+                                else
+                                    col[dateStr] = true;
                                 forecastRoot._collapsedDays = col;
                             } else if (forecastRoot.expandedIndex === index) {
-                                forecastRoot.expandedIndex = -1;
+                                forecastRoot.hourlyCollapsed = !forecastRoot.hourlyCollapsed;
                             }
                         }
                     }
@@ -1449,6 +1489,13 @@ Item {
                             Layout.alignment: Qt.AlignVCenter
                             color: forecastRoot.themeTextColor
                             opacity: sepMouse.containsMouse ? 0.45 : 0.25
+                        }
+                        Kirigami.Icon {
+                            source: _isExpanded ? "arrow-down" : "arrow-right"
+                            Layout.preferredWidth: 14
+                            Layout.preferredHeight: 14
+                            Layout.alignment: Qt.AlignVCenter
+                            opacity: sepMouse.containsMouse ? 0.8 : 0.5
                         }
                         Label {
                             id: sepLabel
@@ -1485,12 +1532,15 @@ Item {
                     id: hourlyPanel
                     width: parent.width
                     // Graphs: as tall as the chart (a fixed guess until it is loaded)
-                    readonly property real _graphPanelHeight: (hourlyLoader.item && hourlyLoader.item.implicitHeight > 0) ? hourlyLoader.item.implicitHeight : forecastRoot._hourlyGraphGuess
-                    height: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? (forecastRoot.hourlyLayout === "strip" ? forecastRoot._hourlyStripHeight : (forecastRoot.hourlyGraphs ? _graphPanelHeight : forecastRoot._hourlyCardHeight + 40)) : 0
+                    readonly property real _graphPanelHeight: hourlyLoader.item && hourlyLoader.item.ready ? hourlyLoader.item.fullHeight : (hourlyLoader.item && hourlyLoader.item.expectedHeight > 0 ? hourlyLoader.item.expectedHeight : forecastRoot._hourlyGraphGuess)
+                    height: _isExpanded ? (forecastRoot.hourlyLayout === "strip" ? forecastRoot._hourlyStripHeight : (forecastRoot.hourlyGraphs ? _graphPanelHeight : forecastRoot._hourlyCardHeight + 40)) : 0
                     visible: height > 0
                     clip: true
                     color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.04)
+                    // (not for the graphs: their height is set once the charts are ready, and an
+                    // animation running while the page is re-laid out makes it shake)
                     Behavior on height {
+                        enabled: !forecastRoot.hourlyGraphs
                         NumberAnimation {
                             duration: 200
                             easing.type: Easing.InOutQuad
@@ -1508,7 +1558,7 @@ Item {
                     Label {
                         anchors.centerIn: parent
                         width: parent.width - 24
-                        visible: !_dayIsLoading && ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && _dayHourlyData.length === 0
+                        visible: !_dayIsLoading && _isExpanded && _dayHourlyData.length === 0
                         text: _dayOutsideQWeatherHourlyRange ? i18n("QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date.") : _dayOutsideAemetHourlyRange ? i18n("AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date.") : (((Plasmoid.configuration.weatherProvider || "adaptive") === "aemet") && weatherRoot && weatherRoot.aemetRateLimited) ? i18n("AEMET: request limit reached for the moment. This will retry automatically - please wait a minute.") : i18n("Loading hourly data…")
                         color: forecastRoot.themeTextColor
                         font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
@@ -1520,7 +1570,7 @@ Item {
                     Loader {
                         id: hourlyLoader
                         anchors.fill: parent
-                        active: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && weatherRoot && _dayHourlyData.length > 0
+                        active: _isExpanded && weatherRoot && _dayHourlyData.length > 0
                         asynchronous: true
                         sourceComponent: forecastRoot.hourlyLayout === "strip" ? stripHourlyComponent : (forecastRoot.hourlyGraphs ? graphsHourlyComponent : cardsHourlyComponent)
                     }
@@ -1531,6 +1581,22 @@ Item {
                             id: graphsRoot
                             // the panel is as tall as the chart plus its margins
                             implicitHeight: hourlyStack.mainItem ? hourlyStack.implicitHeight + 16 : 0
+                            // all graphs are loaded: only then the panel takes the chart's own height
+                            // (it keeps the height of the last chart until then, so nothing jumps)
+                            readonly property bool ready: hourlyStack.ready
+                            readonly property real fullHeight: hourlyStack.implicitHeight + 16
+                            // what a chart with this many graphs measured last time
+                            readonly property real expectedHeight: forecastRoot._hourlyGuessByCount[_metrics.length] || 0
+                            function _remember() {
+                                if (!ready || fullHeight <= 0)
+                                    return;
+                                forecastRoot._hourlyGraphGuess = fullHeight;
+                                var m = Object.assign({}, forecastRoot._hourlyGuessByCount);
+                                m[_metrics.length] = fullHeight;
+                                forecastRoot._hourlyGuessByCount = m;
+                            }
+                            onReadyChanged: _remember()
+                            onFullHeightChanged: _remember()
 
                             // chart data of this day (rebuilt when the hourly data change)
                             readonly property var _data: forecastRoot._hourlyChartData(_dayHourlyData, dataIndex, _daySunriseText, _daySunsetText, (weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex].dateStr : "") || "")
@@ -1568,11 +1634,13 @@ Item {
                                 y: 8
                                 width: parent.width - 20
                                 active: true
+                                opacity: ready ? 1 : 0
                                 chartSource: forecastRoot._chartSource
                                 view: hourlyAdapter
                                 days: graphsRoot._data.items
                                 metrics: graphsRoot._metrics
                                 outerFlickable: forecastRoot._outerFlickable
+                                outerScroll: forecastRoot._scrollParentVertically
                                 minZoomDays: 6
                                 markers: graphsRoot._data.markers
                                 shadeBefore: graphsRoot._data.shadeBefore
@@ -3033,7 +3101,7 @@ Item {
                 Rectangle {
                     width: parent.width
                     height: 1
-                    visible: !forecastRoot.dailyGraphs || _isExpanded
+                    visible: forecastRoot.dailyGraphs ? _isOpenDay : _isExpanded
                     color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)
                 }
             }
