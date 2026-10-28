@@ -61,10 +61,10 @@ For the full functionality of this widget, please ensure you have the following 
 
 > **MangoHud and other `LD_PRELOAD` overlays:** starting plasmashell under MangoHud (`mangohud plasmashell --replace`) has been observed to crash the whole shell when the embedded radar starts. If the widget finds MangoHud in plasmashell's `LD_PRELOAD`, it does not load the embedded radar. The Radar tab then shows an **Open radar in browser** button and a **Load embedded radar anyway** button, so you can still try it at your own risk.
 
-### 📈 History Charts
-*Required for the charts in the History tab. You only need **one** of the two modules below.*
+### 📈 Charts (History tab and Forecast graphs)
+*Required for the charts in the History tab and for the **Graphs** layouts of the daily and hourly forecast. You only need **one** of the two modules below.*
 
-The History tab draws its charts with **Qt Graphs** when it is available. If Qt Graphs is not installed (or your Qt is older than 6.8), the widget automatically falls back to **KDE Quick Charts**. If neither module is installed, the History tab still shows the summary tiles, but the chart is replaced by a short message.
+The History tab and the Graphs layouts of the Forecast tab draw their charts with **Qt Graphs** when it is available. If Qt Graphs is not installed (or your Qt is older than 6.8), the widget automatically falls back to **KDE Quick Charts**. If neither module is installed, the History tab still shows the summary tiles and the Forecast tab keeps its day rows, but a chart is replaced by a short message.
 
 **Qt Graphs** (preferred, needs Qt 6.8 or newer):
 
@@ -222,7 +222,7 @@ For providers that require an API key, you can enter it in the widget's settings
 
 ### 📈 History
 - **Past weather:** Browse earlier days, weeks and months for your exact location, using the [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) (free, no key needed, independent of the provider you picked for the forecast).
-- **Interactive charts:** Temperature, precipitation, wind and more, with zoom (mouse wheel, double-click, buttons) and drag to move through the period. Drawn with **Qt Graphs**, with **KDE Quick Charts** as an automatic fallback (see [Prerequisites](#-history-charts)).
+- **Interactive charts:** Temperature, precipitation, wind and more, with zoom (mouse wheel, double-click, buttons) and drag to move through the period. Drawn with **Qt Graphs**, with **KDE Quick Charts** as an automatic fallback (see [Prerequisites](#-charts-history-tab-and-forecast-graphs)).
 - **Summary tiles:** Average temperature, warmest day, coldest night, total precipitation, wettest day, strongest wind and gust, sunshine, humidity, pressure and cloud cover. Where Open-Meteo provides the hour, the tile also shows when it happened.
 
 ### 🖥 Customization
@@ -230,6 +230,7 @@ For providers that require an API key, you can enter it in the widget's settings
 - **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
 - **Widget Layouts:** Advanced (Details, Forecast, History and Radar tabs) and Simple (no tabs)
 - **Themes:** 7 icon themes (Symbolic, Font, Flat, 3D, Meteocons, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
+- **Forecast layouts:** The daily forecast can be shown as **Standard** rows or as **Graphs** (high/low temperature lines, precipitation bars and a weather icon per day; click a day to open its hours). The hourly forecast can be **Cards**, **Strip** or **Graphs** (temperature line, chance of precipitation or amount, sunrise/sunset marks). In the **Graphs** layouts every stat you switch on in the forecast settings (wind, pressure, Kp index with its G scale, UV index, precipitation sum, visibility) gets a graph of its own below the temperature graph, for both the daily and the hourly forecast. The graphs line up and zoom together; an opened day is headed by an *Hourly forecast for <date>* separator (click it to close the day). Set the layouts in *Appearance → Widget → Forecast*.
 - **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, hourly weather forecast, and interactive History charts.
 
 ---
@@ -335,7 +336,7 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
 
   Open-Meteo data is offered under the **CC BY 4.0** license.
 
-- The **History** charts are drawn with **Qt Graphs** (https://doc.qt.io/qt-6/qtgraphs-index.html) and, as a fallback, **KDE Quick Charts** (https://api.kde.org/frameworks/kquickcharts/html/index.html).
+- The **History** and **Forecast** graphs are drawn with **Qt Graphs** (https://doc.qt.io/qt-6/qtgraphs-index.html) and, as a fallback, **KDE Quick Charts** (https://api.kde.org/frameworks/kquickcharts/html/index.html).
 
 - This project uses the **RainViewer API** for weather radar data:  
   https://www.rainviewer.com/

@@ -17,6 +17,21 @@
 
 /**
  * ForecastView.qml - "Forecast" tab of the main widget popup
+ *
+ * Layouts (Appearance → Widget → Forecast):
+ *   Daily forecast layout  "rows" (Standard) or "graphs": one temperature /
+ *                          precipitation graph of all the days with an icon per
+ *                          day; clicking a day opens its hourly forecast below
+ *   Hourly layout          "cards", "strip" or "graphs": the hourly forecast of
+ *                          an opened day as a graph (temperature line, icons,
+ *                          precipitation bars, sunrise / sunset marks)
+ *   In both graph layouts each stat that is switched on (wind, pressure, Kp, UV,
+ *   precipitation sum, visibility) has a graph of its own below the temperature
+ *   graph (components/ForecastChartStack.qml); an opened day is headed by an
+ *   "Hourly forecast for <date>" separator, which closes the day when clicked.
+ * The graphs use components/HistoryChartGraphs.qml (Qt Graphs) and fall back to
+ * components/HistoryChartKQC.qml (KDE Quick Charts), the same charts as the
+ * History tab.
  */
 import QtQuick
 import QtQuick.Layouts
@@ -247,6 +262,9 @@ Item {
     readonly property bool showToday:       Plasmoid.configuration.forecastShowToday !== false
     readonly property bool showWind:        Plasmoid.configuration.forecastShowWind !== false
     readonly property string hourlyLayout:  Plasmoid.configuration.forecastHourlyLayout || "cards"
+    // "graphs" = the days as one graph (Daily layout); anything else = the standard rows
+    readonly property bool dailyGraphs:     Plasmoid.configuration.forecastLayout === "graphs"
+    readonly property bool hourlyGraphs:    hourlyLayout === "graphs"
     readonly property bool _forecastDualTemp: Plasmoid.configuration.dualTempEnabled === true && Plasmoid.configuration.dualTempInWidget !== false
     readonly property bool _forecastShowTempUnit: Plasmoid.configuration.showTempUnit === true
     readonly property int _forecastWindColumnWidth: 104
@@ -283,6 +301,11 @@ Item {
     readonly property int _hourlyStripScrollbarReserve: Math.max(16, _stripScrollbarHeight + 6)
     property int _stripScrollbarHeight: 16
     readonly property int _hourlyStripHeight: _hourlyStripContentHeight + 8 + _hourlyStripScrollbarReserve
+    // Height of an opened day's graph panel until its chart is loaded (the panel then
+    // takes the chart's own height)
+    readonly property real _hourlyGraphGuess: Kirigami.Units.gridUnit * 16
+    // Size of the weather icons above the graphs
+    readonly property real _graphIconSize: 40
     readonly property int _hourlyCardWidth: {
         var w = 100;
         if (_hourlyShowKpIndex)    w = Math.max(w, 132);
@@ -358,6 +381,303 @@ Item {
             W.weatherCodeToIcon, IconResolver.resolveCondition);
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // Graph layouts (Daily layout / Hourly layout = Graphs)
+    // ══════════════════════════════════════════════════════════════════════
+
+    // Chart engine: Qt Graphs, else KDE Quick Charts (when a chart cannot be
+    // loaded the next engine is used; shared by the daily and hourly charts)
+    property bool _graphsOk: true
+    property bool _kqcOk: true
+    property bool _chartSwitching: false
+    readonly property string _chartSource: _graphsOk ? "HistoryChartGraphs.qml"
+        : (_kqcOk ? "HistoryChartKQC.qml" : "")
+
+    /** Called when a chart Loader changes status: on an error, move on to the next engine. */
+    function _onChartStatus(loader) {
+        if (!loader || loader.status !== Loader.Error || _chartSource === "")
+            return;
+        // an error of an engine that has already been given up on (another chart got there first)
+        if (String(loader.source).indexOf(_chartSource) < 0)
+            return;
+        // Switching the source from inside its own status change would be a
+        // binding loop, so do it a moment later.
+        // several graphs (the temperature graph and the metric graphs) report the same failure
+        if (_chartSwitching)
+            return;
+        if (_graphsOk) {
+            console.warn("Forecast: Qt Graphs chart unavailable, using KDE Quick Charts");
+            _chartSwitching = true;
+            Qt.callLater(function () { forecastRoot._graphsOk = false; forecastRoot._chartSwitching = false; });
+        } else if (_kqcOk) {
+            console.warn("Forecast: KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
+            _chartSwitching = true;
+            Qt.callLater(function () { forecastRoot._kqcOk = false; forecastRoot._chartSwitching = false; });
+        }
+    }
+
+    // The Flickable behind the charts: a wheel turn the chart cannot use scrolls it
+    readonly property var _outerFlickable: {
+        if (!verticalScrollView)
+            return null;
+        var f = verticalScrollView.flickableItem || verticalScrollView.contentItem || verticalScrollView;
+        return (f && f.contentHeight !== undefined && f.contentY !== undefined) ? f : null;
+    }
+
+    function _isNum(v) { return typeof v === "number" && isFinite(v); }
+
+    function _toMins(t) {
+        if (!t || t === "--")
+            return -1;
+        var p = t.split(":");
+        return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+    }
+
+    /** Open the hourly forecast of the day at delegate index `index` - the same as
+     *  clicking its row in the standard layout. Clicking the day that is already
+     *  open does nothing here (a double click on the graph zooms; the separator
+     *  above the open day's hourly forecast closes it). */
+    function _selectDay(index) {
+        if (!weatherRoot)
+            return;
+        var di = showToday ? index : index + 1;
+        if (di < 0 || di >= weatherRoot.dailyData.length)
+            return;
+        if (expandAll) {
+            // all days are open unless closed by hand: open the one that was
+            var ds = weatherRoot.dailyData[di].dateStr || "";
+            if (_collapsedDays[ds]) {
+                var col = Object.assign({}, _collapsedDays);
+                delete col[ds];
+                _collapsedDays = col;
+            }
+            return;
+        }
+        if (expandedIndex === index)
+            return;
+        expandedIndex = index;
+        weatherRoot.hourlyData = [];
+        weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[di].dateStr || "");
+    }
+
+    // The days of the daily graph - the same days the standard rows show
+    readonly property var _dailyChartDays: {
+        var out = [];
+        if (!weatherRoot || !weatherRoot.dailyData)
+            return out;
+        var dd = weatherRoot.dailyData;
+        var total = Math.min(Plasmoid.configuration.forecastDays, dd.length);
+        for (var di = showToday ? 0 : 1; di < total; ++di) {
+            var d = dd[di];
+            var kp = NaN, gScale = "";
+            if (Plasmoid.configuration.forecastShowKpIndex === true) {
+                var ke = weatherRoot.kpForecastForDate(d.dateStr || "");
+                if (ke && isFinite(ke.kp)) {
+                    kp = ke.kp;
+                    gScale = ke.gScale || "G0";
+                }
+            }
+            out.push({
+                dateStr: d.dateStr || "",
+                dataIndex: di,
+                maxC: d.maxC,
+                minC: d.minC,
+                precipMm: d.precipMm,
+                code: d.code,
+                // the metric graphs
+                windKmh: d.windKmh,
+                pressureHpa: d.pressureHpa,
+                kp: kp,
+                gScale: gScale,
+                uv: d.uvMax,
+                precipSum: d.precipMm,
+                visibilityKm: d.visibilityKm
+            });
+        }
+        return out;
+    }
+
+    /** Colour of a Kp bar by its G scale (G0 = quiet ... G5 = extreme storm) */
+    function _kpColor(g) {
+        var map = { G0: "#66bb6a", G1: "#d4e157", G2: "#ffca28", G3: "#ffa726", G4: "#ff7043", G5: "#ef5350" };
+        return map[g] || map.G0;
+    }
+
+    /** The graphs below the temperature graph, for the entries `items`: one for each stat
+     *  that is switched on (the same switches as the stat rows / cards use) and has data.
+     *  `hourly` picks the hourly switches instead of the daily ones. */
+    function _metricList(items, hourly) {
+        var out = [];
+        var wr = weatherRoot;
+        if (!wr || !items || items.length < 2)
+            return out;
+        var cfg = Plasmoid.configuration;
+        var on = hourly
+            ? { wind: _hourlyShowWind, pressure: _hourlyShowPressure, kp: _hourlyShowKpIndex,
+                uv: _hourlyShowUvIndex, precip: _hourlyShowPrecipSum, vis: _hourlyShowVisibility }
+            : { wind: showWind, pressure: cfg.forecastShowPressure === true, kp: cfg.forecastShowKpIndex === true,
+                uv: cfg.forecastShowUvIndex === true, precip: cfg.forecastShowPrecipSum === true,
+                vis: cfg.forecastShowVisibility === true };
+        function has(key) {
+            for (var i = 0; i < items.length; ++i)
+                if (_isNum(items[i][key]))
+                    return true;
+            return false;
+        }
+        if (on.wind && has("windKmh"))
+            out.push({ key: "windKmh", label: i18n("Wind"), color: "#66bb6a", style: "line",
+                       fmt: function (v) { return wr.windValue(v); }, scaleMin: 0, minSpan: 10 });
+        if (on.pressure && has("pressureHpa"))
+            out.push({ key: "pressureHpa", label: i18n("Pressure"), color: "#ab47bc", style: "line",
+                       fmt: function (v) { return wr.pressureValue(v); }, minSpan: 6 });
+        if (on.kp && has("kp"))
+            out.push({ key: "kp", label: i18n("Kp index (G scale)"), color: "#ffa726", style: "bars",
+                       fmt: function (v) { return String(Math.round(v)); },
+                       badge: function (i, key, v) {
+                           var e = items[i];
+                           return "Kp " + v.toFixed(1) + " (" + ((e && e.gScale) || "G0") + ")";
+                       },
+                       barColorAt: function (i) { return forecastRoot._kpColor(items[i] ? items[i].gScale : "G0"); },
+                       scaleMin: 0, scaleMax: 9, scaleStep: 3 });
+        if (on.uv && has("uv"))
+            out.push({ key: "uv", label: i18n("UV index"), color: "#ffb300", style: "line",
+                       fmt: function (v) { return String(Math.round(v * 10) / 10); }, scaleMin: 0, minSpan: 6 });
+        if (on.precip && has("precipSum"))
+            out.push({ key: "precipSum", label: i18n("Precipitation sum"), color: "#26c6da", style: "bars",
+                       fmt: function (v) { return wr.precipSumText(v); }, scaleMin: 0, minSpan: 2 });
+        if (on.vis && has("visibilityKm"))
+            out.push({ key: "visibilityKm", label: i18n("Visibility"), color: "#90a4ae", style: "line",
+                       fmt: function (v) { return wr.visibilityValue(v); }, scaleMin: 0, minSpan: 10 });
+        return out;
+    }
+
+    // The metric graphs of the daily graph. The temperature graph's precipitation strip is
+    // left out when the precipitation sum has a graph of its own (it would show the same bars).
+    readonly property var _dailyMetrics: _metricList(_dailyChartDays, false)
+    readonly property bool _dailyOwnPrecip: {
+        for (var i = 0; i < _dailyMetrics.length; ++i)
+            if (_dailyMetrics[i].key === "precipSum")
+                return true;
+        return false;
+    }
+
+    /** Fractional index (into `items`, which carry `minutes`) of the time of day `t` (minutes), or -1. */
+    function _fracIndex(items, t) {
+        for (var i = 0; i + 1 < items.length; ++i) {
+            var a = items[i].minutes, b = items[i + 1].minutes;
+            if (a >= 0 && b > a && t >= a && t <= b)
+                return i + (t - a) / (b - a);
+        }
+        return -1;
+    }
+
+    /** Everything the hourly graph needs for one day:
+     *  { items, percent, markers, shadeBefore }. The hours follow the same rules as
+     *  the strip and the cards: for today the hours that have passed (less one hour)
+     *  are dropped, or - with "keep past hours" on - kept and greyed out. */
+    function _hourlyChartData(hourly, dataIndex, sunriseText, sunsetText, dayDate) {
+        var result = { items: [], percent: false, markers: [], shadeBefore: -1 };
+        if (!hourly || !hourly.length || !weatherRoot)
+            return result;
+        var rise = _toMins(sunriseText), set_ = _toMins(sunsetText);
+        var nowMins = -1;
+        if (dataIndex === 0) {
+            var now = new Date();
+            nowMins = now.getHours() * 60 + now.getMinutes() - 60;
+        }
+        var items = [], anyProb = false;
+        for (var i = 0; i < hourly.length; ++i) {
+            var h = hourly[i];
+            // the closing entry (the next day's 00:00) is the end of this day
+            var m = h.isNextDay === true ? 1440 : _toMins(h.hour);
+            var isPast = h.isNextDay !== true && nowMins >= 0 && m >= 0 && m < nowMins;
+            if (isPast && !showPastHoursGreyed)
+                continue;
+            var key = (h.hour && h.hour !== "--") ? h.hour : "";
+            var label = "--";
+            if (key !== "") {
+                var parts = key.split(":");
+                if (parts.length >= 2) {
+                    var dt = new Date();
+                    dt.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
+                    label = weatherRoot.formatTimeObj(dt);
+                } else {
+                    label = key;
+                }
+            }
+            // probability of precipitation, by the same rule as the strip / cards
+            var ppText = W.hourlyPrecipProbText(h.precipProb, h.code);
+            var prob = (ppText !== null && ppText !== undefined) ? parseFloat(ppText) : NaN;
+            if (isFinite(prob))
+                anyProb = true;
+            // Kp: the 3-hour NOAA period, else the day's value (as the strip / cards do)
+            var kpv = NaN, kpg = "";
+            if (_hourlyShowKpIndex && dayDate) {
+                var ke = weatherRoot.kpForecastForHour(dayDate, key) || weatherRoot.kpForecastForDate(dayDate);
+                if (ke && isFinite(ke.kp)) {
+                    kpv = ke.kp;
+                    kpg = ke.gScale || "G0";
+                }
+            }
+            var night = false;
+            if (m >= 0 && rise >= 0 && set_ >= 0) {
+                var mm1 = m % 1440;
+                night = mm1 < rise || mm1 >= set_;
+            }
+            var title = label + " · " + weatherRoot.weatherCodeToText(h.code || 0);
+            if (_isNum(h.windKmh))
+                title += " · " + weatherRoot.windValue(h.windKmh);
+            items.push({
+                dateStr: key,
+                tempC: h.tempC,
+                prob: prob,
+                mm: h.precipMm,
+                precipMm: NaN,
+                // the metric graphs
+                windKmh: h.windKmh,
+                pressureHpa: h.pressureHpa,
+                kp: kpv,
+                gScale: kpg,
+                uv: h.uvIndex,
+                precipSum: h.precipMm,
+                visibilityKm: h.visibilityKm,
+                code: h.code || 0,
+                minutes: m,
+                isNight: night,
+                hourText: label,
+                titleText: title
+            });
+            if (isPast)
+                result.shadeBefore = items.length - 0.5;
+        }
+        // The bars show the chance of precipitation when the provider gives it,
+        // otherwise the amount.
+        for (var k = 0; k < items.length; ++k)
+            items[k].precipMm = anyProb ? items[k].prob : (_isNum(items[k].mm) ? items[k].mm : NaN);
+        result.items = items;
+        result.percent = anyProb;
+        if (showSunEvents && items.length > 1) {
+            var events = [
+                { t: rise, kind: "sunrise", text: sunriseText },
+                { t: set_, kind: "sunset", text: sunsetText }
+            ];
+            for (var e = 0; e < events.length; ++e) {
+                var ev = events[e];
+                if (ev.t < 0 || (nowMins >= 0 && ev.t < nowMins))
+                    continue;
+                var pos = _fracIndex(items, ev.t);
+                if (pos < 0)
+                    continue;
+                result.markers.push({
+                    pos: pos,
+                    label: weatherRoot.formatTimeForDisplay(ev.text),
+                    iconInfo: IconResolver.resolve(ev.kind, 32, forecastRoot.iconsBaseDir, forecastRoot.itemsIconTheme)
+                });
+            }
+        }
+        return result;
+    }
+
     // ── empty state ───────────────────────────────────────────────────────
     BusyIndicator {
         id: emptyBusy
@@ -383,6 +703,139 @@ Item {
         spacing: 0
         visible: weatherRoot && weatherRoot.dailyData.length > 0
 
+            // ── Daily layout "Graphs": all the days as one graph ──────────────
+            // Click a day to open its hourly forecast below (the same panel the
+            // standard layout opens under a day's row).
+            Item {
+                id: dailyGraphBox
+                width: parent.width
+                visible: forecastRoot.dailyGraphs && forecastRoot._dailyChartDays.length > 1
+                height: visible ? dailyGraphCol.implicitHeight + 12 : 0
+
+                // What the chart asks for: formatted values and labels
+                QtObject {
+                    id: dailyAdapter
+                    function _temp(c) { return forecastRoot._isNum(c) && weatherRoot ? weatherRoot.tempValue(c) : "--"; }
+                    function _precip(mm) { return forecastRoot._isNum(mm) && weatherRoot ? weatherRoot.precipSumText(mm) : "--"; }
+                    function _date(ds, entry) { return weatherRoot && ds ? weatherRoot.formatIsoDate(ds, true) : "--"; }
+                    function _day(ds, longName, entry) {
+                        if (!weatherRoot || !ds)
+                            return "--";
+                        var name = i18n("Today");
+                        if (!entry || entry.dataIndex !== 0) {
+                            var parts = ds.split("-");
+                            name = parts.length === 3
+                                ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
+                        }
+                        var t = name + ", " + weatherRoot.formatIsoDate(ds, true);
+                        if (entry && entry.code !== undefined)
+                            t += " · " + weatherRoot.weatherCodeToText(entry.code);
+                        return t;
+                    }
+                }
+
+                ColumnLayout {
+                    id: dailyGraphCol
+                    x: 10
+                    y: 6
+                    width: parent.width - 24
+                    spacing: 0
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: dailyStack._on && forecastRoot._dailyChartDays.length > 3
+                        spacing: 2
+
+                        Label {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            color: forecastRoot.themeTextColor
+                            opacity: 0.7
+                            font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                            text: {
+                                var c = dailyStack.mainItem;
+                                if (c && c.zoomed === true) {
+                                    var a = forecastRoot._dailyChartDays[Math.min(c.visibleFirst, forecastRoot._dailyChartDays.length - 1)];
+                                    var b = forecastRoot._dailyChartDays[Math.min(c.visibleLast, forecastRoot._dailyChartDays.length - 1)];
+                                    return a && b ? dailyAdapter._date(a.dateStr, a) + " – " + dailyAdapter._date(b.dateStr, b) : "";
+                                }
+                                return forecastRoot.expandAll
+                                    ? i18n("Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in")
+                                    : i18n("Click a day to show its hourly forecast. Double-click the graph to zoom in");
+                            }
+                        }
+                        ToolButton {
+                            icon.name: "zoom-out"
+                            display: AbstractButton.IconOnly
+                            enabled: !!dailyStack.mainItem && dailyStack.mainItem.zoomed === true
+                            onClicked: dailyStack.mainItem.zoomOut()
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Zoom out")
+                            Accessible.name: i18n("Zoom out")
+                        }
+                        ToolButton {
+                            icon.name: "zoom-in"
+                            display: AbstractButton.IconOnly
+                            enabled: !!dailyStack.mainItem && dailyStack.mainItem.canZoomIn === true
+                            onClicked: dailyStack.mainItem.zoomIn()
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)")
+                            Accessible.name: i18n("Zoom in")
+                        }
+                        ToolButton {
+                            icon.name: "zoom-original"
+                            display: AbstractButton.IconOnly
+                            enabled: !!dailyStack.mainItem && dailyStack.mainItem.zoomed === true
+                            onClicked: dailyStack.mainItem.resetZoom()
+                            ToolTip.visible: hovered
+                            ToolTip.text: i18n("Restore")
+                            Accessible.name: i18n("Restore")
+                        }
+                    }
+
+                    // The temperature graph and a graph of its own for each stat that is switched on
+                    ForecastChartStack {
+                        id: dailyStack
+                        Layout.fillWidth: true
+                        active: forecastRoot.dailyGraphs
+                        chartSource: forecastRoot._chartSource
+                        view: dailyAdapter
+                        days: forecastRoot._dailyChartDays
+                        metrics: forecastRoot._dailyMetrics
+                        outerFlickable: forecastRoot._outerFlickable
+                        selectable: true
+                        selectedIndex: forecastRoot.expandAll ? -1 : forecastRoot.expandedIndex
+                        onDaySelected: function (i) { forecastRoot._selectDay(i); }
+                        onChartStatus: function (loader) { forecastRoot._onChartStatus(loader); }
+                        configureMain: function (item) {
+                            item.seriesDefs = [
+                                { key: "maxC", color: item.highColor, label: i18nc("@label chart legend", "High") },
+                                { key: "minC", color: item.lowColor, label: i18nc("@label chart legend", "Low") }
+                            ];
+                            item.showIcons = true;
+                            item.iconSize = forecastRoot._graphIconSize;
+                            item.iconAt = function (i) {
+                                var d = forecastRoot._dailyChartDays[i];
+                                return d ? forecastRoot.resolveConditionIcon(d.code, false, forecastRoot.iconSz) : null;
+                            };
+                            item.showPrecip = Qt.binding(function () { return !forecastRoot._dailyOwnPrecip; });
+                        }
+                    }
+
+                    // Neither chart module could be loaded
+                    Label {
+                        Layout.fillWidth: true
+                        visible: forecastRoot.dailyGraphs && forecastRoot._dailyChartDays.length > 1 && forecastRoot._chartSource === ""
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                        color: forecastRoot.themeTextColor
+                        opacity: 0.7
+                        font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                        text: i18n("The chart needs the Qt Graphs or the KDE Quick Charts QML module.")
+                    }
+                }
+            }
+
             Repeater {
                 model: {
                     if (!weatherRoot || weatherRoot.dailyData.length === 0) return 0;
@@ -395,6 +848,10 @@ Item {
                     readonly property int dataIndex: forecastRoot.showToday ? index : index + 1
                     width: parent.width
                     spacing: 0
+
+                    // Whether this day's hourly forecast is open
+                    readonly property bool _isExpanded: (forecastRoot.expandAll && !forecastRoot._collapsedDays[(weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex].dateStr : "") || ""])
+                                                        || forecastRoot.expandedIndex === index
 
                     // Per-delegate hourly data: in expandAll mode pulls from the
                     // per-day cache; in single-expand mode uses weatherRoot.hourlyData
@@ -483,7 +940,10 @@ Item {
                     Rectangle {
                         id: dayRow
                         width: parent.width
-                        height: Math.max(52, rowLayoutInner.implicitHeight + 12)
+                        // With the daily graph the rows are not listed (the graphs show the same
+                        // values); an opened day gets a separator instead, see hourlySeparator
+                        height: forecastRoot.dailyGraphs ? 0 : Math.max(52, rowLayoutInner.implicitHeight + 12)
+                        visible: height > 0
                         color: (rowMouse.containsMouse || (forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08) : "transparent"
                         Behavior on color {
                             ColorAnimation {
@@ -832,11 +1292,90 @@ Item {
                         }
                     }
 
+                    // ── Daily layout "Graphs": heading of an opened day's hourly forecast ──
+                    // A line, "Hourly forecast for <date>" and a line. Clicking it closes the day.
+                    Item {
+                        id: hourlySeparator
+                        width: parent.width
+                        visible: forecastRoot.dailyGraphs && _isExpanded
+                        height: visible ? Math.max(34, sepLabel.implicitHeight + 16) : 0
+
+                        MouseArea {
+                            id: sepMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            ToolTip.visible: containsMouse
+                            ToolTip.delay: 600
+                            ToolTip.text: i18n("Click to hide the hourly forecast")
+                            onClicked: {
+                                var dateStr = weatherRoot.dailyData[dataIndex].dateStr || "";
+                                if (forecastRoot.expandAll) {
+                                    var col = Object.assign({}, forecastRoot._collapsedDays);
+                                    col[dateStr] = true;
+                                    forecastRoot._collapsedDays = col;
+                                } else if (forecastRoot.expandedIndex === index) {
+                                    forecastRoot.expandedIndex = -1;
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            anchors {
+                                fill: parent
+                                leftMargin: 10
+                                rightMargin: 14
+                            }
+                            spacing: 10
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                Layout.alignment: Qt.AlignVCenter
+                                color: forecastRoot.themeTextColor
+                                opacity: sepMouse.containsMouse ? 0.45 : 0.25
+                            }
+                            Label {
+                                id: sepLabel
+                                Layout.alignment: Qt.AlignVCenter
+                                Layout.maximumWidth: Math.max(60, hourlySeparator.width - 80)
+                                elide: Text.ElideRight
+                                color: forecastRoot.themeTextColor
+                                font: weatherRoot ? weatherRoot.wf(10, true) : Qt.font({})
+                                text: {
+                                    if (!weatherRoot || !weatherRoot.dailyData[dataIndex])
+                                        return "";
+                                    var ds = weatherRoot.dailyData[dataIndex].dateStr || "";
+                                    var name = i18n("Today");
+                                    if (dataIndex !== 0) {
+                                        var parts = ds.split("-");
+                                        name = parts.length === 3
+                                            ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
+                                    }
+                                    var date = ds ? weatherRoot.formatIsoDate(ds, true) : "";
+                                    return i18n("Hourly forecast for %1", name !== "" ? name + ", " + date : date);
+                                }
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 1
+                                Layout.alignment: Qt.AlignVCenter
+                                color: forecastRoot.themeTextColor
+                                opacity: sepMouse.containsMouse ? 0.45 : 0.25
+                            }
+                        }
+                    }
+
                     // ── inline hourly panel ─────────────────────────────
                     Rectangle {
                         id: hourlyPanel
                         width: parent.width
-                        height: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) ? (forecastRoot.hourlyLayout === "strip" ? forecastRoot._hourlyStripHeight : forecastRoot._hourlyCardHeight + 40) : 0
+                        // Graphs: as tall as the chart (a fixed guess until it is loaded)
+                        readonly property real _graphPanelHeight: (hourlyLoader.item && hourlyLoader.item.implicitHeight > 0)
+                            ? hourlyLoader.item.implicitHeight : forecastRoot._hourlyGraphGuess
+                        height: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index)
+                            ? (forecastRoot.hourlyLayout === "strip" ? forecastRoot._hourlyStripHeight
+                               : (forecastRoot.hourlyGraphs ? _graphPanelHeight : forecastRoot._hourlyCardHeight + 40)) : 0
                         visible: height > 0
                         clip: true
                         color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.04)
@@ -874,10 +1413,99 @@ Item {
 
                         // Only instantiate the heavy hourly UI for the expanded day.
                         Loader {
+                            id: hourlyLoader
                             anchors.fill: parent
                             active: ((forecastRoot.expandAll && !forecastRoot._collapsedDays[weatherRoot.dailyData[dataIndex].dateStr || ""]) || forecastRoot.expandedIndex === index) && weatherRoot && _dayHourlyData.length > 0
                             asynchronous: true
-                            sourceComponent: forecastRoot.hourlyLayout === "strip" ? stripHourlyComponent : cardsHourlyComponent
+                            sourceComponent: forecastRoot.hourlyLayout === "strip" ? stripHourlyComponent
+                                : (forecastRoot.hourlyGraphs ? graphsHourlyComponent : cardsHourlyComponent)
+                        }
+
+                        Component {
+                            id: graphsHourlyComponent
+                            Item {
+                                id: graphsRoot
+                                // the panel is as tall as the chart plus its margins
+                                implicitHeight: hourlyStack.mainItem ? hourlyStack.implicitHeight + 16 : 0
+
+                                // chart data of this day (rebuilt when the hourly data change)
+                                readonly property var _data: forecastRoot._hourlyChartData(_dayHourlyData, dataIndex, _daySunriseText, _daySunsetText,
+                                    (weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex].dateStr : "") || "")
+                                // the graphs below the temperature graph
+                                readonly property var _metrics: forecastRoot._metricList(_data.items, true)
+                                readonly property bool _ownPrecip: {
+                                    for (var i = 0; i < _metrics.length; ++i)
+                                        if (_metrics[i].key === "precipSum")
+                                            return true;
+                                    return false;
+                                }
+
+                                // What the chart asks for: formatted values and labels
+                                QtObject {
+                                    id: hourlyAdapter
+                                    function _temp(c) { return forecastRoot._isNum(c) && weatherRoot ? weatherRoot.tempValue(c) : "--"; }
+                                    function _precip(v) {
+                                        if (!forecastRoot._isNum(v) || !weatherRoot)
+                                            return "--";
+                                        return graphsRoot._data.percent ? Math.round(v) + "%" : weatherRoot.precipSumText(v);
+                                    }
+                                    function _date(key, entry) { return entry ? entry.hourText : (key || "--"); }
+                                    function _day(key, longName, entry) { return entry ? entry.titleText : (key || "--"); }
+                                }
+
+                                ForecastChartStack {
+                                    id: hourlyStack
+                                    x: 10
+                                    y: 8
+                                    width: parent.width - 20
+                                    active: true
+                                    chartSource: forecastRoot._chartSource
+                                    view: hourlyAdapter
+                                    days: graphsRoot._data.items
+                                    metrics: graphsRoot._metrics
+                                    outerFlickable: forecastRoot._outerFlickable
+                                    minZoomDays: 6
+                                    markers: graphsRoot._data.markers
+                                    shadeBefore: graphsRoot._data.shadeBefore
+                                    // the widest time label ("12:00 PM" in a 12-hour locale)
+                                    labelSampleText: {
+                                        var wide = new Date();
+                                        wide.setHours(12, 0, 0, 0);
+                                        return weatherRoot ? weatherRoot.formatTimeObj(wide) : "";
+                                    }
+                                    onChartStatus: function (loader) { forecastRoot._onChartStatus(loader); }
+                                    configureMain: function (item) {
+                                        item.seriesDefs = [{ key: "tempC", color: item.highColor, label: i18n("Temperature") }];
+                                        item.showIcons = true;
+                                        item.iconSize = forecastRoot._graphIconSize;
+                                        item.iconAt = function (i) {
+                                            var d = graphsRoot._data.items[i];
+                                            return d ? forecastRoot.resolveConditionIcon(d.code, d.isNight, forecastRoot.iconSz) : null;
+                                        };
+                                        item.precipPercent = Qt.binding(function () { return graphsRoot._data.percent; });
+                                        item.precipLegend = Qt.binding(function () {
+                                            return graphsRoot._data.percent ? i18n("Chance of precipitation") : i18nc("@label chart legend", "Precipitation");
+                                        });
+                                        // the amount of precipitation has a graph of its own: the strip stays
+                                        // only when it shows the chance of precipitation instead
+                                        item.showPrecip = Qt.binding(function () {
+                                            return graphsRoot._data.percent || !graphsRoot._ownPrecip;
+                                        });
+                                    }
+                                }
+
+                                Label {
+                                    anchors.centerIn: parent
+                                    width: parent.width - 24
+                                    visible: forecastRoot._chartSource === ""
+                                    horizontalAlignment: Text.AlignHCenter
+                                    wrapMode: Text.WordWrap
+                                    color: forecastRoot.themeTextColor
+                                    opacity: 0.7
+                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                    text: i18n("The chart needs the Qt Graphs or the KDE Quick Charts QML module.")
+                                }
+                            }
                         }
 
                         Component {
@@ -2182,6 +2810,7 @@ Item {
                     Rectangle {
                         width: parent.width
                         height: 1
+                        visible: !forecastRoot.dailyGraphs || _isExpanded
                         color: Qt.rgba(forecastRoot.themeTextColor.r, forecastRoot.themeTextColor.g, forecastRoot.themeTextColor.b, 0.08)
                     }
                 }

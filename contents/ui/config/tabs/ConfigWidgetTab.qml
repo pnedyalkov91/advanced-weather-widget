@@ -1134,6 +1134,28 @@ ColumnLayout {
             Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
 
             Label {
+                text: i18n("Daily layout:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            ComboBox {
+                textRole: "text"
+                readonly property var _opts: [
+                    { text: i18n("Standard"), value: "rows" },
+                    { text: i18n("Graphs"),   value: "graphs" }
+                ]
+                model: _opts
+                currentIndex: {
+                    var v = widgetTab.configRoot.cfg_forecastLayout;
+                    for (var i = 0; i < _opts.length; i++)
+                        if (_opts[i].value === v) return i;
+                    return 0;
+                }
+                onActivated: widgetTab.configRoot.cfg_forecastLayout = _opts[currentIndex].value
+            }
+            Label {
                 text: i18n("Pressure forecast:")
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
@@ -1269,7 +1291,8 @@ ColumnLayout {
                 textRole: "text"
                 readonly property var _opts: [
                     { text: i18n("Cards"),  value: "cards" },
-                    { text: i18n("Strip"),  value: "strip" }
+                    { text: i18n("Strip"),  value: "strip" },
+                    { text: i18n("Graphs"), value: "graphs" }
                 ]
                 model: _opts
                 currentIndex: {
