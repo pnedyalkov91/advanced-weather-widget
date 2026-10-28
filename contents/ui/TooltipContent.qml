@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -75,22 +75,11 @@ Item {
 
     // Using an Item root (not ColumnLayout) ensures implicitWidth/Height
     // are NOT overridden by the layout engine, so manual tooltip sizing works.
-    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false)
-        ? (ttWidthAuto
-            ? Math.min(ttMaxWidth, _ttAutoWidth)
-            : ttWidthManual)
-        : 0
-    implicitHeight: (Plasmoid.configuration.tooltipEnabled !== false)
-        ? (ttHeightAuto
-            ? Math.max(40, ttDataCol.implicitHeight + _headerHeight + 32)
-            : ttHeightManual)
-        : 0
+    implicitWidth: (Plasmoid.configuration.tooltipEnabled !== false) ? (ttWidthAuto ? Math.min(ttMaxWidth, _ttAutoWidth) : ttWidthManual) : 0
+    implicitHeight: (Plasmoid.configuration.tooltipEnabled !== false) ? (ttHeightAuto ? Math.max(40, ttDataCol.implicitHeight + _headerHeight + 32) : ttHeightManual) : 0
 
     // Sum of header labels + separator - used in manual-height calculation
-    readonly property int _headerHeight: _ttHeaderLabel.implicitHeight
-        + ((_ttTimestamp.visible ? _ttTimestamp.implicitHeight : 0))
-        + ((_ttNoLocHint.visible ? _ttNoLocHint.implicitHeight : 0))
-        + 6 /* separator + margins */
+    readonly property int _headerHeight: _ttHeaderLabel.implicitHeight + ((_ttTimestamp.visible ? _ttTimestamp.implicitHeight : 0)) + ((_ttNoLocHint.visible ? _ttNoLocHint.implicitHeight : 0)) + 6 /* separator + margins */
 
     // ── Wi-font loaded inside tooltip popup ───────────────────────────────
     FontLoader {
@@ -148,12 +137,17 @@ Item {
                 precipsum: "\uF07C",
                 uvindex: "\uF072",
                 airquality: "\uF074",
-                pollen:     "\uF082",
+                pollen: "\uF082",
                 spaceweather: "\uF06E",
                 alerts: "\uF0CE",
                 snowcover: "\uF076"
             };
-            return { type: "wi", source: glyphs[tok] || "", svgFallback: "", isMask: false };
+            return {
+                type: "wi",
+                source: glyphs[tok] || "",
+                svgFallback: "",
+                isMask: false
+            };
         }
 
         if (theme === "custom") {
@@ -185,7 +179,12 @@ Item {
                 return IconResolver.resolveMoonPhase(moonStemC, ttIconSize, ttRoot.iconsBaseDir, "flat-color");
             }
             var saved = getTooltipCustomIcon(tok);
-            return { type: "kde", source: saved.length > 0 ? saved : (defaults[tok] || ""), svgFallback: "", isMask: false };
+            return {
+                type: "kde",
+                source: saved.length > 0 ? saved : (defaults[tok] || ""),
+                svgFallback: "",
+                isMask: false
+            };
         }
 
         // KDE / SVG themes - unified via IconResolver
@@ -194,7 +193,12 @@ Item {
 
         if (tok === "condition") {
             if (!weatherRoot)
-                return { type: "kde", source: "weather-none-available", svgFallback: "", isMask: false };
+                return {
+                    type: "kde",
+                    source: "weather-none-available",
+                    svgFallback: "",
+                    isMask: false
+                };
             return IconResolver.resolveCondition(weatherRoot.weatherCode, weatherRoot.isNightTime(), ttIconSize, ttRoot.iconsBaseDir, svgTheme);
         }
         if (tok === "moonphase") {
@@ -224,153 +228,144 @@ Item {
         anchors.bottomMargin: 8
         spacing: 5
 
-    // ── Header: location name ─────────────────────────────────────────────
-    Label {
-        id: _ttHeaderLabel
-        Layout.fillWidth: true
-        Layout.maximumWidth: ttRoot.ttMaxWidth - 24
-        text: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown ? Plasmoid.configuration.locationName : i18n("Weather Widget")
-        font.bold: true
-        font.pixelSize: ttRoot.ttFont.pixelSize + 2
-        font.family: ttRoot.ttFont.family
-        color: Kirigami.Theme.textColor
-        wrapMode: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "wrap" ? Text.WordWrap : Text.NoWrap
-        elide: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "truncate" ? Text.ElideRight : Text.ElideNone
-    }
-
-    // ── Update timestamp ─────────────────────────────────────────────────
-    Label {
-        id: _ttTimestamp
-        Layout.fillWidth: true
-        visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && ttRoot.weatherRoot.updateText.length > 0
-        text: ttRoot.weatherRoot ? ttRoot.weatherRoot.updateText : ""
-        textFormat: Text.RichText
-        onLinkActivated: function(link) { Qt.openUrlExternally(link) }
-        font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-        color: Kirigami.Theme.disabledTextColor
-        HoverHandler {
-            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+        // ── Header: location name ─────────────────────────────────────────────
+        Label {
+            id: _ttHeaderLabel
+            Layout.fillWidth: true
+            Layout.maximumWidth: ttRoot.ttMaxWidth - 24
+            text: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown ? Plasmoid.configuration.locationName : i18n("Weather Widget")
+            font.bold: true
+            font.pixelSize: ttRoot.ttFont.pixelSize + 2
+            font.family: ttRoot.ttFont.family
+            color: Kirigami.Theme.textColor
+            wrapMode: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "wrap" ? Text.WordWrap : Text.NoWrap
+            elide: (Plasmoid.configuration.tooltipLocationWrap || "truncate") === "truncate" ? Text.ElideRight : Text.ElideNone
         }
-    }
 
-    // ── No-location hint ─────────────────────────────────────────────────
-    Label {
-        id: _ttNoLocHint
-        Layout.fillWidth: true
-        visible: !ttRoot.weatherRoot || !ttRoot.weatherRoot.hasSelectedTown
-        text: i18n("Click to configure a location")
-        color: Kirigami.Theme.disabledTextColor
-    }
+        // ── Update timestamp ─────────────────────────────────────────────────
+        Label {
+            id: _ttTimestamp
+            Layout.fillWidth: true
+            visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && ttRoot.weatherRoot.updateText.length > 0
+            text: ttRoot.weatherRoot ? ttRoot.weatherRoot.updateText : ""
+            textFormat: Text.RichText
+            onLinkActivated: function (link) {
+                Qt.openUrlExternally(link);
+            }
+            font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+            color: Kirigami.Theme.disabledTextColor
+            HoverHandler {
+                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
+        }
 
-    // ── Separator ────────────────────────────────────────────────────────
-    Rectangle {
-        visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown
-        Layout.fillWidth: true
-        height: 1
-        color: Kirigami.Theme.neutralTextColor
-        Layout.topMargin: 1
-        Layout.bottomMargin: 2
-    }
+        // ── No-location hint ─────────────────────────────────────────────────
+        Label {
+            id: _ttNoLocHint
+            Layout.fillWidth: true
+            visible: !ttRoot.weatherRoot || !ttRoot.weatherRoot.hasSelectedTown
+            text: i18n("Click to configure a location")
+            color: Kirigami.Theme.disabledTextColor
+        }
 
-    // ── Scrollable data area - height capped when Manual ──────────────
-    ScrollView {
-        Layout.fillWidth: true
-        Layout.fillHeight: !ttRoot.ttHeightAuto
-        // Auto: natural height. Manual: fill remaining space within the capped tooltip.
-        implicitHeight: ttRoot.ttHeightAuto
-            ? ttDataCol.implicitHeight
-            : Math.min(Math.max(40, ttRoot.ttHeightManual - ttRoot._headerHeight - 16), ttDataCol.implicitHeight)
-        clip: true
-        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-        ScrollBar.vertical.policy: ttRoot.ttHeightAuto
-            ? ScrollBar.AlwaysOff
-            : (ttDataCol.implicitHeight > (ttRoot.ttHeightManual - ttRoot._headerHeight - 16) ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff)
+        // ── Separator ────────────────────────────────────────────────────────
+        Rectangle {
+            visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown
+            Layout.fillWidth: true
+            height: 1
+            color: Kirigami.Theme.neutralTextColor
+            Layout.topMargin: 1
+            Layout.bottomMargin: 2
+        }
 
-        ColumnLayout {
-            id: ttDataCol
-            width: parent.width
-            spacing: 0
+        // ── Scrollable data area - height capped when Manual ──────────────
+        ScrollView {
+            Layout.fillWidth: true
+            Layout.fillHeight: !ttRoot.ttHeightAuto
+            // Auto: natural height. Manual: fill remaining space within the capped tooltip.
+            implicitHeight: ttRoot.ttHeightAuto ? ttDataCol.implicitHeight : Math.min(Math.max(40, ttRoot.ttHeightManual - ttRoot._headerHeight - 16), ttDataCol.implicitHeight)
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ttRoot.ttHeightAuto ? ScrollBar.AlwaysOff : (ttDataCol.implicitHeight > (ttRoot.ttHeightManual - ttRoot._headerHeight - 16) ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff)
 
-            // ── Data rows - ICONS MODE: 3-per-row grid ────────────────────────────
-            GridLayout {
-                id: ttContentCol
-                Layout.fillWidth: true
-                columns: 3
-                columnSpacing: 10
-                rowSpacing: 6
-                visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && ttRoot.ttUseIcons
+            ColumnLayout {
+                id: ttDataCol
+                width: parent.width
+                spacing: 0
 
-                Repeater {
-                    id: ttIconRepeater
-                    model: {
-                        if (!ttRoot.weatherRoot || !ttRoot.ttUseIcons)
-                            return [];
-                        var _ = (ttRoot.weatherRoot.weatherData || "") 
-                            + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") 
-                            + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") 
-                            + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode 
-                            + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
-                        return ttRoot._buildTooltipItems();
-                    }
+                // ── Data rows - ICONS MODE: 3-per-row grid ────────────────────────────
+                GridLayout {
+                    id: ttContentCol
+                    Layout.fillWidth: true
+                    columns: 3
+                    columnSpacing: 10
+                    rowSpacing: 6
+                    visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && ttRoot.ttUseIcons
 
-                    delegate: RowLayout {
-                        id: ttIconDelegate
-                        required property var modelData
-                        // Fill the grid cell so all 3 columns are equal width
-                        Layout.fillWidth: true
-                        spacing: 5
-
-                        WeatherIcon {
-                            visible: modelData.showIcon
-                            iconInfo: modelData.iconInfo
-                            iconSize: ttRoot.ttIconSize
-                            wiFontFamily: wiFontTT.status === FontLoader.Ready ? wiFontTT.font.family : ""
-                            wiFontReady: wiFontTT.status === FontLoader.Ready
-                            Layout.alignment: Qt.AlignVCenter
+                    Repeater {
+                        id: ttIconRepeater
+                        model: {
+                            if (!ttRoot.weatherRoot || !ttRoot.ttUseIcons)
+                                return [];
+                            var _ = (ttRoot.weatherRoot.weatherData || "") + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") + ttRoot.ttIconTheme + ttRoot.ttIconSize + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
+                            return ttRoot._buildTooltipItems();
                         }
 
-                        // ── Value text ────────────────────────────────────────────
-                        Label {
+                        delegate: RowLayout {
+                            id: ttIconDelegate
+                            required property var modelData
+                            // Fill the grid cell so all 3 columns are equal width
+                            Layout.fillWidth: true
+                            spacing: 5
+
+                            WeatherIcon {
+                                visible: modelData.showIcon
+                                iconInfo: modelData.iconInfo
+                                iconSize: ttRoot.ttIconSize
+                                wiFontFamily: wiFontTT.status === FontLoader.Ready ? wiFontTT.font.family : ""
+                                wiFontReady: wiFontTT.status === FontLoader.Ready
+                                Layout.alignment: Qt.AlignVCenter
+                            }
+
+                            // ── Value text ────────────────────────────────────────────
+                            Label {
+                                Layout.fillWidth: true
+                                text: modelData.text || ""
+                                color: Kirigami.Theme.textColor
+                                font: ttRoot.ttFont
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
+                        }
+                    }
+                }
+
+                // ── Data rows - TEXT MODE: one labelled row per item ──────────────────
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 3
+                    visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && !ttRoot.ttUseIcons
+
+                    Repeater {
+                        model: {
+                            if (!ttRoot.weatherRoot || ttRoot.ttUseIcons)
+                                return [];
+                            var _ = (ttRoot.weatherRoot.weatherData || "") + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
+                            return ttRoot._buildTooltipItems();
+                        }
+
+                        delegate: Label {
+                            required property var modelData
                             Layout.fillWidth: true
                             text: modelData.text || ""
                             color: Kirigami.Theme.textColor
                             font: ttRoot.ttFont
-                            verticalAlignment: Text.AlignVCenter
-                            elide: Text.ElideRight
+                            wrapMode: Text.NoWrap
                         }
                     }
                 }
-            }
-
-            // ── Data rows - TEXT MODE: one labelled row per item ──────────────────
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 3
-                visible: ttRoot.weatherRoot && ttRoot.weatherRoot.hasSelectedTown && !ttRoot.ttUseIcons
-
-                Repeater {
-                    model: {
-                        if (!ttRoot.weatherRoot || ttRoot.ttUseIcons)
-                            return [];
-                        var _ = (ttRoot.weatherRoot.weatherData || "") 
-                            + (ttRoot.weatherRoot.sunriseTimeText || "") + (ttRoot.weatherRoot.sunsetTimeText || "") 
-                            + (ttRoot.weatherRoot.moonriseTimeText || "") + (ttRoot.weatherRoot.moonsetTimeText || "") 
-                            + ttRoot.ttSunTimesMode + ttRoot.ttMoonPhaseMode + ttRoot._dateTimeTick;
-                        return ttRoot._buildTooltipItems();
-                    }
-
-                    delegate: Label {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        text: modelData.text || ""
-                        color: Kirigami.Theme.textColor
-                        font: ttRoot.ttFont
-                        wrapMode: Text.NoWrap
-                    }
-                }
-            }
-        } // ttDataCol
-    } // ScrollView
+            } // ttDataCol
+        } // ScrollView
 
     } // ColumnLayout (ttLayout)
 
@@ -400,13 +395,26 @@ Item {
         var r = weatherRoot;
         var showIcon = ttUseIcons && ((tok in iconMap) ? iconMap[tok] : true);
         var textMode = !ttUseIcons;
-        var emptyInfo = { type: "", source: "", svgFallback: "", isMask: false };
+        var emptyInfo = {
+            type: "",
+            source: "",
+            svgFallback: "",
+            isMask: false
+        };
 
         function iconRow(iconTok, txt) {
-            return { iconInfo: ttItemIconInfo(iconTok), showIcon: showIcon, text: txt };
+            return {
+                iconInfo: ttItemIconInfo(iconTok),
+                showIcon: showIcon,
+                text: txt
+            };
         }
         function textRow(txt) {
-            return { iconInfo: emptyInfo, showIcon: false, text: txt };
+            return {
+                iconInfo: emptyInfo,
+                showIcon: false,
+                text: txt
+            };
         }
         function row(iconTok, iconText, labelText) {
             return textMode ? textRow(labelText) : iconRow(iconTok, iconText);
@@ -429,11 +437,22 @@ Item {
             var windInfo;
             if (ttIconTheme === "wi-font") {
                 var g = isNaN(r.windDirection) ? "\uF050" : W.windDirectionGlyph(r.windDirection);
-                windInfo = { type: "wi", source: g, svgFallback: "", isMask: false };
+                windInfo = {
+                    type: "wi",
+                    source: g,
+                    svgFallback: "",
+                    isMask: false
+                };
             } else {
                 windInfo = ttItemIconInfo("wind");
             }
-            return [{ iconInfo: windInfo, showIcon: showIcon, text: windTxt }];
+            return [
+                {
+                    iconInfo: windInfo,
+                    showIcon: showIcon,
+                    text: windTxt
+                }
+            ];
         }
 
         if (tok === "humidity")
@@ -501,17 +520,16 @@ Item {
                 return [row("moonphase", phaseName, i18n("Moon:") + " " + phaseName)];
 
             if (moonMode === "moonrise")
-                return textMode ? [textRow(i18n("Moonrise:") + " " + riseTime)]
-                    : [iconRow("moonphase-moonrise", riseTime)];
+                return textMode ? [textRow(i18n("Moonrise:") + " " + riseTime)] : [iconRow("moonphase-moonrise", riseTime)];
 
             if (moonMode === "moonset")
-                return textMode ? [textRow(i18n("Moonset:") + " " + setTime)]
-                    : [iconRow("moonphase-moonset", setTime)];
+                return textMode ? [textRow(i18n("Moonset:") + " " + setTime)] : [iconRow("moonphase-moonset", setTime)];
 
             if (moonMode === "upcoming-times") {
                 // Show next moonrise or moonset
                 function parseMoonMins(s) {
-                    if (!s || s.indexOf(":") < 0) return -1;
+                    if (!s || s.indexOf(":") < 0)
+                        return -1;
                     var pts = s.split(":");
                     return parseInt(pts[0]) * 60 + parseInt(pts[1]);
                 }
@@ -520,11 +538,9 @@ Item {
                 var setMM = parseMoonMins(r.moonsetTimeText);
                 var useSetM = riseMM >= 0 && nowMM >= riseMM && (setMM < 0 || nowMM < setMM);
                 if (useSetM)
-                    return textMode ? [textRow(i18n("Moonset:") + " " + setTime)]
-                        : [iconRow("moonphase-moonset", setTime)];
+                    return textMode ? [textRow(i18n("Moonset:") + " " + setTime)] : [iconRow("moonphase-moonset", setTime)];
                 else
-                    return textMode ? [textRow(i18n("Moonrise:") + " " + riseTime)]
-                        : [iconRow("moonphase-moonrise", riseTime)];
+                    return textMode ? [textRow(i18n("Moonrise:") + " " + riseTime)] : [iconRow("moonphase-moonrise", riseTime)];
             }
 
             if (moonMode === "times") {
@@ -533,8 +549,16 @@ Item {
                     return [textRow(i18n("Moonrise:") + " " + riseTime), textRow(i18n("Moonset:") + " " + setTime)];
                 }
                 return [
-                    { iconInfo: ttItemIconInfo("moonphase-moonrise"), showIcon: showIcon, text: riseTime },
-                    { iconInfo: ttItemIconInfo("moonphase-moonset"), showIcon: showIcon, text: setTime }
+                    {
+                        iconInfo: ttItemIconInfo("moonphase-moonrise"),
+                        showIcon: showIcon,
+                        text: riseTime
+                    },
+                    {
+                        iconInfo: ttItemIconInfo("moonphase-moonset"),
+                        showIcon: showIcon,
+                        text: setTime
+                    }
                 ];
             }
 
@@ -542,7 +566,8 @@ Item {
                 // Phase + upcoming rise/set
                 var rows2 = [row("moonphase", phaseName, i18n("Moon:") + " " + phaseName)];
                 function parseMoonMins2(s) {
-                    if (!s || s.indexOf(":") < 0) return -1;
+                    if (!s || s.indexOf(":") < 0)
+                        return -1;
                     var pts = s.split(":");
                     return parseInt(pts[0]) * 60 + parseInt(pts[1]);
                 }
@@ -551,26 +576,40 @@ Item {
                 var setMM2 = parseMoonMins2(r.moonsetTimeText);
                 var useSetM2 = riseMM2 >= 0 && nowMM2 >= riseMM2 && (setMM2 < 0 || nowMM2 < setMM2);
                 if (useSetM2)
-                    rows2.push(textMode ? textRow(i18n("Moonset:") + " " + setTime)
-                        : { iconInfo: ttItemIconInfo("moonphase-moonset"), showIcon: showIcon, text: setTime });
+                    rows2.push(textMode ? textRow(i18n("Moonset:") + " " + setTime) : {
+                        iconInfo: ttItemIconInfo("moonphase-moonset"),
+                        showIcon: showIcon,
+                        text: setTime
+                    });
                 else
-                    rows2.push(textMode ? textRow(i18n("Moonrise:") + " " + riseTime)
-                        : { iconInfo: ttItemIconInfo("moonphase-moonrise"), showIcon: showIcon, text: riseTime });
+                    rows2.push(textMode ? textRow(i18n("Moonrise:") + " " + riseTime) : {
+                        iconInfo: ttItemIconInfo("moonphase-moonrise"),
+                        showIcon: showIcon,
+                        text: riseTime
+                    });
                 return rows2;
             }
 
             // "full" (default): phase + moonrise + moonset
             if (textMode) {
-                return [
-                    textRow(i18n("Moon:") + " " + phaseName),
-                    textRow(i18n("Moonrise:") + " " + riseTime),
-                    textRow(i18n("Moonset:") + " " + setTime)
-                ];
+                return [textRow(i18n("Moon:") + " " + phaseName), textRow(i18n("Moonrise:") + " " + riseTime), textRow(i18n("Moonset:") + " " + setTime)];
             }
             return [
-                { iconInfo: ttItemIconInfo("moonphase"), showIcon: showIcon, text: phaseName },
-                { iconInfo: ttItemIconInfo("moonphase-moonrise"), showIcon: showIcon, text: riseTime },
-                { iconInfo: ttItemIconInfo("moonphase-moonset"), showIcon: showIcon, text: setTime }
+                {
+                    iconInfo: ttItemIconInfo("moonphase"),
+                    showIcon: showIcon,
+                    text: phaseName
+                },
+                {
+                    iconInfo: ttItemIconInfo("moonphase-moonrise"),
+                    showIcon: showIcon,
+                    text: riseTime
+                },
+                {
+                    iconInfo: ttItemIconInfo("moonphase-moonset"),
+                    showIcon: showIcon,
+                    text: setTime
+                }
             ];
         }
 
@@ -590,12 +629,22 @@ Item {
             }
 
             if (mode === "sunrise") {
-                return textMode ? [textRow(i18n("Sunrise:") + " " + riseTime)]
-                    : [{ iconInfo: infoRise, showIcon: showIcon, text: riseTime }];
+                return textMode ? [textRow(i18n("Sunrise:") + " " + riseTime)] : [
+                    {
+                        iconInfo: infoRise,
+                        showIcon: showIcon,
+                        text: riseTime
+                    }
+                ];
             }
             if (mode === "sunset") {
-                return textMode ? [textRow(i18n("Sunset:") + " " + setTime)]
-                    : [{ iconInfo: infoSet, showIcon: showIcon, text: setTime }];
+                return textMode ? [textRow(i18n("Sunset:") + " " + setTime)] : [
+                    {
+                        iconInfo: infoSet,
+                        showIcon: showIcon,
+                        text: setTime
+                    }
+                ];
             }
             if (mode === "upcoming") {
                 var nowM = (new Date()).getHours() * 60 + (new Date()).getMinutes();
@@ -603,19 +652,37 @@ Item {
                 var setM = parseMins(r.sunsetTimeText);
                 var useSet = riseM >= 0 && nowM >= riseM && (setM < 0 || nowM < setM);
                 if (useSet)
-                    return textMode ? [textRow(i18n("Sunset:") + " " + setTime)]
-                        : [{ iconInfo: infoSet, showIcon: showIcon, text: setTime }];
+                    return textMode ? [textRow(i18n("Sunset:") + " " + setTime)] : [
+                        {
+                            iconInfo: infoSet,
+                            showIcon: showIcon,
+                            text: setTime
+                        }
+                    ];
                 else
-                    return textMode ? [textRow(i18n("Sunrise:") + " " + riseTime)]
-                        : [{ iconInfo: infoRise, showIcon: showIcon, text: riseTime }];
+                    return textMode ? [textRow(i18n("Sunrise:") + " " + riseTime)] : [
+                        {
+                            iconInfo: infoRise,
+                            showIcon: showIcon,
+                            text: riseTime
+                        }
+                    ];
             }
             // "both" (default)
             if (textMode) {
                 return [textRow(i18n("Sunrise:") + " " + riseTime), textRow(i18n("Sunset:") + " " + setTime)];
             }
             return [
-                { iconInfo: infoRise, showIcon: showIcon, text: riseTime },
-                { iconInfo: infoSet, showIcon: showIcon, text: setTime }
+                {
+                    iconInfo: infoRise,
+                    showIcon: showIcon,
+                    text: riseTime
+                },
+                {
+                    iconInfo: infoSet,
+                    showIcon: showIcon,
+                    text: setTime
+                }
             ];
         }
         if (tok === "datetime") {

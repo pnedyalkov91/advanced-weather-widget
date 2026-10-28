@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -71,9 +71,7 @@ GridLayout {
         var now = new Date();
         var df = dateFormatValue;
         var tf = timeFormatValue;
-        var ds = df === "locale-long" ? now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
-               : df === "locale-short" ? now.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
-               : Qt.formatDate(now, df);
+        var ds = df === "locale-long" ? now.toLocaleDateString(Qt.locale(), Locale.LongFormat) : df === "locale-short" ? now.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : Qt.formatDate(now, df);
         var ts = Qt.formatTime(now, tf === "locale" ? Qt.locale().timeFormat(Locale.ShortFormat) : tf);
         return ds + "  " + ts;
     }
@@ -152,20 +150,47 @@ GridLayout {
             Layout.preferredWidth: 200
             textRole: "text"
             readonly property var _presets: [
-                { text: i18n("Region default (long)"),  value: "locale-long"  },
-                { text: i18n("Region default (short)"), value: "locale-short" },
-                { text: "Mon, Jan 1  (ddd, MMM d)",     value: "ddd, MMM d"   },
-                { text: "Monday, Jan 1  (dddd, MMM d)", value: "dddd, MMM d"  },
-                { text: "01/01/2025  (dd/MM/yyyy)",     value: "dd/MM/yyyy"   },
-                { text: "01.01.2025  (dd.MM.yyyy)",     value: "dd.MM.yyyy"   },
-                { text: "2025-01-01  (yyyy-MM-dd)",     value: "yyyy-MM-dd"   },
-                { text: i18n("Custom…"),                value: "__custom__"   }
+                {
+                    text: i18n("Region default (long)"),
+                    value: "locale-long"
+                },
+                {
+                    text: i18n("Region default (short)"),
+                    value: "locale-short"
+                },
+                {
+                    text: "Mon, Jan 1  (ddd, MMM d)",
+                    value: "ddd, MMM d"
+                },
+                {
+                    text: "Monday, Jan 1  (dddd, MMM d)",
+                    value: "dddd, MMM d"
+                },
+                {
+                    text: "01/01/2025  (dd/MM/yyyy)",
+                    value: "dd/MM/yyyy"
+                },
+                {
+                    text: "01.01.2025  (dd.MM.yyyy)",
+                    value: "dd.MM.yyyy"
+                },
+                {
+                    text: "2025-01-01  (yyyy-MM-dd)",
+                    value: "yyyy-MM-dd"
+                },
+                {
+                    text: i18n("Custom…"),
+                    value: "__custom__"
+                }
             ]
             model: _presets
             Component.onCompleted: {
                 var v = miscTab.dateFormatValue;
                 for (var i = 0; i < _presets.length - 1; ++i) {
-                    if (_presets[i].value === v) { currentIndex = i; return; }
+                    if (_presets[i].value === v) {
+                        currentIndex = i;
+                        return;
+                    }
                 }
                 currentIndex = _presets.length - 1;
             }
@@ -184,7 +209,8 @@ GridLayout {
                 var v = miscTab.dateFormatValue;
                 var presets = dateFormatCombo._presets;
                 for (var i = 0; i < presets.length - 1; ++i)
-                    if (presets[i].value === v) return "";
+                    if (presets[i].value === v)
+                        return "";
                 return v;
             }
             onEditingFinished: {
@@ -216,18 +242,39 @@ GridLayout {
             Layout.preferredWidth: 200
             textRole: "text"
             readonly property var _presets: [
-                { text: i18n("Region default"), value: "locale"    },
-                { text: "14:30  (HH:mm)",       value: "HH:mm"    },
-                { text: "14:30:05  (HH:mm:ss)", value: "HH:mm:ss" },
-                { text: "2:30 PM  (h:mm AP)",   value: "h:mm AP"  },
-                { text: "2:30:05 PM  (h:mm:ss AP)", value: "h:mm:ss AP" },
-                { text: i18n("Custom…"),         value: "__custom__" }
+                {
+                    text: i18n("Region default"),
+                    value: "locale"
+                },
+                {
+                    text: "14:30  (HH:mm)",
+                    value: "HH:mm"
+                },
+                {
+                    text: "14:30:05  (HH:mm:ss)",
+                    value: "HH:mm:ss"
+                },
+                {
+                    text: "2:30 PM  (h:mm AP)",
+                    value: "h:mm AP"
+                },
+                {
+                    text: "2:30:05 PM  (h:mm:ss AP)",
+                    value: "h:mm:ss AP"
+                },
+                {
+                    text: i18n("Custom…"),
+                    value: "__custom__"
+                }
             ]
             model: _presets
             Component.onCompleted: {
                 var v = miscTab.timeFormatValue;
                 for (var i = 0; i < _presets.length - 1; ++i) {
-                    if (_presets[i].value === v) { currentIndex = i; return; }
+                    if (_presets[i].value === v) {
+                        currentIndex = i;
+                        return;
+                    }
                 }
                 currentIndex = _presets.length - 1;
             }
@@ -246,7 +293,8 @@ GridLayout {
                 var v = miscTab.timeFormatValue;
                 var presets = timeFormatCombo._presets;
                 for (var i = 0; i < presets.length - 1; ++i)
-                    if (presets[i].value === v) return "";
+                    if (presets[i].value === v)
+                        return "";
                 return v;
             }
             onEditingFinished: {
@@ -268,15 +316,22 @@ GridLayout {
             }
             onToggled: {
                 var v = miscTab.timeFormatValue;
-                var map = checked
-                    ? { "h:mm AP": "HH:mm", "h:mm:ss AP": "HH:mm:ss" }
-                    : { "HH:mm": "h:mm AP", "HH:mm:ss": "h:mm:ss AP" };
+                var map = checked ? {
+                    "h:mm AP": "HH:mm",
+                    "h:mm:ss AP": "HH:mm:ss"
+                } : {
+                    "HH:mm": "h:mm AP",
+                    "HH:mm:ss": "h:mm:ss AP"
+                };
                 if (!(v in map))
                     return;
                 miscTab.configRoot.cfg_displayTimeFormat = map[v];
                 var presets = timeFormatCombo._presets;
                 for (var i = 0; i < presets.length - 1; ++i)
-                    if (presets[i].value === map[v]) { timeFormatCombo.currentIndex = i; break; }
+                    if (presets[i].value === map[v]) {
+                        timeFormatCombo.currentIndex = i;
+                        break;
+                    }
             }
         }
     }
@@ -726,9 +781,7 @@ GridLayout {
         implicitHeight: 0
     }
     Label {
-        text: (miscTab.configRoot.cfg_aqiShowUs || miscTab.configRoot.cfg_aqiShowEu || miscTab.configRoot.cfg_aqiShowCa)
-              ? i18n("Turn off all three switches above to pick a single standard here instead.")
-              : i18n("Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI based on your location's country.")
+        text: (miscTab.configRoot.cfg_aqiShowUs || miscTab.configRoot.cfg_aqiShowEu || miscTab.configRoot.cfg_aqiShowCa) ? i18n("Turn off all three switches above to pick a single standard here instead.") : i18n("Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI based on your location's country.")
         wrapMode: Text.WordWrap
         opacity: 0.65
         font: Kirigami.Theme.smallFont
@@ -739,6 +792,15 @@ GridLayout {
 
     // Invisible filler row: it lets the second column take ALL spare width, so the
     // label column keeps its width when rows are shown or hidden.
-    Item { visible: miscTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
-    Item { visible: miscTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
+    Item {
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Item {
+        visible: miscTab.columns === 2
+        Layout.fillWidth: true
+        implicitWidth: 0
+        implicitHeight: 0
+    }
 }

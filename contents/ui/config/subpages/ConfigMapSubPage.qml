@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -56,9 +56,12 @@ ColumnLayout {
         var locs;
         try {
             locs = JSON.parse(configRoot.cfg_savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
-        var isDup = locs.some(function(l) {
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
+        var isDup = locs.some(function (l) {
             return Math.abs(l.lat - selectedLat) < 0.01 && Math.abs(l.lon - selectedLon) < 0.01;
         });
 
@@ -66,17 +69,20 @@ ColumnLayout {
         configRoot.cfg_autoDetectLocation = false;
         configRoot.cfg_latitude = selectedLat;
         configRoot.cfg_longitude = selectedLon;
-        if (selectedName.length > 0) configRoot.cfg_locationName = selectedName;
-        if (selectedAltitude !== 0) configRoot.cfg_altitude = selectedAltitude;
-        if (selectedTimezone.length > 0) configRoot.cfg_timezone = selectedTimezone;
-        if (selectedCountryCode.length > 0) configRoot.cfg_countryCode = selectedCountryCode;
+        if (selectedName.length > 0)
+            configRoot.cfg_locationName = selectedName;
+        if (selectedAltitude !== 0)
+            configRoot.cfg_altitude = selectedAltitude;
+        if (selectedTimezone.length > 0)
+            configRoot.cfg_timezone = selectedTimezone;
+        if (selectedCountryCode.length > 0)
+            configRoot.cfg_countryCode = selectedCountryCode;
         configRoot.verifyProviderLocation(selectedLat, selectedLon);
 
         if (!isDup) {
             configRoot.duplicateWarning = "";
             // Store pending - saved on KCM Apply via save() in configLocation.qml
-            var entryName = selectedName.length > 0
-                ? selectedName : (selectedLat.toFixed(4) + "°, " + selectedLon.toFixed(4) + "°");
+            var entryName = selectedName.length > 0 ? selectedName : (selectedLat.toFixed(4) + "°, " + selectedLon.toFixed(4) + "°");
             configRoot._pendingEntry = {
                 name: entryName,
                 lat: selectedLat,
@@ -395,7 +401,8 @@ ColumnLayout {
         type: Kirigami.MessageType.Warning
         text: configRoot.duplicateWarning
         showCloseButton: true
-        onVisibleChanged: if (!visible) configRoot.duplicateWarning = ""
+        onVisibleChanged: if (!visible)
+            configRoot.duplicateWarning = ""
     }
 
     // ── Search results list ──────────────────────────────────────────
@@ -469,9 +476,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: infoPanelLayout.implicitHeight + 16
-        color: Kirigami.Theme.backgroundColor !== undefined
-            ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95)
-            : Qt.rgba(0, 0, 0, 0.95)
+        color: Kirigami.Theme.backgroundColor !== undefined ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95) : Qt.rgba(0, 0, 0, 0.95)
         border.color: Qt.rgba(0.5, 0.5, 0.5, 0.4)
         border.width: 1
         visible: !isNaN(mapSubPageRoot.selectedLat)

@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -51,41 +51,81 @@ ColumnLayout {
     }
 
     /** Emitted when the user clicks Configure… to push the details sub-page */
-    signal pushSubPage()
+    signal pushSubPage
     /** Emitted when the user clicks Configure… to push the simple items sub-page */
-    signal pushSimpleSubPage()
+    signal pushSimpleSubPage
 
     /** Icon theme choices shared by all combos */
     readonly property var iconThemeModel: [
-        { text: i18n("KDE Icon Theme"),        value: "kde"          },
-        { text: i18n("Symbolic (Bundled)"),        value: "symbolic"     },
-        { text: i18n("Flat Color (Bundled)"),      value: "flat-color"   },
-        { text: i18n("3D Oxygen (Bundled)"),       value: "3d-oxygen"    },
-        { text: i18n("Meteocons (Bundled)"),       value: "meteocons"    }
+        {
+            text: i18n("KDE Icon Theme"),
+            value: "kde"
+        },
+        {
+            text: i18n("Symbolic (Bundled)"),
+            value: "symbolic"
+        },
+        {
+            text: i18n("Flat Color (Bundled)"),
+            value: "flat-color"
+        },
+        {
+            text: i18n("3D Oxygen (Bundled)"),
+            value: "3d-oxygen"
+        },
+        {
+            text: i18n("Meteocons (Bundled)"),
+            value: "meteocons"
+        }
     ]
 
     /** Condition icon theme choices - adds KDE Symbolic and Custom options */
     readonly property var conditionIconThemeModel: [
-        { text: i18n("KDE Icon Theme (Colorful)"),        value: "kde"          },
-        { text: i18n("KDE Icon Theme (Symbolic)"),          value: "kde-symbolic" },
-        { text: i18n("Symbolic (Bundled)"),        value: "symbolic"     },
-        { text: i18n("Flat Color (Bundled)"),      value: "flat-color"   },
-        { text: i18n("3D Oxygen (Bundled)"),       value: "3d-oxygen"    },
-        { text: i18n("Meteocons (Bundled)"),       value: "meteocons"    },
-        { text: i18n("Custom\u2026"),          value: "custom"       }
+        {
+            text: i18n("KDE Icon Theme (Colorful)"),
+            value: "kde"
+        },
+        {
+            text: i18n("KDE Icon Theme (Symbolic)"),
+            value: "kde-symbolic"
+        },
+        {
+            text: i18n("Symbolic (Bundled)"),
+            value: "symbolic"
+        },
+        {
+            text: i18n("Flat Color (Bundled)"),
+            value: "flat-color"
+        },
+        {
+            text: i18n("3D Oxygen (Bundled)"),
+            value: "3d-oxygen"
+        },
+        {
+            text: i18n("Meteocons (Bundled)"),
+            value: "meteocons"
+        },
+        {
+            text: i18n("Custom\u2026"),
+            value: "custom"
+        }
     ]
 
     function findThemeIndex(theme) {
-        if (theme === "wi-font") theme = "symbolic";
+        if (theme === "wi-font")
+            theme = "symbolic";
         for (var i = 0; i < iconThemeModel.length; ++i)
-            if (iconThemeModel[i].value === theme) return i;
+            if (iconThemeModel[i].value === theme)
+                return i;
         return 0;
     }
 
     function findConditionThemeIndex(theme) {
-        if (theme === "wi-font") theme = "symbolic";
+        if (theme === "wi-font")
+            theme = "symbolic";
         for (var i = 0; i < conditionIconThemeModel.length; ++i)
-            if (conditionIconThemeModel[i].value === theme) return i;
+            if (conditionIconThemeModel[i].value === theme)
+                return i;
         return 0;
     }
 
@@ -102,7 +142,9 @@ ColumnLayout {
             return tabIds.slice();
         if (v === "none")
             return [];
-        return v.split(";").map(function (t) { return t.trim(); });
+        return v.split(";").map(function (t) {
+            return t.trim();
+        });
     }
     function isTabVisible(id) {
         return visibleTabList().indexOf(id) >= 0;
@@ -115,7 +157,9 @@ ColumnLayout {
         else if (!on && idx >= 0)
             cur.splice(idx, 1);
         // Keep the canonical display order whatever order the switches were flipped in.
-        var out = tabIds.filter(function (t) { return cur.indexOf(t) >= 0; });
+        var out = tabIds.filter(function (t) {
+            return cur.indexOf(t) >= 0;
+        });
         configRoot.cfg_widgetVisibleTabs = out.length === 0 ? "none" : out.join(";");
     }
 
@@ -125,10 +169,8 @@ ColumnLayout {
     Connections {
         target: widgetTab.configRoot
         function onIconThemesSynced() {
-            conditionIconThemeCombo.currentIndex = widgetTab.findConditionThemeIndex(
-                widgetTab.configRoot.cfg_conditionIconTheme);
-            widgetIconThemeCombo.currentIndex = widgetTab.findThemeIndex(
-                widgetTab.configRoot.cfg_widgetIconTheme);
+            conditionIconThemeCombo.currentIndex = widgetTab.findConditionThemeIndex(widgetTab.configRoot.cfg_conditionIconTheme);
+            widgetIconThemeCombo.currentIndex = widgetTab.findThemeIndex(widgetTab.configRoot.cfg_widgetIconTheme);
         }
     }
 
@@ -149,7 +191,9 @@ ColumnLayout {
         }
     }
 
-    Item { Layout.preferredHeight: Kirigami.Units.largeSpacing }
+    Item {
+        Layout.preferredHeight: Kirigami.Units.largeSpacing
+    }
 
     // Tab pages live in a plain ColumnLayout and only the selected one is visible.
     // A StackLayout is as tall as its TALLEST page, which left empty space and a
@@ -187,7 +231,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Mode:")
@@ -203,8 +249,14 @@ ColumnLayout {
                     Layout.preferredWidth: 200
                     textRole: "text"
                     model: [
-                        { text: i18n("Advanced (all tabs)"),             value: "advanced" },
-                        { text: i18n("Simple"), value: "simple"   }
+                        {
+                            text: i18n("Advanced (all tabs)"),
+                            value: "advanced"
+                        },
+                        {
+                            text: i18n("Simple"),
+                            value: "simple"
+                        }
                     ]
                     Component.onCompleted: {
                         currentIndex = (widgetTab.configRoot.cfg_widgetLayoutMode === "simple") ? 1 : 0;
@@ -228,7 +280,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Weather icon theme:")
@@ -244,8 +298,7 @@ ColumnLayout {
                     Layout.preferredWidth: 200
                     textRole: "text"
                     model: widgetTab.conditionIconThemeModel
-                    Component.onCompleted: currentIndex = widgetTab.findConditionThemeIndex(
-                        widgetTab.configRoot.cfg_conditionIconTheme)
+                    Component.onCompleted: currentIndex = widgetTab.findConditionThemeIndex(widgetTab.configRoot.cfg_conditionIconTheme)
                     // Asks "Apply everywhere / only here / Cancel" when the theme also
                     // exists in other icon theme settings (see configAppearance.qml).
                     // "KDE Symbolic" and "Custom…" are specific to this combo and
@@ -352,7 +405,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Default tab:")
@@ -370,17 +425,33 @@ ColumnLayout {
                     Layout.preferredWidth: 200
                     textRole: "text"
                     model: [
-                        { text: i18n("Details"),  value: "details"  },
-                        { text: i18n("Forecast"), value: "forecast" },
-                        { text: i18n("Radar"),    value: "radar"    },
-                        { text: i18n("History"),  value: "history"  }
+                        {
+                            text: i18n("Details"),
+                            value: "details"
+                        },
+                        {
+                            text: i18n("Forecast"),
+                            value: "forecast"
+                        },
+                        {
+                            text: i18n("Radar"),
+                            value: "radar"
+                        },
+                        {
+                            text: i18n("History"),
+                            value: "history"
+                        }
                     ]
                     Component.onCompleted: {
                         var v = widgetTab.configRoot.cfg_widgetDefaultTab || "details";
-                        if (v === "forecast") currentIndex = 1;
-                        else if (v === "radar") currentIndex = 2;
-                        else if (v === "history") currentIndex = 3;
-                        else currentIndex = 0;
+                        if (v === "forecast")
+                            currentIndex = 1;
+                        else if (v === "radar")
+                            currentIndex = 2;
+                        else if (v === "history")
+                            currentIndex = 3;
+                        else
+                            currentIndex = 0;
                     }
                     onActivated: widgetTab.configRoot.cfg_widgetDefaultTab = model[currentIndex].value
                 }
@@ -508,7 +579,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Minimum width:")
@@ -524,8 +597,14 @@ ColumnLayout {
                     Layout.preferredWidth: 130
                     textRole: "text"
                     model: [
-                        { text: i18n("Auto"),   value: "auto"   },
-                        { text: i18n("Manual"), value: "manual" }
+                        {
+                            text: i18n("Auto"),
+                            value: "auto"
+                        },
+                        {
+                            text: i18n("Manual"),
+                            value: "manual"
+                        }
                     ]
                     currentIndex: widgetTab.configRoot.cfg_widgetMinWidthMode === "manual" ? 1 : 0
                     onActivated: widgetTab.configRoot.cfg_widgetMinWidthMode = model[currentIndex].value
@@ -537,9 +616,7 @@ ColumnLayout {
                     stepSize: 10
                     // Auto placeholder mirrors the actual auto-mode value computed
                     // in main.qml's fullRepresentation block - keep these in sync.
-                    value: widgetTab.configRoot.cfg_widgetMinWidthMode === "manual"
-                        ? widgetTab.configRoot.cfg_widgetMinWidth
-                        : (widgetTab.configRoot.cfg_widgetLayoutMode === "simple" ? 765 : 800)
+                    value: widgetTab.configRoot.cfg_widgetMinWidthMode === "manual" ? widgetTab.configRoot.cfg_widgetMinWidth : (widgetTab.configRoot.cfg_widgetLayoutMode === "simple" ? 765 : 800)
                     onValueModified: widgetTab.configRoot.cfg_widgetMinWidth = value
                 }
                 Label {
@@ -562,8 +639,14 @@ ColumnLayout {
                     Layout.preferredWidth: 130
                     textRole: "text"
                     model: [
-                        { text: i18n("Auto"),   value: "auto"   },
-                        { text: i18n("Manual"), value: "manual" }
+                        {
+                            text: i18n("Auto"),
+                            value: "auto"
+                        },
+                        {
+                            text: i18n("Manual"),
+                            value: "manual"
+                        }
                     ]
                     currentIndex: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual" ? 1 : 0
                     onActivated: widgetTab.configRoot.cfg_widgetMinHeightMode = model[currentIndex].value
@@ -575,9 +658,7 @@ ColumnLayout {
                     stepSize: 10
                     // Auto placeholder mirrors the actual auto-mode value computed
                     // in main.qml's fullRepresentation block - keep these in sync.
-                    value: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual"
-                        ? widgetTab.configRoot.cfg_widgetMinHeight
-                        : (widgetTab.configRoot.cfg_widgetLayoutMode === "simple" ? 550 : 750)
+                    value: widgetTab.configRoot.cfg_widgetMinHeightMode === "manual" ? widgetTab.configRoot.cfg_widgetMinHeight : (widgetTab.configRoot.cfg_widgetLayoutMode === "simple" ? 550 : 750)
                     onValueModified: widgetTab.configRoot.cfg_widgetMinHeight = value
                 }
                 Label {
@@ -589,8 +670,17 @@ ColumnLayout {
 
             // Invisible filler row: it lets the second column take ALL spare width, so the
             // label column keeps its width when rows are shown or hidden.
-            Item { visible: _form1.columns === 2; implicitWidth: 0; implicitHeight: 0 }
-            Item { visible: _form1.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
+            Item {
+                visible: _form1.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
+                visible: _form1.columns === 2
+                Layout.fillWidth: true
+                implicitWidth: 0
+                implicitHeight: 0
+            }
         }
 
         // ── SUB-TAB 1: Details ────────────────────────────────────────
@@ -621,7 +711,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Icon theme:")
@@ -637,8 +729,7 @@ ColumnLayout {
                     Layout.preferredWidth: 200
                     textRole: "text"
                     model: widgetTab.iconThemeModel
-                    Component.onCompleted: currentIndex = widgetTab.findThemeIndex(
-                        widgetTab.configRoot.cfg_widgetIconTheme)
+                    Component.onCompleted: currentIndex = widgetTab.findThemeIndex(widgetTab.configRoot.cfg_widgetIconTheme)
                     // Asks "Apply everywhere / only here / Cancel" when the theme also
                     // exists in other icon theme settings (see configAppearance.qml).
                     onActivated: widgetTab.configRoot.requestIconTheme("details", model[currentIndex].value)
@@ -652,17 +743,31 @@ ColumnLayout {
                     Layout.preferredWidth: 90
                     textRole: "text"
                     model: [
-                        { text: "16 px", value: 16 },
-                        { text: "22 px", value: 22 },
-                        { text: "24 px", value: 24 },
-                        { text: "32 px", value: 32 }
+                        {
+                            text: "16 px",
+                            value: 16
+                        },
+                        {
+                            text: "22 px",
+                            value: 22
+                        },
+                        {
+                            text: "24 px",
+                            value: 24
+                        },
+                        {
+                            text: "32 px",
+                            value: 32
+                        }
                     ]
                     Component.onCompleted: {
                         for (var i = 0; i < model.length; ++i)
                             if (model[i].value === widgetTab.configRoot.cfg_widgetIconSize) {
-                                currentIndex = i; break;
+                                currentIndex = i;
+                                break;
                             }
-                        if (currentIndex < 0) currentIndex = 0;
+                        if (currentIndex < 0)
+                            currentIndex = 0;
                     }
                     onActivated: widgetTab.configRoot.cfg_widgetIconSize = model[currentIndex].value
                 }
@@ -674,7 +779,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             // ── Warning - KDE themes lack some item icons ──
             Kirigami.InlineMessage {
@@ -742,8 +849,14 @@ ColumnLayout {
                     Layout.preferredWidth: 160
                     textRole: "text"
                     model: [
-                        { text: i18n("Cards (2 columns)"), value: "cards2" },
-                        { text: i18n("List"),              value: "list"   }
+                        {
+                            text: i18n("Cards (2 columns)"),
+                            value: "cards2"
+                        },
+                        {
+                            text: i18n("List"),
+                            value: "list"
+                        }
                     ]
                     currentIndex: widgetTab.configRoot.cfg_widgetDetailsLayout === "list" ? 1 : 0
                     onActivated: widgetTab.configRoot.cfg_widgetDetailsLayout = model[currentIndex].value
@@ -767,8 +880,14 @@ ColumnLayout {
                     Layout.preferredWidth: 130
                     textRole: "text"
                     model: [
-                        { text: i18n("Auto"),   value: true  },
-                        { text: i18n("Manual"), value: false }
+                        {
+                            text: i18n("Auto"),
+                            value: true
+                        },
+                        {
+                            text: i18n("Manual"),
+                            value: false
+                        }
                     ]
                     currentIndex: widgetTab.configRoot.cfg_widgetCardsHeightAuto ? 0 : 1
                     onActivated: {
@@ -808,8 +927,14 @@ ColumnLayout {
                     Layout.preferredWidth: 130
                     textRole: "text"
                     model: [
-                        { text: i18n("Auto"),   value: true  },
-                        { text: i18n("Manual"), value: false }
+                        {
+                            text: i18n("Auto"),
+                            value: true
+                        },
+                        {
+                            text: i18n("Manual"),
+                            value: false
+                        }
                     ]
                     currentIndex: widgetTab.configRoot.cfg_widgetExpandedCardsHeightAuto ? 0 : 1
                     onActivated: {
@@ -847,8 +972,7 @@ ColumnLayout {
             // SECTION: Items - switches between advanced and simple mode
             // ═══════════════════════════════════════════════════════════════
             SectionHeader {
-                title: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
-                    ? i18n("Simple Mode Items") : i18n("Details Items")
+                title: widgetTab.configRoot.cfg_widgetLayoutMode === "simple" ? i18n("Simple Mode Items") : i18n("Details Items")
                 Layout.columnSpan: _form2.columns
                 Layout.topMargin: Kirigami.Units.largeSpacing
             }
@@ -858,7 +982,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             // Advanced mode: details items preview + Configure
             Label {
@@ -982,8 +1108,17 @@ ColumnLayout {
 
             // Invisible filler row: it lets the second column take ALL spare width, so the
             // label column keeps its width when rows are shown or hidden.
-            Item { visible: _form2.columns === 2; implicitWidth: 0; implicitHeight: 0 }
-            Item { visible: _form2.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
+            Item {
+                visible: _form2.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
+                visible: _form2.columns === 2
+                Layout.fillWidth: true
+                implicitWidth: 0
+                implicitHeight: 0
+            }
         }
 
         // ── SUB-TAB 2: Forecast ───────────────────────────────────────
@@ -1015,7 +1150,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Forecast days:")
@@ -1059,9 +1196,7 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_forecastAutoOpen = checked
                 }
                 Label {
-                    text: forecastAutoOpenSwitch.checked
-                        ? i18n("Opens today's hourly forecast automatically (or the next available day)")
-                        : i18n("All days start collapsed")
+                    text: forecastAutoOpenSwitch.checked ? i18n("Opens today's hourly forecast automatically (or the next available day)") : i18n("All days start collapsed")
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                     opacity: 0.7
@@ -1083,9 +1218,7 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_forecastExpandAll = checked
                 }
                 Label {
-                    text: forecastExpandAllSwitch.checked
-                        ? i18n("All days show hourly forecast when opening the tab")
-                        : i18n("Only the clicked day expands")
+                    text: forecastExpandAllSwitch.checked ? i18n("All days show hourly forecast when opening the tab") : i18n("Only the clicked day expands")
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                     opacity: 0.7
@@ -1107,9 +1240,7 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_forecastShowPastHours = checked
                 }
                 Label {
-                    text: forecastShowPastHoursSwitch.checked
-                        ? i18n("Already-passed hours for today stay in place, greyed out, instead of being removed")
-                        : i18n("Already-passed hours are removed from today's hourly forecast")
+                    text: forecastShowPastHoursSwitch.checked ? i18n("Already-passed hours for today stay in place, greyed out, instead of being removed") : i18n("Already-passed hours are removed from today's hourly forecast")
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                     opacity: 0.7
@@ -1131,7 +1262,9 @@ ColumnLayout {
                 implicitWidth: 0
                 implicitHeight: 0
             }
-            Item { Layout.preferredHeight: Kirigami.Units.smallSpacing }
+            Item {
+                Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
 
             Label {
                 text: i18n("Daily layout:")
@@ -1143,14 +1276,21 @@ ColumnLayout {
             ComboBox {
                 textRole: "text"
                 readonly property var _opts: [
-                    { text: i18n("Standard"), value: "rows" },
-                    { text: i18n("Graphs"),   value: "graphs" }
+                    {
+                        text: i18n("Standard"),
+                        value: "rows"
+                    },
+                    {
+                        text: i18n("Graphs"),
+                        value: "graphs"
+                    }
                 ]
                 model: _opts
                 currentIndex: {
                     var v = widgetTab.configRoot.cfg_forecastLayout;
                     for (var i = 0; i < _opts.length; i++)
-                        if (_opts[i].value === v) return i;
+                        if (_opts[i].value === v)
+                            return i;
                     return 0;
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastLayout = _opts[currentIndex].value
@@ -1245,14 +1385,9 @@ ColumnLayout {
             Kirigami.InlineMessage {
                 Layout.columnSpan: _form3.columns
                 Layout.fillWidth: true
-                visible: [
-                    widgetTab.configRoot.cfg_forecastShowPressure,
-                    widgetTab.configRoot.cfg_forecastShowKpIndex,
-                    widgetTab.configRoot.cfg_forecastShowUvIndex,
-                    widgetTab.configRoot.cfg_forecastShowPrecipSum,
-                    widgetTab.configRoot.cfg_forecastShowVisibility,
-                    widgetTab.configRoot.cfg_forecastShowWind
-                ].filter(function(v) { return v === true; }).length >= 2
+                visible: [widgetTab.configRoot.cfg_forecastShowPressure, widgetTab.configRoot.cfg_forecastShowKpIndex, widgetTab.configRoot.cfg_forecastShowUvIndex, widgetTab.configRoot.cfg_forecastShowPrecipSum, widgetTab.configRoot.cfg_forecastShowVisibility, widgetTab.configRoot.cfg_forecastShowWind].filter(function (v) {
+                    return v === true;
+                }).length >= 2
                 type: Kirigami.MessageType.Information
                 text: i18n("You may need to increase the widget's width to see all the selected information")
             }
@@ -1290,15 +1425,25 @@ ColumnLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 textRole: "text"
                 readonly property var _opts: [
-                    { text: i18n("Cards"),  value: "cards" },
-                    { text: i18n("Strip"),  value: "strip" },
-                    { text: i18n("Graphs"), value: "graphs" }
+                    {
+                        text: i18n("Cards"),
+                        value: "cards"
+                    },
+                    {
+                        text: i18n("Strip"),
+                        value: "strip"
+                    },
+                    {
+                        text: i18n("Graphs"),
+                        value: "graphs"
+                    }
                 ]
                 model: _opts
                 currentIndex: {
                     var v = widgetTab.configRoot.cfg_forecastHourlyLayout;
                     for (var i = 0; i < _opts.length; i++)
-                        if (_opts[i].value === v) return i;
+                        if (_opts[i].value === v)
+                            return i;
                     return 0;
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastHourlyLayout = _opts[currentIndex].value
@@ -1520,11 +1665,19 @@ ColumnLayout {
                 }
             }
 
-
             // Invisible filler row: it lets the second column take ALL spare width, so the
             // label column keeps its width when rows are shown or hidden.
-            Item { visible: _form3.columns === 2; implicitWidth: 0; implicitHeight: 0 }
-            Item { visible: _form3.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
+            Item {
+                visible: _form3.columns === 2
+                implicitWidth: 0
+                implicitHeight: 0
+            }
+            Item {
+                visible: _form3.columns === 2
+                Layout.fillWidth: true
+                implicitWidth: 0
+                implicitHeight: 0
+            }
         }
     }
 }

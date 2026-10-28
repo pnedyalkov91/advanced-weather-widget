@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -53,9 +53,9 @@ Rectangle {
     readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
     readonly property bool _isHistoryTab: _hasLocation && activeTab === 3 && showHistoryTab
     readonly property bool isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
-    Layout.preferredWidth:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    Layout.preferredWidth: _hasLocation ? (isSimpleMode ? 800 : 540) : 280
     Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : ((_isRadarTab || _isHistoryTab) ? 680 : 550)) : 220
-    width:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    width: _hasLocation ? (isSimpleMode ? 800 : 540) : 280
     height: _hasLocation ? (isSimpleMode ? 550 : ((_isRadarTab || _isHistoryTab) ? 680 : 550)) : 220
     clip: true
 
@@ -72,11 +72,7 @@ Rectangle {
     /** Resolve a condition icon, handling the "custom" theme with per-condition overrides.
      *  Delegates to ConfigUtils.resolveCustomConditionIcon() - single source of truth. */
     function resolveConditionIcon(code, isNight, iconSize) {
-        return ConfigUtils.resolveCustomConditionIcon(
-            code, isNight, iconSize, fullView.iconsBaseDir,
-            fullView.conditionIconTheme,
-            Plasmoid.configuration.widgetConditionCustomIcons || "",
-            W.weatherCodeToIcon, IconResolver.resolveCondition);
+        return ConfigUtils.resolveCustomConditionIcon(code, isNight, iconSize, fullView.iconsBaseDir, fullView.conditionIconTheme, Plasmoid.configuration.widgetConditionCustomIcons || "", W.weatherCodeToIcon, IconResolver.resolveCondition);
     }
 
     // Always transparent - Plasma draws the background via backgroundHints
@@ -88,12 +84,12 @@ Rectangle {
 
     // Header summary cached once per weatherData change - avoids N separate Label
     // bindings each subscribing to individual weatherRoot accessor properties.
-    readonly property string _fvTemp:       weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
-    readonly property string _fvCondition:  weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
-    readonly property string _fvFeelsLike:  weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
-    readonly property string _fvHigh:       (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
-    readonly property string _fvLow:        (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
-    readonly property var    _fvCondIcon:   weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
+    readonly property string _fvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+    readonly property string _fvCondition: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
+    readonly property string _fvFeelsLike: weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
+    readonly property string _fvHigh: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
+    readonly property string _fvLow: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
+    readonly property var _fvCondIcon: weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
 
     // Per-tab visibility flags (all visible by default).
     // widgetVisibleTabs is a semicolon-separated list ("details;forecast;radar;history").
@@ -106,12 +102,14 @@ Rectangle {
             return ["details", "forecast", "radar", "history"];
         if (v === "none")
             return [];
-        return v.split(";").map(function (t) { return t.trim(); });
+        return v.split(";").map(function (t) {
+            return t.trim();
+        });
     }
-    readonly property bool showDetailsTab:  _visibleTabList.indexOf("details") >= 0
+    readonly property bool showDetailsTab: _visibleTabList.indexOf("details") >= 0
     readonly property bool showForecastTab: _visibleTabList.indexOf("forecast") >= 0
-    readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && _visibleTabList.indexOf("radar") >= 0
-    readonly property bool showHistoryTab:  _visibleTabList.indexOf("history") >= 0
+    readonly property bool showRadarTab: (Plasmoid.configuration.radarEnabled !== false) && _visibleTabList.indexOf("radar") >= 0
+    readonly property bool showHistoryTab: _visibleTabList.indexOf("history") >= 0
     readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab || showHistoryTab
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
@@ -120,9 +118,12 @@ Rectangle {
         var shown = [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab, fullView.showHistoryTab];
         var want = 0;
         var pref = Plasmoid.configuration.widgetDefaultTab || "details";
-        if (pref === "forecast") want = 1;
-        else if (pref === "radar") want = 2;
-        else if (pref === "history") want = 3;
+        if (pref === "forecast")
+            want = 1;
+        else if (pref === "radar")
+            want = 2;
+        else if (pref === "history")
+            want = 3;
         if (shown[want])
             return want;
         // The preferred tab is hidden: first visible tab in display order.
@@ -139,7 +140,9 @@ Rectangle {
         try {
             var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
             return Array.isArray(locs) && locs.length > 1;
-        } catch (e) { return false; }
+        } catch (e) {
+            return false;
+        }
     }
     readonly property bool _hdrShowLocation: Plasmoid.configuration.headerShowLocation !== false
     readonly property bool _hdrShowDateTime: Plasmoid.configuration.headerShowDateTime === true
@@ -148,8 +151,7 @@ Rectangle {
     readonly property bool _hdrShowDetect: Plasmoid.configuration.headerShowDetectButton !== false && !inSystemTray
     readonly property bool _hdrShowRefresh: Plasmoid.configuration.headerShowRefreshButton !== false && !inSystemTray
     readonly property bool _hdrShowUpdating: !inSystemTray && !!weatherRoot && weatherRoot.loading === true
-    readonly property bool _headerHasContent: _hdrShowLocation || _hdrShowDateTime || _hdrShowSwitcher
-        || _hdrShowPin || _hdrShowDetect || _hdrShowRefresh || _hdrShowUpdating
+    readonly property bool _headerHasContent: _hdrShowLocation || _hdrShowDateTime || _hdrShowSwitcher || _hdrShowPin || _hdrShowDetect || _hdrShowRefresh || _hdrShowUpdating
 
     // Whether not-currently-shown tabs stay instantiated. True while the
     // popup is open and always on the desktop (Planar), which has no popup.
@@ -158,8 +160,7 @@ Rectangle {
     // "Keep the radar loaded": the Radar tab is built in the background once
     // main.qml says startup is over, and is never unloaded afterwards,
     // popup closed or not.
-    readonly property bool _keepRadarLoaded: !!weatherRoot && weatherRoot.radarKeepLoaded === true
-        && _hasLocation && showRadarTab && !isSimpleMode
+    readonly property bool _keepRadarLoaded: !!weatherRoot && weatherRoot.radarKeepLoaded === true && _hasLocation && showRadarTab && !isSimpleMode
     readonly property bool _preloadRadar: _keepRadarLoaded && weatherRoot.radarBackgroundReady === true
 
     // Reset to the configured default tab every time the popup opens
@@ -173,7 +174,7 @@ Rectangle {
         function onExpandedChanged() {
             if (weatherRoot.expanded) {
                 fullView.activeTab = fullView._resolvedDefaultTab();
-                Qt.callLater(function() {
+                Qt.callLater(function () {
                     // Re-activate when reopening directly onto an already-built
                     // Forecast tab (ForecastView.onVisibleChanged covers the
                     // first build, but not a reopen where it stays visible).
@@ -205,14 +206,21 @@ Rectangle {
         var locs;
         try {
             locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { return; }
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            return;
+        }
 
         var starred = null;
         for (var i = 0; i < locs.length; i++) {
-            if (locs[i].starred) { starred = locs[i]; break; }
+            if (locs[i].starred) {
+                starred = locs[i];
+                break;
+            }
         }
-        if (!starred) return;
+        if (!starred)
+            return;
 
         var curLat = Plasmoid.configuration.latitude || 0;
         var curLon = Plasmoid.configuration.longitude || 0;
@@ -382,7 +390,9 @@ Rectangle {
                             try {
                                 var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
                                 return Array.isArray(locs) ? locs : [];
-                            } catch (e) { return []; }
+                            } catch (e) {
+                                return [];
+                            }
                         }
                         delegate: MenuItem {
                             required property var modelData
@@ -455,14 +465,14 @@ Rectangle {
                 ToolTip.text: i18n("Refresh")
                 onClicked: {
                     if (weatherRoot)
-                        weatherRoot.refreshWeather(true)
+                        weatherRoot.refreshWeather(true);
                     // On the Radar tab, also flush and reload the radar tiles so the
                     // Refresh button is consistent across all tabs.
                     if (fullView.activeTab === 2 && radarLoader.item)
-                        radarLoader.item.reload()
+                        radarLoader.item.reload();
                     // ...and the History tab refetches its archive data.
                     if (fullView.activeTab === 3 && historyLoader.item)
-                        historyLoader.item.reload()
+                        historyLoader.item.reload();
                 }
             }
         }
@@ -582,7 +592,6 @@ Rectangle {
             }
         }
 
-
         Item {
             Layout.preferredHeight: fullView.showAnyTab ? 12 : 0
             visible: !fullView.isSimpleMode
@@ -607,10 +616,26 @@ Rectangle {
                 Repeater {
                     model: {
                         var tabs = [];
-                        if (fullView.showDetailsTab)  tabs.push({ label: i18n("Details"),  logicalIdx: 0 });
-                        if (fullView.showForecastTab) tabs.push({ label: i18n("Forecast"), logicalIdx: 1 });
-                        if (fullView.showRadarTab)    tabs.push({ label: i18n("Radar"),    logicalIdx: 2 });
-                        if (fullView.showHistoryTab)  tabs.push({ label: i18n("History"),  logicalIdx: 3 });
+                        if (fullView.showDetailsTab)
+                            tabs.push({
+                                label: i18n("Details"),
+                                logicalIdx: 0
+                            });
+                        if (fullView.showForecastTab)
+                            tabs.push({
+                                label: i18n("Forecast"),
+                                logicalIdx: 1
+                            });
+                        if (fullView.showRadarTab)
+                            tabs.push({
+                                label: i18n("Radar"),
+                                logicalIdx: 2
+                            });
+                        if (fullView.showHistoryTab)
+                            tabs.push({
+                                label: i18n("History"),
+                                logicalIdx: 3
+                            });
                         return tabs;
                     }
                     delegate: Rectangle {
@@ -755,8 +780,7 @@ Rectangle {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar
-                        || (item !== null && (fullView._keepHiddenTabs || fullView._keepRadarLoaded))
+                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar || (item !== null && (fullView._keepHiddenTabs || fullView._keepRadarLoaded))
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
                         keepLoaded: fullView._keepRadarLoaded
@@ -815,7 +839,9 @@ Rectangle {
                 return t;
             }
             textFormat: Text.RichText
-            onLinkActivated: function(link) { Qt.openUrlExternally(link) }
+            onLinkActivated: function (link) {
+                Qt.openUrlExternally(link);
+            }
             // #2
             color: Kirigami.Theme.textColor
             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})

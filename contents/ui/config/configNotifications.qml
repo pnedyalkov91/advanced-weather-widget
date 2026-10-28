@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 import QtQuick
@@ -71,17 +71,50 @@ KCM.SimpleKCM {
 
     // Canonical MeteoAlarm awareness types shown in the per-type list.
     readonly property var alertTypeList: [
-        { type: 1,  name: i18n("Wind") },
-        { type: 2,  name: i18n("Snow/Ice") },
-        { type: 3,  name: i18n("Thunderstorm") },
-        { type: 4,  name: i18n("Fog") },
-        { type: 5,  name: i18n("High temperature") },
-        { type: 6,  name: i18n("Low temperature") },
-        { type: 7,  name: i18n("Coastal event") },
-        { type: 8,  name: i18n("Forest fire") },
-        { type: 9,  name: i18n("Avalanche") },
-        { type: 10, name: i18n("Rain") },
-        { type: 11, name: i18n("Flood") }
+        {
+            type: 1,
+            name: i18n("Wind")
+        },
+        {
+            type: 2,
+            name: i18n("Snow/Ice")
+        },
+        {
+            type: 3,
+            name: i18n("Thunderstorm")
+        },
+        {
+            type: 4,
+            name: i18n("Fog")
+        },
+        {
+            type: 5,
+            name: i18n("High temperature")
+        },
+        {
+            type: 6,
+            name: i18n("Low temperature")
+        },
+        {
+            type: 7,
+            name: i18n("Coastal event")
+        },
+        {
+            type: 8,
+            name: i18n("Forest fire")
+        },
+        {
+            type: 9,
+            name: i18n("Avalanche")
+        },
+        {
+            type: 10,
+            name: i18n("Rain")
+        },
+        {
+            type: 11,
+            name: i18n("Flood")
+        }
     ]
 
     function alertTypeEnabled(t) {
@@ -98,8 +131,12 @@ KCM.SimpleKCM {
     }
     function setAlertType(t, enabled, minutes) {
         var copy = {};
-        for (var k in alertTypeSettings) copy[k] = alertTypeSettings[k];
-        copy[t] = { enabled: enabled, minutes: minutes };
+        for (var k in alertTypeSettings)
+            copy[k] = alertTypeSettings[k];
+        copy[t] = {
+            enabled: enabled,
+            minutes: minutes
+        };
         alertTypeSettings = copy;
         cfg_alertNotificationsTypeSettings = JSON.stringify(copy);
     }
@@ -162,9 +199,13 @@ KCM.SimpleKCM {
         return /a/i.test(f);
     }
     // Convert between 24-hour storage (HH:mm) and 12-hour display.
-    function hour24To12(h) { var x = h % 12; return x === 0 ? 12 : x; }
+    function hour24To12(h) {
+        var x = h % 12;
+        return x === 0 ? 12 : x;
+    }
     function hour12To24(h12, isPm) {
-        if (isPm) return (h12 === 12) ? 12 : h12 + 12;
+        if (isPm)
+            return (h12 === 12) ? 12 : h12 + 12;
         return (h12 === 12) ? 0 : h12;
     }
 
@@ -199,10 +240,8 @@ KCM.SimpleKCM {
             font: wrappingSwitch.font
             wrapMode: Text.Wrap
             verticalAlignment: Text.AlignVCenter
-            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored
-                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
-            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored
-                ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            leftPadding: wrappingSwitch.indicator && !wrappingSwitch.mirrored ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
+            rightPadding: wrappingSwitch.indicator && wrappingSwitch.mirrored ? wrappingSwitch.indicator.width + wrappingSwitch.spacing : 0
         }
     }
 
@@ -221,33 +260,41 @@ KCM.SimpleKCM {
         readonly property int hour24: root.timeHour(time)
         readonly property int minute: root.timeMinute(time)
 
-        Label { text: i18n("Time:") }
+        Label {
+            text: i18n("Time:")
+        }
         SpinBox {
             id: hourSpin
             from: singleTimeEditor.use12h ? 1 : 0
             to: singleTimeEditor.use12h ? 12 : 23
             editable: true
             value: singleTimeEditor.use12h ? root.hour24To12(singleTimeEditor.hour24) : singleTimeEditor.hour24
-            textFromValue: function(v) { return singleTimeEditor.use12h ? ("" + v) : ("0" + v).slice(-2); }
-            valueFromText: function(t) {
+            textFromValue: function (v) {
+                return singleTimeEditor.use12h ? ("" + v) : ("0" + v).slice(-2);
+            }
+            valueFromText: function (t) {
                 var n = parseInt(t, 10) || 0;
                 return singleTimeEditor.use12h ? Math.max(1, Math.min(12, n)) : Math.max(0, Math.min(23, n));
             }
             onValueModified: {
-                var h24 = singleTimeEditor.use12h
-                    ? root.hour12To24(value, ampmCombo.currentIndex === 1)
-                    : value;
+                var h24 = singleTimeEditor.use12h ? root.hour12To24(value, ampmCombo.currentIndex === 1) : value;
                 singleTimeEditor.timeEdited(root.timeFromParts(h24, singleTimeEditor.minute));
             }
         }
-        Label { text: ":" }
+        Label {
+            text: ":"
+        }
         SpinBox {
             from: 0
             to: 59
             editable: true
             value: singleTimeEditor.minute
-            textFromValue: function(v) { return ("0" + v).slice(-2); }
-            valueFromText: function(t) { return Math.max(0, Math.min(59, parseInt(t, 10) || 0)); }
+            textFromValue: function (v) {
+                return ("0" + v).slice(-2);
+            }
+            valueFromText: function (t) {
+                return Math.max(0, Math.min(59, parseInt(t, 10) || 0));
+            }
             onValueModified: singleTimeEditor.timeEdited(root.timeFromParts(singleTimeEditor.hour24, value))
         }
         ComboBox {
@@ -291,7 +338,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("Weather alerts") }
+            SectionHeader {
+                title: i18n("Weather alerts")
+            }
 
             WrappingSwitch {
                 text: i18n("Enable alert notifications")
@@ -341,7 +390,9 @@ KCM.SimpleKCM {
                     implicitHeight: Kirigami.Units.iconSizes.small
                     opacity: severityInfoHover.hovered ? 1.0 : 0.7
 
-                    HoverHandler { id: severityInfoHover }
+                    HoverHandler {
+                        id: severityInfoHover
+                    }
 
                     ToolTip.visible: severityInfoHover.hovered
                     ToolTip.text: i18n("Weather-alert severity levels, from lowest to highest:\n\n🟡 Yellow - Minor: be aware of the conditions.\n🟠 Orange - Moderate: be prepared.\n🔴 Red - Severe: take action.\n🟣 Purple - Extreme: extraordinarily dangerous, take action immediately.\n\nTurn a level off to stop receiving notifications for alerts of that severity.")
@@ -397,7 +448,9 @@ KCM.SimpleKCM {
                     implicitHeight: Kirigami.Units.iconSizes.small
                     opacity: soundInfoHover.hovered ? 1.0 : 0.7
 
-                    HoverHandler { id: soundInfoHover }
+                    HoverHandler {
+                        id: soundInfoHover
+                    }
 
                     ToolTip.visible: soundInfoHover.hovered
                     ToolTip.text: i18n("Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound.")
@@ -415,7 +468,9 @@ KCM.SimpleKCM {
                     Layout.fillWidth: true
                     spacing: 6
 
-                    Label { text: i18n("Alert sound:") }
+                    Label {
+                        text: i18n("Alert sound:")
+                    }
 
                     TextField {
                         id: soundFileField
@@ -443,9 +498,7 @@ KCM.SimpleKCM {
                         text: i18n("Test")
                         icon.name: "media-playback-start"
                         onClicked: {
-                            testSoundLoader.play(root.cfg_alertNotificationsSoundFile.length > 0
-                                ? root.cfg_alertNotificationsSoundFile
-                                : root.defaultAlertSoundUrl);
+                            testSoundLoader.play(root.cfg_alertNotificationsSoundFile.length > 0 ? root.cfg_alertNotificationsSoundFile : root.defaultAlertSoundUrl);
                         }
                     }
 
@@ -555,9 +608,7 @@ KCM.SimpleKCM {
                 type: Kirigami.MessageType.Information
                 showCloseButton: true
                 visible: root.cfg_alertNotificationsEnabled
-                text: root.cfg_alertNotificationsIncludeTests
-                    ? i18n("Routine tests (for example \"Required Weekly Test\") will show a notification, but never play an alert sound.")
-                    : i18n("Routine tests (for example \"Required Weekly Test\") are ignored: no notification and no sound.")
+                text: root.cfg_alertNotificationsIncludeTests ? i18n("Routine tests (for example \"Required Weekly Test\") will show a notification, but never play an alert sound.") : i18n("Routine tests (for example \"Required Weekly Test\") are ignored: no notification and no sound.")
             }
 
             // ── Per-type overrides ─────────────────────────────────────────
@@ -600,7 +651,9 @@ KCM.SimpleKCM {
                         value: root.alertTypeMinutes(modelData.type)
                         onValueModified: root.setAlertType(modelData.type, root.alertTypeEnabled(modelData.type), value)
                     }
-                    Label { text: i18n("minutes") }
+                    Label {
+                        text: i18n("minutes")
+                    }
                 }
             }
         }
@@ -610,7 +663,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("Today's weather") }
+            SectionHeader {
+                title: i18n("Today's weather")
+            }
 
             WrappingSwitch {
                 text: i18n("Notify with today's forecast")
@@ -621,7 +676,9 @@ KCM.SimpleKCM {
             SingleTimeEditor {
                 active: root.cfg_notificationTodayEnabled
                 time: root.cfg_notificationTodayTime
-                onTimeEdited: function(value) { root.cfg_notificationTodayTime = value; }
+                onTimeEdited: function (value) {
+                    root.cfg_notificationTodayTime = value;
+                }
             }
         }
 
@@ -630,7 +687,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("Tomorrow forecast") }
+            SectionHeader {
+                title: i18n("Tomorrow forecast")
+            }
 
             WrappingSwitch {
                 text: i18n("Notify with tomorrow's forecast")
@@ -641,7 +700,9 @@ KCM.SimpleKCM {
             SingleTimeEditor {
                 active: root.cfg_notificationTomorrowEnabled
                 time: root.cfg_notificationTomorrowTime
-                onTimeEdited: function(value) { root.cfg_notificationTomorrowTime = value; }
+                onTimeEdited: function (value) {
+                    root.cfg_notificationTomorrowTime = value;
+                }
             }
         }
 
@@ -650,7 +711,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("Rain/Storm") }
+            SectionHeader {
+                title: i18n("Rain/Storm")
+            }
 
             WrappingSwitch {
                 text: i18n("Notify about upcoming rain/storms")
@@ -664,7 +727,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("Snow") }
+            SectionHeader {
+                title: i18n("Snow")
+            }
 
             WrappingSwitch {
                 text: i18n("Notify about upcoming snow")
@@ -678,7 +743,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("UV index") }
+            SectionHeader {
+                title: i18n("UV index")
+            }
 
             WrappingSwitch {
                 text: i18n("Notify with today's UV forecast")
@@ -689,7 +756,9 @@ KCM.SimpleKCM {
             SingleTimeEditor {
                 active: root.cfg_notificationUvEnabled
                 time: root.cfg_notificationUvTime
-                onTimeEdited: function(value) { root.cfg_notificationUvTime = value; }
+                onTimeEdited: function (value) {
+                    root.cfg_notificationUvTime = value;
+                }
             }
         }
 
@@ -698,7 +767,9 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             spacing: 6
 
-            SectionHeader { title: i18n("Geomagnetic activity") }
+            SectionHeader {
+                title: i18n("Geomagnetic activity")
+            }
 
             WrappingSwitch {
                 text: i18n("Notify with today's geomagnetic activity forecast")
@@ -709,10 +780,14 @@ KCM.SimpleKCM {
             SingleTimeEditor {
                 active: root.cfg_notificationSpaceWeatherEnabled
                 time: root.cfg_notificationSpaceWeatherTime
-                onTimeEdited: function(value) { root.cfg_notificationSpaceWeatherTime = value; }
+                onTimeEdited: function (value) {
+                    root.cfg_notificationSpaceWeatherTime = value;
+                }
             }
         }
 
-        Item { Layout.preferredHeight: 12 }
+        Item {
+            Layout.preferredHeight: 12
+        }
     }
 }

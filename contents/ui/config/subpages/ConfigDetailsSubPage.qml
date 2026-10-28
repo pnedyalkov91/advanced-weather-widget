@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -36,12 +36,16 @@ ColumnLayout {
     readonly property bool isSimple: mode === "simple"
 
     // Redirect to the right config key / model / helpers based on mode
-    property string _savedOrder:       isSimple ? configRoot.cfg_widgetSimpleDetailsOrder       : configRoot.cfg_widgetDetailsOrder
-    property string _savedIcons:       isSimple ? configRoot.cfg_widgetSimpleDetailsItemIcons    : configRoot.cfg_widgetDetailsItemIcons
+    property string _savedOrder: isSimple ? configRoot.cfg_widgetSimpleDetailsOrder : configRoot.cfg_widgetDetailsOrder
+    property string _savedIcons: isSimple ? configRoot.cfg_widgetSimpleDetailsItemIcons : configRoot.cfg_widgetDetailsItemIcons
     property string _savedCustomIcons: isSimple ? "" : configRoot.cfg_widgetDetailsCustomIcons
 
-    function _applyItems()   { isSimple ? configRoot.applySimpleItems()   : configRoot.applyDetailsItems(); }
-    function _firstDisabled(){ return isSimple ? configRoot.firstSimpleDisabledIndex() : configRoot.firstDetailsDisabledIndex(); }
+    function _applyItems() {
+        isSimple ? configRoot.applySimpleItems() : configRoot.applyDetailsItems();
+    }
+    function _firstDisabled() {
+        return isSimple ? configRoot.firstSimpleDisabledIndex() : configRoot.firstDetailsDisabledIndex();
+    }
 
     Component.onCompleted: isSimple ? configRoot.initSimpleModel() : configRoot.initDetailsModel()
 
@@ -346,12 +350,18 @@ ColumnLayout {
                                 checked: detailsDelegateRoot.settingsExpanded
                                 ToolTip.visible: hovered
                                 ToolTip.text: {
-                                    if (model.itemId === "suntimes") return i18n("Sun times options");
-                                    if (model.itemId === "moonphase") return i18n("Moon phase options");
-                                    if (model.itemId === "airquality") return i18n("Air quality options");
-                                    if (model.itemId === "pollen") return i18n("Pollen options");
-                                    if (model.itemId === "spaceweather") return i18n("Space weather options");
-                                    if (model.itemId === "datetime")     return i18n("Date / Time options");
+                                    if (model.itemId === "suntimes")
+                                        return i18n("Sun times options");
+                                    if (model.itemId === "moonphase")
+                                        return i18n("Moon phase options");
+                                    if (model.itemId === "airquality")
+                                        return i18n("Air quality options");
+                                    if (model.itemId === "pollen")
+                                        return i18n("Pollen options");
+                                    if (model.itemId === "spaceweather")
+                                        return i18n("Space weather options");
+                                    if (model.itemId === "datetime")
+                                        return i18n("Date / Time options");
                                     return i18n("Options");
                                 }
                                 onClicked: detailsDelegateRoot.settingsExpanded = !detailsDelegateRoot.settingsExpanded
@@ -554,7 +564,7 @@ ColumnLayout {
                         Layout.rightMargin: Kirigami.Units.largeSpacing
                         Layout.bottomMargin: Kirigami.Units.smallSpacing
                         spacing: Kirigami.Units.smallSpacing
-                        readonly property var __aqiAllKeys: ["pm2_5","pm10","no2","o3","so2","co"]
+                        readonly property var __aqiAllKeys: ["pm2_5", "pm10", "no2", "o3", "so2", "co"]
                         RowLayout {
                             Layout.fillWidth: true
                             Label {
@@ -569,12 +579,14 @@ ColumnLayout {
                                 tristate: true
                                 checkState: {
                                     var n = aqiOptions.__aqiItems().length;
-                                    if (n === 0) return Qt.Unchecked;
-                                    if (n === aqiOptions.__aqiAllKeys.length) return Qt.Checked;
+                                    if (n === 0)
+                                        return Qt.Unchecked;
+                                    if (n === aqiOptions.__aqiAllKeys.length)
+                                        return Qt.Checked;
                                     return Qt.PartiallyChecked;
                                 }
                                 // Decide next state from the CURRENT state (before Qt auto-cycles)
-                                nextCheckState: function() {
+                                nextCheckState: function () {
                                     var enableAll = checkState !== Qt.Checked;
                                     var newVal = enableAll ? aqiOptions.__aqiAllKeys.join(",") : "";
                                     if (newVal !== configRoot.cfg_aqiExpandedItems)
@@ -586,25 +598,53 @@ ColumnLayout {
                         Flow {
                             Layout.fillWidth: true
                             spacing: Kirigami.Units.largeSpacing
-                            CheckBox { text: i18n("PM2.5"); checked: aqiOptions.__aqiHas("pm2_5"); onToggled: aqiOptions.__aqiToggle("pm2_5", checked) }
-                            CheckBox { text: i18n("PM10");  checked: aqiOptions.__aqiHas("pm10");  onToggled: aqiOptions.__aqiToggle("pm10", checked) }
-                            CheckBox { text: i18n("NO₂");   checked: aqiOptions.__aqiHas("no2");   onToggled: aqiOptions.__aqiToggle("no2", checked) }
-                            CheckBox { text: i18n("O₃");    checked: aqiOptions.__aqiHas("o3");    onToggled: aqiOptions.__aqiToggle("o3", checked) }
-                            CheckBox { text: i18n("SO₂");   checked: aqiOptions.__aqiHas("so2");   onToggled: aqiOptions.__aqiToggle("so2", checked) }
-                            CheckBox { text: i18n("CO");    checked: aqiOptions.__aqiHas("co");    onToggled: aqiOptions.__aqiToggle("co", checked) }
+                            CheckBox {
+                                text: i18n("PM2.5")
+                                checked: aqiOptions.__aqiHas("pm2_5")
+                                onToggled: aqiOptions.__aqiToggle("pm2_5", checked)
+                            }
+                            CheckBox {
+                                text: i18n("PM10")
+                                checked: aqiOptions.__aqiHas("pm10")
+                                onToggled: aqiOptions.__aqiToggle("pm10", checked)
+                            }
+                            CheckBox {
+                                text: i18n("NO₂")
+                                checked: aqiOptions.__aqiHas("no2")
+                                onToggled: aqiOptions.__aqiToggle("no2", checked)
+                            }
+                            CheckBox {
+                                text: i18n("O₃")
+                                checked: aqiOptions.__aqiHas("o3")
+                                onToggled: aqiOptions.__aqiToggle("o3", checked)
+                            }
+                            CheckBox {
+                                text: i18n("SO₂")
+                                checked: aqiOptions.__aqiHas("so2")
+                                onToggled: aqiOptions.__aqiToggle("so2", checked)
+                            }
+                            CheckBox {
+                                text: i18n("CO")
+                                checked: aqiOptions.__aqiHas("co")
+                                onToggled: aqiOptions.__aqiToggle("co", checked)
+                            }
                         }
                         function __aqiItems() {
                             var s = configRoot.cfg_aqiExpandedItems;
                             if (s === undefined || s === null)
-                                return ["pm2_5","pm10","no2","o3","so2","co"];
+                                return ["pm2_5", "pm10", "no2", "o3", "so2", "co"];
                             return s.length ? s.split(",") : [];
                         }
-                        function __aqiHas(k) { return __aqiItems().indexOf(k) >= 0; }
+                        function __aqiHas(k) {
+                            return __aqiItems().indexOf(k) >= 0;
+                        }
                         function __aqiToggle(k, on) {
                             var arr = __aqiItems();
                             var i = arr.indexOf(k);
-                            if (on && i < 0) arr.push(k);
-                            else if (!on && i >= 0) arr.splice(i, 1);
+                            if (on && i < 0)
+                                arr.push(k);
+                            else if (!on && i >= 0)
+                                arr.splice(i, 1);
                             var newVal = arr.join(",");
                             if (newVal !== configRoot.cfg_aqiExpandedItems)
                                 configRoot.cfg_aqiExpandedItems = newVal;
@@ -619,7 +659,7 @@ ColumnLayout {
                         Layout.rightMargin: Kirigami.Units.largeSpacing
                         Layout.bottomMargin: Kirigami.Units.smallSpacing
                         spacing: Kirigami.Units.smallSpacing
-                        readonly property var __pollenAllKeys: ["alder","birch","grass","mugwort","olive","ragweed"]
+                        readonly property var __pollenAllKeys: ["alder", "birch", "grass", "mugwort", "olive", "ragweed"]
                         RowLayout {
                             Layout.fillWidth: true
                             Label {
@@ -634,11 +674,13 @@ ColumnLayout {
                                 tristate: true
                                 checkState: {
                                     var n = pollenOptions.__pollenItems().length;
-                                    if (n === 0) return Qt.Unchecked;
-                                    if (n === pollenOptions.__pollenAllKeys.length) return Qt.Checked;
+                                    if (n === 0)
+                                        return Qt.Unchecked;
+                                    if (n === pollenOptions.__pollenAllKeys.length)
+                                        return Qt.Checked;
                                     return Qt.PartiallyChecked;
                                 }
-                                nextCheckState: function() {
+                                nextCheckState: function () {
                                     var enableAll = checkState !== Qt.Checked;
                                     var newVal = enableAll ? pollenOptions.__pollenAllKeys.join(",") : "";
                                     if (newVal !== configRoot.cfg_pollenExpandedItems)
@@ -650,25 +692,53 @@ ColumnLayout {
                         Flow {
                             Layout.fillWidth: true
                             spacing: Kirigami.Units.largeSpacing
-                            CheckBox { text: i18n("Alder");   checked: pollenOptions.__pollenHas("alder");   onToggled: pollenOptions.__pollenToggle("alder", checked) }
-                            CheckBox { text: i18n("Birch");   checked: pollenOptions.__pollenHas("birch");   onToggled: pollenOptions.__pollenToggle("birch", checked) }
-                            CheckBox { text: i18n("Grass");   checked: pollenOptions.__pollenHas("grass");   onToggled: pollenOptions.__pollenToggle("grass", checked) }
-                            CheckBox { text: i18n("Mugwort"); checked: pollenOptions.__pollenHas("mugwort"); onToggled: pollenOptions.__pollenToggle("mugwort", checked) }
-                            CheckBox { text: i18n("Olive");   checked: pollenOptions.__pollenHas("olive");   onToggled: pollenOptions.__pollenToggle("olive", checked) }
-                            CheckBox { text: i18n("Ragweed"); checked: pollenOptions.__pollenHas("ragweed"); onToggled: pollenOptions.__pollenToggle("ragweed", checked) }
+                            CheckBox {
+                                text: i18n("Alder")
+                                checked: pollenOptions.__pollenHas("alder")
+                                onToggled: pollenOptions.__pollenToggle("alder", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Birch")
+                                checked: pollenOptions.__pollenHas("birch")
+                                onToggled: pollenOptions.__pollenToggle("birch", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Grass")
+                                checked: pollenOptions.__pollenHas("grass")
+                                onToggled: pollenOptions.__pollenToggle("grass", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Mugwort")
+                                checked: pollenOptions.__pollenHas("mugwort")
+                                onToggled: pollenOptions.__pollenToggle("mugwort", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Olive")
+                                checked: pollenOptions.__pollenHas("olive")
+                                onToggled: pollenOptions.__pollenToggle("olive", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Ragweed")
+                                checked: pollenOptions.__pollenHas("ragweed")
+                                onToggled: pollenOptions.__pollenToggle("ragweed", checked)
+                            }
                         }
                         function __pollenItems() {
                             var s = configRoot.cfg_pollenExpandedItems;
                             if (s === undefined || s === null)
-                                return ["alder","birch","grass","mugwort","olive","ragweed"];
+                                return ["alder", "birch", "grass", "mugwort", "olive", "ragweed"];
                             return s.length ? s.split(",") : [];
                         }
-                        function __pollenHas(k) { return __pollenItems().indexOf(k) >= 0; }
+                        function __pollenHas(k) {
+                            return __pollenItems().indexOf(k) >= 0;
+                        }
                         function __pollenToggle(k, on) {
                             var arr = __pollenItems();
                             var i = arr.indexOf(k);
-                            if (on && i < 0) arr.push(k);
-                            else if (!on && i >= 0) arr.splice(i, 1);
+                            if (on && i < 0)
+                                arr.push(k);
+                            else if (!on && i >= 0)
+                                arr.splice(i, 1);
                             var newVal = arr.join(",");
                             if (newVal !== configRoot.cfg_pollenExpandedItems)
                                 configRoot.cfg_pollenExpandedItems = newVal;
@@ -683,7 +753,7 @@ ColumnLayout {
                         Layout.rightMargin: Kirigami.Units.largeSpacing
                         Layout.bottomMargin: Kirigami.Units.smallSpacing
                         spacing: Kirigami.Units.smallSpacing
-                        readonly property var __swAllKeys: ["gscale","kp","solarwind","aurora","bz","xray"]
+                        readonly property var __swAllKeys: ["gscale", "kp", "solarwind", "aurora", "bz", "xray"]
                         RowLayout {
                             Layout.fillWidth: true
                             Label {
@@ -698,11 +768,13 @@ ColumnLayout {
                                 tristate: true
                                 checkState: {
                                     var n = swOptions.__swItems().length;
-                                    if (n === 0) return Qt.Unchecked;
-                                    if (n === swOptions.__swAllKeys.length) return Qt.Checked;
+                                    if (n === 0)
+                                        return Qt.Unchecked;
+                                    if (n === swOptions.__swAllKeys.length)
+                                        return Qt.Checked;
                                     return Qt.PartiallyChecked;
                                 }
-                                nextCheckState: function() {
+                                nextCheckState: function () {
                                     var enableAll = checkState !== Qt.Checked;
                                     var newVal = enableAll ? swOptions.__swAllKeys.join(",") : "";
                                     if (newVal !== configRoot.cfg_spaceWeatherExpandedItems)
@@ -714,25 +786,53 @@ ColumnLayout {
                         Flow {
                             Layout.fillWidth: true
                             spacing: Kirigami.Units.largeSpacing
-                            CheckBox { text: i18n("Geomagnetic Storm"); checked: swOptions.__swHas("gscale");    onToggled: swOptions.__swToggle("gscale", checked) }
-                            CheckBox { text: i18n("Kp Index");            checked: swOptions.__swHas("kp");       onToggled: swOptions.__swToggle("kp", checked) }
-                            CheckBox { text: i18n("Solar Wind");          checked: swOptions.__swHas("solarwind"); onToggled: swOptions.__swToggle("solarwind", checked) }
-                            CheckBox { text: i18n("Aurora Visibility");  checked: swOptions.__swHas("aurora");   onToggled: swOptions.__swToggle("aurora", checked) }
-                            CheckBox { text: i18n("Magnetic Field (Bz)"); checked: swOptions.__swHas("bz");      onToggled: swOptions.__swToggle("bz", checked) }
-                            CheckBox { text: i18n("X-ray Flare Class");  checked: swOptions.__swHas("xray");    onToggled: swOptions.__swToggle("xray", checked) }
+                            CheckBox {
+                                text: i18n("Geomagnetic Storm")
+                                checked: swOptions.__swHas("gscale")
+                                onToggled: swOptions.__swToggle("gscale", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Kp Index")
+                                checked: swOptions.__swHas("kp")
+                                onToggled: swOptions.__swToggle("kp", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Solar Wind")
+                                checked: swOptions.__swHas("solarwind")
+                                onToggled: swOptions.__swToggle("solarwind", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Aurora Visibility")
+                                checked: swOptions.__swHas("aurora")
+                                onToggled: swOptions.__swToggle("aurora", checked)
+                            }
+                            CheckBox {
+                                text: i18n("Magnetic Field (Bz)")
+                                checked: swOptions.__swHas("bz")
+                                onToggled: swOptions.__swToggle("bz", checked)
+                            }
+                            CheckBox {
+                                text: i18n("X-ray Flare Class")
+                                checked: swOptions.__swHas("xray")
+                                onToggled: swOptions.__swToggle("xray", checked)
+                            }
                         }
                         function __swItems() {
                             var s = configRoot.cfg_spaceWeatherExpandedItems;
                             if (s === undefined || s === null)
-                                return ["gscale","kp","solarwind","aurora","bz","xray"];
+                                return ["gscale", "kp", "solarwind", "aurora", "bz", "xray"];
                             return s.length ? s.split(",") : [];
                         }
-                        function __swHas(k) { return __swItems().indexOf(k) >= 0; }
+                        function __swHas(k) {
+                            return __swItems().indexOf(k) >= 0;
+                        }
                         function __swToggle(k, on) {
                             var arr = __swItems();
                             var i = arr.indexOf(k);
-                            if (on && i < 0) arr.push(k);
-                            else if (!on && i >= 0) arr.splice(i, 1);
+                            if (on && i < 0)
+                                arr.push(k);
+                            else if (!on && i >= 0)
+                                arr.splice(i, 1);
                             var newVal = arr.join(",");
                             if (newVal !== configRoot.cfg_spaceWeatherExpandedItems)
                                 configRoot.cfg_spaceWeatherExpandedItems = newVal;
@@ -766,17 +866,33 @@ ColumnLayout {
                                 Layout.fillWidth: true
                                 textRole: "text"
                                 readonly property var _opts: [
-                                    { text: i18n("Use region defaults"), value: -1 },
-                                    { text: i18n("Sunday"),              value: 0  },
-                                    { text: i18n("Monday"),              value: 1  },
-                                    { text: i18n("Friday"),              value: 5  },
-                                    { text: i18n("Saturday"),            value: 6  }
+                                    {
+                                        text: i18n("Use region defaults"),
+                                        value: -1
+                                    },
+                                    {
+                                        text: i18n("Sunday"),
+                                        value: 0
+                                    },
+                                    {
+                                        text: i18n("Monday"),
+                                        value: 1
+                                    },
+                                    {
+                                        text: i18n("Friday"),
+                                        value: 5
+                                    },
+                                    {
+                                        text: i18n("Saturday"),
+                                        value: 6
+                                    }
                                 ]
                                 model: _opts
                                 currentIndex: {
                                     var v = configRoot.cfg_calendarFirstDayOfWeek;
                                     for (var i = 0; i < _opts.length; i++)
-                                        if (_opts[i].value === v) return i;
+                                        if (_opts[i].value === v)
+                                            return i;
                                     return 0;
                                 }
                                 onActivated: configRoot.cfg_calendarFirstDayOfWeek = _opts[currentIndex].value

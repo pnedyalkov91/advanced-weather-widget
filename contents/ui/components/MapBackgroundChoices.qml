@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -39,17 +39,17 @@ QtObject {
     property string attributionSuffix: ""
 
     readonly property var labels: ({
-        "auto": i18n("Automatic"),
-        "osm-standard": i18n("OpenStreetMap (standard)"),
-        "osm-dark": i18n("OpenStreetMap (dark)"),
-        "osm-humanitarian": i18n("Humanitarian (HOT)"),
-        "cyclosm": i18n("CyclOSM (cycling)"),
-        "opentopomap": i18n("OpenTopoMap (topographic)"),
-        "openfreemap-positron": i18n("OpenFreeMap Positron (light)"),
-        "openfreemap-liberty": i18n("OpenFreeMap Liberty (light)"),
-        "openfreemap-fiord": i18n("OpenFreeMap Fiord (dark)"),
-        "openfreemap-dark": i18n("OpenFreeMap Dark")
-    })
+            "auto": i18n("Automatic"),
+            "osm-standard": i18n("OpenStreetMap (standard)"),
+            "osm-dark": i18n("OpenStreetMap (dark)"),
+            "osm-humanitarian": i18n("Humanitarian (HOT)"),
+            "cyclosm": i18n("CyclOSM (cycling)"),
+            "opentopomap": i18n("OpenTopoMap (topographic)"),
+            "openfreemap-positron": i18n("OpenFreeMap Positron (light)"),
+            "openfreemap-liberty": i18n("OpenFreeMap Liberty (light)"),
+            "openfreemap-fiord": i18n("OpenFreeMap Fiord (dark)"),
+            "openfreemap-dark": i18n("OpenFreeMap Dark")
+        })
 
     /** Choices plus their resolved tile data, ready to inject into a page. */
     readonly property var list: {

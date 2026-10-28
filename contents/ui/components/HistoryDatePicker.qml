@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -61,8 +61,10 @@ Item {
         var lo = parseInt(minDate.substring(0, 4), 10) * 12 + parseInt(minDate.substring(5, 7), 10) - 1;
         var hi = parseInt(maxDate.substring(0, 4), 10) * 12 + parseInt(maxDate.substring(5, 7), 10) - 1;
         var cur = viewYear * 12 + viewMonth;
-        if (cur < lo) cur = lo;
-        if (cur > hi) cur = hi;
+        if (cur < lo)
+            cur = lo;
+        if (cur > hi)
+            cur = hi;
         viewYear = Math.floor(cur / 12);
         viewMonth = cur % 12;
     }
@@ -193,8 +195,7 @@ Item {
                     required property var modelData
                     readonly property bool selectable: modelData.iso >= picker.minDate && modelData.iso <= picker.maxDate
                     readonly property bool isSelected: modelData.iso === picker.selectedDate
-                    readonly property bool inRange: picker.rangeStart !== "" && picker.rangeEnd !== ""
-                        && modelData.iso >= picker.rangeStart && modelData.iso <= picker.rangeEnd
+                    readonly property bool inRange: picker.rangeStart !== "" && picker.rangeEnd !== "" && modelData.iso >= picker.rangeStart && modelData.iso <= picker.rangeEnd
                     readonly property bool isToday: modelData.iso === H.todayIso()
 
                     width: layout.width / 7
@@ -204,13 +205,7 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 1
                         radius: 6
-                        color: cell.isSelected
-                            ? Kirigami.Theme.highlightColor
-                            : (cell.inRange
-                                ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.25)
-                                : (hover.hovered && cell.selectable
-                                    ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.10)
-                                    : "transparent"))
+                        color: cell.isSelected ? Kirigami.Theme.highlightColor : (cell.inRange ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.25) : (hover.hovered && cell.selectable ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.10) : "transparent"))
                         border.width: cell.isToday && !cell.isSelected ? 1 : 0
                         border.color: Kirigami.Theme.highlightColor
                     }

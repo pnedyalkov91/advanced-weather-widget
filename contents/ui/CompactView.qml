@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -68,8 +68,7 @@ PlasmaCore.ToolTipArea {
     // Inactive while the full view is open: this also cancels a pending
     // show timer, so a quick hover-then-click does not pop the tooltip
     // over the freshly opened popup.
-    active: Plasmoid.configuration.tooltipEnabled !== false
-            && !(weatherRoot && weatherRoot.expanded)
+    active: Plasmoid.configuration.tooltipEnabled !== false && !(weatherRoot && weatherRoot.expanded)
 
     // ── Public interface - bound from main.qml ────────────────────────────
     property var weatherRoot
@@ -103,10 +102,7 @@ PlasmaCore.ToolTipArea {
     readonly property string simpleIconStyle: Plasmoid.configuration.panelSimpleIconStyle || "symbolic"
     // Bundled SVG icon themes shipped under contents/icons/. They render like the
     // colorful style (full cell, no color mask), only the artwork differs.
-    readonly property bool simpleIconIsBundled: compactRoot.simpleIconStyle === "symbolic-bundled"
-        || compactRoot.simpleIconStyle === "flat-color"
-        || compactRoot.simpleIconStyle === "3d-oxygen"
-        || compactRoot.simpleIconStyle === "meteocons"
+    readonly property bool simpleIconIsBundled: compactRoot.simpleIconStyle === "symbolic-bundled" || compactRoot.simpleIconStyle === "flat-color" || compactRoot.simpleIconStyle === "3d-oxygen" || compactRoot.simpleIconStyle === "meteocons"
     readonly property string simpleClickAreaMode: Plasmoid.configuration.panelSimpleClickAreaMode || "auto"
     readonly property int simpleClickAreaSize: Math.max(20, Plasmoid.configuration.panelSimpleClickAreaSize || 96)
     readonly property bool simpleTempShadowEnabled: Plasmoid.configuration.panelSimpleTempShadowEnabled === true
@@ -185,11 +181,7 @@ PlasmaCore.ToolTipArea {
     // Adding that padding back gives the declared panel thickness.
     // Window.height is used as an upper-bound sanity cap - it can be larger
     // than the panel on some Plasma setups (shell window vs panel window).
-    readonly property int _fullPanelH: !vertical
-        ? (Window.height > 0
-            ? Math.min(Window.height, compactRoot.height + Kirigami.Units.largeSpacing * 2)
-            : compactRoot.height + Kirigami.Units.largeSpacing * 2)
-        : compactRoot.height
+    readonly property int _fullPanelH: !vertical ? (Window.height > 0 ? Math.min(Window.height, compactRoot.height + Kirigami.Units.largeSpacing * 2) : compactRoot.height + Kirigami.Units.largeSpacing * 2) : compactRoot.height
 
     // True panel width for vertical panels.
     // KDE subtracts largeSpacing (8 px) from ONE side of vertical-panel
@@ -197,39 +189,25 @@ PlasmaCore.ToolTipArea {
     //   compactRoot.width ≈ panelThickness - largeSpacing
     // Adding largeSpacing back recovers the declared panel thickness:
     //   e.g. compactRoot.width=40, largeSpacing=8 → _fullPanelW=48 ✓
-    readonly property int _fullPanelW: vertical
-        ? compactRoot.width + Kirigami.Units.largeSpacing
-        : compactRoot.width
+    readonly property int _fullPanelW: vertical ? compactRoot.width + Kirigami.Units.largeSpacing : compactRoot.width
 
     // ── Panel dimension selected by each size mode ───────────────────────
     // auto   → geometry allocated by Plasma
     // large  → reconstructed full panel thickness
     // manual → configured pixel size; panel dimensions are not used for size
     // Icon and font select their panel dimensions independently.
-    readonly property int _simpleIconPanelH: compactRoot.simpleIconLarge
-        ? compactRoot._fullPanelH : compactRoot._allocatedPanelH
-    readonly property int _simpleIconPanelW: compactRoot.simpleIconLarge
-        ? compactRoot._fullPanelW : compactRoot._allocatedPanelW
-    readonly property int _simpleFontPanelH: compactRoot.simpleFontLarge
-        ? compactRoot._fullPanelH : compactRoot._allocatedPanelH
-    readonly property int _simpleFontPanelW: compactRoot.simpleFontLarge
-        ? compactRoot._fullPanelW : compactRoot._allocatedPanelW
-    readonly property bool _simpleShowsIcon: compactRoot.simpleLayoutType !== 0
-        || compactRoot.simpleHorizContent !== "temp_only"
-    readonly property bool _simpleShowsFont: compactRoot.simpleLayoutType !== 0
-        || compactRoot.simpleHorizContent !== "icon_only"
+    readonly property int _simpleIconPanelH: compactRoot.simpleIconLarge ? compactRoot._fullPanelH : compactRoot._allocatedPanelH
+    readonly property int _simpleIconPanelW: compactRoot.simpleIconLarge ? compactRoot._fullPanelW : compactRoot._allocatedPanelW
+    readonly property int _simpleFontPanelH: compactRoot.simpleFontLarge ? compactRoot._fullPanelH : compactRoot._allocatedPanelH
+    readonly property int _simpleFontPanelW: compactRoot.simpleFontLarge ? compactRoot._fullPanelW : compactRoot._allocatedPanelW
+    readonly property bool _simpleShowsIcon: compactRoot.simpleLayoutType !== 0 || compactRoot.simpleHorizContent !== "temp_only"
+    readonly property bool _simpleShowsFont: compactRoot.simpleLayoutType !== 0 || compactRoot.simpleHorizContent !== "icon_only"
     // Layout extent:
     //   base                    → geometry allocated by Plasma
     //   visible large-mode item → reconstructed full panel dimension
     //   manual pixel size       → does not expand the panel-derived extent
-    readonly property int _simpleContentPanelH: Math.max(
-        compactRoot._allocatedPanelH,
-        compactRoot._simpleShowsIcon ? compactRoot._simpleIconPanelH : 0,
-        compactRoot._simpleShowsFont ? compactRoot._simpleFontPanelH : 0)
-    readonly property int _simpleContentPanelW: Math.max(
-        compactRoot._allocatedPanelW,
-        compactRoot._simpleShowsIcon ? compactRoot._simpleIconPanelW : 0,
-        compactRoot._simpleShowsFont ? compactRoot._simpleFontPanelW : 0)
+    readonly property int _simpleContentPanelH: Math.max(compactRoot._allocatedPanelH, compactRoot._simpleShowsIcon ? compactRoot._simpleIconPanelH : 0, compactRoot._simpleShowsFont ? compactRoot._simpleFontPanelH : 0)
+    readonly property int _simpleContentPanelW: Math.max(compactRoot._allocatedPanelW, compactRoot._simpleShowsIcon ? compactRoot._simpleIconPanelW : 0, compactRoot._simpleShowsFont ? compactRoot._simpleFontPanelW : 0)
 
     // ── Symbolic-icon scale for simple mode ───────────────────────────────
     // ↓↓ EDIT THIS LINE to resize symbolic (wi-font) icons in simple mode ↓↓
@@ -291,10 +269,8 @@ PlasmaCore.ToolTipArea {
     //   The config page uses both to recompute sizes for whatever
     //   layout type is currently buffered in the dialog (before Apply).
     // simplePanelIsVertical - orientation flag, read by config page.
-    readonly property int _simplePanelDim: compactRoot.vertical
-        ? compactRoot._allocatedPanelW : compactRoot._allocatedPanelH
-    readonly property int _simplePanelLargeDim: compactRoot.vertical
-        ? compactRoot._fullPanelW : compactRoot._fullPanelH
+    readonly property int _simplePanelDim: compactRoot.vertical ? compactRoot._allocatedPanelW : compactRoot._allocatedPanelH
+    readonly property int _simplePanelLargeDim: compactRoot.vertical ? compactRoot._fullPanelW : compactRoot._fullPanelH
     on_SimplePanelDimChanged: {
         Plasmoid.configuration.simplePanelDim = compactRoot._simplePanelDim;
         Plasmoid.configuration.simplePanelIsVertical = compactRoot.vertical;
@@ -340,8 +316,7 @@ PlasmaCore.ToolTipArea {
     // click area hugs icon + gap + temperature text with no dead space.
     // Compressed (type 2) uses a standalone Item - fall back to icon square + margins.
     // When no location is set, use the no-location prompt width.
-    implicitWidth: !_hasLocation ? noLocationRow.implicitWidth + 2 * leftRightMargin
-        : isMultiLine ? mlIconSize + 6 + 110 + 2 * leftRightMargin : isSimpleMode ? (vertical ? Kirigami.Units.gridUnit * 2 : (simpleLayoutType === 2 ?
+    implicitWidth: !_hasLocation ? noLocationRow.implicitWidth + 2 * leftRightMargin : isMultiLine ? mlIconSize + 6 + 110 + 2 * leftRightMargin : isSimpleMode ? (vertical ? Kirigami.Units.gridUnit * 2 : (simpleLayoutType === 2 ?
             // compressed: just the icon square + margins
             Math.max(Kirigami.Units.gridUnit * 2, simpleIconSz + 2 * leftRightMargin) :
             // side-by-side / stacked: track actual GridLayout content width
@@ -350,12 +325,7 @@ PlasmaCore.ToolTipArea {
     // vertical simple type 0 (side-by-side): content height = max(icon, font)+4;
     // no gridUnit floor so the widget stays compact and matches preferredHeight.
     // all other vertical simple types keep the gridUnit*2 floor.
-    implicitHeight: isMultiLine ? Math.max(multiLines * (panelFontPx + 8), 32)
-        : (isSimpleMode && vertical)
-            ? (simpleLayoutType === 0
-                ? Math.max(simpleIconSz, simpleFontSz) + 4
-                : Math.max(Kirigami.Units.gridUnit * 2, simpleIconSz + 4))
-        : Kirigami.Units.gridUnit * 2
+    implicitHeight: isMultiLine ? Math.max(multiLines * (panelFontPx + 8), 32) : (isSimpleMode && vertical) ? (simpleLayoutType === 0 ? Math.max(simpleIconSz, simpleFontSz) + 4 : Math.max(Kirigami.Units.gridUnit * 2, simpleIconSz + 4)) : Kirigami.Units.gridUnit * 2
 
     // ── Layout hints to the panel ─────────────────────────────────────────
     // vertical panels: fillHeight=false keeps the widget from consuming all
@@ -372,19 +342,18 @@ PlasmaCore.ToolTipArea {
     Layout.fillHeight: !vertical || compactRoot.vertFill || (compactRoot.isSimpleMode && compactRoot.vertical && compactRoot.simpleClickAreaMode === "fill")
     Layout.fillWidth: vertical || Plasmoid.configuration.panelFillWidth || (compactRoot.isSimpleMode && !compactRoot.vertical && compactRoot.simpleClickAreaMode === "fill")
 
-    Layout.preferredWidth: (compactRoot.isSimpleMode && !compactRoot.vertical)
-        ? (compactRoot.simpleClickAreaMode === "fill" ? -1 : (compactRoot.simpleClickAreaMode === "manual" ? compactRoot.simpleClickAreaSize : implicitWidth))
-        // NOTE: panelFillWidth intentionally does NOT map to -1 here. A -1
-        // preferredWidth gives Plasma's panel layout no baseline to anchor
-        // on, so when another flexible item (e.g. a user-added Panel
-        // Spacer) is also competing for space, Plasma can end up granting
-        // this widget almost nothing (collapsing toward Layout.minimumWidth)
-        // and handing the spacer everything instead - the widget's content
-        // effectively disappears. Using implicitWidth as the baseline keeps
-        // the full weather info as a floor; Layout.fillWidth (still driven
-        // by panelFillWidth below) is what lets it additionally grow into
-        // any real slack space.
-        : vertical ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
+    Layout.preferredWidth: (compactRoot.isSimpleMode && !compactRoot.vertical) ? (compactRoot.simpleClickAreaMode === "fill" ? -1 : (compactRoot.simpleClickAreaMode === "manual" ? compactRoot.simpleClickAreaSize : implicitWidth)) :
+    // NOTE: panelFillWidth intentionally does NOT map to -1 here. A -1
+    // preferredWidth gives Plasma's panel layout no baseline to anchor
+    // on, so when another flexible item (e.g. a user-added Panel
+    // Spacer) is also competing for space, Plasma can end up granting
+    // this widget almost nothing (collapsing toward Layout.minimumWidth)
+    // and handing the spacer everything instead - the widget's content
+    // effectively disappears. Using implicitWidth as the baseline keeps
+    // the full weather info as a floor; Layout.fillWidth (still driven
+    // by panelFillWidth below) is what lets it additionally grow into
+    // any real slack space.
+    vertical ? -1 : isMultiLine ? mlIconSize + 6 + (Plasmoid.configuration.panelWidth || 110) + 2 * leftRightMargin : implicitWidth
     Layout.preferredHeight: {
         if (compactRoot.isSimpleMode && compactRoot.vertical) {
             if (compactRoot.simpleClickAreaMode === "fill")
@@ -415,9 +384,7 @@ PlasmaCore.ToolTipArea {
         if (simpleLayoutType === 1)
             return iH + tH + 6;
         if (simpleLayoutType === 2) {
-            var compressedIconSz = compactRoot.vertical
-                ? (compactRoot.simpleIconUsesPanelSize ? Math.max(16, compactRoot._simpleIconPanelW) : Math.max(16, compactRoot.simpleIconPx))
-                : iH;
+            var compressedIconSz = compactRoot.vertical ? (compactRoot.simpleIconUsesPanelSize ? Math.max(16, compactRoot._simpleIconPanelW) : Math.max(16, compactRoot.simpleIconPx)) : iH;
             return compressedIconSz + 4;
         }
         return Math.max(iH, tH) + 4;
@@ -439,8 +406,7 @@ PlasmaCore.ToolTipArea {
     Timer {
         id: dateTimeTimer
         interval: 1000
-        running: (Plasmoid.configuration.panelItemOrder || "").indexOf("datetime") >= 0
-            || (Plasmoid.configuration.tooltipItemOrder || "").indexOf("datetime") >= 0
+        running: (Plasmoid.configuration.panelItemOrder || "").indexOf("datetime") >= 0 || (Plasmoid.configuration.tooltipItemOrder || "").indexOf("datetime") >= 0
         repeat: true
         onTriggered: compactRoot._dateTimeTick++
     }
@@ -457,14 +423,7 @@ PlasmaCore.ToolTipArea {
         // chip showing e.g. the condition icon or moon phase only updates on the
         // next weatherData refresh, not at the actual sunrise/sunset/moonrise/
         // moonset moment (moon phase: not even then - see main.qml).
-        var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex
-            + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "")
-            + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "")
-            + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons
-            + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator
-            + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode
-            + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize
-            + compactRoot._dateTimeTick + weatherRoot._nowTick;
+        var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "") + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "") + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize + compactRoot._dateTimeTick + weatherRoot._nowTick;
         return _buildItems();
     }
 
@@ -500,7 +459,8 @@ PlasmaCore.ToolTipArea {
         }
     }
     onIsMultiLineChanged: mlScrollOffset = 0
-    onMultiLineItemsDataChanged: if (mlScrollOffset >= multiLineItemsData.length) mlScrollOffset = 0
+    onMultiLineItemsDataChanged: if (mlScrollOffset >= multiLineItemsData.length)
+        mlScrollOffset = 0
 
     mainItem: TooltipContent {
         weatherRoot: compactRoot.weatherRoot
@@ -677,8 +637,7 @@ PlasmaCore.ToolTipArea {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width
-        height: (!compactRoot.vertical && compactRoot.isMultiLine)
-            ? compactRoot._fullPanelH : parent.height
+        height: (!compactRoot.vertical && compactRoot.isMultiLine) ? compactRoot._fullPanelH : parent.height
 
         // ── HORIZONTAL: icon left + scrolling rows right ──────────────────
         RowLayout {
@@ -691,9 +650,7 @@ PlasmaCore.ToolTipArea {
             Item {
                 // multiLineRoot is now expanded to _fullPanelH so no cap needed.
                 // Icon fills true panel height in auto mode; manual value used as-is.
-                readonly property int iconSz: _mlIconSizeCfg > 0
-                    ? _mlIconSizeCfg
-                    : compactRoot._fullPanelH
+                readonly property int iconSz: _mlIconSizeCfg > 0 ? _mlIconSizeCfg : compactRoot._fullPanelH
                 Layout.preferredWidth: iconSz
                 Layout.preferredHeight: iconSz
                 Layout.alignment: Qt.AlignVCenter
@@ -703,10 +660,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.iconSz
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode,
-                            compactRoot.weatherRoot.isNightTime(), true)
-                        : "weather-none-available-symbolic"
+                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 // Colorful / custom
@@ -715,9 +669,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.iconSz
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle !== "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? compactRoot.weatherRoot.getMultilineModeIconSource()
-                        : "weather-none-available"
+                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getMultilineModeIconSource() : "weather-none-available"
                     smooth: true
                 }
             }
@@ -798,10 +750,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode,
-                            compactRoot.weatherRoot.isNightTime(), true)
-                        : "weather-none-available-symbolic"
+                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 Kirigami.Icon {
@@ -809,9 +758,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle !== "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? compactRoot.weatherRoot.getMultilineModeIconSource()
-                        : "weather-none-available"
+                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getMultilineModeIconSource() : "weather-none-available"
                     smooth: true
                 }
             }
@@ -1018,13 +965,7 @@ PlasmaCore.ToolTipArea {
                 // vertical type 0 manual: no cap - honour the user's chosen size.
                 // vertical type 1/2 auto/large: cap to the selected panel width.
                 // all other manual cases: no panel cap.
-                readonly property int _cellSz: !compactRoot.simpleIconUsesPanelSize
-                    ? _baseCellSz
-                    : compactRoot.vertical
-                        ? (compactRoot.simpleLayoutType === 0
-                            ? Math.min(_baseCellSz, Math.round(compactRoot._simpleIconPanelW / 2))
-                            : Math.min(_baseCellSz, compactRoot._simpleIconPanelW))
-                        : Math.min(_baseCellSz, compactRoot._simpleIconPanelH)
+                readonly property int _cellSz: !compactRoot.simpleIconUsesPanelSize ? _baseCellSz : compactRoot.vertical ? (compactRoot.simpleLayoutType === 0 ? Math.min(_baseCellSz, Math.round(compactRoot._simpleIconPanelW / 2)) : Math.min(_baseCellSz, compactRoot._simpleIconPanelW)) : Math.min(_baseCellSz, compactRoot._simpleIconPanelH)
                 // Pin the cell to exactly _cellSz on both axes.
                 // The grid is sized to implicitWidth so anchors.centerIn centres
                 // the content block - no fillWidth needed on the icon cell.
@@ -1038,9 +979,7 @@ PlasmaCore.ToolTipArea {
                 //   the cell height but is clipped cleanly - same as panel behaviour).
                 // vertical type 0 manual: use _cellSz so a large icon isn't clipped.
                 // All other cases: square cell (height = _cellSz).
-                readonly property int _cellH: (compactRoot.vertical && compactRoot.simpleLayoutType === 0)
-                    ? (compactRoot.simpleIconUsesPanelSize ? compactRoot.simpleFontSz : _cellSz)
-                    : _cellSz
+                readonly property int _cellH: (compactRoot.vertical && compactRoot.simpleLayoutType === 0) ? (compactRoot.simpleIconUsesPanelSize ? compactRoot.simpleFontSz : _cellSz) : _cellSz
                 Layout.preferredHeight: _cellH
                 Layout.minimumHeight: _cellH
                 Layout.maximumHeight: _cellH
@@ -1142,8 +1081,7 @@ PlasmaCore.ToolTipArea {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
-            height: (!compactRoot.vertical && compactRoot.isSimpleMode)
-                ? compactRoot._simpleContentPanelH : parent.height
+            height: (!compactRoot.vertical && compactRoot.isSimpleMode) ? compactRoot._simpleContentPanelH : parent.height
             visible: compactRoot.simpleLayoutType === 2 && compactRoot.weatherRoot && compactRoot.weatherRoot.hasSelectedTown
 
             // Orientation-aware square sizing:
@@ -1151,11 +1089,7 @@ PlasmaCore.ToolTipArea {
             //   large  → reconstructed full panel thickness
             //   manual → configured icon size
             // All modes use a minimum of 16 px.
-            readonly property int squareSide: compactRoot.simpleIconUsesPanelSize
-                ? (compactRoot.vertical
-                    ? Math.max(16, compactRoot._simpleIconPanelW)
-                    : Math.max(16, compactRoot._simpleIconPanelH))
-                : Math.max(16, compactRoot.simpleIconPx)
+            readonly property int squareSide: compactRoot.simpleIconUsesPanelSize ? (compactRoot.vertical ? Math.max(16, compactRoot._simpleIconPanelW) : Math.max(16, compactRoot._simpleIconPanelH)) : Math.max(16, compactRoot.simpleIconPx)
             Item {
                 id: compressedSquare
                 width: compressedWrapper.squareSide
@@ -1169,10 +1103,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.simpleIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot
-                        ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode,
-                            compactRoot.weatherRoot.isNightTime(), true)
-                        : "weather-none-available-symbolic"
+                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 // Colorful / custom icon
@@ -1217,15 +1148,12 @@ PlasmaCore.ToolTipArea {
                     radius: height / 2
                     color: {
                         var cc = Plasmoid.configuration.compressedBadgeColor || "";
-                        var op = Plasmoid.configuration.compressedBadgeOpacity !== undefined
-                            ? Plasmoid.configuration.compressedBadgeOpacity : 0.85;
+                        var op = Plasmoid.configuration.compressedBadgeOpacity !== undefined ? Plasmoid.configuration.compressedBadgeOpacity : 0.85;
                         if (cc.length > 0) {
                             var parsed = Qt.color(cc);
                             return Qt.rgba(parsed.r, parsed.g, parsed.b, op);
                         }
-                        return Qt.rgba(Kirigami.Theme.backgroundColor.r,
-                                       Kirigami.Theme.backgroundColor.g,
-                                       Kirigami.Theme.backgroundColor.b, op);
+                        return Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, op);
                     }
 
                     Label {
@@ -1233,11 +1161,7 @@ PlasmaCore.ToolTipArea {
                         anchors.centerIn: parent
                         text: compactRoot._cvTemp
                         font.family: Kirigami.Theme.defaultFont.family
-                        font.pixelSize: compactRoot.simpleFontUsesPanelSize
-                            ? Math.max(8, Math.round((compactRoot.vertical
-                                ? compactRoot._simpleFontPanelW
-                                : compactRoot._simpleFontPanelH) / 3))
-                            : Math.max(8, compactRoot.simpleFontPx)
+                        font.pixelSize: compactRoot.simpleFontUsesPanelSize ? Math.max(8, Math.round((compactRoot.vertical ? compactRoot._simpleFontPanelW : compactRoot._simpleFontPanelH) / 3)) : Math.max(8, compactRoot.simpleFontPx)
                         font.bold: false
                         color: compactRoot.simpleTempColor
                     }
@@ -1270,7 +1194,12 @@ PlasmaCore.ToolTipArea {
         if (!r.hasSelectedTown)
             return [
                 {
-                    iconInfo: { type: "wi", source: "\uF041", svgFallback: "", isMask: false },
+                    iconInfo: {
+                        type: "wi",
+                        source: "\uF041",
+                        svgFallback: "",
+                        isMask: false
+                    },
                     iconVis: true,
                     text: i18n("Add a location"),
                     isSep: false
@@ -1289,7 +1218,12 @@ PlasmaCore.ToolTipArea {
 
         function pushSep() {
             result.push({
-                iconInfo: { type: "wi", source: "", svgFallback: "", isMask: false },
+                iconInfo: {
+                    type: "wi",
+                    source: "",
+                    svgFallback: "",
+                    isMask: false
+                },
                 iconVis: false,
                 text: sep,
                 isSep: true
@@ -1305,7 +1239,12 @@ PlasmaCore.ToolTipArea {
         }
         function pushSpaceSep() {
             result.push({
-                iconInfo: { type: "wi", source: "", svgFallback: "", isMask: false },
+                iconInfo: {
+                    type: "wi",
+                    source: "",
+                    svgFallback: "",
+                    isMask: false
+                },
                 iconVis: false,
                 text: " ",
                 isSep: true
@@ -1323,13 +1262,22 @@ PlasmaCore.ToolTipArea {
                 if (sunMode === "both") {
                     // Both sunrise and sunset on the same line
                     var iconSz = Plasmoid.configuration.panelIconSize || 22;
-                    var svgTheme = (theme === "symbolic" && Plasmoid.configuration.panelSymbolicVariant === "light")
-                        ? "symbolic-light" : theme;
+                    var svgTheme = (theme === "symbolic" && Plasmoid.configuration.panelSymbolicVariant === "light") ? "symbolic-light" : theme;
 
                     var rInfo, sInfo;
                     if (theme === "wi-font") {
-                        rInfo = { type: "wi", source: "\uF051", svgFallback: "", isMask: false };
-                        sInfo = { type: "wi", source: "\uF052", svgFallback: "", isMask: false };
+                        rInfo = {
+                            type: "wi",
+                            source: "\uF051",
+                            svgFallback: "",
+                            isMask: false
+                        };
+                        sInfo = {
+                            type: "wi",
+                            source: "\uF052",
+                            svgFallback: "",
+                            isMask: false
+                        };
                     } else if (theme === "custom") {
                         var cmap = {};
                         (Plasmoid.configuration.panelCustomIcons || "").split(";").forEach(function (p) {
@@ -1337,8 +1285,18 @@ PlasmaCore.ToolTipArea {
                             if (kv.length === 2)
                                 cmap[kv[0].trim()] = kv[1].trim();
                         });
-                        rInfo = { type: "kde", source: cmap["suntimes-sunrise"] || "weather-sunrise", svgFallback: "", isMask: false };
-                        sInfo = { type: "kde", source: cmap["suntimes-sunset"] || "weather-sunset", svgFallback: "", isMask: false };
+                        rInfo = {
+                            type: "kde",
+                            source: cmap["suntimes-sunrise"] || "weather-sunrise",
+                            svgFallback: "",
+                            isMask: false
+                        };
+                        sInfo = {
+                            type: "kde",
+                            source: cmap["suntimes-sunset"] || "weather-sunset",
+                            svgFallback: "",
+                            isMask: false
+                        };
                     } else {
                         rInfo = IconResolver.resolve("suntimes-sunrise", iconSz, compactRoot._iconsBaseDir, svgTheme);
                         sInfo = IconResolver.resolve("suntimes-sunset", iconSz, compactRoot._iconsBaseDir, svgTheme);
@@ -1368,8 +1326,7 @@ PlasmaCore.ToolTipArea {
                 // Multi-chip modes: "full" = phase + rise + set, "times" = rise + set, "upcoming" = phase + upcoming
                 if (moonMode === "full" || moonMode === "times" || moonMode === "upcoming") {
                     var iconSzM = Plasmoid.configuration.panelIconSize || 22;
-                    var svgThemeM = (theme === "symbolic" && Plasmoid.configuration.panelSymbolicVariant === "light")
-                        ? "symbolic-light" : theme;
+                    var svgThemeM = (theme === "symbolic" && Plasmoid.configuration.panelSymbolicVariant === "light") ? "symbolic-light" : theme;
 
                     if (result.length > 0)
                         pushSep();
@@ -1389,8 +1346,18 @@ PlasmaCore.ToolTipArea {
                         // full / times: show both rise and set
                         var mrInfo, msInfo;
                         if (theme === "wi-font") {
-                            mrInfo = { type: "wi", source: "\uF0C9", svgFallback: "", isMask: false };
-                            msInfo = { type: "wi", source: "\uF0CA", svgFallback: "", isMask: false };
+                            mrInfo = {
+                                type: "wi",
+                                source: "\uF0C9",
+                                svgFallback: "",
+                                isMask: false
+                            };
+                            msInfo = {
+                                type: "wi",
+                                source: "\uF0CA",
+                                svgFallback: "",
+                                isMask: false
+                            };
                         } else if (theme === "custom") {
                             var cmapM = {};
                             (Plasmoid.configuration.panelCustomIcons || "").split(";").forEach(function (p) {
@@ -1398,8 +1365,18 @@ PlasmaCore.ToolTipArea {
                                 if (kv.length === 2)
                                     cmapM[kv[0].trim()] = kv[1].trim();
                             });
-                            mrInfo = { type: "kde", source: cmapM["moonrise"] || "weather-clear-night", svgFallback: "", isMask: false };
-                            msInfo = { type: "kde", source: cmapM["moonset"] || "weather-clear-night", svgFallback: "", isMask: false };
+                            mrInfo = {
+                                type: "kde",
+                                source: cmapM["moonrise"] || "weather-clear-night",
+                                svgFallback: "",
+                                isMask: false
+                            };
+                            msInfo = {
+                                type: "kde",
+                                source: cmapM["moonset"] || "weather-clear-night",
+                                svgFallback: "",
+                                isMask: false
+                            };
                         } else {
                             mrInfo = IconResolver.resolve("moonrise", iconSzM, compactRoot._iconsBaseDir, svgThemeM);
                             msInfo = IconResolver.resolve("moonset", iconSzM, compactRoot._iconsBaseDir, svgThemeM);
@@ -1429,8 +1406,7 @@ PlasmaCore.ToolTipArea {
                     return;
                 if (result.length > 0)
                     pushSep();
-                var pa = (r.weatherAlerts && r.weatherAlerts.length > 0)
-                    ? r.primaryAlert() : null;
+                var pa = (r.weatherAlerts && r.weatherAlerts.length > 0) ? r.primaryAlert() : null;
                 if (pa) {
                     // Have alerts: flag icon (no text) + type glyph icon + alert name text
                     pushInfoItem(iconInfo, show, "");

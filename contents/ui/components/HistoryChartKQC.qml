@@ -1,9 +1,9 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
+ * published by the Free Software Foundation; either version 3 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -64,9 +64,21 @@ ColumnLayout {
 
     // ── Options (the Forecast tab uses them; the defaults are the History chart) ──
     property var seriesDefs: [
-        { key: "maxC", color: highColor, label: i18nc("@label chart legend", "High") },
-        { key: "meanC", color: meanColor, label: i18nc("@label chart legend", "Mean") },
-        { key: "minC", color: lowColor, label: i18nc("@label chart legend", "Low") }
+        {
+            key: "maxC",
+            color: highColor,
+            label: i18nc("@label chart legend", "High")
+        },
+        {
+            key: "meanC",
+            color: meanColor,
+            label: i18nc("@label chart legend", "Mean")
+        },
+        {
+            key: "minC",
+            color: lowColor,
+            label: i18nc("@label chart legend", "Low")
+        }
     ]
     readonly property int nSeries: Math.min(3, seriesDefs.length)
     property string precipLegend: i18nc("@label chart legend", "Precipitation")
@@ -121,10 +133,8 @@ ColumnLayout {
     readonly property bool zoomed: zoom > 1.001
     readonly property bool canZoomIn: zoom < maxZoom - 0.001
     // Days whose point is within half a step of the viewport.
-    readonly property int visibleFirst: dayCount > 0
-        ? Math.max(0, Math.min(dayCount - 1, Math.round((scroller.contentX - area.pad) / area.step))) : 0
-    readonly property int visibleLast: dayCount > 0
-        ? Math.max(visibleFirst, Math.min(dayCount - 1, Math.round((scroller.contentX + area.vw - area.pad) / area.step))) : 0
+    readonly property int visibleFirst: dayCount > 0 ? Math.max(0, Math.min(dayCount - 1, Math.round((scroller.contentX - area.pad) / area.step))) : 0
+    readonly property int visibleLast: dayCount > 0 ? Math.max(visibleFirst, Math.min(dayCount - 1, Math.round((scroller.contentX + area.vw - area.pad) / area.step))) : 0
 
     /** Zoom to `z` (1 … maxZoom); `anchor` (0..1 across the chart) stays put. */
     function zoomTo(z, anchor) {
@@ -186,8 +196,12 @@ ColumnLayout {
         }
     }
 
-    function zoomIn() { zoomTo(zoom * 2, 0.5); }
-    function zoomOut() { zoomTo(zoom / 2, 0.5); }
+    function zoomIn() {
+        zoomTo(zoom * 2, 0.5);
+    }
+    function zoomOut() {
+        zoomTo(zoom / 2, 0.5);
+    }
     function resetZoom() {
         wheelAnim.stop();
         zoom = 1;
@@ -231,7 +245,10 @@ ColumnLayout {
         for (var i = 0; i < ds.length; ++i) {
             for (var k = 0; k < defs.length; ++k) {
                 var a = ds[i][defs[k].key];
-                if (typeof a === "number" && isFinite(a)) { hi = Math.max(hi, a); lo = Math.min(lo, a); }
+                if (typeof a === "number" && isFinite(a)) {
+                    hi = Math.max(hi, a);
+                    lo = Math.min(lo, a);
+                }
             }
         }
         var forcedLo = isFinite(fixLo), forcedHi = isFinite(fixHi);
@@ -239,7 +256,11 @@ ColumnLayout {
             lo = forcedLo ? fixLo : 0;
             hi = forcedHi ? fixHi : lo + 10;
             if (!isFinite(fixStep))
-                return { lo: lo, hi: hi, ticks: 3 };
+                return {
+                    lo: lo,
+                    hi: hi,
+                    ticks: 3
+                };
         }
         if (forcedLo)
             lo = fixLo;
@@ -250,7 +271,11 @@ ColumnLayout {
         var nhi = forcedHi ? hi : Math.ceil(hi / step) * step;
         if (nhi - nlo < step * 2)
             nhi = nlo + step * 2;
-        return { lo: nlo, hi: nhi, ticks: Math.max(2, Math.round((nhi - nlo) / step) + 1) };
+        return {
+            lo: nlo,
+            hi: nhi,
+            ticks: Math.max(2, Math.round((nhi - nlo) / step) + 1)
+        };
     }
 
     readonly property real precipMax: {
@@ -272,11 +297,21 @@ ColumnLayout {
         return s;
     }
 
-    function _fmtTemp(v) { return valueFormat ? valueFormat(v) : (view ? view._temp(v) : String(v)); }
-    function _badgeText(i, key, v) { return badgeFormat ? badgeFormat(i, key, v) : _fmtTemp(v); }
-    function _fmtPrecip(v) { return view ? view._precip(v) : String(v); }
-    function _dateText(i) { return view && i >= 0 && i < days.length ? view._date(days[i].dateStr, days[i]) : ""; }
-    function _titleText(i) { return view && i >= 0 && i < days.length ? view._day(days[i].dateStr, false, days[i]) : ""; }
+    function _fmtTemp(v) {
+        return valueFormat ? valueFormat(v) : (view ? view._temp(v) : String(v));
+    }
+    function _badgeText(i, key, v) {
+        return badgeFormat ? badgeFormat(i, key, v) : _fmtTemp(v);
+    }
+    function _fmtPrecip(v) {
+        return view ? view._precip(v) : String(v);
+    }
+    function _dateText(i) {
+        return view && i >= 0 && i < days.length ? view._date(days[i].dateStr, days[i]) : "";
+    }
+    function _titleText(i) {
+        return view && i >= 0 && i < days.length ? view._day(days[i].dateStr, false, days[i]) : "";
+    }
 
     // ── Data for KQuickCharts ─────────────────────────────────────────────
     // A LineChart cannot skip a day, so each series is cut to the span between
@@ -294,7 +329,12 @@ ColumnLayout {
             }
         }
         if (a < 0 || b <= a)
-            return { start: Math.max(a, 0), count: a < 0 ? 0 : 1, values: [], real: [] };
+            return {
+                start: Math.max(a, 0),
+                count: a < 0 ? 0 : 1,
+                values: [],
+                real: []
+            };
         var vals = [], real = [];
         var prev = a;
         for (var k = a; k <= b; ++k) {
@@ -312,7 +352,12 @@ ColumnLayout {
                 real.push(false);
             }
         }
-        return { start: a, count: b - a + 1, values: vals, real: real };
+        return {
+            start: a,
+            count: b - a + 1,
+            values: vals,
+            real: real
+        };
     }
     readonly property var seriesData: {
         var o = {};
@@ -334,7 +379,12 @@ ColumnLayout {
         spacing: Kirigami.Units.largeSpacing
 
         Repeater {
-            model: root.showPrecip ? root.seriesDefs.concat([{ label: root.precipLegend, color: root.precipColor }]) : root.seriesDefs
+            model: root.showPrecip ? root.seriesDefs.concat([
+                {
+                    label: root.precipLegend,
+                    color: root.precipColor
+                }
+            ]) : root.seriesDefs
             delegate: RowLayout {
                 id: legendItem
                 required property var modelData
@@ -362,11 +412,31 @@ ColumnLayout {
         id: area
         Layout.fillWidth: true
 
-        TextMetrics { id: tmDate; font: Kirigami.Theme.smallFont; text: root.labelSampleText !== "" ? root.labelSampleText : (root.view && root.dayCount > 0 ? root._dateText(0) : "00.00.0000") }
-        TextMetrics { id: tmH; font: Kirigami.Theme.smallFont; text: "Wg" }
-        TextMetrics { id: tmLo; font: Kirigami.Theme.smallFont; text: root._fmtTemp(root.tempScale.lo) }
-        TextMetrics { id: tmHi; font: Kirigami.Theme.smallFont; text: root._fmtTemp(root.tempScale.hi) }
-        TextMetrics { id: tmP; font: Kirigami.Theme.smallFont; text: root._fmtPrecip(root.precipMax) }
+        TextMetrics {
+            id: tmDate
+            font: Kirigami.Theme.smallFont
+            text: root.labelSampleText !== "" ? root.labelSampleText : (root.view && root.dayCount > 0 ? root._dateText(0) : "00.00.0000")
+        }
+        TextMetrics {
+            id: tmH
+            font: Kirigami.Theme.smallFont
+            text: "Wg"
+        }
+        TextMetrics {
+            id: tmLo
+            font: Kirigami.Theme.smallFont
+            text: root._fmtTemp(root.tempScale.lo)
+        }
+        TextMetrics {
+            id: tmHi
+            font: Kirigami.Theme.smallFont
+            text: root._fmtTemp(root.tempScale.hi)
+        }
+        TextMetrics {
+            id: tmP
+            font: Kirigami.Theme.smallFont
+            text: root._fmtPrecip(root.precipMax)
+        }
 
         // Left gutter for the axis labels (widest label + a little air), so
         // the plot starts clear of them. The plot ("viewport") is `vw` wide.
@@ -406,13 +476,16 @@ ColumnLayout {
         // side. The count only depends on the zoom, so while panning the
         // charts keep their size and only the data shifts by whole days.
         readonly property int winCount: Math.min(root.dayCount, Math.ceil(vw / step) + 4)
-        readonly property int winFirst: root.dayCount > 0
-            ? Math.max(0, Math.min(root.dayCount - winCount, Math.floor((scroller.contentX - pad) / step) - 1)) : 0
+        readonly property int winFirst: root.dayCount > 0 ? Math.max(0, Math.min(root.dayCount - winCount, Math.floor((scroller.contentX - pad) / step) - 1)) : 0
         readonly property int winLast: winFirst + winCount - 1
 
         /** x of day i's point, in chart (viewport) coordinates */
-        function xOf(i) { return pad + i * step - scroller.contentX; }
-        function yOf(v) { return py + (root.tempScale.hi - v) / (root.tempScale.hi - root.tempScale.lo) * ph; }
+        function xOf(i) {
+            return pad + i * step - scroller.contentX;
+        }
+        function yOf(v) {
+            return py + (root.tempScale.hi - v) / (root.tempScale.hi - root.tempScale.lo) * ph;
+        }
 
         /** Left edge of day idx's date label. Labels are centred on their
          *  vertical line; the first day's label starts at its line and the last
@@ -568,8 +641,7 @@ ColumnLayout {
                         font: Kirigami.Theme.smallFont
                         color: Kirigami.Theme.textColor
                         opacity: 0.75
-                        x: Math.max(0, Math.min(area.vw - width, area.xOf(modelData)
-                            - (modelData === 0 ? 0 : (modelData === root.dayCount - 1 ? width : width / 2))))
+                        x: Math.max(0, Math.min(area.vw - width, area.xOf(modelData) - (modelData === 0 ? 0 : (modelData === root.dayCount - 1 ? width : width / 2))))
                         y: area.iconH
                     }
                 }
@@ -610,9 +682,13 @@ ColumnLayout {
                                 visible: active
                                 source: "WeatherIcon.qml"
                                 onLoaded: {
-                                    item.iconInfo = Qt.binding(function () { return mark.modelData.iconInfo; });
+                                    item.iconInfo = Qt.binding(function () {
+                                        return mark.modelData.iconInfo;
+                                    });
                                     item.iconSize = Kirigami.Units.gridUnit;
-                                    item.iconColor = Qt.binding(function () { return Kirigami.Theme.textColor; });
+                                    item.iconColor = Qt.binding(function () {
+                                        return Kirigami.Theme.textColor;
+                                    });
                                 }
                             }
                             Label {
@@ -672,12 +748,12 @@ ColumnLayout {
                             }
                             valueSources: [
                                 Charts.ArraySource {
-                                    array: holder.ok
-                                        ? holder.sd.values.slice(holder.first - holder.sd.start, holder.last - holder.sd.start + 1)
-                                        : []
+                                    array: holder.ok ? holder.sd.values.slice(holder.first - holder.sd.start, holder.last - holder.sd.start + 1) : []
                                 }
                             ]
-                            colorSource: Charts.ArraySource { array: [holder.modelData.color] }
+                            colorSource: Charts.ArraySource {
+                                array: [holder.modelData.color]
+                            }
                         }
                     }
                 }
@@ -733,10 +809,14 @@ ColumnLayout {
                             automatic: false
                         }
                         valueSources: [
-                            Charts.ArraySource { array: root.precipArray.slice(area.winFirst, area.winFirst + area.winCount) }
+                            Charts.ArraySource {
+                                array: root.precipArray.slice(area.winFirst, area.winFirst + area.winCount)
+                            }
                         ]
                         // same 0.9 opacity as the bars of the Qt Graphs chart
-                        colorSource: Charts.ArraySource { array: [Qt.alpha(root.precipColor, 0.9)] }
+                        colorSource: Charts.ArraySource {
+                            array: [Qt.alpha(root.precipColor, 0.9)]
+                        }
                     }
                 }
 
@@ -788,8 +868,7 @@ ColumnLayout {
                         // the first and last icon are pushed in from the edge rather than cut -
                         // unless the icons are so close that this would make them touch
                         readonly property bool roomAtEdge: area.step >= root.iconSize + Kirigami.Units.smallSpacing
-                        visible: index % every === 0 && cx >= 0 && cx <= area.vw
-                            && (roomAtEdge || (cx - root.iconSize / 2 >= 0 && cx + root.iconSize / 2 <= area.vw))
+                        visible: index % every === 0 && cx >= 0 && cx <= area.vw && (roomAtEdge || (cx - root.iconSize / 2 >= 0 && cx + root.iconSize / 2 <= area.vw))
                         x: Math.max(0, Math.min(area.vw - root.iconSize, cx - root.iconSize / 2))
                         y: 0
                         width: root.iconSize
@@ -801,9 +880,15 @@ ColumnLayout {
                             // Forecast tab asks for icons, so the History chart does not depend on it
                             source: "WeatherIcon.qml"
                             onLoaded: {
-                                item.iconInfo = Qt.binding(function () { return iconSlot.info; });
-                                item.iconSize = Qt.binding(function () { return root.iconSize; });
-                                item.iconColor = Qt.binding(function () { return Kirigami.Theme.textColor; });
+                                item.iconInfo = Qt.binding(function () {
+                                    return iconSlot.info;
+                                });
+                                item.iconSize = Qt.binding(function () {
+                                    return root.iconSize;
+                                });
+                                item.iconColor = Qt.binding(function () {
+                                    return Kirigami.Theme.textColor;
+                                });
                             }
                         }
                     }
@@ -868,9 +953,16 @@ ColumnLayout {
                     var items = [];
                     for (var i = 0; i < nS; ++i)
                         if (typeof vals[i] === "number" && isFinite(vals[i]))
-                            items.push({ i: i, y: area.yOf(vals[i]) - root.badgeH / 2 });
-                    items.sort(function (a, b) { return a.y - b.y; });
-                    var pref = items.map(function (it) { return it.y; });
+                            items.push({
+                                i: i,
+                                y: area.yOf(vals[i]) - root.badgeH / 2
+                            });
+                    items.sort(function (a, b) {
+                        return a.y - b.y;
+                    });
+                    var pref = items.map(function (it) {
+                        return it.y;
+                    });
                     for (var k = 1; k < items.length; ++k) {
                         var minY = items[k - 1].y + root.badgeH + Kirigami.Units.smallSpacing;
                         if (items[k].y < minY)
@@ -901,7 +993,11 @@ ColumnLayout {
                 Repeater {
                     model: root.seriesDefs.map(function (sd) {
                         var v = pinned.hoverDay ? pinned.hoverDay[sd.key] : NaN;
-                        return { color: sd.color, text: pinned.hoverDay ? root._badgeText(root.hoverIndex, sd.key, v) : "", ok: typeof v === "number" && isFinite(v) };
+                        return {
+                            color: sd.color,
+                            text: pinned.hoverDay ? root._badgeText(root.hoverIndex, sd.key, v) : "",
+                            ok: typeof v === "number" && isFinite(v)
+                        };
                     })
                     delegate: Rectangle {
                         id: badge
@@ -914,8 +1010,7 @@ ColumnLayout {
                         color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(modelData.color, 0.18))
                         border.width: 1
                         border.color: Qt.alpha(modelData.color, 0.6)
-                        x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing
-                                              : pinned.cursorX - Kirigami.Units.largeSpacing - width
+                        x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing : pinned.cursorX - Kirigami.Units.largeSpacing - width
                         y: pinned.badgeYs[index]
                         Label {
                             id: badgeText
@@ -937,8 +1032,7 @@ ColumnLayout {
                     color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(root.precipColor, 0.18))
                     border.width: 1
                     border.color: Qt.alpha(root.precipColor, 0.6)
-                    x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing
-                                          : pinned.cursorX - Kirigami.Units.largeSpacing - width
+                    x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing : pinned.cursorX - Kirigami.Units.largeSpacing - width
                     y: {
                         var pm = pinned.hoverDay && isFinite(pinned.hoverDay.precipMm) ? pinned.hoverDay.precipMm : 0;
                         var barTop = area.precipBottom - pm / root.precipMax * root.precipPlotH;
@@ -994,8 +1088,14 @@ ColumnLayout {
         }
         Repeater {
             model: root.dayCount > 1 && root.showPrecip ? [
-                { v: root.precipMax, y: area.precipTop },
-                { v: 0, y: area.precipBottom }
+                {
+                    v: root.precipMax,
+                    y: area.precipTop
+                },
+                {
+                    v: 0,
+                    y: area.precipBottom
+                }
             ] : []
             delegate: Label {
                 id: pLabel
@@ -1043,8 +1143,7 @@ ColumnLayout {
             onWheel: function (wheel) {
                 if (wheel.modifiers & Qt.ControlModifier) {
                     root.hoverIndex = -1;
-                    root.zoomTo(root.zoom * (wheel.angleDelta.y > 0 ? 1.4 : 1 / 1.4),
-                                Math.max(0, Math.min(1, wheel.x / area.vw)));
+                    root.zoomTo(root.zoom * (wheel.angleDelta.y > 0 ? 1.4 : 1 / 1.4), Math.max(0, Math.min(1, wheel.x / area.vw)));
                     wheel.accepted = true;
                 } else {
                     root.wheelPan(wheel);
