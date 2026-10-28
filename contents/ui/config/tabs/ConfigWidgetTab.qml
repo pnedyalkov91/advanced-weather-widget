@@ -51,12 +51,14 @@ ColumnLayout {
     }
 
     // The forecast detail switches on ONE line (they wrap only when the page is too narrow),
-    // plus - for the "Graphs" layout, when two or more graphs are switched on - an up/down
+    // plus - for the "Graphs" layout, when two or more graphs are switched on - a drag-and-drop
     // list that sets the order the graphs are stacked in.
     component StatSwitches: ColumnLayout {
         id: ss
         /** The KCM root that owns the cfg_* properties */
         required property var cfgRoot
+        /** Title shown above the switches (hidden when empty) */
+        property string title: ""
         /** [{key, label, cfg, orderable?}] */
         property var defs: []
         /** Name of the cfg_* string property that holds the graph order ("wind;pressure;...") */
@@ -102,18 +104,59 @@ ColumnLayout {
             }
             return out;
         }
-        function _move(pos, delta) {
+
+        // ── Drag-and-drop order list ──────────────────────────────────────
+        // Same approach as ConfigTooltipSubPage.qml: a working ListModel is moved live
+        // while dragging, and the order is written back to cfg_ once the item is dropped.
+        // True while WE write the order, so the model is not rebuilt under the user's hands.
+        property bool _applyingOrder: false
+
+        ListModel {
+            id: orderModel
+        }
+
+        function _rebuildOrderModel() {
+            orderModel.clear();
             var en = ss._enabled;
-            var to = pos + delta;
-            if (to < 0 || to >= en.length)
-                return;
+            for (var i = 0; i < en.length; ++i)
+                orderModel.append({
+                    itemKey: en[i].key,
+                    itemLabel: en[i].label
+                });
+        }
+        // The enabled details changed from outside (a switch was toggled, the config was reset...)
+        on_EnabledChanged: {
+            if (!ss._applyingOrder)
+                ss._rebuildOrderModel();
+        }
+        Component.onCompleted: ss._rebuildOrderModel()
+
+        // Writes the order shown in the list back to the config. Details that are switched
+        // off keep their place in the saved order; the switched-on ones are refilled in the
+        // order of the list.
+        function _applyOrder() {
+            var keys = [];
+            for (var i = 0; i < orderModel.count; ++i)
+                keys.push(orderModel.get(i).itemKey);
             var full = ss._fullOrder();
-            var a = full.indexOf(en[pos].key);
-            var b = full.indexOf(en[to].key);
-            var t = full[a];
-            full[a] = full[b];
-            full[b] = t;
-            ss.cfgRoot[ss.orderProp] = full.join(";");
+            var out = [];
+            var n = 0;
+            for (var j = 0; j < full.length; ++j) {
+                if (keys.indexOf(full[j]) >= 0)
+                    out.push(keys[n++]);
+                else
+                    out.push(full[j]);
+            }
+            ss._applyingOrder = true;
+            ss.cfgRoot[ss.orderProp] = out.join(";");
+            ss._applyingOrder = false;
+        }
+
+        Label {
+            visible: ss.title.length > 0
+            text: ss.title
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
         }
 
         Flow {
@@ -148,45 +191,66 @@ ColumnLayout {
             spacing: 0
 
             Label {
-                text: i18n("Graph order (below the temperature graph):")
+                text: i18n("Graph order (below the temperature graph) - drag to reorder:")
                 Layout.topMargin: Kirigami.Units.smallSpacing
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
                 opacity: 0.7
             }
-            Repeater {
-                model: ss._enabled
-                delegate: RowLayout {
-                    id: orderRow
-                    required property var modelData
-                    required property int index
-                    Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing
-                    Label {
-                        text: (orderRow.index + 1) + "."
-                        opacity: 0.6
-                        Layout.preferredWidth: Kirigami.Units.gridUnit * 1.2
+
+            ListView {
+                id: orderList
+                Layout.fillWidth: true
+                // the page around it scrolls, so this list just shows all of its rows
+                Layout.preferredHeight: contentHeight
+                interactive: false
+                spacing: 0
+                model: orderModel
+                displaced: Transition {
+                    YAnimator {
+                        duration: Kirigami.Units.longDuration
                     }
-                    Label {
-                        text: orderRow.modelData.label
-                        Layout.fillWidth: true
-                        elide: Text.ElideRight
-                    }
-                    ToolButton {
-                        icon.name: "go-up"
-                        enabled: orderRow.index > 0
-                        onClicked: ss._move(orderRow.index, -1)
-                        ToolTip.text: i18n("Move up")
-                        ToolTip.visible: hovered
-                        ToolTip.delay: Kirigami.Units.toolTipDelay
-                    }
-                    ToolButton {
-                        icon.name: "go-down"
-                        enabled: orderRow.index < ss._enabled.length - 1
-                        onClicked: ss._move(orderRow.index, 1)
-                        ToolTip.text: i18n("Move down")
-                        ToolTip.visible: hovered
-                        ToolTip.delay: Kirigami.Units.toolTipDelay
+                }
+                delegate: Item {
+                    id: orderDelegateRoot
+                    width: orderList.width
+                    implicitHeight: orderDelegateCol.implicitHeight
+                    ColumnLayout {
+                        id: orderDelegateCol
+                        spacing: 0
+                        width: parent.width
+                        ItemDelegate {
+                            id: orderRowDelegate
+                            Layout.fillWidth: true
+                            hoverEnabled: true
+                            down: false
+                            contentItem: RowLayout {
+                                spacing: Kirigami.Units.smallSpacing
+                                Kirigami.ListItemDragHandle {
+                                    listItem: orderRowDelegate
+                                    listView: orderList
+                                    onMoveRequested: function (oldIndex, newIndex) {
+                                        if (newIndex !== oldIndex)
+                                            orderModel.move(oldIndex, newIndex, 1);
+                                    }
+                                    onDropped: ss._applyOrder()
+                                }
+                                Label {
+                                    text: (model.index + 1) + "."
+                                    opacity: 0.6
+                                    Layout.preferredWidth: Kirigami.Units.gridUnit * 1.2
+                                }
+                                Label {
+                                    text: model.itemLabel
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                        Kirigami.Separator {
+                            Layout.fillWidth: true
+                            opacity: 0.4
+                        }
                     }
                 }
             }
@@ -1443,6 +1507,7 @@ ColumnLayout {
                 Layout.columnSpan: _form3.columns
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
+                title: i18n("Show in daily forecast:")
                 orderProp: "cfg_forecastGraphOrder"
                 reorderable: widgetTab.configRoot.cfg_forecastLayout === "graphs"
                 defs: [
@@ -1589,6 +1654,7 @@ ColumnLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
+                title: i18n("Show in hourly forecast:")
                 orderProp: "cfg_forecastHourlyGraphOrder"
                 reorderable: widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
                 defs: [
