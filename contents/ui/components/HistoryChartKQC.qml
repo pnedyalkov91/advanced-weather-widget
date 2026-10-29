@@ -483,7 +483,13 @@ ColumnLayout {
         // Without the precipitation strip the plot ends where the value plot does
         readonly property real precipTop: root.showPrecip ? gvY + gvH + Kirigami.Units.largeSpacing : py + ph
         readonly property real precipBottom: root.showPrecip ? precipTop + root.precipPlotH : py + ph
-        readonly property real plotBottom: root.showPrecip ? precipBottom + Kirigami.Units.smallSpacing : gvY + gvH + Kirigami.Units.smallSpacing
+        readonly property real plotBase: root.showPrecip ? precipBottom + Kirigami.Units.smallSpacing : gvY + gvH + Kirigami.Units.smallSpacing
+        // Row under the plot for the sunrise / sunset times (only when a mark has a label)
+        readonly property bool hasMarkLabels: root.markers.some(function (mk) {
+            return mk.label !== "" || !!mk.iconInfo;
+        })
+        readonly property real markH: hasMarkLabels ? Math.max(Kirigami.Units.gridUnit, Math.ceil(tmH.height)) + Kirigami.Units.smallSpacing : 0
+        readonly property real plotBottom: plotBase + markH
 
         // Room for the scroll bar. Always reserved: the view sits in a ListView
         // header, and a header that changes height makes the list jump.
@@ -496,7 +502,14 @@ ColumnLayout {
         // last day `pad` from the right end, so at zoom 1 the graph runs from
         // edge to edge. `step` is the distance between two days.
         readonly property real contentW: vw * root.zoom
-        readonly property real pad: root.dayCount > 1 ? Math.max(8, Kirigami.Units.smallSpacing * 2) : vw / 2
+        // What an entry draws above its line: its label or its icon, whichever is wider
+        readonly property real cellW: Math.max(tmDate.width, root.labelMinWidth, root.showIcons ? root.iconSize : 0)
+        // Forecast tab (icons): every entry owns a column of the same width and sits in the middle
+        // of it. The first and the last entry are half a column (at least half a label) in from
+        // the ends, so their labels and icons are centred on their grid lines like all the others,
+        // and the band of a hovered / selected entry is whole at the ends too.
+        readonly property bool tableCells: root.showIcons || root.labelMinWidth > 0
+        readonly property real pad: root.dayCount > 1 ? (tableCells ? Math.max(contentW / root.dayCount / 2, Math.min(cellW / 2, contentW / 4)) : Math.max(8, Kirigami.Units.smallSpacing * 2)) : vw / 2
         readonly property real step: root.dayCount > 1 ? Math.max(0.001, (contentW - 2 * pad) / (root.dayCount - 1)) : 1
 
         // The days KQuickCharts is given: the ones in view plus a few either
@@ -518,11 +531,13 @@ ColumnLayout {
          *  vertical line; the first day's label starts at its line and the last
          *  day's ends at it (so the line never sits off to one side of a label
          *  that is pushed in from the edge); all are kept inside the view. */
-        function labelLeft(idx) {
-            var w = tmDate.width;
+        function labelX(idx, w) {
             var c = xOf(idx);
-            var l = idx === 0 ? c : (idx === root.dayCount - 1 ? c - w : c - w / 2);
+            var l = tableCells || (idx > 0 && idx < root.dayCount - 1) ? c - w / 2 : (idx === 0 ? c : c - w);
             return Math.max(0, Math.min(vw - w, l));
+        }
+        function labelLeft(idx) {
+            return labelX(idx, tmDate.width);
         }
 
         // Date labels / vertical grid lines (and the icons above them, which sit over their
@@ -539,11 +554,11 @@ ColumnLayout {
                     return false;
             return true;
         }
-        /** `k` entries of `n` spread evenly, the first and the last among them */
-        function spread(k, n) {
+        /** entries 0, s, 2s, ... of `n` */
+        function strideList(s, n) {
             var out = [];
-            for (var i = 0; i < k; ++i)
-                out.push(Math.round(i * (n - 1) / (k - 1)));
+            for (var i = 0; i < n; i += s)
+                out.push(i);
             return out;
         }
 
@@ -551,19 +566,30 @@ ColumnLayout {
             var n = root.dayCount;
             if (n < 2)
                 return [];
-            var w = tmDate.width;
-            var gap = Kirigami.Units.largeSpacing * 2;
+            var gap = Kirigami.Units.largeSpacing;
             // with icons, an icon sits over every label: a cell is as wide as the wider of the two
-            var cw = Math.max(w, root.labelMinWidth, root.showIcons ? root.iconSize : 0);
+            var cw = cellW;
 
             if (!root.zoomed) {
-                // the whole period is in view: the most entries that fit, evenly spread
-                for (var k = Math.min(n, Math.floor(vw / (cw + gap)) + 1); k >= 2; --k) {
-                    var even = spread(k, n);
-                    if (cellsFit(even, cw, gap))
-                        return even;
+                // The whole period is in view: every `s`-th entry from the first one, all the same
+                // distance apart, so the grid is regular at any width. `s` is the smallest stride
+                // whose cells fit; up to twice that, the one that ends exactly on the last entry
+                // (nothing left over at the right) is preferred.
+                var sMin = Math.max(1, Math.ceil((cw + gap) / step));
+                var bestS = -1, bestR = 1e9;
+                for (var s = sMin; s <= n - 1; ++s) {
+                    if (bestS >= 0 && (bestR === 0 || s > sMin * 2))
+                        break;
+                    var lst = strideList(s, n);
+                    if (!cellsFit(lst, cw, gap))
+                        continue;
+                    var rest = (n - 1) % s;
+                    if (rest < bestR) {
+                        bestR = rest;
+                        bestS = s;
+                    }
                 }
-                return [0];
+                return bestS < 0 ? [0] : strideList(bestS, n);
             }
 
             // zoomed in: whole multiples of a stride, so that scrolling does not move them
@@ -713,7 +739,7 @@ ColumnLayout {
                         font: Kirigami.Theme.smallFont
                         color: Kirigami.Theme.textColor
                         opacity: 0.75
-                        x: Math.max(0, Math.min(area.vw - width, area.xOf(modelData) - (modelData === 0 ? 0 : (modelData === root.dayCount - 1 ? width : width / 2))))
+                        x: area.labelX(modelData, width)
                         y: area.iconH
                     }
                 }
@@ -741,14 +767,16 @@ ColumnLayout {
                             x: Math.round(mark.mx - 0.5)
                             y: area.py
                             width: 1
-                            height: area.precipBottom - area.py
+                            // a marked line runs down to its label under the plot
+                            height: (mark.modelData.label !== "" || !!mark.modelData.iconInfo ? area.plotBase : area.precipBottom) - area.py
                             color: Kirigami.Theme.textColor
                             opacity: 0.3
                         }
+                        // the time (and icon) sits below the graph, centred on its line
                         Row {
                             spacing: 2
-                            x: Math.min(area.vw - width, mark.mx + 3)
-                            y: area.gvY
+                            x: Math.max(0, Math.min(area.vw - width, mark.mx - width / 2))
+                            y: area.plotBase
                             Loader {
                                 active: !!mark.modelData.iconInfo
                                 visible: active

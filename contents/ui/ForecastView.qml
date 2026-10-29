@@ -323,7 +323,9 @@ Item {
     // ... per number of graphs (a day without Kp data has one graph less than the others)
     property var _hourlyGuessByCount: ({})
     // Size of the weather icons above the graphs
-    readonly property real _graphIconSize: 40
+    readonly property real _graphIconSize: 24
+    // Sunrise / sunset marks in the hourly graphs. Off for now (the code stays: set to true to bring them back).
+    readonly property bool _graphSunMarks: false
     readonly property int _hourlyCardWidth: {
         var w = 100;
         if (_hourlyShowKpIndex)
@@ -793,7 +795,7 @@ Item {
             items[k].precipMm = anyProb ? items[k].prob : (_isNum(items[k].mm) ? items[k].mm : NaN);
         result.items = items;
         result.percent = anyProb;
-        if (showSunEvents && items.length > 1) {
+        if (_graphSunMarks && showSunEvents && items.length > 1) {
             var events = [
                 {
                     t: rise,
@@ -866,8 +868,23 @@ Item {
                 function _precip(mm) {
                     return forecastRoot._isNum(mm) && weatherRoot ? weatherRoot.precipSumText(mm) : "--";
                 }
+                /** The user's date format without the year (day and month only): the axis labels */
+                function _dayMonthPattern() {
+                    var fmt = weatherRoot ? weatherRoot.dateFormatSetting : "";
+                    if (fmt === "locale-long" || fmt === "locale-short" || !fmt)
+                        fmt = Qt.locale().dateFormat(Locale.ShortFormat);
+                    var f = fmt.replace(/[\s.\/\-,]*y+[^dM]*$/, "")      // year at the end (with a trailing "г." and the like)
+                        .replace(/^\s*y+[\s.\/\-,]*/, "")              // year first
+                        .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
+                    return f.trim() !== "" ? f : fmt;
+                }
                 function _date(ds, entry) {
-                    return weatherRoot && ds ? weatherRoot.formatIsoDate(ds, true) : "--";
+                    if (!weatherRoot || !ds)
+                        return "--";
+                    var p = ds.substring(0, 10).split("-");
+                    if (p.length !== 3)
+                        return "--";
+                    return Qt.formatDate(new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)), _dayMonthPattern());
                 }
                 function _day(ds, longName, entry) {
                     if (!weatherRoot || !ds)
@@ -907,7 +924,7 @@ Item {
                             if (c && c.zoomed === true) {
                                 var a = forecastRoot._dailyChartDays[Math.min(c.visibleFirst, forecastRoot._dailyChartDays.length - 1)];
                                 var b = forecastRoot._dailyChartDays[Math.min(c.visibleLast, forecastRoot._dailyChartDays.length - 1)];
-                                return a && b ? dailyAdapter._date(a.dateStr, a) + " – " + dailyAdapter._date(b.dateStr, b) : "";
+                                return a && b ? weatherRoot.formatIsoDate(a.dateStr, true) + " – " + weatherRoot.formatIsoDate(b.dateStr, true) : "";
                             }
                             return forecastRoot.expandAll ? i18n("Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in") : i18n("Click a day to show its hourly forecast. Double-click the graph to zoom in");
                         }
