@@ -868,23 +868,27 @@ Item {
                 function _precip(mm) {
                     return forecastRoot._isNum(mm) && weatherRoot ? weatherRoot.precipSumText(mm) : "--";
                 }
-                /** The user's date format without the year (day and month only): the axis labels */
-                function _dayMonthPattern() {
-                    var fmt = weatherRoot ? weatherRoot.dateFormatSetting : "";
-                    if (fmt === "locale-long" || fmt === "locale-short" || !fmt)
-                        fmt = Qt.locale().dateFormat(Locale.ShortFormat);
+                /** The region's short date format without the year (day and month only) */
+                function _regionDayMonthPattern() {
+                    var fmt = Qt.locale().dateFormat(Locale.ShortFormat);
                     var f = fmt.replace(/[\s.\/\-,]*y+[^dM]*$/, "")      // year at the end (with a trailing "г." and the like)
                         .replace(/^\s*y+[\s.\/\-,]*/, "")              // year first
                         .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
                     return f.trim() !== "" ? f : fmt;
                 }
+                /** The axis labels follow Appearance > Misc > Date format exactly as it is set (a preset
+                 *  or a custom pattern, year included if the pattern has one). Only the two "Region
+                 *  default" choices, which have no pattern of their own, are shown as day and month. */
                 function _date(ds, entry) {
                     if (!weatherRoot || !ds)
                         return "--";
+                    var fmt = weatherRoot.dateFormatSetting;
+                    if (fmt !== "locale-long" && fmt !== "locale-short" && fmt)
+                        return weatherRoot.formatIsoDate(ds, true);
                     var p = ds.substring(0, 10).split("-");
                     if (p.length !== 3)
                         return "--";
-                    return Qt.formatDate(new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)), _dayMonthPattern());
+                    return Qt.formatDate(new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)), _regionDayMonthPattern());
                 }
                 function _day(ds, longName, entry) {
                     if (!weatherRoot || !ds)
