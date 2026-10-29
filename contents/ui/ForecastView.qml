@@ -369,6 +369,21 @@ Item {
         return _isClassicMouseWheel(wheel) && wheel.angleDelta.y !== 0;
     }
 
+    /** The Flickable that scrolls the page. `verticalScrollView` can be the ScrollView or - as in
+     *  FullView - already its Flickable (ScrollView.contentItem); the Flickable's own
+     *  `contentItem` is just its inner container, which cannot scroll. */
+    function _flickableOf(v) {
+        if (!v)
+            return null;
+        var cands = [v, v.flickableItem, v.contentItem];
+        for (var i = 0; i < cands.length; ++i) {
+            var f = cands[i];
+            if (f && f.contentHeight !== undefined && f.contentY !== undefined && f.height !== undefined)
+                return f;
+        }
+        return null;
+    }
+
     function _scrollParentVertically(wheel) {
         if (!verticalScrollView)
             return false;
@@ -378,10 +393,11 @@ Item {
         var scale = wheel.pixelDelta.y !== 0 ? 1 : 0.5;
         var amount = delta * scale;
 
-        var flick = verticalScrollView.flickableItem || verticalScrollView.contentItem || verticalScrollView;
-        if (flick && flick.contentHeight !== undefined && flick.contentY !== undefined) {
+        var flick = _flickableOf(verticalScrollView);
+        if (flick) {
+            var oy = flick.originY || 0;
             var maxY = Math.max(0, flick.contentHeight - flick.height);
-            flick.contentY = Math.max(0, Math.min(maxY, flick.contentY - amount));
+            flick.contentY = oy + Math.max(0, Math.min(maxY, flick.contentY - oy - amount));
             return true;
         }
 
@@ -441,12 +457,7 @@ Item {
     }
 
     // The Flickable behind the charts: a wheel turn the chart cannot use scrolls it
-    readonly property var _outerFlickable: {
-        if (!verticalScrollView)
-            return null;
-        var f = verticalScrollView.flickableItem || verticalScrollView.contentItem || verticalScrollView;
-        return (f && f.contentHeight !== undefined && f.contentY !== undefined) ? f : null;
-    }
+    readonly property var _outerFlickable: _flickableOf(verticalScrollView)
 
     function _isNum(v) {
         return typeof v === "number" && isFinite(v);

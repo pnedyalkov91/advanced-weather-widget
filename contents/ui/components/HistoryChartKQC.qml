@@ -53,6 +53,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.quickcharts as Charts
 import org.kde.kirigami as Kirigami
+import "../js/chartMath.js" as ChartMath
 
 ColumnLayout {
     id: root
@@ -524,9 +525,28 @@ ColumnLayout {
             return Math.max(0, Math.min(vw - w, l));
         }
 
-        // Date labels / vertical grid lines: whole multiples of `step` days
-        // whose label fits completely inside the view (the two end days may
-        // sit against the edge), thinned so that no two labels touch.
+        // Date labels / vertical grid lines (and the icons above them, which sit over their
+        // labels). The first and the last entry always have one; the others are spread over the
+        // width, as many as fit, whatever the width of the widget. A "cell" is what is drawn
+        // for an entry - its label or its icon, whichever is wider - kept inside the view.
+        function cellLeft(idx, cw) {
+            return Math.max(0, Math.min(vw - cw, labelLeft(idx) + tmDate.width / 2 - cw / 2));
+        }
+        /** do the cells of `list` (ascending) keep `gap` apart? */
+        function cellsFit(list, cw, gap) {
+            for (var k = 1; k < list.length; ++k)
+                if (cellLeft(list[k], cw) < cellLeft(list[k - 1], cw) + cw + gap)
+                    return false;
+            return true;
+        }
+        /** `k` entries of `n` spread evenly, the first and the last among them */
+        function spread(k, n) {
+            var out = [];
+            for (var i = 0; i < k; ++i)
+                out.push(Math.round(i * (n - 1) / (k - 1)));
+            return out;
+        }
+
         readonly property var _labelIdxRaw: {
             var n = root.dayCount;
             if (n < 2)
@@ -535,6 +555,18 @@ ColumnLayout {
             var gap = Kirigami.Units.largeSpacing * 2;
             // with icons, an icon sits over every label: a cell is as wide as the wider of the two
             var cw = Math.max(w, root.labelMinWidth, root.showIcons ? root.iconSize : 0);
+
+            if (!root.zoomed) {
+                // the whole period is in view: the most entries that fit, evenly spread
+                for (var k = Math.min(n, Math.floor(vw / (cw + gap)) + 1); k >= 2; --k) {
+                    var even = spread(k, n);
+                    if (cellsFit(even, cw, gap))
+                        return even;
+                }
+                return [0];
+            }
+
+            // zoomed in: whole multiples of a stride, so that scrolling does not move them
             var every = Math.max(1, Math.ceil((cw + gap) / step));
             var first = Math.max(0, Math.floor((scroller.contentX - pad) / step) - 1);
             var last = Math.min(n - 1, Math.ceil((scroller.contentX + vw - pad) / step) + 1);
@@ -544,29 +576,25 @@ ColumnLayout {
             if (cand.length === 0 || cand[cand.length - 1] !== n - 1)
                 cand.push(n - 1);
             var out = [];
-            var prevRight = -1e9;
-            for (var k = 0; k < cand.length; ++k) {
-                var idx = cand[k];
+            for (var q = 0; q < cand.length; ++q) {
+                var idx = cand[q];
                 var c = xOf(idx);
                 if (c < 0 || c > vw)
                     continue;               // point not in view
                 var isEnd = idx === 0 || idx === n - 1;
-                if (!isEnd && (c - w / 2 < 0 || c + w / 2 > vw))
-                    continue;               // label would be cut or pushed
-                var left = labelLeft(idx);
-                if (left < prevRight + gap) {
-                    // collides with the previous label: the last day wins
-                    if (idx === n - 1 && out.length > 0 && out[out.length - 1] !== 0) {
-                        out.pop();
-                        prevRight = out.length > 0 ? labelLeft(out[out.length - 1]) + w : -1e9;
-                        if (left < prevRight + gap)
-                            continue;
-                    } else {
+                if (!isEnd && (c - cw / 2 < 0 || c + cw / 2 > vw))
+                    continue;               // would be cut or pushed
+                var cl = cellLeft(idx, cw);
+                if (out.length > 0 && cl < cellLeft(out[out.length - 1], cw) + cw + gap) {
+                    if (idx !== n - 1)
                         continue;
-                    }
+                    // the last entry always stays: it pushes out the ones before it (not the first)
+                    while (out.length > 0 && out[out.length - 1] !== 0 && cl < cellLeft(out[out.length - 1], cw) + cw + gap)
+                        out.pop();
+                    if (out.length > 0 && cl < cellLeft(out[out.length - 1], cw) + cw + gap)
+                        continue;
                 }
                 out.push(idx);
-                prevRight = left + w;
             }
             return out;
         }
@@ -773,6 +801,18 @@ ColumnLayout {
                         readonly property int first: sd ? Math.max(sd.start, area.winFirst) : 0
                         readonly property int last: sd ? Math.min(sd.start + sd.count - 1, area.winLast) : -1
                         readonly property bool ok: !!sd && sd.count >= 2 && last > first
+                        // The curve is made here (a monotone smoothing that never goes above the
+                        // highest or below the lowest value, js/chartMath.js) and handed over as a
+                        // plain line, instead of LineChart's own `interpolate`, which overshoots.
+                        readonly property var curve: {
+                            if (!ok)
+                                return [];
+                            var vals = sd.values.slice(first - sd.start, last - sd.start + 1);
+                            var xs = [];
+                            for (var i = 0; i < vals.length; ++i)
+                                xs.push(i);
+                            return ChartMath.smooth(xs, vals, Math.max(1, Math.min(10, Math.ceil(area.step / 6)))).y;
+                        }
 
                         visible: ok
                         x: area.xOf(first)
@@ -782,7 +822,7 @@ ColumnLayout {
 
                         Charts.LineChart {
                             anchors.fill: parent
-                            interpolate: true
+                            interpolate: false
                             lineWidth: holder.modelData.key === "meanC" ? 2.5 : 3
                             fillOpacity: 0
                             yRange {
@@ -792,7 +832,7 @@ ColumnLayout {
                             }
                             valueSources: [
                                 Charts.ArraySource {
-                                    array: holder.ok ? holder.sd.values.slice(holder.first - holder.sd.start, holder.last - holder.sd.start + 1) : []
+                                    array: holder.curve
                                 }
                             ]
                             colorSource: Charts.ArraySource {

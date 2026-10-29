@@ -20,7 +20,7 @@
  * of the KDE Plasma Weather applet's forecast graph (kdeplasma-addons,
  * applets/weather/qml/DayForecastGraph.qml and graph/*):
  *
- *   • GraphsView + SplineSeries for the temperature lines, styled with
+ *   • GraphsView + LineSeries (smoothed by js/chartMath.js) for the temperature lines, styled with
  *     Kirigami.Theme (no background / grid from the Qt Graphs theme)
  *   • Custom grid, axis labels and legend drawn with Kirigami units/fonts
  *     (Qt Graphs cannot size labels or put them on both sides itself). The
@@ -78,6 +78,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtGraphs as Graphs
 import org.kde.kirigami as Kirigami
+import "../js/chartMath.js" as ChartMath
 
 ColumnLayout {
     id: root
@@ -485,9 +486,28 @@ ColumnLayout {
             return Math.max(0, Math.min(vw - w, l));
         }
 
-        // Date labels / vertical grid lines: whole multiples of `step` days
-        // whose label fits completely inside the view (the two end days may
-        // sit against the edge), thinned so that no two labels touch.
+        // Date labels / vertical grid lines (and the icons above them, which sit over their
+        // labels). The first and the last entry always have one; the others are spread over the
+        // width, as many as fit, whatever the width of the widget. A "cell" is what is drawn
+        // for an entry - its label or its icon, whichever is wider - kept inside the view.
+        function cellLeft(idx, cw) {
+            return Math.max(0, Math.min(vw - cw, labelLeft(idx) + tmDate.width / 2 - cw / 2));
+        }
+        /** do the cells of `list` (ascending) keep `gap` apart? */
+        function cellsFit(list, cw, gap) {
+            for (var k = 1; k < list.length; ++k)
+                if (cellLeft(list[k], cw) < cellLeft(list[k - 1], cw) + cw + gap)
+                    return false;
+            return true;
+        }
+        /** `k` entries of `n` spread evenly, the first and the last among them */
+        function spread(k, n) {
+            var out = [];
+            for (var i = 0; i < k; ++i)
+                out.push(Math.round(i * (n - 1) / (k - 1)));
+            return out;
+        }
+
         readonly property var _labelIdxRaw: {
             var n = root.dayCount;
             if (n < 2)
@@ -496,6 +516,18 @@ ColumnLayout {
             var gap = Kirigami.Units.largeSpacing * 2;
             // with icons, an icon sits over every label: a cell is as wide as the wider of the two
             var cw = Math.max(w, root.labelMinWidth, root.showIcons ? root.iconSize : 0);
+
+            if (!root.zoomed) {
+                // the whole period is in view: the most entries that fit, evenly spread
+                for (var k = Math.min(n, Math.floor(vw / (cw + gap)) + 1); k >= 2; --k) {
+                    var even = spread(k, n);
+                    if (cellsFit(even, cw, gap))
+                        return even;
+                }
+                return [0];
+            }
+
+            // zoomed in: whole multiples of a stride, so that scrolling does not move them
             var every = Math.max(1, Math.ceil((cw + gap) / step));
             var first = Math.max(0, Math.floor((scroller.contentX - pad) / step) - 1);
             var last = Math.min(n - 1, Math.ceil((scroller.contentX + vw - pad) / step) + 1);
@@ -505,29 +537,25 @@ ColumnLayout {
             if (cand.length === 0 || cand[cand.length - 1] !== n - 1)
                 cand.push(n - 1);
             var out = [];
-            var prevRight = -1e9;
-            for (var k = 0; k < cand.length; ++k) {
-                var idx = cand[k];
+            for (var q = 0; q < cand.length; ++q) {
+                var idx = cand[q];
                 var c = xOf(idx);
                 if (c < 0 || c > vw)
                     continue;               // point not in view
                 var isEnd = idx === 0 || idx === n - 1;
-                if (!isEnd && (c - w / 2 < 0 || c + w / 2 > vw))
-                    continue;               // label would be cut or pushed
-                var left = labelLeft(idx);
-                if (left < prevRight + gap) {
-                    // collides with the previous label: the last day wins
-                    if (idx === n - 1 && out.length > 0 && out[out.length - 1] !== 0) {
-                        out.pop();
-                        prevRight = out.length > 0 ? labelLeft(out[out.length - 1]) + w : -1e9;
-                        if (left < prevRight + gap)
-                            continue;
-                    } else {
+                if (!isEnd && (c - cw / 2 < 0 || c + cw / 2 > vw))
+                    continue;               // would be cut or pushed
+                var cl = cellLeft(idx, cw);
+                if (out.length > 0 && cl < cellLeft(out[out.length - 1], cw) + cw + gap) {
+                    if (idx !== n - 1)
                         continue;
-                    }
+                    // the last entry always stays: it pushes out the ones before it (not the first)
+                    while (out.length > 0 && out[out.length - 1] !== 0 && cl < cellLeft(out[out.length - 1], cw) + cw + gap)
+                        out.pop();
+                    if (out.length > 0 && cl < cellLeft(out[out.length - 1], cw) + cw + gap)
+                        continue;
                 }
                 out.push(idx);
-                prevRight = left + w;
             }
             return out;
         }
@@ -712,8 +740,8 @@ ColumnLayout {
                     height: area.gvH
                     marginLeft: 0
                     marginRight: 0
-                    marginTop: root.marginV
-                    marginBottom: root.marginV
+                    marginTop: 0
+                    marginBottom: 0
 
                     // The view does not clip the plot area; clip here so lines
                     // never spill over neighbouring items.
@@ -734,24 +762,29 @@ ColumnLayout {
                     axisY: Graphs.ValueAxis {
                         visible: false
                         lineVisible: false
-                        min: root.tempScale.lo
-                        max: root.tempScale.hi
+                        // The view is `marginV` taller than the plot at both ends: a line along the
+                        // highest / lowest grid line is then drawn whole, not cut in half by the
+                        // edge of the plot area.
+                        readonly property real _pad: root.tempPlotH > 0 ? (root.tempScale.hi - root.tempScale.lo) * root.marginV / root.tempPlotH : 0
+                        min: root.tempScale.lo - _pad
+                        max: root.tempScale.hi + _pad
                     }
 
-                    // Three slots; the ones beyond root.seriesDefs stay empty and hidden.
-                    Graphs.SplineSeries {
+                    // Three slots; the ones beyond root.seriesDefs stay empty and hidden. The points are
+                    // the smoothed curve (area.rebuild), so these are plain lines.
+                    Graphs.LineSeries {
                         id: series0
                         visible: root.style === "line" && root.nSeries > 0
                         color: root.nSeries > 0 ? root.seriesDefs[0].color : "transparent"
                         width: root._lineWidth(0)
                     }
-                    Graphs.SplineSeries {
+                    Graphs.LineSeries {
                         id: series1
                         visible: root.style === "line" && root.nSeries > 1
                         color: root.nSeries > 1 ? root.seriesDefs[1].color : "transparent"
                         width: root._lineWidth(1)
                     }
-                    Graphs.SplineSeries {
+                    Graphs.LineSeries {
                         id: series2
                         visible: root.style === "line" && root.nSeries > 2
                         color: root.nSeries > 2 ? root.seriesDefs[2].color : "transparent"
@@ -1191,29 +1224,43 @@ ColumnLayout {
                 if (a >= root.seriesDefs.length)
                     continue;
                 var key = root.seriesDefs[a].key;
+                var xs = [], ys = [];
                 for (var i = 0; i < root.days.length; ++i) {
                     var v = root.days[i][key];
                     // Days without data are skipped, so the line bridges the gap.
-                    if (typeof v === "number" && isFinite(v))
-                        slots[a].append(i, v);
+                    if (typeof v === "number" && isFinite(v)) {
+                        xs.push(i);
+                        ys.push(v);
+                    }
                 }
+                var c = ChartMath.smooth(xs, ys, ChartMath.samplesPerSegment(xs.length));
+                for (var k = 0; k < c.x.length; ++k)
+                    slots[a].append(c.x[k], c.y[k]);
             }
+        }
+        // The data and the series definitions are set one after the other (the Forecast tab
+        // sets its own definitions right after the data): build the lines once, afterwards,
+        // rather than once for each - and never fill a line with the wrong data first.
+        Timer {
+            id: rebuildTimer
+            interval: 0
+            onTriggered: area.rebuild()
         }
         Connections {
             target: root
             function onDaysChanged() {
                 root.hoverIndex = -1;
                 root.resetZoom();
-                area.rebuild();
+                rebuildTimer.restart();
             }
             function onSeriesDefsChanged() {
-                area.rebuild();
+                rebuildTimer.restart();
             }
         }
         Component.onCompleted: {
             _labelSig = _labelIdxRaw.join(",");
             labelIdx = _labelIdxRaw;
-            rebuild();
+            rebuildTimer.restart();
         }
     }
 }

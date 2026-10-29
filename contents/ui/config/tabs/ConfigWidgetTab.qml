@@ -57,8 +57,6 @@ ColumnLayout {
         id: ss
         /** The KCM root that owns the cfg_* properties */
         required property var cfgRoot
-        /** Title shown above the switches (hidden when empty) */
-        property string title: ""
         /** [{key, label, cfg, orderable?}] */
         property var defs: []
         /** Name of the cfg_* string property that holds the graph order ("wind;pressure;...") */
@@ -150,13 +148,6 @@ ColumnLayout {
             ss._applyingOrder = true;
             ss.cfgRoot[ss.orderProp] = out.join(";");
             ss._applyingOrder = false;
-        }
-
-        Label {
-            visible: ss.title.length > 0
-            text: ss.title
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
         }
 
         Flow {
@@ -1502,12 +1493,17 @@ ColumnLayout {
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastLayout = _opts[currentIndex].value
             }
+            Label {
+                text: i18n("Show in daily forecast:")
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
             StatSwitches {
-                // the switches use the whole width of the page: all on ONE line (they wrap only when it is too narrow)
-                Layout.columnSpan: _form3.columns
+                // in the second column, next to the title (the switches wrap only when the page is too narrow)
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
-                title: i18n("Show in daily forecast:")
                 orderProp: "cfg_forecastGraphOrder"
                 reorderable: widgetTab.configRoot.cfg_forecastLayout === "graphs"
                 defs: [
@@ -1648,13 +1644,19 @@ ColumnLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
+            Label {
+                text: i18n("Show in hourly forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
             StatSwitches {
-                // the switches use the whole width of the page: all on ONE line (they wrap only when it is too narrow)
-                Layout.columnSpan: _form3.columns
+                // in the second column, next to the title (the switches wrap only when the page is too narrow)
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
-                title: i18n("Show in hourly forecast:")
                 orderProp: "cfg_forecastHourlyGraphOrder"
                 reorderable: widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
                 defs: [
