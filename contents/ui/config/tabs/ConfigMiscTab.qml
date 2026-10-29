@@ -127,6 +127,105 @@ GridLayout {
         }
     }
 
+    SectionHeader {
+        title: i18n("Dual temperature")
+        Layout.columnSpan: miscTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+    }
+    Label {
+        text: i18n("Show both units:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        spacing: 12
+        Switch {
+            id: dualTempSwitch
+            checked: miscTab.configRoot.cfg_dualTempEnabled
+            onToggled: miscTab.configRoot.cfg_dualTempEnabled = checked
+        }
+        Label {
+            text: dualTempSwitch.checked ? i18n("Displaying °C and °F together") : i18n("Showing primary unit only")
+            opacity: 0.8
+        }
+    }
+    Label {
+        text: i18n("Swap order:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        enabled: miscTab.configRoot.cfg_dualTempEnabled
+        opacity: enabled ? 1.0 : 0.5
+        spacing: 12
+        Switch {
+            id: dualTempSwapSwitch
+            checked: miscTab.configRoot.cfg_dualTempSwapOrder
+            onToggled: miscTab.configRoot.cfg_dualTempSwapOrder = checked
+        }
+        Label {
+            text: dualTempSwapSwitch.checked ? i18n("Secondary unit shown first (e.g. °F / °C)") : i18n("Primary unit shown first (e.g. °C / °F)")
+            opacity: 0.8
+        }
+    }
+    Label {
+        text: i18n("Separator:")
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        spacing: Kirigami.Units.smallSpacing
+        TextField {
+            id: dualTempSepField
+            Layout.preferredWidth: 80
+            Component.onCompleted: text = miscTab.configRoot.cfg_dualTempSeparator
+            onTextChanged: miscTab.configRoot.cfg_dualTempSeparator = text.length > 0 ? text : " / "
+            onEditingFinished: miscTab.configRoot.cfg_dualTempSeparator = text.length > 0 ? text : " / "
+        }
+        Label {
+            text: i18n("Preview: 20°C") + (dualTempSepField.text || " / ") + i18n("68°F")
+            opacity: 0.65
+            font: Kirigami.Theme.smallFont
+        }
+    }
+    Label {
+        text: i18n("Show in:")
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    Flow {
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        visible: miscTab.configRoot.cfg_dualTempEnabled
+        spacing: Kirigami.Units.largeSpacing
+        Switch {
+            text: i18n("Widget")
+            checked: miscTab.configRoot.cfg_dualTempInWidget
+            onToggled: miscTab.configRoot.cfg_dualTempInWidget = checked
+        }
+        Switch {
+            text: i18n("Panel")
+            checked: miscTab.configRoot.cfg_dualTempInPanel
+            onToggled: miscTab.configRoot.cfg_dualTempInPanel = checked
+        }
+        Switch {
+            text: i18n("Tooltip")
+            checked: miscTab.configRoot.cfg_dualTempInTooltip
+            onToggled: miscTab.configRoot.cfg_dualTempInTooltip = checked
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // SECTION: Date and Time - applies everywhere (panel, tooltip, header,
     // Details, Forecast, Radar, History)
@@ -372,105 +471,6 @@ GridLayout {
         Layout.fillWidth: true
         Layout.minimumWidth: 0
         Layout.maximumWidth: 340
-    }
-
-    SectionHeader {
-        title: i18n("Dual temperature")
-        Layout.columnSpan: miscTab.columns
-        Layout.topMargin: Kirigami.Units.largeSpacing
-    }
-    Label {
-        text: i18n("Show both units:")
-        wrapMode: Text.Wrap
-        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-    }
-    RowLayout {
-        spacing: 12
-        Switch {
-            id: dualTempSwitch
-            checked: miscTab.configRoot.cfg_dualTempEnabled
-            onToggled: miscTab.configRoot.cfg_dualTempEnabled = checked
-        }
-        Label {
-            text: dualTempSwitch.checked ? i18n("Displaying °C and °F together") : i18n("Showing primary unit only")
-            opacity: 0.8
-        }
-    }
-    Label {
-        text: i18n("Swap order:")
-        wrapMode: Text.Wrap
-        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-    }
-    RowLayout {
-        enabled: miscTab.configRoot.cfg_dualTempEnabled
-        opacity: enabled ? 1.0 : 0.5
-        spacing: 12
-        Switch {
-            id: dualTempSwapSwitch
-            checked: miscTab.configRoot.cfg_dualTempSwapOrder
-            onToggled: miscTab.configRoot.cfg_dualTempSwapOrder = checked
-        }
-        Label {
-            text: dualTempSwapSwitch.checked ? i18n("Secondary unit shown first (e.g. °F / °C)") : i18n("Primary unit shown first (e.g. °C / °F)")
-            opacity: 0.8
-        }
-    }
-    Label {
-        text: i18n("Separator:")
-        visible: miscTab.configRoot.cfg_dualTempEnabled
-        wrapMode: Text.Wrap
-        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-    }
-    RowLayout {
-        visible: miscTab.configRoot.cfg_dualTempEnabled
-        spacing: Kirigami.Units.smallSpacing
-        TextField {
-            id: dualTempSepField
-            Layout.preferredWidth: 80
-            Component.onCompleted: text = miscTab.configRoot.cfg_dualTempSeparator
-            onTextChanged: miscTab.configRoot.cfg_dualTempSeparator = text.length > 0 ? text : " / "
-            onEditingFinished: miscTab.configRoot.cfg_dualTempSeparator = text.length > 0 ? text : " / "
-        }
-        Label {
-            text: i18n("Preview: 20°C") + (dualTempSepField.text || " / ") + i18n("68°F")
-            opacity: 0.65
-            font: Kirigami.Theme.smallFont
-        }
-    }
-    Label {
-        text: i18n("Show in:")
-        visible: miscTab.configRoot.cfg_dualTempEnabled
-        wrapMode: Text.Wrap
-        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
-    }
-    Flow {
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        visible: miscTab.configRoot.cfg_dualTempEnabled
-        spacing: Kirigami.Units.largeSpacing
-        Switch {
-            text: i18n("Widget")
-            checked: miscTab.configRoot.cfg_dualTempInWidget
-            onToggled: miscTab.configRoot.cfg_dualTempInWidget = checked
-        }
-        Switch {
-            text: i18n("Panel")
-            checked: miscTab.configRoot.cfg_dualTempInPanel
-            onToggled: miscTab.configRoot.cfg_dualTempInPanel = checked
-        }
-        Switch {
-            text: i18n("Tooltip")
-            checked: miscTab.configRoot.cfg_dualTempInTooltip
-            onToggled: miscTab.configRoot.cfg_dualTempInTooltip = checked
-        }
     }
 
     SectionHeader {
