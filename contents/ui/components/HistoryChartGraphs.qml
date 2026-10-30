@@ -155,7 +155,9 @@ ColumnLayout {
     readonly property color highColor: "#ef5350"
     readonly property color lowColor: "#42a5f5"
     readonly property color meanColor: Kirigami.Theme.textColor
-    readonly property color precipColor: "#26c6da"
+    /** Color of the precipitation bars (and their legend / badge / total). Writable: the Forecast tab
+     *  binds it to the color chosen in the settings; the History tab keeps the default. */
+    property color precipColor: "#26c6da"
 
     // ── Zoom ──────────────────────────────────────────────────────────────
     // 1 = whole period fits; the plot is `zoom` times as wide as the chart.

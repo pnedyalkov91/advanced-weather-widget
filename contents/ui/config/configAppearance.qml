@@ -1550,14 +1550,18 @@ KCM.AbstractKCM {
     property bool cfg_forecastAutoOpen: true
     property bool cfg_forecastExpandAll: false
     property bool cfg_forecastShowPastHours: false
+    property bool cfg_forecastShowTemp: true
     property bool cfg_forecastShowWind: true
     property bool cfg_forecastShowPressure: false
     property bool cfg_forecastShowKpIndex: false
     property bool cfg_forecastShowUvIndex: false
     property bool cfg_forecastShowPrecipSum: false
     property bool cfg_forecastShowVisibility: false
-    property string cfg_forecastGraphOrder: "wind;pressure;kp;uv;precip;vis"
-    property string cfg_forecastHourlyGraphOrder: "wind;pressure;kp;uv;precip;vis"
+    property string cfg_forecastGraphOrder: "temp;wind;pressure;kp;uv;precip;vis"
+    property string cfg_forecastHourlyGraphOrder: "temp;wind;pressure;kp;uv;precip;vis"
+    property string cfg_forecastGraphColors: ""          // "wind=#66bb6a;uv=#ffb300": own colors of the daily graphs
+    property string cfg_forecastHourlyGraphColors: ""    // the same for the hourly graphs
+    property bool cfg_forecastHourlyShowTemp: true
     property bool cfg_forecastHourlyShowPrecipProb: true
     property bool cfg_forecastHourlyShowWind: true
     property bool cfg_forecastHourlyShowPressure: false

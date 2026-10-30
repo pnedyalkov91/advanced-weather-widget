@@ -552,6 +552,47 @@ Item {
         return map[g] || map.G0;
     }
 
+    /** The colors chosen in the settings, "wind=#66bb6a;temphigh=#ef5350" -> { wind: "#66bb6a", ... }
+     *  (keys: wind, pressure, kp, uv, precip, vis; the temperature graph: temphigh, templow, temp) */
+    function _parseGraphColors(str) {
+        var out = {};
+        var parts = String(str || "").split(";");
+        for (var i = 0; i < parts.length; ++i) {
+            var kv = parts[i].split("=");
+            if (kv.length === 2 && /^#[0-9a-fA-F]{6}$/.test(kv[1].trim()))
+                out[kv[0].trim()] = kv[1].trim();
+        }
+        return out;
+    }
+    readonly property var _dailyGraphColors: _parseGraphColors(Plasmoid.configuration.forecastGraphColors)
+    readonly property var _hourlyGraphColors: _parseGraphColors(Plasmoid.configuration.forecastHourlyGraphColors)
+
+    /** How many of the `metrics` graphs come before the temperature graph in the order chosen in
+     *  the settings ("temp;wind;pressure;..."). A saved order that has no "temp" in it (made
+     *  before the temperature graph could be moved) keeps the temperature graph on top. */
+    function _mainIndexFor(metrics, hourly) {
+        var cfg = Plasmoid.configuration;
+        var order = String((hourly ? cfg.forecastHourlyGraphOrder : cfg.forecastGraphOrder) || "").split(";");
+        var at = order.indexOf("temp");
+        if (at < 0)
+            return 0;
+        var tok = {
+            windKmh: "wind",
+            pressureHpa: "pressure",
+            kp: "kp",
+            uv: "uv",
+            precipSum: "precip",
+            visibilityKm: "vis"
+        };
+        var n = 0;
+        for (var i = 0; i < (metrics || []).length; ++i) {
+            var r = order.indexOf(tok[metrics[i].key]);
+            if ((r < 0 ? 99 : r) < at)
+                n++;
+        }
+        return n;
+    }
+
     /** The graphs below the temperature graph, for the entries `items`: one for each stat
      *  that is switched on (the same switches as the stat rows / cards use) and has data.
      *  `hourly` picks the hourly switches instead of the daily ones. */
@@ -670,6 +711,16 @@ Item {
             precipSum: "precip",
             visibilityKm: "vis"
         };
+        // the colors chosen in the settings ("wind=#66bb6a;uv=#ffb300"): they replace the built-in ones
+        var custom = _parseGraphColors(hourly ? cfg.forecastHourlyGraphColors : cfg.forecastGraphColors);
+        for (var q = 0; q < out.length; ++q) {
+            var own = custom[tok[out[q].key]];
+            if (own) {
+                out[q].color = own;
+                // the Kp bars follow the G scale; an own color paints all of them
+                delete out[q].barColorAt;
+            }
+        }
         function rank(m) {
             var r = order.indexOf(tok[m.key]);
             return r < 0 ? 99 : r;
@@ -688,6 +739,9 @@ Item {
     // The metric graphs of the daily graph. The temperature graph's precipitation strip is
     // left out when the precipitation sum has a graph of its own (it would show the same bars).
     readonly property var _dailyMetrics: _metricList(_dailyChartDays, false)
+    // The temperature graph can be switched off in the settings; it stays when there is no other
+    // graph, so the Graphs layout is never empty
+    readonly property bool _dailyShowMain: Plasmoid.configuration.forecastShowTemp !== false || _dailyMetrics.length === 0
     readonly property bool _dailyOwnPrecip: {
         for (var i = 0; i < _dailyMetrics.length; ++i)
             if (_dailyMetrics[i].key === "precipSum")
@@ -971,6 +1025,8 @@ Item {
                     view: dailyAdapter
                     days: forecastRoot._dailyChartDays
                     metrics: forecastRoot._dailyMetrics
+                    showMain: forecastRoot._dailyShowMain
+                    mainIndex: forecastRoot._mainIndexFor(forecastRoot._dailyMetrics, false)
                     outerFlickable: forecastRoot._outerFlickable
                     outerScroll: forecastRoot._scrollParentVertically
                     selectable: true
@@ -982,18 +1038,21 @@ Item {
                         forecastRoot._onChartStatus(loader);
                     }
                     configureMain: function (item) {
-                        item.seriesDefs = [
-                            {
-                                key: "maxC",
-                                color: item.highColor,
-                                label: i18nc("@label chart legend", "High")
-                            },
-                            {
-                                key: "minC",
-                                color: item.lowColor,
-                                label: i18nc("@label chart legend", "Low")
-                            }
-                        ];
+                        // a binding: the colors chosen in the settings apply at once
+                        item.seriesDefs = Qt.binding(function () {
+                            return [
+                                {
+                                    key: "maxC",
+                                    color: forecastRoot._dailyGraphColors.temphigh || item.highColor,
+                                    label: i18nc("@label chart legend", "High")
+                                },
+                                {
+                                    key: "minC",
+                                    color: forecastRoot._dailyGraphColors.templow || item.lowColor,
+                                    label: i18nc("@label chart legend", "Low")
+                                }
+                            ];
+                        });
                         item.showIcons = true;
                         item.iconSize = forecastRoot._graphIconSize;
                         item.iconAt = function (i) {
@@ -1618,13 +1677,14 @@ Item {
                             readonly property bool ready: hourlyStack.ready
                             readonly property real fullHeight: hourlyStack.implicitHeight + 16
                             // what a chart with this many graphs measured last time
-                            readonly property real expectedHeight: forecastRoot._hourlyGuessByCount[_metrics.length] || 0
+                            readonly property string _heightKey: _metrics.length + (_showMain ? "" : "x")
+                            readonly property real expectedHeight: forecastRoot._hourlyGuessByCount[_heightKey] || 0
                             function _remember() {
                                 if (!ready || fullHeight <= 0)
                                     return;
                                 forecastRoot._hourlyGraphGuess = fullHeight;
                                 var m = Object.assign({}, forecastRoot._hourlyGuessByCount);
-                                m[_metrics.length] = fullHeight;
+                                m[_heightKey] = fullHeight;
                                 forecastRoot._hourlyGuessByCount = m;
                             }
                             onReadyChanged: _remember()
@@ -1634,6 +1694,10 @@ Item {
                             readonly property var _data: forecastRoot._hourlyChartData(_dayHourlyData, dataIndex, _daySunriseText, _daySunsetText, (weatherRoot && weatherRoot.dailyData[dataIndex] ? weatherRoot.dailyData[dataIndex].dateStr : "") || "")
                             // the graphs below the temperature graph
                             readonly property var _metrics: forecastRoot._metricList(_data.items, true)
+                            // the temperature graph (with its icons and precipitation strip) can be
+                            // switched off; it stays when there is no other graph
+                            readonly property bool _showMain: Plasmoid.configuration.forecastHourlyShowTemp !== false || _metrics.length === 0
+                            readonly property int _mainIndex: forecastRoot._mainIndexFor(_metrics, true)
                             readonly property bool _ownPrecip: {
                                 for (var i = 0; i < _metrics.length; ++i)
                                     if (_metrics[i].key === "precipSum")
@@ -1671,6 +1735,8 @@ Item {
                                 view: hourlyAdapter
                                 days: graphsRoot._data.items
                                 metrics: graphsRoot._metrics
+                                showMain: graphsRoot._showMain
+                                mainIndex: graphsRoot._mainIndex
                                 outerFlickable: forecastRoot._outerFlickable
                                 outerScroll: forecastRoot._scrollParentVertically
                                 minZoomDays: 6
@@ -1686,13 +1752,16 @@ Item {
                                     forecastRoot._onChartStatus(loader);
                                 }
                                 configureMain: function (item) {
-                                    item.seriesDefs = [
-                                        {
-                                            key: "tempC",
-                                            color: item.highColor,
-                                            label: i18n("Temperature")
-                                        }
-                                    ];
+                                    // a binding: the color chosen in the settings applies at once
+                                    item.seriesDefs = Qt.binding(function () {
+                                        return [
+                                            {
+                                                key: "tempC",
+                                                color: forecastRoot._hourlyGraphColors.temp || item.highColor,
+                                                label: i18n("Temperature")
+                                            }
+                                        ];
+                                    });
                                     item.showIcons = true;
                                     item.iconSize = forecastRoot._graphIconSize;
                                     item.iconAt = function (i) {
@@ -1705,10 +1774,15 @@ Item {
                                     item.precipLegend = Qt.binding(function () {
                                         return graphsRoot._data.percent ? i18n("Chance of precipitation") : i18nc("@label chart legend", "Precipitation");
                                     });
-                                    // the amount of precipitation has a graph of its own: the strip stays
-                                    // only when it shows the chance of precipitation instead
+                                    // the strip is the "Precip." switch of the hourly settings; the amount of
+                                    // precipitation has a graph of its own: the strip stays only when it
+                                    // shows the chance of precipitation instead
                                     item.showPrecip = Qt.binding(function () {
-                                        return graphsRoot._data.percent || !graphsRoot._ownPrecip;
+                                        return forecastRoot._hourlyShowPrecipProb && (graphsRoot._data.percent || !graphsRoot._ownPrecip);
+                                    });
+                                    // the color of the bars, chosen in the settings
+                                    item.precipColor = Qt.binding(function () {
+                                        return forecastRoot._hourlyGraphColors.precipprob || "#26c6da";
                                     });
                                 }
                             }

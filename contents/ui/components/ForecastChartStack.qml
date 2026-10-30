@@ -1,13 +1,15 @@
 /*
  * ForecastChartStack - the Forecast tab's "Graphs" layouts: the temperature graph
- * (with the weather icons and the precipitation strip) and, below it, one graph
- * of its own for each metric (wind, pressure, Kp index, UV index, precipitation
- * sum, visibility).
+ * (with the weather icons and the precipitation strip) and one graph of its own for
+ * each metric (wind, pressure, Kp index, UV index, precipitation sum, visibility).
  *
  * All the graphs are the same chart as the History tab uses (HistoryChartGraphs.qml,
  * or HistoryChartKQC.qml as the fallback; `chartSource` says which). They line up
  * (same left gutter, same days) and zoom and scroll together: zooming or dragging
  * one of them moves all of them.
+ *
+ * The temperature graph is a block like the others: it sits at `mainIndex` among the
+ * metric graphs (0 = on top) and is left out when `showMain` is false.
  *
  * Input
  *   chartSource   the chart file to load ("" = none)
@@ -18,6 +20,8 @@
  *                    barColorAt(i, entry), scaleMin, scaleMax, scaleStep, minSpan }]
  *                 The graphs are only rebuilt when the list of keys changes (selecting another
  *                 day or refreshing the data keeps them), so the closures must not capture the data.
+ *   showMain      false: no temperature graph (its icons and precipitation strip go with it)
+ *   mainIndex     how many metric graphs come before the temperature graph (0 = on top)
  *   configureMain function(chart): sets up the temperature graph (series, icons, ...)
  *   markers / shadeBefore / labelSampleText / minZoomDays / selectable / selectedIndex
  *                 passed on to every graph
@@ -25,7 +29,8 @@
  *   outerScroll   function(wheelEvent): scrolls the page (used when a graph is not zoomed)
  * Output
  *   ready         every graph is loaded (the caller can keep the old height until then)
- *   mainItem      the temperature graph (zoom state for the toolbar buttons)
+ *   mainItem      the graph that tells the zoom state for the toolbar buttons: the temperature
+ *                 graph, or the first graph when there is none
  *   chartStatus(loader)  a graph's Loader changed status (the caller falls back to
  *                 the next chart engine on an error)
  *   daySelected(index)   a graph was clicked (only when `selectable`)
@@ -43,6 +48,8 @@ ColumnLayout {
     property var view: null
     property var days: []
     property var metrics: []
+    property bool showMain: true
+    property int mainIndex: 0
     property var configureMain: null
     property var markers: []
     property real shadeBefore: -1
@@ -55,30 +62,100 @@ ColumnLayout {
     /** Plot height of a metric graph */
     property real metricPlotH: Kirigami.Units.gridUnit * 3.5
 
-    readonly property var mainItem: mainLoader.item
+    /** The graph whose zoom state the toolbar shows (the temperature graph, else the first one) */
+    property var mainItem: null
+    /** The temperature graph itself (null when it is not shown) */
+    property var _mainChart: null
 
-    // The metric graphs are only recreated when the SET of graphs changes, not each time the
-    // data (and with it the `metrics` array) is rebuilt: recreating them is what made the
-    // page jump when another day was selected.
-    property var _metricModel: []
-    property string _metricSig: ""
-    function _syncMetrics() {
-        var sig = (metrics || []).map(function (m) {
-            return m.key;
+    // The graphs are only recreated when the SET (or the order) of graphs changes, not each time
+    // the data (and with it the `metrics` array) is rebuilt: recreating them is what made the
+    // page jump when another day was selected. The temperature graph is one of the blocks.
+    property var _blockModel: []
+    property string _blockSig: ""
+    function _syncBlocks() {
+        var list = metrics || [];
+        var at = Math.max(0, Math.min(list.length, mainIndex));
+        var blocks = [];
+        for (var i = 0; i <= list.length; ++i) {
+            if (showMain && i === at)
+                blocks.push({
+                    key: "__main",
+                    isMain: true
+                });
+            if (i < list.length)
+                blocks.push(list[i]);
+        }
+        var sig = blocks.map(function (b) {
+            return b.key;
         }).join("|");
-        if (sig !== _metricSig) {
-            _metricSig = sig;
-            _metricModel = metrics || [];
+        if (sig !== _blockSig) {
+            _blockSig = sig;
+            _blockModel = blocks;
         }
     }
-    onMetricsChanged: _syncMetrics()
-    Component.onCompleted: _syncMetrics()
+    // A metric graph takes its color (and, for Kp, its bar colors) from `metrics` when it is
+    // created. When only a color changes (the settings were changed) the set of graphs stays
+    // the same and nothing is recreated, so the graphs that are already there are re-styled here.
+    function _restyle() {
+        var list = metrics || [];
+        for (var i = 0; i < blockRepeater.count; ++i) {
+            var l = blockRepeater.itemAt(i);
+            if (!l || !l.item || l.isMain)
+                continue;
+            for (var k = 0; k < list.length; ++k) {
+                var m = list[k];
+                if (m.key !== l.modelData.key)
+                    continue;
+                var defs = l.item.seriesDefs;
+                var cur = defs && defs.length > 0 ? String(defs[0].color) : "";
+                if (cur !== String(m.color) || !!l.item.barColorAt !== !!m.barColorAt) {
+                    l.item.seriesDefs = [
+                        {
+                            key: m.key,
+                            color: m.color,
+                            label: m.label
+                        }
+                    ];
+                    l.item.barColorAt = m.barColorAt || null;
+                }
+                break;
+            }
+        }
+    }
+    function _refresh() {
+        _syncBlocks();
+        _restyle();
+    }
+    onMetricsChanged: _refresh()
+    onShowMainChanged: _refresh()
+    onMainIndexChanged: _refresh()
+    Component.onCompleted: _syncBlocks()
+
+    /** Which loaded graph is the temperature graph / the one that tells the zoom state */
+    function _updateLeader() {
+        var main = null, first = null;
+        for (var i = 0; i < blockRepeater.count; ++i) {
+            var l = blockRepeater.itemAt(i);
+            if (!l || !l.item)
+                continue;
+            if (!first)
+                first = l.item;
+            if (l.isMain)
+                main = l.item;
+        }
+        if (_mainChart !== main)
+            _mainChart = main;
+        var lead = main || first;
+        if (mainItem !== lead)
+            mainItem = lead;
+    }
 
     property bool ready: false
     function _checkReady() {
-        var ok = _on && mainLoader.item !== null;
-        for (var i = 0; ok && i < metricRepeater.count; ++i) {
-            var l = metricRepeater.itemAt(i);
+        _updateLeader();
+        var ok = _on && blockRepeater.count > 0;
+        for (var i = 0; ok && i < blockRepeater.count; ++i) {
+            var l = blockRepeater.itemAt(i);
             if (!l || !l.item)
                 ok = false;
         }
@@ -98,10 +175,8 @@ ColumnLayout {
 
     function _items() {
         var out = [];
-        if (mainLoader.item)
-            out.push(mainLoader.item);
-        for (var i = 0; i < metricRepeater.count; ++i) {
-            var l = metricRepeater.itemAt(i);
+        for (var i = 0; i < blockRepeater.count; ++i) {
+            var l = blockRepeater.itemAt(i);
             if (l && l.item)
                 out.push(l.item);
         }
@@ -136,7 +211,8 @@ ColumnLayout {
         interval: 0
         onTriggered: {
             stack._updateGutter();
-            var m = mainLoader.item;
+            stack._updateLeader();
+            var m = stack.mainItem;
             var list = stack._pendingJoin;
             stack._pendingJoin = [];
             for (var i = 0; i < list.length; ++i) {
@@ -204,34 +280,26 @@ ColumnLayout {
         joinTimer.restart();
     }
 
-    // ── the temperature graph ──────────────────────────────────────────────
-    Loader {
-        id: mainLoader
-        Layout.fillWidth: true
-        active: stack._on
-        source: stack.chartSource
-        onLoaded: {
-            stack._setup(item);
-            if (stack.configureMain)
-                stack.configureMain(item);
-        }
-        onStatusChanged: stack.chartStatus(mainLoader)
-        onItemChanged: readyTimer.restart()
-    }
-
-    // ── one graph per metric ───────────────────────────────────────────────
+    // ── the graphs: the temperature graph and one per metric, in the chosen order ──
     Repeater {
-        id: metricRepeater
-        model: stack._on ? stack._metricModel : []
+        id: blockRepeater
+        model: stack._on ? stack._blockModel : []
 
         delegate: Loader {
-            id: metricLoader
+            id: blockLoader
             required property var modelData
+            readonly property bool isMain: modelData.isMain === true
             Layout.fillWidth: true
             source: stack.chartSource
             onLoaded: {
                 var m = modelData;
                 stack._setup(item);
+                if (isMain) {
+                    // the temperature graph
+                    if (stack.configureMain)
+                        stack.configureMain(item);
+                    return;
+                }
                 // the sunrise / sunset lines, without their labels (the temperature graph has them)
                 item.markers = Qt.binding(function () {
                     return stack.markers.map(function (mk) {
@@ -242,11 +310,15 @@ ColumnLayout {
                         };
                     });
                 });
+                // the date labels are thinned as if they were as wide as the icons of the temperature graph
                 item.labelMinWidth = Qt.binding(function () {
-                    return mainLoader.item ? (mainLoader.item.showIcons ? mainLoader.item.iconSize : 0) : 0;
+                    return stack._mainChart ? (stack._mainChart.showIcons ? stack._mainChart.iconSize : 0) : 0;
                 });
                 item.showPrecip = false;
-                item.showScrollBar = false;
+                // the scroll bar belongs to the graph that tells the zoom state
+                item.showScrollBar = Qt.binding(function () {
+                    return stack.mainItem === item;
+                });
                 item.tempPlotH = Qt.binding(function () {
                     return stack.metricPlotH;
                 });
@@ -266,7 +338,7 @@ ColumnLayout {
                 item.scaleStep = m.scaleStep !== undefined ? m.scaleStep : NaN;
                 item.scaleMinSpan = m.minSpan !== undefined ? m.minSpan : 4;
             }
-            onStatusChanged: stack.chartStatus(metricLoader)
+            onStatusChanged: stack.chartStatus(blockLoader)
             onItemChanged: readyTimer.restart()
         }
         onItemAdded: readyTimer.restart()
