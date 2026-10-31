@@ -28,9 +28,9 @@
  *
  * All requests/parsing live in providers/openMeteoHistory.js; unit
  * conversion and fonts go through weatherRoot like every other tab, so the
- * user's unit settings are honoured. Dates use the system (KDE/Qt) locale
- * formats, like the Forecast tab, and the tile / detail icons follow
- * Appearance → Widget → Details → Icon theme.
+ * user's unit settings are honoured. Dates and times follow Appearance →
+ * Misc → Date and Time (see _date / _day / _time), and the tile / detail
+ * icons follow Appearance → Widget → Details → Icon theme.
  *
  * The chart is components/HistoryChartGraphs.qml (Qt Graphs, styled after
  * the KDE Plasma Weather applet). Where Qt Graphs is unavailable the Loader
@@ -123,28 +123,65 @@ Item {
     function _hours(h) {
         return _isNum(h) ? h.toFixed(1) + " " + i18n("h") : "--";
     }
+    // ── Dates and times: Appearance → Misc → Date and Time ────────────────
+    // Same effective values as ConfigMiscTab: the display* keys are empty
+    // until chosen, and the older header-only keys are the fallback, so an
+    // existing setting carries over. Read through Plasmoid.configuration, so
+    // everything below updates as soon as the setting changes.
+    readonly property string _dateFmt: Plasmoid.configuration.displayDateFormat || Plasmoid.configuration.headerDateFormat || "locale-long"
+    readonly property string _timeFmt: Plasmoid.configuration.displayTimeFormat || Plasmoid.configuration.headerTimeFormat || "locale"
+
+    function _timeFormat() {
+        return _timeFmt === "locale" ? Qt.locale().timeFormat(Locale.ShortFormat) : _timeFmt;
+    }
+
+    /** "2026-10-21T07:12" -> time in the chosen format. */
     function _time(iso) {
-        // "2026-10-21T07:12" -> locale short time
-        if (!iso || iso.length < 16 || !weatherRoot)
+        if (!iso || iso.length < 16)
             return "--";
-        return weatherRoot.formatTimeForDisplay(iso.substring(11, 16));
-    }
-    // Dates follow the system (KDE/Qt) locale, exactly like ForecastView:
-    // Qt.locale().dateFormat(Locale.ShortFormat) for the date and
-    // Qt.locale().dayName() for the weekday.
-    function _date(iso) {
-        return H.isIso(iso) ? Qt.formatDate(H.parseIso(iso), Qt.locale().dateFormat(Locale.ShortFormat)) : "--";
-    }
-    /** Weekday + locale date, e.g. "Tue, 20.10.26". longName -> full weekday name. */
-    function _day(iso, longName) {
-        if (!H.isIso(iso))
+        var h = parseInt(iso.substring(11, 13), 10);
+        var m = parseInt(iso.substring(14, 16), 10);
+        if (isNaN(h) || isNaN(m))
             return "--";
-        var wd = Qt.locale().dayName(H.parseIso(iso).getDay(), longName ? Locale.LongFormat : Locale.ShortFormat);
-        return wd + ", " + _date(iso);
+        // Built as a local date: only the clock time matters.
+        return Qt.formatTime(new Date(2000, 0, 1, h, m), _timeFormat());
     }
-    /** "Tue, 20.10.26" or, when Open-Meteo's hourly data gave the hour, "Tue, 20.10.26, 14:00". */
+    /** Date in the chosen format, built exactly like the widget header and
+     *  the preview on the Misc page (toLocaleDateString for the two region
+     *  defaults, Qt.formatDate for presets / custom formats).
+     *
+     *  roomy = true  : there is space (heading, daily rows) - "Region default
+     *                  (long)" is shown in full, e.g. "петък, 30 октомври 2026 г.".
+     *  roomy = false : tight space (tiles, buttons, ranges) - "Region default
+     *                  (long)" is shortened to weekday + short date, as the
+     *                  note on the Misc page says; "Region default (short)"
+     *                  is the plain short date.
+     *  Every other format is shown exactly as chosen, in both cases. */
+    function _fmtDate(d, roomy, longName) {
+        var f = _dateFmt;
+        if (f === "locale-long") {
+            if (roomy === true)
+                return d.toLocaleDateString(Qt.locale(), Locale.LongFormat);
+            var wd = Qt.locale().dayName(d.getDay(), longName === true ? Locale.LongFormat : Locale.ShortFormat);
+            return wd + ", " + d.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+        }
+        if (f === "locale-short")
+            return d.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
+        return Qt.formatDate(d, f);
+    }
+    /** ISO date -> date in the chosen format. */
+    function _date(iso, roomy) {
+        return H.isIso(iso) ? _fmtDate(H.parseIso(iso), roomy === true, false) : "--";
+    }
+    /** ISO date -> date in the chosen format, with the weekday where the
+     *  format has one (see _fmtDate). longName -> full weekday name in the
+     *  shortened "Region default (long)" form. */
+    function _day(iso, longName, roomy) {
+        return H.isIso(iso) ? _fmtDate(H.parseIso(iso), roomy === true, longName === true) : "--";
+    }
+    /** Day, plus the hour when Open-Meteo's hourly data gave one, e.g. "Tue, 20.10.26, 14:00". */
     function _when(entry) {
-        var d = _day(entry.date, false);
+        var d = _day(entry.date, true);
         return entry.time ? d + ", " + _time(entry.time) : d;
     }
     function _compass(deg) {
@@ -229,7 +266,7 @@ Item {
                 icon: "umbrella",
                 label: i18n("Wettest day"),
                 value: _precip(s.wettest.v),
-                sub: _day(s.wettest.date, false)
+                sub: _day(s.wettest.date, true)
             });
         if (_isNum(s.totalSnowCm) && s.totalSnowCm > 0)
             t.push({
@@ -594,7 +631,7 @@ Item {
                     return 2;
                 }
                 // Stepped back from "Yesterday" with <: show which day it is.
-                displayText: (root.preset === "yesterday" && root._offset > 0) ? root._day(root._period.start, false) : currentText
+                displayText: (root.preset === "yesterday" && root._offset > 0) ? root._day(root._period.start, true) : currentText
                 font: root._f(11, false)
                 onActivated: function (idx) {
                     root._setPreset(root._presetModel[idx].value);
@@ -665,7 +702,9 @@ Item {
                 font: root._f(11, false)
                 text: {
                     var p = root._period;
-                    var range = p.start === p.end ? root._day(p.start, false) : root._day(p.start, false) + " – " + root._day(p.end, false);
+                    // The heading has room for the long region format (it elides
+                    // if a very wide range does not fit).
+                    var range = p.start === p.end ? root._day(p.start, false, true) : root._day(p.start, true, true) + " – " + root._day(p.end, true, true);
                     var place = root.weatherRoot ? String(root.weatherRoot._locName()) : "";
                     if (place.length === 0)
                         return range;
@@ -1040,7 +1079,7 @@ Item {
                                 spacing: 0
                                 Label {
                                     Layout.fillWidth: true
-                                    text: root._day(row.modelData.dateStr, true)
+                                    text: root._day(row.modelData.dateStr, true, true)
                                     elide: Text.ElideRight
                                     color: Kirigami.Theme.textColor
                                     font: root._f(11, true)
