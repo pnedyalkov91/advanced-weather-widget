@@ -1608,6 +1608,11 @@ KCM.AbstractKCM {
     // Semicolon-separated tab ids ("details;forecast;radar;history"), "none" = all hidden.
     // Legacy values "both" (= all) and a single tab id are still understood.
     property string cfg_widgetVisibleTabs: "details;forecast;radar;history"
+    // Where the tab bar sits in the widget: "top" | "bottom"
+    property string cfg_widgetTabsPosition: "top"
+    // Order of ALL tab ids in the tab bar (drag-and-drop list in Widget > General).
+    // Only the order matters here; which tabs are shown is cfg_widgetVisibleTabs.
+    property string cfg_widgetTabOrder: "details;forecast;radar;history"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
     property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set

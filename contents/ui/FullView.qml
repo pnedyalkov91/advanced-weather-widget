@@ -112,6 +112,53 @@ Rectangle {
     readonly property bool showHistoryTab: _visibleTabList.indexOf("history") >= 0
     readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab || showHistoryTab
 
+    // ── Tab bar order and position (Widget > General > Tabs & Header Behavior) ──
+    // widgetTabOrder is a semicolon-separated list of ALL tab ids in the order the
+    // tab bar shows them ("details;forecast;radar;history"). It only reorders the
+    // BUTTONS: the StackLayout below keeps its fixed children order (index ==
+    // logicalIdx), so activeTab still means 0 = Details ... 3 = History.
+    // Unknown ids are dropped and missing ones appended in the default order, so
+    // an empty or partial value still gives a complete list.
+    readonly property var _tabLogicalIdx: ({
+            "details": 0,
+            "forecast": 1,
+            "radar": 2,
+            "history": 3
+        })
+    readonly property var _tabOrder: {
+        var all = ["details", "forecast", "radar", "history"];
+        var raw = String(Plasmoid.configuration.widgetTabOrder || "").split(";");
+        var out = [];
+        for (var i = 0; i < raw.length; ++i) {
+            var k = raw[i].trim();
+            if (all.indexOf(k) >= 0 && out.indexOf(k) < 0)
+                out.push(k);
+        }
+        for (var j = 0; j < all.length; ++j)
+            if (out.indexOf(all[j]) < 0)
+                out.push(all[j]);
+        return out;
+    }
+    // The visible tabs, in that order: [{label, logicalIdx}]
+    readonly property var _tabBarModel: {
+        var shown = [showDetailsTab, showForecastTab, showRadarTab, showHistoryTab];
+        var labels = [i18n("Details"), i18n("Forecast"), i18n("Radar"), i18n("History")];
+        var tabs = [];
+        for (var i = 0; i < _tabOrder.length; ++i) {
+            var idx = _tabLogicalIdx[_tabOrder[i]];
+            if (shown[idx])
+                tabs.push({
+                    label: labels[idx],
+                    logicalIdx: idx
+                });
+        }
+        return tabs;
+    }
+    // The bar is only worth showing when there is something to switch between.
+    readonly property bool _showTabBar: !isSimpleMode && _tabBarModel.length > 1
+    // "top" (default) or "bottom"; anything else reads as "top".
+    readonly property bool _tabsAtBottom: (Plasmoid.configuration.widgetTabsPosition || "top") === "bottom"
+
     // Resolve the default tab, falling back if the preferred tab is hidden.
     // Returns 0 = Details, 1 = Forecast, 2 = Radar, 3 = History
     function _resolvedDefaultTab() {
@@ -126,10 +173,9 @@ Rectangle {
             want = 3;
         if (shown[want])
             return want;
-        // The preferred tab is hidden: first visible tab in display order.
-        for (var i = 0; i < shown.length; ++i)
-            if (shown[i])
-                return i;
+        // The preferred tab is hidden: first visible tab in the tab bar's order.
+        if (fullView._tabBarModel.length > 0)
+            return fullView._tabBarModel[0].logicalIdx;
         return 0;
     }
 
@@ -597,79 +643,70 @@ Rectangle {
             visible: !fullView.isSimpleMode
         }
 
-        // ── Tab bar - shown when more than one tab is enabled ──────────
-        Rectangle {
+        // ── Tab bar, top slot ─────────────────────────────────────────
+        // The bar itself is defined once (tabBarComponent below) and shown in
+        // this slot or in the bottom slot, depending on Widget > General >
+        // Tabs & Header Behavior > Tabs position. Only one slot is ever active.
+        Loader {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
-            radius: 17
-            visible: !fullView.isSimpleMode && [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab, fullView.showHistoryTab].filter(Boolean).length > 1
-            // #2: tab bar background adapts to theme
-            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
+            active: fullView._showTabBar && !fullView._tabsAtBottom
+            visible: active
+            sourceComponent: tabBarComponent
+        }
 
-            RowLayout {
-                anchors {
-                    fill: parent
-                    margins: 3
-                }
-                spacing: 0
+        // The tab bar: shown when more than one tab is enabled, in the order
+        // of fullView._tabBarModel.
+        Component {
+            id: tabBarComponent
+            Rectangle {
+                anchors.fill: parent
+                radius: 17
+                // #2: tab bar background adapts to theme
+                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
-                Repeater {
-                    model: {
-                        var tabs = [];
-                        if (fullView.showDetailsTab)
-                            tabs.push({
-                                label: i18n("Details"),
-                                logicalIdx: 0
-                            });
-                        if (fullView.showForecastTab)
-                            tabs.push({
-                                label: i18n("Forecast"),
-                                logicalIdx: 1
-                            });
-                        if (fullView.showRadarTab)
-                            tabs.push({
-                                label: i18n("Radar"),
-                                logicalIdx: 2
-                            });
-                        if (fullView.showHistoryTab)
-                            tabs.push({
-                                label: i18n("History"),
-                                logicalIdx: 3
-                            });
-                        return tabs;
+                RowLayout {
+                    anchors {
+                        fill: parent
+                        margins: 3
                     }
-                    delegate: Rectangle {
-                        required property var modelData
-                        required property int index
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        radius: 14
-                        readonly property bool isActive: fullView.activeTab === modelData.logicalIdx
-                        color: isActive ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.17) : "transparent"
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 140
-                            }
-                        }
-                        Label {
-                            anchors.centerIn: parent
-                            text: parent.modelData.label
-                            // #2
-                            color: Kirigami.Theme.textColor
-                            opacity: parent.isActive ? 1.0 : 0.42
-                            font: weatherRoot ? weatherRoot.wf(11, parent.isActive) : Qt.font({
-                                bold: parent.isActive
-                            })
-                            Behavior on opacity {
-                                NumberAnimation {
+                    spacing: 0
+
+                    Repeater {
+                        model: fullView._tabBarModel
+                        delegate: Rectangle {
+                            required property var modelData
+                            required property int index
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            radius: 14
+                            readonly property bool isActive: fullView.activeTab === modelData.logicalIdx
+                            color: isActive ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.17) : "transparent"
+                            Behavior on color {
+                                ColorAnimation {
                                     duration: 140
                                 }
                             }
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: fullView.activeTab = modelData.logicalIdx
+                            Label {
+                                anchors.centerIn: parent
+                                text: parent.modelData.label
+                                // #2
+                                color: Kirigami.Theme.textColor
+                                opacity: parent.isActive ? 1.0 : 0.42
+                                font: weatherRoot ? weatherRoot.wf(11, parent.isActive) : Qt.font({
+                                    bold: parent.isActive
+                                })
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 140
+                                    }
+                                }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: fullView.activeTab = modelData.logicalIdx
+                            }
                         }
                     }
                 }
@@ -850,6 +887,20 @@ Rectangle {
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
             }
+        }
+
+        // ── Tab bar, bottom slot ──────────────────────────────────────
+        // Last item of the popup, below the footer (see the top slot above).
+        Item {
+            Layout.preferredHeight: 8
+            visible: fullView._showTabBar && fullView._tabsAtBottom
+        }
+        Loader {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 34
+            active: fullView._showTabBar && fullView._tabsAtBottom
+            visible: active
+            sourceComponent: tabBarComponent
         }
     }
 }

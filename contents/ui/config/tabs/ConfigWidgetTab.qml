@@ -687,6 +687,39 @@ ColumnLayout {
         configRoot.cfg_widgetVisibleTabs = out.length === 0 ? "none" : out.join(";");
     }
 
+    // ── Tab order ─────────────────────────────────────────────────────────
+    // cfg_widgetTabOrder holds ALL tab ids in the order the tab bar shows them
+    // ("details;forecast;radar;history"). Which tabs are shown is still decided
+    // by cfg_widgetVisibleTabs; hidden tabs just keep their place in the order.
+    // Unknown ids are dropped and missing ones appended, so a damaged value is
+    // repaired the first time the list is dragged (FullView.qml reads it the same way).
+    function tabOrderList() {
+        var raw = String(configRoot.cfg_widgetTabOrder || "").split(";");
+        var out = [];
+        for (var i = 0; i < raw.length; ++i) {
+            var k = raw[i].trim();
+            if (tabIds.indexOf(k) >= 0 && out.indexOf(k) < 0)
+                out.push(k);
+        }
+        for (var j = 0; j < tabIds.length; ++j)
+            if (out.indexOf(tabIds[j]) < 0)
+                out.push(tabIds[j]);
+        return out;
+    }
+    function tabLabel(id) {
+        switch (id) {
+        case "details":
+            return i18n("Details");
+        case "forecast":
+            return i18n("Forecast");
+        case "radar":
+            return i18n("Radar");
+        case "history":
+            return i18n("History");
+        }
+        return id;
+    }
+
     // Refresh both icon theme combos (General > Weather icon theme, Details >
     // Icon theme) after the icon theme scope dialog (configAppearance.qml)
     // applied a theme from another tab, or was cancelled.
@@ -1013,6 +1046,162 @@ ColumnLayout {
                     onToggled: widgetTab.setTabVisible("history", checked)
                 }
             }
+            Label {
+                text: i18n("Tabs position:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            RowLayout {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: tabsPositionCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    model: [
+                        {
+                            text: i18n("Top"),
+                            value: "top"
+                        },
+                        {
+                            text: i18n("Bottom"),
+                            value: "bottom"
+                        }
+                    ]
+                    currentIndex: widgetTab.configRoot.cfg_widgetTabsPosition === "bottom" ? 1 : 0
+                    onActivated: widgetTab.configRoot.cfg_widgetTabsPosition = model[currentIndex].value
+                }
+            }
+
+            Label {
+                text: i18n("Tabs order:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            // Drag-and-drop list of the tabs. Same approach as GraphOrderList above: a working
+            // ListModel is moved live while dragging, and the order is written back to cfg_
+            // once the item is dropped.
+            ColumnLayout {
+                id: tabOrderBox
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Layout.fillWidth: true
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 20
+                spacing: 0
+
+                // True while WE write the order, so the model is not rebuilt under the user's hands.
+                property bool _applyingOrder: false
+                // The saved order; changes from outside (config loaded, reset...) rebuild the list.
+                readonly property string _saved: widgetTab.configRoot.cfg_widgetTabOrder
+
+                ListModel {
+                    id: tabOrderModel
+                }
+
+                function _rebuildModel() {
+                    tabOrderModel.clear();
+                    var order = widgetTab.tabOrderList();
+                    for (var i = 0; i < order.length; ++i)
+                        tabOrderModel.append({
+                            tabId: order[i],
+                            tabText: widgetTab.tabLabel(order[i])
+                        });
+                }
+                // Writes the order shown in the list back to the config.
+                function _applyOrder() {
+                    var ids = [];
+                    for (var i = 0; i < tabOrderModel.count; ++i)
+                        ids.push(tabOrderModel.get(i).tabId);
+                    tabOrderBox._applyingOrder = true;
+                    widgetTab.configRoot.cfg_widgetTabOrder = ids.join(";");
+                    tabOrderBox._applyingOrder = false;
+                }
+                on_SavedChanged: {
+                    if (!tabOrderBox._applyingOrder)
+                        tabOrderBox._rebuildModel();
+                }
+                Component.onCompleted: tabOrderBox._rebuildModel()
+
+                Label {
+                    text: i18n("Drag to change the order of the tabs")
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    font: Kirigami.Theme.smallFont
+                    opacity: 0.7
+                }
+
+                ListView {
+                    id: tabOrderList
+                    Layout.fillWidth: true
+                    Layout.topMargin: Kirigami.Units.smallSpacing
+                    // the page around it scrolls, so this list just shows all of its rows
+                    Layout.preferredHeight: contentHeight
+                    interactive: false
+                    spacing: 0
+                    model: tabOrderModel
+                    displaced: Transition {
+                        YAnimator {
+                            duration: Kirigami.Units.longDuration
+                        }
+                    }
+                    delegate: Item {
+                        id: tabOrderDelegateRoot
+                        width: tabOrderList.width
+                        implicitHeight: tabOrderDelegateCol.implicitHeight
+                        ColumnLayout {
+                            id: tabOrderDelegateCol
+                            spacing: 0
+                            width: parent.width
+                            ItemDelegate {
+                                id: tabOrderRowDelegate
+                                Layout.fillWidth: true
+                                hoverEnabled: true
+                                down: false
+                                contentItem: RowLayout {
+                                    spacing: Kirigami.Units.smallSpacing
+                                    Kirigami.ListItemDragHandle {
+                                        listItem: tabOrderRowDelegate
+                                        listView: tabOrderList
+                                        onMoveRequested: function (oldIndex, newIndex) {
+                                            if (newIndex !== oldIndex)
+                                                tabOrderModel.move(oldIndex, newIndex, 1);
+                                        }
+                                        onDropped: tabOrderBox._applyOrder()
+                                    }
+                                    Label {
+                                        text: (model.index + 1) + "."
+                                        opacity: 0.6
+                                        Layout.preferredWidth: Kirigami.Units.gridUnit * 1.2
+                                    }
+                                    Label {
+                                        text: model.tabText
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                        // a tab that is switched off keeps its place in the order
+                                        opacity: widgetTab.isTabVisible(model.tabId) ? 1.0 : 0.5
+                                    }
+                                    Label {
+                                        visible: !widgetTab.isTabVisible(model.tabId)
+                                        text: i18n("Hidden")
+                                        font: Kirigami.Theme.smallFont
+                                        opacity: 0.6
+                                    }
+                                }
+                            }
+                            Kirigami.Separator {
+                                Layout.fillWidth: true
+                                opacity: 0.4
+                            }
+                        }
+                    }
+                }
+            }
+
             Label {
                 text: i18n("Sunrise / Sunset:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
