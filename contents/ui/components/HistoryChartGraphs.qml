@@ -65,6 +65,8 @@
  *   valueFormat(v) / badgeFormat(i, key, v, entry) / barColorAt(i, entry)   labels and bar colours
  *   scaleMin / scaleMax / scaleStep / scaleMinSpan   force the ends / step of the value axis
  *   tempPlotH / minPlotX / showScrollBar   plot height, least left gutter, scroll bar
+ *   glyphAt(i, entry) / glyphFont   a font glyph (the wind arrow) drawn instead of the dot of
+ *                     an entry, and after the value in the hover badge and the card; "" = a plain dot
  *   setView(zoom, scrollFrac) / scrollFrac   let stacked charts zoom and scroll together
  *   zoomed / canZoomIn      state for the toolbar buttons
  *   visibleFirst / visibleLast  indices of the days currently in view
@@ -143,6 +145,10 @@ ColumnLayout {
     property real minPlotX: 0
     /** false: no scroll bar under the chart (a chart that follows another one's zoom) */
     property bool showScrollBar: true
+    /** function(index, entry) -> a glyph of `glyphFont` drawn instead of the dot of that entry (and
+     *  after the value in its hover badge), in the colour of the series; "" or null: the plain dot */
+    property var glyphAt: null
+    property string glyphFont: ""
     /** Width of the left gutter the axis labels need (what `minPlotX` is compared with). */
     readonly property real naturalPlotX: area.naturalX
     /** An entry was clicked (only when `selectable`). */
@@ -177,6 +183,7 @@ ColumnLayout {
             out.push({
                 label: m.label,
                 color: m.color,
+                glyph: m.glyph ? (m.glyph(hoverIndex, e) || "") : "",
                 text: m.badge ? m.badge(hoverIndex, m.key, v, e) : (m.fmt ? m.fmt(v) : String(v))
             });
         }
@@ -293,8 +300,59 @@ ColumnLayout {
     property real tempPlotH: Kirigami.Units.gridUnit * 6
     readonly property real precipPlotH: Kirigami.Units.gridUnit * 2.5
     readonly property real badgeH: Kirigami.Units.gridUnit + 4
+    /** Size of the wind arrow beside a value (hover box, card) */
+    readonly property real glyphTextPx: Math.round(Kirigami.Units.gridUnit * 1.15)
+    /** What the disc behind a wind arrow on the line is painted with: the panel's own colour */
+    readonly property color glyphBackdrop: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(Kirigami.Theme.textColor, 0.04))
 
     spacing: Kirigami.Units.smallSpacing
+
+    /** A font glyph (the wind arrow) whose INK is centred in the box: the box is `boxH` high (default: the
+     *  ink's own height) and the ink sits at `centerY` from its top (default: the middle). Icon fonts leave
+     *  uneven room above and below their glyphs, so centring the Text item itself puts them off the line of
+     *  the text they stand next to. */
+    component GlyphInk: Item {
+        id: gi
+        property string glyph: ""
+        property string family: ""
+        property real pixelSize: 14
+        property color color: "black"
+        property bool outlined: false
+        property color outlineColor: "transparent"
+        /** a disc of this colour behind the glyph (as wide as its ink): whatever runs under the circle of
+         *  the wind arrow - the line of the graph, the grid - is hidden inside it */
+        property color backdrop: "transparent"
+        property real boxH: Math.ceil(inkMetrics.tightBoundingRect.height)
+        property real centerY: NaN
+        width: Math.ceil(inkMetrics.tightBoundingRect.width)
+        height: boxH
+        TextMetrics {
+            id: inkMetrics
+            font.family: gi.family
+            font.pixelSize: gi.pixelSize
+            text: gi.glyph
+        }
+        Rectangle {
+            visible: gi.backdrop.a > 0 && gi.glyph !== ""
+            width: Math.max(gi.width, inkMetrics.tightBoundingRect.height) - 1
+            height: width
+            radius: width / 2
+            color: gi.backdrop
+            x: gi.width / 2 - width / 2
+            y: (isFinite(gi.centerY) ? gi.centerY : gi.height / 2) - height / 2
+        }
+        Text {
+            id: inkText
+            text: gi.glyph
+            font.family: gi.family
+            font.pixelSize: gi.pixelSize
+            color: gi.color
+            style: gi.outlined ? Text.Outline : Text.Normal
+            styleColor: gi.outlineColor
+            x: gi.width / 2 - (inkMetrics.tightBoundingRect.x + inkMetrics.tightBoundingRect.width / 2)
+            y: (isFinite(gi.centerY) ? gi.centerY : gi.height / 2) - (inkText.baselineOffset + inkMetrics.tightBoundingRect.y + inkMetrics.tightBoundingRect.height / 2)
+        }
+    }
 
     // ── Temperature scale: "nice" bounds so grid lines carry round labels ─
     readonly property var tempScale: _computeScale(days, seriesDefs, scaleMin, scaleMax, scaleStep, scaleMinSpan)
@@ -432,6 +490,18 @@ ColumnLayout {
             font: Kirigami.Theme.smallFont
             text: "Wg"
         }
+        // Where the middle of a number sits in a line of small text (from the top of the line): the
+        // wind arrow beside a value is centred on it
+        TextMetrics {
+            id: tmDigit
+            font: Kirigami.Theme.smallFont
+            text: "0"
+        }
+        FontMetrics {
+            id: fmSmall
+            font: Kirigami.Theme.smallFont
+        }
+        readonly property real digitCenterY: fmSmall.ascent + tmDigit.tightBoundingRect.y + tmDigit.tightBoundingRect.height / 2
         TextMetrics {
             id: tmLo
             font: Kirigami.Theme.smallFont
@@ -482,12 +552,7 @@ ColumnLayout {
         readonly property real precipTop: root.showPrecip ? gvY + gvH + Kirigami.Units.largeSpacing : py + ph
         readonly property real precipBottom: root.showPrecip ? precipTop + root.precipPlotH : py + ph
         readonly property real plotBase: root.showPrecip ? precipBottom + Kirigami.Units.smallSpacing : gvY + gvH + Kirigami.Units.smallSpacing
-        // Row under the plot for the sunrise / sunset times (only when a mark has a label)
-        readonly property bool hasMarkLabels: root.markers.some(function (mk) {
-            return mk.label !== "" || !!mk.iconInfo;
-        })
-        readonly property real markH: hasMarkLabels ? Math.max(Kirigami.Units.gridUnit, Math.ceil(tmH.height)) + Kirigami.Units.smallSpacing : 0
-        readonly property real plotBottom: plotBase + markH
+        readonly property real plotBottom: plotBase
 
         // Room for the scroll bar. Always reserved: the view sits in a ListView
         // header, and a header that changes height makes the list jump.
@@ -743,46 +808,75 @@ ColumnLayout {
                 }
 
                 // ── marks such as sunrise / sunset (Forecast tab, hourly) ──
+                // A line through the plot; its time (and icon) sits inside the plot, at the end of the
+                // temperature band away from the line, so that it covers as little of it as possible.
                 Repeater {
                     model: root.markers
                     delegate: Item {
                         id: mark
                         required property var modelData
                         readonly property real mx: area.xOf(modelData.pos)
+                        readonly property bool hasLabel: mark.modelData.label !== "" || !!mark.modelData.iconInfo
+                        // the first series, at the mark (between two entries)
+                        readonly property real lineV: {
+                            var d = root.days;
+                            if (d.length === 0 || root.seriesDefs.length === 0)
+                                return NaN;
+                            var k = root.seriesDefs[0].key;
+                            var i0 = Math.max(0, Math.min(d.length - 1, Math.floor(modelData.pos)));
+                            var i1 = Math.min(d.length - 1, i0 + 1);
+                            var a = d[i0][k], b = d[i1][k];
+                            if (typeof a !== "number" || !isFinite(a))
+                                return NaN;
+                            if (typeof b !== "number" || !isFinite(b))
+                                return a;
+                            return a + (b - a) * (modelData.pos - i0);
+                        }
+                        readonly property bool lineHigh: isFinite(lineV) && root.tempScale.hi > root.tempScale.lo && (lineV - root.tempScale.lo) / (root.tempScale.hi - root.tempScale.lo) > 0.5
                         visible: mx >= 0 && mx <= area.vw
                         Rectangle {
                             x: Math.round(mark.mx - 0.5)
                             y: area.py
                             width: 1
-                            // a marked line runs down to its label under the plot
-                            height: (mark.modelData.label !== "" || !!mark.modelData.iconInfo ? area.plotBase : area.precipBottom) - area.py
+                            height: area.precipBottom - area.py
                             color: Kirigami.Theme.textColor
                             opacity: 0.3
                         }
-                        // the time (and icon) sits below the graph, centred on its line
-                        Row {
-                            spacing: 2
+                        Rectangle {
+                            visible: mark.hasLabel
+                            z: 3
+                            width: markRow.implicitWidth + 6
+                            height: markRow.implicitHeight + 2
+                            radius: 3
+                            color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.8)
                             x: Math.max(0, Math.min(area.vw - width, mark.mx - width / 2))
-                            y: area.plotBase
-                            Loader {
-                                active: !!mark.modelData.iconInfo
-                                visible: active
-                                source: "WeatherIcon.qml"
-                                onLoaded: {
-                                    item.iconInfo = Qt.binding(function () {
-                                        return mark.modelData.iconInfo;
-                                    });
-                                    item.iconSize = Kirigami.Units.gridUnit;
-                                    item.iconColor = Qt.binding(function () {
-                                        return Kirigami.Theme.textColor;
-                                    });
+                            y: mark.lineHigh ? area.py + area.ph - height - 2 : area.py + 2
+                            Row {
+                                id: markRow
+                                anchors.centerIn: parent
+                                spacing: 2
+                                Loader {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    active: !!mark.modelData.iconInfo
+                                    visible: active
+                                    source: "WeatherIcon.qml"
+                                    onLoaded: {
+                                        item.iconInfo = Qt.binding(function () {
+                                            return mark.modelData.iconInfo;
+                                        });
+                                        item.iconSize = Kirigami.Units.gridUnit;
+                                        item.iconColor = Qt.binding(function () {
+                                            return Kirigami.Theme.textColor;
+                                        });
+                                    }
                                 }
-                            }
-                            Label {
-                                text: mark.modelData.label
-                                font: Kirigami.Theme.smallFont
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.8
+                                Label {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: mark.modelData.label
+                                    font: Kirigami.Theme.smallFont
+                                    color: Kirigami.Theme.textColor
+                                    opacity: 0.9
+                                }
                             }
                         }
                     }
@@ -870,13 +964,18 @@ ColumnLayout {
                     }
                 }
 
-                // ── dots on the lines ──────────────────────────────────
+                // ── dots on the lines ──
                 // One dot per day and series, left out when the days are too
-                // close together for them to read as dots.
+                // close together for them to read as dots. With `glyphAt` an entry's
+                // dot is a glyph (the wind arrow).
                 readonly property real dotSize: Kirigami.Units.gridUnit * 0.4
                 readonly property bool showDots: area.step >= dotSize * 2.4
+                // a glyph (the wind arrow) is wider than a dot: when the entries are close together only
+                // every few of them get one
+                readonly property real glyphSize: Kirigami.Units.gridUnit * 1.5
+                readonly property int glyphStride: Math.max(1, Math.ceil(glyphSize * 1.15 / Math.max(1, area.step)))
                 Repeater {
-                    model: pinned.showDots && root.style === "line" ? root.seriesDefs : []
+                    model: (pinned.showDots || !!root.glyphAt) && root.style === "line" ? root.seriesDefs : []
                     delegate: Repeater {
                         id: dotSeries
                         required property var modelData
@@ -886,15 +985,25 @@ ColumnLayout {
                             required property int index
                             readonly property real v: typeof modelData[dotSeries.modelData.key] === "number" ? modelData[dotSeries.modelData.key] : NaN
                             readonly property real cx: area.xOf(index)
-                            visible: isFinite(v) && cx > -width && cx < area.vw + width
+                            readonly property string glyph: root.glyphAt ? (root.glyphAt(index, modelData) || "") : ""
+                            visible: isFinite(v) && cx > -width && cx < area.vw + width && (glyph !== "" ? index % pinned.glyphStride === 0 : pinned.showDots)
                             width: pinned.dotSize
                             height: width
                             radius: width / 2
                             x: cx - width / 2
                             y: isFinite(v) ? area.yOf(v) - height / 2 : 0
-                            color: dotSeries.modelData.color
-                            border.width: 1
+                            color: glyph !== "" ? "transparent" : dotSeries.modelData.color
+                            border.width: glyph !== "" ? 0 : 1
                             border.color: Kirigami.Theme.backgroundColor
+                            GlyphInk {
+                                anchors.centerIn: parent
+                                visible: parent.glyph !== ""
+                                glyph: parent.glyph
+                                family: root.glyphFont
+                                pixelSize: pinned.glyphSize
+                                color: dotSeries.modelData.color
+                                backdrop: root.glyphBackdrop
+                            }
                         }
                     }
                 }
@@ -989,15 +1098,25 @@ ColumnLayout {
                     delegate: Rectangle {
                         required property var modelData
                         readonly property real v: pinned.hoverDay && typeof pinned.hoverDay[modelData.key] === "number" ? pinned.hoverDay[modelData.key] : NaN
+                        readonly property string glyph: pinned.hovering && root.glyphAt ? (root.glyphAt(root.hoverIndex, pinned.hoverDay) || "") : ""
                         visible: pinned.hovering && isFinite(v)
                         width: Kirigami.Units.gridUnit * 0.6
                         height: width
                         radius: width / 2
                         x: pinned.cursorX - width / 2
                         y: isFinite(v) ? area.yOf(v) - height / 2 : 0
-                        color: modelData.color
-                        border.width: 2
+                        color: glyph !== "" ? "transparent" : modelData.color
+                        border.width: glyph !== "" ? 0 : 2
                         border.color: Kirigami.Theme.backgroundColor
+                        GlyphInk {
+                            anchors.centerIn: parent
+                            visible: parent.glyph !== ""
+                            glyph: parent.glyph
+                            family: root.glyphFont
+                            pixelSize: pinned.glyphSize * 1.2
+                            color: parent.modelData.color
+                            backdrop: root.glyphBackdrop
+                        }
                     }
                 }
 
@@ -1069,6 +1188,7 @@ ColumnLayout {
                         return {
                             color: sd.color,
                             text: pinned.hoverDay ? root._badgeText(root.hoverIndex, sd.key, v) : "",
+                            glyph: pinned.hoverDay && root.glyphAt ? (root.glyphAt(root.hoverIndex, pinned.hoverDay) || "") : "",
                             ok: typeof v === "number" && isFinite(v)
                         };
                     })
@@ -1077,7 +1197,7 @@ ColumnLayout {
                         required property var modelData
                         required property int index
                         visible: pinned.hovering && modelData.ok
-                        width: badgeText.implicitWidth + 8
+                        width: badgeRow.implicitWidth + 8
                         height: root.badgeH
                         radius: 4
                         color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(modelData.color, 0.18))
@@ -1085,12 +1205,26 @@ ColumnLayout {
                         border.color: Qt.alpha(modelData.color, 0.6)
                         x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing : pinned.cursorX - Kirigami.Units.largeSpacing - width
                         y: pinned.badgeYs[index]
-                        Label {
-                            id: badgeText
+                        // the value, and (the wind graph) the direction arrow after it
+                        Row {
+                            id: badgeRow
                             anchors.centerIn: parent
-                            text: badge.modelData.text
-                            font: Kirigami.Theme.smallFont
-                            color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
+                            spacing: 3
+                            Label {
+                                id: badgeText
+                                text: badge.modelData.text
+                                font: Kirigami.Theme.smallFont
+                                color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
+                            }
+                            GlyphInk {
+                                visible: badge.modelData.glyph !== ""
+                                glyph: badge.modelData.glyph
+                                family: root.glyphFont
+                                pixelSize: root.glyphTextPx
+                                color: badgeText.color
+                                boxH: badgeText.height
+                                centerY: area.digitCenterY
+                            }
                         }
                     }
                 }
@@ -1160,6 +1294,15 @@ ColumnLayout {
                                     text: modelData.text
                                     font: Kirigami.Theme.smallFont
                                     color: modelData.color
+                                }
+                                GlyphInk {
+                                    visible: modelData.glyph !== ""
+                                    glyph: modelData.glyph
+                                    family: root.glyphFont
+                                    pixelSize: root.glyphTextPx
+                                    color: modelData.color
+                                    boxH: Math.ceil(tmH.height)
+                                    centerY: area.digitCenterY
                                 }
                             }
                         }

@@ -5,8 +5,8 @@
  *
  * All the graphs are the same chart as the History tab uses (HistoryChartGraphs.qml,
  * or HistoryChartKQC.qml as the fallback; `chartSource` says which). They line up
- * (same left gutter, same days) and zoom and scroll together: zooming or dragging
- * one of them moves all of them.
+ * (same left gutter, same days) and zoom and scroll together: zooming, dragging or moving
+ * the scroll bar of one of them moves all of them.
  *
  * The temperature graph is a block like the others: it sits at `mainIndex` among the
  * metric graphs (0 = on top) and is left out when `showMain` is false.
@@ -20,7 +20,7 @@
  *   view          adapter for the chart (_temp, _precip, _date, _day; see HistoryChart*.qml)
  *   days          the entries (one per day / hour)
  *   metrics       [{ key, label, color, style ("line" | "bars"), fmt(v), badge(i, key, v, entry),
- *                    barColorAt(i, entry), scaleMin, scaleMax, scaleStep, minSpan }]
+ *                    glyph(i, entry), barColorAt(i, entry), scaleMin, scaleMax, scaleStep, minSpan }]
  *                 The graphs are only rebuilt when the list of keys changes (selecting another
  *                 day or refreshing the data keeps them), so the closures must not capture the data.
  *   showMain      false: no temperature graph (its icons and precipitation strip go with it)
@@ -31,7 +31,10 @@
  *   mainIndex    how many metric graphs come before the temperature graph (0 = on top)
  *   configureMain function(chart): sets up the temperature graph (series, icons, ...)
  *   markers / shadeBefore / labelSampleText / minZoomDays / selectable / selectedIndex
- *                 passed on to every graph
+ *                 passed on to every graph (the sunrise / sunset times and icons are drawn in the
+ *                 first graph only, the lines through all of them)
+ *   glyphFont     font family of the glyphs a metric draws instead of dots (`metric.glyph(i, entry)`:
+ *                 the wind arrow); also used for them in the combined graph's card
  *   outerFlickable  the page's Flickable, the wheel falls through to it
  *   outerScroll   function(wheelEvent): scrolls the page (used when a graph is not zoomed)
  * Output
@@ -68,6 +71,8 @@ ColumnLayout {
     property int selectedIndex: -1
     property var outerFlickable: null
     property var outerScroll: null
+    /** Font family of the glyphs the metrics draw (see `glyph` of a metric) */
+    property string glyphFont: ""
     /** Plot height of a metric graph */
     property real metricPlotH: Kirigami.Units.gridUnit * 3.5
 
@@ -314,6 +319,9 @@ ColumnLayout {
         it.minPlotX = Qt.binding(function () {
             return stack.gutter;
         });
+        it.glyphFont = Qt.binding(function () {
+            return stack.glyphFont;
+        });
         it.daySelected.connect(function (i) {
             stack.daySelected(i);
         });
@@ -363,10 +371,11 @@ ColumnLayout {
                     }
                     return;
                 }
-                // the sunrise / sunset lines, without their labels (the temperature graph has them)
+                // the sunrise / sunset lines, without their labels (the first graph has them)
                 item.markers = Qt.binding(function () {
+                    var lead = stack.mainItem === item;
                     return stack.markers.map(function (mk) {
-                        return {
+                        return lead ? mk : {
                             pos: mk.pos,
                             label: "",
                             iconInfo: null
@@ -378,10 +387,7 @@ ColumnLayout {
                     return stack._mainChart ? (stack._mainChart.showIcons ? stack._mainChart.iconSize : 0) : 0;
                 });
                 item.showPrecip = false;
-                // the scroll bar belongs to the graph that tells the zoom state
-                item.showScrollBar = Qt.binding(function () {
-                    return stack.mainItem === item;
-                });
+                // (every graph has its own scroll bar: moving one moves them all, see _follow)
                 item.tempPlotH = Qt.binding(function () {
                     return stack.metricPlotH;
                 });
@@ -396,6 +402,7 @@ ColumnLayout {
                 item.valueFormat = m.fmt || null;
                 item.badgeFormat = m.badge || null;
                 item.barColorAt = m.barColorAt || null;
+                item.glyphAt = m.glyph || null;
                 item.scaleMin = m.scaleMin !== undefined ? m.scaleMin : NaN;
                 item.scaleMax = m.scaleMax !== undefined ? m.scaleMax : NaN;
                 item.scaleStep = m.scaleStep !== undefined ? m.scaleStep : NaN;

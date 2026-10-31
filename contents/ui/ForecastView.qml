@@ -252,6 +252,8 @@ Item {
         id: wiFont
         source: Qt.resolvedUrl("../fonts/weathericons-regular-webfont.ttf")
     }
+    // its family, for the wind arrows of the graphs ("" until the font is loaded)
+    readonly property string _wiFontFamily: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
 
     // Resolved at load time so the path is correct in all rendering contexts
     readonly property url iconsBaseDir: Qt.resolvedUrl("../icons/")
@@ -332,8 +334,9 @@ Item {
     property var _hourlyGuessByCount: ({})
     // Size of the weather icons above the graphs
     readonly property real _graphIconSize: 24
-    // Sunrise / sunset marks in the hourly graphs. Off for now (the code stays: set to true to bring them back).
-    readonly property bool _graphSunMarks: false
+    // Sunrise / sunset marks (time + icon) in the hourly graphs: a line through the graphs, the time and
+    // the icon inside the first graph. Follows the "sunrise / sunset" switch of the forecast settings.
+    readonly property bool _graphSunMarks: true
     readonly property int _hourlyCardWidth: {
         var w = 100;
         if (_hourlyShowKpIndex)
@@ -536,6 +539,7 @@ Item {
                 code: d.code,
                 // the metric graphs
                 windKmh: d.windKmh,
+                windDeg: d.windDir,
                 pressureHpa: d.pressureHpa,
                 kp: kp,
                 gScale: gScale,
@@ -639,6 +643,11 @@ Item {
                 style: "line",
                 fmt: function (v) {
                     return wr.windValue(v);
+                },
+                // the wind direction arrow (a weather-icons glyph) instead of the dots, and after the
+                // value in the hover box; it takes the color of the graph
+                glyph: function (i, entry) {
+                    return entry && _isNum(entry.windDeg) ? W.windDirectionGlyph(entry.windDeg) : "";
                 },
                 scaleMin: 0,
                 minSpan: 10
@@ -829,9 +838,8 @@ Item {
                 var mm1 = m % 1440;
                 night = mm1 < rise || mm1 >= set_;
             }
-            var title = label + " · " + weatherRoot.weatherCodeToText(h.code || 0);
-            if (_isNum(h.windKmh))
-                title += " · " + weatherRoot.windValue(h.windKmh);
+            // the hover title of the graphs: just the time (the icons show the weather, the graphs the wind)
+            var title = label;
             items.push({
                 dateStr: key,
                 tempC: h.tempC,
@@ -840,6 +848,7 @@ Item {
                 precipMm: NaN,
                 // the metric graphs
                 windKmh: h.windKmh,
+                windDeg: h.windDeg,
                 pressureHpa: h.pressureHpa,
                 kp: kpv,
                 gScale: kpg,
@@ -964,10 +973,8 @@ Item {
                         var parts = ds.split("-");
                         name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                     }
-                    var t = name + ", " + weatherRoot.formatIsoDate(ds, true);
-                    if (entry && entry.code !== undefined)
-                        t += " · " + weatherRoot.weatherCodeToText(entry.code);
-                    return t;
+                    // (the weather condition is not part of it: the icons show it)
+                    return name + ", " + weatherRoot.formatIsoDate(ds, true);
                 }
             }
 
@@ -1034,6 +1041,7 @@ Item {
                     Layout.fillWidth: true
                     active: forecastRoot.dailyGraphs
                     chartSource: forecastRoot._chartSource
+                    glyphFont: forecastRoot._wiFontFamily
                     view: dailyAdapter
                     days: forecastRoot._dailyChartDays
                     metrics: forecastRoot._dailyMetrics
@@ -1686,11 +1694,14 @@ Item {
                         Item {
                             id: graphsRoot
                             // the panel is as tall as the chart plus its margins
-                            implicitHeight: hourlyStack.mainItem ? hourlyStack.implicitHeight + 16 : 0
+                            implicitHeight: hourlyStack.mainItem ? hourlyStack.implicitHeight + 16 + _barH : 0
                             // all graphs are loaded: only then the panel takes the chart's own height
                             // (it keeps the height of the last chart until then, so nothing jumps)
                             readonly property bool ready: hourlyStack.ready
-                            readonly property real fullHeight: hourlyStack.implicitHeight + 16
+                            readonly property real fullHeight: hourlyStack.implicitHeight + 16 + _barH
+                            // the zoom bar above the graphs (as the daily graphs have): only with enough hours to zoom into
+                            readonly property bool _hasBar: _data.items.length > 3
+                            readonly property real _barH: _hasBar ? hourlyBar.implicitHeight + 2 : 0
                             // what a chart with this many graphs measured last time
                             readonly property string _heightKey: _metrics.length + (_showMain ? "" : "x")
                             readonly property real expectedHeight: forecastRoot._hourlyGuessByCount[_heightKey] || 0
@@ -1743,14 +1754,70 @@ Item {
                                 }
                             }
 
+                            // Zoom in / out / restore (the same buttons as above the daily graphs)
+                            RowLayout {
+                                id: hourlyBar
+                                x: 10
+                                y: 6
+                                width: parent.width - 20
+                                visible: graphsRoot._hasBar && hourlyStack._on
+                                spacing: 2
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                    color: forecastRoot.themeTextColor
+                                    opacity: 0.7
+                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                    text: {
+                                        var c = hourlyStack.mainItem;
+                                        var it = graphsRoot._data.items;
+                                        if (c && c.zoomed === true && it.length > 0) {
+                                            var a = it[Math.min(c.visibleFirst, it.length - 1)];
+                                            var b = it[Math.min(c.visibleLast, it.length - 1)];
+                                            return a && b ? a.hourText + " – " + b.hourText : "";
+                                        }
+                                        return i18n("Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in");
+                                    }
+                                }
+                                ToolButton {
+                                    icon.name: "zoom-out"
+                                    display: AbstractButton.IconOnly
+                                    enabled: !!hourlyStack.mainItem && hourlyStack.mainItem.zoomed === true
+                                    onClicked: hourlyStack.mainItem.zoomOut()
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: i18n("Zoom out")
+                                    Accessible.name: i18n("Zoom out")
+                                }
+                                ToolButton {
+                                    icon.name: "zoom-in"
+                                    display: AbstractButton.IconOnly
+                                    enabled: !!hourlyStack.mainItem && hourlyStack.mainItem.canZoomIn === true
+                                    onClicked: hourlyStack.mainItem.zoomIn()
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: i18n("Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)")
+                                    Accessible.name: i18n("Zoom in")
+                                }
+                                ToolButton {
+                                    icon.name: "zoom-original"
+                                    display: AbstractButton.IconOnly
+                                    enabled: !!hourlyStack.mainItem && hourlyStack.mainItem.zoomed === true
+                                    onClicked: hourlyStack.mainItem.resetZoom()
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: i18n("Restore")
+                                    Accessible.name: i18n("Restore")
+                                }
+                            }
+
                             ForecastChartStack {
                                 id: hourlyStack
                                 x: 10
-                                y: 8
+                                y: 8 + graphsRoot._barH
                                 width: parent.width - 20
                                 active: true
                                 opacity: ready ? 1 : 0
                                 chartSource: forecastRoot._chartSource
+                                glyphFont: forecastRoot._wiFontFamily
                                 view: hourlyAdapter
                                 days: graphsRoot._data.items
                                 metrics: graphsRoot._metrics
