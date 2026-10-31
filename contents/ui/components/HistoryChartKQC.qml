@@ -134,6 +134,34 @@ ColumnLayout {
      *  binds it to the color chosen in the settings; the History tab keeps the default. */
     property color precipColor: "#26c6da"
 
+    /** The Forecast tab's "combine graphs into one" option: the details of the entry under the
+     *  pointer ("wind", "pressure", ...) are listed in a card inside this graph instead of having
+     *  graphs of their own. [{ key, label, color, fmt(v), badge(i, key, v, entry) }]; empty = no card. */
+    property var detailMetrics: []
+    /** The rows of the card for the entry under the pointer: [{ label, color, text }] */
+    readonly property var detailRows: {
+        var out = [];
+        if (hoverIndex < 0 || hoverIndex >= days.length)
+            return out;
+        var e = days[hoverIndex];
+        for (var k = 0; k < detailMetrics.length; ++k) {
+            var m = detailMetrics[k];
+            var v = e[m.key];
+            if (typeof v !== "number" || !isFinite(v))
+                continue;
+            out.push({
+                label: m.label,
+                color: m.color,
+                text: m.badge ? m.badge(hoverIndex, m.key, v, e) : (m.fmt ? m.fmt(v) : String(v))
+            });
+        }
+        return out;
+    }
+    /** Height of the card when every detail has a value (the most it can need) */
+    readonly property real detailCardH: detailMetrics.length > 0 ? detailMetrics.length * (Math.ceil(tmH.height) + 4) + 12 : 0
+    /** Least plot height that leaves room for the card (the card sits beside the plot and the strip) */
+    readonly property real detailMinPlotH: detailCardH - 2 * marginV - (showPrecip ? Kirigami.Units.largeSpacing + precipPlotH : 0)
+
     // ── Zoom ──────────────────────────────────────────────────────────────
     // 1 = whole period fits; the plot is `zoom` times as wide as the chart.
     property real zoom: 1
@@ -1156,6 +1184,52 @@ ColumnLayout {
                         text: pinned.hoverDay ? root._fmtPrecip(pinned.hoverDay.precipMm) : ""
                         font: Kirigami.Theme.smallFont
                         color: root.precipColor
+                    }
+                }
+
+                // The details of the hovered entry (the "combine graphs into one" option), in the
+                // corner away from the cursor so that the badges next to it stay readable
+                Rectangle {
+                    id: detailCard
+                    visible: pinned.hovering && root.detailRows.length > 0
+                    width: detailCol.implicitWidth + 16
+                    height: detailCol.implicitHeight + 12
+                    radius: 4
+                    color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(Kirigami.Theme.textColor, 0.06))
+                    border.width: 1
+                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.3)
+                    x: pinned.badgesRight ? area.vw - width - 4 : 4
+                    y: Math.max(area.gvY, area.gvY + (area.precipBottom - area.gvY - height) / 2)
+                    z: 5
+                    Column {
+                        id: detailCol
+                        anchors.centerIn: parent
+                        spacing: 4
+                        Repeater {
+                            model: root.detailRows
+                            delegate: Row {
+                                required property var modelData
+                                spacing: Kirigami.Units.smallSpacing
+                                Rectangle {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Kirigami.Units.gridUnit * 0.5
+                                    height: width
+                                    radius: width / 2
+                                    color: modelData.color
+                                }
+                                Label {
+                                    text: modelData.label + ":"
+                                    font: Kirigami.Theme.smallFont
+                                    color: Kirigami.Theme.textColor
+                                    opacity: 0.75
+                                }
+                                Label {
+                                    text: modelData.text
+                                    font: Kirigami.Theme.smallFont
+                                    color: modelData.color
+                                }
+                            }
+                        }
                     }
                 }
 

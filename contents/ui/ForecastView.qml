@@ -275,6 +275,10 @@ Item {
     // "graphs" = the days as one graph (Daily layout); anything else = the standard rows
     readonly property bool dailyGraphs: Plasmoid.configuration.forecastLayout === "graphs"
     readonly property bool hourlyGraphs: hourlyLayout === "graphs"
+    // "Graphs" layouts: ONE compact graph (temperature, icons, precipitation); the other details
+    // are shown for the day / hour under the pointer (the "Combine graphs into one" switches)
+    readonly property bool dailyCombined: Plasmoid.configuration.forecastGraphsCombined === true
+    readonly property bool hourlyCombined: Plasmoid.configuration.forecastHourlyGraphsCombined === true
     onDailyGraphsChanged: hourlyCollapsed = false
     readonly property bool _forecastDualTemp: Plasmoid.configuration.dualTempEnabled === true && Plasmoid.configuration.dualTempInWidget !== false
     readonly property bool _forecastShowTempUnit: Plasmoid.configuration.showTempUnit === true
@@ -742,6 +746,10 @@ Item {
     // The temperature graph can be switched off in the settings; it stays when there is no other
     // graph, so the Graphs layout is never empty
     readonly property bool _dailyShowMain: Plasmoid.configuration.forecastShowTemp !== false || _dailyMetrics.length === 0
+    // what the combined graph lists on hover: the details, except the amount of precipitation that its strip shows
+    readonly property var _dailyDetailMetrics: _dailyMetrics.filter(function (m) {
+        return m.key !== "precipSum";
+    })
     readonly property bool _dailyOwnPrecip: {
         for (var i = 0; i < _dailyMetrics.length; ++i)
             if (_dailyMetrics[i].key === "precipSum")
@@ -1026,6 +1034,8 @@ Item {
                     days: forecastRoot._dailyChartDays
                     metrics: forecastRoot._dailyMetrics
                     showMain: forecastRoot._dailyShowMain
+                    combined: forecastRoot.dailyCombined
+                    detailMetrics: forecastRoot._dailyDetailMetrics
                     mainIndex: forecastRoot._mainIndexFor(forecastRoot._dailyMetrics, false)
                     outerFlickable: forecastRoot._outerFlickable
                     outerScroll: forecastRoot._scrollParentVertically
@@ -1060,7 +1070,8 @@ Item {
                             return d ? forecastRoot.resolveConditionIcon(d.code, false, forecastRoot.iconSz) : null;
                         };
                         item.showPrecip = Qt.binding(function () {
-                            return !forecastRoot._dailyOwnPrecip;
+                            // the combined graph has no graph of its own for the amount: the strip stays
+                            return !forecastRoot._dailyOwnPrecip || forecastRoot.dailyCombined;
                         });
                     }
                 }
@@ -1698,6 +1709,10 @@ Item {
                             // switched off; it stays when there is no other graph
                             readonly property bool _showMain: Plasmoid.configuration.forecastHourlyShowTemp !== false || _metrics.length === 0
                             readonly property int _mainIndex: forecastRoot._mainIndexFor(_metrics, true)
+                            // what the combined graph lists on hover (the amount is left out when the strip shows it)
+                            readonly property var _detailMetrics: _metrics.filter(function (m) {
+                                return m.key !== "precipSum" || graphsRoot._data.percent || !forecastRoot._hourlyShowPrecipProb;
+                            })
                             readonly property bool _ownPrecip: {
                                 for (var i = 0; i < _metrics.length; ++i)
                                     if (_metrics[i].key === "precipSum")
@@ -1736,6 +1751,8 @@ Item {
                                 days: graphsRoot._data.items
                                 metrics: graphsRoot._metrics
                                 showMain: graphsRoot._showMain
+                                combined: forecastRoot.hourlyCombined
+                                detailMetrics: graphsRoot._detailMetrics
                                 mainIndex: graphsRoot._mainIndex
                                 outerFlickable: forecastRoot._outerFlickable
                                 outerScroll: forecastRoot._scrollParentVertically
@@ -1778,7 +1795,7 @@ Item {
                                     // precipitation has a graph of its own: the strip stays only when it
                                     // shows the chance of precipitation instead
                                     item.showPrecip = Qt.binding(function () {
-                                        return forecastRoot._hourlyShowPrecipProb && (graphsRoot._data.percent || !graphsRoot._ownPrecip);
+                                        return forecastRoot._hourlyShowPrecipProb && (graphsRoot._data.percent || !graphsRoot._ownPrecip || forecastRoot.hourlyCombined);
                                     });
                                     // the color of the bars, chosen in the settings
                                     item.precipColor = Qt.binding(function () {

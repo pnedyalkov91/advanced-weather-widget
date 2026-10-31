@@ -348,6 +348,10 @@
          A graph that is not listed keeps its built-in color. -->
     <entry name="forecastGraphColors"       type="String"><default></default></entry>
     <entry name="forecastHourlyGraphColors" type="String"><default></default></entry>
+    <!-- "Graphs" layouts: true = ONE compact graph (temperature, weather icons, precipitation)
+         instead of one graph per detail; hovering a day / hour shows all the other details in a card -->
+    <entry name="forecastGraphsCombined"       type="Bool"><default>false</default></entry>
+    <entry name="forecastHourlyGraphsCombined" type="Bool"><default>false</default></entry>
 
     <!-- ── Widget - hourly forecast extra stats ──────────────────────── -->
     <entry name="forecastHourlyShowTemp"       type="Bool"><default>true</default></entry>

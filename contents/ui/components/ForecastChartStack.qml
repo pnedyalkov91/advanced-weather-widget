@@ -21,6 +21,10 @@
  *                 The graphs are only rebuilt when the list of keys changes (selecting another
  *                 day or refreshing the data keeps them), so the closures must not capture the data.
  *   showMain      false: no temperature graph (its icons and precipitation strip go with it)
+ *   combined      true: ONE graph - only the temperature graph is built (whatever `showMain` says);
+ *                 the details of `detailMetrics` are shown for the day / hour under the pointer,
+ *                 in a card inside that graph, instead of in graphs of their own
+ *   detailMetrics the metrics for that card (same form as `metrics`); only used when `combined`
  *   mainIndex     how many metric graphs come before the temperature graph (0 = on top)
  *   configureMain function(chart): sets up the temperature graph (series, icons, ...)
  *   markers / shadeBefore / labelSampleText / minZoomDays / selectable / selectedIndex
@@ -49,6 +53,8 @@ ColumnLayout {
     property var days: []
     property var metrics: []
     property bool showMain: true
+    property bool combined: false
+    property var detailMetrics: []
     property int mainIndex: 0
     property var configureMain: null
     property var markers: []
@@ -73,11 +79,11 @@ ColumnLayout {
     property var _blockModel: []
     property string _blockSig: ""
     function _syncBlocks() {
-        var list = metrics || [];
+        var list = combined ? [] : (metrics || []);
         var at = Math.max(0, Math.min(list.length, mainIndex));
         var blocks = [];
         for (var i = 0; i <= list.length; ++i) {
-            if (showMain && i === at)
+            if ((showMain || combined) && i === at)
                 blocks.push({
                     key: "__main",
                     isMain: true
@@ -87,7 +93,7 @@ ColumnLayout {
         }
         var sig = blocks.map(function (b) {
             return b.key;
-        }).join("|");
+        }).join("|") + (combined ? "|combined" : "");
         if (sig !== _blockSig) {
             _blockSig = sig;
             _blockModel = blocks;
@@ -128,6 +134,7 @@ ColumnLayout {
     }
     onMetricsChanged: _refresh()
     onShowMainChanged: _refresh()
+    onCombinedChanged: _refresh()
     onMainIndexChanged: _refresh()
     Component.onCompleted: _syncBlocks()
 
@@ -298,6 +305,16 @@ ColumnLayout {
                     // the temperature graph
                     if (stack.configureMain)
                         stack.configureMain(item);
+                    if (stack.combined) {
+                        // the other details are shown in a card beside the pointer
+                        item.detailMetrics = Qt.binding(function () {
+                            return stack.detailMetrics;
+                        });
+                        // room for the card (never smaller than the usual plot)
+                        item.tempPlotH = Qt.binding(function () {
+                            return Math.max(Kirigami.Units.gridUnit * 6, item.detailMinPlotH);
+                        });
+                    }
                     return;
                 }
                 // the sunrise / sunset lines, without their labels (the temperature graph has them)
