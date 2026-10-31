@@ -11,6 +11,9 @@
  * The temperature graph is a block like the others: it sits at `mainIndex` among the
  * metric graphs (0 = on top) and is left out when `showMain` is false.
  *
+ * The pointer is shared: pointing at a day / hour in one graph shows the cursor and the values
+ * of that day / hour in all the graphs at once.
+ *
  * Input
  *   chartSource   the chart file to load ("" = none)
  *   active        whether the graphs are wanted at all
@@ -25,7 +28,7 @@
  *                 the details of `detailMetrics` are shown for the day / hour under the pointer,
  *                 in a card inside that graph, instead of in graphs of their own
  *   detailMetrics the metrics for that card (same form as `metrics`); only used when `combined`
- *   mainIndex     how many metric graphs come before the temperature graph (0 = on top)
+ *   mainIndex    how many metric graphs come before the temperature graph (0 = on top)
  *   configureMain function(chart): sets up the temperature graph (series, icons, ...)
  *   markers / shadeBefore / labelSampleText / minZoomDays / selectable / selectedIndex
  *                 passed on to every graph
@@ -96,6 +99,7 @@ ColumnLayout {
         }).join("|") + (combined ? "|combined" : "");
         if (sig !== _blockSig) {
             _blockSig = sig;
+            _hoverOwner = null;     // the graphs are about to be recreated
             _blockModel = blocks;
         }
     }
@@ -174,11 +178,50 @@ ColumnLayout {
     signal chartStatus(var loader)
     signal daySelected(int index)
 
-    spacing: Kirigami.Units.largeSpacing
+    // (the graphs sit close together: they read as one block with a common cursor)
+    spacing: Kirigami.Units.smallSpacing
 
     // ── the graphs line up and move together ───────────────────────────────
     property real gutter: 0
     property bool _syncing: false
+
+    // ── the shared pointer ─────────────────────────────────────────────────
+    // Each graph shows its cursor and value badges for its own `hoverIndex`, which it sets from its
+    // own pointer. The graph the pointer is in (the owner) passes its index on to the others, so
+    // they all show the same day / hour. Nothing else about them changes. (With `combined` there is
+    // just one graph, and nothing to pass on.)
+    /** the graph the pointer is in (null: none) */
+    property var _hoverOwner: null
+    property bool _hoverSyncing: false
+
+    /** every graph except `src` shows entry `idx` (-1: none) */
+    function _hoverBroadcast(src, idx) {
+        _hoverSyncing = true;
+        var its = _items();
+        for (var i = 0; i < its.length; ++i)
+            if (its[i] !== src && its[i].hoverIndex !== idx)
+                its[i].hoverIndex = idx;
+        _hoverSyncing = false;
+    }
+    /** `src` changed its `hoverIndex` (the pointer moved in it, left it, or the graph reset it) */
+    function _hoverChanged(src) {
+        if (_hoverSyncing || !src)
+            return;
+        var idx = src.hoverIndex;
+        if (idx >= 0) {
+            _hoverOwner = src;
+            _hoverBroadcast(src, idx);
+        } else if (!_hoverOwner || _hoverOwner === src) {
+            _hoverOwner = null;
+            _hoverBroadcast(src, -1);
+        } else {
+            // `src` only mirrored the owner, and was told "the pointer left" late (the pointer has
+            // already moved on to the owner): it keeps mirroring
+            _hoverSyncing = true;
+            src.hoverIndex = _hoverOwner.hoverIndex;
+            _hoverSyncing = false;
+        }
+    }
 
     function _items() {
         var out = [];
@@ -273,6 +316,9 @@ ColumnLayout {
         });
         it.daySelected.connect(function (i) {
             stack.daySelected(i);
+        });
+        it.hoverIndexChanged.connect(function () {
+            stack._hoverChanged(it);
         });
         it.zoomChanged.connect(function () {
             stack._follow(it);

@@ -1561,8 +1561,8 @@ KCM.AbstractKCM {
     property string cfg_forecastHourlyGraphOrder: "temp;wind;pressure;kp;uv;precip;vis"
     property string cfg_forecastGraphColors: ""          // "wind=#66bb6a;uv=#ffb300": own colors of the daily graphs
     property string cfg_forecastHourlyGraphColors: ""    // the same for the hourly graphs
-    property bool cfg_forecastGraphsCombined: false      // daily "Graphs" layout: one combined graph, details on hover
-    property bool cfg_forecastHourlyGraphsCombined: false // the same for the hourly graphs
+    property string cfg_forecastGraphsMode: "separate"       // daily "Graphs" layout: "separate" | "compact"
+    property string cfg_forecastHourlyGraphsMode: "separate" // the same for the hourly graphs
     property bool cfg_forecastHourlyShowTemp: true
     property bool cfg_forecastHourlyShowPrecipProb: true
     property bool cfg_forecastHourlyShowWind: true

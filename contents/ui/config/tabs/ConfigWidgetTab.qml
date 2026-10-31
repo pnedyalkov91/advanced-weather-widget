@@ -51,6 +51,57 @@ ColumnLayout {
         }
     }
 
+    // How a "Graphs" layout arranges its graphs (the dropdown under the Daily / Hourly layout):
+    //   Separated - one graph for each detail that is switched on, with a shared pointer: pointing
+    //               at a day / hour shows its value in every graph at once
+    //   Compact   - ONE graph; the other details are shown for the day / hour under the pointer
+    // `modeProp` names the cfg_* property that holds the choice.
+    component GraphsModeBox: ColumnLayout {
+        id: gm
+        /** The KCM root that owns the cfg_* properties */
+        required property var cfgRoot
+        required property string modeProp
+        /** true: the hourly forecast (the hint says "hour" instead of "day") */
+        required property bool hourly
+        spacing: Kirigami.Units.smallSpacing
+
+        readonly property var _opts: [
+            {
+                text: i18n("Separated"),
+                value: "separate"
+            },
+            {
+                text: i18n("Compact"),
+                value: "compact"
+            }
+        ]
+        // anything unknown (an empty or an older value, e.g. "linked") counts as "separate"
+        readonly property string current: String(gm.cfgRoot[gm.modeProp] || "") === "compact" ? "compact" : "separate"
+
+        ComboBox {
+            textRole: "text"
+            model: gm._opts
+            currentIndex: {
+                for (var i = 0; i < gm._opts.length; i++)
+                    if (gm._opts[i].value === gm.current)
+                        return i;
+                return 0;
+            }
+            onActivated: gm.cfgRoot[gm.modeProp] = gm._opts[currentIndex].value
+        }
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            font: Kirigami.Theme.smallFont
+            text: {
+                if (gm.current === "compact")
+                    return gm.hourly ? i18n("One compact graph; point at an hour to see all the other details") : i18n("One compact graph; point at a day to see all the other details");
+                return gm.hourly ? i18n("A graph for each detail; point at an hour to see its value in all of them") : i18n("A graph for each detail; point at a day to see its value in all of them");
+            }
+        }
+    }
+
     // The forecast detail switches on ONE line (they wrap only when the page is too narrow).
     // GraphOrderList (below) works on the same switches: it lists the graphs that are switched
     // on - for the "Graphs" layout - so they can be dragged into order and given their colors.
@@ -1768,30 +1819,21 @@ ColumnLayout {
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastLayout = _opts[currentIndex].value
             }
-            // one compact graph instead of one graph per detail (only with the "Graphs" layout)
+            // how the graphs are arranged (only with the "Graphs" layout)
             Label {
-                text: i18n("Combine graphs into one:")
+                text: i18n("Graphs style:")
                 visible: widgetTab.configRoot.cfg_forecastLayout === "graphs"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
             }
-            RowLayout {
+            GraphsModeBox {
                 visible: widgetTab.configRoot.cfg_forecastLayout === "graphs"
-                spacing: Kirigami.Units.smallSpacing
-                Switch {
-                    id: dailyCombinedSwitch
-                    checked: widgetTab.configRoot.cfg_forecastGraphsCombined
-                    onToggled: widgetTab.configRoot.cfg_forecastGraphsCombined = checked
-                }
-                Label {
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    opacity: 0.7
-                    font: Kirigami.Theme.smallFont
-                    text: dailyCombinedSwitch.checked ? i18n("One compact graph; point at a day to see all the other details") : i18n("One graph for each detail that is switched on")
-                }
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                modeProp: "cfg_forecastGraphsMode"
+                hourly: false
             }
             Label {
                 text: i18n("Show in daily forecast:")
@@ -1938,30 +1980,21 @@ ColumnLayout {
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastHourlyLayout = _opts[currentIndex].value
             }
-            // one compact graph instead of one graph per detail (only with the "Graphs" layout)
+            // how the graphs are arranged (only with the "Graphs" layout)
             Label {
-                text: i18n("Combine graphs into one:")
+                text: i18n("Graphs style:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
             }
-            RowLayout {
+            GraphsModeBox {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
-                spacing: Kirigami.Units.smallSpacing
-                Switch {
-                    id: hourlyCombinedSwitch
-                    checked: widgetTab.configRoot.cfg_forecastHourlyGraphsCombined
-                    onToggled: widgetTab.configRoot.cfg_forecastHourlyGraphsCombined = checked
-                }
-                Label {
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    opacity: 0.7
-                    font: Kirigami.Theme.smallFont
-                    text: hourlyCombinedSwitch.checked ? i18n("One compact graph; point at an hour to see all the other details") : i18n("One graph for each detail that is switched on")
-                }
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                modeProp: "cfg_forecastHourlyGraphsMode"
+                hourly: true
             }
             Label {
                 text: i18n("Sunrise/sunset markers:")

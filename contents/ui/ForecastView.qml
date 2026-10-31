@@ -275,10 +275,14 @@ Item {
     // "graphs" = the days as one graph (Daily layout); anything else = the standard rows
     readonly property bool dailyGraphs: Plasmoid.configuration.forecastLayout === "graphs"
     readonly property bool hourlyGraphs: hourlyLayout === "graphs"
-    // "Graphs" layouts: ONE compact graph (temperature, icons, precipitation); the other details
-    // are shown for the day / hour under the pointer (the "Combine graphs into one" switches)
-    readonly property bool dailyCombined: Plasmoid.configuration.forecastGraphsCombined === true
-    readonly property bool hourlyCombined: Plasmoid.configuration.forecastHourlyGraphsCombined === true
+    // How the "Graphs" layouts arrange their graphs (the "Graphs style" settings):
+    //   "separate" (default) one graph for each detail that is switched on; the pointer is shared:
+    //                        pointing at a day / hour in one graph shows its value in all of them
+    //   "compact"            ONE graph (temperature, icons, precipitation); the other details are
+    //                        shown for the day / hour under the pointer
+    // (anything else, e.g. an empty value or an older "linked", counts as "separate")
+    readonly property bool dailyCombined: Plasmoid.configuration.forecastGraphsMode === "compact"
+    readonly property bool hourlyCombined: Plasmoid.configuration.forecastHourlyGraphsMode === "compact"
     onDailyGraphsChanged: hourlyCollapsed = false
     readonly property bool _forecastDualTemp: Plasmoid.configuration.dualTempEnabled === true && Plasmoid.configuration.dualTempInWidget !== false
     readonly property bool _forecastShowTempUnit: Plasmoid.configuration.showTempUnit === true

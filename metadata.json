@@ -1,8 +1,8 @@
 {
   "KPackageStructure": "Plasma/Applet",
   "KPlugin": {
-    "Id": "org.kde.plasma.advanced-weather-widget",
-    "Name": "Advanced Weather Widget",
+    "Id": "org.kde.plasma.advanced-weather-widget-dev",
+    "Name": "Advanced Weather Widget (Development Version)",
     "Name[bg]": "Разширен уиджет за времето",
     "Name[de]":"Advanced Weather Widget",
     "Name[nl]": "Uitgebreide weerwidget",

@@ -348,10 +348,14 @@
          A graph that is not listed keeps its built-in color. -->
     <entry name="forecastGraphColors"       type="String"><default></default></entry>
     <entry name="forecastHourlyGraphColors" type="String"><default></default></entry>
-    <!-- "Graphs" layouts: true = ONE compact graph (temperature, weather icons, precipitation)
-         instead of one graph per detail; hovering a day / hour shows all the other details in a card -->
-    <entry name="forecastGraphsCombined"       type="Bool"><default>false</default></entry>
-    <entry name="forecastHourlyGraphsCombined" type="Bool"><default>false</default></entry>
+    <!-- How the "Graphs" layouts arrange their graphs:
+           separate = one graph for each detail that is switched on; the pointer is shared: pointing
+                      at a day / hour shows its value in every graph at once
+           compact  = ONE graph (temperature, weather icons, precipitation); hovering a day / hour
+                      shows all the other details in a card
+         (any other value, e.g. an older "linked", counts as "separate") -->
+    <entry name="forecastGraphsMode"       type="String"><default>separate</default></entry>
+    <entry name="forecastHourlyGraphsMode" type="String"><default>separate</default></entry>
 
     <!-- ── Widget - hourly forecast extra stats ──────────────────────── -->
     <entry name="forecastHourlyShowTemp"       type="Bool"><default>true</default></entry>
