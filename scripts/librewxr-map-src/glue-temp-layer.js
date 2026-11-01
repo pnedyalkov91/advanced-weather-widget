@@ -110,6 +110,9 @@ WidgetTemp.TempLayer = (function () {
     this._api = null;         // the API field last made: { grid, field }
     this._jobs = [];          // tiles waiting for their rows to be drawn
     this._frame = false;      // a frame asked for those
+    this._manual = !!options.manual;   // the file grid comes from showFile() only (the animation)
+    this._inflight = 0;       // tiles asked for and not drawn yet
+    this._served = null;      // the data the last tile asked for was drawn from
     var self = this;
     this._provider = function (z, x, y, signal) { return self.tile(z, x, y, signal); };
   }
@@ -125,7 +128,7 @@ WidgetTemp.TempLayer = (function () {
       this._renderLegend();
       this._onMoveEnd = function () { self._reset(); };
       map.on('moveend', this._onMoveEnd);
-      if (this._open) {
+      if (this._open && !this._manual) {
         var open = this._open;
         open.keptTemp().then(function (grid) {
           if (grid && !self._fileGrid) self._fileIn(grid, true);
@@ -137,16 +140,18 @@ WidgetTemp.TempLayer = (function () {
             self._reset();
           }
         });
-        open.loadSurface().then(function (surface) {
-          if (!self._map || !surface) return;
-          self._surface = surface;
-          self._reset();
-        });
         this._recheck = setInterval(function () {
           open.loadTemp().then(function (res) { if (res && res.changed) self._fileIn(res.grid, true); });
         }, RECHECK_MS);
         // Under Node (tests) the timer must not keep the process alive.
         if (this._recheck && this._recheck.unref) this._recheck.unref();
+      }
+      if (this._open) {
+        this._open.loadSurface().then(function (surface) {
+          if (!self._map || !surface) return;
+          self._surface = surface;
+          self._reset();
+        });
       }
       this._reset();
       return this;
@@ -168,6 +173,13 @@ WidgetTemp.TempLayer = (function () {
     /** True once a tile is drawn. */
     isDrawing: function () { return this._drawn; },
 
+    /** Manual mode: show this file grid at every zoom. */
+    showFile: function (grid) { this._fileIn(grid, true); },
+
+    /** True once the map has asked for the tiles of the data shown and got
+        them all. */
+    settled: function () { return !!this._shown && this._served === this._shown && this._inflight === 0; },
+
     /** Opacity in percent: only the layer changes, nothing is redrawn. */
     setOpacity: function (percent) {
       this.options.opacity = WidgetTemp.normOpacity(percent);
@@ -187,6 +199,8 @@ WidgetTemp.TempLayer = (function () {
     tile: function (z, x, y, signal) {
       var self = this, shown = this._shown, px = new Uint8ClampedArray(TILE * TILE * 4);
       if (!this._map || !shown) return Promise.resolve(px);
+      this._served = shown;
+      this._inflight++;
       var dz = Math.min(z, DEM_MAX_ZOOM), s = z - dz;
       var dx = x >> s, dy = y >> s;
       var wantsDem = !!this._dem && shown.fields.some(function (f) { return !!f.elev; });
@@ -201,6 +215,12 @@ WidgetTemp.TempLayer = (function () {
           });
           self._pump();
         });
+      }).then(function (out) {
+        self._inflight--;
+        return out;
+      }, function (err) {
+        self._inflight--;
+        throw err;
       });
     },
 
@@ -284,6 +304,11 @@ WidgetTemp.TempLayer = (function () {
       var self = this, token = ++this._token, view = this._view();
       if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
       var file = this._open && this._fileState === 'ready' ? this._fileField() : null;
+      if (this._manual) {
+        this._setMode('file');
+        if (file) this._show([file]);
+        return;
+      }
       if (this._open && this._fileState !== 'failed' && !WindField.wantApi(WindField.gridSpec(view.bounds), this._open.res)) {
         this._setMode('file');
         // Still on its way: _fileIn() shows it.

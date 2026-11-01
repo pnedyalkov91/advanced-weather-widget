@@ -332,3 +332,26 @@ test('the API held back: tries again once it allows, then new tiles from the vie
   assert.equal(adapter.tiles.length, 1);
   assert.deepEqual(colors(await drawTile(layer, ...tileOf(45.83, 6.87, 15))), [colorOf(11)]);
 });
+
+test('manual mode: the file grid given, at every zoom; settled once its tiles are drawn', async () => {
+  const adapter = fakeAdapter({ west: 6, south: 45, east: 7, north: 46 });
+  const open = fakeOpen();
+  let loads = 0;
+  open.loadTemp = async () => { loads++; return null; };
+  open.keptTemp = async () => { loads++; return null; };
+  const layer = new T.TempLayer(adapter, stubSource(apiEntry(EUROPE)), open, fakeDem(2076), Object.assign({ manual: true }, OPTS));
+  layer.addTo(fakeMap(10));
+  await settle();
+  assert.equal(loads, 0);
+  assert.equal(adapter.tiles.length, 0);
+  assert.equal(layer.settled(), false);
+  layer.showFile(WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW));
+  const last = adapter.tiles[adapter.tiles.length - 1];
+  assert.equal(layer.settled(), false);           // the map has not asked for the tiles yet
+  const p = last.provider(...MONT_BLANC);
+  assert.equal(layer.settled(), false);
+  await settle();
+  assert.deepEqual(colors({ data: await p }), [colorOf(-3)]);
+  assert.equal(layer.settled(), true);
+  layer.remove();
+});

@@ -10,6 +10,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var maxZoom = 12;
   var frameSeq = 0;
   var frameRegistry = [];      // runtime frame entries, creation order
+  var framesHidden = false;    // the radar and satellite frames off (the animations)
   var pendingReady = {};       // source id -> finishers of onLayerReady still waiting
   var alertsEntry = null;      // { geojson } while the alerts overlay is on
   var tempEntry = null;        // { provider, version, opacity } while the temperature shows
@@ -217,7 +218,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       id: entry.layerId,
       type: 'raster',
       source: entry.sourceId,
-      layout: { visibility: entry.held ? 'none' : 'visible' },
+      layout: { visibility: frameVisibility(entry) },
       paint: {
         'raster-opacity': entry.opacity,
         'raster-opacity-transition': { duration: 0, delay: 0 },
@@ -267,9 +268,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // comes back at once.
   var REVEAL_BATCH = 2;
   var moving = false, revealJob = 0;
+  function frameVisibility(e) { return e.held || framesHidden ? 'none' : 'visible'; }
   function holdFrame(e, held) {
     e.held = held;
-    if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', held ? 'none' : 'visible');
+    if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
   }
   function entryOf(handle) {
     for (var i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].layerId === handle.layerId) return frameRegistry[i];
@@ -498,6 +500,15 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       }
       if (map.getLayer(handle.layerId)) map.removeLayer(handle.layerId);
       if (map.getSource(handle.sourceId)) map.removeSource(handle.sourceId);
+    },
+
+    /** Hide every radar and satellite frame, those to come too. */
+    setFramesHidden: function (on) {
+      framesHidden = !!on;
+      for (var i = 0; i < frameRegistry.length; i++) {
+        var e = frameRegistry[i];
+        if (map && map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
+      }
     },
 
     onAlertClick: function (cb) { alertClickCb = cb; },
