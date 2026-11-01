@@ -30,6 +30,7 @@
  * .pragma library - no Qt globals, pure JS.
  */
 .pragma library
+.import "weather.js" as W
 
 // ── KDE system icon names ───────────────────────────────────────────────────
 // These are standard Breeze/Plasma icon names that exist in most KDE themes.
@@ -333,35 +334,12 @@ function _isUnknownCode(code) {
         (typeof code === "number" && isNaN(code)) || code < 0;
 }
 
+// Single source of truth for the WMO -> KDE icon mapping is weather.js
+// (W.weatherCodeToIcon), the same function the panel and tray use. This
+// function only adds the null/NaN guard that weather.js does not have.
 function _conditionKdeIcon(code, night) {
-    var n = night ? true : false;
-    var d = n ? "night" : "day";
-
     if (_isUnknownCode(code)) return "weather-none-available";
-    if (code === 0)  return n ? "weather-clear-night" : "weather-clear";
-    if (code === 1)  return n ? "weather-few-clouds-night" : "weather-few-clouds";
-    if (code === 2)  return "weather-clouds-" + d;
-    if (code === 3)  return "weather-many-clouds";
-    if (code === 45 || code === 48) return "weather-fog";
-    if (code === 51 || code === 53 || code === 55) return "weather-showers-scattered-" + d;
-    if (code === 56) return "weather-freezing-scattered-rain-" + d;
-    if (code === 57) return "weather-freezing-rain-" + d;
-    if (code === 61) return "weather-showers-scattered-" + d;
-    if (code === 63 || code === 65) return "weather-showers-" + d;
-    if (code === 66) return "weather-freezing-scattered-rain-" + d;
-    if (code === 67) return "weather-freezing-rain-" + d;
-    if (code === 71) return "weather-snow-scattered-" + d;
-    if (code === 73 || code === 75) return "weather-snow-" + d;
-    if (code === 77) return "weather-snow-scattered-" + d;
-    if (code === 80) return "weather-showers-scattered-" + d;
-    if (code === 81 || code === 82) return "weather-showers-" + d;
-    if (code === 85) return "weather-snow-scattered-" + d;
-    if (code === 86) return "weather-snow-" + d;
-    if (code === 95) return "weather-storm-" + d;
-    if (code === 96) return "weather-showers-scattered-storm-" + d;
-    if (code === 99) return "weather-snow-scattered-storm-" + d;
-
-    return "weather-few-clouds-night";
+    return W.weatherCodeToIcon(code, night ? true : false, false);
 }
 
 function _conditionSvgStem(code, night) {

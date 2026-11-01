@@ -284,7 +284,7 @@ function windDirectionCompassStem(deg) {
 function weatherCodeToIcon(code, night, symbolic) {
     var n = (night !== undefined) ? night : false;
     var s = (symbolic === true) ? "-symbolic" : "";
-    var d = n ? "night" : "day";   // day/night suffix for icons that have both
+    var d = n ? "night" : "day";  
 
     if (code < 0)   return "weather-none-available";
 
@@ -300,7 +300,7 @@ function weatherCodeToIcon(code, night, symbolic) {
     if (code === 2)
         return "weather-clouds-" + d + s;
 
-    // 3 - Overcast
+    // 3 - Overcast 
     if (code === 3)
         return "weather-many-clouds" + s;
 
@@ -308,63 +308,49 @@ function weatherCodeToIcon(code, night, symbolic) {
     if (code === 45 || code === 48)
         return "weather-fog" + s;
 
-    // 51, 53, 55 - Drizzle (light → dense)
+    // 51, 53, 55 - Drizzle
     if (code === 51 || code === 53 || code === 55)
-        return "weather-showers-scattered-" + d + s;
+        return "weather-showers-scattered" + s; 
 
-    // 56, 57 - Freezing drizzle (light, dense)
-    if (code === 56)
-        return "weather-freezing-scattered-rain-" + d + s;
-    if (code === 57)
-        return "weather-freezing-rain-" + d + s;
+    // 56, 57 - Freezing drizzle
+    if (code === 56 || code === 57)
+        return "weather-freezing-rain" + s;
 
-    // 61, 63, 65 - Rain (slight, moderate, heavy)
-    if (code === 61)
-        return "weather-showers-scattered-" + d + s;
-    if (code === 63 || code === 65)
-        return "weather-showers-" + d + s;
+    // 61, 63, 65 - Rain 
+    if (code === 61 || code === 63 || code === 65)
+        return "weather-showers" + s; 
 
-    // 66, 67 - Freezing rain (light, heavy)
-    if (code === 66)
-        return "weather-freezing-scattered-rain-" + d + s;
-    if (code === 67)
-        return "weather-freezing-rain-" + d + s;
+    // 66, 67 - Freezing rain
+    if (code === 66 || code === 67)
+        return "weather-freezing-rain" + s;
 
-    // 71, 73, 75 - Snow fall (slight, moderate, heavy)
+    // 71, 73, 75 - Snow fall
     if (code === 71)
-        return "weather-snow-scattered-" + d + s;
+        return "weather-snow-scattered" + s;
     if (code === 73 || code === 75)
-        return "weather-snow-" + d + s;
+        return "weather-snow" + s; 
 
     // 77 - Snow grains
     if (code === 77)
-        return "weather-snow-scattered-" + d + s;
+        return "weather-snow-scattered" + s;
 
-    // 80, 81, 82 - Rain showers (slight, moderate, violent)
-    if (code === 80)
-        return "weather-showers-scattered-" + d + s;
-    if (code === 81 || code === 82)
-        return "weather-showers-" + d + s;
+    // 80, 81, 82 - Rain showers 
+    if (code === 80 || code === 81 || code === 82)
+        return "weather-showers-" + d + s; // Sun/Moon + cloud + rain drops
 
-    // 85, 86 - Snow showers (slight, heavy)
-    if (code === 85)
-        return "weather-snow-scattered-" + d + s;
-    if (code === 86)
-        return "weather-snow-" + d + s;
+    // 85, 86 - Snow showers ()
+    if (code === 85 || code === 86)
+        return "weather-snow-" + d + s; // Sun/Moon + cloud + snowflake
 
-    // 95 - Thunderstorm (slight or moderate)
+    // 95 - Thunderstorm
     if (code === 95)
         return "weather-storm-" + d + s;
 
-    // 96 - Thunderstorm with slight hail
-    if (code === 96)
-        return "weather-showers-scattered-storm-" + d + s;
+    // 96, 99 - Thunderstorm with hail 
+    if (code === 96 || code === 99)
+        return "weather-storm" + s;
 
-    // 99 - Thunderstorm with heavy hail
-    if (code === 99)
-        return "weather-snow-scattered-storm-" + d + s;
-
-    return "weather-few-clouds-night" + s;  // safe fallback
+    return (n ? "weather-clear-night" : "weather-clear") + s;  // Fallback for unknown codes
 }
 
 // ── Provider code converters ────────────────────────────────────────────────
