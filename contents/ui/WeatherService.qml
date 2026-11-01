@@ -102,6 +102,31 @@ QtObject {
         return u || "https://alerts.kde.org";
     }
 
+    /**
+     * Preferred alert language for the current location, as a lowercase
+     * primary language subtag ("de", "fr", ...). "" means "native": the
+     * alert parsers then keep their default (non-English info block first).
+     * Read at fetch time, so a settings change applies on the next refresh.
+     * Keys are "lat,lon" with 4 decimals, matching the Alerts settings tab.
+     */
+    function alertsLanguageForLocation() {
+        if (Plasmoid.configuration.alertsLanguageNative !== false)
+            return "";
+        var map;
+        try {
+            map = JSON.parse(Plasmoid.configuration.alertsLanguageByLocation || "{}");
+        } catch (e) {
+            return "";
+        }
+        if (!map || typeof map !== "object")
+            return "";
+        var lat = parseFloat(latitude), lon = parseFloat(longitude);
+        if (isNaN(lat) || isNaN(lon))
+            return "";
+        var v = map[lat.toFixed(4) + "," + lon.toFixed(4)];
+        return (typeof v === "string") ? v.toLowerCase() : "";
+    }
+
     // ── Private: API key helpers ─────────────────────────────────────────
     function _owKey() {
         return (Plasmoid.configuration.owApiKey || "").trim();

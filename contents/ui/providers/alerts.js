@@ -211,7 +211,8 @@ function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
         try {
             var alerts = _parseMeteoAlarmAlerts(
                 state.feedData, service.locationName, state.localTerms,
-                service.latitude, service.longitude);
+                service.latitude, service.longitude,
+                service.alertsLanguageForLocation());
             r.weatherAlerts = alerts;
             callback(true);
         } catch (e) {
@@ -290,7 +291,7 @@ function _getLocalAdminTerms(service, gen, lat, lon, callback) {
     req.send();
 }
 
-function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
+function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon, preferredLang) {
     var now = new Date();
     var alerts = [];
     var userLat = parseFloat(lat);
@@ -324,7 +325,7 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
             return;
         var infos = entry.alert.info;
         // Pick local-language info block for display text
-        var localInfo = _pickLocalInfo(infos);
+        var localInfo = _pickLocalInfo(infos, preferredLang);
         if (!localInfo)
             return;
 
@@ -464,8 +465,18 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
 /**
  * Pick the local-language info block (non-English) from the CAP alert.
  * Falls back to the first info block if no local language is found.
+ * When preferredLang (primary subtag, e.g. "fr") is given and an info block
+ * has that language ("fr" matches "fr-BE"), that block wins.
  */
-function _pickLocalInfo(infos) {
+function _pickLocalInfo(infos, preferredLang) {
+    var pref = (preferredLang || "").toLowerCase();
+    if (pref.length > 0) {
+        for (var p = 0; p < infos.length; ++p) {
+            var l = (infos[p].language || "").toLowerCase();
+            if (l === pref || l.indexOf(pref + "-") === 0 || l.indexOf(pref + "_") === 0)
+                return infos[p];
+        }
+    }
     var local = null;
     var english = null;
     for (var i = 0; i < infos.length; ++i) {

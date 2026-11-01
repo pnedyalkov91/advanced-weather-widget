@@ -58,6 +58,8 @@ KCM.AbstractKCM {
     property bool cfg_radarKeepLoaded: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
+    property bool cfg_alertsLanguageNative: true
+    property string cfg_alertsLanguageByLocation: "{}"
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 

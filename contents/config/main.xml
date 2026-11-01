@@ -428,6 +428,14 @@
     <!-- Base URL of the FOSS Public Alert Server (self-hostable; default is
          KDE's public instance). -->
     <entry name="fossAlertUrl"   type="String"><default>https://alerts.kde.org</default></entry>
+    <!-- Alert language. true = use the alert's native/official language (the
+         non-English CAP <info> block, the long-standing behaviour). false = use
+         the per-location choice stored in alertsLanguageByLocation. -->
+    <entry name="alertsLanguageNative"     type="Bool"><default>true</default></entry>
+    <!-- JSON map "lat,lon" (4 decimals) -> language code ("de", "fr", ...).
+         A location without an entry uses its native language. Only read while
+         alertsLanguageNative is false. -->
+    <entry name="alertsLanguageByLocation" type="String"><default>{}</default></entry>
 
     <!-- ── Notifications ─────────────────────────────────────────────── -->
     <entry name="alertNotificationsEnabled" type="Bool"><default>true</default></entry>

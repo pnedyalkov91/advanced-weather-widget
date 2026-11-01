@@ -3592,6 +3592,14 @@ PlasmoidItem {
             root._pendingRainWindowRefresh = true;
             refreshDebounce.restart();
         }
+        // The alert language is resolved when alerts are fetched, so refetch
+        // when it is changed (debounced: both keys are written on Apply).
+        function onAlertsLanguageNativeChanged() {
+            refreshDebounce.restart();
+        }
+        function onAlertsLanguageByLocationChanged() {
+            refreshDebounce.restart();
+        }
         // These must NOT call _resetAlertNotificationState(): that wipes the
         // dismiss/postpone state for every alert (all severities), so toggling
         // just one severity switch would re-notify every other already-

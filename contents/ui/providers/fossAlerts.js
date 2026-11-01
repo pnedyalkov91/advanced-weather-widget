@@ -119,6 +119,8 @@ function _fetchAlertsByIds(service, gen, base, ids) {
     var r = service.weatherRoot;
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
+    // "" = native (default behaviour); otherwise a primary language subtag.
+    var preferredLang = service.alertsLanguageForLocation();
 
     // Cap the number of individual fetches to avoid hammering the server for
     // a location that happens to sit in a very busy bbox.
@@ -163,7 +165,7 @@ function _fetchAlertsByIds(service, gen, base, ids) {
                 try {
                     var doc = req.responseXML;
                     var parsed = doc
-                        ? _parseCapDocument(doc, lat, lon)
+                        ? _parseCapDocument(doc, lat, lon, preferredLang)
                         : _parseCapText(req.responseText, lat, lon);
                     parsed.forEach(function (a) { collected.push(a); });
                 } catch (e) {
@@ -184,8 +186,12 @@ function _fetchAlertsByIds(service, gen, base, ids) {
  * Parse a CAP <alert> DOM document into zero or more alert objects.
  * Returns [] when the alert is expired, test/exercise, or does not contain
  * the user's coordinates.
+ *
+ * preferredLang (optional): primary language subtag ("de", "fr", ...). The
+ * <info> block in that language is used for the display text when the alert
+ * has one; otherwise the usual native-first choice applies.
  */
-function _parseCapDocument(doc, userLat, userLon) {
+function _parseCapDocument(doc, userLat, userLon, preferredLang) {
     var now = new Date();
     var root = doc && doc.documentElement ? doc.documentElement : null;
     if (!root) return [];
@@ -200,7 +206,7 @@ function _parseCapDocument(doc, userLat, userLon) {
     // Merge geometry + parameters across all <info> blocks (language variants
     // of the same alert may each carry different area / parameter data), and
     // pick a local-language block for display text.
-    var localInfo = _pickLocalInfoNode(infos);
+    var localInfo = _pickLocalInfoNode(infos, preferredLang);
     if (!localInfo) return [];
 
     var color = "", levelName = "", levelNum = 0;
@@ -516,8 +522,18 @@ function _localName(node) {
 /**
  * Pick a local-language <info> node for display, preferring a non-English
  * language, then English, then the first block - mirrors alerts.js.
+ * When preferredLang is given and an <info> block carries that language
+ * (primary subtag match, so "de" matches "de-CH"), that block wins.
  */
-function _pickLocalInfoNode(infos) {
+function _pickLocalInfoNode(infos, preferredLang) {
+    var pref = (preferredLang || "").toLowerCase();
+    if (pref.length > 0) {
+        for (var p = 0; p < infos.length; p++) {
+            var l = _capText(infos[p], "language").toLowerCase();
+            if (l === pref || l.indexOf(pref + "-") === 0 || l.indexOf(pref + "_") === 0)
+                return infos[p];
+        }
+    }
     var local = null, english = null;
     for (var i = 0; i < infos.length; i++) {
         var lang = _capText(infos[i], "language").toLowerCase();
