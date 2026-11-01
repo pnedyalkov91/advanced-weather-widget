@@ -568,11 +568,12 @@ ColumnLayout {
         // What an entry draws above its line: its label or its icon, whichever is wider
         readonly property real cellW: Math.max(tmDate.width, root.labelMinWidth, root.showIcons ? root.iconSize : 0)
         // Forecast tab (icons): every entry owns a column of the same width and sits in the middle
-        // of it. The first and the last entry are half a column (at least half a label) in from
-        // the ends, so their labels and icons are centred on their grid lines like all the others,
-        // and the band of a hovered / selected entry is whole at the ends too.
+        // of it. The first and the last entry are only half a label (or icon) in
+        // from the ends - whatever the number of entries - so their labels and icons are centred
+        // on their grid lines like all the others, and with few days / hours the graph does not
+        // leave wide empty margins at its ends (the band of a selected entry is cut at the ends).
         readonly property bool tableCells: root.showIcons || root.labelMinWidth > 0
-        readonly property real pad: root.dayCount > 1 ? (tableCells ? Math.max(contentW / root.dayCount / 2, Math.min(cellW / 2, contentW / 4)) : Math.max(8, Kirigami.Units.smallSpacing * 2)) : vw / 2
+        readonly property real pad: root.dayCount > 1 ? (tableCells ? Math.min(cellW / 2, contentW / 4) : Math.max(8, Kirigami.Units.smallSpacing * 2)) : vw / 2
         readonly property real step: root.dayCount > 1 ? Math.max(0.001, (contentW - 2 * pad) / (root.dayCount - 1)) : 1
 
         /** x of day i's point, in chart (viewport) coordinates */
@@ -799,9 +800,10 @@ ColumnLayout {
                 // ── selected entry (Forecast tab: the day whose hours are shown) ──
                 Rectangle {
                     visible: root.selectedIndex >= 0 && root.selectedIndex < root.dayCount
-                    x: area.xOf(root.selectedIndex) - area.step / 2
+                    // (cut at the ends of the plot: the first and the last entry sit close to them)
+                    x: Math.max(0, area.xOf(root.selectedIndex) - area.step / 2)
                     y: area.gvY
-                    width: area.step
+                    width: Math.max(0, Math.min(area.vw, area.xOf(root.selectedIndex) + area.step / 2) - x)
                     height: area.precipBottom - area.gvY
                     color: Kirigami.Theme.highlightColor
                     opacity: 0.14
