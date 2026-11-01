@@ -328,6 +328,18 @@
     <entry name="simpleShowSunriseSunset" type="Bool"><default>true</default></entry>
     <entry name="simpleShowForecastCompass" type="Bool"><default>true</default></entry>
     <entry name="simpleShowStatsChips"   type="Bool"><default>true</default></entry>
+    <!-- How the Simple widget draws its forecast: "rows" = Standard (a square for each day),
+         "graphs" = the temperature graph with weather icons and the precipitation strip.
+         Separate from forecastLayout, which belongs to the Advanced mode. -->
+    <entry name="simpleForecastLayout"   type="String"><default>rows</default></entry>
+    <!-- Simple mode, forecast layout "Graphs": the details shown for the day under the pointer
+         (the Advanced mode's "Compact" graph style). Own switches, all on by default, so they
+         do not change the Advanced mode's forecastShow* settings. -->
+    <entry name="simpleForecastShowWind"       type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowPressure"   type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowKpIndex"    type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowUvIndex"    type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowVisibility" type="Bool"><default>true</default></entry>
 
     <!-- ── Widget - forecast ──────────────────────────────────────────── -->
     <entry name="forecastLayout"      type="String"><default>rows</default></entry>

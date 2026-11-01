@@ -376,11 +376,272 @@ ColumnLayout {
         }
     }
 
-    // ── SECTION 3: Forecast squares ───────────────────────────────────────────
+    // ── SECTION 3a: Forecast as a graph (Forecast layout = Graphs) ────────────
+    // The same chart the Forecast tab uses, in its "Compact" style (ForecastChartStack: the
+    // temperature graph with high / low lines, a weather icon for every day and the precipitation
+    // strip). Pointing at a day lists its wind, pressure, Kp, UV and visibility in a card; which
+    // ones is chosen with the "Show in forecast" switches of the settings.
+    readonly property bool _graphsLayout: Plasmoid.configuration.simpleForecastLayout === "graphs"
+
+    // Chart files, resolved from this file. Qt Graphs first; when that module is missing the
+    // Loader fails and HistoryChartKQC.qml (KQuickCharts) takes over, as in the Forecast tab.
+    readonly property string _chartGraphsUrl: String(Qt.resolvedUrl("components/HistoryChartGraphs.qml"))
+    readonly property string _chartKqcUrl: String(Qt.resolvedUrl("components/HistoryChartKQC.qml"))
+    property string _chartSource: _chartGraphsUrl
+
+    // Daily precipitation of an entry of weatherRoot.dailyData (mm), NaN when it has none.
+    // The first of these fields that holds a number is used.
+    function _dayPrecip(d) {
+        var keys = ["precipMm", "precipSumMm", "precipSum", "precip"];
+        for (var i = 0; i < keys.length; ++i) {
+            var v = d[keys[i]];
+            if (typeof v === "number" && isFinite(v))
+                return v;
+        }
+        return NaN;
+    }
+
+    // The details listed for the day under the pointer ("Show in forecast" switches of the settings;
+    // all on by default). Own settings, separate from the Advanced mode's.
+    readonly property bool _fcWind: Plasmoid.configuration.simpleForecastShowWind !== false
+    readonly property bool _fcPressure: Plasmoid.configuration.simpleForecastShowPressure !== false
+    readonly property bool _fcKp: Plasmoid.configuration.simpleForecastShowKpIndex !== false
+    readonly property bool _fcUv: Plasmoid.configuration.simpleForecastShowUvIndex !== false
+    readonly property bool _fcVis: Plasmoid.configuration.simpleForecastShowVisibility !== false
+
+    function _isNum(v) {
+        return typeof v === "number" && isFinite(v);
+    }
+
+    // The same days as the Standard layout shows (forecastDays, "Show Today"), as chart entries.
+    // They carry what the details need (wind, pressure, Kp, UV, visibility) like the Forecast tab's.
+    readonly property var _graphDays: {
+        if (!weatherRoot || !weatherRoot.dailyData)
+            return [];
+        var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
+        var out = [];
+        for (var i = simpleView.showToday ? 0 : 1; i < total; ++i) {
+            var d = weatherRoot.dailyData[i];
+            var kp = NaN, gScale = "";
+            if (simpleView._fcKp) {
+                var ke = weatherRoot.kpForecastForDate(d.dateStr || "");
+                if (ke && isFinite(ke.kp)) {
+                    kp = ke.kp;
+                    gScale = ke.gScale || "G0";
+                }
+            }
+            out.push({
+                dateStr: d.dateStr || "",
+                time: d.time,
+                code: d.code,
+                maxC: d.maxC,
+                minC: d.minC,
+                precipMm: simpleView._dayPrecip(d),
+                isToday: i === 0,
+                windKmh: d.windKmh,
+                windDeg: d.windDir,
+                pressureHpa: d.pressureHpa,
+                kp: kp,
+                gScale: gScale,
+                uv: d.uvMax,
+                visibilityKm: d.visibilityKm
+            });
+        }
+        return out;
+    }
+
+    // The details card of the compact graph (the same rows, colors and texts as the Forecast tab's
+    // Compact graph style). A detail is listed when its switch is on and some day has a value.
+    // (The closures do not capture the data: they only read weatherRoot.)
+    readonly property var _detailMetrics: {
+        var items = simpleView._graphDays;
+        var wr = weatherRoot;
+        var out = [];
+        if (!wr || items.length < 2)
+            return out;
+        function has(key) {
+            for (var i = 0; i < items.length; ++i)
+                if (simpleView._isNum(items[i][key]))
+                    return true;
+            return false;
+        }
+        if (simpleView._fcWind && has("windKmh"))
+            out.push({
+                key: "windKmh",
+                label: i18n("Wind"),
+                color: "#66bb6a",
+                fmt: function (v) {
+                    return wr.windValue(v);
+                },
+                // the wind direction arrow after the value (a weather-icons glyph)
+                glyph: function (i, entry) {
+                    return entry && simpleView._isNum(entry.windDeg) ? W.windDirectionGlyph(entry.windDeg) : "";
+                }
+            });
+        if (simpleView._fcPressure && has("pressureHpa"))
+            out.push({
+                key: "pressureHpa",
+                label: i18n("Pressure"),
+                color: "#ab47bc",
+                fmt: function (v) {
+                    return wr.pressureValue(v);
+                }
+            });
+        if (simpleView._fcKp && has("kp"))
+            out.push({
+                key: "kp",
+                label: i18n("Kp index (G scale)"),
+                color: "#ffa726",
+                fmt: function (v) {
+                    return String(Math.round(v));
+                },
+                badge: function (i, key, v, e) {
+                    return "Kp " + v.toFixed(1) + " (" + ((e && e.gScale) || "G0") + ")";
+                }
+            });
+        if (simpleView._fcUv && has("uv"))
+            out.push({
+                key: "uv",
+                label: i18n("UV index"),
+                color: "#ffb300",
+                fmt: function (v) {
+                    return String(Math.round(v * 10) / 10);
+                }
+            });
+        if (simpleView._fcVis && has("visibilityKm"))
+            out.push({
+                key: "visibilityKm",
+                label: i18n("Visibility"),
+                color: "#90a4ae",
+                fmt: function (v) {
+                    return wr.visibilityValue(v);
+                }
+            });
+        return out;
+    }
+
+    Item {
+        id: graphForecast
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.minimumHeight: forecastGraphs.implicitHeight
+        implicitHeight: forecastGraphs.implicitHeight
+        visible: Plasmoid.configuration.simpleShowForecast !== false && simpleView._graphsLayout && simpleView._graphDays.length > 1
+
+        // What the chart asks its "view" for: value, date and day texts
+        QtObject {
+            id: graphAdapter
+            // (the same texts as the Forecast tab's daily graph)
+            function _isNum(v) {
+                return typeof v === "number" && isFinite(v);
+            }
+            function _temp(c) {
+                return _isNum(c) && weatherRoot ? weatherRoot.tempValue(c) : "--";
+            }
+            function _precip(mm) {
+                return _isNum(mm) && weatherRoot ? weatherRoot.precipSumText(mm) : "--";
+            }
+            /** The region's short date format without the year (day and month only) */
+            function _regionDayMonthPattern() {
+                var fmt = Qt.locale().dateFormat(Locale.ShortFormat);
+                var f = fmt.replace(/[\s.\/\-,]*y+[^dM]*$/, "")      // year at the end (with a trailing "г." and the like)
+                    .replace(/^\s*y+[\s.\/\-,]*/, "")              // year first
+                    .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
+                return f.trim() !== "" ? f : fmt;
+            }
+            /** The axis labels follow Appearance > Misc > Date format as it is set (a preset or a
+             *  custom pattern). Only the two "Region default" choices, which have no pattern of
+             *  their own, are shown as day and month. */
+            function _date(ds, entry) {
+                if (!weatherRoot || !ds)
+                    return "--";
+                var fmt = weatherRoot.dateFormatSetting;
+                if (fmt !== "locale-long" && fmt !== "locale-short" && fmt)
+                    return weatherRoot.formatIsoDate(ds, true);
+                var p = ds.substring(0, 10).split("-");
+                if (p.length !== 3)
+                    return "--";
+                return Qt.formatDate(new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)), _regionDayMonthPattern());
+            }
+            // the title shown above the pointer: "Today", else the day name and the date
+            function _day(ds, longName, entry) {
+                if (!weatherRoot || !ds)
+                    return "--";
+                var name = i18n("Today");
+                if (!entry || !entry.isToday) {
+                    var parts = ds.split("-");
+                    name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
+                }
+                return name + ", " + weatherRoot.formatIsoDate(ds, true);
+            }
+        }
+
+        ForecastChartStack {
+            id: forecastGraphs
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+            }
+            chartSource: simpleView._chartSource
+            active: graphForecast.visible
+            view: graphAdapter
+            days: simpleView._graphDays
+            metrics: []
+            showMain: true
+            mainIndex: 0
+            outerFlickable: null
+            // ONE compact graph (the Advanced mode's "Compact" graph style): temperature, icons and
+            // the precipitation strip; the other details are listed for the day under the pointer
+            combined: true
+            detailMetrics: simpleView._detailMetrics
+            glyphFont: simpleView.wiFontFamily
+
+            // The temperature graph: high and low lines (the colors of the Standard layout),
+            // a weather icon above every day, and the precipitation strip below.
+            configureMain: function (chart) {
+                chart.seriesDefs = Qt.binding(function () {
+                    return [
+                        {
+                            key: "maxC",
+                            color: "#ff6e40",
+                            label: i18n("High")
+                        },
+                        {
+                            key: "minC",
+                            color: "#42a5f5",
+                            label: i18n("Low")
+                        }
+                    ];
+                });
+                chart.precipLegend = i18n("Precipitation");
+                chart.showIcons = true;
+                chart.iconSize = Kirigami.Units.gridUnit * 2;
+                chart.iconAt = function (i) {
+                    // reads _graphDays, so the icons follow the data when it is refreshed
+                    var d = simpleView._graphDays[i];
+                    return d ? simpleView.resolveConditionIconFn(d.code, false, 48) : null;
+                };
+            }
+            // Qt Graphs missing or too old: use the KQuickCharts chart instead
+            onChartStatus: function (loader) {
+                if (loader.status !== Loader.Error || simpleView._chartSource !== simpleView._chartGraphsUrl)
+                    return;
+                // Switching the source from inside its own status change would be a binding
+                // loop (as in the Forecast tab), so do it a moment later.
+                console.warn("SimpleView: Qt Graphs chart unavailable, using KDE Quick Charts");
+                Qt.callLater(function () {
+                    simpleView._chartSource = simpleView._chartKqcUrl;
+                });
+            }
+        }
+    }
+
+    // ── SECTION 3b: Forecast squares (Forecast layout = Standard) ─────────────
     Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        visible: Plasmoid.configuration.simpleShowForecast !== false && weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0
+        visible: Plasmoid.configuration.simpleShowForecast !== false && !simpleView._graphsLayout && weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0
 
         RowLayout {
             anchors.fill: parent

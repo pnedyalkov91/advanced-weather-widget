@@ -1604,6 +1604,13 @@ KCM.AbstractKCM {
     property bool cfg_simpleShowSunriseSunset: true
     property bool cfg_simpleShowForecastCompass: true
     property bool cfg_simpleShowStatsChips: true
+    property string cfg_simpleForecastLayout: "rows"  // Simple mode forecast: "rows" (Standard) | "graphs"
+    // Simple mode, "Graphs" layout: the details shown under the pointer (all on by default)
+    property bool cfg_simpleForecastShowWind: true
+    property bool cfg_simpleForecastShowPressure: true
+    property bool cfg_simpleForecastShowKpIndex: true
+    property bool cfg_simpleForecastShowUvIndex: true
+    property bool cfg_simpleForecastShowVisibility: true
     property string cfg_widgetDefaultTab: "details"  // "details" | "forecast" | "radar" | "history"
     // Semicolon-separated tab ids ("details;forecast;radar;history"), "none" = all hidden.
     // Legacy values "both" (= all) and a single tab id are still understood.

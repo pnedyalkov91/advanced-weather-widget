@@ -1893,6 +1893,78 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_forecastShowToday = checked
                 }
             }
+            // Simple mode only: how the forecast of the Simple widget is drawn. (The Advanced mode
+            // has its own "Daily layout" under Daily Forecast Settings.) Own setting, so the two
+            // modes do not change each other's layout.
+            Label {
+                text: i18n("Forecast layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            ComboBox {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                textRole: "text"
+                readonly property var _opts: [
+                    {
+                        text: i18n("Standard"),
+                        value: "rows"
+                    },
+                    {
+                        text: i18n("Graphs"),
+                        value: "graphs"
+                    }
+                ]
+                model: _opts
+                currentIndex: widgetTab.configRoot.cfg_simpleForecastLayout === "graphs" ? 1 : 0
+                onActivated: widgetTab.configRoot.cfg_simpleForecastLayout = _opts[currentIndex].value
+            }
+            // Simple mode, "Graphs" layout: what the graph shows for the day under the pointer (the
+            // Advanced mode's "Compact" graph style). The same switches as "Show in daily forecast",
+            // without the drag-and-drop order; all on by default. Own settings, so the two modes do
+            // not change each other's.
+            Label {
+                text: i18n("Show in forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple" && widgetTab.configRoot.cfg_simpleForecastLayout === "graphs"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            StatSwitches {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple" && widgetTab.configRoot.cfg_simpleForecastLayout === "graphs"
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                defs: [
+                    {
+                        key: "wind",
+                        label: i18n("Wind"),
+                        cfg: "cfg_simpleForecastShowWind"
+                    },
+                    {
+                        key: "pressure",
+                        label: i18n("Pressure"),
+                        cfg: "cfg_simpleForecastShowPressure"
+                    },
+                    {
+                        key: "kp",
+                        label: i18n("Kp index/G"),
+                        cfg: "cfg_simpleForecastShowKpIndex"
+                    },
+                    {
+                        key: "uv",
+                        label: i18n("UV index"),
+                        cfg: "cfg_simpleForecastShowUvIndex"
+                    },
+                    {
+                        key: "vis",
+                        label: i18n("Visibility"),
+                        cfg: "cfg_simpleForecastShowVisibility"
+                    }
+                ]
+            }
             Label {
                 text: i18n("Auto-open hourly forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
@@ -1963,24 +2035,29 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Daily Forecast Settings
             // ═══════════════════════════════════════════════════════════════
+            // The whole section is for the Advanced mode: in Simple mode the forecast layout is
+            // chosen under General ("Forecast layout"), and the graph details / order do not apply.
             SectionHeader {
                 title: i18n("Daily Forecast Settings")
                 Layout.columnSpan: _form3.columns
                 Layout.topMargin: Kirigami.Units.largeSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
             Item {
                 // empty label cell: keeps the control in the second column
-                visible: _form3.columns === 2
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
                 implicitWidth: 0
                 implicitHeight: 0
             }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
             Label {
                 text: i18n("Daily layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
                 Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -1999,6 +2076,7 @@ ColumnLayout {
                     }
                 ]
                 model: _opts
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 currentIndex: {
                     var v = widgetTab.configRoot.cfg_forecastLayout;
                     for (var i = 0; i < _opts.length; i++)
@@ -2011,14 +2089,14 @@ ColumnLayout {
             // how the graphs are arranged (only with the "Graphs" layout)
             Label {
                 text: i18n("Graphs style:")
-                visible: widgetTab.configRoot.cfg_forecastLayout === "graphs"
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastLayout === "graphs"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                 Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
             }
             GraphsModeBox {
-                visible: widgetTab.configRoot.cfg_forecastLayout === "graphs"
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastLayout === "graphs"
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
                 modeProp: "cfg_forecastGraphsMode"
@@ -2026,6 +2104,7 @@ ColumnLayout {
             }
             Label {
                 text: i18n("Show in daily forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -2033,6 +2112,9 @@ ColumnLayout {
             }
             StatSwitches {
                 id: dailyStats
+                // Advanced mode only. GraphOrderList hides itself with its StatSwitches, so the
+                // "Daily graph order" title and list disappear in Simple mode too.
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 // in the second column, next to the title (the switches wrap only when the page is too narrow)
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
@@ -2381,7 +2463,8 @@ ColumnLayout {
             }
             RowLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
-                enabled: widgetTab.configRoot.cfg_simpleShowForecast
+                // the compass belongs to the Standard layout (the Graphs layout has no compasses)
+                enabled: widgetTab.configRoot.cfg_simpleShowForecast && widgetTab.configRoot.cfg_simpleForecastLayout !== "graphs"
                 Switch {
                     checked: widgetTab.configRoot.cfg_simpleShowForecastCompass
                     onToggled: widgetTab.configRoot.cfg_simpleShowForecastCompass = checked
