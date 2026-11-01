@@ -27,6 +27,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
 
 import "js/weather.js" as W
 import "js/configUtils.js" as ConfigUtils
@@ -61,6 +62,149 @@ ColumnLayout {
     readonly property int    forecastDays: Plasmoid.configuration.forecastDays || 5
     readonly property bool   showToday:    Plasmoid.configuration.forecastShowToday !== false
 
+    // ── Weather alerts (the icon next to the condition icon, its tooltip) ─────────
+    // weatherRoot.weatherAlerts as the Details tab reads it. The alerts that have not expired yet,
+    // sorted by onset; "now" is a property that a timer refreshes, so an alert that expires while
+    // the popup is open goes away (new Date() on its own is not a binding dependency).
+    property var _alertNow: new Date()
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: simpleView._alertNow = new Date()
+    }
+    readonly property var _alertList: {
+        var src = (weatherRoot && weatherRoot.weatherAlerts) ? weatherRoot.weatherAlerts : [];
+        var now = simpleView._alertNow;
+        var out = [];
+        for (var i = 0; i < src.length; ++i) {
+            var ex = src[i].expires ? new Date(src[i].expires) : null;
+            if (ex && !isNaN(ex.getTime()) && ex < now)
+                continue;
+            out.push(src[i]);
+        }
+        out.sort(function (a, b) {
+            var da = a.onset ? new Date(a.onset).getTime() : 0;
+            var db = b.onset ? new Date(b.onset).getTime() : 0;
+            return da - db;
+        });
+        return out;
+    }
+    function _alertColor(c) {
+        c = (c || "").toLowerCase();
+        if (c === "yellow")
+            return isDark ? "#ffc107" : "#9a7b00";
+        if (c === "orange")
+            return isDark ? "#ff8c00" : "#c04000";
+        if (c === "red")
+            return isDark ? "#ff4444" : "#cc0000";
+        return Kirigami.Theme.textColor;
+    }
+    function _alertDateTime(iso) {
+        if (!iso || !weatherRoot)
+            return "";
+        var d = new Date(iso);
+        if (isNaN(d.getTime()))
+            return "";
+        return weatherRoot.formatDateObj(d, true) + ", " + weatherRoot.formatTimeObj(d);
+    }
+    // Map an alert's source to a link to its provider
+    function _alertProviderLink(src) {
+        src = (src || "").trim();
+        if (src === "NWS")
+            return "<a href='https://www.weather.gov/'>NOAA NWS</a>";
+        if (src === "MET Norway")
+            return "<a href='https://www.met.no/'>MET Norway</a>";
+        if (src === "MeteoAlarm")
+            return "<a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a>";
+        if (src === "PirateWeather")
+            return "<a href='https://pirateweather.net/'>Pirate Weather</a>";
+        if (src === "VisualCrossing")
+            return "<a href='https://www.visualcrossing.com/'>Visual Crossing</a>";
+        if (src === "WeatherAPI")
+            return "<a href='https://www.weatherapi.com/'>WeatherAPI.com</a>";
+        if (src === "LibreWXR")
+            return "<a href='https://librewxr.net/'>LibreWXR</a>";
+        if (src === "FOSS Public Alert Server")
+            return "<a href='https://alerts.kde.org/'>FOSS Public Alert Server</a>";
+        if (src.length > 0)
+            return src;
+        return "<a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a>";
+    }
+    function _formatNwsDescription(desc) {
+        if (!desc)
+            return "";
+        var text = desc.replace(/\r?\n/g, "<br>");
+        text = text.replace(/\*\s+WHAT\s*\.{3}/gi, "<br><b>WHAT:</b> ");
+        text = text.replace(/\*\s+WHERE\s*\.{3}/gi, "<br><b>WHERE:</b> ");
+        text = text.replace(/\*\s+WHEN\s*\.{3}/gi, "<br><b>WHEN:</b> ");
+        text = text.replace(/\*\s+IMPACTS?\s*\.{3}/gi, "<br><b>IMPACTS:</b> ");
+        text = text.replace(/\*\s+ADDITIONAL\s+DETAILS\s*\.{3}/gi, "<br><b>ADDITIONAL DETAILS:</b> ");
+        text = text.replace(/\*\s+HAZARD\s*\.{3}/gi, "<br><b>HAZARD:</b> ");
+        text = text.replace(/\*\s+SOURCE\s*\.{3}/gi, "<br><b>SOURCE:</b> ");
+        text = text.replace(/\*\s+IMPACT\s*\.{3}/gi, "<br><b>IMPACT:</b> ");
+        text = text.replace(/\*\s+PRECAUTIONARY\/PREPAREDNESS\s+ACTIONS\s*\.{3}/gi, "<br><b>PRECAUTIONARY ACTIONS:</b> ");
+        text = text.replace(/(<br>\s*){3,}/g, "<br><br>");
+        text = text.replace(/^(<br>)+/, "");
+        return text;
+    }
+    // The town of the location and the area of the alert: the heading of an alert in the tooltip
+    function _alertTooltipTitle(a) {
+        var town = (Plasmoid.configuration.locationName || "").split(",")[0].trim();
+        var area = a ? (a.area || "") : "";
+        if (town && area)
+            return town + ", " + area;
+        return town || area;
+    }
+    // The fields of an alert (the same ones, in the same order, as the Details tab's tooltip)
+    function _alertTooltipSub(a) {
+        var lines = [];
+        if (a.headline)
+            lines.push("<b>" + i18n("Headline") + ":</b> " + a.headline);
+        if (a.description) {
+            if (a.source === "NWS")
+                lines.push("<b>" + i18n("Description") + ":</b><br>" + _formatNwsDescription(a.description));
+            else
+                lines.push("<b>" + i18n("Description") + ":</b><br>" + a.description);
+        }
+        if (a.effective)
+            lines.push("<b>" + i18n("Effective") + ":</b> " + _alertDateTime(a.effective));
+        if (a.expires)
+            lines.push("<b>" + i18n("Expires") + ":</b> " + _alertDateTime(a.expires));
+        if (a.instruction)
+            lines.push("<b>" + i18n("Instruction") + ":</b><br>" + a.instruction);
+        if (a.source || a.senderName)
+            lines.push("<b>" + i18n("Provider") + ":</b> " + _alertProviderLink(a.source));
+        if (a.web)
+            lines.push("<b>" + i18n("Website") + ":</b> <a href='" + a.web + "'>" + a.web + "</a>");
+        return lines.join("<br>");
+    }
+    // The whole tooltip as one rich text: each alert is its heading and its fields, a rule between
+    // alerts. One alert shows exactly what the Details tab's tooltip shows; with several, each
+    // also gets its name (in the color of its level). A few only: a long list would not fit.
+    readonly property string _alertTooltipHtml: {
+        var list = simpleView._alertList;
+        var shown = Math.min(list.length, 3);
+        var parts = [];
+        for (var i = 0; i < shown; ++i) {
+            var a = list[i];
+            var head = "";
+            if (list.length > 1) {
+                var name = a.displayName || a.headline || "";
+                if (name)
+                    head += "<b><font color='" + simpleView._alertColor(a.color) + "'>" + name + "</font></b><br>";
+            }
+            var title = simpleView._alertTooltipTitle(a);
+            if (title)
+                head += "<b>" + title + "</b><br>";
+            parts.push(head + simpleView._alertTooltipSub(a));
+        }
+        var html = parts.join("<hr>");
+        if (list.length > shown)
+            html += "<hr><i>" + i18np("and %1 more alert", "and %1 more alerts", list.length - shown) + "</i>";
+        return html;
+    }
+
     // ── SECTION 1: Hero ───────────────────────────────────────────────────────
     Item {
         Layout.fillWidth: true
@@ -90,6 +234,7 @@ ColumnLayout {
 
         // CENTER - condition icon + condition text
         ColumnLayout {
+            id: condColumn
             anchors.centerIn: parent
             spacing: 4
 
@@ -205,6 +350,37 @@ ColumnLayout {
                     opacity: 0.7
                     font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                 }
+            }
+        }
+
+        // ── Weather alert: a warning icon beside the condition icon ──────────────
+        // Only there while there is an alert; it does not move the condition icon. The tooltip is
+        // built like the Details tab's (a fixed-width rich text label: the heading and the fields
+        // of each alert). Declared last, a child of the hero itself: on top of the other items.
+        PlasmaCore.ToolTipArea {
+            x: condColumn.x + condColumn.width / 2 + 50
+            y: condColumn.y
+            width: 32
+            height: 32
+            visible: simpleView._alertList.length > 0
+            active: true
+            mainItem: ColumnLayout {
+                width: 380
+                spacing: 6
+                Label {
+                    text: simpleView._alertTooltipHtml
+                    font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                    textFormat: Text.RichText
+                    wrapMode: Text.Wrap
+                    width: parent.width
+                    Layout.fillWidth: true
+                }
+            }
+            Kirigami.Icon {
+                anchors.centerIn: parent
+                width: 28
+                height: 28
+                source: "dialog-warning"
             }
         }
     }
@@ -633,6 +809,29 @@ ColumnLayout {
                 Qt.callLater(function () {
                     simpleView._chartSource = simpleView._chartKqcUrl;
                 });
+            }
+        }
+
+        // An info button in the bottom-right corner of the graph (it takes no room of its own,
+        // it sits over the corner): its tooltip says how to use the graph. Declared after the
+        // chart, so it is on top of it.
+        PlasmaCore.ToolTipArea {
+            anchors.right: forecastGraphs.right
+            anchors.bottom: forecastGraphs.bottom
+            anchors.rightMargin: Kirigami.Units.smallSpacing
+            anchors.bottomMargin: Kirigami.Units.smallSpacing
+            width: Kirigami.Units.iconSizes.small
+            height: Kirigami.Units.iconSizes.small
+            active: true
+            mainItem: Label {
+                width: Kirigami.Units.gridUnit * 18
+                wrapMode: Text.Wrap
+                text: i18n("Point at a day to see its details. Double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in.")
+            }
+            Kirigami.Icon {
+                anchors.fill: parent
+                source: "help-about"
+                opacity: 0.6
             }
         }
     }
