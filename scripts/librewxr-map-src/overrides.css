@@ -312,3 +312,6 @@
       #lv-temp-legend .lv-temp-bar { grid-column: 1; grid-row: 2; width: 240px; height: 8px; border-radius: 2px; }
       #lv-temp-legend .lv-temp-unit { grid-column: 2; grid-row: 2; align-self: center; }
       @media (max-width: 320px) { #lv-temp-legend { display: none; } }
+
+/* Animations: the widget's own time bar replaces the radar's. */
+body.lv-anim .replayer { display: none; }

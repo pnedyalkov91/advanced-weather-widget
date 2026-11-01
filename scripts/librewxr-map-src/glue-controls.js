@@ -222,7 +222,7 @@ var tempUnit = TEMP_UNIT;
 
 // Open-Meteo credited while its data show.
 function creditOpenMeteo() {
-  if (_widgetAdapter.setDataAttribution) _widgetAdapter.setDataAttribution(!!(windLayer || tempLayer));
+  if (_widgetAdapter.setDataAttribution) _widgetAdapter.setDataAttribution(!!(windLayer || tempLayer || anim));
 }
 
 window.setTemp = function (on) {
@@ -269,6 +269,91 @@ window.setTempUnit = function (u) {
 };
 
 if (TEMP_ON) window.setTemp(true);
+
+// === ANIMATIONS (glue-anim.js; MapLibre page) ===
+// The temperature from the past day to two days ahead, on a layer of its
+// own; the radar and its bar hide meanwhile. QML drives it and reads
+// window.animState() for its own time bar.
+var anim = null;
+window.animAvailable = window.tempAvailable && typeof WidgetAnim !== 'undefined' && !!_windOpen;
+
+/** New pictures for pastH hours before now and futureH after, those
+    already read taken over; the time shown stays. */
+function animLoad(pastH, futureH) {
+  var old = anim.frames, shownMs = anim.player.index >= 0 ? old.times[Math.round(anim.player.index)] : null;
+  var frames = new WidgetAnim.Frames(_windOpen, {
+    pastH: pastH, futureH: futureH, reuse: old, parallel: 6,
+    onFrame: function (i) {
+      // The picture of now goes up as soon as it is in.
+      if (anim && anim.frames === frames && anim.player.index < 0 && i === frames.nowIndex) anim.player.show(i);
+    }
+  });
+  if (old) old.stop();
+  anim.frames = frames;
+  anim.player.frames = frames;
+  var keep = shownMs === null ? -1 : frames.times.indexOf(shownMs);
+  anim.player.index = -1;
+  anim.player.show(keep >= 0 ? keep : frames.nowIndex);
+  var t0 = Date.now();
+  frames.load().then(function () {
+    console.log('[anim] ' + frames.packed.filter(Boolean).length + '/' + frames.times.length + ' pictures in ' + (Date.now() - t0) + ' ms');
+  }, function (err) { console.warn('[anim] ' + err); });
+}
+
+window.animStart = function (pastH, futureH) {
+  var m = _widgetAdapter.getMap();
+  if (!m || !window.animAvailable) return false;
+  if (anim) return true;
+  if (tempLayer) { tempLayer.remove(); tempLayer = null; }
+  var layer = new WidgetTemp.TempLayer(_widgetAdapter, _windSource, _windOpen, _tempDem, {
+    stops: tempPalette, step: tempStep, unit: tempUnit, opacity: tempOpacity, manual: true
+  });
+  anim = { layer: layer, frames: null, player: new WidgetAnim.Player(null, layer) };
+  _widgetAdapter.setFramesHidden(true);
+  document.body.classList.add('lv-anim');
+  layer.addTo(m);
+  creditOpenMeteo();
+  animLoad(pastH || 24, futureH || 48);
+  return true;
+};
+
+window.animSetRange = function (pastH, futureH) { if (anim) animLoad(pastH, futureH); };
+
+window.animStop = function () {
+  if (!anim) return;
+  anim.player.stop();
+  anim.frames.stop();
+  anim.layer.remove();
+  anim = null;
+  _widgetAdapter.setFramesHidden(false);
+  document.body.classList.remove('lv-anim');
+  creditOpenMeteo();
+};
+
+window.animPlay = function (on) { if (anim) anim.player.play(on); };
+/** Play or pause; the new state, so QML need not trust its last reading. */
+window.animToggle = function () {
+  if (!anim) return false;
+  anim.player.play(!anim.player.playing);
+  return anim.player.playing;
+};
+window.animShow = function (i) { if (anim) anim.player.seek(i); };
+window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
+window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
+
+/** { times (ms), ready, failed, now, index (a position between frames),
+    time (ms) of that position, fromFile (a frame as read, not worked out),
+    playing } for the QML bar. */
+window.animState = function () {
+  if (!anim) return null;
+  var f = anim.frames;
+  return {
+    times: f.times, now: f.nowIndex, index: anim.player.index, playing: anim.player.playing,
+    time: anim.player.index >= 0 ? f.timeAt(anim.player.index) : null,
+    fromFile: anim.player.index >= 0 && f.isFile(anim.player.index),
+    ready: f.times.map(function (_, i) { return f.ready(i); }), failed: f.failed
+  };
+};
 
 // Fade-in fallback when nothing calls fixViewport (the page opened on its own).
 setTimeout(function () { document.body.classList.add('lv-ready'); }, 1500);
