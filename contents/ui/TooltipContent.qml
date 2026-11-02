@@ -253,7 +253,8 @@ Item {
                 Qt.openUrlExternally(link);
             }
             font.pixelSize: Kirigami.Theme.smallFont.pixelSize
-            color: Kirigami.Theme.disabledTextColor
+            // Follows the theme's text colour (slightly dimmed) so the footer stays readable on light and dark themes
+            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.75)
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
             }

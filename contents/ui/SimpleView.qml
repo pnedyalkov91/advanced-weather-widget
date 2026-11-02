@@ -613,7 +613,7 @@ ColumnLayout {
                 maxC: d.maxC,
                 minC: d.minC,
                 precipMm: simpleView._dayPrecip(d),
-                isToday: i === 0,
+                isToday: weatherRoot.isDailyRowToday(i),
                 windKmh: d.windKmh,
                 windDeg: d.windDir,
                 pressureHpa: d.pressureHpa,
@@ -880,7 +880,7 @@ ColumnLayout {
                             Layout.alignment: Qt.AlignHCenter
                             text: {
                                 if (!day) return "";
-                                if (dataIndex === 0) return i18n("Today");
+                                if (weatherRoot && weatherRoot.isDailyRowToday(dataIndex)) return i18n("Today");
                                 var ds = day.dateStr || "";
                                 if (ds) {
                                     var parts = ds.split("-");

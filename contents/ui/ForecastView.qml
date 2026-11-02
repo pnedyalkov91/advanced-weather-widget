@@ -65,6 +65,8 @@ Item {
     // ── Auto-open: expand the first available day's hourly forecast ────────
     readonly property bool autoOpen: Plasmoid.configuration.forecastAutoOpen !== false
     property bool _autoOpenDone: false
+    // Which day/location/provider the open first day's hours were fetched for (see _doAutoOpen)
+    property string _autoOpenKey: ""
 
     // ── Expand-all: show hourly for every day simultaneously ───────────────
     readonly property bool expandAll: Plasmoid.configuration.forecastExpandAll === true
@@ -201,9 +203,17 @@ Item {
         var firstDataIndex = forecastRoot.showToday ? 0 : 1;
         if (firstDataIndex >= weatherRoot.dailyData.length)
             return;
+        var firstDate = weatherRoot.dailyData[firstDataIndex].dateStr || "";
+        var openKey = firstDate + "|" + Plasmoid.configuration.latitude + "," + Plasmoid.configuration.longitude + "|" + (Plasmoid.configuration.weatherProvider || "");
+        // Coming back to the Forecast tab (or reopening the popup) with the first day still open for the
+        // same day, place and provider: keep its hours on screen while they reload, instead of emptying
+        // the panel and showing "Loading hourly data..." every time.
+        var keepHours = forecastRoot.expandedIndex === 0 && weatherRoot.hourlyData && weatherRoot.hourlyData.length > 0 && forecastRoot._autoOpenKey === openKey;
         forecastRoot.expandedIndex = 0;
-        weatherRoot.hourlyData = [];
-        weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[firstDataIndex].dateStr || "");
+        if (!keepHours)
+            weatherRoot.hourlyData = [];
+        forecastRoot._autoOpenKey = openKey;
+        weatherRoot.fetchHourlyForDate(firstDate);
     }
 
     onVisibleChanged: {
@@ -272,6 +282,11 @@ Item {
     }
     readonly property bool showSunEvents: Plasmoid.configuration.forecastShowSunEvents !== false
     readonly property bool showToday: Plasmoid.configuration.forecastShowToday !== false
+
+    /** True when daily row `di` is really today's date (see weatherRoot.isDailyRowToday). */
+    function _rowIsToday(di) {
+        return !!weatherRoot && weatherRoot.isDailyRowToday(di);
+    }
     readonly property bool showWind: Plasmoid.configuration.forecastShowWind !== false
     readonly property string hourlyLayout: Plasmoid.configuration.forecastHourlyLayout || "cards"
     // "graphs" = the days as one graph (Daily layout); anything else = the standard rows
@@ -795,7 +810,7 @@ Item {
             return result;
         var rise = _toMins(sunriseText), set_ = _toMins(sunsetText);
         var nowMins = -1;
-        if (dataIndex === 0) {
+        if (forecastRoot._rowIsToday(dataIndex)) {
             var now = new Date();
             nowMins = now.getHours() * 60 + now.getMinutes() - 60;
         }
@@ -969,7 +984,7 @@ Item {
                     if (!weatherRoot || !ds)
                         return "--";
                     var name = i18n("Today");
-                    if (!entry || entry.dataIndex !== 0) {
+                    if (!entry || !forecastRoot._rowIsToday(entry.dataIndex)) {
                         var parts = ds.split("-");
                         name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                     }
@@ -1256,7 +1271,7 @@ Item {
                                 elide: Text.ElideRight
                                 text: {
                                     var di = dataIndex;
-                                    if (di === 0)
+                                    if (forecastRoot._rowIsToday(di))
                                         return i18n("Today");
                                     var ds = weatherRoot.dailyData[di].dateStr;
                                     if (!ds)
@@ -1623,7 +1638,7 @@ Item {
                                     return "";
                                 var ds = weatherRoot.dailyData[dataIndex].dateStr || "";
                                 var name = i18n("Today");
-                                if (dataIndex !== 0) {
+                                if (!forecastRoot._rowIsToday(dataIndex)) {
                                     var parts = ds.split("-");
                                     name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                                 }
@@ -1928,6 +1943,69 @@ Item {
                                     easing.type: Easing.OutCubic
                                 }
 
+                                // With "show past weather info" on, today's strip starts at midnight:
+                                // open it on the current hour instead (same as the cards layout).
+                                // Without it the past hours are not in the strip and nothing is needed.
+                                Timer {
+                                    id: stripScrollTimer
+                                    interval: 100
+                                    running: true
+                                    property int _tries: 0
+                                    onTriggered: {
+                                        if (!forecastRoot.showPastHoursGreyed || !forecastRoot._rowIsToday(dataIndex))
+                                            return;
+                                        var items = stripScrollView._hourlyWithSun;
+                                        if (!items || !items.length)
+                                            return;
+                                        // The strip is not laid out yet (built in advance, or just shown): wait
+                                        if (stripScrollView.width <= 0 || stripScrollView.contentWidth <= 0) {
+                                            if (_tries < 20) {
+                                                _tries++;
+                                                restart();
+                                            }
+                                            return;
+                                        }
+                                        _tries = 0;
+                                        var now = new Date();
+                                        var nowM = now.getHours() * 60 + now.getMinutes();
+                                        var target = -1;
+                                        var minDiff = 86400;
+                                        for (var i = 0; i < items.length; i++) {
+                                            var it = items[i];
+                                            if (it.isSunrise === true || it.isSunset === true || it.isNextDay === true || !it.hour)
+                                                continue;
+                                            var p = String(it.hour).split(":");
+                                            if (p.length < 2)
+                                                continue;
+                                            var diff = Math.abs(parseInt(p[0], 10) * 60 + parseInt(p[1], 10) - nowM);
+                                            if (diff < minDiff) {
+                                                minDiff = diff;
+                                                target = i;
+                                            }
+                                        }
+                                        if (target < 0)
+                                            return;
+                                        var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
+                                        stripScrollView.contentX = Math.min(maxX, target * (stripScrollView.colW + stripScrollView.colSpacing));
+                                    }
+                                }
+                                Connections {
+                                    target: weatherRoot
+                                    function onHourlyDataChanged() {
+                                        stripScrollTimer._tries = 0;
+                                        stripScrollTimer.restart();
+                                    }
+                                }
+                                Connections {
+                                    target: forecastRoot
+                                    function onVisibleChanged() {
+                                        if (forecastRoot.visible) {
+                                            stripScrollTimer._tries = 0;
+                                            stripScrollTimer.restart();
+                                        }
+                                    }
+                                }
+
                                 // Build combined model same as cards (with sun events)
                                 property var _hourlyWithSun: {
                                     if (!_dayHourlyData || !_dayHourlyData.length)
@@ -1946,7 +2024,7 @@ Item {
                                     // fetchers) reads as minutes=0 same as a just-past midnight hour, so it's exempted here -
                                     // otherwise it would always look "in the past" and get filtered/greyed out of "today".
                                     var nowMins = -1;
-                                    if (index === 0) {
+                                    if (forecastRoot._rowIsToday(dataIndex)) {
                                         var _now = new Date();
                                         nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                     }
@@ -2774,6 +2852,13 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 8
                                 clip: true
+                                // Today's row stays invisible until it is scrolled to the current hour
+                                opacity: (forecastRoot._rowIsToday(dataIndex) && !scrollTimer._placed) ? 0 : 1
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 120
+                                    }
+                                }
                                 // ScrollView itself does not have flickableDirection.
                                 // This property needs to be set on the internal flickableItem.
                                 Component.onCompleted: {
@@ -2793,22 +2878,49 @@ Item {
                                     easing.type: Easing.OutCubic
                                 }
 
-                                // Auto-scroll to current hour for "Today" (index === 0)
+                                // Auto-scroll to the current hour for today's row.
+                                // The position is computed on the cards that are really displayed
+                                // (hourlyRow._hourlyWithSun): past hours are dropped or greyed and the
+                                // sunrise/sunset cards are inserted, so an index into the raw hourly
+                                // list does not match what is on screen. Until the row is placed it
+                                // stays invisible (see the opacity above), so it never visibly jumps.
                                 Timer {
                                     id: scrollTimer
-                                    interval: 150
+                                    interval: 30
+                                    running: true
+                                    property int _tries: 0
+                                    property bool _placed: false
+                                    // The layout (width, bar) or the data is not ready yet: try again shortly,
+                                    // but never keep the row hidden for long.
+                                    function _retry() {
+                                        if (_tries >= 8)
+                                            _placed = true;
+                                        if (_tries < 20) {
+                                            _tries++;
+                                            restart();
+                                        } else {
+                                            _tries = 0;
+                                        }
+                                    }
                                     onTriggered: {
-                                        if (index !== 0 || !_dayHourlyData.length)
+                                        if (!forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._placed = true;
                                             return;
+                                        }
+                                        var items = hourlyRow._hourlyWithSun;
+                                        if (!_dayHourlyData.length || !items || !items.length) {
+                                            scrollTimer._retry();
+                                            return;
+                                        }
                                         var now = new Date();
                                         var currentTotalMins = now.getHours() * 60 + now.getMinutes();
-                                        var closestIdx = 0;
+                                        var closestIdx = -1;
                                         var minDiff = 86400;
-                                        for (var i = 0; i < _dayHourlyData.length; i++) {
-                                            var h = _dayHourlyData[i].hour;
-                                            if (!h)
+                                        for (var i = 0; i < items.length; i++) {
+                                            var it = items[i];
+                                            if (it.isSunrise === true || it.isSunset === true || it.isNextDay === true || !it.hour)
                                                 continue;
-                                            var parts = h.split(":");
+                                            var parts = String(it.hour).split(":");
                                             if (parts.length < 2)
                                                 continue;
                                             var hm = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
@@ -2818,67 +2930,65 @@ Item {
                                                 closestIdx = i;
                                             }
                                         }
-                                        if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
-                                            function toMins(t) {
-                                                if (!t || t === "--")
-                                                    return -1;
-                                                var p = t.split(":");
-                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
-                                            }
-                                            var rise = toMins(_daySunriseText);
-                                            var set_ = toMins(_daySunsetText);
-                                            var targetMins = closestIdx < _dayHourlyData.length ? toMins(_dayHourlyData[closestIdx].hour) : -1;
-                                            if (rise >= 0 && targetMins >= 0 && rise < targetMins)
-                                                closestIdx++;
-                                            if (set_ >= 0 && targetMins >= 0 && set_ < targetMins)
-                                                closestIdx++;
-                                        }
+                                        if (closestIdx < 0)
+                                            closestIdx = 0;
                                         var hourlyWidth = hourlyRow._stretchedCardWidth;
                                         var sunWidth = hourlyRow._sunCardWidth;
-                                        var spacing = 6;
+                                        var spacing = hourlyRow.spacing;
                                         var scrollPos = 0;
-                                        if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
-                                            function toMins2(t) {
-                                                if (!t || t === "--")
-                                                    return -1;
-                                                var p = t.split(":");
-                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
-                                            }
-                                            var rise2 = toMins2(_daySunriseText);
-                                            var set2 = toMins2(_daySunsetText);
-                                            for (var j = 0; j < closestIdx; j++) {
-                                                var hm2 = toMins2(_dayHourlyData[j].hour);
-                                                if (rise2 >= 0 && hm2 > rise2) {
-                                                    scrollPos += sunWidth + spacing;
-                                                    rise2 = -1;
-                                                }
-                                                if (set2 >= 0 && hm2 > set2) {
-                                                    scrollPos += sunWidth + spacing;
-                                                    set2 = -1;
-                                                }
-                                                scrollPos += hourlyWidth + spacing;
-                                            }
-                                        } else {
-                                            scrollPos = closestIdx * (hourlyWidth + spacing);
-                                        }
+                                        for (var j = 0; j < closestIdx; j++)
+                                            scrollPos += ((items[j].isSunrise === true || items[j].isSunset === true) ? sunWidth : hourlyWidth) + spacing;
                                         var bar = hourlyScrollView.ScrollBar.horizontal;
-                                        if (!bar)
-                                            return;
-                                        var contentW = hourlyRow.implicitWidth || hourlyRow.width || (_dayHourlyData.length * (hourlyWidth + spacing));
+                                        var contentW = hourlyRow.implicitWidth || hourlyRow.width;
                                         var viewW = hourlyScrollView.width;
+                                        if (!bar || contentW <= 0 || viewW <= 0) {
+                                            scrollTimer._retry();
+                                            return;
+                                        }
+                                        scrollTimer._tries = 0;
+                                        scrollTimer._placed = true;
                                         if (contentW > viewW) {
                                             var maxPos = Math.max(0, contentW - viewW);
-                                            var targetPos = Math.min(scrollPos, maxPos);
-                                            bar.position = targetPos / contentW;
+                                            bar.position = Math.min(scrollPos, maxPos) / contentW;
                                         }
                                     }
                                 }
                                 Connections {
                                     target: weatherRoot
                                     function onHourlyDataChanged() {
-                                        if (index !== 0 || !_dayHourlyData.length)
+                                        if (!forecastRoot._rowIsToday(dataIndex) || !_dayHourlyData.length)
                                             return;
-                                        scrollTimer.start();
+                                        scrollTimer._tries = 0;
+                                        scrollTimer.restart();
+                                    }
+                                }
+                                // Place the row again once the layout settles, the popup is resized,
+                                // or the Forecast tab becomes visible again.
+                                Connections {
+                                    target: hourlyRow
+                                    function onImplicitWidthChanged() {
+                                        if (forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._tries = 0;
+                                            scrollTimer.restart();
+                                        }
+                                    }
+                                }
+                                Connections {
+                                    target: hourlyScrollView
+                                    function onWidthChanged() {
+                                        if (forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._tries = 0;
+                                            scrollTimer.restart();
+                                        }
+                                    }
+                                }
+                                Connections {
+                                    target: forecastRoot
+                                    function onVisibleChanged() {
+                                        if (forecastRoot.visible && forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._tries = 0;
+                                            scrollTimer.restart();
+                                        }
                                     }
                                 }
 
@@ -2907,7 +3017,7 @@ Item {
                                         // midnight hour, so it's exempted here - otherwise it would always
                                         // look "in the past" and get filtered/greyed out of "today".
                                         var nowMins = -1;
-                                        if (index === 0) {
+                                        if (forecastRoot._rowIsToday(dataIndex)) {
                                             var _now = new Date();
                                             nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                         }

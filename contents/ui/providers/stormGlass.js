@@ -186,6 +186,12 @@ function fetchCurrent(service, W, chain, idx) {
 
         var nd = [];
         var dateKeys = Object.keys(dayMap).sort();
+        // StormGlass's data starts at midnight UTC, so shortly after local midnight the first
+        // group can still be yesterday's (the keys above are local dates): skip past days.
+        var _sgToday = Qt.formatDate(new Date(), "yyyy-MM-dd");
+        var _sgUpcoming = dateKeys.filter(function (x) { return x >= _sgToday; });
+        if (_sgUpcoming.length > 0)
+            dateKeys = _sgUpcoming;
         var maxD = Math.min(service.forecastDays, dateKeys.length);
         for (var k = 0; k < maxD; k++) {
             var de = dayMap[dateKeys[k]];

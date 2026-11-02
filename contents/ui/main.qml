@@ -2726,6 +2726,39 @@ PlasmoidItem {
         onTriggered: root._nowTick = (new Date()).getTime()
     }
 
+    /** True when `ds` ("yyyy-MM-dd") is today's date - on this computer's calendar, or on the
+     *  forecast location's calendar when its UTC offset is known. Providers disagree on which
+     *  calendar their day keys use (OpenWeather groups by the computer's local date, Open-Meteo
+     *  by the location's), so either one counts. An offset of 0 may just mean "not supplied"
+     *  (several providers emit 0 as a placeholder), so it is not used to build a second date. */
+    function isTodayDateStr(ds) {
+        void (_nowTick);   // re-evaluate bindings as the clock passes midnight
+        if (!ds)
+            return false;
+        var key = String(ds).substring(0, 10);
+        var now = new Date();
+        if (key === Qt.formatDate(now, "yyyy-MM-dd"))
+            return true;
+        var off = locationUtcOffsetMins;
+        if (off) {
+            var l = new Date(now.getTime() + off * 60000);
+            var lk = l.getUTCFullYear() + "-" + ("0" + (l.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + l.getUTCDate()).slice(-2);
+            if (key === lk)
+                return true;
+        }
+        return false;
+    }
+
+    /** True when daily forecast row `di` really is today's. Row 0 is normally today, but it can be
+     *  tomorrow (OpenWeather has no slot left for today in the late evening) or yesterday
+     *  (StormGlass starts at midnight UTC). An undated row 0 keeps the old "first row = today". */
+    function isDailyRowToday(di) {
+        var row = dailyData ? dailyData[di] : null;
+        if (!row)
+            return false;
+        return row.dateStr ? isTodayDateStr(row.dateStr) : di === 0;
+    }
+
     function getSimpleModeIconSource() {
         var theme = Plasmoid.configuration.panelIconTheme || "wi-font";
         var code = weatherCode;
