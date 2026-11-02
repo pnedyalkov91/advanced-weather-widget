@@ -3,10 +3,599 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Advanced Weather Widget</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101820">
+    <meta name="description" content="Advanced Weather Widget — a feature-rich, customizable weather widget for KDE Plasma.">
+    <title>Advanced Weather Widget — KDE Plasma</title>
+
+    <style>
+        :root {
+            --bg: #101820;
+            --surface: #182630;
+            --surface-light: #213441;
+            --text: #f3f7fa;
+            --muted: #a7bac8b;
+            --accent: #70b8ff;
+            --accent-hover: #a1d2ff;
+            --border: rgba(255,255,255,0.09);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(1120px, calc(100% - 48px));
+            margin: 0 auto;
+        }
+
+        /* Navigation */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(16, 24, 32, 0.88);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6bbaff, #397cdb);
+            color: #10202d;
+            font-size: 22px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        /* Buttons */
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.2s ease;
+        }
+
+        .button-primary {
+            background: var(--accent);
+            color: #10202d;
+        }
+
+        .button-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .button-secondary {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+        }
+
+        .button-secondary:hover {
+            background: #2b4050;
+        }
+
+        /* Hero */
+
+        .hero {
+            padding: 100px 0 90px;
+            text-align: center;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(64, 139, 213, 0.19), transparent 60%);
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid rgba(112,184,255,0.25);
+            background: rgba(112,184,255,0.08);
+            color: var(--accent);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            max-width: 850px;
+            margin: 0 auto;
+            font-size: clamp(40px, 7vw, 76px);
+            line-height: 1.08;
+            letter-spacing: -2.5px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .hero-description {
+            max-width: 650px;
+            margin: 26px auto 32px;
+            color: var(--muted);
+            font-size: 18px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .hero-visual {
+            margin: 70px auto 0;
+            max-width: 950px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 24px;
+            background: rgba(255,255,255,0.035);
+            box-shadow: 0 30px 100px rgba(0,0,0,0.25);
+        }
+
+        .visual-placeholder {
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+            padding: 30px;
+            border-radius: 16px;
+            background:
+                radial-gradient(ellipse at 70% 20%, rgba(78,147,210,0.22), transparent 45%),
+                linear-gradient(135deg, #1c2d3b, #15222d);
+            color: var(--muted);
+        }
+
+        .placeholder-icon {
+            font-size: 60px;
+        }
+
+        .visual-placeholder strong {
+            color: var(--text);
+            font-size: 20px;
+        }
+
+        /* Sections */
+
+        section {
+            padding: 90px 0;
+        }
+
+        .section-heading {
+            max-width: 700px;
+            margin: 0 auto 50px;
+            text-align: center;
+        }
+
+        .section-heading h2 {
+            font-size: clamp(30px, 4vw, 44px);
+            letterletter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .section-heading p {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 16px;
+        }
+
+        /* Feature cards */
+
+        .features {
+            background: #131e28;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            padding: 28px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(112,184,255,0.4);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(112,184,255,0.1);
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 19px;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* Privacy */
+
+        .privacy-box {
+            max-width: 850px;
+            margin: 0 auto;
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            padding: 36px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+        }
+
+        .privacy-icon {
+            font-size: 42px;
+        }
+
+        .privacy-box h3 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .privacy-box p {
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        /* Get started */
+
+        .get-started {
+            text-align: center;
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(64,139,213,0.16), transparent 60%),
+                #131e28;
+            border-top: 1px solid var(--border);
+        }
+
+        .get-started h2 {
+            font-size: clamp(32px, 4vw, 48px);
+            letterletter-spacing: -1px;
+        }
+
+        .get-started p {
+            color: var(--muted);
+            margin: 18px auto 30px;
+            max-width: 600px;
+        }
+
+        /* Footer */
+
+        footer {
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        /* Responsive */
+
+        @media (max-width: 800px) {
+            .feature-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero {
+                padding: 75px 0 60px;
+            }
+
+            .hero-visual {
+                margin-top: 50px;
+            }
+
+            section {
+                padding: 70px 0;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .container {
+                width: min(100% - 32px, 1120px);
+            }
+
+            nav {
+                min-height: 66px;
+            }
+
+            .nav-links {
+                gap: 14px;
+                font-size: 12px;
+            }
+
+            .nav-links .hide-mobile {
+                display: none;
+            }
+
+            h1 {
+                letterletter-spacing: -1.5px;
+            }
+
+            .hero-description {
+                font-size: 16px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visual-placeholder {
+                min-height: 230px;
+            }
+
+            .privacy-box {
+                flex-direction: column;
+                text-align: center;
+                padding: 26px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Advanced Weather Widget</h1>
-    <p>Official website for the KDE Plasma weather widget.</p>
+
+<header>
+    <div class="container">
+        <nav>
+            <a class="brand" href="#">
+                <span class="brand-icon">☀</span>
+                <span>Advanced Weather Widget</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a class="hide-mobile" href="#privacy">Privacy</a>
+                <a href="#get-started">Get started</a>
+                <a href="https://github.com/pnedyalkov91/advanced-weather-widget">GitHub ↗</a>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<main>
+
+    <section class="hero">
+        <div class="container">
+            <span class="eyebrow">Made for KDE Plasma</span>
+
+            <h1>Your weather.<br><span>Your desktop.</span></h1>
+
+            <p class="hero-description">
+                A powerful, customizable weather widget for KDE Plasma.
+                From detailed forecasts to interactive radar maps —
+                everything you need, right on your desktop.
+            </p>
+
+            <div class="hero-buttons">
+                <a class="button button-primary"
+                   href="https://store.kde.org/p/2349879">
+                    ↓ Get the widget
+                </a>
+
+                <a class="button button-secondary"
+                   href="https://github.com/pnedyalkov91/advanced-weather-widget">
+                    View source code ↗
+                </a>
+            </div>
+
+            <div class="hero-visual">
+                <div class="visual-placeholder">
+                    <div class="placeholder-icon">🌤️</div>
+                    <strong>Your widget screenshot goes here</strong>
+                    <span>We'll replace this placeholder with a real screenshot in the next step.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-heading">
+                <span class="eyebrow">Powerful features</span>
+                <h2>More than just the weather</h2>
+                <p>Everything you need to stay informed about the weather, without leaving your desktop.</p>
+            </div>
+
+            <div class="feature-grid">
+
+                <article class="feature-card">
+                    <div class="feature-icon">🌡️</div>
+                    <h3>Current conditions</h3>
+                    <p>Temperature, feels-like, wind, humidity, pressure, UV index and much more.</p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Detailed forecasts</h3>
+                    <p>Hourly and daily forecasts with customizable graphs and weather details.</p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">🌧️</div>
+                    <h3>Interactive radar</h3>
+            <p>Explore precipitation and weather patterns on an interactive map.</p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Weather history</h3>
+                    <p>Explore past weather conditions and historical data.</p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Multiple providers</h3>
+                    <p>Choose from various weather services to get the data you need.</p>
+                </article>
+
+                <article class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Your way</h3>
+                    <p>Customize the layout, forecast details, graphs and widget appearance.</p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="privacy">
+        <div class="container">
+            <div class="privacy-box">
+                <div class="privacy-icon">🔒</div>
+                <div>
+                    <h3>Your privacy matters</h3>
+                    <p>
+                        The widget does not collect telemetry or track users.
+                        Your location is used to retrieve weather information from
+                        the selected weather provider. No advertising. No tracking.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="get-started" id="get-started">
+        <div class="container">
+            <span class="eyebrow">Open source · KDE Plasma</span>
+            <h2>Bring the weather to your desktop.</h2>
+            <p>
+                Get Advanced Weather Widget from KDE Store,
+                explore the source code, or contribute to its development.
+            </p>
+
+            <div class="hero-buttons">
+                <a class="button button-primary"
+                   href="https://store.kde.org/p/2349879">
+                    ↓ Download from KDE Store
+                </a>
+
+                <a class="button button-secondary"
+                   href="https://github.com/pnedyalkov91/advanced-weather-widget">
+                    Explore on GitHub ↗
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <span>© 2026 Advanced Weather Widget · Open source under GPL-2.0-or-later</span>
+
+            <div class="footer-links">
+                <a href="https://github.com/pnedyalkov91/advanced-weather-widget">GitHub</a>
+                <a href="https://store.kde.org/p/2349879">KDE Store</a>
+                <a href="https://github.com/pnedyalkov91/advanced-weather-widget/issues">Report an issue</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
 </body>
 </html>
