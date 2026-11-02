@@ -259,6 +259,8 @@ window.setTempStep = function (n) {
   if (!window.tempAvailable) return;
   tempStep = WidgetTemp.normStep(n);
   if (tempLayer) tempLayer.setStep(tempStep);
+  var t = anim && anim.group.track('temperature');
+  if (t) t.layer.setStep(tempStep);
 };
 
 // The widget's temperature unit, 'C' or 'F': the bands and the legend follow it.
@@ -266,65 +268,143 @@ window.setTempUnit = function (u) {
   if (!window.tempAvailable) return;
   tempUnit = WidgetTemp.normUnit(u);
   if (tempLayer) tempLayer.setUnit(tempUnit);
+  var t = anim && anim.group.track('temperature');
+  if (t) t.layer.setUnit(tempUnit);
 };
 
 if (TEMP_ON) window.setTemp(true);
 
 // === ANIMATIONS (glue-anim.js; MapLibre page) ===
-// The temperature from the past day to two days ahead, on a layer of its
-// own; the radar and its bar hide meanwhile. QML drives it and reads
+// The weather from days before to days ahead, each layer switched on
+// (temperature, wind) with pictures of its own, moved on together; the
+// radar, its bar and the live wind hide meanwhile. QML drives it and reads
 // window.animState() for its own time bar.
 var anim = null;
+// Six file reads at once for all the layers together: as many as the
+// temperature alone used to have; twelve ran the reader out of memory.
+var animGate = typeof WidgetAnim === 'undefined' ? null : new WidgetAnim.Gate(6);
+// The pictures read, kept across page loads; sorted out down to the longest
+// range back the bar offers (8 days).
+var animStore = typeof WidgetAnim === 'undefined' || typeof indexedDB === 'undefined' ? null : WidgetAnim.frameStore();
+var ANIM_KEEP_H = 192;
 window.animAvailable = window.tempAvailable && typeof WidgetAnim !== 'undefined' && !!_windOpen;
+
+// The layers an animation can show, by id (a WidgetAnim.FIELDS key): each
+// makes its layer in manual mode and puts it on the map. As on the radar,
+// far out they draw the files, closer in the API grids (anim.api: one
+// request per view for both, holding every hour of the range).
+var ANIM_LAYERS = {
+  temperature: function (m) {
+    var layer = new WidgetTemp.TempLayer(_widgetAdapter, anim.api, _windOpen, _tempDem, {
+      stops: tempPalette, step: tempStep, unit: tempUnit, opacity: tempOpacity, manual: true
+    });
+    layer.addTo(m);
+    layer.setMovingStep(anim.movingStep);
+    return layer;
+  },
+  wind: function (m) {
+    var layer = _widgetAdapter.createWindLayer(anim.api, null, _windDem, {
+      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: '10m',
+      lineWidth: windLineWidth, palette: windPalette, density: windDensity, manual: true
+    });
+    if (!layer) return null;
+    layer.addTo(m);
+    layer.settle();
+    return layer;
+  }
+};
+
+/** Pictures of layer id for the range of the animation, those of `reuse`
+    (the same layer's Frames of another range) taken over. */
+function animTrack(id, layer, reuse) {
+  var frames = new WidgetAnim.Frames(_windOpen, {
+    field: WidgetAnim.FIELDS[id], now: function () { return anim.nowMs; },
+    pastH: anim.pastH, futureH: anim.futureH, reuse: reuse, parallel: 6, gate: animGate,
+    store: animStore, pruneH: ANIM_KEEP_H,
+    onFrame: function (i) {
+      var t = anim && anim.group.track(id);
+      if (!t || t.frames !== frames) return;
+      var p = anim.player;
+      // The picture of now goes up as soon as every layer has it; a layer
+      // switched on while paused joins the others once its picture is in.
+      if (p.index < 0) { if (i === anim.group.nowIndex && anim.group.ready(i)) p.show(i); }
+      else if (!p.playing && (i === Math.floor(p.index) || i === Math.ceil(p.index))) p.seek(p.index);
+    }
+  });
+  if (reuse) reuse.stop();
+  anim.group.add(id, frames, layer);
+  var t0 = Date.now();
+  frames.load().then(function () {
+    console.log('[anim] ' + id + ': ' + frames.packed.filter(Boolean).length + '/' + frames.times.length + ' pictures in ' +
+      (Date.now() - t0) + ' ms, ' + frames.fromStore + ' from the store');
+  }, function (err) { console.warn('[anim] ' + id + ': ' + err); });
+}
 
 /** New pictures for pastH hours before now and futureH after, those
     already read taken over; the time shown stays. */
 function animLoad(pastH, futureH) {
-  var old = anim.frames, shownMs = anim.player.index >= 0 ? old.times[Math.round(anim.player.index)] : null;
-  var frames = new WidgetAnim.Frames(_windOpen, {
-    pastH: pastH, futureH: futureH, reuse: old, parallel: 6,
-    onFrame: function (i) {
-      // The picture of now goes up as soon as it is in.
-      if (anim && anim.frames === frames && anim.player.index < 0 && i === frames.nowIndex) anim.player.show(i);
-    }
-  });
-  if (old) old.stop();
-  anim.frames = frames;
-  anim.player.frames = frames;
-  var keep = shownMs === null ? -1 : frames.times.indexOf(shownMs);
+  var old = anim.group, shownMs = old && anim.player.index >= 0 ? old.times[Math.round(anim.player.index)] : null;
+  anim.nowMs = Date.now();
+  anim.pastH = pastH;
+  anim.futureH = futureH;
+  var ft = WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, WidgetAnim.STEP_H);
+  anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
+  // The API's hours count from the present hour, the frames from the
+  // nearest 3-hour step: one step more each way covers them.
+  anim.api.setHours(pastH + WidgetAnim.STEP_H, futureH + WidgetAnim.STEP_H);
+  if (old) old.tracks.forEach(function (t) { animTrack(t.id, t.layer, t.frames); t.layer.reload(); });
+  var keep = shownMs === null ? -1 : ft.times.indexOf(shownMs);
   anim.player.index = -1;
-  anim.player.show(keep >= 0 ? keep : frames.nowIndex);
-  var t0 = Date.now();
-  frames.load().then(function () {
-    console.log('[anim] ' + frames.packed.filter(Boolean).length + '/' + frames.times.length + ' pictures in ' + (Date.now() - t0) + ' ms');
-  }, function (err) { console.warn('[anim] ' + err); });
+  anim.player.show(keep >= 0 ? keep : ft.now);
 }
 
-window.animStart = function (pastH, futureH) {
+/** Switch layer id of the animation on or off. */
+function animSetLayer(id, on) {
+  var t = anim.group.track(id);
+  if (!on && t) {
+    t.frames.stop();
+    t.layer.remove();
+    anim.group.remove(id);
+  } else if (on && !t && ANIM_LAYERS[id]) {
+    var layer = ANIM_LAYERS[id](_widgetAdapter.getMap());
+    if (!layer) return;
+    if (layer.setMoving) layer.setMoving(anim.player.playing);
+    animTrack(id, layer, null);
+    if (anim.player.index >= 0) anim.player.seek(anim.player.index);
+  }
+}
+
+/** Start with the layers of `layers` ({ temperature: true, wind: false }),
+    the temperature alone by default. */
+window.animStart = function (pastH, futureH, layers) {
   var m = _widgetAdapter.getMap();
   if (!m || !window.animAvailable) return false;
   if (anim) return true;
   if (tempLayer) { tempLayer.remove(); tempLayer = null; }
-  var layer = new WidgetTemp.TempLayer(_widgetAdapter, _windSource, _windOpen, _tempDem, {
-    stops: tempPalette, step: tempStep, unit: tempUnit, opacity: tempOpacity, manual: true
-  });
-  anim = { layer: layer, frames: null, player: new WidgetAnim.Player(null, layer) };
+  if (windLayer) windLayer.setActive(false);
+  anim = {
+    group: null, player: new WidgetAnim.Player(null, null), movingStep: 1,
+    // Not stored: a grid of the whole range would not fit in localStorage.
+    api: new WidgetWind.WindSource({ storage: null, world: false })
+  };
+  animLoad(pastH || 24, futureH || 48);
   _widgetAdapter.setFramesHidden(true);
   document.body.classList.add('lv-anim');
-  layer.addTo(m);
+  layers = layers || { temperature: true };
+  for (var id in ANIM_LAYERS) if (layers[id]) animSetLayer(id, true);
   creditOpenMeteo();
-  animLoad(pastH || 24, futureH || 48);
   return true;
 };
 
 window.animSetRange = function (pastH, futureH) { if (anim) animLoad(pastH, futureH); };
+window.animSetLayer = function (id, on) { if (anim) animSetLayer(id, !!on); };
 
 window.animStop = function () {
   if (!anim) return;
   anim.player.stop();
-  anim.frames.stop();
-  anim.layer.remove();
+  anim.group.tracks.slice().forEach(function (t) { animSetLayer(t.id, false); });
   anim = null;
+  if (windLayer) windLayer.setActive(true);
   _widgetAdapter.setFramesHidden(false);
   document.body.classList.remove('lv-anim');
   creditOpenMeteo();
@@ -343,20 +423,26 @@ window.animStep = function (dir) { if (anim) anim.player.step(dir, WidgetAnim.ST
 window.animStepFile = function (dir) { if (anim) anim.player.stepFile(dir); };
 window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
 window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
-// Resolution of the map while it plays: 1 full, 2 half, 4 quarter; full again on pause.
-window.animSetResolution = function (n) { if (anim) anim.layer.setMovingStep(n); };
+// Resolution of the temperature while it plays: 1 full, 2 half, 4 quarter; full again on pause.
+window.animSetResolution = function (n) {
+  if (!anim) return;
+  anim.movingStep = n;
+  var t = anim.group.track('temperature');
+  if (t) t.layer.setMovingStep(n);
+};
 
 /** { times (ms), ready, failed, now, index (a position between frames),
     time (ms) of that position, fromFile (a frame as read, not worked out),
-    playing } for the QML bar. */
+    playing, layers ({ id: on }) } for the QML bar. */
 window.animState = function () {
   if (!anim) return null;
-  var f = anim.frames;
+  var g = anim.group, layers = {};
+  for (var id in ANIM_LAYERS) layers[id] = !!g.track(id);
   return {
-    times: f.times, now: f.nowIndex, index: anim.player.index, playing: anim.player.playing,
-    time: anim.player.index >= 0 ? f.timeAt(anim.player.index) : null,
-    fromFile: anim.player.index >= 0 && f.isFile(anim.player.index),
-    ready: f.times.map(function (_, i) { return f.ready(i); }), failed: f.failed
+    times: g.times, now: g.nowIndex, index: anim.player.index, playing: anim.player.playing,
+    time: anim.player.index >= 0 ? g.timeAt(anim.player.index) : null,
+    fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
+    ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers
   };
 };
 

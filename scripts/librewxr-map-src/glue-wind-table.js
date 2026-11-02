@@ -15,6 +15,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
   var CELL = 12;              // px between table nodes
   var SLICE_MS = 4;           // longest slice of table building per frame
   var MAX_PARTICLES = 1500;
+  var FILE_RES = 0.25;        // degrees of the files given in manual mode
 
   // Nested grids: every zoom of a band samples the same points (the map
   // zooms in fractions), and a finer grid holds the points of a coarser one.
@@ -31,7 +32,8 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       relief: true, reliefMinZoom: 9, sigma: 250,
       fade: 0.90, maxAge: 60, density: 1, lineWidth: 1, palette: null, theme: 'dark',
       speedScale: 3, minPx: 2, maxPx: 60,
-      fetchDelayMs: 600, settleMs: 1500, level: '10m'
+      fetchDelayMs: 600, settleMs: 1500, level: '10m',
+      manual: false          // the file grid comes from showFile() (the animation); the API as usual
     };
     for (var k in options) if (options[k] !== undefined) this.options[k] = options[k];
     this.options.lineWidth = WindField.lineWidth(this.options.lineWidth);
@@ -82,7 +84,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       // Nothing is drawn before settle(): the page's first viewport fix
       // would land the particles in a provisional frame.
       this._settleTimer = setTimeout(function () { self.settle(); }, this.options.settleMs);
-      if (this._open) {
+      if (this._open && !this.options.manual) {
         this._loadFile(this.options.level);
         // A newer file now and then; the loader reads latest.json at most every 10 min.
         this._recheck = setInterval(function () { self._loadFile(self.options.level); }, 600000);
@@ -120,6 +122,27 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
 
     isDrawing: function () { return !!this._running; },
 
+    /** Manual mode: the file grid to draw far out, in place of the latest
+        file. Its `at` (s) is the time drawn, also on the API grids closer in
+        (they hold every hour of the animation). The particles go on across
+        the swap. */
+    showFile: function (grid) {
+      var level = this.options.level, first = this._fileState[level] !== 'ready';
+      this._at = grid.at;
+      this._fileGrid[level] = grid;
+      this._fileState[level] = 'ready';
+      if (!this._map) return;
+      if (first) { this._reset(); return; }
+      if (this._mode === 'file') {
+        this._entry = { grid: grid };
+        if (!this._running && !this._building) this._start();
+      }
+    },
+
+    /** Whether the grid given is on screen: false while the table of the
+        projection is being built. */
+    settled: function () { return !this._building; },
+
     setRate: function (fps, maxFps) {
       this.options.fps = Math.max(4, Math.min(30, fps || 10));
       this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
@@ -143,6 +166,9 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
 
     /** The projection changed under the layer: rebuild the table. */
     refresh: function () { if (this._map) this._reset(); },
+
+    /** The source's grids changed (other hours): draw again from it. */
+    reload: function () { if (this._map) this._reset(); },
 
     _stop: function (clear) {
       this._running = false;
@@ -187,8 +213,11 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       var view = this._view(), self = this, token = ++this._resetToken, level = this.options.level;
       // Far out, the open-data file: the model's own field, no API call. The
       // API only once its grid is finer than the file's; while the file is
-      // on its way, wait for it; if it failed, the API at every zoom.
-      if (this._open && !WindField.wantApi(WindField.gridSpec(view.bounds), this._open.res)) {
+      // on its way, wait for it; if it failed, the API at every zoom. In
+      // manual mode the file is the one given (showFile).
+      var fileRes = this.options.manual ? FILE_RES : this._open && this._open.res;
+      if (fileRes && !WindField.wantApi(WindField.gridSpec(view.bounds), fileRes)) {
+        if (this.options.manual && this._fileState[level] !== 'ready') { this._setMode('file'); return; }
         if (this._fileState[level] === 'ready') {
           this._setMode('file');
           this._entry = { grid: this._fileGrid[level] };
@@ -407,7 +436,9 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       ctx.globalCompositeOperation = 'source-over';
       var map = this._map, glZoom = map.getZoom(), z = glZoom + 1;
       var pxPerDeg = 512 * Math.pow(2, glZoom) / 360 / Math.cos(map.getCenter().lat * DEG);
-      var tw = WindField.timeWeights(grid.times, Date.now() / 1000);
+      // The animation's time (manual mode), else now.
+      var at = grid.at != null ? grid.at : this._at != null ? this._at : Date.now() / 1000;
+      var tw = WindField.timeWeights(grid.times, at);
       // Relief weighting near the ground, from the API grid's elevations.
       var sigma = o.relief && z >= o.reliefMinZoom && grid.elev && o.level === '10m' ? o.sigma : 0;
       var dz = this._demZoom(), worldSize = 256 * Math.pow(2, dz);

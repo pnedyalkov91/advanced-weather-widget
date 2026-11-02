@@ -329,3 +329,18 @@ test('DemTiles ensureTile: a tile that fails resolves all the same, and stays mi
   try { await dem.ensureTile(2, 4, 1); } finally { console.warn = warn; }
   assert.equal(dem.tileData(2, 4, 1), null);
 });
+
+test('WindSource for the animation: the hours asked for, no world grid', async () => {
+  const urls = [];
+  const fetch = (u) => { urls.push(u); return Promise.resolve({ ok: true, json: () => Promise.resolve([]) }); };
+  const src = new WindSource({ fetch, storage: null, pastH: 27, futureH: 51, world: false });
+  assert.match(src.url(WindField.gridSpec({ west: 6, south: 45, east: 7, north: 46 })), /past_hours=27&forecast_hours=51/);
+  assert.equal(await src.ensureWorld(), null);
+  assert.equal(urls.length, 0);
+  src.entries = [{ spec: {}, fetchedAt: 0 }];
+  src.setHours(27, 51);
+  assert.equal(src.entries.length, 1);              // same hours: the grids stay
+  src.setHours(51, 51);
+  assert.equal(src.entries.length, 0);              // other hours: they no longer cover the range
+  assert.match(src.url(WindField.gridSpec({ west: 6, south: 45, east: 7, north: 46 })), /past_hours=51&/);
+});

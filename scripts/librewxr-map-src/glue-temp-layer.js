@@ -134,7 +134,9 @@ WidgetTemp.TempLayer = (function () {
     this._api = null;         // the API field last made: { grid, field }
     this._jobs = [];          // tiles waiting for their rows to be drawn
     this._frame = false;      // a frame asked for those
-    this._manual = !!options.manual;   // the file grid comes from showFile() only (the animation)
+    this._manual = !!options.manual;   // the file grid comes from showFile() (the animation); the API as usual
+    this._at = null;          // manual mode: the time of the picture given (s), for the API grids
+    this._drawnApi = null;    // the API entry on the map
     this._inflight = 0;       // tiles asked for and not drawn yet
     this._served = null;      // the data the last tile asked for was drawn from
     this._relief = new Map(); // tile -> { key, offsets }, oldest first
@@ -201,8 +203,19 @@ WidgetTemp.TempLayer = (function () {
     /** True once a tile is drawn. */
     isDrawing: function () { return this._drawn; },
 
-    /** Manual mode: show this file grid at every zoom. */
-    showFile: function (grid) { this._fileIn(grid, true); },
+    /** Manual mode: the file grid to draw far out, and the time (its
+        times[0]) to read the API grids at closer in. Zoomed in, the next
+        picture only reads the grid on the map at the new time. */
+    showFile: function (grid) {
+      this._at = grid.times ? grid.times[0] : null;
+      if (this._map && this._mode === 'api' && this._drawnApi) {
+        this._fileGrid = grid;
+        this._fileState = 'ready';
+        this._show(this._apiFields(this._drawnApi.grid, this._fileField()));
+        return;
+      }
+      this._fileIn(grid, true);
+    },
 
     /** The animation plays (on) or stops: while it plays, tiles are drawn
         at the moving resolution; once it stops, the picture shown is drawn
@@ -234,6 +247,9 @@ WidgetTemp.TempLayer = (function () {
 
     /** The projection changed: the map draws its tiles again by itself. */
     refresh: function () {},
+
+    /** The source's grids changed (other hours): draw again from it. */
+    reload: function () { this._reset(); },
 
     /** The pixels of tile z/x/y (256 x 256 RGBA), drawn from the data on the
         map: once its elevation tile is in, a few rows per frame. Empty when
@@ -374,12 +390,7 @@ WidgetTemp.TempLayer = (function () {
       if (!this._map) return;
       var self = this, token = ++this._token, view = this._view();
       if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
-      var file = this._open && this._fileState === 'ready' ? this._fileField() : null;
-      if (this._manual) {
-        this._setMode('file');
-        if (file) this._show([file]);
-        return;
-      }
+      var file = this._fileState === 'ready' && this._fileGrid ? this._fileField() : null;
       if (this._open && this._fileState !== 'failed' && !WindField.wantApi(WindField.gridSpec(view.bounds), this._open.res)) {
         this._setMode('file');
         // Still on its way: _fileIn() shows it.
@@ -391,7 +402,10 @@ WidgetTemp.TempLayer = (function () {
       // the view: one request serves the wind and the temperature.
       var best = this._source.best(view);
       var drawn = best && best.grid && best.grid.temp ? best : null;
+      this._drawnApi = drawn;
       if (drawn) this._show(this._apiFields(drawn.grid, file));
+      // Nothing from the API yet: the picture given meanwhile.
+      else if (this._manual && file) this._show([file]);
       this._fetchTimer = setTimeout(function () {
         self._fetchTimer = null;
         self._ensureFor(view, token, drawn);
@@ -408,7 +422,7 @@ WidgetTemp.TempLayer = (function () {
         if (token !== self._token || !self._map) return;
         var now = self._source.now(), next = WindField.afterEnsure(view, entry, now, self._source.ttlMs);
         if (next.draw && entry !== drawn && entry.grid.temp) {
-          drawn = entry;
+          drawn = self._drawnApi = entry;
           self._show(self._apiFields(entry.grid, self._fileState === 'ready' ? self._fileField() : null));
         }
         if (!next.retry) return;
@@ -443,13 +457,19 @@ WidgetTemp.TempLayer = (function () {
 
     /** An API grid, then the file where the grid ends. */
     _apiFields: function (grid, file) {
-      if (!this._api || this._api.grid !== grid) this._api = { grid: grid, field: this._apiField(grid) };
+      // Live, the field made once per grid (a move then keeps the tiles); in
+      // manual mode, once per time of the animation.
+      var at = this._timeSec(), key = this._manual ? at : null;
+      if (!this._api || this._api.grid !== grid || this._api.key !== key) this._api = { grid: grid, key: key, field: this._apiField(grid, at) };
       return file ? [this._api.field, file] : [this._api.field];
     },
 
-    /** An API grid's temperature at the present time, with its points' heights. */
-    _apiField: function (grid) {
-      var tw = WindField.timeWeights(grid.times, this._now() / 1000);
+    /** The time drawn (s): the animation's in manual mode, else now. */
+    _timeSec: function () { return this._manual && this._at != null ? this._at : this._now() / 1000; },
+
+    /** An API grid's temperature at time `at` (s), with its points' heights. */
+    _apiField: function (grid, at) {
+      var tw = WindField.timeWeights(grid.times, at);
       var a = grid.temp[tw.i], b = grid.temp[Math.min(tw.i + 1, grid.temp.length - 1)];
       var values = new Float32Array(a.length);
       for (var k = 0; k < a.length; k++) values[k] = a[k] + (b[k] - a[k]) * tw.frac;

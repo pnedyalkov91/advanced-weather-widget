@@ -334,14 +334,14 @@ test('the API held back: tries again once it allows, then new tiles from the vie
   assert.deepEqual(colors(await drawTile(layer, ...tileOf(45.83, 6.87, 15))), [colorOf(11)]);
 });
 
-test('manual mode: the file grid given, at every zoom; settled once its tiles are drawn', async () => {
-  const adapter = fakeAdapter({ west: 6, south: 45, east: 7, north: 46 });
+test('manual mode, wide view: the file grid given, nothing loaded; settled once its tiles are drawn', async () => {
+  const adapter = fakeAdapter(EUROPE);
   const open = fakeOpen();
   let loads = 0;
   open.loadTemp = async () => { loads++; return null; };
   open.keptTemp = async () => { loads++; return null; };
   const layer = new T.TempLayer(adapter, stubSource(apiEntry(EUROPE)), open, fakeDem(2076), Object.assign({ manual: true }, OPTS));
-  layer.addTo(fakeMap(10));
+  layer.addTo(fakeMap(4));
   await settle();
   assert.equal(loads, 0);
   assert.equal(adapter.tiles.length, 0);
@@ -398,5 +398,21 @@ test('manual mode: smaller tiles while the animation plays, full ones again once
   const full = await draw();
   assert.equal(full.length, 256 * 256 * 4);
   assert.deepEqual(colors({ data: full }), [colorOf(4)]);
+  layer.remove();
+});
+
+test('manual mode, zoomed in: the API grid as the radar has it, at the time of the picture given', async () => {
+  const bounds = { west: 6.80, south: 45.80, east: 6.95, north: 45.87 };
+  const adapter = fakeAdapter(bounds), source = stubSource(apiEntry(bounds));
+  const layer = new T.TempLayer(adapter, source, fakeOpen(), fakeDem(1000), Object.assign({ manual: true }, OPTS));
+  layer.addTo(fakeMap(10));
+  await settle();
+  const file = (t) => WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, t);
+  layer.showFile(file(NOW + 1800e3));
+  await settle();
+  assert.deepEqual(colors(await drawTile(layer, ...tileOf(45.83, 6.87, 15))), [colorOf(12)]);
+  layer.showFile(file(NOW - 1800e3));             // the next picture: same grid, another hour
+  await settle();
+  assert.deepEqual(colors(await drawTile(layer, ...tileOf(45.83, 6.87, 15))), [colorOf(10)]);
   layer.remove();
 });

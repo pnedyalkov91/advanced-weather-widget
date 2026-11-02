@@ -94,3 +94,66 @@ test('table layer: a resize that leaves the view as it was keeps the particles g
     layer.remove();
   }
 });
+
+test('table layer, manual: only the grids it is given, at the time they say, nothing asked', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  let asked = 0;
+  const src = Object.assign({}, source, { best: () => { asked++; return null; }, ensure: () => { asked++; return new Promise(() => {}); } });
+  const map = fakeMap(), layer = new Layer(src, null, {}, { manual: true });
+  const seen = [], tw = WidgetWind.WindField.timeWeights;
+  WidgetWind.WindField.timeWeights = (times, nowSec) => { seen.push(nowSec); return tw(times, nowSec); };
+  layer.addTo(map);
+  try {
+    layer.settle();
+    flushRaf();
+    assert.equal(layer.isDrawing(), false);       // nothing to draw yet
+    const grid = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
+    grid.at = 1800;
+    layer.showFile(grid);
+    assert.equal(layer.settled(), false);         // the table is being built
+    flushRaf();
+    assert.equal(layer.isDrawing(), true);
+    assert.equal(layer.settled(), true);
+    assert.equal(asked, 0);
+    assert.ok(seen.length > 0 && seen.every((s) => s === 1800));
+    const next = Object.assign({}, grid, { at: 2000 });
+    layer.showFile(next);                          // swapped under running particles
+    assert.equal(layer.isDrawing(), true);
+    assert.equal(layer._grid(), next);
+  } finally {
+    WidgetWind.WindField.timeWeights = tw;
+    layer.remove();
+  }
+});
+
+test('table layer, manual, zoomed in: the API grid as the radar has it, at the time of the picture given', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const tiny = { west: 0, south: 0, east: 0.4, north: 0.2 };   // finer than the file: the API
+  const spec = WidgetWind.WindField.gridSpec(tiny), pts = [];
+  for (let i = 0; i < spec.lats.length * spec.lons.length; i++) pts.push({ elevation: 500, hourly: { time: [0, 3600], wind_speed_10m: [1, 2], wind_direction_10m: [270, 270] } });
+  const api = { spec, fetchedAt: 0, grid: WidgetWind.WindField.buildGrid(spec, pts) };
+  const src = Object.assign({}, source, { best: () => api, ensure: () => Promise.resolve(api) });
+  const map = fakeMap();
+  map.getBounds = () => ({ getWest: () => tiny.west, getEast: () => tiny.east, getSouth: () => tiny.south, getNorth: () => tiny.north });
+  const layer = new Layer(src, null, {}, { manual: true });
+  const seen = [], tw = WidgetWind.WindField.timeWeights;
+  WidgetWind.WindField.timeWeights = (times, nowSec) => { seen.push([times.length, nowSec]); return tw(times, nowSec); };
+  layer.addTo(map);
+  try {
+    layer.settle();
+    const file = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
+    file.at = 1800;
+    layer.showFile(file);
+    flushRaf();
+    assert.equal(layer._grid(), api.grid);
+    assert.ok(seen.length > 0 && seen.every(([n, s]) => n === 2 && s === 1800));
+    seen.length = 0;
+    layer.showFile(Object.assign({}, file, { at: 900 }));   // next picture: the API grid stays, its hour moves
+    layer._frame();
+    assert.equal(layer._grid(), api.grid);
+    assert.deepEqual(seen, [[2, 900]]);
+  } finally {
+    WidgetWind.WindField.timeWeights = tw;
+    layer.remove();
+  }
+});

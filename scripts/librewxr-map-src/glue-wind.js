@@ -436,6 +436,12 @@ var WidgetWind = (function () {
     this.now = opts.now || function () { return Date.now(); };
     this.apiBase = opts.apiBase || 'https://api.open-meteo.com/v1/forecast';
     this.ttlMs = opts.ttlMs || 60 * 60 * 1000;
+    // Hours before and after now in each grid: a few for the live map, the
+    // whole range for the animation (one request then serves every picture).
+    this.pastH = opts.pastH || 2;
+    this.futureH = opts.futureH || 4;
+    // The animation draws far views from the files: no world grid there.
+    this.useWorld = opts.world !== false;
     // Retry delay after a failure: backoffMs, doubled at each further failure
     // up to maxBackoffMs, reset by the next success. A 429 (quota) or a
     // network blip must not freeze the layer on a stale box for long.
@@ -479,7 +485,16 @@ var WidgetWind = (function () {
     vars.push(TEMP_VAR);
     return this.apiBase + '?latitude=' + pl.latitude + '&longitude=' + pl.longitude +
       '&hourly=' + vars.join(',') + '&wind_speed_unit=ms&timeformat=unixtime' +
-      '&past_hours=2&forecast_hours=4';
+      '&past_hours=' + this.pastH + '&forecast_hours=' + this.futureH;
+  };
+
+  /** Other hours in each grid: the grids kept no longer cover them, so they go. */
+  WindSource.prototype.setHours = function (pastH, futureH) {
+    if (pastH === this.pastH && futureH === this.futureH) return;
+    this.pastH = pastH;
+    this.futureH = futureH;
+    this.entries = [];
+    this.world = null;
   };
 
   /** Bring the grids back from storage once per page, dropping those past
@@ -563,6 +578,7 @@ var WidgetWind = (function () {
       own. Resolves with the world grid, or null. */
   WindSource.prototype.ensureWorld = function () {
     var self = this;
+    if (!this.useWorld) return Promise.resolve(null);
     this.restore();
     var now = this.now();
     if (this.world && now - this.world.fetchedAt <= this.ttlMs) return Promise.resolve(this.world);
@@ -608,12 +624,15 @@ var WidgetWind = (function () {
     this.ensureWorld();
     if (now < this.blockedUntil) return Promise.resolve(this.best(view));
     if (this.inflight) return this.inflight;
-    var t0 = now;
+    var t0 = now, hours = this.pastH + '/' + this.futureH;
     this.inflight = this._get(spec).then(function (entry) {
       entry.zoom = view.zoom;
-      self.entries.unshift(entry);
-      if (self.entries.length > self.maxEntries) self.entries.length = self.maxEntries;
-      self.persist();
+      // Not kept when the hours changed meanwhile (setHours).
+      if (hours === self.pastH + '/' + self.futureH) {
+        self.entries.unshift(entry);
+        if (self.entries.length > self.maxEntries) self.entries.length = self.maxEntries;
+        self.persist();
+      }
       self.inflight = null;
       self.failures = 0;
       self.blockedUntil = self.now() + self.minIntervalMs;
