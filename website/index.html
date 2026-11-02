@@ -644,17 +644,17 @@
           </article>
           <article class="detail-card">
             <h3>Weather alerts and notifications</h3>
-            <p>Receive KDE notifications for forecasts, UV and space-weather updates, as well as severe alerts from supported warning services. Configure each notification and alert sound separately.</p>
+            <p>Receive KDE notifications for forecasts, UV and space-weather updates, plus severe alerts from MeteoAlarm, NOAA NWS, LibreWXR, KDE’s FOSS Public Alert Server and supported provider sources. Configure notification types and sounds separately; an additional Purple severity tier highlights extreme alerts.</p>
             <div class="pill-row"><span class="pill">MeteoAlarm</span><span class="pill">NOAA NWS</span><span class="pill">LibreWXR</span><span class="pill">KDE Public Alert Server</span></div>
           </article>
           <article class="detail-card">
             <h3>Location with precision</h3>
-            <p>Use GeoClue2 for automatic location detection or search manually. An integrated OpenStreetMap picker helps you pin the location you actually want.</p>
+            <p>Use GeoClue2 for automatic detection or search manually with OpenStreetMap and Photon geocoding. The integrated OpenStreetMap picker lets you pin an exact location, while timezone, altitude and localized city names are detected automatically.</p>
             <div class="pill-row"><span class="pill">GeoClue2</span><span class="pill">OpenStreetMap</span><span class="pill">Photon geocoding</span></div>
           </article>
           <article class="detail-card">
             <h3>Weather history</h3>
-            <p>Look back across days, weeks and months using the Open-Meteo Historical Weather API. Explore interactive charts and summary tiles for local conditions.</p>
+            <p>Look back across days, weeks and months using the free Open-Meteo Historical Weather API, independently of your forecast provider. Zoom and pan interactive charts for temperature, precipitation, wind and more; summary tiles include averages, extremes, rainfall, wind, sunshine, humidity, pressure and cloud cover.</p>
             <div class="pill-row"><span class="pill">No API key required</span><span class="pill">Qt Graphs</span><span class="pill">KDE Quick Charts fallback</span></div>
           </article>
         </div>
@@ -768,6 +768,7 @@ systemctl --user restart plasma-plasmashell</code></pre>
                 <tr><td>Charts · preferred</td><td><code>qt6-qtgraphs</code></td><td><code>qt6-graphs-imports</code></td><td><code>qt6-graphs</code></td><td><code>qml6-module-qtgraphs</code></td></tr>
                 <tr><td>Charts · fallback</td><td><code>kf6-kquickcharts</code></td><td><code>kf6-kquickcharts</code></td><td><code>kquickcharts</code></td><td><code>libquickcharts1</code></td></tr>
                 <tr><td>Alert sounds · PipeWire</td><td><code>pipewire-utils</code></td><td><code>pipewire-tools</code></td><td><code>pipewire-audio</code></td><td><code>pipewire-bin</code></td></tr>
+                <tr><td>Alert sounds · PulseAudio fallback</td><td><code>pulseaudio-utils</code></td><td><code>pulseaudio-utils</code></td><td><code>libpulse</code></td><td><code>pulseaudio-utils</code></td></tr>
               </tbody>
             </table>
           </div>
@@ -800,6 +801,37 @@ systemctl --user restart plasma-plasmashell</code></pre>
             <a class="text-link" href="https://github.com/pnedyalkov91/advanced-weather-widget/tree/feature/1.9.0/translate">Translation files ↗</a>
           </article>
         </div>
+        <div class="closing-grid" style="margin-top:18px">
+          <article class="closing-card">
+            <h3>Support independent development</h3>
+            <p>The widget is developed in free time. Contributions help support continued maintenance, testing and new features.</p>
+            <div class="pill-row">
+              <a class="pill" href="https://buymeacoffee.com/petarnedyaq">Buy Me a Coffee ↗</a>
+              <a class="pill" href="https://liberapay.com/pnedyalkov">Liberapay ↗</a>
+              <a class="pill" href="https://paypal.me/pnedyalkov91">PayPal ↗</a>
+              <a class="pill" href="https://revolut.me/petarnedyalkov91">Revolut ↗</a>
+            </div>
+          </article>
+          <article class="closing-card">
+            <h3>People behind the project</h3>
+            <p>Thank you to everyone contributing code, fixes and translations — including Mizu Ikki, rcspam, ydimitrof, Katze-942, KassLavender and JoshuaKimsey.</p>
+            <a class="text-link" href="https://github.com/pnedyalkov91/advanced-weather-widget/blob/feature/1.9.0/README.md#-translation">Contributors and translator credits ↗</a>
+          </article>
+        </div>
+        <details>
+          <summary>Data sources, libraries and third-party acknowledgements</summary>
+          <ul>
+            <li><a href="https://open-meteo.com/" class="text-link">Open-Meteo</a> provides forecast and historical weather data; historical data is offered under CC BY 4.0.</li>
+            <li><a href="https://www.rainviewer.com/" class="text-link">RainViewer</a> and <a href="https://librewxr.net/" class="text-link">LibreWXR</a> provide radar data and related services.</li>
+            <li><a href="https://www.openstreetmap.org/copyright" class="text-link">OpenStreetMap</a> contributors provide map data under the ODbL; <a href="https://photon.komoot.io/" class="text-link">Photon</a> is used for geocoding.</li>
+            <li><a href="https://leafletjs.com/" class="text-link">Leaflet</a> is used for interactive map rendering (BSD 2-Clause License).</li>
+            <li>Weather icon resources include <a href="https://github.com/erikflowers/weather-icons" class="text-link">Weather Icons</a> (SIL OFL 1.1) and <a href="https://meteocons.com/" class="text-link">Meteocons</a> by Bas Milius (MIT License).</li>
+            <li>Sun and Moon calculations use <a href="https://github.com/mourner/suncalc" class="text-link">SunCalc</a> (BSD License).</li>
+            <li>Charts use <a href="https://doc.qt.io/qt-6/qtgraphs-index.html" class="text-link">Qt Graphs</a>, with <a href="https://api.kde.org/frameworks/kquickcharts/html/index.html" class="text-link">KDE Quick Charts</a> as a fallback.</li>
+            <li>Weather alerts can use <a href="https://alerts.kde.org/" class="text-link">KDE’s FOSS Public Alert Server</a>; space-weather information uses data from <a href="https://www.spaceweather.gov/" class="text-link">NOAA SWPC</a>.</li>
+          </ul>
+          <p>See the repository README and bundled license files for complete third-party notices and attribution details.</p>
+        </details>
         <p class="privacy-line">No analytics or telemetry are built into the widget. Location coordinates are used to request local weather data from the selected provider and to support location-related services.</p>
       </div>
     </section>
