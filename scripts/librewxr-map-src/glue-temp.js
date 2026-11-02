@@ -19,7 +19,7 @@ var WidgetTemp = (function () {
   // Colors for every 0.1 °C from -60 to +60: drawing a pixel is one lookup.
   var LUT_MIN = -60, LUT_STEP = 0.1, LUT_SIZE = 1201;
 
-  var STEPS = [0, 2, 5, 10];        // band widths offered; 0 is a smooth gradient
+  var STEPS = [0, 2, 2.5, 5, 10];   // band widths offered; 0 is a smooth gradient
   var DEFAULT_STEP = 5, DEFAULT_OPACITY = 45;
 
   function toF(c) { return c * 9 / 5 + 32; }
@@ -113,7 +113,7 @@ var WidgetTemp = (function () {
     return out;
   }
 
-  /** Band width from the widget: 0, 2, 5 or 10; anything else gives 5. */
+  /** Band width from the widget: 0, 2, 2.5, 5 or 10; anything else gives 5. */
   function normStep(n) {
     if (n === null || n === undefined || n === '') return DEFAULT_STEP;
     var v = Number(n);

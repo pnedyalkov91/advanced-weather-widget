@@ -57,7 +57,7 @@ KCM.AbstractKCM {
     property string cfg_librewxrTempPalettes: "[]"
     property string cfg_librewxrTempPalette: ""
     property int cfg_librewxrTempOpacity: 45
-    property int cfg_librewxrTempStep: 5
+    property real cfg_librewxrTempStep: 5
     property bool cfg_radarGpuWorkaround: false
     property bool cfg_radarKeepLoaded: false
     property string cfg_alertsProvider: "native"

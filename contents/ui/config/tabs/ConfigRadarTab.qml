@@ -715,11 +715,12 @@ GridLayout {
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
     }
     ComboBox {
-        readonly property var steps: [0, 2, 5, 10]
+        readonly property var steps: [0, 2, 2.5, 5, 10]
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
         Layout.preferredWidth: 200
         model: steps.map(function (n) {
-            return n === 0 ? i18n("Smooth") : n + " °" + radarTab.tempUnit;
+            // 2.5 written the local way (2,5 in French)
+            return n === 0 ? i18n("Smooth") : Number(n).toLocaleString(Qt.locale(), "f", n % 1 ? 1 : 0) + " °" + radarTab.tempUnit;
         })
         currentIndex: Math.max(0, steps.indexOf(radarTab.configRoot.cfg_librewxrTempStep))
         onActivated: radarTab.configRoot.cfg_librewxrTempStep = steps[currentIndex]

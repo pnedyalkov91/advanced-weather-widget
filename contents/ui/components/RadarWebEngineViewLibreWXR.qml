@@ -33,7 +33,7 @@
  *   window.setTemp(true | false)          // air temperature under the radar (MapLibre page only)
  *   window.setTempPalette("t:rrggbb,...")  // temperature palette from the settings, t in °C
  *   window.setTempOpacity(percent)        // opacity of the temperature layer (10-100)
- *   window.setTempStep(0 | 2 | 5 | 10)    // width of the temperature bands; 0 = smooth gradient
+ *   window.setTempStep(0 | 2 | 2.5 | 5 | 10)  // width of the temperature bands; 0 = smooth gradient
  *   window.setTempUnit("C" | "F")         // unit of the temperature bands and legend
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
  *   window.setAlerts(true | false)        // WMO alerts overlay
@@ -138,7 +138,7 @@ Item {
     // t in °C; the vivid palette for an entry that does not read.
     readonly property string tempPalette: ConfigUtils.formatTempPalette(ConfigUtils.tempPaletteStops(Plasmoid.configuration.librewxrTempPalette || "", Plasmoid.configuration.librewxrTempPalettes || "[]"))
     readonly property int tempOpacity: Plasmoid.configuration.librewxrTempOpacity > 0 ? Plasmoid.configuration.librewxrTempOpacity : 45
-    readonly property int tempStep: Plasmoid.configuration.librewxrTempStep
+    readonly property real tempStep: Plasmoid.configuration.librewxrTempStep
     // The widget's temperature unit, which the bands and the legend follow.
     readonly property string tempUnit: ConfigUtils.effectiveTempUnit(Plasmoid.configuration.unitsMode, Plasmoid.configuration.temperatureUnit, Qt.locale().measurementSystem)
     // Set from the page once loaded: the Leaflet page (no WebGL) has no

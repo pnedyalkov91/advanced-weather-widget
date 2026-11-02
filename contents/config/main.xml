@@ -230,8 +230,8 @@
     <!-- Temperature palettes made in the settings: JSON [{ "name", "stops": [{ "t" (°C), "color" }] }] -->
     <entry name="librewxrTempPalettes"  type="String"><default>[]</default></entry>
     <entry name="librewxrTempOpacity"   type="Int"><default>45</default><min>10</min><max>100</max></entry>
-    <!-- Width of the temperature bands in the widget's unit: 0 (smooth), 2, 5 or 10 -->
-    <entry name="librewxrTempStep"      type="Int"><default>5</default></entry>
+    <!-- Width of the temperature bands in the widget's unit: 0 (smooth), 2, 2.5, 5 or 10 -->
+    <entry name="librewxrTempStep"      type="Double"><default>5</default></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
     <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
     <entry name="librewxrCells"         type="String"><default></default></entry>
