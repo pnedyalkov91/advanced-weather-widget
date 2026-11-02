@@ -47,6 +47,25 @@ var WidgetWind = (function () {
       return { u: -speed * Math.sin(a), v: -speed * Math.cos(a) };
     },
 
+    /** The other way: speed (m/s) and the direction it comes from (degrees). */
+    fromUV: function (u, v) {
+      var speed = Math.sqrt(u * u + v * v);
+      if (!(speed > 0)) return { speed: 0, dir: 0 };
+      return { speed: speed, dir: (Math.atan2(-u, -v) / DEG + 360) % 360 };
+    },
+
+    /** A speed (m/s) in the widget's unit, written as the widget writes it
+        (weather.js formatWindValue): km/h whole, the others to 0.1. */
+    speedText: function (ms, unit) {
+      if (unit === 'ms') return ms.toFixed(1);
+      if (unit === 'kn') return (ms * 3.6 * 0.539957).toFixed(1);
+      if (unit === 'mph') return (ms * 3.6 * 0.621371).toFixed(1);
+      return String(Math.round(ms * 3.6));
+    },
+
+    /** Which of the eight compass points (0 N, 1 NE ... 7 NW) a direction is. */
+    compassIndex: function (dir) { return Math.round(((dir % 360) + 360) % 360 / 45) % 8; },
+
     /** Grid spec for a viewport: the bounds widened by `margin` on each side,
         covered by grid points on a lattice fixed to the Earth. Meridians sit
         on multiples of a step that divides 360 and parallels on multiples of

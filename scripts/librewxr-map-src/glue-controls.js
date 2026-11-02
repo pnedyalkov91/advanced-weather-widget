@@ -446,6 +446,149 @@ window.animState = function () {
   };
 };
 
+// === READOUT UNDER THE POINTER (Ctrl) ===
+// While Ctrl is held, a small box follows the mouse with the wind and the
+// temperature drawn there, at the time shown: the animation's layers while
+// it runs, else the live ones. Ctrl is read from the mouse events too: in
+// the Plasma popup the page does not always get the keys.
+var windUnit = WIND_UNIT;
+var windUnitLabel = tr('windUnitLabel', { kmh: 'km/h', ms: 'm/s', kn: 'kn', mph: 'mph' }[WIND_UNIT]);
+var COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'].map(function (d) { return tr('dir' + d, d); });
+var readout = { el: null, x: 0, y: 0, known: false, shown: false, timer: null, keyDown: false };
+
+/** The wind unit chosen in the widget and its translated label. */
+window.setWindUnit = function (u, label) {
+  windUnit = u;
+  windUnitLabel = label || windUnitLabel;
+  if (readout.shown) readoutDraw();
+};
+
+function readoutLayers() {
+  if (anim) {
+    var w = anim.group.track('wind'), t = anim.group.track('temperature');
+    return { wind: w && w.layer, temp: t && t.layer };
+  }
+  return { wind: windLayer, temp: tempLayer };
+}
+
+/** A number the local way, with `dec` decimals. */
+function localNumber(n, dec) {
+  return n.toLocaleString(SYS_LOCALE, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+// A filled arrow pointing down (south), turned to where the wind goes; it
+// takes the color of its span.
+var READOUT_ARROW = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M8 15.5 3.6 9.3H6.9V.5h2.2v8.8h3.3Z" fill="currentColor"/></svg>';
+
+// A thermometer drawn here (a file's image could not take a color), filled
+// with the color of its span, a thin outline so dark colors still show.
+var READOUT_THERMO = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M6.2 2.2a1.8 1.8 0 0 1 3.6 0v6.7a3.6 3.6 0 1 1-3.6 0Z" ' +
+  'fill="currentColor" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/></svg>';
+
+/** The lines of the box at the pointer, '' where nothing is drawn. */
+function readoutHtml() {
+  var m = _widgetAdapter.getMap(), layers = readoutLayers();
+  var hasWind = !!(layers.wind && layers.wind.valueAt), hasTemp = !!(layers.temp && layers.temp.valueAt);
+  if (!m || !(hasWind || hasTemp)) return '';
+  var c = m.getContainer().getBoundingClientRect(), x = readout.x - c.left, y = readout.y - c.top;
+  if (x < 0 || y < 0 || x > c.width || y > c.height) return '';
+  var ll = m.unproject([x, y]);
+  if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) return '';
+  var back = m.project(ll);
+  if (Math.abs(back.x - x) > 1 || Math.abs(back.y - y) > 1) return '';   // off the globe
+  var lines = [];
+  var w = hasWind ? layers.wind.valueAt(ll.lat, ll.lng) : null;
+  if (w) {
+    var s = WidgetWind.WindField.speedText(w.speed, windUnit);
+    // The arrow points where the wind goes.
+    // The arrow in the color of the particles at that speed.
+    var wc = layers.wind.colorOf ? ';color:' + layers.wind.colorOf(w.speed) : '';
+    lines.push('<span class="lv-readout-arrow" style="transform:rotate(' + Math.round(w.dir) + 'deg)' + wc + '">' + READOUT_ARROW + '</span>' +
+      '<span>' + localNumber(Number(s), s.indexOf('.') >= 0 ? 1 : 0) + ' ' + windUnitLabel + ' ' + COMPASS[WidgetWind.WindField.compassIndex(w.dir)] + '</span>');
+  }
+  var t = hasTemp ? layers.temp.valueAt(ll.lat, ll.lng) : null;
+  if (t !== null && isFinite(t)) {
+    // The thermometer in the color of the band on the map.
+    var tc = layers.temp.colorOf ? ' style="color:' + layers.temp.colorOf(t) + '"' : '';
+    lines.push('<span class="lv-readout-icon"' + tc + '>' + READOUT_THERMO + '</span>' +
+      '<span>' + localNumber(tempUnit === 'F' ? t * 9 / 5 + 32 : t, 1) + ' \u00b0' + tempUnit + '</span>');
+  }
+  return lines.map(function (l) { return '<div class="lv-readout-row">' + l + '</div>'; }).join('');
+}
+
+function readoutDraw() {
+  // Nothing before the pointer has been over the page: its place is unknown.
+  var html = readout.known ? readoutHtml() : '', el = readout.el;
+  if (!html) { el.style.display = 'none'; return; }
+  el.innerHTML = html;
+  el.style.display = 'block';
+  // Below right of the pointer, kept inside the window.
+  var left = readout.x + 14, top = readout.y + 14;
+  if (left + el.offsetWidth > window.innerWidth - 4) left = readout.x - 14 - el.offsetWidth;
+  if (top + el.offsetHeight > window.innerHeight - 4) top = readout.y - 14 - el.offsetHeight;
+  el.style.left = Math.max(4, left) + 'px';
+  el.style.top = Math.max(4, top) + 'px';
+}
+
+function readoutShow(on) {
+  if (on === readout.shown) { if (on) readoutDraw(); return; }
+  readout.shown = on;
+  document.body.classList.toggle('lv-readout-on', on);   // the pointer becomes a cross
+  // Told to the window through the console: it sets the cross at once
+  // (Chromium changes its own only at the next mouse move).
+  console.log('[readout] ctrl:' + (on ? 1 : 0));
+  if (!readout.el) {
+    readout.el = document.createElement('div');
+    readout.el.id = 'lv-readout';
+    document.body.appendChild(readout.el);
+  }
+  if (on) {
+    readoutDraw();
+    // The values change while the animation plays or the wind comes in.
+    readout.timer = setInterval(readoutDraw, 250);
+  } else {
+    clearInterval(readout.timer);
+    readout.el.style.display = 'none';
+  }
+}
+
+document.addEventListener('mousemove', function (e) {
+  readout.x = e.clientX;
+  readout.y = e.clientY;
+  readout.known = true;
+  // A move without Ctrl only ends it when no key holds it: Qt sends moves
+  // of its own, without the modifiers, when the window changes the cursor.
+  readoutShow(e.ctrlKey || readout.keyDown);
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Control' || e.repeat) return;
+  readout.keyDown = true;
+  readoutShow(true);
+});
+// Ctrl seen by QML while the keyboard is on its side (the page then gets no
+// key at all): the box shows at once at the last pointer position.
+// The pointer as the window sees it (x, y in the page's pixels): while it
+// sets the cross, the moves no longer reach the page.
+window.readoutAt = function (x, y) {
+  readout.x = x;
+  readout.y = y;
+  readout.known = true;
+  if (readout.shown) readoutDraw();
+};
+window.setReadout = function (on) {
+  readout.keyDown = !!on;
+  readoutShow(!!on);
+};
+document.addEventListener('keyup', function (e) {
+  if (e.key !== 'Control') return;
+  readout.keyDown = false;
+  readoutShow(false);
+});
+// Not while a key holds it: setting the cross, Qt tells the page the pointer
+// left, though the moves keep coming.
+document.addEventListener('mouseleave', function () { if (!readout.keyDown) readoutShow(false); });
+window.addEventListener('blur', function () { readout.keyDown = false; readoutShow(false); });
+
 // Fade-in fallback when nothing calls fixViewport (the page opened on its own).
 setTimeout(function () { document.body.classList.add('lv-ready'); }, 1500);
 

@@ -313,5 +313,19 @@
       #lv-temp-legend .lv-temp-unit { grid-column: 2; grid-row: 2; align-self: center; }
       @media (max-width: 320px) { #lv-temp-legend { display: none; } }
 
+/* Readout under the pointer while Ctrl is held (glue-controls.js). */
+#lv-readout {
+  position: fixed; z-index: 20; pointer-events: none; display: none;
+  padding: 4px 8px; border-radius: 6px; white-space: nowrap;
+  font: 12px var(--font-ui, sans-serif); line-height: 1.5;
+  background: rgba(41, 49, 37, 0.9); color: #eee;   /* #293125, as the time shown over the map */
+}
+body[data-theme="light"] #lv-readout { background: rgba(255, 255, 255, 0.92); color: #222; }
+#lv-readout .lv-readout-row { display: flex; align-items: center; gap: 4px; }
+#lv-readout .lv-readout-icon { display: inline-flex; width: 20px; height: 20px; }
+#lv-readout .lv-readout-arrow { display: inline-flex; width: 20px; height: 20px; }
+/* Over MapLibre's grab hand too. */
+body.lv-readout-on, body.lv-readout-on * { cursor: crosshair !important; }
+
 /* Animations: the widget's own time bar replaces the radar's. */
 body.lv-anim .replayer { display: none; }

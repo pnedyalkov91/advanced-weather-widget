@@ -139,3 +139,6 @@ var TEMP_PALETTE_PARAM = PARAMS.get('temppalette') || '';
 var TEMP_OPACITY = PARAMS.get('tempopacity');
 var TEMP_STEP = PARAMS.get('tempstep');
 var TEMP_UNIT = PARAMS.get('tempunit') === 'F' ? 'F' : 'C';
+// The widget's wind unit, for the readout under the pointer (Ctrl).
+var WIND_UNIT = ['kmh', 'ms', 'kn', 'mph'].indexOf(PARAMS.get('windunit')) >= 0 ? PARAMS.get('windunit') : 'kmh';
+

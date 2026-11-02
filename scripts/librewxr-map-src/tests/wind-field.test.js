@@ -597,3 +597,24 @@ test('buildGrid: temperature per hour when the points have it, null otherwise', 
   const old = WindField.buildGrid(spec, [1, 2, 3, 4].map(() => ({ elevation: 0, hourly: { time: [1000], wind_speed_10m: [1], wind_direction_10m: [270] } })));
   assert.equal(old.temp, null);
 });
+
+test('fromUV: speed and the direction the wind comes from, the inverse of toUV', () => {
+  for (const dir of [0, 45, 90, 200, 270, 315]) {
+    const uv = WindField.toUV(7, dir), back = WindField.fromUV(uv.u, uv.v);
+    assert.ok(Math.abs(back.speed - 7) < 1e-9);
+    assert.ok(Math.abs(back.dir - dir) < 1e-9 || Math.abs(back.dir - dir) > 359.999);
+  }
+  assert.deepEqual(WindField.fromUV(0, 0), { speed: 0, dir: 0 });
+});
+
+test('speedText: the widget\'s wind units, as the widget writes them', () => {
+  assert.equal(WindField.speedText(10, 'kmh'), '36');
+  assert.equal(WindField.speedText(10, 'ms'), '10.0');
+  assert.equal(WindField.speedText(10, 'kn'), '19.4');
+  assert.equal(WindField.speedText(10, 'mph'), '22.4');
+  assert.equal(WindField.speedText(10, 'other'), '36');
+});
+
+test('compassIndex: eight points, N first, turning east', () => {
+  assert.deepEqual([0, 22, 23, 90, 180, 247, 300, 338, 359].map(WindField.compassIndex), [0, 0, 1, 2, 4, 5, 7, 0, 0]);
+});

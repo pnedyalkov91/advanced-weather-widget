@@ -464,6 +464,32 @@ WidgetTemp.TempLayer = (function () {
       return file ? [this._api.field, file] : [this._api.field];
     },
 
+    /** The temperature drawn at lat/lon (°C), corrected to the height there
+        once its elevation tile is in; null where nothing is drawn. */
+    valueAt: function (lat, lon) {
+      var shown = this._shown, out = {};
+      if (!this._map || !shown) return null;
+      readFields(shown.fields, lat, lon, out);
+      if (!isFinite(out.t)) return null;
+      var zPix = NaN;
+      if (this._dem && isFinite(out.z)) {
+        // The elevation tiles are those of the temperature tiles on screen.
+        var z = this._map.getZoom() + 1, zooms = [Math.round(z), Math.floor(z)];
+        for (var k = 0; k < zooms.length && !isFinite(zPix); k++) {
+          var dz = Math.max(0, Math.min(zooms[k], DEM_MAX_ZOOM)), p = WindField.worldPx(lat, lon, dz);
+          zPix = this._dem.elevationAtWorld(p.x, p.y, dz);
+        }
+      }
+      return WidgetTemp.correct(out.t, out.z, zPix);
+    },
+
+    /** The color of the band temperature tC (°C) is drawn in, as on the map. */
+    colorOf: function (tC) {
+      var lut = this._lut || WidgetTemp.buildLut(this.options.stops, this.options.step, this.options.unit);
+      var i = WidgetTemp.lutIndex(tC) * 3;
+      return 'rgb(' + lut[i] + ', ' + lut[i + 1] + ', ' + lut[i + 2] + ')';
+    },
+
     /** The time drawn (s): the animation's in manual mode, else now. */
     _timeSec: function () { return this._manual && this._at != null ? this._at : this._now() / 1000; },
 

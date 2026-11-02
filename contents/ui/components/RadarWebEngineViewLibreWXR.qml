@@ -141,6 +141,14 @@ Item {
     readonly property real tempStep: Plasmoid.configuration.librewxrTempStep
     // The widget's temperature unit, which the bands and the legend follow.
     readonly property string tempUnit: ConfigUtils.effectiveTempUnit(Plasmoid.configuration.unitsMode, Plasmoid.configuration.temperatureUnit, Qt.locale().measurementSystem)
+    // The widget's wind unit and its label, for the readout under the pointer (Ctrl).
+    readonly property string windUnit: Plasmoid.configuration.windSpeedUnit || "kmh"
+    readonly property string windUnitLabel: ({
+            "kmh": i18n("km/h"),
+            "ms": i18n("m/s"),
+            "kn": i18n("kn"),
+            "mph": i18n("mph")
+        })[windUnit] || i18n("km/h")
     // Set from the page once loaded: the Leaflet page (no WebGL) has no
     // temperature layer, and its button goes away.
     property bool tempAvailable: true
@@ -467,9 +475,18 @@ Item {
             "apiError": i18n("API error"),
             "connFailed": i18n("Connection failed"),
             "globe": i18n("Globe"),
-            "dayNight": i18n("Day and night")
+            "dayNight": i18n("Day and night"),
+            "windUnitLabel": radarRoot.windUnitLabel,
+            "dirN": i18n("N"),
+            "dirNE": i18n("NE"),
+            "dirE": i18n("E"),
+            "dirSE": i18n("SE"),
+            "dirS": i18n("S"),
+            "dirSW": i18n("SW"),
+            "dirW": i18n("W"),
+            "dirNW": i18n("NW")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&prepare=" + radarRoot.prepareMode + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&temp=" + (radarRoot.tempOn ? "1" : "0") + "&temppalette=" + encodeURIComponent(radarRoot.tempPalette) + "&tempopacity=" + radarRoot.tempOpacity + "&tempstep=" + radarRoot.tempStep + "&tempunit=" + radarRoot.tempUnit + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&prepare=" + radarRoot.prepareMode + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&temp=" + (radarRoot.tempOn ? "1" : "0") + "&temppalette=" + encodeURIComponent(radarRoot.tempPalette) + "&tempopacity=" + radarRoot.tempOpacity + "&tempstep=" + radarRoot.tempStep + "&tempunit=" + radarRoot.tempUnit + "&windunit=" + radarRoot.windUnit + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -947,6 +964,9 @@ Item {
                 }
                 function onTempUnitChanged() {
                     webView.runJavaScript("if (window.setTempUnit) window.setTempUnit(" + JSON.stringify(radarRoot.tempUnit) + ");");
+                }
+                function onWindUnitChanged() {
+                    webView.runJavaScript("if (window.setWindUnit) window.setWindUnit(" + JSON.stringify(radarRoot.windUnit) + ", " + JSON.stringify(radarRoot.windUnitLabel) + ");");
                 }
                 function onProjectionChanged() {
                     webView.runJavaScript("if (window.setProjection) window.setProjection(" + JSON.stringify(radarRoot.projection) + ");");

@@ -157,3 +157,28 @@ test('table layer, manual, zoomed in: the API grid as the radar has it, at the t
     layer.remove();
   }
 });
+
+test('table layer: valueAt reads the wind drawn, where it is drawn', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const map = fakeMap(), layer = new Layer(source, null, {}, { manual: true });
+  layer.addTo(map);
+  try {
+    assert.equal(layer.valueAt(0, 0), null);       // nothing drawn yet
+    layer.settle();
+    const grid = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
+    grid.at = 3600;
+    layer.showFile(grid);
+    flushRaf();
+    const w = layer.valueAt(10, 20);
+    assert.ok(Math.abs(w.speed - 5) < 1e-6);
+    assert.ok(Math.abs(w.dir - 270) < 1e-6);         // u = +5: from the west
+  } finally {
+    layer.remove();
+  }
+});
+
+test('table layer: colorOf gives the color of the particles at that speed', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const WF = WidgetWind.WindField, layer = new Layer(source, null, {}, { theme: 'dark' });
+  for (const ms of [0.5, 5, 12, 40]) assert.equal(layer.colorOf(ms), WF.bandColor(WF.DEFAULT_PALETTE, WF.paletteBand(ms, WF.DEFAULT_PALETTE), 'dark'));
+});

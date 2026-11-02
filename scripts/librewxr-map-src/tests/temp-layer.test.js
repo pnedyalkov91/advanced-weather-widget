@@ -88,6 +88,7 @@ function fakeDem(height, opts = {}) {
   d.resolve = () => { d.loaded = true; d.waiting.splice(0).forEach((r) => r()); };
   const data = new Float32Array(65536).fill(height);   // one array per tile, as DemTiles keeps them
   d.tileData = () => (d.loaded && !opts.fail ? data : null);
+  d.elevationAtWorld = () => (d.loaded && !opts.fail ? height : NaN);
   return d;
 }
 
@@ -414,5 +415,24 @@ test('manual mode, zoomed in: the API grid as the radar has it, at the time of t
   layer.showFile(file(NOW - 1800e3));             // the next picture: same grid, another hour
   await settle();
   assert.deepEqual(colors(await drawTile(layer, ...tileOf(45.83, 6.87, 15))), [colorOf(10)]);
+  layer.remove();
+});
+
+test('valueAt: the temperature drawn under a point, corrected to its height', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(4792), OPTS);
+  const map = fakeMap(4);
+  layer.addTo(map);
+  assert.equal(layer.valueAt(45.83, 6.87), null);   // nothing shown yet
+  await settle();
+  assert.ok(Math.abs(layer.valueAt(45.83, 6.87) - T.correct(6.3, 2076, 4792)) < 1e-6);
+  layer.remove();
+});
+
+test('colorOf: the color of the band a temperature is drawn in', async () => {
+  const layer = new T.TempLayer(fakeAdapter(EUROPE), stubSource(null), fakeOpen(), fakeDem(2076), OPTS);
+  layer.addTo(fakeMap(4));
+  const rgb = colorOf(6.3).split(',').slice(0, 3).join(', ');
+  assert.equal(layer.colorOf(6.3), 'rgb(' + rgb + ')');
   layer.remove();
 });

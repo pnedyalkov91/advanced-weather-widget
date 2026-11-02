@@ -143,6 +143,33 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         projection is being built. */
     settled: function () { return !this._building; },
 
+    /** The wind drawn at lat/lon, { speed (m/s), dir (from, degrees) }, or
+        null where none is drawn. */
+    valueAt: function (lat, lon) {
+      var grid = this._grid();
+      if (!grid || !this._map) return null;
+      var o = this.options, z = this._map.getZoom() + 1, hP = NaN;
+      var sigma = o.relief && z >= o.reliefMinZoom && grid.elev && o.level === '10m' ? o.sigma : 0;
+      if (sigma > 0) {
+        var dz = this._demZoom(), p = WindField.worldPx(lat, lon, dz);
+        hP = this._dem.elevationAtWorld(p.x, p.y, dz);
+      }
+      var uv = WindField.sample(grid, lat, lon, WindField.timeWeights(grid.times, this._time(grid)), hP, sigma, o.level);
+      return uv ? WindField.fromUV(uv.u, uv.v) : null;
+    },
+
+    /** The color of the particles at speed ms (m/s). */
+    colorOf: function (ms) {
+      var p = this.options.palette;
+      return WindField.bandColor(p, WindField.paletteBand(ms, p), this.options.theme);
+    },
+
+    /** The time a grid is drawn at (s): its own (a file of the animation),
+        the animation's (manual mode), else now. */
+    _time: function (grid) {
+      return grid.at != null ? grid.at : this._at != null ? this._at : Date.now() / 1000;
+    },
+
     setRate: function (fps, maxFps) {
       this.options.fps = Math.max(4, Math.min(30, fps || 10));
       this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
@@ -436,9 +463,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       ctx.globalCompositeOperation = 'source-over';
       var map = this._map, glZoom = map.getZoom(), z = glZoom + 1;
       var pxPerDeg = 512 * Math.pow(2, glZoom) / 360 / Math.cos(map.getCenter().lat * DEG);
-      // The animation's time (manual mode), else now.
-      var at = grid.at != null ? grid.at : this._at != null ? this._at : Date.now() / 1000;
-      var tw = WindField.timeWeights(grid.times, at);
+      var tw = WindField.timeWeights(grid.times, this._time(grid));
       // Relief weighting near the ground, from the API grid's elevations.
       var sigma = o.relief && z >= o.reliefMinZoom && grid.elev && o.level === '10m' ? o.sigma : 0;
       var dz = this._demZoom(), worldSize = 256 * Math.pow(2, dz);
