@@ -160,25 +160,45 @@ var WidgetAnim = (function () {
 
   Frames.prototype.ready = function (i) { return !!this.packed[i]; };
 
+  var UNPACKED_KEPT = 3;        // frames kept in full: the two being mixed, and the one before
+
+  /** Frame i in full (4 bytes a point), unpacked once and kept while it is
+      among the last few used. */
+  Frames.prototype._values = function (i) {
+    var kept = this.unpacked || (this.unpacked = []);
+    for (var k = 0; k < kept.length; k++) {
+      if (kept[k].i === i) {
+        var hit = kept.splice(k, 1)[0];
+        kept.push(hit);
+        return hit.values;
+      }
+    }
+    var values = unpack(this.packed[i]);
+    kept.push({ i: i, values: values });
+    if (kept.length > UNPACKED_KEPT) kept.shift();
+    return values;
+  };
+
   /** Picture i as a grid of the temperature layer, null until it is in. */
   Frames.prototype.grid = function (i) {
     var p = this.packed[i], m = this.meta;
     if (!p || !m) return null;
-    return { lats: m.lats, lons: m.lons, res: m.res, times: [this.times[i] / 1000], values: unpack(p) };
+    return { lats: m.lats, lons: m.lons, res: m.res, times: [this.times[i] / 1000], values: this._values(i) };
   };
 
-  /** The temperature at position pos (frame i plus a fraction toward i + 1),
-      mixed from the two frames around it; frame i alone when i + 1 is not
-      read. null until frame i is in. */
+  /** The temperature at position pos (frame i plus a fraction toward i + 1):
+      frame i, frame i + 1 and the share of the second (mix). The layer mixes
+      the two where it reads them, a few thousand points a picture instead
+      of the whole world. Frame i alone when i + 1 is not read. null until
+      frame i is in. */
   Frames.prototype.gridAt = function (pos) {
-    var i = Math.floor(pos), f = pos - i, a = this.packed[i], b = this.packed[i + 1], m = this.meta;
-    if (!a || !m) return null;
-    if (!b || f < 1e-3) return this.grid(i);
-    var out = new Float32Array(a.length), fa = (1 - f) / 2, fb = f / 2;
-    for (var k = 0; k < a.length; k++) {
-      out[k] = a[k] === PACK_NAN || b[k] === PACK_NAN ? NaN : PACK_MIN + a[k] * fa + b[k] * fb;
-    }
-    return { lats: m.lats, lons: m.lons, res: m.res, times: [this.timeAt(pos) / 1000], values: out };
+    var i = Math.floor(pos), f = pos - i, m = this.meta;
+    if (!this.packed[i] || !m) return null;
+    if (!this.packed[i + 1] || f < 1e-3) return this.grid(i);
+    return {
+      lats: m.lats, lons: m.lons, res: m.res, times: [this.timeAt(pos) / 1000],
+      values: this._values(i), valuesB: this._values(i + 1), mix: f
+    };
   };
 
   /** Whether position pos shows a frame as read from its file, rather than
@@ -197,6 +217,7 @@ var WidgetAnim = (function () {
   Frames.prototype.stop = function () {
     this.stopped = true;
     this.packed = this.packed.map(function () { return null; });
+    this.unpacked = [];
   };
 
   /* Plays the frames on a temperature layer in manual mode, in continuous
@@ -266,8 +287,37 @@ var WidgetAnim = (function () {
     return -1;
   };
 
+  /** Where a step starts from: the seek on its way, else what is shown. */
+  Player.prototype._base = function () {
+    if (this.target !== null) return this.target;
+    return this.index >= 0 ? this.index : this.frames.nowIndex;
+  };
+
+  /** Pause and move one 1/perFrame of a frame (perFrame 3: one hour)
+      forward (dir 1) or back (-1), on that grid. */
+  Player.prototype.step = function (dir, perFrame) {
+    var base = this._base() * perFrame, last = this.frames.times.length - 1;
+    var k = dir > 0 ? Math.floor(base + 1e-6) + 1 : Math.ceil(base - 1e-6) - 1;
+    this.play(false);
+    this.seek(Math.max(0, Math.min(last, k / perFrame)));
+  };
+
+  /** Pause and move to the next frame read from its file, forward (dir 1)
+      or back (-1); nothing when there is none that way. */
+  Player.prototype.stepFile = function (dir) {
+    var base = this._base(), n = this.frames.times.length;
+    var i = dir > 0 ? Math.floor(base + 1e-6) + 1 : Math.ceil(base - 1e-6) - 1;
+    for (; i >= 0 && i < n; i += dir) {
+      if (!this.frames.isFile(i)) continue;
+      this.play(false);
+      this.seek(i);
+      return;
+    }
+  };
+
   Player.prototype.play = function (on) {
     this.playing = !!on;
+    if (this.layer.setMoving) this.layer.setMoving(this.playing);
     if (this.playing) this.shownAt = this.now();
     this._ensureTimer();
   };

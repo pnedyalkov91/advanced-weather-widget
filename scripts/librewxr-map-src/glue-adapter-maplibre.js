@@ -153,7 +153,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var drawn = tempEntry ? tempEntry.provider(+m[1], +m[2], +m[3], signal)
       : Promise.resolve(new Uint8ClampedArray(TEMP_TILE * TEMP_TILE * 4));
     return drawn.then(function (px) {
-      return createImageBitmap(new ImageData(px, TEMP_TILE, TEMP_TILE));
+      // 256 px, or fewer while the animation plays (the map stretches them).
+      var size = Math.round(Math.sqrt(px.length / 4));
+      return createImageBitmap(new ImageData(px, size, size));
     }).then(function (bitmap) {
       return { data: bitmap };
     });

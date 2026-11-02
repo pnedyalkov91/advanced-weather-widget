@@ -338,8 +338,13 @@ window.animToggle = function () {
   return anim.player.playing;
 };
 window.animShow = function (i) { if (anim) anim.player.seek(i); };
+// Paused steps: one hour (dir 1 or -1), or to the next frame from its file.
+window.animStep = function (dir) { if (anim) anim.player.step(dir, WidgetAnim.STEP_H); };
+window.animStepFile = function (dir) { if (anim) anim.player.stepFile(dir); };
 window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
 window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
+// Resolution of the map while it plays: 1 full, 2 half, 4 quarter; full again on pause.
+window.animSetResolution = function (n) { if (anim) anim.layer.setMovingStep(n); };
 
 /** { times (ms), ready, failed, now, index (a position between frames),
     time (ms) of that position, fromFile (a frame as read, not worked out),

@@ -90,15 +90,16 @@ test('loadOrder: nearest to now first, the future first on a tie', () => {
   assert.deepEqual(A.loadOrder(5, 2), [2, 3, 1, 4, 0]);
 });
 
-test('Frames.gridAt: the two frames around mixed, the time in between', () => {
+test('Frames.gridAt: the two frames around and the share of the second, the time in between', () => {
   const f = Object.create(A.Frames.prototype);
   f.times = [0, 3 * H];
   f.meta = { lats: [], lons: [], res: 1 };
   f.packed = [A.pack(Float32Array.from([0, NaN])), A.pack(Float32Array.from([10, 4]))];
   const g = f.gridAt(0.25);
-  assert.equal(g.values[0], 2.5);
+  assert.deepEqual([g.values[0], g.valuesB[0], g.mix], [0, 10, 0.25]);   // mixed where the layer reads them
   assert.ok(Number.isNaN(g.values[1]));
   assert.equal(g.times[0], 0.75 * H / 1000);
+  assert.equal(f.gridAt(0.5).values, g.values);                       // unpacked once
   assert.equal(f.gridAt(1).values[0], 10);          // the last frame alone
   f.between = [false, true];
   assert.equal(f.isFile(0), true);
@@ -111,7 +112,8 @@ test('Frames.gridAt: the two frames around mixed, the time in between', () => {
 function fakePlayer(ready, opts) {
   const shown = [];
   const clock = { t: 0, settled: true };
-  const frames = { times: ready.map((_, i) => i * 3 * H), ready: (i) => ready[i], gridAt: (pos) => (ready[Math.floor(pos)] ? { pos } : null) };
+  const frames = { times: ready.map((_, i) => i * 3 * H), nowIndex: 0, ready: (i) => ready[i], isFile: (i) => i === Math.floor(i) && !!ready[i] && !(opts && opts.between || [])[i],
+    gridAt: (pos) => (ready[Math.floor(pos)] ? { pos } : null) };
   const layer = { showFile: (g) => shown.push(+g.pos.toFixed(3)), settled: () => clock.settled };
   const p = new A.Player(frames, layer, Object.assign({ now: () => clock.t }, opts));
   return { p, shown, clock };
@@ -179,4 +181,34 @@ test('Player.seek: a map that never answers does not hold it for ever', () => {
   p._tick();
   assert.deepEqual(shown, [0, 1]);
   p.play(false);
+});
+
+test('Player.step: one hour at a time on the hour grid, paused, held at the ends', () => {
+  const { p, shown } = fakePlayer([true, true, true], {});
+  p.show(0);
+  p.play(true);
+  p.step(1, 3);
+  assert.equal(p.playing, false);
+  assert.deepEqual(shown, [0, 0.333]);
+  p.step(1, 3); p.step(1, 3);
+  assert.deepEqual(shown, [0, 0.333, 0.667, 1]);
+  p.show(1.5);                                       // between hours
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [1.333]);
+  p.show(0);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [0]);
+});
+
+test('Player.stepFile: to the next frame from its file, none past the ends', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { between: [false, false, true, false] });
+  p.show(0.5);
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [1]);
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [3]);            // 2 is worked out, not from a file
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [3]);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [1]);
 });

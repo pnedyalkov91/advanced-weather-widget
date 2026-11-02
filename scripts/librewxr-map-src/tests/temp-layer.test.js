@@ -86,7 +86,8 @@ function fakeDem(height, opts = {}) {
     return d.loaded ? Promise.resolve() : new Promise((r) => d.waiting.push(r));
   };
   d.resolve = () => { d.loaded = true; d.waiting.splice(0).forEach((r) => r()); };
-  d.tileData = () => (d.loaded && !opts.fail ? new Float32Array(65536).fill(height) : null);
+  const data = new Float32Array(65536).fill(height);   // one array per tile, as DemTiles keeps them
+  d.tileData = () => (d.loaded && !opts.fail ? data : null);
   return d;
 }
 
@@ -353,5 +354,49 @@ test('manual mode: the file grid given, at every zoom; settled once its tiles ar
   await settle();
   assert.deepEqual(colors({ data: await p }), [colorOf(-3)]);
   assert.equal(layer.settled(), true);
+  layer.remove();
+});
+
+test('manual mode: a picture between two times is mixed, the relief offsets of a tile computed once', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const open = fakeOpen();                               // model ground at 2076 m
+  const layer = new T.TempLayer(adapter, stubSource(null), open, fakeDem(4792), Object.assign({ manual: true }, OPTS));
+  layer.addTo(fakeMap(4));
+  await settle();
+  const g = (v) => WidgetOpenData.toScalarGrid(new Float32Array(12).fill(v), 3, 4, NOW);
+  const a = g(0), b = g(10);
+  const draw = async () => adapter.tiles[adapter.tiles.length - 1].provider(...MONT_BLANC);
+  layer.showFile(a);
+  const p1 = draw();
+  await settle();
+  assert.deepEqual(colors({ data: await p1 }), [colorOf(T.correct(0, 2076, 4792))]);
+  const offsets = [...layer._relief.values()][0].offsets;
+  layer.showFile(Object.assign({}, a, { valuesB: b.values, mix: 0.5 }));
+  const p2 = draw();
+  await settle();
+  assert.deepEqual(colors({ data: await p2 }), [colorOf(T.correct(5, 2076, 4792))]);
+  assert.equal(layer._relief.size, 1);
+  assert.equal([...layer._relief.values()][0].offsets, offsets);
+  layer.remove();
+});
+
+test('manual mode: smaller tiles while the animation plays, full ones again once it stops', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(2076), Object.assign({ manual: true, movingStep: 2 }, OPTS));
+  layer.addTo(fakeMap(4));
+  await settle();
+  const g = (v) => WidgetOpenData.toScalarGrid(new Float32Array(12).fill(v), 3, 4, NOW);
+  const draw = async () => { const p = adapter.tiles[adapter.tiles.length - 1].provider(...MONT_BLANC); await settle(); return p; };
+  layer.setMoving(true);
+  layer.showFile(g(4));
+  const small = await draw();
+  assert.equal(small.length, 128 * 128 * 4);
+  assert.deepEqual(colors({ data: small }), [colorOf(4)]);
+  const before = adapter.tiles.length;
+  layer.setMoving(false);
+  assert.equal(adapter.tiles.length, before + 1);      // the same picture, drawn again
+  const full = await draw();
+  assert.equal(full.length, 256 * 256 * 4);
+  assert.deepEqual(colors({ data: full }), [colorOf(4)]);
   layer.remove();
 });
