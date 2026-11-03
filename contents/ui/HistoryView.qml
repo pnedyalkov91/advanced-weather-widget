@@ -803,6 +803,13 @@ Item {
                     policy: ScrollBar.AsNeeded
                 }
 
+                // Width of everything inside the list (summary tiles, chart, daily
+                // rows, footnote). The vertical scrollbar overlays the right edge of
+                // the list, so leave room for it plus a gap - the same 24 px the
+                // Forecast tab keeps free on the right of its graphs - instead of
+                // letting the content run right up against the scrollbar.
+                readonly property real _contentW: Math.max(0, width - 24)
+
                 // New data replaces the model, which makes a ListView jump to
                 // the top. Changing the period (dropdown, < / >) should leave
                 // the page where it is, so the scroll offset is remembered
@@ -845,7 +852,7 @@ Item {
 
                     ColumnLayout {
                         id: headerColumn
-                        width: parent.width - 10
+                        width: list._contentW
                         spacing: 8
 
                         GridLayout {
@@ -1034,7 +1041,7 @@ Item {
                     required property var modelData
                     property bool open: false
 
-                    width: list.width - 10
+                    width: list._contentW
                     height: rowColumn.implicitHeight + 12
                     radius: 8
                     color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, open ? 0.11 : 0.05)
@@ -1178,7 +1185,7 @@ Item {
 
                 // Footnote
                 footer: Label {
-                    width: list.width - 10
+                    width: list._contentW
                     topPadding: 8
                     bottomPadding: 4
                     wrapMode: Text.WordWrap
