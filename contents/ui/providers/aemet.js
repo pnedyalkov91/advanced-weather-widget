@@ -1191,7 +1191,7 @@ function fetchHourly(service, W, dateStr, muniData) {
     _resolveMunicipio(service, gen, muniData, function (muniId) {
         if (!muniId) { r.hourlyData = []; return; }
         _withHourlyData(service, key, muniId, function (hd) {
-            r.hourlyData = _dayHourlyForDate(hd, dateStr, W, service);
+            r.setHourlyResult(dateStr, _dayHourlyForDate(hd, dateStr, W, service));
         });
     });
 }

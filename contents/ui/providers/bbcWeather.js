@@ -308,7 +308,7 @@ function fetchHourly(service, W, dateStr) {
             if (req.readyState !== XMLHttpRequest.DONE) return;
             if (service._refreshGen !== gen) return;
             if (req.status !== 200) { r.hourlyData = []; return; }
-            try { r.hourlyData = _parseHourly(JSON.parse(req.responseText), W, dateStr); }
+            try { r.setHourlyResult(dateStr, _parseHourly(JSON.parse(req.responseText), W, dateStr)); }
             catch (e) { r.hourlyData = []; }
         };
         req.send();

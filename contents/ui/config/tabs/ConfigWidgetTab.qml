@@ -1203,6 +1203,31 @@ ColumnLayout {
             }
 
             Label {
+                text: i18n("Popup:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            ColumnLayout {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
+                Switch {
+                    text: i18n("Keep the popup ready")
+                    checked: widgetTab.configRoot.cfg_popupKeepLoaded
+                    onToggled: widgetTab.configRoot.cfg_popupKeepLoaded = checked
+                }
+                Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    opacity: 0.7
+                    text: i18n("The Details, Forecast and History tabs are built in the background after startup and stay built when the popup is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup. The Radar tab has its own setting (Radar).")
+                }
+            }
+
+            Label {
                 text: i18n("Sunrise / Sunset:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
                 wrapMode: Text.Wrap

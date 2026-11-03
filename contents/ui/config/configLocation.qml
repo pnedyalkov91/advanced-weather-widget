@@ -460,8 +460,7 @@ KCM.SimpleKCM {
     }
 
     property string preferredLanguage: Qt.locale().name.split("_")[0]
-    readonly property string bundledOpenWeatherApiKey: "8003225e8825db83758c237068447229"
-    readonly property string bundledWeatherApiKey: "601ba4ac57404ec29ff120510261802"
+
     function displayAltitudeUnit() {
         return cfg_altitudeUnit === "ft" ? "feet" : "meters";
     }

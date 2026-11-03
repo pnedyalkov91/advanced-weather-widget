@@ -281,7 +281,7 @@ function fetchHourly(service, W, dateStr) {
                 arr.push(closing);
             }
         }
-        r.hourlyData = arr;
+        r.setHourlyResult(dateStr, arr);
     };
     req.send();
 }

@@ -384,7 +384,7 @@ function fetchHourly(service, W, dateStr) {
             }
         }
         if (nextEntry) hours.push(nextEntry);
-        r.hourlyData = hours;
+        r.setHourlyResult(dateStr, hours);
     };
     req.send();
 }

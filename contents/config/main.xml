@@ -252,6 +252,16 @@
          opens at once. Off by default: it starts QtWebEngine with Plasma and
          keeps its memory for the whole session. -->
     <entry name="radarKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
+         the background after startup and keep them loaded, so the popup opens
+         instantly. Off by default (uses extra memory for the whole session). -->
+    <entry name="popupKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- Internal caches (JSON): last weather, hourly rows and today's past
+         hours. Restored at startup so the widget shows data before the first
+         network answer. Written by main.qml; not user settings. -->
+    <entry name="weatherCache"          type="String"><default></default></entry>
+    <entry name="hourlyCache"           type="String"><default></default></entry>
+    <entry name="pastHoursCache"        type="String"><default></default></entry>
 
     <!-- ── Widget - details view ──────────────────────────────────────── -->
     <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>

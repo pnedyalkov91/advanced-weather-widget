@@ -354,13 +354,13 @@ function fetchHourly(service, dateStr) {
         // for it. Backfill from the global best-match blend when needed.
         var needsBackfill = arr.length === 0 || arr.some(_isHourlyIncomplete);
         if (!needsBackfill) {
-            r.hourlyData = arr;
+            r.setHourlyResult(dateStr, arr);
             return;
         }
 
         _fetchHourlyBackup(service, gen, dateStr, nextDateStr, function (backupArr) {
             if (service._refreshGen !== gen) return;
-            r.hourlyData = _mergeHourlyArrays(arr, backupArr);
+            r.setHourlyResult(dateStr, _mergeHourlyArrays(arr, backupArr));
         });
     };
     req.send();

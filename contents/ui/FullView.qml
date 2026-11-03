@@ -201,7 +201,14 @@ Rectangle {
 
     // Whether not-currently-shown tabs stay instantiated. True while the
     // popup is open and always on the desktop (Planar), which has no popup.
-    readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
+    readonly property bool _keepHiddenTabsOpen: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
+
+    // "Keep the popup ready" (opt-in): Details, Forecast and History are built in the background
+    // once main.qml says startup is over, and stay built when the popup is closed - the popup then
+    // opens at once, at the cost of the memory those tabs use. The Radar tab has its own setting.
+    readonly property bool _keepPopupLoaded: !!weatherRoot && weatherRoot.popupKeepLoaded === true && _hasLocation && !isSimpleMode
+    readonly property bool _preloadPopup: _keepPopupLoaded && weatherRoot.radarBackgroundReady === true
+    readonly property bool _keepHiddenTabs: _keepHiddenTabsOpen || _keepPopupLoaded
 
     // "Keep the radar loaded": the Radar tab is built in the background once
     // main.qml says startup is over, and is never unloaded afterwards,
@@ -760,7 +767,7 @@ Rectangle {
                     // there is no popup): hidden tabs unload on close, so the
                     // expose-time PlasmaTheme sync storm on reopen only covers
                     // one tab's items instead of every tab ever visited.
-                    active: detailsTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: detailsTab.StackLayout.isCurrentItem || fullView._preloadPopup || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: DetailsView {
                         weatherRoot: fullView.weatherRoot
                     }
@@ -780,7 +787,7 @@ Rectangle {
                     id: forecastLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: forecastTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: forecastTab.StackLayout.isCurrentItem || fullView._preloadPopup || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: ScrollView {
                         id: forecastScrollView
                         clip: true
@@ -817,7 +824,7 @@ Rectangle {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar || (item !== null && (fullView._keepHiddenTabs || fullView._keepRadarLoaded))
+                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar || (item !== null && (fullView._keepHiddenTabsOpen || fullView._keepRadarLoaded))
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
                         keepLoaded: fullView._keepRadarLoaded
@@ -842,7 +849,7 @@ Rectangle {
                     id: historyLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: historyTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: historyTab.StackLayout.isCurrentItem || (fullView._preloadPopup && fullView.showHistoryTab) || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: HistoryView {
                         weatherRoot: fullView.weatherRoot
                         resolveConditionIconFn: fullView.resolveConditionIcon

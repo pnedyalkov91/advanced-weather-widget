@@ -237,7 +237,7 @@ function fetchHourly(service, W, dateStr) {
                 }
             });
         if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        r.setHourlyResult(dateStr, arr);
     };
     req.send();
 }

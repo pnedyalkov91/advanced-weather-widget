@@ -71,17 +71,21 @@ PlasmoidItem {
     // startup on its own (applets opened often get preloaded), so FullView
     // waits for radarBackgroundReady rather than for the view to exist.
     readonly property bool radarKeepLoaded: Plasmoid.configuration.radarKeepLoaded === true && Plasmoid.configuration.radarEnabled !== false
+    // "Keep the popup ready": the popup (Forecast, Details, History tabs) is built in the background
+    // at the same moment and stays built when it is closed. The Radar tab has its own setting above.
+    readonly property bool popupKeepLoaded: Plasmoid.configuration.popupKeepLoaded === true
+    readonly property bool _prepareWanted: radarKeepLoaded || popupKeepLoaded
     readonly property bool _shellStarted: {
         var corona = Plasmoid.containment ? Plasmoid.containment.corona : null;
         return !corona || corona.isStartupCompleted === true;
     }
-    readonly property bool _radarPreloadReady: radarKeepLoaded && _shellStarted && ((!loading && !isNaN(temperatureC)) || _radarPreloadWaited)
+    readonly property bool _radarPreloadReady: _prepareWanted && _shellStarted && ((!loading && !isNaN(temperatureC)) || _radarPreloadWaited)
     // A weather request that fails (rate limit, provider down) must not hold
     // the radar back for good: give up waiting for it after a minute.
     property bool _radarPreloadWaited: false
     Timer {
         interval: 60000
-        running: root.radarKeepLoaded && root._shellStarted && !root.radarBackgroundReady
+        running: root._prepareWanted && root._shellStarted && !root.radarBackgroundReady
         onTriggered: root._radarPreloadWaited = true
     }
     // Latched: later weather refreshes must not unload the radar.
@@ -94,7 +98,11 @@ PlasmoidItem {
         }
     }
     onRadarKeepLoadedChanged: {
-        if (!radarKeepLoaded)
+        if (!_prepareWanted)
+            radarBackgroundReady = false;
+    }
+    onPopupKeepLoadedChanged: {
+        if (!_prepareWanted)
             radarBackgroundReady = false;
     }
 
@@ -136,10 +144,393 @@ PlasmoidItem {
     // when the UI thread is idle instead of blocking the network callback.
     property var weatherDataStaged: null
     property var weatherData: null
+
+    // True while the last synchronisation failed (every provider failed, or the update timed
+    // out): the panel then shows the "no data" icon and "--" instead of the last values, so
+    // outdated data is never read as current. Cleared as soon as fresh data arrives.
+    property bool syncLost: false
+
     function _applyWeatherData() {
         weatherData = weatherDataStaged;
+        // Fresh data from a provider (not the object just restored from the cache)
+        if (weatherDataStaged && weatherDataStaged !== _cacheRestoredObj) {
+            _wdLat = _locLat();
+            _wdLon = _locLon();
+            _wdStamp = weatherService._updateTimestampMs > 0 ? weatherService._updateTimestampMs : Date.now();
+            _wdProvider = weatherService._updateProvider || "";
+            syncLost = false;
+            _scheduleCacheSave("weather");
+        }
     }
     onWeatherDataStagedChanged: Qt.callLater(_applyWeatherData)
+
+    // ══════════════════════════════════════════════════════════════════════
+    // Caches - something useful on screen at once after a restart
+    //   weatherCache    the last weather data (current + daily), shown while the first refresh runs
+    //   hourlyCache     the hourly forecast of today and tomorrow, shown while the provider answers
+    //                   and put back if it fails
+    //   pastHoursCache  today's hours as they were forecast, for providers that only send the hours
+    //                   still to come (OpenWeather, met.no, ...), so "Show past weather info" has them
+    // All three are JSON in hidden settings. They are written at most once every 5 s (and on exit),
+    // and only used for the same place (and provider) - the weather one within 12 hours.
+    // They add no network request: they only keep what the providers already sent.
+    // ══════════════════════════════════════════════════════════════════════
+    readonly property real _cacheMaxAgeMs: 12 * 3600 * 1000
+    // ~5 km: GPS / auto-detect jitter must not defeat the cache
+    readonly property real _cacheLocTolerance: 0.05
+    property var _cacheRestoredObj: null
+    property real _wdLat: 0
+    property real _wdLon: 0
+    property real _wdStamp: 0
+    property string _wdProvider: ""
+    property var _hourlyCacheObj: null
+    property var _pastHoursObj: null
+    property bool _dirtyWeather: false
+    property bool _dirtyHourly: false
+    property bool _dirtyPast: false
+    property string _hourlyReqDate: ""
+    property bool _hourlyApplying: false
+
+    function _cacheProviderKey() {
+        return Plasmoid.configuration.weatherProvider || "adaptive";
+    }
+    function _sameLocation(lat, lon) {
+        return Math.abs(lat - _locLat()) <= _cacheLocTolerance && Math.abs(lon - _locLon()) <= _cacheLocTolerance;
+    }
+    // Whether the weather on screen belongs to the place that is selected now
+    function _weatherDataIsForCurrentLocation() {
+        return _sameLocation(_wdLat, _wdLon);
+    }
+    function _hhmmToMins(t) {
+        var p = String(t || "").split(":");
+        return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+    }
+    // NaN and Infinity do not survive JSON: they are written as markers and turned back on reading
+    function _cacheEncode(o) {
+        return JSON.stringify(o, function (k, v) {
+            if (typeof v === "number" && !isFinite(v))
+                return isNaN(v) ? "__NaN__" : (v > 0 ? "__Inf__" : "__-Inf__");
+            return v;
+        });
+    }
+    function _cacheDecode(s) {
+        return JSON.parse(s, function (k, v) {
+            if (v === "__NaN__")
+                return NaN;
+            if (v === "__Inf__")
+                return Infinity;
+            if (v === "__-Inf__")
+                return -Infinity;
+            return v;
+        });
+    }
+
+    Timer {
+        id: _cacheSaveTimer
+        interval: 5000
+        repeat: false
+        onTriggered: root._flushCaches()
+    }
+    function _scheduleCacheSave(kind) {
+        if (kind === "weather")
+            _dirtyWeather = true;
+        else if (kind === "hourly")
+            _dirtyHourly = true;
+        else if (kind === "past")
+            _dirtyPast = true;
+        _cacheSaveTimer.restart();
+    }
+    function _flushCaches() {
+        _cacheSaveTimer.stop();
+        try {
+            if (_dirtyWeather) {
+                _dirtyWeather = false;
+                if (weatherData && weatherData !== _cacheRestoredObj)
+                    Plasmoid.configuration.weatherCache = _cacheEncode({
+                        ts: _wdStamp,
+                        prov: _wdProvider,
+                        lat: _wdLat,
+                        lon: _wdLon,
+                        data: weatherData
+                    });
+            }
+            if (_dirtyHourly && _hourlyCacheObj) {
+                _dirtyHourly = false;
+                Plasmoid.configuration.hourlyCache = _cacheEncode(_hourlyCacheObj);
+            }
+            if (_dirtyPast && _pastHoursObj) {
+                _dirtyPast = false;
+                Plasmoid.configuration.pastHoursCache = _cacheEncode(_pastHoursObj);
+            }
+        } catch (e) {}
+    }
+    Component.onDestruction: _flushCaches()
+
+    // Called once at startup, before the first refresh: shows the last weather of this place
+    // (at most 12 hours old) with its real age ("Updated 3 hours ago"), until fresh data replaces it.
+    function _restoreWeatherCache() {
+        try {
+            var s = Plasmoid.configuration.weatherCache || "";
+            if (!s || !hasSelectedTown || weatherData || weatherDataStaged)
+                return;
+            var c = _cacheDecode(s);
+            if (!c || !c.data || !(c.ts > 0))
+                return;
+            if (Date.now() - c.ts > _cacheMaxAgeMs || !_sameLocation(c.lat, c.lon))
+                return;
+            _wdLat = c.lat;
+            _wdLon = c.lon;
+            _wdStamp = c.ts;
+            _wdProvider = c.prov || "";
+            _cacheRestoredObj = c.data;
+            weatherService._updateTimestampMs = c.ts;
+            weatherService._updateProvider = c.prov || "";
+            weatherDataStaged = c.data;
+            var t = weatherService._buildRelativeUpdateText(c.prov || "");
+            if (t.length > 0)
+                updateText = t;
+        } catch (e) {}
+    }
+
+    // ── Hourly cache: { lat, lon, prov, days: { "yyyy-MM-dd": { ms, arr } } } ──
+    function _hourlyCacheEnsure() {
+        var prov = _cacheProviderKey();
+        var o = _hourlyCacheObj;
+        if (o && o.prov === prov && _sameLocation(o.lat, o.lon))
+            return o;
+        var loaded = null;
+        try {
+            var s = Plasmoid.configuration.hourlyCache || "";
+            if (s)
+                loaded = _cacheDecode(s);
+        } catch (e) {
+            loaded = null;
+        }
+        if (loaded && loaded.days && loaded.prov === prov && _sameLocation(loaded.lat, loaded.lon)) {
+            _hourlyCacheObj = loaded;
+            return loaded;
+        }
+        _hourlyCacheObj = {
+            lat: _locLat(),
+            lon: _locLon(),
+            prov: prov,
+            days: {}
+        };
+        return _hourlyCacheObj;
+    }
+    function _hourlyCacheGet(dateStr) {
+        if (!dateStr || !hasSelectedTown)
+            return null;
+        var e = _hourlyCacheEnsure().days[dateStr];
+        if (!e || !e.arr || !e.arr.length || !(Date.now() - e.ms <= _cacheMaxAgeMs))
+            return null;
+        return e.arr;
+    }
+    function _hourlyCachePut(dateStr, arr) {
+        if (!dateStr || !arr || !arr.length || !hasSelectedTown)
+            return;
+        // Only the two first forecast days (today and tomorrow) are kept: it bounds the size even
+        // when "expand all days" loads a whole week
+        var keep = {};
+        var dd = dailyData;
+        if (dd && dd.length > 0 && dd[0].dateStr) {
+            keep[dd[0].dateStr] = true;
+            if (dd.length > 1 && dd[1].dateStr)
+                keep[dd[1].dateStr] = true;
+        } else {
+            var d0 = new Date();
+            keep[Qt.formatDate(d0, "yyyy-MM-dd")] = true;
+            keep[Qt.formatDate(new Date(d0.getTime() + 86400000), "yyyy-MM-dd")] = true;
+        }
+        var o = _hourlyCacheEnsure();
+        if (keep[dateStr])
+            o.days[dateStr] = {
+                ms: Date.now(),
+                arr: arr
+            };
+        Object.keys(o.days).forEach(function (k) {
+            if (!keep[k])
+                delete o.days[k];
+        });
+        _scheduleCacheSave("hourly");
+    }
+    function _applyHourly(arr) {
+        _hourlyApplying = true;
+        hourlyData = arr;
+        _hourlyApplying = false;
+    }
+    // The provider failed (or sent nothing) for the requested day: put the saved hours back
+    function _hourlyRestoreIfEmpty() {
+        if ((hourlyData && hourlyData.length > 0) || !_hourlyReqDate)
+            return;
+        var cached = _hourlyCacheGet(_hourlyReqDate);
+        if (cached)
+            _applyHourly(_withPastHours(_hourlyReqDate, cached));
+    }
+    onHourlyDataChanged: {
+        if (_hourlyApplying)
+            return;
+        if ((!hourlyData || hourlyData.length === 0) && _hourlyReqDate !== "")
+            Qt.callLater(_hourlyRestoreIfEmpty);
+    }
+
+    // ── Hours already passed today ────────────────────────────────────────
+    // Several providers only send the hours still to come (OpenWeather's free plan, met.no,
+    // QWeather, ...). Today's hours are remembered as they were forecast - at every refresh for
+    // OpenWeather, whose daily request already carries them, and whenever today's hourly
+    // forecast is loaded for the others - so "Show past weather info for today" can show them.
+    // Format: { date, lat, lon, prov, hours: { "HH:mm": entry } }
+    function _pastHoursFind(dateStr) {
+        var c = _pastHoursObj;
+        if (!c) {
+            try {
+                var s = Plasmoid.configuration.pastHoursCache || "";
+                if (s)
+                    c = _cacheDecode(s);
+            } catch (e) {
+                c = null;
+            }
+            _pastHoursObj = c || null;
+        }
+        if (c && c.date === dateStr && c.hours && c.prov === _cacheProviderKey() && _sameLocation(c.lat, c.lon))
+            return c;
+        return null;
+    }
+    function rememberTodayHours(dateStr, arr) {
+        if (!arr || !arr.length || !hasSelectedTown || !isTodayDateStr(dateStr))
+            return;
+        var c = _pastHoursFind(dateStr);
+        if (!c) {
+            c = {
+                date: dateStr,
+                lat: _locLat(),
+                lon: _locLon(),
+                prov: _cacheProviderKey(),
+                hours: {}
+            };
+            _pastHoursObj = c;
+        }
+        var any = false;
+        arr.forEach(function (h) {
+            if (h && h.isNextDay !== true && h.hour) {
+                c.hours[h.hour] = h;
+                any = true;
+            }
+        });
+        if (any)
+            _scheduleCacheSave("past");
+    }
+    /** The remembered hours of `dateStr` (today only), earliest first; [] when there are none. */
+    function pastHoursFor(dateStr) {
+        var c = _pastHoursFind(dateStr);
+        if (!c)
+            return [];
+        var out = Object.keys(c.hours).map(function (k) {
+            return c.hours[k];
+        });
+        out.sort(function (a, b) {
+            return _hhmmToMins(a.hour) - _hhmmToMins(b.hour);
+        });
+        return out;
+    }
+    // With "Show past weather info" on, puts the remembered earlier hours in front of the received ones
+    function _withPastHours(dateStr, arr) {
+        if (!arr || !arr.length || Plasmoid.configuration.forecastShowPastHours !== true || !isTodayDateStr(dateStr))
+            return arr;
+        var past = pastHoursFor(dateStr);
+        if (past.length === 0)
+            return arr;
+        var have = {};
+        var first = 100000;
+        arr.forEach(function (h) {
+            if (h && h.isNextDay !== true && h.hour) {
+                have[h.hour] = true;
+                first = Math.min(first, _hhmmToMins(h.hour));
+            }
+        });
+        var before = past.filter(function (h) {
+            return !have[h.hour] && _hhmmToMins(h.hour) < first;
+        });
+        return before.length > 0 ? before.concat(arr) : arr;
+    }
+
+    // ── Connectivity probe, only while the last synchronisation failed ───────
+    // After a total failure WeatherService retries three times (5, 15 and 45 s). If the network
+    // takes longer to come back (wake from sleep, Wi-Fi roaming, a VPN) nothing else would happen
+    // until the next scheduled refresh. While syncLost, one small request a minute checks whether
+    // the Internet is reachable again and, when it is, starts a refresh at once (at most every
+    // 2 minutes). It never declares the connection lost - only the providers' own failure does -
+    // so a network that blocks these two hosts cannot turn the panel to "--" by itself.
+    // (the connectivity-check addresses of KDE and GNOME, the same ones NetworkManager uses)
+    readonly property var _probeUrls: ["https://networkcheck.kde.org/", "https://nmcheck.gnome.org/check_network_status.txt"]
+    property bool _probeBusy: false
+    property var _probeReq: null
+    property real _lastProbeRefreshMs: 0
+    function _probeFinish(online) {
+        if (!_probeBusy)
+            return;
+        _probeBusy = false;
+        _probeTimeout.stop();
+        _probeReq = null;
+        if (online && syncLost && !loading && (Date.now() - _lastProbeRefreshMs) > 120000) {
+            _lastProbeRefreshMs = Date.now();
+            refreshWeather(false);
+        }
+    }
+    function _probeNext(idx) {
+        var old = _probeReq;
+        _probeReq = null;
+        try {
+            if (old)
+                old.abort();
+        } catch (e) {}
+        if (idx + 1 < _probeUrls.length)
+            _probeTry(idx + 1);
+        else
+            _probeFinish(false);
+    }
+    function _probeTry(idx) {
+        var rq = new XMLHttpRequest();
+        _probeReq = rq;
+        rq.onreadystatechange = function () {
+            if (rq.readyState !== XMLHttpRequest.DONE || root._probeReq !== rq)
+                return;
+            // Any HTTP answer means the Internet is reachable; status 0 = no connection
+            if (rq.status > 0)
+                root._probeFinish(true);
+            else
+                root._probeNext(idx);
+        };
+        _probeTimeout.stop();
+        _probeTimeout.idx = idx;
+        _probeTimeout.restart();
+        try {
+            rq.open("GET", _probeUrls[idx]);
+            rq.send();
+        } catch (e) {
+            _probeNext(idx);
+        }
+    }
+    function _runProbe() {
+        if (_probeBusy || !syncLost || !hasSelectedTown)
+            return;
+        _probeBusy = true;
+        _probeTry(0);
+    }
+    Timer {
+        id: _probeTimeout
+        property int idx: 0
+        interval: 8000
+        repeat: false
+        onTriggered: root._probeNext(idx)
+    }
+    Timer {
+        interval: 60000
+        repeat: true
+        // AEMET alone has its own retry timer (and a request quota to respect)
+        running: root.syncLost && root.hasSelectedTown && root._cacheProviderKey() !== "aemet"
+        onTriggered: root._runProbe()
+    }
     // Sunrise/sunset (and therefore isNightTime()) only settle once weatherData
     // lands for the new location - which can be after the location-switch
     // refresh already ran its (network-free) aurora recompute. Re-run it here
@@ -956,12 +1347,42 @@ PlasmoidItem {
 
     /** Fetch hourly data for a specific date - called by FullView */
     function fetchHourlyForDate(dateStr) {
+        _hourlyReqDate = dateStr;
+        // Nothing on screen yet: show the saved hours of that day at once, the provider replaces
+        // them when it answers. (Hours already on screen are kept while the new ones load.)
+        if (!hourlyData || hourlyData.length === 0) {
+            var cached = _hourlyCacheGet(dateStr);
+            if (cached)
+                _applyHourly(_withPastHours(dateStr, cached));
+        }
         weatherService.fetchHourlyForDate(dateStr);
+    }
+
+    /** The providers hand their hourly answer for `dateStr` in here (instead of writing hourlyData
+     *  themselves). An answer for a day that is no longer the requested one - the person already
+     *  opened another day - is dropped, so it cannot replace the hours on screen or be saved
+     *  under the wrong day. */
+    function setHourlyResult(dateStr, arr) {
+        if (_hourlyReqDate !== "" && dateStr !== _hourlyReqDate)
+            return;
+        _hourlyCachePut(dateStr, arr);
+        rememberTodayHours(dateStr, arr);
+        hourlyData = _withPastHours(dateStr, arr);
     }
 
     /** Fetch hourly data without touching shared hourlyData - used by expand-all forecast */
     function fetchHourlyForDateDirect(dateStr, callback) {
-        weatherService.fetchHourlyForDateDirect(dateStr, callback);
+        weatherService.fetchHourlyForDateDirect(dateStr, function (arr) {
+            if (arr && arr.length) {
+                _hourlyCachePut(dateStr, arr);
+                rememberTodayHours(dateStr, arr);
+                callback(_withPastHours(dateStr, arr));
+            } else {
+                // failed (or nothing for that day): fall back on the saved hours
+                var cached = _hourlyCacheGet(dateStr);
+                callback(cached ? _withPastHours(dateStr, cached) : (arr || []));
+            }
+        });
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -3558,6 +3979,7 @@ PlasmoidItem {
             }
         } catch (e) {}
         _updateHasSelectedTown();
+        _restoreWeatherCache();   // the last known weather at once, replaced by the first refresh
         refreshDebounce.restart();
         // Restore the once-per-day "already sent" keys BEFORE the first evaluation
         // so a plasmashell restart doesn't re-fire daily notifications already

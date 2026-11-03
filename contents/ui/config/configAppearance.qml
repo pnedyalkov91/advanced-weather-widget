@@ -1617,6 +1617,8 @@ KCM.AbstractKCM {
     property string cfg_widgetVisibleTabs: "details;forecast;radar;history"
     // Where the tab bar sits in the widget: "top" | "bottom"
     property string cfg_widgetTabsPosition: "top"
+    // Keep Details / Forecast / History built in the background so the popup opens at once.
+    property bool cfg_popupKeepLoaded: false
     // Order of ALL tab ids in the tab bar (drag-and-drop list in Widget > General).
     // Only the order matters here; which tabs are shown is cfg_widgetVisibleTabs.
     property string cfg_widgetTabOrder: "details;forecast;radar;history"

@@ -376,6 +376,7 @@ QtObject {
             r.loading = false;
             service._clearUpdateMetadata();
             r.updateText = "";
+            r.syncLost = false;
             r.weatherDataStaged = null;
             r.aqiDataStaged = null;
             r.pollenDataStaged = [];
@@ -1353,6 +1354,11 @@ QtObject {
         if (idx >= chain.length) {
             weatherRoot.loading = false;
             _safetyTimer.stop();
+            // Every provider failed: the panel shows "no data" instead of the last values (they are
+            // kept for the popup). Data that belongs to another place is dropped - it is wrong, not old.
+            weatherRoot.syncLost = true;
+            if (!weatherRoot._weatherDataIsForCurrentLocation())
+                weatherRoot.weatherDataStaged = null;
             if (chain.length === 1 && chain[0] === "aemet") {
                 service._clearUpdateMetadata();
                 // Exponential backoff, capped at 5 minutes - long enough to

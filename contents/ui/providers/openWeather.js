@@ -106,11 +106,15 @@ function fetchCurrent(service, W, chain, idx) {
             if (fcReq.status === 200) {
                 var fc = JSON.parse(fcReq.responseText);
                 var days = {};
+                var todayKey = Qt.formatDate(new Date(), "yyyy-MM-dd");
+                var todayArr = [];
                 if (fc.list)
                     fc.list.forEach(function (e) {
                         var dt = new Date(e.dt * 1000);
                         var dk = Qt.formatDate(dt, "yyyy-MM-dd");
                         var hr = dt.getHours();
+                        if (dk === todayKey)
+                            todayArr.push(_hourEntry(W, e, dt));
                         if (!days[dk])
                             days[dk] = { maxC: -Infinity, minC: Infinity, bestHr: -1, bestEntry: null, precipMm: 0, snowMm: 0 };
                         var day = days[dk];
@@ -129,6 +133,39 @@ function fetchCurrent(service, W, chain, idx) {
                             day.bestEntry = e;
                         }
                     });
+                // /forecast only lists the slots still to come: remember today's so far, and once the
+                // last slot of the day has passed (after 21:00) rebuild today's row from them,
+                // otherwise the first forecast row would be tomorrow's.
+                if (todayArr.length > 0 && typeof r.rememberTodayHours === "function")
+                    r.rememberTodayHours(todayKey, todayArr);
+                if (!days[todayKey] && typeof r.pastHoursFor === "function") {
+                    var pastToday = r.pastHoursFor(todayKey);
+                    if (pastToday.length > 0) {
+                        var pMax = -Infinity, pMin = Infinity, pRain = 0, pBest = null;
+                        pastToday.forEach(function (h) {
+                            if (h.tempC > pMax) pMax = h.tempC;
+                            if (h.tempC < pMin) pMin = h.tempC;
+                            if (h.precipMm === h.precipMm) pRain += h.precipMm * 3;
+                            var hm = parseInt(String(h.hour).split(":")[0], 10);
+                            if (pBest === null || Math.abs(hm - 12) < Math.abs(pBest.hm - 12))
+                                pBest = { hm: hm, code: h.code };
+                        });
+                        if (isFinite(pMax) && isFinite(pMin) && pBest) {
+                            nd.push({
+                                day: Qt.formatDate(new Date(), "ddd"),
+                                dateStr: todayKey,
+                                maxC: pMax,
+                                minC: pMin,
+                                code: pBest.code,
+                                precipMm: pRain,
+                                snowCm: NaN,
+                                precipProb: NaN,
+                                windKmh: NaN,
+                                windDir: NaN
+                            });
+                        }
+                    }
+                }
                 Object.keys(days).sort().forEach(function (k) {
                     if (nd.length >= service.forecastDays)
                         return;
@@ -171,6 +208,23 @@ function fetchCurrent(service, W, chain, idx) {
         fcReq.send();
     };
     req.send();
+}
+
+/** One 3-hour slot of /forecast as an hourly row (shared by the hourly view and the daily builder). */
+function _hourEntry(W, e, d) {
+    return {
+        hour: Qt.formatTime(d, "HH:mm"),
+        tempC: e.main.temp,
+        code: W.openWeatherCodeToWmo(e.weather[0].id),
+        windKmh: e.wind ? e.wind.speed * 3.6 : NaN,
+        windDeg: e.wind ? e.wind.deg : NaN,
+        humidity: e.main.humidity,
+        precipProb: (e.pop !== undefined && e.pop !== null)
+            ? Math.round(e.pop * 100) : NaN,
+        precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
+            : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
+            : NaN
+    };
 }
 
 function fetchHourly(service, W, dateStr) {
@@ -229,7 +283,7 @@ function fetchHourly(service, W, dateStr) {
                 }
             });
         if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        r.setHourlyResult(dateStr, arr);
     };
     req.send();
 }
