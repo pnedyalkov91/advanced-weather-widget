@@ -950,6 +950,7 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Tabs & Header behavior
             // ═══════════════════════════════════════════════════════════════
+
             SectionHeader {
                 title: i18n("Tabs & Header Behavior")
                 Layout.columnSpan: _form1.columns
@@ -964,6 +965,33 @@ ColumnLayout {
             }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
+
+            Label {
+                text: i18n("Prepare widget in advance:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            ColumnLayout {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
+                Switch {
+                    text: widgetTab.configRoot.cfg_popupKeepLoaded ? i18n("Enabled") : i18n("Disabled")
+                    checked: widgetTab.configRoot.cfg_popupKeepLoaded
+                    onToggled: widgetTab.configRoot.cfg_popupKeepLoaded = checked
+                }
+                // Shown only while the switch above is on.
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    visible: widgetTab.configRoot.cfg_popupKeepLoaded
+                    type: Kirigami.MessageType.Information
+                    showCloseButton: true
+                    text: i18n("The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup. The Radar tab has its own setting (Radar).")
+                }
             }
 
             Label {
@@ -1199,31 +1227,6 @@ ColumnLayout {
                             }
                         }
                     }
-                }
-            }
-
-            Label {
-                text: i18n("Popup:")
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                wrapMode: Text.Wrap
-                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
-                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
-            }
-            ColumnLayout {
-                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
-                Layout.fillWidth: true
-                spacing: Kirigami.Units.smallSpacing
-                Switch {
-                    text: i18n("Keep the popup ready")
-                    checked: widgetTab.configRoot.cfg_popupKeepLoaded
-                    onToggled: widgetTab.configRoot.cfg_popupKeepLoaded = checked
-                }
-                Label {
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    opacity: 0.7
-                    text: i18n("The Details, Forecast and History tabs are built in the background after startup and stay built when the popup is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup. The Radar tab has its own setting (Radar).")
                 }
             }
 
