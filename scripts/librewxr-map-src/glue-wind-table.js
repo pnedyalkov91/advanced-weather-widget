@@ -27,6 +27,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     this._source = source;
     this._open = openData;
     this._dem = dem;
+    this._fade = 1;           // 0..1, the canvas's opacity while the layer fades in or out
     this.options = {
       fps: 10, maxFps: 20, stepPx: 2.5, cadenceFraction: 0.98,
       relief: true, reliefMinZoom: 9, sigma: 250,
@@ -61,6 +62,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._canvas = document.createElement('canvas');
       this._canvas.className = 'lv-wind-canvas';
       this._canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+      this._canvas.style.opacity = String(this._fade);
       // Right over the map's own canvas: markers and popups stay on top.
       var gl = map.getCanvas();
       gl.parentNode.insertBefore(this._canvas, gl.nextSibling);
@@ -111,6 +113,12 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       if (this._settled) return;
       this._settled = true;
       this._reset();
+    },
+
+    /** Fade in or out (0..1): the canvas's opacity, the particles go on. */
+    setFade: function (f) {
+      this._fade = Math.max(0, Math.min(1, f));
+      if (this._canvas) this._canvas.style.opacity = String(this._fade);
     },
 
     /** Pause (popup collapsed) or resume. */

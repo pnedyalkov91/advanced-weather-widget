@@ -142,6 +142,7 @@ WidgetTemp.TempLayer = (function () {
     this._served = null;      // the data the last tile asked for was drawn from
     this._relief = new Map(); // tile -> { key, offsets }, oldest first
     this._moving = false;     // the animation plays: tiles at movingStep
+    this._fade = 1;           // 0..1 over the opacity, while the layer fades in or out
     this.options.movingStep = normMovingStep(options.movingStep);
     var self = this;
     this._provider = function (z, x, y, signal) { return self.tile(z, x, y, signal); };
@@ -156,6 +157,7 @@ WidgetTemp.TempLayer = (function () {
       this._legend.id = 'lv-temp-legend';
       (document.getElementById('lv-map') || map.getContainer()).appendChild(this._legend);
       this._renderLegend();
+      this._legend.style.opacity = String(this._fade);
       this._onMoveEnd = function () { self._reset(); };
       map.on('moveend', this._onMoveEnd);
       if (this._open && !this._manual) {
@@ -241,8 +243,16 @@ WidgetTemp.TempLayer = (function () {
         nothing is redrawn. */
     setOpacity: function (percent) {
       this.options.opacity = WidgetTemp.normOpacity(percent);
-      if (this._map) this._adapter.setTempOpacity(this.options.opacity / 100);
+      if (this._map) this._adapter.setTempOpacity(this.options.opacity / 100 * this._fade);
       if (this._bar) this._bar.style.opacity = String(this.options.opacity / 100);
+    },
+
+    /** Fade in or out (0..1) over the opacity, the legend with it: nothing
+        is redrawn. */
+    setFade: function (f) {
+      this._fade = Math.max(0, Math.min(1, f));
+      if (this._map) this._adapter.setTempOpacity(this.options.opacity / 100 * this._fade);
+      if (this._legend) this._legend.style.opacity = String(this._fade);
     },
 
     setPalette: function (stops) { this.options.stops = stops || WidgetTemp.DEFAULT_STOPS; this._recolor(); },
@@ -449,7 +459,7 @@ WidgetTemp.TempLayer = (function () {
           f.valuesB === fields[i].valuesB && f.mix === fields[i].mix;
       })) return;
       this._shown = { fields: fields, lut: lut, step: step };
-      this._adapter.setTempTiles(this._provider, ++this._version, this.options.opacity / 100);
+      this._adapter.setTempTiles(this._provider, ++this._version, this.options.opacity / 100 * this._fade);
     },
 
     /** The file's temperature, with the model's ground height when it matches. */

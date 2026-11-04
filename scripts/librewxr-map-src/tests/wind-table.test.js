@@ -182,3 +182,14 @@ test('table layer: colorOf gives the color of the particles at that speed', () =
   const WF = WidgetWind.WindField, layer = new Layer(source, null, {}, { theme: 'dark' });
   for (const ms of [0.5, 5, 12, 40]) assert.equal(layer.colorOf(ms), WF.bandColor(WF.DEFAULT_PALETTE, WF.paletteBand(ms, WF.DEFAULT_PALETTE), 'dark'));
 });
+
+test('table layer: setFade is the opacity of its canvas, kept across a new one', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const layer = new Layer(source, null, {}, { manual: true });
+  layer.setFade(0.25);
+  layer.addTo(fakeMap());
+  assert.equal(layer._canvas.style.opacity, '0.25');
+  layer.setFade(1);
+  assert.equal(layer._canvas.style.opacity, '1');
+  layer.remove();
+});

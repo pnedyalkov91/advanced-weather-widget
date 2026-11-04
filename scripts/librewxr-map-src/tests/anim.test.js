@@ -400,3 +400,234 @@ test('pruneStore: hours past the longest range and those of a run since replaced
   await A.pruneStore(store, 'm', latest, now, 192);
   assert.deepEqual([...store.m.keys()].sort(), keep.concat(['other|stuff']).sort());
 });
+
+// === Switching layers: pictures kept, fades ===
+test('Frames.pause keeps the pictures: a Frames taking them over is ready at once and reads nothing', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-01T00:00:00Z' }) }),
+    _readVars: async (f) => { read.push(f.validMs); return { data: [new Float32Array(12).fill(f.validMs % (12 * H) ? 10 : 0)], ny: 3, nx: 4 }; },
+  };
+  const now = () => at('2026-11-07T03:00:00Z');
+  const first = new A.Frames(loader, { now, pastH: 3, futureH: 3 });
+  await first.load();
+  first.pause();
+  assert.equal(first.stopped, true);
+  read.length = 0;
+  const again = new A.Frames(loader, { now, pastH: 3, futureH: 3, reuse: first });
+  // The hour without file too, before latest.json is read again.
+  assert.deepEqual([0, 1, 2].map((i) => again.ready(i)), [true, true, true]);
+  assert.equal(again.grid(1).values[0], 5);
+  await again.load();
+  assert.deepEqual(read, []);
+});
+
+/** A clock and a frame loop driven by hand. */
+function fakeFrames() {
+  const c = { t: 0, cbs: [], later: [] };
+  c.now = () => c.t;
+  c.raf = (f) => { c.cbs.push(f); };
+  c.defer = (f) => { c.later.push(f); };
+  c.step = (ms) => { c.t += ms; const cbs = c.cbs; c.cbs = []; cbs.forEach((f) => f(c.t)); };
+  c.run = (ms, every = 16) => { for (let n = 0; n < ms; n += every) c.step(every); };
+  c.tick = () => { const l = c.later; c.later = []; l.forEach((f) => f()); };
+  return c;
+}
+
+test('Fade: from where it is to the target in ms, a new target takes over at once', () => {
+  const c = fakeFrames(), seen = [];
+  const f = new A.Fade((v) => seen.push(+v.toFixed(2)), { ms: 400, now: c.now, raf: c.raf, from: 0 });
+  let done = 0;
+  f.to(1, () => done++);
+  c.run(200);
+  assert.ok(f.value > 0.4 && f.value < 0.6, String(f.value));
+  f.to(0, () => done += 10);
+  c.run(500);
+  assert.equal(f.value, 0);
+  assert.equal(done, 10, 'the first end never comes');
+  assert.equal(seen[seen.length - 1], 0);
+});
+
+function fakeLayer() {
+  return { fade: 1, removed: 0, setFade(v) { this.fade = v; }, remove() { this.removed++; } };
+}
+const fakeTrackFrames = () => ({ paused: 0, pause() { this.paused++; } });
+
+test('Switcher: a layer switched off fades out, then goes; its pictures are kept', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const layer = fakeLayer(), frames = fakeTrackFrames();
+  s.leave('pressure', layer, frames);
+  assert.equal(frames.paused, 1);
+  c.tick();
+  c.run(200);
+  assert.ok(layer.fade > 0 && layer.fade < 1);
+  assert.equal(layer.removed, 0);
+  c.run(300);
+  assert.equal(layer.removed, 1);
+  assert.equal(s.enter('pressure').reuse, frames);
+});
+
+test('Switcher: one color for another, the old one waits for the first picture of the new', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, waitMs: 2000 });
+  const temp = fakeLayer(), pres = fakeLayer();
+  s.leave('temperature', temp, fakeTrackFrames());
+  const e = s.enter('pressure');
+  assert.equal(e.layer, null);                       // a new layer to make
+  s.entered('pressure', pres);
+  assert.equal(pres.fade, 0);
+  c.tick();
+  c.run(600);
+  assert.equal(temp.fade, 1, 'still there while the new one has nothing');
+  s.shown('pressure');
+  c.run(200);
+  assert.ok(temp.fade < 1 && pres.fade > 0);
+  assert.ok(Math.abs(temp.fade + pres.fade - 1) < 0.1, 'one goes as the other comes');
+  c.run(300);
+  assert.equal(pres.fade, 1);
+  assert.equal(temp.removed, 1);
+});
+
+test('Switcher: the old one does not wait for ever', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, waitMs: 1000 });
+  const temp = fakeLayer();
+  s.leave('temperature', temp, fakeTrackFrames());
+  s.enter('pressure');
+  s.entered('pressure', fakeLayer());
+  c.tick();
+  c.run(1500);
+  assert.equal(temp.removed, 1);
+});
+
+test('Switcher: switched on again while it fades out, the same layer comes back', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const temp = fakeLayer(), frames = fakeTrackFrames();
+  s.leave('temperature', temp, frames);
+  c.tick();
+  c.run(200);
+  const e = s.enter('temperature');
+  assert.equal(e.layer, temp);
+  assert.equal(e.reuse, frames);
+  s.entered('temperature', temp);
+  s.shown('temperature');
+  c.run(500);
+  assert.equal(temp.fade, 1);
+  assert.equal(temp.removed, 0);
+});
+
+test('Switcher: at most `keep` sets of pictures kept, the oldest go first', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 0, now: c.now, raf: c.raf, defer: c.defer, keep: 2 });
+  const f = { a: fakeTrackFrames(), b: fakeTrackFrames(), d: fakeTrackFrames() };
+  for (const id of ['a', 'b', 'd']) s.leave(id, fakeLayer(), f[id]);
+  assert.equal(s.enter('a').reuse, null);
+  assert.equal(s.enter('b').reuse, f.b);
+});
+
+test('Switcher.clear: every layer leaving goes at once, nothing kept', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const temp = fakeLayer();
+  s.leave('temperature', temp, fakeTrackFrames());
+  s.clear();
+  assert.equal(temp.removed, 1);
+  assert.equal(s.enter('temperature').reuse, null);
+});
+
+test('Group: onShow of a layer, once, after its first picture', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  let n = 0;
+  g.add('t', { ready: () => true, gridAt: (p) => ({ p }) }, { showFile() {} }, { onShow: () => n++ });
+  g.showFile(g.gridAt(0));
+  g.showFile(g.gridAt(1));
+  assert.equal(n, 1);
+});
+
+test('Switcher: a layer without setFade just comes and goes; flush ends the fades out at once', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const bare = { removed: 0, remove() { this.removed++; } }, frames = fakeTrackFrames();
+  s.entered('isobars', bare);
+  s.shown('isobars');
+  s.leave('isobars', bare, frames);
+  s.flush();
+  assert.equal(bare.removed, 1);
+  assert.equal(s.enter('isobars').reuse, frames, 'pictures still kept');
+});
+
+test('Switcher.drop: the pictures kept for a layer go (its data changed)', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 0, now: c.now, raf: c.raf, defer: c.defer });
+  s.leave('airquality', fakeLayer(), fakeTrackFrames());
+  s.drop('airquality');
+  assert.equal(s.enter('airquality').reuse, null);
+});
+
+// === Playing on while layers come and go ===
+const trackOf = (ready) => {
+  const shown = [];
+  return {
+    shown,
+    frames: { ready: (i) => !!ready[i], isFile: () => true, gridAt: (p) => (ready[Math.floor(p)] ? { p } : null), failed: ready.map(() => false) },
+    layer: { showFile: (g) => shown.push(g.p), settled: () => true },
+  };
+};
+
+test('Group: a layer still loading does not hold the others; it joins once it has the picture', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 0);
+  const wind = trackOf([true, true, true]), temp = trackOf([false, true, false]);
+  g.add('wind', wind.frames, wind.layer);
+  let shownTemp = 0;
+  g.add('temperature', temp.frames, temp.layer, { optional: true, onShow: () => shownTemp++ });
+  assert.deepEqual([0, 1, 2].map((i) => g.ready(i)), [true, true, true]);
+  g.showFile(g.gridAt(0));
+  assert.deepEqual([wind.shown, temp.shown, shownTemp], [[0], [], 0]);
+  g.showFile(g.gridAt(1));
+  assert.deepEqual([wind.shown, temp.shown, shownTemp], [[0, 1], [1], 1]);
+  // Loaded: it counts again.
+  g.setOptional('temperature', false);
+  assert.equal(g.ready(2), false);
+});
+
+test('Group: layers all still loading count as before', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  const temp = trackOf([false, true]);
+  g.add('temperature', temp.frames, temp.layer, { optional: true });
+  assert.deepEqual([g.ready(0), g.ready(1)], [false, true]);
+  assert.equal(g.gridAt(0), null);
+});
+
+test('Group: a layer leaving still gets the pictures, without counting for ready or settled', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  const wind = trackOf([true, true]), old = trackOf([true, false]);
+  old.layer.settled = () => false;
+  g.add('wind', wind.frames, wind.layer);
+  g.addGhost('pressure', old.frames, old.layer);
+  assert.equal(g.ready(1), true);
+  assert.equal(g.settled(), true);
+  g.showFile(g.gridAt(0.5));
+  assert.deepEqual(old.shown, [0.5]);
+  g.showFile(g.gridAt(1));          // it has no picture there: nothing
+  assert.deepEqual(old.shown, [0.5]);
+  g.removeGhost('pressure');
+  g.showFile(g.gridAt(0));
+  assert.deepEqual(old.shown, [0.5]);
+});
+
+test('Switcher: onGone once a layer is gone, after its fade, a flush or a clear', () => {
+  const c = fakeFrames(), gone = [];
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, onGone: (key, layer) => gone.push(key) });
+  s.leave('a', fakeLayer(), fakeTrackFrames());
+  c.tick();
+  c.run(500);
+  s.leave('b', fakeLayer(), fakeTrackFrames());
+  s.flush();
+  s.leave('d', fakeLayer(), fakeTrackFrames());
+  s.clear();
+  assert.deepEqual(gone, ['a', 'b', 'd']);
+});

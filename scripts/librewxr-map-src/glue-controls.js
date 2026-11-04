@@ -321,9 +321,16 @@ var ANIM_LAYERS = {
   }
 };
 
+// The name the pictures of a layer are kept under while it is off, for
+// layers whose pictures depend on a choice within them (by id: a function
+// giving that name); the layer's id otherwise.
+var ANIM_KEYS = {};
+function animKey(id) { return ANIM_KEYS[id] ? ANIM_KEYS[id]() : id; }
+
 /** Pictures of layer id for the range of the animation, those of `reuse`
-    (the same layer's Frames of another range) taken over. */
-function animTrack(id, layer, reuse) {
+    (the same layer's Frames of another range, or kept while it was off)
+    taken over; onShow once its first picture is drawn. */
+function animTrack(id, layer, reuse, onShow) {
   var frames = new WidgetAnim.Frames(_windOpen, {
     field: WidgetAnim.FIELDS[id], now: function () { return anim.nowMs; },
     pastH: anim.pastH, futureH: anim.futureH, reuse: reuse, parallel: 6, gate: animGate,
@@ -339,9 +346,13 @@ function animTrack(id, layer, reuse) {
     }
   });
   if (reuse) reuse.stop();
-  anim.group.add(id, frames, layer);
+  // Loading, it holds no other layer: they play on, it joins them picture
+  // by picture; once loaded, they wait for it again where it misses one.
+  anim.group.add(id, frames, layer, { onShow: onShow, optional: true });
   var t0 = Date.now();
   frames.load().then(function () {
+    var t = anim && anim.group.track(id);
+    if (t && t.frames === frames) anim.group.setOptional(id, false);
     console.log('[anim] ' + id + ': ' + frames.packed.filter(Boolean).length + '/' + frames.times.length + ' pictures in ' +
       (Date.now() - t0) + ' ms, ' + frames.fromStore + ' from the store');
   }, function (err) { console.warn('[anim] ' + id + ': ' + err); });
@@ -350,6 +361,8 @@ function animTrack(id, layer, reuse) {
 /** New pictures for pastH hours before now and futureH after, those
     already read taken over; the time shown stays. */
 function animLoad(pastH, futureH) {
+  // Layers fading out belong to the old range: they go at once.
+  anim.switcher.flush();
   var old = anim.group, shownMs = old && anim.player.index >= 0 ? old.times[Math.round(anim.player.index)] : null;
   anim.nowMs = Date.now();
   anim.pastH = pastH;
@@ -365,18 +378,26 @@ function animLoad(pastH, futureH) {
   anim.player.show(keep >= 0 ? keep : ft.now);
 }
 
-/** Switch layer id of the animation on or off. */
+/** Switch layer id of the animation on or off. Off, it fades out and its
+    pictures are kept; on, it takes them back (nothing read again) and
+    fades in with its first picture, while a color it replaces waits for
+    it (WidgetAnim.Switcher). */
 function animSetLayer(id, on) {
   var t = anim.group.track(id);
+  var key = animKey(id);
   if (!on && t) {
-    t.frames.stop();
-    t.layer.remove();
     anim.group.remove(id);
+    // Fading out, it plays on with the others.
+    anim.group.addGhost(key, t.frames, t.layer);
+    anim.switcher.leave(key, t.layer, t.frames);
   } else if (on && !t && ANIM_LAYERS[id]) {
-    var layer = ANIM_LAYERS[id](_widgetAdapter.getMap());
+    var back = anim.switcher.enter(key);
+    if (back.layer) anim.group.removeGhost(key);
+    var layer = back.layer || ANIM_LAYERS[id](_widgetAdapter.getMap());
     if (!layer) return;
     if (layer.setMoving) layer.setMoving(anim.player.playing);
-    animTrack(id, layer, null);
+    anim.switcher.entered(key, layer);
+    animTrack(id, layer, back.reuse, function () { if (anim) anim.switcher.shown(key); });
     if (anim.player.index >= 0) anim.player.seek(anim.player.index);
   }
 }
@@ -388,6 +409,7 @@ var animRestyleHooked = false;
 function animRestyle() {
   if (!anim) return;
   var m = _widgetAdapter.getMap();
+  anim.switcher.flush();
   anim.group.tracks.forEach(function (t) { if (t.layer.restyle) t.layer.restyle(m); });
   if (anim.player.index >= 0) anim.player.show(anim.player.index);
 }
@@ -403,6 +425,7 @@ window.animStart = function (pastH, futureH, layers) {
   if (windLayer) windLayer.setActive(false);
   anim = {
     group: null, player: new WidgetAnim.Player(null, null), movingStep: 1,
+    switcher: new WidgetAnim.Switcher({ onGone: function (key) { if (anim && anim.group) anim.group.removeGhost(key); } }),
     // Not stored: a grid of the whole range would not fit in localStorage.
     api: new WidgetWind.WindSource({ storage: null, world: false })
   };
@@ -421,7 +444,8 @@ window.animSetLayer = function (id, on) { if (anim) animSetLayer(id, !!on); };
 window.animStop = function () {
   if (!anim) return;
   anim.player.stop();
-  anim.group.tracks.slice().forEach(function (t) { animSetLayer(t.id, false); });
+  anim.group.tracks.forEach(function (t) { t.frames.stop(); t.layer.remove(); });
+  anim.switcher.clear();
   anim = null;
   if (windLayer) windLayer.setActive(true);
   _widgetAdapter.setFramesHidden(false);

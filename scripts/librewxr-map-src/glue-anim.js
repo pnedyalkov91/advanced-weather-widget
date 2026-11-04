@@ -284,7 +284,10 @@ var WidgetAnim = (function () {
       this.meta = old.meta;
       for (var i = 0; i < this.times.length; i++) {
         var k = old.times.indexOf(this.times[i]);
-        if (k >= 0 && old.packed[k]) this.packed[i] = old.packed[k];
+        if (k >= 0 && old.packed[k]) {
+          this.packed[i] = old.packed[k];
+          this.between[i] = old.between[k];
+        }
       }
     }
   }
@@ -430,19 +433,55 @@ var WidgetAnim = (function () {
     this.unpacked = [];
   };
 
+  /** No more reading, the pictures read kept (packed) for a Frames that
+      takes them over later (opts.reuse). */
+  Frames.prototype.pause = function () {
+    this.stopped = true;
+    this.unpacked = [];
+  };
+
   /* The layers switched on, as one set of frames and one layer for the
      Player: a position is ready once every layer has it, and shows on all
      of them at once. times and now are those of every Frames of the set
-     (same range); with no layer, nothing is ever ready. */
+     (same range); with no layer, nothing is ever ready. A layer still
+     loading (optional) holds no one: it gets the pictures it has, and the
+     others play on; while every layer loads, all count. Layers leaving
+     (ghosts) get the pictures too while they fade out, and count for
+     nothing. */
   function Group(times, nowIndex) {
     this.times = times;
     this.nowIndex = nowIndex;
-    this.tracks = [];           // { id, frames, layer }
+    this.tracks = [];           // { id, frames, layer, onShow, optional }
+    this.ghosts = [];           // { id, frames, layer }
   }
 
-  Group.prototype.add = function (id, frames, layer) {
+  /** opts.onShow: called once, after the layer's first picture;
+      opts.optional: the layer is still loading (see setOptional). */
+  Group.prototype.add = function (id, frames, layer, opts) {
     this.remove(id);
-    this.tracks.push({ id: id, frames: frames, layer: layer });
+    opts = opts || {};
+    this.tracks.push({ id: id, frames: frames, layer: layer, onShow: opts.onShow || null, optional: !!opts.optional });
+  };
+
+  /** Layer id loaded (false): the others wait for it again where it misses a picture. */
+  Group.prototype.setOptional = function (id, on) {
+    var t = this.track(id);
+    if (t) t.optional = !!on;
+  };
+
+  Group.prototype.addGhost = function (id, frames, layer) {
+    this.removeGhost(id);
+    this.ghosts.push({ id: id, frames: frames, layer: layer });
+  };
+
+  Group.prototype.removeGhost = function (id) {
+    this.ghosts = this.ghosts.filter(function (t) { return t.id !== id; });
+  };
+
+  /** The layers that count: those loaded, or all while none is. */
+  Group.prototype._counted = function () {
+    var hard = this.tracks.filter(function (t) { return !t.optional; });
+    return hard.length ? hard : this.tracks;
   };
 
   Group.prototype.remove = function (id) {
@@ -454,7 +493,7 @@ var WidgetAnim = (function () {
     return null;
   };
 
-  Group.prototype._every = function (fn) { return this.tracks.length > 0 && this.tracks.every(fn); };
+  Group.prototype._every = function (fn) { var c = this._counted(); return c.length > 0 && c.every(fn); };
 
   Group.prototype.ready = function (i) { return this._every(function (t) { return t.frames.ready(i); }); };
   Group.prototype.isFile = function (pos) { return this._every(function (t) { return t.frames.isFile(pos); }); };
@@ -462,28 +501,213 @@ var WidgetAnim = (function () {
 
   /** Frames that failed in any layer. */
   Group.prototype.failed = function () {
-    var tracks = this.tracks;
+    var tracks = this._counted();
     return this.times.map(function (_, i) { return tracks.some(function (t) { return !!t.frames.failed[i]; }); });
   };
 
-  /** One grid per layer, in the order of tracks; null while one is missing. */
+  /** One grid per layer, in the order of tracks (null for a layer still
+      loading that misses it), and the position (pos); null while a layer
+      that counts misses it. */
   Group.prototype.gridAt = function (pos) {
     if (!this.tracks.length) return null;
-    var grids = [];
+    var counted = this._counted(), grids = [];
     for (var k = 0; k < this.tracks.length; k++) {
-      var g = this.tracks[k].frames.gridAt(pos);
-      if (!g) return null;
+      var t = this.tracks[k], g = t.frames.gridAt(pos);
+      if (!g && counted.indexOf(t) >= 0) return null;
       grids.push(g);
     }
+    grids.pos = pos;
     return grids;
   };
 
   Group.prototype.showFile = function (grids) {
-    this.tracks.forEach(function (t, k) { t.layer.showFile(grids[k]); });
+    this.tracks.forEach(function (t, k) {
+      if (!grids[k]) return;
+      t.layer.showFile(grids[k]);
+      if (t.onShow) { var f = t.onShow; t.onShow = null; f(); }
+    });
+    this.ghosts.forEach(function (t) {
+      var g = grids.pos == null ? null : t.frames.gridAt(grids.pos);
+      if (g) t.layer.showFile(g);
+    });
+  };
+
+  var raf = typeof requestAnimationFrame === 'function' ? function (f) { requestAnimationFrame(f); } : function (f) { setTimeout(f, 16); };
+  function nowMs() { return typeof performance !== 'undefined' ? performance.now() : Date.now(); }
+
+  /* A value going from where it is to a target in opts.ms (linear, so two
+     layers crossing keep the same sum), set(value) on each frame of the
+     page. A new target takes over at once: the end of the old one never
+     comes. */
+  function Fade(set, opts) {
+    opts = opts || {};
+    this.set = set;
+    this.ms = opts.ms == null ? 400 : opts.ms;
+    this.now = opts.now || nowMs;
+    this.raf = opts.raf || raf;
+    this.value = opts.from == null ? 1 : opts.from;
+    this._token = 0;
+  }
+
+  Fade.prototype.to = function (target, done) {
+    var self = this, token = ++this._token, from = this.value, start = this.now();
+    if (this.ms <= 0 || from === target) {
+      this.value = target;
+      this.set(target);
+      if (done) done();
+      return;
+    }
+    function frame() {
+      if (token !== self._token) return;
+      var p = Math.min(1, (self.now() - start) / self.ms);
+      self.value = from + (target - from) * p;
+      self.set(self.value);
+      if (p < 1) self.raf(frame);
+      else if (done) done();
+    }
+    this.raf(frame);
+  };
+
+  /* Layers of the animation switched on and off. A layer switched off
+     fades out, then goes; its pictures are kept (at most opts.keep sets,
+     the oldest dropped first) for when it comes back, read again from
+     nothing. One color for another: the old layer stays until the new one
+     shows its first picture (opts.waitMs at most), then the two cross. A
+     layer switched on again while it fades out comes back as it is.
+     Layers need remove(), and setFade(0..1) to fade. */
+  function Switcher(opts) {
+    opts = opts || {};
+    this.ms = opts.ms == null ? 400 : opts.ms;
+    this.waitMs = opts.waitMs == null ? 1500 : opts.waitMs;
+    // The colored layers of the animation (temperature, pressure, air
+    // quality, a few of its pollutants): up to 1 MB a picture, 25 to 113
+    // pictures each.
+    this.keep = opts.keep == null ? 6 : opts.keep;
+    this.now = opts.now || nowMs;
+    this.raf = opts.raf || raf;
+    this.defer = opts.defer || function (f) { setTimeout(f, 0); };
+    this.onGone = opts.onGone || function () {};
+    this._parked = [];          // { id, frames }, oldest first
+    this._leaving = {};         // id -> { layer, fade, waiting, since }
+    this._pending = {};         // id -> { fade, since }: on, first picture not shown yet
+    this._fades = [];           // [layer, Fade]
+    this._polling = false;
+  }
+
+  Switcher.prototype._fade = function (layer, from) {
+    for (var k = 0; k < this._fades.length; k++) if (this._fades[k][0] === layer) return this._fades[k][1];
+    var f = new Fade(function (v) { if (layer.setFade) layer.setFade(v); }, { ms: this.ms, now: this.now, raf: this.raf, from: from });
+    this._fades.push([layer, f]);
+    return f;
+  };
+
+  Switcher.prototype._forget = function (layer) {
+    this._fades = this._fades.filter(function (e) { return e[0] !== layer; });
+  };
+
+  /** Layer id goes off: its pictures kept, the layer faded out then removed. */
+  Switcher.prototype.leave = function (id, layer, frames) {
+    var self = this;
+    if (frames) {
+      frames.pause();
+      this._parked = this._parked.filter(function (p) { return p.id !== id; });
+      this._parked.push({ id: id, frames: frames });
+      while (this._parked.length > this.keep) this._parked.shift();
+    }
+    delete this._pending[id];
+    this._leaving[id] = { layer: layer, fade: this._fade(layer, 1), waiting: true, since: this.now() };
+    // A color switched on right after (in the same call) is waited for.
+    this.defer(function () { self._poll(); });
+  };
+
+  /** Layer id goes on: { layer: the one fading out to take back, or null
+      for a new one; reuse: its kept pictures, or null }. */
+  Switcher.prototype.enter = function (id) {
+    var reuse = null, layer = null;
+    for (var k = 0; k < this._parked.length; k++) {
+      if (this._parked[k].id === id) { reuse = this._parked[k].frames; this._parked.splice(k, 1); break; }
+    }
+    var l = this._leaving[id];
+    if (l) { layer = l.layer; delete this._leaving[id]; }
+    return { layer: layer, reuse: reuse };
+  };
+
+  /** The layer of id is on the map: invisible until its first picture. */
+  Switcher.prototype.entered = function (id, layer) {
+    var f = this._fade(layer, 0);
+    if (f.value === 0 && layer.setFade) layer.setFade(0);
+    this._pending[id] = { fade: f, since: this.now() };
+    this._poll();
+  };
+
+  /** The first picture of id is drawn: it fades in. */
+  Switcher.prototype.shown = function (id) {
+    var p = this._pending[id];
+    if (!p) return;
+    delete this._pending[id];
+    p.fade.to(1);
+  };
+
+  Switcher.prototype._out = function (id, l) {
+    var self = this;
+    l.waiting = false;
+    l.fade.to(0, function () {
+      if (self._leaving[id] !== l) return;
+      delete self._leaving[id];
+      self._forget(l.layer);
+      l.layer.remove();
+      self.onGone(id, l.layer);
+    });
+  };
+
+  /** Layers leaving go once nothing waits for a first picture; a picture
+      that never comes is not waited for past waitMs. */
+  Switcher.prototype._poll = function () {
+    var self = this, t = this.now(), id, busy = false;
+    for (id in this._pending) {
+      if (t - this._pending[id].since >= this.waitMs) this.shown(id);
+      else busy = true;
+    }
+    var again = false;
+    for (id in this._leaving) {
+      var l = this._leaving[id];
+      if (!l.waiting) continue;
+      if (!busy || t - l.since >= this.waitMs) this._out(id, l);
+      else again = true;
+    }
+    if ((again || busy) && !this._polling) {
+      this._polling = true;
+      this.raf(function () { self._polling = false; self._poll(); });
+    }
+  };
+
+  /** The pictures kept for id go: its data changed. */
+  Switcher.prototype.drop = function (id) {
+    this._parked = this._parked.filter(function (p) { return p.id !== id; });
+  };
+
+  /** The layers fading out go at once (a new base map); pictures kept. */
+  Switcher.prototype.flush = function () {
+    for (var id in this._leaving) {
+      var l = this._leaving[id];
+      l.fade.to(l.fade.value);           // cancels its end
+      this._forget(l.layer);
+      l.layer.remove();
+      this.onGone(id, l.layer);
+    }
+    this._leaving = {};
+  };
+
+  /** Everything off at once (end of the animation): nothing kept. */
+  Switcher.prototype.clear = function () {
+    this.flush();
+    this._pending = {};
+    this._parked = [];
+    this._fades = [];
   };
 
   Group.prototype.settled = function () {
-    return this.tracks.every(function (t) { return !t.layer.settled || t.layer.settled(); });
+    return this._counted().every(function (t) { return !t.layer.settled || t.layer.settled(); });
   };
 
   Group.prototype.setMoving = function (on) {
@@ -626,7 +850,8 @@ var WidgetAnim = (function () {
 
   return {
     STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, frameUrl: frameUrl, pack: pack, unpack: unpack,
-    decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, Group: Group, Player: Player
+    decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, Group: Group, Player: Player,
+    Fade: Fade, Switcher: Switcher
   };
 })();
 

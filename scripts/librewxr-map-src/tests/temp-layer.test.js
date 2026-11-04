@@ -451,3 +451,21 @@ test('colorOf: the color of the band a temperature is drawn in', async () => {
   assert.equal(layer.colorOf(6.3), 'rgb(' + rgb + ')');
   layer.remove();
 });
+
+test('setFade scales the opacity, tiles and legend, without new tiles; setOpacity keeps the fade', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(0), Object.assign({}, OPTS, { opacity: 80 }));
+  layer.setFade(0);
+  layer.addTo(fakeMap(4));
+  await settle();
+  // Tiles given while faded out come at 0.
+  assert.ok(adapter.tiles.length > 0);
+  assert.equal(adapter.tiles[adapter.tiles.length - 1].opacity, 0);
+  const count = adapter.tiles.length;
+  layer.setFade(0.5);
+  assert.equal(adapter.opacities[adapter.opacities.length - 1], 0.4);
+  assert.equal(layer._legend.style.opacity, '0.5');
+  layer.setOpacity(60);
+  assert.equal(adapter.opacities[adapter.opacities.length - 1], 0.3);
+  assert.equal(adapter.tiles.length, count);
+});
