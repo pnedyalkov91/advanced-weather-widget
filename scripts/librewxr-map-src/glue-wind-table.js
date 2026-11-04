@@ -14,6 +14,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
   var DEG = Math.PI / 180;
   var CELL = 12;              // px between table nodes
   var SLICE_MS = 4;           // longest slice of table building per frame
+  var REVEAL_MS = 250;        // fade in of the wind after a change of projection
   var MAX_PARTICLES = 1500;
   var FILE_RES = 0.25;        // degrees of the files given in manual mode
 
@@ -202,6 +203,23 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     /** The projection changed under the layer: rebuild the table. */
     refresh: function () { if (this._map) this._reset(); },
 
+    /** The projection is changing: the particles of the old one go at once
+        (they would stand in the wrong places), the table is built again on
+        the first frame of the new one, and the wind fades back in. */
+    reproject: function () {
+      if (!this._map) return;
+      var self = this;
+      this._stop(true);
+      this._map.once('render', function () {
+        requestAnimationFrame(function () {
+          if (!self._map) return;
+          self._fadeIn = true;
+          self._reset();
+        });
+      });
+      this._map.triggerRepaint();
+    },
+
     /** The source's grids changed (other hours): draw again from it. */
     reload: function () { if (this._map) this._reset(); },
 
@@ -353,6 +371,10 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         if (!done) { requestAnimationFrame(slice); return; }
         self._building = false;
         self._canvas.style.visibility = '';
+        if (self._fadeIn) {
+          self._fadeIn = false;
+          if (self._canvas.animate) self._canvas.animate([{ opacity: 0 }, { opacity: self._fade }], { duration: REVEAL_MS, easing: 'ease-out' });
+        }
         self._running = true;
         self._schedule();
       };

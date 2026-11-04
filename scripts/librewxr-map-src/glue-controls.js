@@ -648,8 +648,15 @@ window.setProjection = function (p) {
   if (p === _widgetAdapter.getProjection()) return;
   _widgetAdapter.setProjection(p);
   renderProjBtn();
-  // The new projection is in place on the next frames: rebuild the wind table then.
-  if (windLayer && windLayer.refresh) setTimeout(function () { if (windLayer) windLayer.refresh(); }, 300);
+  // The wind layers, the animation's too (and those fading out), build their
+  // table again on the first frame of the new projection (reproject); the
+  // old one put a flat map's wind in the globe's disc.
+  var winds = [windLayer];
+  if (anim && anim.group) anim.group.tracks.concat(anim.group.ghosts).forEach(function (t) { winds.push(t.layer); });
+  winds.forEach(function (l) {
+    if (l && l.reproject) l.reproject();
+    else if (l && l.refresh) setTimeout(function () { l.refresh(); }, 300);
+  });
   if (tempLayer) setTimeout(function () { if (tempLayer) tempLayer.refresh(); }, 300);
 };
 if (projBtn) {

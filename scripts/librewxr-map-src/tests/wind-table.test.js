@@ -35,6 +35,11 @@ function fakeMap() {
     zoom: 2,
     on: (e, f) => { (handlers[e] = handlers[e] || []).push(f); },
     off: () => {},
+    once: (e, f) => {
+      const g = () => { handlers[e] = handlers[e].filter((h) => h !== g); f(); };
+      (handlers[e] = handlers[e] || []).push(g);
+    },
+    triggerRepaint: () => {},
     fire: (e) => (handlers[e] || []).slice().forEach((f) => f()),
     unproject: ([x, y]) => ({ lng: x / 10 - 15, lat: 6 - y / 10 }),
     project: (ll) => ({ x: (ll.lng + 15) * 10, y: (6 - ll.lat) * 10 }),
@@ -90,6 +95,34 @@ test('table layer: a resize that leaves the view as it was keeps the particles g
     map.fire('movestart'); map.fire('move'); map.fire('resize'); map.fire('moveend');
     assert.equal(layer.isDrawing(), true);
     assert.equal(layer._job, job);
+  } finally {
+    layer.remove();
+  }
+});
+
+test('table layer: reproject clears the old particles at once, builds on the new frame and fades in', async () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const map = fakeMap(), layer = new Layer(source, fakeOpen(), {}, {});
+  layer.addTo(map);
+  try {
+    await new Promise((r) => setImmediate(r));
+    layer.settle();
+    flushRaf();
+    assert.equal(layer.isDrawing(), true);
+    const fades = [];
+    layer._canvas.animate = (frames) => fades.push(frames);
+    layer.reproject();
+    assert.equal(layer.isDrawing(), false);      // gone before the map has the new projection
+    flushRaf();
+    assert.equal(layer.isDrawing(), false);      // nothing built on the old one
+    map.fire('render');                           // the first frame of the new projection
+    flushRaf();
+    assert.equal(layer.isDrawing(), true);
+    assert.equal(fades.length, 1);
+    assert.deepEqual(fades[0], [{ opacity: 0 }, { opacity: 1 }]);
+    map.fire('render');                           // later frames: no new build
+    flushRaf();
+    assert.equal(fades.length, 1);
   } finally {
     layer.remove();
   }
