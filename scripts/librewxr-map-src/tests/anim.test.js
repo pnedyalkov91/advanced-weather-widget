@@ -86,6 +86,27 @@ test('Frames: the pictures of the old range are taken over, the rest is read', a
   assert.equal(big.grid(0).values[0], 5);
 });
 
+test('Frames.gridAt: the frame after next is unpacked ahead, when the page is idle', () => {
+  const f = Object.create(A.Frames.prototype), idle = [];
+  let unpacked = 0;
+  f.times = [0, 3 * H, 6 * H, 9 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = Object.assign({}, A.FIELDS.temperature, { unpack: (parts) => { unpacked++; return A.unpack(parts[0]); } });
+  f.packed = [0, 10, 20, 30].map((t) => [A.pack(Float32Array.from([t]))]);
+  f.idle = (cb) => idle.push(cb);
+  f.gridAt(0.5);
+  assert.equal(unpacked, 2);
+  assert.equal(idle.length, 1);                     // frame 2 asked for
+  idle.shift()();
+  assert.equal(unpacked, 3);
+  assert.equal(f.gridAt(1.5).valuesB[0], 20);       // already there when the step comes
+  assert.equal(unpacked, 3);
+  f.gridAt(1.6);
+  assert.equal(idle.length, 1);                     // frame 3, once
+  f.gridAt(1.7);
+  assert.equal(idle.length, 1);
+});
+
 test('loadOrder: nearest to now first, the future first on a tie', () => {
   assert.deepEqual(A.loadOrder(5, 2), [2, 3, 1, 4, 0]);
 });
@@ -144,6 +165,20 @@ test('Player: in between pictures as the map draws them, up to the next frame', 
   p._tick();
   assert.deepEqual(shown, [0, 0.25, 1, 2, 0]);
   p.play(false);
+});
+
+test('Player: the cap of pictures per second holds with a timer of 16 ms', () => {
+  // A cap of 15 a second used to give 12.5: 66.7 ms waited for, 80 ms
+  // reached at the timer's steps.
+  for (const fps of [4, 8, 15]) {
+    const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 100000, endPauseMs: 0, minFrameMs: 1000 / fps });
+    p.show(0);
+    p.play(true);
+    for (clock.t = 16; clock.t <= 2000; clock.t += 16) p._tick();
+    p.play(false);
+    const got = (shown.length - 1) / 2;
+    assert.ok(Math.abs(got - fps) <= 0.5, fps + ' a second asked, ' + got + ' shown');
+  }
 });
 
 test('Player: a frame not read is jumped over after stepMs', () => {

@@ -299,6 +299,21 @@ test('setPalette, setStep and setUnit make new tiles and remake the legend', asy
   assert.deepEqual(colors(await drawTile(layer, ...MONT_BLANC)), ['161,161,161,255']);
 });
 
+test('the colors of the legend follow the opacity of the layer', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(2076), OPTS);
+  layer.addTo(fakeMap(4));
+  await settle();
+  const legend = container.children[container.children.length - 1];
+  const bar = () => legend.children[legend.children.length - 1];
+  assert.equal(bar().style.opacity, '0.45');
+  layer.setOpacity(80);
+  assert.equal(bar().style.opacity, '0.8');
+  layer.setUnit('F');
+  await settle();
+  assert.equal(bar().style.opacity, '0.8', 'kept when the legend is made again');
+});
+
 test('remove clears the layer and the legend; tiles asked later stay empty', async () => {
   const adapter = fakeAdapter(EUROPE);
   const map = fakeMap(4);

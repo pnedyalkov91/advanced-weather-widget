@@ -14,6 +14,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var pendingReady = {};       // source id -> finishers of onLayerReady still waiting
   var alertsEntry = null;      // { geojson } while the alerts overlay is on
   var tempEntry = null;        // { provider, version, opacity } while the temperature shows
+  var restyleCbs = [];         // the page's own layers to put back after a new style (onRestyle)
   var attribution = null;      // the attribution control, remade when its lines change
   var dataAttribution = false; // Open-Meteo credited (wind or temperature on)
   var popupHandler = null;
@@ -445,6 +446,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     applyProjection();
     moveSun();
     swapInProgress = false;
+    for (i = 0; i < restyleCbs.length; i++) restyleCbs[i]();
     if (desired && desired.key !== appliedKey) swapToStyle(desired);
   }
 
@@ -481,6 +483,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.on('render', checkPrepared);
       return map;
     },
+
+    /** cb() after each base map change, once the adapter has put its own
+        layers back: the layers the page added itself (those of the
+        animation) go back then. */
+    onRestyle: function (cb) { restyleCbs.push(cb); },
 
     setBasemap: function (theme) {
       skyTheme = theme;

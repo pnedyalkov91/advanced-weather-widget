@@ -80,9 +80,18 @@ var WidgetAnim = (function () {
     return out;
   }
 
+  // The 256 values a byte can stand for, by min: unpacking a picture is
+  // then one lookup a point (a million points: a few ms instead of 20 to 40).
+  var unpackTables = {};
+
   function unpackFrom(packed, min) {
+    var table = unpackTables[min];
+    if (!table) {
+      table = unpackTables[min] = new Float32Array(256);
+      for (var b = 0; b < 256; b++) table[b] = b === PACK_NAN ? NaN : min + b / 2;
+    }
     var out = new Float32Array(packed.length);
-    for (var i = 0; i < packed.length; i++) out[i] = packed[i] === PACK_NAN ? NaN : min + packed[i] / 2;
+    for (var i = 0; i < packed.length; i++) out[i] = table[packed[i]];
     return out;
   }
 
@@ -364,6 +373,25 @@ var WidgetAnim = (function () {
     return values;
   };
 
+  // When the page has a moment: the browser's idle time, or the next turn.
+  var whenIdle = typeof requestIdleCallback === 'function'
+    ? function (cb) { requestIdleCallback(cb, { timeout: 500 }); }
+    : function (cb) { setTimeout(cb, 0); };
+
+  /** Unpack frame i while the page is idle, so that reaching it does not
+      hold the picture back (40 ms for the wind's two fields). */
+  Frames.prototype._warm = function (i) {
+    var packed = this.packed[i], kept = this.unpacked || [];
+    if (!packed || this._warming === i) return;
+    for (var k = 0; k < kept.length; k++) if (kept[k].i === i) return;
+    var self = this;
+    this._warming = i;
+    (this.idle || whenIdle)(function () {
+      if (self._warming === i) self._warming = null;
+      if (self.packed[i] === packed) self._values(i);
+    });
+  };
+
   /** Picture i as a grid of the layer, null until it is in. */
   Frames.prototype.grid = function (i) {
     var p = this.packed[i], m = this.meta;
@@ -378,6 +406,7 @@ var WidgetAnim = (function () {
   Frames.prototype.gridAt = function (pos) {
     var i = Math.floor(pos), f = pos - i, m = this.meta;
     if (!this.packed[i] || !m) return null;
+    this._warm(i + 2);
     if (!this.packed[i + 1] || f < 1e-3) return this.grid(i);
     return this.field.grid(m, this._values(i), this._values(i + 1), f, this.times[i], this.times[i + 1], this.timeAt(pos));
   };
@@ -484,6 +513,7 @@ var WidgetAnim = (function () {
     this.target = null;         // position of the last seek, not shown yet
     this.playing = false;
     this.shownAt = 0;
+    this.dueAt = 0;             // when the next picture may come
     this.timer = null;
   }
 
@@ -512,8 +542,14 @@ var WidgetAnim = (function () {
   Player.prototype.show = function (pos) {
     var g = this.frames.gridAt(pos);
     if (!g) return false;
+    var now = this.now();
     this.index = pos;
-    this.shownAt = this.now();
+    this.shownAt = now;
+    // Due minFrameMs after the last one was due, not after the timer step
+    // that showed it, so the cap holds on average (15 a second gave 12.5);
+    // once behind (the map was slow), counted from now again.
+    var base = now >= this.dueAt && now - this.dueAt < this.minFrameMs ? this.dueAt : now;
+    this.dueAt = base + this.minFrameMs;
     this.layer.showFile(g);
     return true;
   };
@@ -581,7 +617,7 @@ var WidgetAnim = (function () {
     } else if (j > i + 1 || this.index === i && !this.frames.ready(i)) {
       // A frame missing on the way: straight to the next one read.
       if (now - this.shownAt >= this.stepMs) this.show(j);
-    } else if (now - this.shownAt >= this.minFrameMs) {
+    } else if (now >= this.dueAt) {
       this.show(Math.min(j, this.index + (now - this.shownAt) / this.stepMs));
     }
   };

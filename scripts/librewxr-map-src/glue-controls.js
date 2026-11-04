@@ -252,6 +252,8 @@ window.setTempOpacity = function (n) {
   if (!window.tempAvailable) return;
   tempOpacity = WidgetTemp.normOpacity(n);
   if (tempLayer) tempLayer.setOpacity(tempOpacity);
+  var t = anim && anim.group.track('temperature');
+  if (t) t.layer.setOpacity(tempOpacity);
 };
 
 // Width of the bands (0: smooth gradient), in the unit below.
@@ -379,12 +381,24 @@ function animSetLayer(id, on) {
   }
 }
 
+/** A new base map drops the layers the animation put on the map: each puts
+    its own back (restyle, for those that add any; the temperature tiles
+    come back with the adapter's), then the picture shown is drawn again. */
+var animRestyleHooked = false;
+function animRestyle() {
+  if (!anim) return;
+  var m = _widgetAdapter.getMap();
+  anim.group.tracks.forEach(function (t) { if (t.layer.restyle) t.layer.restyle(m); });
+  if (anim.player.index >= 0) anim.player.show(anim.player.index);
+}
+
 /** Start with the layers of `layers` ({ temperature: true, wind: false }),
     the temperature alone by default. */
 window.animStart = function (pastH, futureH, layers) {
   var m = _widgetAdapter.getMap();
   if (!m || !window.animAvailable) return false;
   if (anim) return true;
+  if (!animRestyleHooked && _widgetAdapter.onRestyle) { _widgetAdapter.onRestyle(animRestyle); animRestyleHooked = true; }
   if (tempLayer) { tempLayer.remove(); tempLayer = null; }
   if (windLayer) windLayer.setActive(false);
   anim = {

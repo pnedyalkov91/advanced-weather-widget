@@ -129,6 +129,7 @@ WidgetTemp.TempLayer = (function () {
     this._surface = null;
     this._lut = null;
     this._legend = null;
+    this._bar = null;         // the legend's colors
     this._shown = null;       // what the tiles on the map are drawn from: { fields, lut }
     this._version = 0;        // of those tiles
     this._api = null;         // the API field last made: { grid, field }
@@ -195,6 +196,7 @@ WidgetTemp.TempLayer = (function () {
       this._adapter.clearTemp();
       if (this._legend) this._legend.remove();
       this._legend = null;
+      this._bar = null;
       this._map = null;
       this._shown = null;
       this._relief.clear();
@@ -235,10 +237,12 @@ WidgetTemp.TempLayer = (function () {
         them all. */
     settled: function () { return !!this._shown && this._served === this._shown && this._inflight === 0; },
 
-    /** Opacity in percent: only the layer changes, nothing is redrawn. */
+    /** Opacity in percent: only the layer and the legend's colors change,
+        nothing is redrawn. */
     setOpacity: function (percent) {
       this.options.opacity = WidgetTemp.normOpacity(percent);
       if (this._map) this._adapter.setTempOpacity(this.options.opacity / 100);
+      if (this._bar) this._bar.style.opacity = String(this.options.opacity / 100);
     },
 
     setPalette: function (stops) { this.options.stops = stops || WidgetTemp.DEFAULT_STOPS; this._recolor(); },
@@ -355,12 +359,14 @@ WidgetTemp.TempLayer = (function () {
       bar.width = LEGEND_PX;
       bar.height = 10;
       bar.className = 'lv-temp-bar';
+      bar.style.opacity = String(o.opacity / 100);   // as light as the layer
       for (var x = 0; x < LEGEND_PX; x++) {
         var i = WidgetTemp.lutIndex(lo + (x + 0.5) / LEGEND_PX * (hi - lo)) * 3;
         g.fillStyle = 'rgb(' + lut[i] + ',' + lut[i + 1] + ',' + lut[i + 2] + ')';
         g.fillRect(x, 0, 1, 10);
       }
       this._legend.appendChild(bar);
+      this._bar = bar;
     },
 
     _view: function () {

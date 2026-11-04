@@ -457,6 +457,21 @@ test('a base map change puts the temperature back, at the same place', () => {
   assert.deepEqual([...map.getSource('lv-temp-src').tiles], ['lvtemp://4/{z}/{x}/{y}']);
 });
 
+test('after a base map change, the page is told once the adapter has put its own layers back', () => {
+  const { adapter, map, ctx } = loadAdapter();
+  adapter.setTempTiles(provider, 4, 0.3);
+  const seen = [];
+  adapter.onRestyle(() => seen.push(!!map.getLayer('lv-temp')));
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('light');
+  assert.deepEqual(seen, []);
+  map.layers = []; map.sources = {};
+  for (const l of map.loadedStyle.layers) map.addLayer(l);
+  for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
+  map.fire('style.load');
+  assert.deepEqual(seen, [true]);
+});
+
 test('setTempOpacity changes the layer only; clearTemp removes layer and source', async () => {
   const { adapter, map, protocols } = loadAdapter();
   adapter.setTempTiles(provider, 1, 0.45);
