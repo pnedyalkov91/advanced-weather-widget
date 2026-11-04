@@ -491,3 +491,146 @@ test('temperature tiles given before the style loads show once it has', () => {
   assert.ok(map.getLayer('lv-temp'));
   assert.deepEqual([...map.getSource('lv-temp-src').tiles], ['lvtemp://2/{z}/{x}/{y}']);
 });
+
+// === Coasts and borders over the color layers ===
+const LINES = { type: 'FeatureCollection', features: [] };
+const linesGlobals = (fetched) => ({
+  fetch: (url) => { fetched.push(url); return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve('bin') }); },
+  WidgetEarth: Object.assign({}, require('../glue-earth.js'), { decodeLines: (b) => (b === 'bin' ? LINES : null) })
+});
+
+test('the temperature brings the coasts and borders right over it, under the frames', async () => {
+  const fetched = [];
+  const { adapter, map } = loadAdapter(linesGlobals(fetched));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  const order = ids(map);
+  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 1);
+  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+  assert.equal(map.getLayer('lv-lines').type, 'line');
+  assert.equal(map.getSource('lv-lines-src').data, LINES);
+  // The widget's own file, read once.
+  assert.deepEqual(fetched, ['vendor/coast-borders.bin']);
+});
+
+test('the lines are fetched once, whatever asks for them', async () => {
+  const fetched = [];
+  const { adapter } = loadAdapter(linesGlobals(fetched));
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.clearTemp();
+  adapter.setTempTiles(provider, 2, 0.45);
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.equal(fetched.length, 1);
+});
+
+const linesVisible = (map) => !!map.getLayer('lv-lines') && map.getLayer('lv-lines').layout.visibility !== 'none';
+
+test('the lines stay while one layer still wants them, then only hide', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  adapter.clearTemp();
+  assert.ok(linesVisible(map));
+  const source = map.getSource('lv-lines-src');
+  adapter.setLines('pressure', false);
+  assert.equal(linesVisible(map), false);
+  // Kept, tiles and all: the next color layer shows them at once.
+  assert.equal(map.getSource('lv-lines-src'), source);
+});
+
+test('one color layer for another: the same lines, never made again', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  const source = map.getSource('lv-lines-src'), layer = map.getLayer('lv-lines');
+  adapter.clearTemp();
+  adapter.setLines('pressure', true);
+  map.addLayer({ id: 'lv-pres-gl', type: 'custom' }, adapter.linesBefore());
+  assert.equal(map.getSource('lv-lines-src'), source);
+  assert.equal(map.getLayer('lv-lines'), layer);
+  assert.ok(linesVisible(map));
+  adapter.setLines('pressure', false);
+  adapter.setTempTiles(provider, 2, 0.45);
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-temp') < order.indexOf('lv-lines'), order.join());
+  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+  assert.ok(linesVisible(map));
+});
+
+test('the night switched on later goes under the lines kept hidden', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  adapter.clearTemp();
+  adapter.setDayNight(true);
+  assert.ok(ids(map).indexOf('lv-night') < ids(map).indexOf('lv-lines'));
+});
+
+test('turned off before the file arrives: no lines', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.clearTemp();
+  await tick(); await tick();
+  assert.equal(linesVisible(map), false);
+});
+
+test('a color layer of another script goes under the lines through linesBefore()', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(adapter.linesBefore(), undefined);
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.equal(adapter.linesBefore(), 'lv-lines');
+  map.addLayer({ id: 'lv-pres-gl', type: 'custom' }, adapter.linesBefore());
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-pres-gl') < order.indexOf('lv-lines'));
+  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+});
+
+test('a satellite frame added later goes over the lines too', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite');
+  assert.ok(ids(map).indexOf('lv-lines') < ids(map).indexOf(sat.layerId));
+});
+
+test('a base map change puts the lines back over the temperature', async () => {
+  const { adapter, map, ctx } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 4, 0.3);
+  await tick(); await tick();
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('light');
+  map.layers = []; map.sources = {};
+  for (const l of map.loadedStyle.layers) map.addLayer(l);
+  for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
+  map.fire('style.load');
+  const order = ids(map);
+  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 1);
+  assert.equal(map.getSource('lv-lines-src').data, LINES);
+});
+
+test('lines switched off: none drawn, even wanted; back on, they come back', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  adapter.setLinesShown(false);
+  assert.equal(linesVisible(map), false);
+  adapter.setLinesShown(true);
+  assert.ok(linesVisible(map));
+  assert.equal(ids(map).indexOf('lv-lines'), ids(map).indexOf('lv-temp') + 1);
+});
+
+test('the widget can open the page with the lines off, and nothing is fetched', async () => {
+  const fetched = [];
+  const { adapter, map } = loadAdapter(Object.assign(linesGlobals(fetched), { LINES_INIT: false }));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  assert.equal(map.getLayer('lv-lines'), undefined);
+  assert.deepEqual(fetched, []);
+  assert.equal(adapter.getLinesShown(), false);
+});

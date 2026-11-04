@@ -35,6 +35,7 @@
  *   window.setTempOpacity(percent)        // opacity of the temperature layer (10-100)
  *   window.setTempStep(0 | 2 | 2.5 | 5 | 10)  // width of the temperature bands; 0 = smooth gradient
  *   window.setTempUnit("C" | "F")         // unit of the temperature bands and legend
+ *   window.setMapLines(true | false)      // coasts and borders over the temperature
  *   window.setCells("light" | "dark" | "")   // storm-cell overlay theme; "" = off
  *   window.setAlerts(true | false)        // WMO alerts overlay
  *   window.setSmooth(true | false)        // radar tile edge smoothing
@@ -137,6 +138,8 @@ Item {
     // The temperature palette in use, in the page's form: "t:rrggbb" points,
     // t in °C; the vivid palette for an entry that does not read.
     readonly property string tempPalette: ConfigUtils.formatTempPalette(ConfigUtils.tempPaletteStops(Plasmoid.configuration.librewxrTempPalette || "", Plasmoid.configuration.librewxrTempPalettes || "[]"))
+    // Coasts and borders drawn over the temperature, from the Options row.
+    readonly property bool mapLinesOn: Plasmoid.configuration.librewxrMapLines !== false
     readonly property int tempOpacity: Plasmoid.configuration.librewxrTempOpacity > 0 ? Plasmoid.configuration.librewxrTempOpacity : 45
     readonly property real tempStep: Plasmoid.configuration.librewxrTempStep
     // The widget's temperature unit, which the bands and the legend follow.
@@ -486,7 +489,7 @@ Item {
             "dirW": i18n("W"),
             "dirNW": i18n("NW")
         };
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&prepare=" + radarRoot.prepareMode + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&temp=" + (radarRoot.tempOn ? "1" : "0") + "&temppalette=" + encodeURIComponent(radarRoot.tempPalette) + "&tempopacity=" + radarRoot.tempOpacity + "&tempstep=" + radarRoot.tempStep + "&tempunit=" + radarRoot.tempUnit + "&windunit=" + radarRoot.windUnit + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=" + encodeURIComponent(radarRoot.activeLayer) + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=" + (radarRoot.windOn ? "1" : "0") + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&prepare=" + radarRoot.prepareMode + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&temp=" + (radarRoot.tempOn ? "1" : "0") + "&temppalette=" + encodeURIComponent(radarRoot.tempPalette) + "&tempopacity=" + radarRoot.tempOpacity + "&tempstep=" + radarRoot.tempStep + "&tempunit=" + radarRoot.tempUnit + "&lines=" + (radarRoot.mapLinesOn ? "1" : "0") + "&windunit=" + radarRoot.windUnit + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -787,6 +790,18 @@ Item {
                 onToggled: {
                     Plasmoid.configuration.librewxrSnow = checked;
                     webView.runJavaScript("if (window.setSnow) window.setSnow(" + (checked ? "true" : "false") + ");");
+                }
+            }
+
+            MapToggle {
+                visible: radarRoot.optionsExpanded && radarRoot.tempOn && radarRoot.tempAvailable
+                icon.name: "map-flat"
+                title: i18n("Coasts and borders")
+                tip: i18n("Draw the coasts and the country borders over the temperature")
+                checked: radarRoot.mapLinesOn
+                onToggled: {
+                    Plasmoid.configuration.librewxrMapLines = checked;
+                    webView.runJavaScript("if (window.setMapLines) window.setMapLines(" + (checked ? "true" : "false") + ");");
                 }
             }
 

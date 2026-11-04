@@ -838,6 +838,14 @@ msgstr "Colorer selon la température :"
 msgid "Color the map by the air temperature (Open-Meteo)"
 msgstr "Colorer la carte selon la température de l'air (Open-Meteo)"
 
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:799
+msgid "Coasts and borders"
+msgstr "Côtes et frontières"
+
+#: contents/ui/components/RadarWebEngineViewLibreWXR.qml:800
+msgid "Draw the coasts and the country borders over the temperature"
+msgstr "Tracer les côtes et les frontières des pays par-dessus la température"
+
 #: contents/ui/config/tabs/ConfigPanelTab.qml:684
 msgid "Color the panel temperature with the same cold to hot scale as the forecast curve, instead of a fixed color."
 msgstr "Colorer la température du panneau avec la même échelle du froid au chaud que la courbe de prévisions, au lieu d'une couleur fixe."

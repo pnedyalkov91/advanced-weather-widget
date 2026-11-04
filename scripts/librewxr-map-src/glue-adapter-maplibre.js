@@ -74,7 +74,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) {
       var id = layers[i].id;
-      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night' && id !== TEMP_LAYER) return id;
+      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night' && id !== TEMP_LAYER && id !== LINES_LAYER) return id;
     }
     return undefined;
   }
@@ -134,7 +134,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     }
     if (!map.getLayer('lv-night')) {
       map.addLayer({ id: 'lv-night', type: 'raster', source: 'lv-night', paint: { 'raster-fade-duration': 0 } },
-        map.getLayer(TEMP_LAYER) ? TEMP_LAYER : firstRuntimeLayerId());
+        map.getLayer(TEMP_LAYER) ? TEMP_LAYER : map.getLayer(LINES_LAYER) ? LINES_LAYER : firstRuntimeLayerId());
     }
   }
 
@@ -170,8 +170,71 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.addLayer({
         id: TEMP_LAYER, type: 'raster', source: TEMP_SOURCE,
         paint: { 'raster-opacity': tempEntry.opacity, 'raster-fade-duration': 0, 'raster-resampling': 'linear' }
-      }, firstRuntimeLayerId());
+      }, map.getLayer(LINES_LAYER) ? LINES_LAYER : firstRuntimeLayerId());
     }
+    setLines('temperature', true);
+  }
+
+  // The color layers hide the base map: the coasts and land borders drawn
+  // again over them, from the widget's own file (vendor/coast-borders.bin,
+  // Natural Earth, about 500 m), the same on every base map and offline.
+  // Right under the frames and the alerts; color layers of other scripts
+  // go under them through linesBefore(). Shown while a layer wants them
+  // (setLines) and the widget's setting lets them (setLinesShown), the
+  // file read once. Hidden, never removed: from one color layer to another
+  // they stay as they are, tiles and all.
+  var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
+  var linesOwners = {}, linesData = null, linesLoading = false;
+  var linesShown = typeof LINES_INIT === 'undefined' || LINES_INIT !== false;
+  function linesWanted() {
+    if (!linesShown) return false;
+    for (var k in linesOwners) return true;
+    return false;
+  }
+  function firstOverlayLayerId() {
+    var layers = map.getStyle().layers;
+    for (var i = 0; i < layers.length; i++) {
+      var id = layers[i].id;
+      if (id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0) return id;
+    }
+    return undefined;
+  }
+  // Called by restoreRuntimeStyle() while the swap ends, so not held by it.
+  function applyLines() {
+    if (!styleReady) return;
+    if (!linesWanted()) {
+      if (map.getLayer(LINES_LAYER)) map.setLayoutProperty(LINES_LAYER, 'visibility', 'none');
+      return;
+    }
+    if (!linesData) {
+      if (linesLoading || typeof fetch !== 'function') return;
+      linesLoading = true;
+      fetch(LINES_URL).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+        linesData = WidgetEarth.decodeLines(buf);
+        if (!swapInProgress) applyLines();
+      }).catch(function (e) {
+        linesLoading = false;
+        console.warn('coast and border lines: ' + e);
+      });
+      return;
+    }
+    if (!map.getSource(LINES_SOURCE)) map.addSource(LINES_SOURCE, { type: 'geojson', data: linesData });
+    if (map.getLayer(LINES_LAYER)) {
+      map.setLayoutProperty(LINES_LAYER, 'visibility', 'visible');
+      return;
+    }
+    map.addLayer({
+      id: LINES_LAYER, type: 'line', source: LINES_SOURCE,
+      layout: { 'line-join': 'round', visibility: 'visible' },
+      paint: {
+        'line-color': 'rgba(20, 20, 20, 0.6)',
+        'line-width': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 6, 1.2, 10, 1.8]
+      }
+    }, firstOverlayLayerId());
+  }
+  function setLines(owner, on) {
+    if (on) linesOwners[owner] = true; else delete linesOwners[owner];
+    if (!swapInProgress) applyLines();
   }
 
   var OPEN_METEO = 'Weather data: <a href="https://open-meteo.com/">Open-Meteo</a>';
@@ -374,6 +437,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var i;
     addSunLayers();
     addTempLayer();
+    applyLines();
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind === 'satellite') addFrameEntry(frameRegistry[i]);
     if (alertsEntry) { addAlertsLayers(); registerAlertsPopup(); }
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind !== 'satellite') addFrameEntry(frameRegistry[i]);
@@ -642,9 +706,20 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     clearTemp: function () {
       tempEntry = null;
+      setLines('temperature', false);
       if (map.getLayer(TEMP_LAYER)) map.removeLayer(TEMP_LAYER);
       if (map.getSource(TEMP_SOURCE)) map.removeSource(TEMP_SOURCE);
     },
+
+    /** Coasts and borders over the color layers while at least one owner
+        wants them; the layer to put a color layer before, to stay under. */
+    setLines: setLines,
+    setLinesShown: function (on) {
+      linesShown = !!on;
+      if (!swapInProgress) applyLines();
+    },
+    getLinesShown: function () { return linesShown; },
+    linesBefore: function () { return map && map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined; },
 
     /** Credit Open-Meteo while the wind or the temperature shows. */
     setDataAttribution: function (on) {

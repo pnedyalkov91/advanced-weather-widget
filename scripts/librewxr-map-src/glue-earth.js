@@ -119,7 +119,35 @@ var WidgetEarth = (function () {
     return Math.log2(2 * Math.PI * R / 512);
   }
 
+  /** The coasts and land borders of vendor/coast-borders.bin (made by
+      scripts/make_coast_lines.py) as GeoJSON lines, properties.kind 'coast'
+      or 'border'. Points come as zigzag varint deltas in thousandths of a
+      degree: 650 KB for what takes 5 MB as GeoJSON. */
+  function decodeLines(buffer) {
+    var b = new Uint8Array(buffer), pos = 0;
+    if (b.length < 5 || String.fromCharCode(b[0], b[1], b[2], b[3]) !== 'AWL1') throw new Error('not a lines file');
+    pos = 4;
+    function varint() {
+      var v = 0, shift = 1, c;
+      do { c = b[pos++]; v += (c & 0x7f) * shift; shift *= 128; } while (c & 0x80);
+      return v;
+    }
+    function zigzag() { var v = varint(); return v % 2 ? -(v + 1) / 2 : v / 2; }
+    var count = varint(), features = new Array(count);
+    for (var i = 0; i < count; i++) {
+      var kind = b[pos++] ? 'border' : 'coast';
+      var n = varint(), coords = new Array(n), x = 0, y = 0;
+      for (var j = 0; j < n; j++) {
+        x += zigzag(); y += zigzag();
+        coords[j] = [x / 1000, y / 1000];
+      }
+      features[i] = { type: 'Feature', properties: { kind: kind }, geometry: { type: 'LineString', coordinates: coords } };
+    }
+    return { type: 'FeatureCollection', features: features };
+  }
+
   return {
+    decodeLines: decodeLines,
     GLOBE_FILL: GLOBE_FILL, subsolarPoint: subsolarPoint, sunAltitude: sunAltitude,
     shadeTile: shadeTile, sunLightPosition: sunLightPosition,
     globeApparentRadius: globeApparentRadius, wholeEarthZoom: wholeEarthZoom

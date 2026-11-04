@@ -272,6 +272,11 @@ window.setTempUnit = function (u) {
   if (t) t.layer.setUnit(tempUnit);
 };
 
+// Coasts and borders over the color layers, from the widget's setting.
+window.setMapLines = function (on) {
+  if (_widgetAdapter.setLinesShown) _widgetAdapter.setLinesShown(!!on);
+};
+
 if (TEMP_ON) window.setTemp(true);
 
 // === ANIMATIONS (glue-anim.js; MapLibre page) ===

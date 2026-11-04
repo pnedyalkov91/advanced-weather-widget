@@ -135,6 +135,8 @@ var WIND_FILES_BASE = PARAMS.get('omfiles') || '';
 // palette ("t:rrggbb" with t in °C; empty: the vivid one), the opacity in
 // percent, the band width (0: smooth) and the unit of the bands and legend.
 var TEMP_ON = PARAMS.get('temp') === '1';
+// Coasts and borders over the color layers; on unless the widget says no.
+var LINES_INIT = PARAMS.get('lines') !== '0';
 var TEMP_PALETTE_PARAM = PARAMS.get('temppalette') || '';
 var TEMP_OPACITY = PARAMS.get('tempopacity');
 var TEMP_STEP = PARAMS.get('tempstep');

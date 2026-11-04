@@ -224,6 +224,8 @@
     <entry name="librewxrWindPalette"   type="String"><default></default></entry>
     <!-- Temperature layer under the radar (MapLibre page), switched from the map's bar -->
     <entry name="librewxrTemp"          type="Bool"><default>false</default></entry>
+    <!-- Coasts and borders drawn over the temperature (MapLibre page), switched in the map's Options -->
+    <entry name="librewxrMapLines"      type="Bool"><default>true</default></entry>
     <!-- Temperature palette in use: empty for the vivid one, "builtin:muted",
          "builtin:bluered", or the name of a palette made in the settings -->
     <entry name="librewxrTempPalette"   type="String"><default></default></entry>
