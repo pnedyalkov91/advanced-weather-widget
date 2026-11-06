@@ -21,9 +21,16 @@ import QtQuick.Layouts
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import "../js/debug.js" as Dbg
 
 KCM.SimpleKCM {
     id: root
+
+    // Debug mode (Settings -> Misc -> Debug). This dialog runs in its own QML
+    // engine, so js/debug.js has to be told separately from the applet itself.
+    QtObject {
+        Component.onCompleted: Dbg.setEnabled(Plasmoid.configuration.debugMode === true, "settings dialog")
+    }
 
     // Probed at startup - true only when the QtPositioning package is installed.
     // When false, auto-detect is hidden/disabled and an install-hint banner is shown.
@@ -479,7 +486,7 @@ KCM.SimpleKCM {
         locationCheckState = 1;
         locationCheckMessage = i18n("Checking location availability…");
 
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Config/Location", "verifyProviderLocation");
         var url;
         if (provider === "openWeather") {
             var owKey = (Plasmoid.configuration.owApiKey || "").trim();
@@ -740,7 +747,7 @@ KCM.SimpleKCM {
     // geocode is skipped and that name is used directly.
     function reverseGeocode(lat, lon, ipInfo) {
         stageDetectedLocation(lat, lon, NaN, "", "");
-        var metaReq = new XMLHttpRequest();
+        var metaReq = Dbg.xhr("Config/Location", "reverseGeocode");
         metaReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m&timezone=auto");
         metaReq.onreadystatechange = function () {
             if (metaReq.readyState !== XMLHttpRequest.DONE)
@@ -784,28 +791,28 @@ KCM.SimpleKCM {
             autoDetectBusy = false;
             return;
         }
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Config/Location", "reverseGeocode");
         // Photon reverse geocoding (OpenStreetMap data). lang=default gives local-language names,
         // the same as the location search. radius is in km: nearest object within 20 km.
         var revUrl = "https://photon.komoot.io/reverse?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&radius=20&limit=1&lang=default&layer=city";
-        console.warn("[LocationSearch] Photon reverse GET " + revUrl);
+        Dbg.log("Location search", "Photon reverse GET " + revUrl);
         req.open("GET", revUrl);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
-            console.warn("[LocationSearch] Photon reverse HTTP " + req.status + " " + req.statusText);
+            Dbg.warn("Location search", "Photon reverse HTTP " + req.status + " " + req.statusText);
             if (req.status !== 200)
-                console.warn("[LocationSearch] Photon reverse body: " + String(req.responseText).substring(0, 400));
+                Dbg.log("Location search", "Photon reverse body: " + String(req.responseText).substring(0, 400));
             if (req.status === 200) {
                 var p = null;
                 try {
                     var feats = JSON.parse(req.responseText).features || [];
                     p = feats.length > 0 ? (feats[0].properties || {}) : null;
                 } catch (e) {
-                    console.warn("[LocationSearch] Photon reverse parse error: " + e);
+                    Dbg.warn("Location search", "Photon reverse parse error: " + e);
                 }
                 if (p) {
-                    console.warn("[LocationSearch] Photon reverse result: " + JSON.stringify({
+                    Dbg.log("Location search", "Photon reverse result: " + JSON.stringify({
                         name: p.name,
                         osm_key: p.osm_key,
                         osm_value: p.osm_value,
@@ -871,7 +878,7 @@ KCM.SimpleKCM {
 
     function _cfgHandlePosition(lat, lon, alt, tierLabel, ipInfo) {
         if (_cfgFixHandled) {
-            console.warn("[LocationSearch] duplicate position fix ignored");
+            Dbg.log("Location search", "duplicate position fix ignored");
             return;
         }
         _cfgFixHandled = true;
@@ -950,7 +957,7 @@ KCM.SimpleKCM {
         repeat: false
         onTriggered: {
             if (_cfgLocationTier === 1) {
-                console.log("[Location/config] GeoClue2 timed out, trying generic…");
+                Dbg.log("Config/Location", "GeoClue2 timed out, trying generic…");
                 _cfgEscalateToGeneric();
             }
         }
@@ -961,7 +968,7 @@ KCM.SimpleKCM {
         repeat: false
         onTriggered: {
             if (_cfgLocationTier === 2) {
-                console.log("[Location/config] Generic source timed out, trying IP…");
+                Dbg.log("Config/Location", "Generic source timed out, trying IP…");
                 _cfgEscalateToIpGeo();
             }
         }
@@ -974,7 +981,7 @@ KCM.SimpleKCM {
         property var _activeReq: null
         onTriggered: {
             if (_cfgLocationTier === 3 && _activeReq) {
-                console.warn("[Location/config] Tier 3 IP geolocation timed out");
+                Dbg.warn("Config/Location", "Tier 3 IP geolocation timed out");
                 _activeReq.abort();
                 _activeReq = null;
                 _cfgLocationTier = 0;
@@ -997,12 +1004,12 @@ KCM.SimpleKCM {
                     return;
                 _cfgGeoclue2Timer.stop();
                 _cfgLocationTier = 0;
-                console.log("[Location/config] Tier 1 (GeoClue2): position acquired");
+                Dbg.log("Config/Location", "Tier 1 (GeoClue2): position acquired");
                 root._cfgHandlePosition(lat, lon, alt, "GeoClue2");
             });
             item.geoclue2Error.connect(function () {
                 if (_cfgLocationTier === 1) {
-                    console.log("[Location/config] Tier 1 (GeoClue2) error");
+                    Dbg.log("Config/Location", "Tier 1 (GeoClue2) error");
                     _cfgGeoclue2Timer.stop();
                     root._cfgEscalateToGeneric();
                 }
@@ -1013,12 +1020,12 @@ KCM.SimpleKCM {
                     return;
                 _cfgGenericTimer.stop();
                 _cfgLocationTier = 0;
-                console.log("[Location/config] Tier 2 (generic): position acquired");
+                Dbg.log("Config/Location", "Tier 2 (generic): position acquired");
                 root._cfgHandlePosition(lat, lon, alt, i18n("system location"));
             });
             item.genericError.connect(function () {
                 if (_cfgLocationTier === 2) {
-                    console.log("[Location/config] Tier 2 (generic) error");
+                    Dbg.log("Config/Location", "Tier 2 (generic) error");
                     _cfgGenericTimer.stop();
                     root._cfgEscalateToIpGeo();
                 }
@@ -1028,8 +1035,8 @@ KCM.SimpleKCM {
 
     // Tier 3 - IP-based geolocation
     function _cfgIpGeolocate() {
-        console.log("[Location/config] Tier 3: trying ip-api.com…");
-        var req = new XMLHttpRequest();
+        Dbg.log("Config/Location", "Tier 3: trying ip-api.com…");
+        var req = Dbg.xhr("Config/Location", "_cfgIpGeolocate");
         _cfgIpGeoTimer._activeReq = req;
         _cfgIpGeoTimer.restart();
         req.open("GET", "http://ip-api.com/json/?fields=status,lat,lon,city,regionName,country,countryCode");
@@ -1045,7 +1052,7 @@ KCM.SimpleKCM {
                         _cfgIpGeoTimer.stop();
                         _cfgIpGeoTimer._activeReq = null;
                         _cfgLocationTier = 0;
-                        console.log("[Location/config] Tier 3 (ip-api.com): position acquired");
+                        Dbg.log("Config/Location", "Tier 3 (ip-api.com): position acquired");
                         _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"), {
                             name: _ipLocationName(data.city, data.regionName, data.country),
                             countryCode: data.countryCode || ""
@@ -1053,7 +1060,7 @@ KCM.SimpleKCM {
                         return;
                     }
                 } catch (e) {
-                    console.warn("[Location/config] ip-api.com parse error:", e);
+                    Dbg.warn("Config/Location", "ip-api.com parse error:", e);
                 }
             }
             _cfgIpGeolocateFallback();
@@ -1062,8 +1069,8 @@ KCM.SimpleKCM {
     }
 
     function _cfgIpGeolocateFallback() {
-        console.log("[Location/config] Tier 3 fallback: trying reallyfreegeoip.org…");
-        var req = new XMLHttpRequest();
+        Dbg.log("Config/Location", "Tier 3 fallback: trying reallyfreegeoip.org…");
+        var req = Dbg.xhr("Config/Location", "_cfgIpGeolocateFallback");
         _cfgIpGeoTimer._activeReq = req;
         _cfgIpGeoTimer.restart();
         req.open("GET", "https://reallyfreegeoip.org/json/");
@@ -1079,7 +1086,7 @@ KCM.SimpleKCM {
                     var lon = parseFloat(data.longitude);
                     if (!isNaN(lat) && !isNaN(lon)) {
                         _cfgLocationTier = 0;
-                        console.log("[Location/config] Tier 3 (reallyfreegeoip): position acquired");
+                        Dbg.log("Config/Location", "Tier 3 (reallyfreegeoip): position acquired");
                         _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"), {
                             name: _ipLocationName(data.city, data.region_name, data.country_name),
                             countryCode: data.country_code || ""
@@ -1087,13 +1094,13 @@ KCM.SimpleKCM {
                         return;
                     }
                 } catch (e) {
-                    console.warn("[Location/config] reallyfreegeoip parse error:", e);
+                    Dbg.warn("Config/Location", "reallyfreegeoip parse error:", e);
                 }
             }
             _cfgLocationTier = 0;
             autoDetectBusy = false;
             autoDetectStatus = i18n("Unable to detect location. All methods failed.");
-            console.warn("[Location/config] All 3 tiers failed");
+            Dbg.warn("Config/Location", "All 3 tiers failed");
         };
         req.send();
     }
@@ -1131,7 +1138,7 @@ KCM.SimpleKCM {
         cfg_countryCode = newCountryCode;
 
         // Fetch accurate elevation - updates cfg_altitude only, no Plasmoid.configuration write
-        var elevReq = new XMLHttpRequest();
+        var elevReq = Dbg.xhr("Config/Location", "applySearchResult");
         elevReq.open("GET", "https://api.open-meteo.com/v1/elevation?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon));
         elevReq.onreadystatechange = function () {
             if (elevReq.readyState !== XMLHttpRequest.DONE)
@@ -1145,7 +1152,7 @@ KCM.SimpleKCM {
         elevReq.send();
 
         // Fetch timezone - updates cfg_timezone only, no Plasmoid.configuration write
-        var tzReq = new XMLHttpRequest();
+        var tzReq = Dbg.xhr("Config/Location", "applySearchResult");
         tzReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m&timezone=auto");
         tzReq.onreadystatechange = function () {
             if (tzReq.readyState !== XMLHttpRequest.DONE)

@@ -790,6 +790,46 @@ GridLayout {
         Layout.maximumWidth: 340
     }
 
+    SectionHeader {
+        title: i18n("Debug")
+        Layout.columnSpan: miscTab.columns
+    }
+    Label {
+        text: i18n("Debug mode:")
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+        Layout.topMargin: miscTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+    }
+    RowLayout {
+        spacing: 12
+        Switch {
+            id: debugModeSwitch
+            checked: miscTab.configRoot.cfg_debugMode
+            onToggled: miscTab.configRoot.cfg_debugMode = checked
+        }
+        Label {
+            text: debugModeSwitch.checked ? i18n("Detailed log output is on") : i18n("Off (warnings and errors are always logged)")
+            opacity: 0.8
+        }
+    }
+    Item {
+        // empty label cell: keeps the caption in the second column
+        visible: miscTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Label {
+        text: i18n("Logs every API request (address without keys, HTTP status, time taken, size, what came back), the provider fallback chain, caches, timers and how long the widget needs to load everything. Every line starts with [Advanced Weather Widget - <component>]. View it with: journalctl --user -f | grep \"Advanced Weather Widget\"")
+        textFormat: Text.PlainText   // the text contains <component>, which must not be read as HTML
+        wrapMode: Text.WordWrap
+        opacity: 0.65
+        font: Kirigami.Theme.smallFont
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
+        Layout.maximumWidth: 340
+    }
+
     // Invisible filler row: it lets the second column take ALL spare width, so the
     // label column keeps its width when rows are shown or hidden.
     Item {

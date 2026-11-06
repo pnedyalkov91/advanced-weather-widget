@@ -25,6 +25,8 @@
  * Docs: https://www.visualcrossing.com/resources/documentation/weather-api/
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Visual Crossing icon string to a WMO weather code.
  * VC uses an extended Dark Sky-compatible icon set (icons2).
@@ -92,6 +94,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._vcKey();
     if (!key) {
+        Dbg.log("Visual Crossing", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -103,7 +106,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&include=current,days,alerts"
         + "&iconSet=icons2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Visual Crossing", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -227,6 +230,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._vcKey();
     if (!key) {
+        Dbg.log("Visual Crossing", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -243,7 +247,7 @@ function fetchHourly(service, W, dateStr) {
         + "&include=hours"
         + "&iconSet=icons2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Visual Crossing", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

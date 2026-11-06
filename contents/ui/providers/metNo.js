@@ -24,6 +24,8 @@
  * W (weather.js) is passed as a parameter by the caller.
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Magnus-formula dew-point approximation.
  * T in °C, rh in % → dew point in °C (rounded to 1 decimal).
@@ -54,7 +56,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&lon=" + encodeURIComponent(service.longitude)
         + ((!isNaN(alt) && alt !== 0) ? "&altitude=" + Math.round(alt) : "");
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("met.no", "fetchCurrent");
     req.open("GET", url);
     // met.no Terms of Service: User-Agent identifying the app is MANDATORY.
     req.setRequestHeader("User-Agent",
@@ -177,7 +179,7 @@ function fetchHourly(service, W, dateStr) {
         + encodeURIComponent(service.latitude)
         + "&lon=" + encodeURIComponent(service.longitude)
         + ((!isNaN(alt) && alt !== 0) ? "&altitude=" + Math.round(alt) : "");
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("met.no", "fetchHourly");
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");

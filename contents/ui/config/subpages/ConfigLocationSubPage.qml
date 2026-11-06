@@ -23,6 +23,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import "../../js/debug.js" as Dbg
 
 ColumnLayout {
     id: searchSubPageRoot
@@ -90,7 +91,7 @@ ColumnLayout {
             }
             currentInfoBusy = true;
             var myGen = ++_currentInfoGen;
-            var req = new XMLHttpRequest();
+            var req = Dbg.xhr("Config/Location", "_fetchCurrentInfo");
             req.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m,weather_code&timezone=auto");
             req.onreadystatechange = function () {
                 if (req.readyState !== XMLHttpRequest.DONE)
@@ -178,17 +179,17 @@ ColumnLayout {
         // Without it Photon uses the Accept-Language header of the request, which here
         // follows the system locale and gives English names.
         var url = "https://photon.komoot.io/api?q=" + encodeURIComponent(q) + "&limit=15&lang=default";
-        console.warn("[LocationSearch] #" + requestId + " Photon GET " + url);
-        var req = new XMLHttpRequest();
+        Dbg.log("Location search", "#" + requestId + " Photon GET " + url);
+        var req = Dbg.xhr("Config/Location", "performSearch");
         req.open("GET", url);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
             if (requestId !== searchRequestId) {
-                console.warn("[LocationSearch] #" + requestId + " Photon reply ignored (stale), HTTP " + req.status);
+                Dbg.warn("Location search", "#" + requestId + " Photon reply ignored (stale), HTTP " + req.status);
                 return;
             }
-            console.warn("[LocationSearch] #" + requestId + " Photon HTTP " + req.status + " " + req.statusText);
+            Dbg.warn("Location search", "#" + requestId + " Photon HTTP " + req.status + " " + req.statusText);
             var collected = [];
             if (req.status === 200) {
                 try {
@@ -200,7 +201,7 @@ ColumnLayout {
                     });
                     if (places.length === 0)
                         places = feats;
-                    console.warn("[LocationSearch] #" + requestId + " Photon returned " + feats.length + " item(s), kept " + places.length);
+                    Dbg.log("Location search", "#" + requestId + " Photon returned " + feats.length + " item(s), kept " + places.length);
                     places.forEach(function (f) {
                         var pr = f.properties || {};
                         var c = f.geometry && f.geometry.coordinates;   // GeoJSON order: [lon, lat]
@@ -220,7 +221,7 @@ ColumnLayout {
                                 parts.push(part);
                         });
                         var title = parts.join(", ");
-                        console.warn("[LocationSearch] #" + requestId + " Photon item: " + title);
+                        Dbg.log("Location search", "#" + requestId + " Photon item: " + title);
                         collected.push({
                             name: pName,
                             admin1: pState,
@@ -237,10 +238,10 @@ ColumnLayout {
                         });
                     });
                 } catch (e) {
-                    console.warn("[LocationSearch] #" + requestId + " Photon parse error: " + e);
+                    Dbg.warn("Location search", "#" + requestId + " Photon parse error: " + e);
                 }
             } else {
-                console.warn("[LocationSearch] #" + requestId + " Photon body: " + String(req.responseText).substring(0, 400));
+                Dbg.log("Location search", "#" + requestId + " Photon body: " + String(req.responseText).substring(0, 400));
             }
             var dedup = {}, finalList = [];
             for (var i = 0; i < collected.length; ++i) {

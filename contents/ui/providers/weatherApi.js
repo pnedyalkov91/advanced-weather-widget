@@ -24,6 +24,8 @@
  * W (weather.js) is passed as a parameter by the caller.
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Magnus-formula dew-point approximation.
  * T in °C, rh in % → dew point in °C (rounded to 1 decimal).
@@ -72,6 +74,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._waKey();
     if (!key) {
+        Dbg.log("WeatherAPI", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -82,7 +85,7 @@ function fetchCurrent(service, W, chain, idx) {
             service.latitude + "," + service.longitude)
         + "&days=" + days + "&alerts=yes";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("WeatherAPI", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -223,6 +226,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._waKey();
     if (!key) {
+        Dbg.log("WeatherAPI", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -240,7 +244,7 @@ function fetchHourly(service, W, dateStr) {
         + "&q=" + encodeURIComponent(
             service.latitude + "," + service.longitude)
         + "&days=" + days + "&aqi=no&alerts=no";
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("WeatherAPI", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

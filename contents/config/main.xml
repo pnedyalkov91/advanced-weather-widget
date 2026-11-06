@@ -513,5 +513,13 @@
     <entry name="scrollboxItems"         type="String"><default>Humidity;Wind;Pressure;Dew Point;Visibility</default></entry>
     <entry name="panelWidth"             type="Int"><default>0</default></entry>
 
+     
+        <entry name="debugMode" type="Bool">
+            <label>Verbose debug logging</label>
+            <default>false</default>
+        </entry>
+ 
+
+
   </group>
 </kcfg>

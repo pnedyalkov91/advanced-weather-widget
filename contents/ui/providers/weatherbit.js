@@ -24,6 +24,8 @@
  * Docs: https://www.weatherbit.io/api
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Weatherbit weather code to a WMO weather code.
  */
@@ -75,6 +77,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._wbKey();
     if (!key) {
+        Dbg.log("Weatherbit", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -85,7 +88,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&key=" + encodeURIComponent(key)
         + "&units=M";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Weatherbit", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -151,7 +154,7 @@ function _fetchDailyForecast(service, W, gen) {
         + "&units=M"
         + "&days=" + Math.min(service.forecastDays, 16);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Weatherbit", "_fetchDailyForecast");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -209,6 +212,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._wbKey();
     if (!key) {
+        Dbg.log("Weatherbit", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -220,7 +224,7 @@ function fetchHourly(service, W, dateStr) {
         + "&units=M"
         + "&hours=48";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Weatherbit", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

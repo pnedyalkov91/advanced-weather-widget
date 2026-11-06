@@ -44,6 +44,7 @@ import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
 import "js/tempColors.js" as TempColorsJS
 import "components"
+import "js/debug.js" as Dbg
 
 Item {
     id: forecastRoot
@@ -468,14 +469,14 @@ Item {
         if (_chartSwitching)
             return;
         if (_graphsOk) {
-            console.warn("Forecast: Qt Graphs chart unavailable, using KDE Quick Charts");
+            Dbg.warn("Forecast", "Qt Graphs chart unavailable, using KDE Quick Charts");
             _chartSwitching = true;
             Qt.callLater(function () {
                 forecastRoot._graphsOk = false;
                 forecastRoot._chartSwitching = false;
             });
         } else if (_kqcOk) {
-            console.warn("Forecast: KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
+            Dbg.warn("Forecast", "KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
             _chartSwitching = true;
             Qt.callLater(function () {
                 forecastRoot._kqcOk = false;

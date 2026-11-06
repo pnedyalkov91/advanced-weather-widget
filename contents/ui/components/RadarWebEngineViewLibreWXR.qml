@@ -64,6 +64,7 @@ import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
 import "../js/iconResolver.js" as IconResolver
+import "../js/debug.js" as Dbg
 
 Item {
     id: radarRoot
@@ -187,11 +188,11 @@ Item {
 
     onIsDarkChanged: {
         if (!radarRoot._themeGuardArmed) {
-            console.log("[Advanced Weather Widget Radar/LibreWXR] ignoring theme read during startup settle");
+            Dbg.log("Radar/LibreWXR", "ignoring theme read during startup settle");
             return;
         }
         if ((Plasmoid.configuration.librewxrTheme || "auto") !== "auto") {
-            console.log("[Advanced Weather Widget Radar/LibreWXR] Plasma theme changed; clearing manual dark-map override");
+            Dbg.log("Radar/LibreWXR", "Plasma theme changed; clearing manual dark-map override");
             Plasmoid.configuration.librewxrTheme = "auto";
         }
     }
@@ -220,7 +221,7 @@ Item {
         interval: 150
         repeat: false
         onTriggered: {
-            console.log("[Advanced Weather Widget Radar/LibreWXR] repaint nudge");
+            Dbg.log("Radar/LibreWXR", "repaint nudge");
             radarRoot._repaintNudge = 1;
             repaintRestoreTimer.restart();
         }
@@ -264,7 +265,7 @@ Item {
     }
 
     Component.onCompleted: {
-        console.log("[Advanced Weather Widget Radar/LibreWXR] component completed; lat=", lat, "lon=", lon, "layer=", activeLayer, "zoom=", initialZoom, "colorScheme=", colorScheme, "arrows=", arrowsOn, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
+        Dbg.log("Radar/LibreWXR", "component completed; lat=", lat, "lon=", lon, "layer=", activeLayer, "zoom=", initialZoom, "colorScheme=", colorScheme, "arrows=", arrowsOn, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
         _applyMapProfile();
         themeGuardTimer.restart();
     }
@@ -290,7 +291,7 @@ Item {
             return;
         webView.profile = p;
         _mapProfileSet = true;
-        console.log("[Advanced Weather Widget Radar/LibreWXR] map profile:", p.storageName);
+        Dbg.log("Radar/LibreWXR", "map profile:", p.storageName);
     }
 
     FontLoader {
@@ -466,11 +467,11 @@ Item {
         // url, loading it a second time only made the map, the radar and the
         // wind show up twice in a row.
         if (reason === "coalesced" && url === radarRoot._lastPageUrl) {
-            console.log("[Advanced Weather Widget Radar/LibreWXR] coalesced load skipped: page already at this url");
+            Dbg.log("Radar/LibreWXR", "coalesced load skipped: page already at this url");
             return;
         }
         radarRoot._lastPageUrl = url;
-        console.log("[Advanced Weather Widget Radar/LibreWXR] loading page (" + reason + "); lat=", radarRoot.lat, "lon=", radarRoot.lon, "layer=", radarRoot.activeLayer, "theme=", radarRoot.mapTheme);
+        Dbg.log("Radar/LibreWXR", "loading page (" + reason + "); lat=", radarRoot.lat, "lon=", radarRoot.lon, "layer=", radarRoot.activeLayer, "theme=", radarRoot.mapTheme);
         // Assigning an unchanged url is not guaranteed to navigate - force a
         // real reload in that case (e.g. the header Refresh button).
         if (webView.url.toString() === url)
@@ -791,7 +792,7 @@ Item {
             Component.onCompleted: pageLoadTimer.restart()
 
             onLoadingChanged: function (loadRequest) {
-                console.log("[Advanced Weather Widget Radar/LibreWXR] loading changed:", "status=", loadRequest.status, "url=", loadRequest.url, "errorCode=", loadRequest.errorCode, "error=", loadRequest.errorString);
+                Dbg.log("Radar/LibreWXR", "loading changed:", "status=", loadRequest.status, "url=", Dbg.shortUrl(loadRequest.url), "errorCode=", loadRequest.errorCode, "error=", loadRequest.errorString);
                 if (loadRequest.status === WebEngineView.LoadSucceededStatus) {
                     viewportFixTimer.restart();
                     // mapTheme can still flip while the page is loading: Kirigami
@@ -814,7 +815,7 @@ Item {
                 interval: 300
                 repeat: false
                 onTriggered: {
-                    console.log("[Advanced Weather Widget Radar/LibreWXR] post-load viewport fix");
+                    Dbg.log("Radar/LibreWXR", "post-load viewport fix");
                     webView.runJavaScript("if (window.fixViewport) window.fixViewport();");
                     repaintNudgeTimer.restart();
                     viewportFixLateTimer.restart();
@@ -833,7 +834,7 @@ Item {
             }
 
             onRenderProcessTerminated: function (terminationStatus, exitCode) {
-                console.warn("[Advanced Weather Widget Radar/LibreWXR] render process terminated:", "status=", terminationStatus, "exitCode=", exitCode);
+                Dbg.warn("Radar/LibreWXR", "render process terminated:", "status=", terminationStatus, "exitCode=", exitCode);
             }
 
             onTitleChanged: {
@@ -888,7 +889,7 @@ Item {
                     pageLoadTimer.restart();
                 }
                 function onMapThemeChanged() {
-                    console.log("[Advanced Weather Widget Radar/LibreWXR] Plasma theme changed; mapTheme=", radarRoot.mapTheme);
+                    Dbg.log("Radar/LibreWXR", "Plasma theme changed; mapTheme=", radarRoot.mapTheme);
                     webView.runJavaScript("window.setTheme(" + JSON.stringify(radarRoot.mapTheme) + ");");
                 }
                 function onWindRateChanged() {
@@ -922,7 +923,7 @@ Item {
                         radarRoot._backgroundFromMap = false;
                         return;
                     }
-                    console.log("[Advanced Weather Widget Radar/LibreWXR] map background changed; background=", radarRoot.mapBackground);
+                    Dbg.log("Radar/LibreWXR", "map background changed; background=", radarRoot.mapBackground);
                     webView.runJavaScript("window.setBackground(" + JSON.stringify(radarRoot.mapBackground) + ");");
                 }
             }

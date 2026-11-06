@@ -24,6 +24,7 @@
  */
 
 .import "../js/weather.js" as W
+.import "../js/debug.js" as Dbg
 
 // Open-Meteo represents "this model doesn't report this field" as a bare
 // null, NOT a missing key - undefined-only checks (`x !== undefined`) let
@@ -80,7 +81,7 @@ function fetchCurrent(service, chain, idx) {
         + "uv_index_max,pressure_msl_mean,visibility_mean"
         + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Open-Meteo", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -107,6 +108,7 @@ function fetchCurrent(service, chain, idx) {
         // since coverage changes over time.
         var currentNeedsBackfill = _isCurrentIncomplete(c);
         var dailyNeedsBackfill = nd.length < requestedDays || nd.some(_isDailyIncomplete);
+        Dbg.log("Open-Meteo", "model: " + (W.openMeteoModelParam(service.openMeteoModel, service.countryCode).replace("&models=", "") || "default best_match") + " (setting \"" + service.openMeteoModel + "\", country " + (service.countryCode || "?") + "); days requested " + requestedDays + ", received " + nd.length + "; current block " + (currentNeedsBackfill ? "INCOMPLETE" : "complete") + ", daily block " + (dailyNeedsBackfill ? "INCOMPLETE" : "complete") + ((currentNeedsBackfill || dailyNeedsBackfill) ? " → second request to the global best-match model will fill the gaps" : " → no backup request needed"));
 
         function finalize(finalCurrent, finalDaily) {
             if (service._refreshGen !== gen) return;
@@ -251,7 +253,7 @@ function _fetchBackup(service, gen, requestedDays, callback) {
         + "precipitation_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,"
         + "uv_index_max,pressure_msl_mean,visibility_mean";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Open-Meteo", "_fetchBackup");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -335,7 +337,7 @@ function fetchHourly(service, dateStr) {
         + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
         + "&start_date=" + dateStr + "&end_date=" + nextDateStr
         + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Open-Meteo", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -429,7 +431,7 @@ function _fetchHourlyBackup(service, gen, dateStr, nextDateStr, callback) {
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
         + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
         + "&start_date=" + dateStr + "&end_date=" + nextDateStr;
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Open-Meteo", "_fetchHourlyBackup");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

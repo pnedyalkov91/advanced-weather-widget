@@ -19,6 +19,7 @@ import QtQuick.Controls
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
+import "js/debug.js" as Dbg
 
 Item {
     id: radarRoot
@@ -52,7 +53,7 @@ Item {
 
     onBlockedByPreloadChanged: {
         if (blockedByPreload)
-            console.warn("[Advanced Weather Widget Radar] MangoHud found in LD_PRELOAD; embedded WebEngine radar withheld (it can crash plasmashell under the overlay)");
+            Dbg.warn("Radar", "MangoHud found in LD_PRELOAD; embedded WebEngine radar withheld (it can crash plasmashell under the overlay)");
     }
 
     readonly property double lat: Plasmoid.configuration.latitude || 0
@@ -84,7 +85,7 @@ Item {
     // page that does not answer at all.
     onShownChanged: {
         if (shown && keepLoaded && radarReady) {
-            console.log("[Advanced Weather Widget Radar] fading the kept radar in");
+            Dbg.log("Radar", "fading the kept radar in");
             _fadeIn();
         }
     }
@@ -133,7 +134,7 @@ Item {
         id: fadeCapTimer
         interval: 2000
         onTriggered: {
-            console.log("[Advanced Weather Widget Radar] no answer from the page after 2 s, fading in anyway");
+            Dbg.log("Radar", "no answer from the page after 2 s, fading in anyway");
             radarRoot._fadeStart();
         }
     }
@@ -153,7 +154,7 @@ Item {
     Component.onCompleted: _maybeDeferLoad()
 
     function _maybeDeferLoad() {
-        console.log("[Advanced Weather Widget Radar] wrapper maybeDeferLoad; visible=", visible, "loadEmbeddedRadar=", loadEmbeddedRadar, "loaderStatus=", _loaderStatusText(radarLoader.status));
+        Dbg.log("Radar", "wrapper maybeDeferLoad; visible=", visible, "loadEmbeddedRadar=", loadEmbeddedRadar, "loaderStatus=", _loaderStatusText(radarLoader.status));
         if ((visible || keepLoaded) && !loadEmbeddedRadar)
             deferredLoadTimer.restart();
     }
@@ -163,7 +164,7 @@ Item {
         interval: 250
         repeat: false
         onTriggered: {
-            console.log("[Advanced Weather Widget Radar] deferred WebEngine activation tick; visible=", radarRoot.visible, "lat=", radarRoot.lat, "lon=", radarRoot.lon, "layer=", Plasmoid.configuration.radarLayer || "rainviewer", "zoom=", Plasmoid.configuration.radarZoom || 9, "qt=", Qt.version, "platform=", Qt.platform.os);
+            Dbg.log("Radar", "deferred WebEngine activation tick; visible=", radarRoot.visible, "lat=", radarRoot.lat, "lon=", radarRoot.lon, "layer=", Plasmoid.configuration.radarLayer || "rainviewer", "zoom=", Plasmoid.configuration.radarZoom || 9, "qt=", Qt.version, "platform=", Qt.platform.os);
             if (radarRoot.visible || radarRoot.keepLoaded)
                 radarRoot.loadEmbeddedRadar = true;
         }
@@ -200,13 +201,13 @@ Item {
         asynchronous: false
 
         onStatusChanged: {
-            console.log("[Advanced Weather Widget Radar] loader status:", radarRoot._loaderStatusText(status), "active=", active, "visible=", radarRoot.visible, "loadEmbeddedRadar=", radarRoot.loadEmbeddedRadar);
+            Dbg.log("Radar", "loader status:", radarRoot._loaderStatusText(status), "active=", active, "visible=", radarRoot.visible, "loadEmbeddedRadar=", radarRoot.loadEmbeddedRadar);
             if (status === Loader.Error)
-                console.warn("[Advanced Weather Widget Radar] failed to load RadarWebEngineView:", radarLoader.source);
+                Dbg.warn("Radar", "failed to load RadarWebEngineView:", radarLoader.source);
         }
 
         onLoaded: {
-            console.log("[Advanced Weather Widget Radar] RadarWebEngineView loaded; syncing weatherRoot");
+            Dbg.log("Radar", "RadarWebEngineView loaded; syncing weatherRoot");
             radarRoot._loadedAt = Date.now();
             radarRoot._syncLoadedItem();
         }
@@ -396,11 +397,11 @@ Item {
 
     function reload() {
         if (radarReady) {
-            console.log("[Advanced Weather Widget Radar] reload requested");
+            Dbg.log("Radar", "reload requested");
             _loadedAt = Date.now();
             radarLoader.item.reload();
         } else {
-            console.log("[Advanced Weather Widget Radar] reload requested before radarReady; status=", _loaderStatusText(radarLoader.status));
+            Dbg.log("Radar", "reload requested before radarReady; status=", _loaderStatusText(radarLoader.status));
         }
     }
 
@@ -417,12 +418,12 @@ Item {
         if (!radarReady)
             return;
         if (keepLoaded) {
-            console.log("[Advanced Weather Widget Radar] kept radar shown again, no reload");
+            Dbg.log("Radar", "kept radar shown again, no reload");
             return;
         }
         var age = Date.now() - _loadedAt;
         if (age < 10 * 60 * 1000) {
-            console.log("[Advanced Weather Widget Radar] page is recent, no reload; ageMs=", age);
+            Dbg.log("Radar", "page is recent, no reload; ageMs=", age);
             return;
         }
         reload();
@@ -430,7 +431,7 @@ Item {
 
     function _syncLoadedItem() {
         if (radarReady) {
-            console.log("[Advanced Weather Widget Radar] sync weatherRoot into RadarWebEngineView");
+            Dbg.log("Radar", "sync weatherRoot into RadarWebEngineView");
             radarLoader.item.weatherRoot = radarRoot.weatherRoot;
         }
     }

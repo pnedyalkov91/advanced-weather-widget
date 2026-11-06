@@ -24,6 +24,8 @@
  * Docs: https://docs.tomorrow.io/reference/welcome
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Tomorrow.io weather code to a WMO weather code.
  */
@@ -71,6 +73,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._tioKey();
     if (!key) {
+        Dbg.log("Tomorrow.io", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -81,7 +84,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&units=metric"
         + "&apikey=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Tomorrow.io", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -146,7 +149,7 @@ function _fetchForecast(service, W, gen) {
         + "&units=metric"
         + "&apikey=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Tomorrow.io", "_fetchForecast");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -224,6 +227,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._tioKey();
     if (!key) {
+        Dbg.log("Tomorrow.io", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -234,7 +238,7 @@ function fetchHourly(service, W, dateStr) {
         + "&units=metric"
         + "&apikey=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Tomorrow.io", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

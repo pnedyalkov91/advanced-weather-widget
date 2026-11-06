@@ -26,6 +26,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import "../../js/debug.js" as Dbg
 
 Item {
     id: manualSubPageRoot
@@ -313,7 +314,7 @@ Item {
             }
             _setResult(p, 1, i18n("Testing…"));
 
-            var req = new XMLHttpRequest();
+            var req = Dbg.xhr("Config/Location", "runTest");
             req.open("GET", info.url);
             if (p === "metno")
                 req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");

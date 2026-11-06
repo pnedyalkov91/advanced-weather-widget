@@ -48,6 +48,7 @@ import "providers/openMeteoHistory.js" as H
 import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
 import "components"
+import "js/debug.js" as Dbg
 
 Item {
     id: root
@@ -999,12 +1000,12 @@ Item {
                                 if (status !== Loader.Error)
                                     return;
                                 if (root._graphsOk) {
-                                    console.warn("History: Qt Graphs chart unavailable, using KDE Quick Charts");
+                                    Dbg.warn("History", "Qt Graphs chart unavailable, using KDE Quick Charts");
                                     Qt.callLater(function () {
                                         root._graphsOk = false;
                                     });
                                 } else if (root._kqcOk) {
-                                    console.warn("History: KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
+                                    Dbg.warn("History", "KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
                                     Qt.callLater(function () {
                                         root._kqcOk = false;
                                     });

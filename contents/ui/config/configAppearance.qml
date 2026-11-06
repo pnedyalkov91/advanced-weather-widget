@@ -24,10 +24,17 @@ import org.kde.plasma.plasmoid
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.iconthemes as KIconThemes
+import "../js/debug.js" as Dbg
 
 KCM.AbstractKCM {
     id: root
     Kirigami.ColumnView.fillWidth: true
+
+    // Debug mode (Settings -> Misc -> Debug). This dialog runs in its own QML
+    // engine, so js/debug.js has to be told separately from the applet itself.
+    QtObject {
+        Component.onCompleted: Dbg.setEnabled(Plasmoid.configuration.debugMode === true, "settings dialog")
+    }
 
     FontLoader {
         id: wiFont
@@ -1702,6 +1709,10 @@ KCM.AbstractKCM {
     property bool cfg_aqiShowUs: false
     property bool cfg_aqiShowEu: false
     property bool cfg_aqiShowCa: false
+
+    // Debug mode (Misc tab -> Debug), applied live so this dialog's own traces start/stop at once.
+    property bool cfg_debugMode: false
+    onCfg_debugModeChanged: Dbg.setEnabled(cfg_debugMode, "toggled in this dialog")
 
     // ── Font config aliases ───────────────────────────────────────────────
     property bool cfg_useSystemFont: true

@@ -26,6 +26,8 @@
  * Docs: https://docs.stormglass.io/
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Derives a WMO weather code from cloud cover, precipitation, and temp.
  * StormGlass does not provide a native weather condition code.
@@ -79,6 +81,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._sgKey();
     if (!key) {
+        Dbg.log("StormGlass", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -91,7 +94,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("StormGlass", "fetchCurrent");
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {
@@ -235,6 +238,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._sgKey();
     if (!key) {
+        Dbg.log("StormGlass", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -246,7 +250,7 @@ function fetchHourly(service, W, dateStr) {
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("StormGlass", "fetchHourly");
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {

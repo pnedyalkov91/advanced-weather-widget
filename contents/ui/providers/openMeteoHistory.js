@@ -29,6 +29,7 @@
  * user's unit settings are honoured exactly like everywhere else.
  */
 .pragma library
+.import "../js/debug.js" as Dbg
 
 var ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive";
 
@@ -396,7 +397,7 @@ function fetchHistory(opts, callback) {
     };
 
     function attempt(vars, canFallBack) {
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Open-Meteo History", "attempt");
         handle._req = req;
         req.open("GET", _buildUrl(opts, vars));
         req.onreadystatechange = function () {
@@ -553,7 +554,7 @@ function fetchExtremeTimes(opts, summary, callback) {
             oneDone();
             return;
         }
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Open-Meteo History", "oneDone");
         handle._reqs.push(req);
         req.open("GET", url);
         req.onreadystatechange = function () {

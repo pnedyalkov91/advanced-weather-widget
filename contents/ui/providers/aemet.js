@@ -133,6 +133,8 @@
  * above comes from).
  */
 
+.import "../js/debug.js" as Dbg
+
 // ── Geometry helpers ─────────────────────────────────────────────────────
 
 function _haversineKm(lat1, lon1, lat2, lon2) {
@@ -475,6 +477,7 @@ function _aemetBudgetRecord(service) {
     var log = service._aemetRequestLog || [];
     log.push(Date.now());
     service._aemetRequestLog = log;
+    Dbg.log("AEMET", "request budget: " + log.length + "/" + AEMET_REQUEST_BUDGET_PER_MIN + " requests used in the last 60 s (AEMET allows roughly 40-50/min per key)");
 }
 
 /**
@@ -529,29 +532,29 @@ function _fetchAemetJson(url, service, cb) {
         // anyway (we're already at this widget's own self-imposed ceiling
         // for the last 60 s), and a rejected request still counts against
         // the same per-minute quota as an accepted one - so don't send it.
-        console.warn("[aemet] request budget exhausted (" + AEMET_REQUEST_BUDGET_PER_MIN + "/min) - skipping:", _redactKey(url));
+        Dbg.warn("AEMET", "request budget exhausted (" + AEMET_REQUEST_BUDGET_PER_MIN + "/min) - skipping:", _redactKey(url));
         service._aemetRateLimited = true;
         service.weatherRoot.aemetRateLimited = true;
         cb(null);
         return;
     }
     _aemetBudgetRecord(service);
-    var meta = new XMLHttpRequest();
+    var meta = Dbg.xhr("AEMET", "hop 1/2 (pointer)");
     meta.open("GET", url);
     try { meta.overrideMimeType(AEMET_CHARSET); } catch (e) {}
     meta.onreadystatechange = function () {
         if (meta.readyState !== XMLHttpRequest.DONE) return;
         if (meta.status === 429) {
-            console.warn("[aemet] HTTP 429 (rate limited) on first hop:", _redactKey(url), "- Retry-After:", _retryAfterSeconds(meta), "s (null = header not sent)");
+            Dbg.warn("AEMET", "HTTP 429 (rate limited) on first hop:", _redactKey(url), "- Retry-After:", _retryAfterSeconds(meta), "s (null = header not sent)");
             service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return;
         }
         if (meta.status !== 200) {
-            console.warn("[aemet] first hop failed, HTTP " + meta.status + ":", _redactKey(url), "- body:", (meta.responseText || "").substring(0, 300));
+            Dbg.warn("AEMET", "first hop failed, HTTP " + meta.status + ":", _redactKey(url), "- body:", (meta.responseText || "").substring(0, 300));
             cb(null); return;
         }
         var ptr;
         try { ptr = JSON.parse(meta.responseText); } catch (e) {
-            console.warn("[aemet] first hop returned unparseable JSON:", _redactKey(url), "- body:", (meta.responseText || "").substring(0, 300), "-", e);
+            Dbg.warn("AEMET", "first hop returned unparseable JSON:", _redactKey(url), "- body:", (meta.responseText || "").substring(0, 300), "-", e);
             cb(null); return;
         }
 
@@ -567,7 +570,7 @@ function _fetchAemetJson(url, service, cb) {
             // An error body ({"estado":404,"descripcion":"..."}) is not a
             // payload - only a missing/200 estado means "this is the data".
             if (ptr && ptr.estado !== undefined && ptr.estado !== 200) {
-                console.warn("[aemet] first hop returned an AEMET error body:", _redactKey(url), "- estado:", ptr.estado, ptr.descripcion || "");
+                Dbg.warn("AEMET", "first hop returned an AEMET error body:", _redactKey(url), "- estado:", ptr.estado, ptr.descripcion || "");
                 cb(null); return;
             }
             cb(ptr);
@@ -575,28 +578,28 @@ function _fetchAemetJson(url, service, cb) {
         }
 
         if (!_aemetBudgetOk(service)) {
-            console.warn("[aemet] request budget exhausted before second hop - skipping:", ptr.datos);
+            Dbg.warn("AEMET", "request budget exhausted before second hop - skipping:", ptr.datos);
             service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return;
         }
         _aemetBudgetRecord(service);
         // The "datos" pointer is short-lived and single-use - always fetch
         // it fresh, right now, never cache/reuse it across refreshes.
-        var data = new XMLHttpRequest();
+        var data = Dbg.xhr("AEMET", "hop 2/2 (datos)");
         data.open("GET", ptr.datos);
         try { data.overrideMimeType(AEMET_CHARSET); } catch (e) {}
         data.onreadystatechange = function () {
             if (data.readyState !== XMLHttpRequest.DONE) return;
             if (data.status === 429) {
-                console.warn("[aemet] HTTP 429 (rate limited) on second hop:", ptr.datos, "- Retry-After:", _retryAfterSeconds(data), "s (null = header not sent)");
+                Dbg.warn("AEMET", "HTTP 429 (rate limited) on second hop:", ptr.datos, "- Retry-After:", _retryAfterSeconds(data), "s (null = header not sent)");
                 service._aemetRateLimited = true; service.weatherRoot.aemetRateLimited = true; cb(null); return;
             }
             if (data.status !== 200) {
-                console.warn("[aemet] second hop (datos) failed, HTTP " + data.status + ":", ptr.datos, "- body:", (data.responseText || "").substring(0, 300));
+                Dbg.warn("AEMET", "second hop (datos) failed, HTTP " + data.status + ":", ptr.datos, "- body:", (data.responseText || "").substring(0, 300));
                 cb(null); return;
             }
             try { cb(JSON.parse(data.responseText)); }
             catch (e) {
-                console.warn("[aemet] second hop (datos) returned unparseable JSON:", ptr.datos, "- body:", (data.responseText || "").substring(0, 300), "-", e);
+                Dbg.warn("AEMET", "second hop (datos) returned unparseable JSON:", ptr.datos, "- body:", (data.responseText || "").substring(0, 300), "-", e);
                 cb(null);
             }
         };
@@ -645,7 +648,7 @@ function _municipiosList(service, muniData) {
     var list = (muniData && typeof muniData.list === "function") ? muniData.list() : null;
     var arr = Array.isArray(list) ? list : [];
     if (arr.length > 0) service._aemetMunicipios = arr;
-    else console.warn("[aemet] Bundled municipios dataset is missing or empty - AEMET cannot resolve any location.");
+    else Dbg.warn("AEMET", "Bundled municipios dataset is missing or empty - AEMET cannot resolve any location.");
     return arr;
 }
 
@@ -668,14 +671,17 @@ var AEMET_CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes
 function _withDailyData(service, key, muniId, cb) {
     var cache = service._aemetDailyCache;
     if (cache && cache.muniId === muniId && (Date.now() - cache.ts) < AEMET_CACHE_TTL_MS) {
+        Dbg.log("AEMET", "daily forecast served from cache (" + Math.round((Date.now() - cache.ts) / 1000) + " s old, TTL " + Math.round(AEMET_CACHE_TTL_MS / 1000) + " s) - no request sent");
         cb(cache.data);
         return;
     }
     var pending = service._aemetDailyPending;
     if (pending && pending.muniId === muniId) {
+        Dbg.log("AEMET", "daily forecast request already in flight - waiting for it instead of sending another");
         pending.callbacks.push(cb);
         return;
     }
+    Dbg.log("AEMET", "daily forecast: cache " + (cache ? "expired or for another municipio" : "empty") + " → requesting it (2 hops)");
     service._aemetDailyPending = { muniId: muniId, callbacks: [cb] };
     _fetchAemetJsonR(_forecastBaseUrl("diaria", muniId, key), service, function (d) {
         var p = service._aemetDailyPending;
@@ -706,14 +712,17 @@ function _withDailyData(service, key, muniId, cb) {
 function _withHourlyData(service, key, muniId, cb) {
     var cache = service._aemetHourlyCache;
     if (cache && cache.muniId === muniId && (Date.now() - cache.ts) < AEMET_CACHE_TTL_MS) {
+        Dbg.log("AEMET", "hourly forecast served from cache (" + Math.round((Date.now() - cache.ts) / 1000) + " s old, TTL " + Math.round(AEMET_CACHE_TTL_MS / 1000) + " s) - no request sent");
         cb(cache.data);
         return;
     }
     var pending = service._aemetHourlyPending;
     if (pending && pending.muniId === muniId) {
+        Dbg.log("AEMET", "hourly forecast request already in flight - waiting for it instead of sending another");
         pending.callbacks.push(cb);
         return;
     }
+    Dbg.log("AEMET", "hourly forecast: cache " + (cache ? "expired or for another municipio" : "empty") + " → requesting it (2 hops)");
     service._aemetHourlyPending = { muniId: muniId, callbacks: [cb] };
     _fetchAemetJsonR(_forecastBaseUrl("horaria", muniId, key), service, function (hd) {
         var p = service._aemetHourlyPending;
@@ -749,31 +758,33 @@ function _withHourlyData(service, key, muniId, cb) {
  *  just "the id, eventually". */
 function _resolveMunicipio(service, gen, muniData, cb) {
     if (!service._isSpainLocation()) {
-        console.warn("[aemet] _resolveMunicipio: location (" + service.latitude + "," + service.longitude + ") is outside AEMET's Spain bounding-box check - not attempting AEMET.");
+        Dbg.warn("AEMET", "_resolveMunicipio: location (" + service.latitude + "," + service.longitude + ") is outside AEMET's Spain bounding-box check - not attempting AEMET.");
         cb(null); return;
     }
 
     var rk = _roundKey(service.latitude, service.longitude);
     if (service._aemetMuniKey === rk && service._aemetMuniId) {
+        Dbg.log("AEMET", "municipio " + service._aemetMuniId + " taken from the cache for location key " + rk + " (no lookup needed)");
         cb(service._aemetMuniId);
         return;
     }
 
     var list = _municipiosList(service, muniData);
     if (!list || list.length === 0) {
-        console.warn("[aemet] _resolveMunicipio: bundled municipios list is empty - see the earlier '[aemet] Bundled municipios dataset...' warning.");
+        Dbg.warn("AEMET", "_resolveMunicipio: bundled municipios list is empty - see the earlier '[aemet] Bundled municipios dataset...' warning.");
         cb(null); return;
     }
     var nearest = _nearestMunicipio(list, service.latitude, service.longitude);
     if (!nearest) {
-        console.warn("[aemet] _resolveMunicipio: no nearest municipio found for (" + service.latitude + "," + service.longitude + ") against " + list.length + " entries.");
+        Dbg.warn("AEMET", "_resolveMunicipio: no nearest municipio found for (" + service.latitude + "," + service.longitude + ") against " + list.length + " entries.");
         cb(null); return;
     }
     var id = String(nearest.id || "").replace(/^id/, "");
     if (!id) {
-        console.warn("[aemet] _resolveMunicipio: nearest entry has no usable id -", JSON.stringify(nearest));
+        Dbg.warn("AEMET", "_resolveMunicipio: nearest entry has no usable id -", JSON.stringify(nearest));
         cb(null); return;
     }
+    Dbg.log("AEMET", "nearest municipio resolved from the bundled list of " + list.length + " entries: id " + id + " \"" + (nearest.nombre || nearest.name || "?") + "\" for (" + service.latitude + ", " + service.longitude + "); saved for next start");
     service._aemetMuniKey = rk;
     service._aemetMuniId = id;
     if (typeof service._persistAemetMunicipio === "function")
@@ -1038,7 +1049,7 @@ function fetchCurrent(service, W, chain, idx, muniData) {
     var gen = service._refreshGen;
     var key = service._aemetKey();
     if (!key) {
-        console.warn("[aemet] fetchCurrent: no API key configured (Plasmoid.configuration.aemetApiKey is empty) - falling back.");
+        Dbg.warn("AEMET", "fetchCurrent: no API key configured (Plasmoid.configuration.aemetApiKey is empty) - falling back.");
         service._tryProvider(chain, idx + 1); return;
     }
     service._aemetRateLimited = false; // fresh attempt - don't judge it by a previous one's rate limit
@@ -1047,7 +1058,7 @@ function fetchCurrent(service, W, chain, idx, muniData) {
     _resolveMunicipio(service, gen, muniData, function (muniId) {
         if (service._refreshGen !== gen) return;
         if (!muniId) {
-            console.warn("[aemet] fetchCurrent: municipio resolution failed - see the preceding '[aemet] _resolveMunicipio:' warning for why - falling back.");
+            Dbg.warn("AEMET", "fetchCurrent: municipio resolution failed - see the preceding '[aemet] _resolveMunicipio:' warning for why - falling back.");
             service._tryProvider(chain, idx + 1); return;
         }
 
@@ -1068,7 +1079,7 @@ function fetchCurrent(service, W, chain, idx, muniData) {
             // better source for current conditions anyway). Only give up on
             // the provider when BOTH came back empty.
             if (!dailyResult && !hourlyResult) {
-                console.warn("[aemet] fetchCurrent: both daily and hourly requests failed - see the preceding '[aemet]' warnings above for the actual HTTP/parse failure - falling back.");
+                Dbg.warn("AEMET", "fetchCurrent: both daily and hourly requests failed - see the preceding '[aemet]' warnings above for the actual HTTP/parse failure - falling back.");
                 service._tryProvider(chain, idx + 1); return;
             }
 
@@ -1108,7 +1119,7 @@ function fetchCurrent(service, W, chain, idx, muniData) {
 
                 // Neither product yielded a usable "today" - nothing to show.
                 if (!finalCur) {
-                    console.warn("[aemet] fetchCurrent: daily and/or hourly responses parsed, but neither yielded a usable 'today' entry - falling back. dailyResult:", dailyResult ? "present" : dailyResult, "hourlyResult:", hourlyResult ? "present" : hourlyResult);
+                    Dbg.warn("AEMET", "fetchCurrent: daily and/or hourly responses parsed, but neither yielded a usable 'today' entry - falling back. dailyResult:", dailyResult ? "present" : dailyResult, "hourlyResult:", hourlyResult ? "present" : hourlyResult);
                     service._tryProvider(chain, idx + 1); return;
                 }
 
@@ -1151,7 +1162,7 @@ function fetchCurrent(service, W, chain, idx, muniData) {
                 // MeteoAlarm (already covers Spain) / NWS.
                 service._fetchAlertsIfNeeded();
             } catch (e) {
-                console.warn("[aemet] fetchCurrent: unexpected error while parsing AEMET's response -", e);
+                Dbg.warn("AEMET", "fetchCurrent: unexpected error while parsing AEMET's response -", e);
                 service._tryProvider(chain, idx + 1);
             }
         }

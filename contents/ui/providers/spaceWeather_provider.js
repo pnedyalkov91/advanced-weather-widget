@@ -26,6 +26,8 @@
  * this file is non-pragma so it can use Qt / XMLHttpRequest.
  */
 
+.import "../js/debug.js" as Dbg
+
 // Helper copied inline (cannot import .pragma from non-pragma)
 // Thresholds at n − 1/3 to match NOAA's thirds rounding (see js/spaceWeather.js).
 function _kpToGScale(kp) {
@@ -316,7 +318,7 @@ function recomputeAuroraForLocation(service) {
 // ── Internal HTTP helper ──────────────────────────────────────────────────────
 
 function _get(url, onSuccess, onError) {
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Space Weather", "_get");
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");

@@ -34,6 +34,7 @@ import "js/configUtils.js" as ConfigUtils
 import "js/iconResolver.js" as IconResolver
 import "js/windCompass.js" as WindCompass
 import "components"
+import "js/debug.js" as Dbg
 
 ColumnLayout {
     id: simpleView
@@ -805,7 +806,7 @@ ColumnLayout {
                     return;
                 // Switching the source from inside its own status change would be a binding
                 // loop (as in the Forecast tab), so do it a moment later.
-                console.warn("SimpleView: Qt Graphs chart unavailable, using KDE Quick Charts");
+                Dbg.warn("Simple view", "Qt Graphs chart unavailable, using KDE Quick Charts");
                 Qt.callLater(function () {
                     simpleView._chartSource = simpleView._chartKqcUrl;
                 });

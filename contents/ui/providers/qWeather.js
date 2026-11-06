@@ -32,6 +32,8 @@
  * Falls back to devapi.qweather.com when no host is configured.
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Map a QWeather icon code to WMO weather code.
  *
@@ -163,6 +165,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._qwKey();
     if (!key) {
+        Dbg.log("QWeather", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -172,7 +175,7 @@ function fetchCurrent(service, W, chain, idx) {
     var url = base + "/v7/weather/now?location=" + encodeURIComponent(loc)
         + "&unit=m";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("QWeather", "fetchCurrent");
     req.open("GET", url);
     req.setRequestHeader("X-QW-Api-Key", key);
     req.onreadystatechange = function () {
@@ -229,7 +232,7 @@ function _fetchDailyAttempt(service, W, key, loc, gen, base, spans, spanIdx) {
     var url = base + "/v7/weather/" + span + "d?location=" + encodeURIComponent(loc)
         + "&unit=m";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("QWeather", "_fetchDailyAttempt");
     req.open("GET", url);
     req.setRequestHeader("X-QW-Api-Key", key);
     req.onreadystatechange = function () {
@@ -323,6 +326,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._qwKey();
     if (!key) {
+        Dbg.log("QWeather", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -331,7 +335,7 @@ function fetchHourly(service, W, dateStr) {
     var url = base + "/v7/weather/" + _hourlySpanHours(dateStr) + "h?location=" + encodeURIComponent(loc)
         + "&unit=m";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("QWeather", "fetchHourly");
     req.open("GET", url);
     req.setRequestHeader("X-QW-Api-Key", key);
     req.onreadystatechange = function () {

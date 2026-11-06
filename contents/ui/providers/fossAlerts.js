@@ -44,6 +44,8 @@
  * Non-pragma JS - accesses config via service properties.
  */
 
+.import "../js/debug.js" as Dbg
+
 // Small bounding box (± ~0.05° ≈ 5.5 km) around the point so the area query
 // reliably catches alerts whose polygons contain the location without pulling
 // in a whole country's worth of unrelated warnings.
@@ -59,7 +61,7 @@ function fetchAlerts(service) {
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
     if (isNaN(lat) || isNaN(lon)) {
-        console.warn("[Alerts/FOSS] invalid coordinates:", service.latitude, service.longitude);
+        Dbg.warn("Alerts/FOSS", "invalid coordinates:", service.latitude, service.longitude);
         return;
     }
 
@@ -72,9 +74,9 @@ function fetchAlerts(service) {
     var areaUrl = base + "/alert/area?min_lat=" + minLat + "&max_lat=" + maxLat
         + "&min_lon=" + minLon + "&max_lon=" + maxLon;
 
-    console.log("[Alerts/FOSS] fetching area:", areaUrl);
+    Dbg.log("Alerts/FOSS", "fetching area:", areaUrl);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts/FOSS", "fetchAlerts");
     req.open("GET", areaUrl);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
@@ -84,24 +86,24 @@ function fetchAlerts(service) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            console.warn("[Alerts/FOSS] HTTP", req.status, "for", areaUrl);
+            Dbg.warn("Alerts/FOSS", "HTTP", req.status, "for", areaUrl);
             return;
         }
         var ids;
         try {
             ids = JSON.parse(req.responseText);
         } catch (e) {
-            console.warn("[Alerts/FOSS] area parse error:", e);
+            Dbg.warn("Alerts/FOSS", "area parse error:", e);
             return;
         }
         if (!Array.isArray(ids)) {
-            console.warn("[Alerts/FOSS] area response is not an array");
+            Dbg.warn("Alerts/FOSS", "area response is not an array");
             return;
         }
         if (ids.length === 0) {
             // No alerts intersect the bbox → genuinely nothing here.
             // Clear any previously shown alert (server already filtered).
-            console.log("[Alerts/FOSS] no alerts in area");
+            Dbg.log("Alerts/FOSS", "no alerts in area");
             r.weatherAlerts = [];
             return;
         }
@@ -146,14 +148,14 @@ function _fetchAlertsByIds(service, gen, base, ids) {
                 unique.push(a);
             }
         });
-        console.log("[Alerts/FOSS] parsed", unique.length, "active alert(s)");
+        Dbg.log("Alerts/FOSS", "parsed", unique.length, "active alert(s)");
         r.weatherAlerts = unique;
     }
 
     ids.forEach(function (id) {
         if (typeof id !== "string" || id.length === 0) { _settle(); return; }
         var url = base + "/alert/" + encodeURIComponent(id);
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Alerts/FOSS", "_settle");
         req.open("GET", url);
         req.setRequestHeader("User-Agent",
             "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
@@ -169,10 +171,10 @@ function _fetchAlertsByIds(service, gen, base, ids) {
                         : _parseCapText(req.responseText, lat, lon);
                     parsed.forEach(function (a) { collected.push(a); });
                 } catch (e) {
-                    console.warn("[Alerts/FOSS] alert parse error for", id, ":", e);
+                    Dbg.warn("Alerts/FOSS", "alert parse error for", id, ":", e);
                 }
             } else {
-                console.warn("[Alerts/FOSS] HTTP", req.status, "for", url);
+                Dbg.warn("Alerts/FOSS", "HTTP", req.status, "for", url);
             }
             _settle();
         };

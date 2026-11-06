@@ -27,6 +27,8 @@
  * Docs: https://docs.pirateweather.net/en/latest/API/
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Pirate Weather / Dark Sky icon string to a WMO weather code.
  */
@@ -110,6 +112,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._pwKey();
     if (!key) {
+        Dbg.log("Pirate Weather", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -120,7 +123,7 @@ function fetchCurrent(service, W, chain, idx) {
         + service.latitude + "," + service.longitude
         + "?units=ca&exclude=minutely&version=2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Pirate Weather", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -256,6 +259,7 @@ function fetchHourly(service, W, dateStr) {
     var r = service.weatherRoot;
     var key = service._pwKey();
     if (!key) {
+        Dbg.log("Pirate Weather", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -266,7 +270,7 @@ function fetchHourly(service, W, dateStr) {
         + service.latitude + "," + service.longitude
         + "?units=ca&exclude=minutely,daily,alerts&extend=hourly";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Pirate Weather", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -382,7 +386,7 @@ function fetchAirQuality(service, W) {
         + "?units=si&exclude=minutely,hourly,daily,alerts,summary"
         + "&include=airqualitydetails&version=2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Pirate Weather", "fetchAirQuality");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

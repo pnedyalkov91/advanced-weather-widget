@@ -34,6 +34,8 @@
  *   Forecast: https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/<id>
  */
 
+.import "../js/debug.js" as Dbg
+
 var _LOCATOR_KEY = "AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv";
 
 /**
@@ -92,8 +94,11 @@ function _resolveLocationId(service, gen, cb) {
     var lat = service.latitude;
     var lon = service.longitude;
     var key = Number(lat).toFixed(3) + "," + Number(lon).toFixed(3);
-    if (service._bbcLocKey === key && service._bbcLocId)
+    if (service._bbcLocKey === key && service._bbcLocId) {
+        Dbg.log("BBC Weather", "location id " + service._bbcLocId + " taken from the cache for " + key + " (no locator request needed)");
         return cb(service._bbcLocId);
+    }
+    Dbg.log("BBC Weather", "no cached location id for " + key + " → asking the BBC locator service for the nearest place");
 
     var url = "https://locator-service.api.bbci.co.uk/locations?"
         + "api_key=" + _LOCATOR_KEY
@@ -102,7 +107,7 @@ function _resolveLocationId(service, gen, cb) {
         + "&latitude=" + encodeURIComponent(lat)
         + "&longitude=" + encodeURIComponent(lon)
         + "&format=json";
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("BBC Weather", "_resolveLocationId");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -114,6 +119,7 @@ function _resolveLocationId(service, gen, cb) {
                 ? d.response.results.results : null;
             if (!results || results.length === 0) return cb(null);
             var id = results[0].id;
+            Dbg.log("BBC Weather", "locator resolved id " + id + " (\"" + (results[0].name || "?") + "\"" + (results[0].country ? ", " + results[0].country : "") + ") out of " + results.length + " candidate(s)");
             service._bbcLocKey = key;
             service._bbcLocId = id;
             cb(id);
@@ -149,7 +155,7 @@ function fetchCurrent(service, W, chain, idx) {
 
 function _fetchCurrentForId(service, W, chain, idx, gen, id) {
     var r = service.weatherRoot;
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("BBC Weather", "_fetchCurrentForId");
     req.open("GET", _forecastUrl(id));
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -302,7 +308,7 @@ function fetchHourly(service, W, dateStr) {
     _resolveLocationId(service, gen, function (id) {
         if (service._refreshGen !== gen) return;
         if (!id) { r.hourlyData = []; return; }
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("BBC Weather", "fetchHourly");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -325,7 +331,7 @@ function fetchHourlyDirect(service, W, dateStr, cb) {
     _resolveLocationId(service, gen, function (id) {
         if (service._refreshGen !== gen) { cb([]); return; }
         if (!id) { cb([]); return; }
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("BBC Weather", "fetchHourlyDirect");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;

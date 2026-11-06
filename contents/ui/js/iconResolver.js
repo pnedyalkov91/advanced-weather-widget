@@ -31,6 +31,7 @@
  */
 .pragma library
 .import "weather.js" as W
+.import "debug.js" as Dbg
 
 // ── KDE system icon names ───────────────────────────────────────────────────
 // These are standard Breeze/Plasma icon names that exist in most KDE themes.
@@ -322,7 +323,7 @@ function svgStem(itemId) {
 function svgUrl(stem, iconSize, iconsBaseDir, svgTheme) {
     var base = String(iconsBaseDir === undefined || iconsBaseDir === null ? "" : iconsBaseDir);
     if (!stem || base.length === 0 || (base.indexOf("://") < 0 && base.charAt(0) !== "/")) {
-        console.warn("iconResolver.svgUrl: no usable icons base dir for stem '" + stem + "' (got '" + base + "') - binding evaluated before the base dir was resolved?");
+        Dbg.warn("Icons", "svgUrl: no usable icons base dir for stem '" + stem + "' (got '" + base + "') - binding evaluated before the base dir was resolved?");
         return "";
     }
     var theme = _themeDir(svgTheme || "symbolic");

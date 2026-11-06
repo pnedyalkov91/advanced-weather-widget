@@ -44,6 +44,7 @@ import "js/suncalc.js" as SC
 import "js/sunpath.js" as SunPath
 import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
+import "js/debug.js" as Dbg
 
 PlasmoidItem {
     id: root
@@ -92,8 +93,9 @@ PlasmoidItem {
     property bool radarBackgroundReady: false
     on_RadarPreloadReadyChanged: {
         if (_radarPreloadReady && !radarBackgroundReady) {
-            console.log("[Advanced Weather Widget Radar] Plasma started, preparing the radar in the background; weather loaded=", !isNaN(temperatureC));
+            Dbg.log("Radar", "Plasma started, preparing the radar in the background; weather loaded=", !isNaN(temperatureC));
             radarBackgroundReady = true;
+            Dbg.mark("Radar", "background preload released", "shell started and first weather in (or 60 s wait elapsed)");
             preloadFullRepresentation = true;
         }
     }
@@ -152,6 +154,14 @@ PlasmoidItem {
 
     function _applyWeatherData() {
         weatherData = weatherDataStaged;
+        if (weatherDataStaged) {
+            var _fromCache = (weatherDataStaged === _cacheRestoredObj);
+            Dbg.mark("Weather", _fromCache ? "cached weather shown (restored from the last session)" : "weather data applied to the UI", _fromCache ? "will be replaced by the first refresh" : "provider=" + (weatherService._updateProvider || "?"));
+            Dbg.log("Weather", Dbg.weatherSummary(weatherDataStaged));
+            var _miss = Dbg.missingFields(weatherDataStaged);
+            if (_miss.length > 0 && !_fromCache)
+                Dbg.log("Weather", "fields the provider did NOT supply (shown as '--' / N/A): " + _miss);
+        }
         // Fresh data from a provider (not the object just restored from the cache)
         if (weatherDataStaged && weatherDataStaged !== _cacheRestoredObj) {
             _wdLat = _locLat();
@@ -274,10 +284,15 @@ PlasmoidItem {
             if (!s || !hasSelectedTown || weatherData || weatherDataStaged)
                 return;
             var c = _cacheDecode(s);
-            if (!c || !c.data || !(c.ts > 0))
+            if (!c || !c.data || !(c.ts > 0)) {
+                Dbg.log("Cache", "saved weather cache is empty or unreadable - nothing to show until the first refresh");
                 return;
-            if (Date.now() - c.ts > _cacheMaxAgeMs || !_sameLocation(c.lat, c.lon))
+            }
+            if (Date.now() - c.ts > _cacheMaxAgeMs || !_sameLocation(c.lat, c.lon)) {
+                Dbg.log("Cache", "saved weather cache NOT used: " + (Date.now() - c.ts > _cacheMaxAgeMs ? "older than 12 h (" + Math.round((Date.now() - c.ts) / 60000) + " min)" : "it belongs to another location"));
                 return;
+            }
+            Dbg.log("Cache", "restoring saved weather from " + (c.prov || "?") + ", " + Math.round((Date.now() - c.ts) / 60000) + " min old, for (" + c.lat + ", " + c.lon + ")");
             _wdLat = c.lat;
             _wdLon = c.lon;
             _wdStamp = c.ts;
@@ -472,6 +487,7 @@ PlasmoidItem {
         _probeBusy = false;
         _probeTimeout.stop();
         _probeReq = null;
+        Dbg.log("Connectivity", "probe finished: " + (online ? "Internet reachable" : "no answer from any probe host") + (online && syncLost ? (loading ? " (a refresh is already running)" : ((Date.now() - _lastProbeRefreshMs) > 120000 ? " → starting a refresh" : " (but a probe-triggered refresh ran less than 2 min ago)")) : ""));
         if (online && syncLost && !loading && (Date.now() - _lastProbeRefreshMs) > 120000) {
             _lastProbeRefreshMs = Date.now();
             refreshWeather(false);
@@ -490,7 +506,7 @@ PlasmoidItem {
             _probeFinish(false);
     }
     function _probeTry(idx) {
-        var rq = new XMLHttpRequest();
+        var rq = Dbg.xhr("Connectivity", "probe " + _probeUrls[idx]);
         _probeReq = rq;
         rq.onreadystatechange = function () {
             if (rq.readyState !== XMLHttpRequest.DONE || root._probeReq !== rq)
@@ -515,6 +531,7 @@ PlasmoidItem {
         if (_probeBusy || !syncLost || !hasSelectedTown)
             return;
         _probeBusy = true;
+        Dbg.log("Connectivity", "last sync failed → probing whether the Internet is back (" + _probeUrls.join(", ") + ")");
         _probeTry(0);
     }
     Timer {
@@ -561,6 +578,7 @@ PlasmoidItem {
     property var aqiData: null
     function _applyAqiData() {
         aqiData = aqiDataStaged;
+        Dbg.mark("Air quality", "air-quality data applied", Dbg.json(aqiDataStaged, 300));
     }
     onAqiDataStagedChanged: Qt.callLater(_applyAqiData)
 
@@ -663,6 +681,7 @@ PlasmoidItem {
     property var pollenData: []             // [{key, value}] UPI 0-12 per pollen type - set via _applyPollenData
     function _applyPollenData() {
         pollenData = pollenDataStaged;
+        Dbg.mark("Air quality", "pollen data applied", (pollenDataStaged ? pollenDataStaged.length : 0) + " pollen type(s)");
     }
     onPollenDataStagedChanged: Qt.callLater(_applyPollenData)
     property var spaceWeather: null         // NOAA SWPC data object
@@ -973,7 +992,7 @@ PlasmoidItem {
     Connections {
         target: alertSoundLoader.item
         function onFailed(message) {
-            console.warn("[AdvancedWeatherWidget] alert sound failed to play:", message);
+            Dbg.warn("Alert sound", "alert sound failed to play:", message);
         }
     }
 
@@ -1079,7 +1098,7 @@ PlasmoidItem {
         repeat: false
         onTriggered: {
             if (_locationTier === 1) {
-                console.log("[Location] GeoClue2 timed out, trying generic PositionSource…");
+                Dbg.log("Location", "GeoClue2 timed out, trying generic PositionSource…");
                 _escalateToGenericSource();
             }
         }
@@ -1090,7 +1109,7 @@ PlasmoidItem {
         repeat: false
         onTriggered: {
             if (_locationTier === 2) {
-                console.log("[Location] Generic PositionSource timed out, trying IP geolocation…");
+                Dbg.log("Location", "Generic PositionSource timed out, trying IP geolocation…");
                 _escalateToIpGeo();
             }
         }
@@ -1102,7 +1121,7 @@ PlasmoidItem {
         property var _activeReq: null
         onTriggered: {
             if (_locationTier === 3 && _activeReq) {
-                console.warn("[Location] Tier 3 IP geolocation timed out");
+                Dbg.warn("Location", "Tier 3 IP geolocation timed out");
                 _activeReq.abort();
                 _activeReq = null;
                 _locationTier = 0;
@@ -1130,12 +1149,12 @@ PlasmoidItem {
                 return;
             _geoclue2Timer.stop();
             _locationTier = 0;
-            console.log("[Location] Tier 1 (GeoClue2): position acquired");
+            Dbg.log("Location", "Tier 1 (GeoClue2): position acquired");
             _applyAutoPosition(c.latitude, c.longitude, c.altitude);
         }
         onSourceErrorChanged: {
             if (sourceError !== PositionSource.NoError && _locationTier === 1) {
-                console.log("[Location] Tier 1 (GeoClue2) error:", sourceError, "- escalating");
+                Dbg.log("Location", "Tier 1 (GeoClue2) error:", sourceError, "- escalating");
                 _geoclue2Timer.stop();
                 _escalateToGenericSource();
             }
@@ -1154,12 +1173,12 @@ PlasmoidItem {
                 return;
             _genericSourceTimer.stop();
             _locationTier = 0;
-            console.log("[Location] Tier 2 (generic PositionSource): position acquired");
+            Dbg.log("Location", "Tier 2 (generic PositionSource): position acquired");
             _applyAutoPosition(c.latitude, c.longitude, c.altitude);
         }
         onSourceErrorChanged: {
             if (sourceError !== PositionSource.NoError && _locationTier === 2) {
-                console.log("[Location] Tier 2 (generic) error:", sourceError, "- escalating to IP");
+                Dbg.log("Location", "Tier 2 (generic) error:", sourceError, "- escalating to IP");
                 _genericSourceTimer.stop();
                 _escalateToIpGeo();
             }
@@ -1168,8 +1187,8 @@ PlasmoidItem {
 
     // Tier 3 - IP-based geolocation
     function _ipGeolocate() {
-        console.log("[Location] Tier 3: trying ip-api.com…");
-        var req = new XMLHttpRequest();
+        Dbg.log("Location", "Tier 3: trying ip-api.com…");
+        var req = Dbg.xhr("Location", "IP geolocation: ip-api.com");
         _ipGeoTimer._activeReq = req;
         _ipGeoTimer.restart();
 
@@ -1186,7 +1205,7 @@ PlasmoidItem {
                         _ipGeoTimer.stop();
                         _ipGeoTimer._activeReq = null;
                         _locationTier = 0;
-                        console.log("[Location] Tier 3 (ip-api.com): position acquired");
+                        Dbg.log("Location", "Tier 3 (ip-api.com): position acquired");
                         _applyAutoPosition(lat, lon, NaN, {
                             name: _ipLocationName(data.city, data.regionName, data.country),
                             countryCode: data.countryCode || ""
@@ -1194,7 +1213,7 @@ PlasmoidItem {
                         return;
                     }
                 } catch (e) {
-                    console.warn("[Location] ip-api.com parse error:", e);
+                    Dbg.warn("Location", "ip-api.com parse error:", e);
                 }
             }
             // Fallback to reallyfreegeoip.org
@@ -1204,8 +1223,8 @@ PlasmoidItem {
     }
 
     function _ipGeolocateFallback() {
-        console.log("[Location] Tier 3 fallback: trying reallyfreegeoip.org…");
-        var req = new XMLHttpRequest();
+        Dbg.log("Location", "Tier 3 fallback: trying reallyfreegeoip.org…");
+        var req = Dbg.xhr("Location", "IP geolocation: reallyfreegeoip.org");
         _ipGeoTimer._activeReq = req;
         _ipGeoTimer.restart();
         req.open("GET", "https://reallyfreegeoip.org/json/");
@@ -1221,7 +1240,7 @@ PlasmoidItem {
                     var lon = parseFloat(data.longitude);
                     if (!isNaN(lat) && !isNaN(lon)) {
                         _locationTier = 0;
-                        console.log("[Location] Tier 3 (reallyfreegeoip.org): position acquired");
+                        Dbg.log("Location", "Tier 3 (reallyfreegeoip.org): position acquired");
                         _applyAutoPosition(lat, lon, NaN, {
                             name: _ipLocationName(data.city, data.region_name, data.country_name),
                             countryCode: data.country_code || ""
@@ -1229,11 +1248,11 @@ PlasmoidItem {
                         return;
                     }
                 } catch (e) {
-                    console.warn("[Location] reallyfreegeoip parse error:", e);
+                    Dbg.warn("Location", "reallyfreegeoip parse error:", e);
                 }
             }
             _locationTier = 0;
-            console.warn("[Location] All 3 tiers failed - no position available");
+            Dbg.warn("Location", "All 3 tiers failed - no position available");
         };
         req.send();
     }
@@ -1246,7 +1265,7 @@ PlasmoidItem {
      *                     municipality → county → display_name.
      */
     function _autoReverseGeocode(lat, lon) {
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Location", "reverse geocode (Nominatim)");
         var lang = Qt.locale().name.split("_")[0];
         var acceptLang = (lang.length > 0) ? lang + ",en;q=0.8" : "en";
         req.open("GET", "https://nominatim.openstreetmap.org/reverse" + "?format=jsonv2&zoom=10&addressdetails=1" + "&accept-language=" + acceptLang + "&lat=" + lat + "&lon=" + lon);
@@ -1279,7 +1298,7 @@ PlasmoidItem {
                 if (cc.length > 0)
                     Plasmoid.configuration.countryCode = cc;
             } catch (e) {
-                console.warn("[Location] reverse geocode parse error:", e);
+                Dbg.warn("Location", "reverse geocode parse error:", e);
             }
         };
         req.send();
@@ -1341,6 +1360,7 @@ PlasmoidItem {
     /** Refresh current weather + forecast (called by button, timers, config changes).
      *  force=true (manual refresh button) also bypasses the space weather throttle. */
     function refreshWeather(force) {
+        Dbg.log("Refresh", "refreshWeather(" + (force === true ? "force" : "") + ") called");
         refreshDebounce.stop();
         weatherService.refreshNow(force === true);
     }
@@ -1363,8 +1383,11 @@ PlasmoidItem {
      *  opened another day - is dropped, so it cannot replace the hours on screen or be saved
      *  under the wrong day. */
     function setHourlyResult(dateStr, arr) {
-        if (_hourlyReqDate !== "" && dateStr !== _hourlyReqDate)
+        if (_hourlyReqDate !== "" && dateStr !== _hourlyReqDate) {
+            Dbg.log("Hourly", "hourly answer for " + dateStr + " ignored - " + _hourlyReqDate + " is the requested day now");
             return;
+        }
+        Dbg.mark("Hourly", "hourly forecast received for " + dateStr, (arr ? arr.length : 0) + " hour(s)");
         _hourlyCachePut(dateStr, arr);
         rememberTodayHours(dateStr, arr);
         hourlyData = _withPastHours(dateStr, arr);
@@ -2348,6 +2371,7 @@ PlasmoidItem {
 
     function _sendNotification(title, text, urgency, iconName, notificationObj) {
         var n = notificationObj || todayNotification;
+        Dbg.log("Notifications", "sending desktop notification: \"" + title + "\" (urgency " + urgency + ")");
         n.title = title;
         n.text = text;
         n.urgency = urgency;
@@ -2969,7 +2993,7 @@ PlasmoidItem {
         try {
             fn(now);
         } catch (e) {
-            console.warn("[weather notifications] " + name + " failed: " + e);
+            Dbg.warn("Notifications", "" + name + " failed: " + e);
         }
     }
 
@@ -3362,10 +3386,18 @@ PlasmoidItem {
         moonsetTimeText = t.set || "--";
     }
 
-    onWeatherAlertsChanged: _evaluateNotifications()
+    onWeatherAlertsChanged: {
+        Dbg.mark("Alerts", "alerts updated", (weatherAlerts ? weatherAlerts.length : 0) + " active alert(s)" + (weatherAlerts && weatherAlerts.length > 0 ? ": " + weatherAlerts.map(function (a) {
+            return (a.headline || a.event || "?") + " [" + (a.severity || a.color || "?") + "]";
+        }).join("; ") : ""));
+        _evaluateNotifications();
+    }
     onDailyDataChanged: _evaluateNotifications()
     onUvIndexChanged: _evaluateNotifications()
-    onSpaceWeatherChanged: _evaluateNotifications()
+    onSpaceWeatherChanged: {
+        Dbg.mark("Space Weather", "space-weather data updated", Dbg.shape(spaceWeather, 300));
+        _evaluateNotifications();
+    }
 
     onLoadingChanged: {
         if (!loading) {
@@ -3866,7 +3898,10 @@ PlasmoidItem {
         interval: Math.max(5, Plasmoid.configuration.refreshIntervalMinutes) * 60000
         running: Plasmoid.configuration.autoRefresh
         repeat: true
-        onTriggered: refreshWeather()
+        onTriggered: {
+            Dbg.log("Refresh", "auto-refresh timer fired (every " + Math.max(5, Plasmoid.configuration.refreshIntervalMinutes) + " min)");
+            refreshWeather();
+        }
     }
 
     // Notification evaluator loop. Runs every 30s so postponed alert
@@ -3903,6 +3938,7 @@ PlasmoidItem {
         interval: 600
         repeat: false
         onTriggered: {
+            Dbg.log("Refresh", "settings/location settled (debounce 600 ms elapsed) → refreshing");
             refreshWeather();
             if (root._pendingRainWindowRefresh) {
                 root._pendingRainWindowRefresh = false;
@@ -3941,6 +3977,7 @@ PlasmoidItem {
             root._lastHeartbeat = now;
             // If more than 3 minutes passed since last tick, system was likely suspended
             if (elapsed > 180000) {
+                Dbg.log("Refresh", "heartbeat gap of " + Math.round(elapsed / 1000) + " s → the system was probably asleep, refreshing after resume");
                 refreshDebounce.restart();
             }
         }
@@ -3950,7 +3987,37 @@ PlasmoidItem {
     // Startup + config change reactions
     // ══════════════════════════════════════════════════════════════════════
 
+    // ── Debug mode (Settings → Misc → Debug) ─────────────────────────────────
+    // js/debug.js is a .pragma library, so it cannot read Plasmoid itself: this
+    // pushes the setting into it, and prints the environment + the (secret-free)
+    // configuration once whenever debug mode is on.
+    readonly property var _debugConfigKeys: ["weatherProvider", "locationName", "latitude", "longitude", "altitude", "timezone", "countryCode", "autoDetectLocation", "forecastDays", "autoRefresh", "refreshIntervalMinutes", "openMeteoModel", "alertsProvider", "librewxrUrl", "fossAlertUrl", "aqiStandard", "unitsMode", "temperatureUnit", "widgetLayoutMode", "radarEnabled", "radarLayer", "radarKeepLoaded", "popupKeepLoaded", "keepOpen", "owApiKey", "waApiKey", "pwApiKey", "vcApiKey", "tioApiKey", "sgApiKey", "wbApiKey", "qwApiKey", "qwApiHost", "aemetApiKey"]
+    function _debugBanner() {
+        Dbg.environment("Startup", {
+            inTray: inTray,
+            formFactor: Plasmoid.formFactor,
+            location: Plasmoid.location,
+            shellStartupCompleted: _shellStarted,
+            hasSelectedTown: hasSelectedTown
+        });
+        Dbg.dumpConfig("Startup", Plasmoid.configuration, _debugConfigKeys);
+        Dbg.log("Startup", "API keys are never printed - only whether one is set. URLs in the log have their key/appid/token parameters removed.");
+    }
+    function _syncDebugMode(source) {
+        // Missing key = the entry was not added to contents/config/main.xml yet, so the
+        // Settings switch can never take effect. Say so once instead of staying silent.
+        if (Plasmoid.configuration.debugMode === undefined)
+            Dbg.warn("Debug", "config key 'debugMode' does not exist - add the <entry name=\"debugMode\" type=\"Bool\"> to contents/config/main.xml, then restart plasmashell. Debug output stays off until then.");
+        var on = Plasmoid.configuration.debugMode === true;
+        Dbg.setEnabled(on, source);
+        if (on)
+            _debugBanner();
+    }
+
     Component.onCompleted: {
+        // FIRST thing: turn debug output on (if enabled) so start-up is traced
+        Dbg.mark("Startup", "main.qml root created", "Plasma has built the widget and is now running Component.onCompleted");
+        _syncDebugMode("setting 'Debug mode' is on");
         // Re-check in case the initial property binding ran before
         // containment was fully wired up.
         if (!inTray) {
@@ -3979,7 +4046,9 @@ PlasmoidItem {
             }
         } catch (e) {}
         _updateHasSelectedTown();
+        Dbg.mark("Startup", "saved location read", hasSelectedTown ? "\"" + _activeLocName + "\" (" + _activeLocLat + ", " + _activeLocLon + "), tz=" + (_activeLocTz || "auto") + ", country=" + (_activeLocCC || "?") : "none selected yet");
         _restoreWeatherCache();   // the last known weather at once, replaced by the first refresh
+        Dbg.log("Startup", "first refresh scheduled in 600 ms (debounce)");
         refreshDebounce.restart();
         // Restore the once-per-day "already sent" keys BEFORE the first evaluation
         // so a plasmashell restart doesn't re-fire daily notifications already
@@ -3989,12 +4058,18 @@ PlasmoidItem {
         _loadAlertTypeSettings();
         _refreshNotificationRainWindowIfNeeded(true);
         _evaluateNotifications();
-        if (Plasmoid.configuration.autoDetectLocation)
+        if (Plasmoid.configuration.autoDetectLocation) {
+            Dbg.log("Location", "automatic location detection is ON → starting tier 1 (GeoClue2)");
             _startAutoDetect();
+        }
+        Dbg.mark("Startup", "main.qml Component.onCompleted finished", "everything after this is asynchronous (network, timers)");
     }
 
     Connections {
         target: Plasmoid.configuration
+        function onDebugModeChanged() {
+            root._syncDebugMode("changed in Settings");
+        }
         function onActiveLocationChanged() {
             var s = Plasmoid.configuration.activeLocation || "{}";
             try {
@@ -4017,33 +4092,39 @@ PlasmoidItem {
         // date) re-fire immediately for the new location even though they
         // already fired today.
         function onLocationNameChanged() {
+            Dbg.log("Refresh", "setting changed: locationName → \"" + Plasmoid.configuration.locationName + "\"" + (root._batchingLocation ? " (batched, refresh follows once)" : " → refresh scheduled"));
             root._updateHasSelectedTown();
             root.weatherAlerts = [];
             if (!root._batchingLocation)
                 refreshDebounce.restart();
         }
         function onLatitudeChanged() {
+            Dbg.log("Refresh", "setting changed: latitude → " + Plasmoid.configuration.latitude + (root._batchingLocation ? " (batched)" : " → refresh scheduled"));
             root._pendingRainWindowRefresh = true;
             root.weatherAlerts = [];
             if (!root._batchingLocation)
                 refreshDebounce.restart();
         }
         function onLongitudeChanged() {
+            Dbg.log("Refresh", "setting changed: longitude → " + Plasmoid.configuration.longitude + (root._batchingLocation ? " (batched)" : " → refresh scheduled"));
             root._pendingRainWindowRefresh = true;
             root.weatherAlerts = [];
             if (!root._batchingLocation)
                 refreshDebounce.restart();
         }
         function onTimezoneChanged() {
+            Dbg.log("Refresh", "setting changed: timezone → " + Plasmoid.configuration.timezone);
             root._pendingRainWindowRefresh = true;
             if (!root._batchingLocation)
                 refreshDebounce.restart();
         }
         function onWeatherProviderChanged() {
+            Dbg.log("Refresh", "setting changed: weather provider → " + Plasmoid.configuration.weatherProvider + " → refresh scheduled");
             root._pendingRainWindowRefresh = true;
             refreshDebounce.restart();
         }
         function onForecastDaysChanged() {
+            Dbg.log("Refresh", "setting changed: forecast days → " + Plasmoid.configuration.forecastDays + " → refresh scheduled");
             root._pendingRainWindowRefresh = true;
             refreshDebounce.restart();
         }
