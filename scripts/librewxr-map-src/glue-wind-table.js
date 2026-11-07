@@ -163,7 +163,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         var dz = this._demZoom(), p = WindField.worldPx(lat, lon, dz);
         hP = this._dem.elevationAtWorld(p.x, p.y, dz);
       }
-      var uv = WindField.sample(grid, lat, lon, WindField.timeWeights(grid.times, this._time(grid)), hP, sigma, o.level);
+      var uv = WindField.sampleChain(grid, lat, lon, WindField.timeWeights(grid.times, this._time(grid)), hP, sigma, o.level);
       return uv ? WindField.fromUV(uv.u, uv.v) : null;
     },
 
@@ -514,7 +514,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
           var wy = (1 - Math.log(Math.tan(Math.PI / 4 + lat * DEG / 2)) / Math.PI) / 2 * worldSize;
           hP = this._dem.elevationAtWorld(wx, wy, dz);
         }
-        var uv = WindField.sample(grid, lat, lon, tw, hP, sigma, o.level);
+        var uv = WindField.sampleChain(grid, lat, lon, tw, hP, sigma, o.level);
         if (!uv) { this._spawn(i, false); continue; }
         var sv = WindField.screenVelocity(uv.u, uv.v, this._velOpts);
         var dlon = sv.dx / (pxPerDeg * Math.max(0.05, Math.cos(lat * DEG))), dlat = -sv.dy / pxPerDeg;

@@ -12,18 +12,21 @@ var WidgetModels = (function () {
   var Grids = typeof WidgetGrids !== 'undefined' ? WidgetGrids : require('./glue-grids.js');
 
   /* id, label, every (hours between runs), range(h): the hours run of
-     UTC hour h holds. */
+     UTC hour h holds; wind: how the files give the 10 m wind, 'uv' (east
+     and north components), 'uv-grid' (along the grid's axes, turned to
+     true north here; Open-Meteo's API does so for HRRR) or 'sd' (speed,
+     and direction it blows from). Checked against the API on 2026-11-07. */
   var TABLE = [
-    { id: 'meteofrance_arome_france0025', label: 'AROME', every: 3, range: function () { return 51; } },
-    { id: 'dwd_icon_d2', label: 'ICON-D2', every: 3, range: function () { return 48; } },
-    { id: 'italia_meteo_arpae_icon_2i', label: 'ICON-2I', every: 12, range: function () { return 72; } },
-    { id: 'jma_msm', label: 'MSM', every: 3, range: function (h) { return h % 12 === 0 ? 78 : 39; } },
-    { id: 'meteoswiss_icon_ch1', label: 'ICON-CH1', every: 3, range: function () { return 33; } },
-    { id: 'cmc_gem_hrdps', label: 'HRDPS', every: 6, range: function () { return 48; } },
-    { id: 'ncep_hrrr_conus', label: 'HRRR', every: 1, range: function (h) { return h % 6 === 0 ? 48 : 18; } },
-    { id: 'ukmo_uk_deterministic_2km', label: 'UKV', every: 1, range: function (h) { return h % 3 === 0 ? 54 : 12; } },
+    { id: 'meteofrance_arome_france0025', label: 'AROME', every: 3, range: function () { return 51; }, wind: 'uv' },
+    { id: 'dwd_icon_d2', label: 'ICON-D2', every: 3, range: function () { return 48; }, wind: 'uv' },
+    { id: 'italia_meteo_arpae_icon_2i', label: 'ICON-2I', every: 12, range: function () { return 72; }, wind: 'sd' },
+    { id: 'jma_msm', label: 'MSM', every: 3, range: function (h) { return h % 12 === 0 ? 78 : 39; }, wind: 'uv' },
+    { id: 'meteoswiss_icon_ch1', label: 'ICON-CH1', every: 3, range: function () { return 33; }, wind: 'uv' },
+    { id: 'cmc_gem_hrdps', label: 'HRDPS', every: 6, range: function () { return 48; }, wind: 'sd' },
+    { id: 'ncep_hrrr_conus', label: 'HRRR', every: 1, range: function (h) { return h % 6 === 0 ? 48 : 18; }, wind: 'uv-grid' },
+    { id: 'ukmo_uk_deterministic_2km', label: 'UKV', every: 1, range: function (h) { return h % 3 === 0 ? 54 : 12; }, wind: 'sd' },
     // 56 to 58 hours depending on the run: the shortest.
-    { id: 'metno_nordic_pp', label: 'MEPS', every: 1, range: function () { return 56; } }
+    { id: 'metno_nordic_pp', label: 'MEPS', every: 1, range: function () { return 56; }, wind: 'sd' }
   ];
 
   var SCAN_H = 96;              // how far back a run is looked for
@@ -37,7 +40,7 @@ var WidgetModels = (function () {
   var list = TABLE.map(function (t, k) {
     var g = Grids.of(t.id), box = null;
     var m = {
-      id: t.id, label: t.label, every: t.every, range: t.range, grid: g, res: g.res, order: k,
+      id: t.id, label: t.label, every: t.every, range: t.range, wind: t.wind, grid: g, res: g.res, order: k,
       step: g.nx * g.ny > MAX_POINTS ? 2 : 1,
       // The latitudes and longitudes it covers, worked out once.
       bounds: function () { return box || (box = Grids.bounds(g)); }
@@ -102,7 +105,57 @@ var WidgetModels = (function () {
     return lead >= 0 && lead % HOUR === 0 && lead <= m.range(hourOf(runMs)) * HOUR && hourOf(runMs) % m.every === 0;
   }
 
-  return { list: list, get: get, runFor: runFor, hasFile: hasFile, coverage: coverage, pickForView: pickForView };
+  var DEG = Math.PI / 180;
+
+  /** The variables a model's 10 m wind is read from. */
+  function windVars(id) {
+    return byId[id].wind === 'sd' ? ['wind_speed_10m', 'wind_direction_10m'] : ['wind_u_component_10m', 'wind_v_component_10m'];
+  }
+
+  var turns = {};
+
+  /** Cosine and sine of the angle a grid's north makes with true north at
+      each point of a Lambert conformal grid: n times the longitude from
+      its central meridian. Worked out once per model. */
+  function gridTurn(id, d) {
+    if (turns[id]) return turns[id];
+    var n = d.nx * d.ny, cos = new Float32Array(n), sin = new Float32Array(n), p = d.proj;
+    for (var r = 0; r < d.ny; r++) {
+      for (var c = 0; c < d.nx; c++) {
+        var lon = Grids.lonLatAt(d, c, r).lon, dl = ((lon - p.lon0 / DEG + 540) % 360) - 180, a = p.n * dl * DEG;
+        cos[r * d.nx + c] = Math.cos(a);
+        sin[r * d.nx + c] = Math.sin(a);
+      }
+    }
+    return (turns[id] = { cos: cos, sin: sin });
+  }
+
+  /** A model's 10 m wind as read (a, b: its two variables, on its full grid
+      d) as { u, v } toward the east and the north, in m/s. */
+  function toEarthWind(id, a, b, d) {
+    var kind = byId[id].wind, n = a.length, u, v, i;
+    if (kind === 'uv') return { u: a, v: b };
+    u = new Float32Array(n); v = new Float32Array(n);
+    if (kind === 'sd') {
+      for (i = 0; i < n; i++) {
+        var dir = b[i] * DEG;
+        u[i] = -a[i] * Math.sin(dir);
+        v[i] = -a[i] * Math.cos(dir);
+      }
+      return { u: u, v: v };
+    }
+    var t = gridTurn(id, d);
+    for (i = 0; i < n; i++) {
+      u[i] = a[i] * t.cos[i] + b[i] * t.sin[i];
+      v[i] = -a[i] * t.sin[i] + b[i] * t.cos[i];
+    }
+    return { u: u, v: v };
+  }
+
+  return {
+    list: list, get: get, runFor: runFor, hasFile: hasFile, coverage: coverage, pickForView: pickForView,
+    windVars: windVars, toEarthWind: toEarthWind
+  };
 })();
 
 if (typeof module !== 'undefined' && module.exports) { module.exports = WidgetModels; }

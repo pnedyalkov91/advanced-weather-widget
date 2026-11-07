@@ -287,6 +287,31 @@ var WidgetWind = (function () {
       return { u: u / wsum, v: v / wsum };
     },
 
+    /** As sample(), with the finer regional models a grid of the animation
+        brings (grid.fines, finest first: { desc, u, v, uB, vB, mix,
+        weights, fade }, on their own grids, see WidgetGrids) blended over
+        it by their edge weight and fade, the coarsest first. The relief
+        weighting (hP, sigma) is the global grid's. */
+    sampleChain: function (grid, lat, lon, tw, hP, sigma, level) {
+      var uv = this.sample(grid, lat, lon, tw, hP, sigma, level), fines = grid.fines;
+      if (!fines || !fines.length) return uv;
+      for (var k = fines.length - 1; k >= 0; k--) {
+        var f = fines[k], c = WidgetGrids.cell(f.desc, lat, lon);
+        if (!c) continue;
+        var w = WidgetGrids.valueAt(f.weights, c) * (f.fade == null ? 1 : f.fade);
+        if (!(w > 0)) continue;
+        var u = WidgetGrids.valueAt(f.u, c), v = WidgetGrids.valueAt(f.v, c);
+        if (f.uB && f.mix > 0) {
+          u += (WidgetGrids.valueAt(f.uB, c) - u) * f.mix;
+          v += (WidgetGrids.valueAt(f.vB, c) - v) * f.mix;
+        }
+        if (!isFinite(u) || !isFinite(v)) continue;
+        if (!uv) { if (w >= 1) uv = { u: u, v: v }; continue; }
+        uv = { u: uv.u + (u - uv.u) * w, v: uv.v + (v - uv.v) * w };
+      }
+      return uv;
+    },
+
     /** Screen velocity (px/s): k px/s per m/s, clamped so calm air still
         drifts and storms stay readable. Screen y points down. */
     screenVelocity: function (u, v, opts) {

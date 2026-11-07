@@ -618,3 +618,26 @@ test('speedText: the widget\'s wind units, as the widget writes them', () => {
 test('compassIndex: eight points, N first, turning east', () => {
   assert.deepEqual([0, 22, 23, 90, 180, 247, 300, 338, 359].map(WindField.compassIndex), [0, 0, 1, 2, 4, 5, 7, 0, 0]);
 });
+
+test('sampleChain: a finer model over the global wind by its weight and fade, the global one outside', () => {
+  global.WidgetGrids = require('../glue-grids.js');
+  const T = require('../glue-temp.js');
+  const WidgetOpenData = require('../glue-wind-open.js');
+  const coarse = WidgetOpenData.toGrid(new Float32Array(12).fill(10), new Float32Array(12).fill(0), 3, 4, 3600000, '10m');
+  const n = 9, desc = WidgetGrids.latlon({ nx: n, ny: n, south: 40, west: 0, dLon: 0.25, dLat: 0.25 });
+  const fu = new Float32Array(n * n).fill(0), fv = new Float32Array(n * n).fill(4);
+  const fine = { desc, u: fu, v: fv, uB: null, vB: null, mix: 0, weights: T.edgeWeights(fu, n, n, 2), fade: 1 };
+  const g = Object.assign({}, coarse, { fines: [fine] });
+  const tw = WindField.timeWeights(g.times, g.times[0]);
+  const mid = WindField.sampleChain(g, 41, 1, tw, NaN, 0, '10m');      // center: all fine
+  assert.ok(Math.abs(mid.u) < 1e-6 && Math.abs(mid.v - 4) < 1e-6);
+  const out = WindField.sampleChain(g, 30, 1, tw, NaN, 0, '10m');      // outside: global
+  assert.ok(Math.abs(out.u - 10) < 1e-6 && Math.abs(out.v) < 1e-6);
+  const half = WindField.sampleChain(Object.assign({}, g, { fines: [Object.assign({}, fine, { fade: 0.5 })] }), 41, 1, tw, NaN, 0, '10m');
+  assert.ok(Math.abs(half.u - 5) < 1e-6 && Math.abs(half.v - 2) < 1e-6);
+  // Two hours of the fine model, mixed.
+  const mixed = WindField.sampleChain(Object.assign({}, g, { fines: [Object.assign({}, fine, { uB: new Float32Array(n * n).fill(2), vB: fv, mix: 0.5 })] }), 41, 1, tw, NaN, 0, '10m');
+  assert.ok(Math.abs(mixed.u - 1) < 1e-6);
+  // No fines: as sample().
+  assert.deepEqual(WindField.sampleChain(coarse, 41, 1, tw, NaN, 0, '10m'), WindField.sample(coarse, 41, 1, tw, NaN, 0, '10m'));
+});

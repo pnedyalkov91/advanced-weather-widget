@@ -117,3 +117,13 @@ test('thin: one point in f each way, the same places as the full grid, values wi
   assert.deepEqual(Array.from(v), [0, 2, 4, 20, 22, 24]);
   assert.equal(G.thin(d, 1), d);
 });
+
+test('cell and valueAt: one projection for several fields at the same point', () => {
+  const d = G.latlon({ nx: 3, ny: 2, south: 0, west: 0, dLon: 1, dLat: 1 });
+  const a = Float32Array.from([0, 10, 20, 100, 110, 120]), b = Float32Array.from([1, 1, 1, 3, 3, 3]);
+  const c = G.cell(d, 0.5, 0.5);
+  assert.equal(G.valueAt(a, c), 55);
+  assert.equal(G.valueAt(b, c), 2);
+  assert.equal(G.valueAt(a, c), G.sample(d, a, 0.5, 0.5));
+  assert.equal(G.cell(d, 5, 5), null);
+});

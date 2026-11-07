@@ -176,6 +176,29 @@ var WidgetAnim = (function () {
         return { desc: desc, times: [at / 1000], values: a, valuesB: b, mix: mix };
       }
     },
+    // The 10 m wind of a regional model, on its own grid like the
+    // temperature's: read as each model gives it, kept as u and v toward
+    // the east and the north (see WidgetModels.toEarthWind), by half m/s.
+    windFine: {
+      id: 'wind',
+      store: 'wind-file',
+      vars: function (model) { return WidgetModels.windVars(model); },
+      feather: 2,
+      read: function (e, t, model) {
+        var step = stepOf(model), full = WidgetOpenData.gridOf(model, 1);
+        var w = WidgetModels.toEarthWind(model, e.data[0], e.data[1], full);
+        var gu = WidgetOpenData.toModelGrid(w.u, e.ny, e.nx, t, model, step), gv = WidgetOpenData.toModelGrid(w.v, e.ny, e.nx, t, model, step);
+        return { meta: { model: model, step: step }, parts: [packFrom(gu.values, WIND_MIN), packFrom(gv.values, WIND_MIN)] };
+      },
+      accepts: function (meta, model) { return (meta.step || 1) === stepOf(model); },
+      unpack: function (parts) { return { u: unpackFrom(parts[0], WIND_MIN), v: unpackFrom(parts[1], WIND_MIN) }; },
+      grid: function (m, a, b, mix, tA, tB, at) {
+        return {
+          desc: WidgetOpenData.gridOf(m.model, m.step), times: [(b ? at : tA) / 1000],
+          u: a.u, v: a.v, uB: b ? b.u : null, vB: b ? b.v : null, mix: b ? mix : 0
+        };
+      }
+    },
     // The 10 m wind, every point of the file as the radar reads it; the
     // wind layer mixes two hours by itself (times and at).
     wind: {
@@ -324,7 +347,8 @@ var WidgetAnim = (function () {
     this.schedule = scheduleOf(this.fileModel);
     // A read takes a place of the gate per million points of the file.
     var rm = typeof WidgetModels !== 'undefined' && WidgetModels.get(this.fileModel);
-    this.weight = rm ? Math.max(1, Math.round(rm.grid.nx * rm.grid.ny / 1e6)) : 1;
+    this.names = typeof this.field.vars === 'function' ? this.field.vars(this.fileModel) : this.field.vars;
+    this.weight = rm ? Math.max(1, Math.round(rm.grid.nx * rm.grid.ny * this.names.length / 1e6)) : 1;
     this.fines = opts.fines || null;   // Frames of finer models, finest first, given along (see gridAt)
     this.surface = opts.surface || null;   // () -> the model's ground heights, once known
     this.pruneH = opts.pruneH || 0;
@@ -377,7 +401,7 @@ var WidgetAnim = (function () {
             return;
           }
           var t0 = Date.now();
-          var read = function () { return loader._readVars({ url: url, validMs: t }, self.field.vars); };
+          var read = function () { return loader._readVars({ url: url, validMs: t }, self.names); };
           return (self.gate ? self.gate.run(read, self.weight) : read()).then(function (e) {
             if (self.stopped) return;
             var fr = self.field.read(e, t, self.fileModel);
@@ -485,9 +509,9 @@ var WidgetAnim = (function () {
     var m = this.meta;
     for (var i = 0; i < this.packed.length && m; i++) {
       if (!this.packed[i] || this.between[i]) continue;
-      var d = this.field.grid(m, this._values(i), null, 0, this.times[i]).desc;
+      var vals = this._values(i), d = this.field.grid(m, vals, null, 0, this.times[i]).desc;
       var rows = d ? d.ny : m.lats.length, cols = d ? d.nx : m.lons.length, res = d ? d.res : m.res;
-      this._weights = WidgetTemp.edgeWeights(this._values(i), rows, cols, this.field.feather / res);
+      this._weights = WidgetTemp.edgeWeights(vals.u || vals, rows, cols, this.field.feather / res);
       return this._weights;
     }
     return null;
@@ -573,17 +597,20 @@ var WidgetAnim = (function () {
     return f.packed.reduce(function (n, p) { return n + (p ? p.reduce(function (m, a) { return m + a.byteLength; }, 0) : 0); }, 0);
   }
 
+  function keepKey(f) { return f.keepKey || f.fileModel; }
+
   FineKeep.prototype.put = function (frames) {
-    this.kept = this.kept.filter(function (f) { return f.fileModel !== frames.fileModel; });
+    this.kept = this.kept.filter(function (f) { return keepKey(f) !== keepKey(frames); });
     frames.pause();
     this.kept.push(frames);
     this.trim(0);
   };
 
-  /** The kept Frames of model, taken out of the keep; null if none. */
-  FineKeep.prototype.take = function (model) {
+  /** The kept Frames under key (keepKey, else its model), taken out of the
+      keep; null if none. */
+  FineKeep.prototype.take = function (key) {
     for (var i = 0; i < this.kept.length; i++) {
-      if (this.kept[i].fileModel === model) return this.kept.splice(i, 1)[0];
+      if (keepKey(this.kept[i]) === key) return this.kept.splice(i, 1)[0];
     }
     return null;
   };

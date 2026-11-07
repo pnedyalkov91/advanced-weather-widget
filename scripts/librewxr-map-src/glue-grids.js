@@ -153,13 +153,26 @@ var WidgetGrids = (function () {
   /** Value of a field of grid d (values row by row, south row first) at
       lat/lon: bilinear; NaN outside the grid or next to a missing value. */
   function sample(d, values, lat, lon) {
+    var c = cell(d, lat, lon);
+    return c ? valueAt(values, c) : NaN;
+  }
+
+  /** The cell of grid d lat/lon falls in, { k (its south-west point), nx,
+      fr, fc }, for valueAt(); null outside the grid. Found once, it serves
+      every field of the grid at that point. */
+  function cell(d, lat, lon) {
     var p = index(d, lat, lon);
-    if (!(p.col >= 0)) return NaN;
+    if (!(p.col >= 0)) return null;
     var nx = d.nx, i0 = Math.min(d.ny - 2, Math.floor(p.row)), j0 = Math.min(nx - 2, Math.floor(p.col));
-    var fr = p.row - i0, fc = p.col - j0, k = i0 * nx + j0;
+    return { k: i0 * nx + j0, nx: nx, fr: p.row - i0, fc: p.col - j0 };
+  }
+
+  /** Bilinear value of a field in cell c; NaN next to a missing value. */
+  function valueAt(values, c) {
+    var k = c.k, nx = c.nx, fc = c.fc;
     var bottom = values[k] * (1 - fc) + values[k + 1] * fc;
     var top = values[k + nx] * (1 - fc) + values[k + nx + 1] * fc;
-    return bottom * (1 - fr) + top * fr;
+    return bottom * (1 - c.fr) + top * c.fr;
   }
 
   // The regional models, as Open-Meteo sets their grids (checked against
@@ -226,7 +239,7 @@ var WidgetGrids = (function () {
 
   return {
     R: R, thin: thin, thinValues: thinValues, rotated: rotated, lcc: lcc, laea: laea, forward: forward, inverse: inverse,
-    latlon: latlon, projected: projected, index: index, lonLatAt: lonLatAt, bounds: bounds, sample: sample,
+    latlon: latlon, projected: projected, index: index, lonLatAt: lonLatAt, bounds: bounds, sample: sample, cell: cell, valueAt: valueAt,
     MODELS: Object.keys(MODELS), of: of
   };
 })();

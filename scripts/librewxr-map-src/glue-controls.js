@@ -367,11 +367,11 @@ function animTrack(id, layer, reuse, onShow) {
     }
   });
   var fines = [];
-  if (id === 'temperature' && animFine && typeof WidgetModels !== 'undefined') {
+  if (animFineField(id) && animFine) {
     if (animFineAuto) animFineModels = animPickFines();
     fines = frames.fines = animFineModels.map(function (model) {
       var old = reuse && reuse.fines ? reuse.fines.filter(function (f) { return f.fileModel === model; })[0] : null;
-      return animMakeFine(model, frames, old || animFineKeep.take(model));
+      return animMakeFine(id, model, frames, old || animFineKeep.take(id + '|' + model));
     });
   }
   if (reuse) reuse.stop();
@@ -394,31 +394,40 @@ function animPickFines() {
   return WidgetModels.pickForView({ south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() });
 }
 
-/** The pictures of finer model `model` riding along with the
-    temperature's frames, those of `reuse` (the same model's, paused or of
-    another range) taken over. */
-function animMakeFine(model, frames, reuse) {
-  fineSurface(model);
+/** The field of the finer models riding along with layer id's pictures;
+    null for a layer without (pressure, clouds...). */
+function animFineField(id) {
+  if (typeof WidgetModels === 'undefined') return null;
+  return { temperature: WidgetAnim.FIELDS.temperatureFine, wind: WidgetAnim.FIELDS.windFine }[id] || null;
+}
+
+/** The pictures of finer model `model` riding along with layer id's
+    frames, those of `reuse` (the same model's, paused or of another
+    range) taken over. The temperature brings the model's ground height. */
+function animMakeFine(id, model, frames, reuse) {
+  var temp = id === 'temperature';
+  if (temp) fineSurface(model);
   var fine = new WidgetAnim.Frames(_windOpen, {
-    field: WidgetAnim.FIELDS.temperatureFine, fileModel: model, now: function () { return anim.nowMs; },
+    field: animFineField(id), fileModel: model, now: function () { return anim.nowMs; },
     pastH: anim.pastH, futureH: anim.futureH, reuse: reuse, parallel: 6, gate: animGate,
-    store: animStore, pruneH: ANIM_KEEP_H, surface: function () { return fineSurface(model); },
+    store: animStore, pruneH: ANIM_KEEP_H, surface: temp ? function () { return fineSurface(model); } : null,
     onFrame: function (i) {
-      var t = anim && anim.group.track('temperature'), p = anim && anim.player;
+      var t = anim && anim.group.track(id), p = anim && anim.player;
       if (!t || t.frames !== frames || (frames.fines || []).indexOf(fine) < 0 || p.index < 0 || p.playing) return;
       if (i === Math.floor(p.index) || i === Math.ceil(p.index)) p.seek(p.index);
     }
   });
   if (reuse) reuse.stop();
   return fine;
+  fine.keepKey = id + '|' + model;
 }
 
 function animLoadFine(fine) {
   var t1 = Date.now();
   fine.load().then(function () {
-    console.log('[anim] temperature ' + fine.fileModel + ': ' + fine.packed.filter(Boolean).length + '/' + fine.times.length + ' pictures in ' +
+    console.log('[anim] ' + fine.field.id + ' ' + fine.fileModel + ': ' + fine.packed.filter(Boolean).length + '/' + fine.times.length + ' pictures in ' +
       (Date.now() - t1) + ' ms, ' + fine.fromStore + ' from the store');
-  }, function (err) { console.warn('[anim] temperature ' + fine.fileModel + ': ' + err); });
+  }, function (err) { console.warn('[anim] ' + fine.field.id + ' ' + fine.fileModel + ': ' + err); });
 }
 
 /** The map moved: the models the view picks now, if they changed. Those
@@ -433,21 +442,25 @@ function animFineMoved() {
 
 function animSetFines(ids) {
   animFineModels = ids;
-  var t = anim && anim.group.track('temperature');
-  if (!t) return;
-  var frames = t.frames, old = frames.fines || [];
-  var fines = ids.map(function (model) {
-    var here = old.filter(function (f) { return f.fileModel === model; })[0];
-    if (here) return here;
-    var fine = animMakeFine(model, frames, animFineKeep.take(model));
-    animLoadFine(fine);
-    return fine;
+  if (!anim) return;
+  var shown = 0;
+  anim.group.tracks.forEach(function (t) {
+    if (!animFineField(t.id)) return;
+    var frames = t.frames, old = frames.fines || [];
+    var fines = ids.map(function (model) {
+      var here = old.filter(function (f) { return f.fileModel === model; })[0];
+      if (here) return here;
+      var fine = animMakeFine(t.id, model, frames, animFineKeep.take(t.id + '|' + model));
+      animLoadFine(fine);
+      return fine;
+    });
+    old.forEach(function (f) { if (fines.indexOf(f) < 0) animFineKeep.put(f); });
+    frames.fines = fines;
+    shown += fines.reduce(function (n, f) { return n + WidgetAnim.heldBytes(f); }, 0);
   });
-  old.forEach(function (f) { if (fines.indexOf(f) < 0) animFineKeep.put(f); });
-  frames.fines = fines;
-  animFineKeep.trim(fines.reduce(function (n, f) { return n + WidgetAnim.heldBytes(f); }, 0));
+  animFineKeep.trim(shown);
   console.log('[anim] regional models: ' + (ids.join(', ') || 'none') + '; kept out of view: ' +
-    animFineKeep.kept.map(function (f) { return f.fileModel; }).join(', '));
+    animFineKeep.kept.map(function (f) { return f.keepKey || f.fileModel; }).join(', '));
   var p = anim.player;
   if (p.index >= 0 && !p.playing) p.seek(p.index);
 }

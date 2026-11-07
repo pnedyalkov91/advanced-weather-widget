@@ -83,3 +83,32 @@ test('step: grids past two million points are read one point in two', () => {
   assert.equal(M.get('ncep_hrrr_conus').step, 1);
   assert.equal(M.get('meteofrance_arome_france0025').step, 1);
 });
+
+test('wind: how each model gives its 10 m wind', () => {
+  const kinds = Object.fromEntries(M.list.map((m) => [m.id, m.wind]));
+  assert.deepEqual(kinds, {
+    meteofrance_arome_france0025: 'uv', dwd_icon_d2: 'uv', jma_msm: 'uv', meteoswiss_icon_ch1: 'uv',
+    ncep_hrrr_conus: 'uv-grid',
+    italia_meteo_arpae_icon_2i: 'sd', cmc_gem_hrdps: 'sd', ukmo_uk_deterministic_2km: 'sd', metno_nordic_pp: 'sd'
+  });
+  assert.deepEqual(M.windVars('dwd_icon_d2'), ['wind_u_component_10m', 'wind_v_component_10m']);
+  assert.deepEqual(M.windVars('metno_nordic_pp'), ['wind_speed_10m', 'wind_direction_10m']);
+});
+
+test('toEarthWind: speed and direction (from) as u and v; HRRR turned from its grid to true north', () => {
+  const d = WidgetGrids.latlon({ nx: 2, ny: 1, south: 0, west: 0, dLon: 1, dLat: 1 });
+  const sd = M.toEarthWind('metno_nordic_pp', Float32Array.from([10, 2]), Float32Array.from([90, 180]), d);
+  assert.ok(Math.abs(sd.u[0] + 10) < 1e-5 && Math.abs(sd.v[0]) < 1e-5);     // from the east: blowing west
+  assert.ok(Math.abs(sd.u[1]) < 1e-5 && Math.abs(sd.v[1] - 2) < 1e-5);      // from the south: blowing north
+  // HRRR at Denver, 2026-11-07 22 UTC: grid-relative (-2.0, -2.2); the API gave 3.0 m/s from 38 degrees.
+  const g = WidgetGrids.of('ncep_hrrr_conus'), p = WidgetGrids.index(g, 39.74, -104.99);
+  const k = Math.round(p.row) * g.nx + Math.round(p.col);
+  const u = new Float32Array(g.nx * g.ny), v = new Float32Array(g.nx * g.ny);
+  u[k] = -2.0; v[k] = -2.2;
+  const e = M.toEarthWind('ncep_hrrr_conus', u, v, g);
+  const dir = (Math.atan2(-e.u[k], -e.v[k]) * 180 / Math.PI + 360) % 360;
+  assert.ok(Math.abs(dir - 37.6) < 0.5, 'direction ' + dir);
+  assert.ok(Math.abs(Math.hypot(e.u[k], e.v[k]) - Math.hypot(2, 2.2)) < 1e-5);
+  // Other grids keep their u and v.
+  assert.equal(M.toEarthWind('dwd_icon_d2', u, v, g).u, u);
+});

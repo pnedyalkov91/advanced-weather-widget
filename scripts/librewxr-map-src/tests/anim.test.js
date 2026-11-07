@@ -808,3 +808,39 @@ test('Frames: the weight of a read follows the size of the grid', () => {
   assert.equal(w('cmc_gem_hrdps'), 3);
   assert.equal(w('metno_nordic_pp'), 4);
 });
+
+test('Frames of a regional wind: its own variables, turned to u and v, two places of the gate a million points', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const asked = [];
+  const loader = {
+    base: 'b/', model: 'ecmwf_ifs025',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-07T18:00:00Z' }) }),
+    _readVars: async (f, names) => {
+      asked.push(names.join());
+      const n = 761 * 761;
+      return { data: [new Float32Array(n).fill(10), new Float32Array(n).fill(270)], ny: 761, nx: 761 };   // 10 m/s from the west
+    }
+  };
+  const f = new A.Frames(loader, { field: A.FIELDS.windFine, fileModel: 'italia_meteo_arpae_icon_2i', now: () => at('2026-11-07T18:10:00Z'), pastH: 0, futureH: 0 });
+  assert.equal(f.weight, 1);
+  await f.load();
+  assert.deepEqual(asked, ['wind_speed_10m,wind_direction_10m']);
+  const g = f.grid(0);
+  assert.equal(g.desc.id, 'italia_meteo_arpae_icon_2i');
+  assert.equal(g.u[380 * 761 + 380], 10);              // blowing east, half m/s steps
+  assert.equal(g.v[380 * 761 + 380], 0);
+  assert.equal(g.weights.length, 761 * 761);
+  const big = new A.Frames(loader, { field: A.FIELDS.windFine, fileModel: 'ncep_hrrr_conus', now: () => 0 });
+  assert.equal(big.weight, 4);                         // 1.9 M points, two fields
+});
+
+test('FineKeep: the temperature and the wind of one model kept apart', () => {
+  const mk = (key) => ({ fileModel: 'm', keepKey: key, packed: [[new Uint8Array(10)]], pause() {}, stop() {} });
+  const keep = new A.FineKeep(1e9), t = mk('temperature|m'), w = mk('wind|m');
+  keep.put(t); keep.put(w);
+  assert.equal(keep.take('wind|m'), w);
+  assert.equal(keep.take('temperature|m'), t);
+});
