@@ -738,3 +738,73 @@ test('Frames.fineAt: a picture still loading is waited for at full weight', () =
   assert.equal(g.fade, 1);
   assert.equal(smallFrames([1, 2], false).fineAt(0.5), null);
 });
+
+test('FineKeep: models out of view kept paused while they fit, the least recently seen let go', () => {
+  const mk = (model, mb) => ({ fileModel: model, packed: [[new Uint8Array(mb * 1e6)]], paused: 0, stopped: 0, pause() { this.paused++; }, stop() { this.stopped++; } });
+  const keep = new A.FineKeep(150e6);
+  const a = mk('a', 60), b = mk('b', 60), c = mk('c', 60);
+  keep.put(a); keep.put(b);
+  assert.equal(a.paused, 1);
+  assert.equal(keep.bytes(), 120e6);
+  keep.put(c);                                         // 180 MB: a goes
+  assert.equal(a.stopped, 1);
+  assert.equal(keep.take('a'), null);
+  assert.equal(keep.take('b'), b);                     // taken back, no longer kept
+  assert.equal(keep.bytes(), 60e6);
+  keep.trim(90e6);                                     // the models in view hold 90 MB: 150 in all, it fits
+  assert.equal(c.stopped, 0);
+  keep.trim(100e6);
+  assert.equal(c.stopped, 1);
+});
+
+test('Frames of a large grid: read one point in two, kept so in the store, a picture kept another way read again', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const META = 'metno_nordic_pp', reads = [], m = new Map();
+  const store = { get: async (k) => m.get(k) || null, put: async (k, v) => { m.set(k, v); }, keys: async () => [...m.keys()], del: async () => {} };
+  const loader = {
+    base: 'b/', model: 'ecmwf_ifs025',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-07T20:00:00Z' }) }),
+    _readVars: async (f) => { reads.push(f.url); return { data: [new Float32Array(2321 * 1796).fill(4)], ny: 2321, nx: 1796 }; }
+  };
+  const opts = { field: A.FIELDS.temperatureFine, fileModel: META, now: () => at('2026-11-07T21:10:00Z'), pastH: 0, futureH: 0, store };
+  // One picture kept the old way (every point) is not taken.
+  const key = A.frameKey(META, 'temperature-file', at('2026-11-07T20:00:00Z'), at('2026-11-07T21:00:00Z'));
+  m.set(key, { meta: { model: META }, parts: [new Uint8Array(4)] });
+  const f = new A.Frames(loader, opts);
+  await f.load();
+  assert.equal(reads.length, 1);
+  const g = f.grid(0);
+  assert.equal(g.desc.nx, 898);
+  assert.equal(g.values.length, 898 * 1161);
+  assert.equal(m.get(key).meta.step, 2);
+  const again = new A.Frames(loader, opts);
+  await again.load();
+  assert.equal(reads.length, 1);                       // from the store this time
+});
+
+test('Gate: a heavy job takes several places, never more than n in all', async () => {
+  const g = new A.Gate(6);
+  let used = 0, most = 0;
+  const job = (w) => g.run(async () => {
+    const took = Math.min(w, 6);
+    used += took; most = Math.max(most, used);
+    await new Promise((r) => setImmediate(r));
+    used -= took;
+  }, w);
+  await Promise.all([job(4), job(4), job(1), job(1), job(3), job(9)]);   // 9 is held to 6
+  assert.ok(most <= 6, 'at most 6, saw ' + most);
+});
+
+test('Frames: the weight of a read follows the size of the grid', () => {
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const w = (model) => new A.Frames({ base: 'b/', model: 'ecmwf_ifs025' }, { fileModel: model, now: () => 0 }).weight;
+  assert.equal(w('ecmwf_ifs025'), 1);
+  assert.equal(w('meteofrance_arome_france0025'), 1);
+  assert.equal(w('ncep_hrrr_conus'), 2);
+  assert.equal(w('cmc_gem_hrdps'), 3);
+  assert.equal(w('metno_nordic_pp'), 4);
+});

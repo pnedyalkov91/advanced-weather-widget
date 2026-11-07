@@ -103,3 +103,17 @@ test('projected grids: the grid point nearest a city is the one the Open-Meteo A
     near(q.lon, alon, 2e-4, id + ' lon');
   }
 });
+
+test('thin: one point in f each way, the same places as the full grid, values with them', () => {
+  const full = G.of('metno_nordic_pp'), t = G.thin(full, 2);
+  assert.equal(t.nx, 898);
+  assert.equal(t.ny, 1161);
+  assert.equal(G.thin(full, 2), t);                      // once
+  const a = G.lonLatAt(t, 10, 20), b = G.lonLatAt(full, 20, 40);
+  near(a.lat, b.lat, 1e-9); near(a.lon, b.lon, 1e-9);
+  near(t.res, full.res * 2, 1e-12);
+  const d = G.latlon({ nx: 5, ny: 3, south: 0, west: 0, dLon: 1, dLat: 1 });
+  const v = G.thinValues(Float32Array.from([0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 23, 24]), d, 2);
+  assert.deepEqual(Array.from(v), [0, 2, 4, 20, 22, 24]);
+  assert.equal(G.thin(d, 1), d);
+});

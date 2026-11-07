@@ -198,8 +198,34 @@ var WidgetGrids = (function () {
     return d;
   }
 
+  var thinned = {};
+
+  /** Grid d read one point in f each way (from its first point): the same
+      places, f times fewer each way. d itself for f = 1. */
+  function thin(d, f) {
+    if (!f || f === 1) return d;
+    var key = d.id + '/' + f;
+    if (d.id && thinned[key]) return thinned[key];
+    var t = {
+      id: d.id, kind: d.kind, nx: Math.floor((d.nx - 1) / f) + 1, ny: Math.floor((d.ny - 1) / f) + 1,
+      x0: d.x0, y0: d.y0, dx: d.dx * f, dy: d.dy * f, proj: d.proj, res: d.res * f, step: f, full: d
+    };
+    if (d.id) thinned[key] = t;
+    return t;
+  }
+
+  /** The values of a field of grid d at the points of thin(d, f). */
+  function thinValues(values, d, f) {
+    if (!f || f === 1) return values;
+    var t = thin(d, f), out = new Float32Array(t.nx * t.ny);
+    for (var r = 0; r < t.ny; r++) {
+      for (var c = 0; c < t.nx; c++) out[r * t.nx + c] = values[r * f * d.nx + c * f];
+    }
+    return out;
+  }
+
   return {
-    R: R, rotated: rotated, lcc: lcc, laea: laea, forward: forward, inverse: inverse,
+    R: R, thin: thin, thinValues: thinValues, rotated: rotated, lcc: lcc, laea: laea, forward: forward, inverse: inverse,
     latlon: latlon, projected: projected, index: index, lonLatAt: lonLatAt, bounds: bounds, sample: sample,
     MODELS: Object.keys(MODELS), of: of
   };

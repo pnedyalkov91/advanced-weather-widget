@@ -53,6 +53,12 @@ var WidgetAnim = (function () {
   /* When each model's runs start and how far they go: runFor(validMs,
      latestRefMs) and hasFile(validMs, runMs). The regional models' come
      from WidgetModels, ECMWF's are those above. */
+  /** One point in how many each way a regional model is read with. */
+  function stepOf(model) {
+    var m = typeof WidgetModels !== 'undefined' && WidgetModels.get(model);
+    return m ? m.step : 1;
+  }
+
   function scheduleOf(model) {
     if (typeof WidgetModels === 'undefined' || !WidgetModels.get(model)) return { runFor: runFor, hasFile: hasFile };
     return {
@@ -158,12 +164,14 @@ var WidgetAnim = (function () {
       vars: ['temperature_2m'],
       feather: 2,
       read: function (e, t, model) {
-        var g = WidgetOpenData.toModelGrid(e.data[0], e.ny, e.nx, t, model);
-        return { meta: { model: model }, parts: [pack(g.values)] };
+        var step = stepOf(model), g = WidgetOpenData.toModelGrid(e.data[0], e.ny, e.nx, t, model, step);
+        return { meta: { model: model, step: step }, parts: [pack(g.values)] };
       },
+      // A picture kept with another step is read again.
+      accepts: function (meta, model) { return (meta.step || 1) === stepOf(model); },
       unpack: function (parts) { return unpack(parts[0]); },
       grid: function (m, a, b, mix, tA, tB, at) {
-        var desc = WidgetOpenData.gridOf(m.model);
+        var desc = WidgetOpenData.gridOf(m.model, m.step);
         if (!b) return { desc: desc, times: [tA / 1000], values: a };
         return { desc: desc, times: [at / 1000], values: a, valuesB: b, mix: mix };
       }
@@ -267,21 +275,29 @@ var WidgetAnim = (function () {
      animation share one, since the file reader runs out of memory past a
      few reads at a time. */
   function Gate(n) {
+    this.n = n;
     this.free = n;
-    this.waiting = [];
+    this.waiting = [];          // { weight, go }, in turn
   }
 
-  /** fn() once a place is free; its promise. */
-  Gate.prototype.run = function (fn) {
-    var self = this;
+  /** fn() once weight places are free (1 by default; at most n, for a
+      large grid whose read needs that much of the reader's memory); its
+      promise. */
+  Gate.prototype.run = function (fn, weight) {
+    var self = this, w = Math.max(1, Math.min(this.n, weight || 1));
     return new Promise(function (resolve) {
-      if (self.free > 0) { self.free--; resolve(); } else self.waiting.push(resolve);
-    }).then(fn).then(function (v) { self._done(); return v; }, function (err) { self._done(); throw err; });
+      if (!self.waiting.length && self.free >= w) { self.free -= w; resolve(); } else self.waiting.push({ weight: w, go: resolve });
+    }).then(fn).then(function (v) { self._done(w); return v; }, function (err) { self._done(w); throw err; });
   };
 
-  Gate.prototype._done = function () {
-    var next = this.waiting.shift();
-    if (next) next(); else this.free++;
+  /** Weight places back; the next in turn go while they fit. */
+  Gate.prototype._done = function (w) {
+    this.free += w;
+    while (this.waiting.length && this.free >= this.waiting[0].weight) {
+      var next = this.waiting.shift();
+      this.free -= next.weight;
+      next.go();
+    }
   };
 
   /* The pictures of one layer of an animation (opts.field, one of FIELDS;
@@ -306,6 +322,9 @@ var WidgetAnim = (function () {
     this.fileModel = opts.fileModel || loader.model;
     this.model = opts.model || this.fileModel;
     this.schedule = scheduleOf(this.fileModel);
+    // A read takes a place of the gate per million points of the file.
+    var rm = typeof WidgetModels !== 'undefined' && WidgetModels.get(this.fileModel);
+    this.weight = rm ? Math.max(1, Math.round(rm.grid.nx * rm.grid.ny / 1e6)) : 1;
     this.fines = opts.fines || null;   // Frames of finer models, finest first, given along (see gridAt)
     this.surface = opts.surface || null;   // () -> the model's ground heights, once known
     this.pruneH = opts.pruneH || 0;
@@ -352,14 +371,14 @@ var WidgetAnim = (function () {
         var kept = key ? Promise.resolve().then(function () { return self.store.get(key); }).catch(function () { return null; }) : Promise.resolve(null);
         return kept.then(function (k) {
           if (self.stopped) return;
-          if (k && k.parts && k.meta) {
+          if (k && k.parts && k.meta && (!self.field.accepts || self.field.accepts(k.meta, self.fileModel))) {
             self.fromStore++;
             self._in(i, k.meta, k.parts);
             return;
           }
           var t0 = Date.now();
           var read = function () { return loader._readVars({ url: url, validMs: t }, self.field.vars); };
-          return (self.gate ? self.gate.run(read) : read()).then(function (e) {
+          return (self.gate ? self.gate.run(read, self.weight) : read()).then(function (e) {
             if (self.stopped) return;
             var fr = self.field.read(e, t, self.fileModel);
             console.log('[anim] ' + url.split('/').slice(-3).join('/') + ' ' + self.field.id + ' in ' + (Date.now() - t0) + ' ms');
@@ -539,6 +558,48 @@ var WidgetAnim = (function () {
     if (this.fines) this.fines.forEach(function (f) { f.pause(); });
     this.stopped = true;
     this.unpacked = [];
+  };
+
+  /* The pictures of finer models out of view, kept paused (packed) so that
+     coming back over them costs nothing, while they fit in budget bytes
+     with those in view; past it the least recently kept are let go (their
+     pictures stay in the store). */
+  function FineKeep(budget) {
+    this.budget = budget;
+    this.kept = [];             // Frames, oldest first
+  }
+
+  function heldBytes(f) {
+    return f.packed.reduce(function (n, p) { return n + (p ? p.reduce(function (m, a) { return m + a.byteLength; }, 0) : 0); }, 0);
+  }
+
+  FineKeep.prototype.put = function (frames) {
+    this.kept = this.kept.filter(function (f) { return f.fileModel !== frames.fileModel; });
+    frames.pause();
+    this.kept.push(frames);
+    this.trim(0);
+  };
+
+  /** The kept Frames of model, taken out of the keep; null if none. */
+  FineKeep.prototype.take = function (model) {
+    for (var i = 0; i < this.kept.length; i++) {
+      if (this.kept[i].fileModel === model) return this.kept.splice(i, 1)[0];
+    }
+    return null;
+  };
+
+  FineKeep.prototype.bytes = function () {
+    return this.kept.reduce(function (n, f) { return n + heldBytes(f); }, 0);
+  };
+
+  /** Let the oldest go until the kept and inView bytes fit the budget. */
+  FineKeep.prototype.trim = function (inView) {
+    while (this.kept.length && this.bytes() + (inView || 0) > this.budget) this.kept.shift().stop();
+  };
+
+  FineKeep.prototype.clear = function () {
+    this.kept.forEach(function (f) { f.stop(); });
+    this.kept = [];
   };
 
   /* The layers switched on, as one set of frames and one layer for the
@@ -951,7 +1012,7 @@ var WidgetAnim = (function () {
 
   return {
     STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
-    decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, Group: Group, Player: Player,
+    decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };
 })();

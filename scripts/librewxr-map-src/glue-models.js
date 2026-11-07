@@ -27,12 +27,18 @@ var WidgetModels = (function () {
   ];
 
   var SCAN_H = 96;              // how far back a run is looked for
+  var MAX_POINTS = 2e6;         // larger grids are read one point in two
+  var VIEW_MAX_DEG = 60;        // no regional model in a view wider than this
+  var VIEW_MAX_MODELS = 3;
+  var MIN_SHARE = 0.02;         // a model covering less of the view is left out
+  var SAMPLES = 12;             // points each way the view is probed with
 
   var byId = {};
   var list = TABLE.map(function (t, k) {
     var g = Grids.of(t.id), box = null;
     var m = {
       id: t.id, label: t.label, every: t.every, range: t.range, grid: g, res: g.res, order: k,
+      step: g.nx * g.ny > MAX_POINTS ? 2 : 1,
       // The latitudes and longitudes it covers, worked out once.
       bounds: function () { return box || (box = Grids.bounds(g)); }
     };
@@ -41,6 +47,36 @@ var WidgetModels = (function () {
   }).sort(function (a, b) { return a.res - b.res || a.order - b.order; });
 
   function get(id) { return byId[id] || null; }
+
+  /** The share of view { south, west, north, east } inside model m's grid,
+      probed at SAMPLES x SAMPLES points. */
+  function coverage(m, view) {
+    var b = m.bounds(), inside = 0;
+    if (view.north < b.south || view.south > b.north) return 0;
+    for (var i = 0; i < SAMPLES; i++) {
+      var lat = view.south + (view.north - view.south) * (i + 0.5) / SAMPLES;
+      for (var j = 0; j < SAMPLES; j++) {
+        var lon = view.west + (view.east - view.west) * (j + 0.5) / SAMPLES;
+        if (Grids.index(m.grid, lat, lon).col >= 0) inside++;
+      }
+    }
+    return inside / (SAMPLES * SAMPLES);
+  }
+
+  /** The models to draw over view { south, west, north, east }: none when
+      it is wider than VIEW_MAX_DEG; else the VIEW_MAX_MODELS covering most
+      of it (each at least MIN_SHARE), finest first. */
+  function pickForView(view, opts) {
+    opts = opts || {};
+    var maxDeg = opts.maxDeg || VIEW_MAX_DEG, max = opts.max || VIEW_MAX_MODELS;
+    if (view.east - view.west > maxDeg) return [];
+    return list.map(function (m) { return { m: m, share: coverage(m, view) }; })
+      .filter(function (c) { return c.share >= MIN_SHARE; })
+      .sort(function (a, b) { return b.share - a.share || a.m.res - b.m.res; })
+      .slice(0, max)
+      .sort(function (a, b) { return a.m.res - b.m.res || a.m.order - b.m.order; })
+      .map(function (c) { return c.m.id; });
+  }
 
   function hourOf(ms) { return new Date(ms).getUTCHours(); }
 
@@ -66,7 +102,7 @@ var WidgetModels = (function () {
     return lead >= 0 && lead % HOUR === 0 && lead <= m.range(hourOf(runMs)) * HOUR && hourOf(runMs) % m.every === 0;
   }
 
-  return { list: list, get: get, runFor: runFor, hasFile: hasFile };
+  return { list: list, get: get, runFor: runFor, hasFile: hasFile, coverage: coverage, pickForView: pickForView };
 })();
 
 if (typeof module !== 'undefined' && module.exports) { module.exports = WidgetModels; }

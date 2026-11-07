@@ -164,11 +164,12 @@ var WidgetOpenData = (function () {
     return { lats: g.lats, lons: g.lons, times: validMs == null ? null : [validMs / 1000], values: flipRows(d, ny, nx), res: g.res };
   }
 
-  /** A field of a regional model, kept as the file holds it: { desc (its
-      WidgetGrids grid), times, values }; an error when the file is not
-      the size of the model's grid. */
-  function toModelGrid(d, ny, nx, validMs, model) {
-    return { desc: Grids.of(model, ny, nx), times: validMs == null ? null : [validMs / 1000], values: d };
+  /** A field of a regional model, kept as the file holds it (one point in
+      step each way when step > 1): { desc (its WidgetGrids grid), times,
+      values }; an error when the file is not the size of the model's grid. */
+  function toModelGrid(d, ny, nx, validMs, model, step) {
+    var full = Grids.of(model, ny, nx);
+    return { desc: Grids.thin(full, step || 1), times: validMs == null ? null : [validMs / 1000], values: Grids.thinValues(d, full, step || 1) };
   }
 
   /** Rows of a field flipped north to south, plus a column at +180. */
@@ -247,6 +248,7 @@ var WidgetOpenData = (function () {
   function Loader(opts) {
     opts = opts || {};
     this.model = opts.model || 'ecmwf_ifs025';
+    this.step = opts.step || 1;  // a regional grid read one point in step each way
     this.base = opts.base || BASE;
     this.dataBase = opts.dataBase || DATA_BASE;
     this.store = opts.store || idbStore();
@@ -333,7 +335,7 @@ var WidgetOpenData = (function () {
         return kept;
       });
     }).then(function (entry) {
-      self.surface = Grids.of(self.model) ? toModelGrid(entry.d, entry.ny, entry.nx, null, self.model)
+      self.surface = Grids.of(self.model) ? toModelGrid(entry.d, entry.ny, entry.nx, null, self.model, self.step)
         : toScalarGrid(entry.d, entry.ny, entry.nx, null);
       return self.surface;
     }).catch(function (err) {
@@ -393,7 +395,7 @@ var WidgetOpenData = (function () {
 
   return {
     BASE: BASE, fileUrl: fileUrl, varNames: varNames, mergeRanges: mergeRanges, TailBackend: TailBackend,
-    toGrid: toGrid, toScalarGrid: toScalarGrid, toModelGrid: toModelGrid, gridOf: function (model) { return Grids.of(model); }, traffic: traffic, SURFACE_URL: SURFACE_URL, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
+    toGrid: toGrid, toScalarGrid: toScalarGrid, toModelGrid: toModelGrid, gridOf: function (model, step) { return Grids.thin(Grids.of(model), step || 1); }, traffic: traffic, SURFACE_URL: SURFACE_URL, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
   };
 })();
 

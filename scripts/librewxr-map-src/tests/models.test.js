@@ -48,3 +48,38 @@ test('bounds: each model knows the latitudes and longitudes it covers', () => {
   [b.south, b.west, b.north, b.east].forEach((v, k) => assert.ok(Math.abs(v - [37.5, -12, 55.4, 16][k]) < 1e-9));
   assert.equal(M.get('meteofrance_arome_france0025').bounds(), b);    // once
 });
+
+const view = (south, west, north, east) => ({ south, west, north, east });
+
+test('pickForView: over France, AROME among at most three, finest first', () => {
+  const ids = M.pickForView(view(42, -5, 51, 9));
+  assert.ok(ids.includes('meteofrance_arome_france0025'));
+  assert.ok(ids.length >= 1 && ids.length <= 3);
+  for (let i = 1; i < ids.length; i++) assert.ok(M.get(ids[i - 1]).res <= M.get(ids[i]).res);
+});
+
+test('pickForView: over much of Europe, the three covering most of it, France kept', () => {
+  const ids = M.pickForView(view(36, -10, 60, 30));
+  assert.equal(ids.length, 3);
+  assert.ok(ids.includes('meteofrance_arome_france0025'));
+});
+
+test('pickForView: none for a view wider than 60 degrees, or over the open sea', () => {
+  assert.deepEqual(M.pickForView(view(-60, -180, 80, 180)), []);
+  assert.deepEqual(M.pickForView(view(30, -100, 50, -30)), []);       // 70 degrees wide
+  assert.deepEqual(M.pickForView(view(30, -38, 38, -28)), []);        // mid Atlantic (HRDPS reaches 41 W further north)
+});
+
+test('pickForView: HRRR over the United States, MSM over Japan, nothing European', () => {
+  const us = M.pickForView(view(30, -110, 45, -80));
+  assert.ok(us.includes('ncep_hrrr_conus'));
+  assert.ok(us.every((id) => !/meteofrance|dwd|ukmo|metno|meteoswiss|italia/.test(id)));
+  assert.deepEqual(M.pickForView(view(33, 136, 38, 142)), ['jma_msm']);
+});
+
+test('step: grids past two million points are read one point in two', () => {
+  assert.equal(M.get('metno_nordic_pp').step, 2);
+  assert.equal(M.get('cmc_gem_hrdps').step, 2);
+  assert.equal(M.get('ncep_hrrr_conus').step, 1);
+  assert.equal(M.get('meteofrance_arome_france0025').step, 1);
+});
