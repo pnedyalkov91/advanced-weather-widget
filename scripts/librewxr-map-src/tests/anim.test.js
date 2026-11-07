@@ -693,7 +693,45 @@ test('Frames.gridAt: the fine model rides along when it has the picture', () => 
   coarse.packed = [[A.pack(Float32Array.from([1]))], [A.pack(Float32Array.from([3]))]];
   coarse.idle = () => {};
   assert.equal(coarse.gridAt(0).fine, undefined);
-  coarse.fine = { gridAt: (pos) => (pos < 1 ? { tag: pos } : null) };
+  coarse.fine = { fineAt: (pos) => (pos < 1 ? { tag: pos } : null) };
   assert.deepEqual(coarse.gridAt(0.5).fine, { tag: 0.5 });
   assert.equal(coarse.gridAt(1).fine, undefined);
+});
+
+/** Frames of one-point pictures at 0, 3, 6 and 9 h, those of `have` in,
+    loaded when done. */
+function smallFrames(have, done) {
+  const f = Object.create(A.Frames.prototype);
+  f.field = A.FIELDS.temperature;
+  f.times = [0, 3 * H, 6 * H, 9 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.packed = f.times.map((t, i) => (have.includes(i) ? [A.pack(Float32Array.from([i * 10]))] : null));
+  f.failed = f.times.map(() => false);
+  f.idle = () => {};
+  f.done = done;
+  return f;
+}
+
+test('Frames.fineAt: full weight between two pictures in', () => {
+  const g = smallFrames([0, 1, 2, 3], true).fineAt(1.5);
+  assert.equal(g.fade, 1);
+  assert.equal(g.mix, 0.5);
+});
+
+test('Frames.fineAt: fades out toward a picture it will never have, in toward the first it has', () => {
+  const f = smallFrames([1, 2], true);
+  const out = f.fineAt(2.25);
+  assert.equal(out.values[0], 20);           // picture 2 held
+  assert.equal(out.fade, 0.75);
+  assert.equal(f.fineAt(2).fade, 1);
+  assert.equal(f.fineAt(3), null);
+  const into = f.fineAt(0.5);
+  assert.equal(into.values[0], 10);          // picture 1 ahead
+  assert.equal(into.fade, 0.5);
+});
+
+test('Frames.fineAt: a picture still loading is waited for at full weight', () => {
+  const g = smallFrames([1, 2], false).fineAt(2.25);
+  assert.equal(g.fade, 1);
+  assert.equal(smallFrames([1, 2], false).fineAt(0.5), null);
 });

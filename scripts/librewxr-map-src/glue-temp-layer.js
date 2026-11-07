@@ -47,7 +47,7 @@ WidgetTemp.TempLayer = (function () {
       if (!isFinite(t)) continue;
       var z = f.elev && !noZ ? WidgetTemp.sampleScalar(f.grid, f.elev, lat, lon) : NaN;
       if (f.weights) {
-        var w = WidgetTemp.sampleScalar(f.grid, f.weights, lat, lon);
+        var w = WidgetTemp.sampleScalar(f.grid, f.weights, lat, lon) * (f.fade == null ? 1 : f.fade);
         if (!(w > 0)) continue;
         if (w < 1) {
           readFields(fields, lat, lon, out, noZ, i + 1);
@@ -326,7 +326,8 @@ WidgetTemp.TempLayer = (function () {
       var parts = [];
       for (var i = 0; i < fields.length; i++) {
         var f = fields[i];
-        if (!f.elev || f.grid.temp) return null;
+        // A finer model fading in or out blends the heights by its fade.
+        if (!f.elev || f.grid.temp || f.fade != null && f.fade !== 1) return null;
         parts.push(f.grid.lats, f.elev, f.weights || null);
       }
       return parts.length ? { parts: parts, dem: demData } : null;
@@ -480,7 +481,7 @@ WidgetTemp.TempLayer = (function () {
       var shown = this._shown, lut = this._lut, step = this._moving ? this.options.movingStep : 1;
       if (!force && shown && shown.lut === lut && shown.step === step && shown.fields.length === fields.length && shown.fields.every(function (f, i) {
         return f.values === fields[i].values && f.elev === fields[i].elev &&
-          f.valuesB === fields[i].valuesB && f.mix === fields[i].mix;
+          f.valuesB === fields[i].valuesB && f.mix === fields[i].mix && f.fade === fields[i].fade;
       })) return;
       this._shown = { fields: fields, lut: lut, step: step };
       this._adapter.setTempTiles(this._provider, ++this._version, this.options.opacity / 100 * this._fade);
@@ -493,7 +494,10 @@ WidgetTemp.TempLayer = (function () {
       var g = this._fileGrid, s = this._surface, out = [];
       var f = g.fine;
       if (f && f.weights) {
-        out.push({ grid: f, values: f.values, valuesB: f.valuesB || null, mix: f.mix || 0, elev: f.elev || null, weights: f.weights });
+        out.push({
+          grid: f, values: f.values, valuesB: f.valuesB || null, mix: f.mix || 0, elev: f.elev || null,
+          weights: f.weights, fade: f.fade == null ? 1 : f.fade
+        });
       }
       out.push({
         grid: g, values: g.values, valuesB: g.valuesB || null, mix: g.mix || 0,

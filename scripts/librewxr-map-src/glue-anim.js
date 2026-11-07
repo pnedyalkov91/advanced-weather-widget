@@ -322,6 +322,7 @@ var WidgetAnim = (function () {
     this.between = this.times.map(function () { return false; });   // no file: halfway between its neighbors
     this.meta = null;            // { lats, lons, res } shared by every picture
     this.stopped = false;
+    this.done = false;           // every read is over: a picture missing now stays so
     var old = opts.reuse;
     if (old && old.meta) {
       this.meta = old.meta;
@@ -376,7 +377,7 @@ var WidgetAnim = (function () {
       }
       var workers = [];
       for (var k = 0; k < self.parallel; k++) workers.push(next());
-      return Promise.all(workers);
+      return Promise.all(workers).then(function () { self.done = true; });
     });
   };
 
@@ -452,7 +453,7 @@ var WidgetAnim = (function () {
     var z = this.surface && this.surface();
     if (z && z.length === g.values.length) g.elev = z;
     if (this.fine) {
-      var f = this.fine.gridAt(pos);
+      var f = this.fine.fineAt(pos);
       if (f) g.fine = f;
     }
     return g;
@@ -481,6 +482,33 @@ var WidgetAnim = (function () {
     this._warm(i + 2);
     if (!this.packed[i + 1] || f < 1e-3) return this.grid(i);
     return this._dress(this.field.grid(m, this._values(i), this._values(i + 1), f, this.times[i], this.times[i + 1], this.timeAt(pos)), pos);
+  };
+
+  /** Whether picture j will never be in: out of the range, or missing
+      once every read is over (past the finer model's hours, a file not
+      found). */
+  Frames.prototype.gone = function (j) {
+    return j < 0 || j >= this.times.length || !this.packed[j] && (this.failed[j] || this.done);
+  };
+
+  /** This Frames as the finer model of another: its grid at position pos
+      with a fade (1 in full, 0 not at all), so that where it lacks a
+      picture for good it fades out over the step before (in over the step
+      after, at the start) instead of stopping at once. A picture still
+      loading is waited for, the one before held at full weight. */
+  Frames.prototype.fineAt = function (pos) {
+    var i = Math.floor(pos), f = pos - i, a = this.packed[i], b = this.packed[i + 1], g = null;
+    if (a && (b || f < 1e-3)) {
+      g = this.gridAt(pos);
+      if (g) g.fade = 1;
+    } else if (a) {
+      g = this.grid(i);
+      g.fade = this.gone(i + 1) ? 1 - f : 1;
+    } else if (b && this.gone(i)) {
+      g = this.grid(i + 1);
+      g.fade = f;
+    }
+    return g;
   };
 
   /** Whether position pos shows a frame as read from its file, rather than

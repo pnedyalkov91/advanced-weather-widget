@@ -550,3 +550,31 @@ test('manual mode: with a finer model too, the relief offsets of a tile are comp
   assert.equal([...layer._relief.values()][0].offsets, offsets);
   layer.remove();
 });
+
+test('readFields: a fine field fading out weighs that much less', () => {
+  const read = WidgetTemp.TempLayer.readFields, fine = fineField(20, 1000), out = {};
+  fine.fade = 0.5;
+  read([fine, coarseField()], 40.5, 0.5, out);     // center: full weight, halved
+  assert.equal(out.t, 15);
+  assert.equal(out.z, 500);
+  fine.fade = 0;
+  read([fine, coarseField()], 40.5, 0.5, out);
+  assert.equal(out.t, 10);
+});
+
+test('manual mode: a new fade of the finer model draws again, its relief not kept', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(4792), Object.assign({ manual: true }, OPTS));
+  layer.addTo(fakeMap(4));
+  await settle();
+  const n = 41, dom = { south: 45.33, west: 6.36, step: 0.025 };
+  const fine = WidgetOpenData.toScalarGrid(new Float32Array(n * n).fill(-12), n, n, NOW, dom);
+  Object.assign(fine, { elev: new Float32Array(n * n).fill(3500), weights: T.edgeWeights(fine.values, n, n, 4), fade: 1 });
+  const c = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW);
+  layer.showFile(Object.assign({}, c, { fine }));
+  const before = adapter.tiles.length;
+  layer.showFile(Object.assign({}, c, { fine: Object.assign({}, fine, { fade: 0.5 }) }));
+  assert.equal(adapter.tiles.length, before + 1);
+  assert.equal(layer._reliefKey(layer._shown.fields, new Float32Array(1)), null);
+  layer.remove();
+});
