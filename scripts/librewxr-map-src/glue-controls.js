@@ -323,7 +323,9 @@ window.animAvailable = window.tempAvailable && typeof WidgetAnim !== 'undefined'
 // request per view for both, holding every hour of the range).
 var ANIM_LAYERS = {
   temperature: function (m) {
-    var layer = new WidgetTemp.TempLayer(_widgetAdapter, anim.api, _windOpen, _tempDem, {
+    // The graphics chip draws the files far out; the tiles everything else.
+    var Layer = WidgetTemp.TempLayerGL || WidgetTemp.TempLayer;
+    var layer = new Layer(_widgetAdapter, anim.api, _windOpen, _tempDem, {
       stops: tempPalette, step: tempStep, unit: tempUnit, opacity: tempOpacity, manual: true
     });
     layer.addTo(m);
@@ -417,9 +419,9 @@ function animMakeFine(id, model, frames, reuse) {
       if (i === Math.floor(p.index) || i === Math.ceil(p.index)) p.seek(p.index);
     }
   });
+  fine.keepKey = id + '|' + model;
   if (reuse) reuse.stop();
   return fine;
-  fine.keepKey = id + '|' + model;
 }
 
 function animLoadFine(fine) {
@@ -619,7 +621,10 @@ window.animMeasure = function () {
   }
   var kept = {};
   if (animFineKeep) animFineKeep.kept.forEach(function (f) { kept[f.fileModel] = WidgetAnim.heldBytes(f); });
-  return { read: Object.assign({}, WidgetOpenData.traffic), held: held, kept: kept, fine: animFine, models: animFineModels };
+  // How the temperature is drawn: by the chip, the tiles, or the tiles after the chip failed.
+  var tt = anim && anim.group.track('temperature'), tl = tt && tt.layer, draw = null;
+  if (tl) draw = tl._gl && tl._gl.failed ? 'tiles (no shader)' : tl._gpuOn ? 'chip, ' + (tl._shown.fields.length - 1) + ' finer' : 'tiles';
+  return { read: Object.assign({}, WidgetOpenData.traffic), held: held, kept: kept, fine: animFine, models: animFineModels, draw: draw };
 };
 
 /** { times (ms), ready, failed, now, index (a position between frames),
