@@ -294,14 +294,22 @@ var animGate = typeof WidgetAnim === 'undefined' ? null : new WidgetAnim.Gate(6)
 // range back the bar offers (8 days).
 var animStore = typeof WidgetAnim === 'undefined' || typeof indexedDB === 'undefined' ? null : WidgetAnim.frameStore();
 var ANIM_KEEP_H = 192;
-// The finer model over France (AROME 2.5 km) drawn over the temperature,
-// and its ground height for the relief (spike: animSetFine switches it).
+// The finer regional models drawn over the temperature (WidgetModels ids,
+// finest first; animSetFine switches them all), and their ground heights
+// for the relief, one loader each.
 var animFine = true;
-var _fineOpen = typeof WidgetAnim === 'undefined' || !_windOpen ? null : new WidgetOpenData.Loader({
-  base: WIND_FILES_BASE || undefined, model: WidgetAnim.FINE_MODEL,
-  importReader: function () { return import('./vendor/index.browser.js'); }
-});
-var _fineSurface = null;
+var animFineModels = ['meteofrance_arome_france0025'];
+var _fineOpen = {}, _fineSurface = {};
+function fineSurface(model) {
+  if (!_fineOpen[model]) {
+    _fineOpen[model] = new WidgetOpenData.Loader({
+      base: WIND_FILES_BASE || undefined, model: model,
+      importReader: function () { return import('./vendor/index.browser.js'); }
+    });
+    _fineOpen[model].loadSurface().then(function (g) { if (g) _fineSurface[model] = g.values; });
+  }
+  return _fineSurface[model] || null;
+}
 window.animAvailable = window.tempAvailable && typeof WidgetAnim !== 'undefined' && !!_windOpen;
 
 // The layers an animation can show, by id (a WidgetAnim.FIELDS key): each
@@ -353,18 +361,21 @@ function animTrack(id, layer, reuse, onShow) {
       else if (!p.playing && (i === Math.floor(p.index) || i === Math.ceil(p.index))) p.seek(p.index);
     }
   });
-  var fine = null;
-  if (id === 'temperature' && animFine && _fineOpen) {
-    if (!_fineSurface) _fineOpen.loadSurface().then(function (g) { if (g) _fineSurface = g.values; });
-    fine = frames.fine = new WidgetAnim.Frames(_windOpen, {
-      field: WidgetAnim.FIELDS.temperatureFine, fileModel: WidgetAnim.FINE_MODEL, now: function () { return anim.nowMs; },
-      pastH: anim.pastH, futureH: anim.futureH, reuse: reuse && reuse.fine, parallel: 6, gate: animGate,
-      store: animStore, pruneH: ANIM_KEEP_H, surface: function () { return _fineSurface; },
-      onFrame: function (i) {
-        var t = anim && anim.group.track(id), p = anim && anim.player;
-        if (!t || t.frames !== frames || p.index < 0 || p.playing) return;
-        if (i === Math.floor(p.index) || i === Math.ceil(p.index)) p.seek(p.index);
-      }
+  var fines = [];
+  if (id === 'temperature' && animFine && typeof WidgetModels !== 'undefined') {
+    fines = frames.fines = animFineModels.map(function (model) {
+      var old = reuse && reuse.fines ? reuse.fines.filter(function (f) { return f.fileModel === model; })[0] : null;
+      fineSurface(model);
+      return new WidgetAnim.Frames(_windOpen, {
+        field: WidgetAnim.FIELDS.temperatureFine, fileModel: model, now: function () { return anim.nowMs; },
+        pastH: anim.pastH, futureH: anim.futureH, reuse: old, parallel: 6, gate: animGate,
+        store: animStore, pruneH: ANIM_KEEP_H, surface: function () { return fineSurface(model); },
+        onFrame: function (i) {
+          var t = anim && anim.group.track(id), p = anim && anim.player;
+          if (!t || t.frames !== frames || p.index < 0 || p.playing) return;
+          if (i === Math.floor(p.index) || i === Math.ceil(p.index)) p.seek(p.index);
+        }
+      });
     });
   }
   if (reuse) reuse.stop();
@@ -378,13 +389,13 @@ function animTrack(id, layer, reuse, onShow) {
     console.log('[anim] ' + id + ': ' + frames.packed.filter(Boolean).length + '/' + frames.times.length + ' pictures in ' +
       (Date.now() - t0) + ' ms, ' + frames.fromStore + ' from the store');
   }, function (err) { console.warn('[anim] ' + id + ': ' + err); });
-  if (fine) {
+  fines.forEach(function (fine) {
     var t1 = Date.now();
     fine.load().then(function () {
-      console.log('[anim] ' + id + ' fine: ' + fine.packed.filter(Boolean).length + '/' + fine.times.length + ' pictures in ' +
+      console.log('[anim] ' + id + ' ' + fine.fileModel + ': ' + fine.packed.filter(Boolean).length + '/' + fine.times.length + ' pictures in ' +
         (Date.now() - t1) + ' ms, ' + fine.fromStore + ' from the store');
-    }, function (err) { console.warn('[anim] ' + id + ' fine: ' + err); });
-  }
+    }, function (err) { console.warn('[anim] ' + id + ' ' + fine.fileModel + ': ' + err); });
+  });
 }
 
 /** New pictures for pastH hours before now and futureH after, those
@@ -503,13 +514,19 @@ window.animSetResolution = function (n) {
   if (t) t.layer.setMovingStep(n);
 };
 
-/** { times (ms), ready, failed, now, index (a position between frames),
-    time (ms) of that position, fromFile (a frame as read, not worked out),
-    playing, layers ({ id: on }) } for the QML bar. */
-/** The finer model over France on or off (spike, to compare). */
+/** The finer models on or off (spike, to compare). */
 window.animSetFine = function (on) {
   animFine = !!on;
   if (anim) animLoad(anim.pastH, anim.futureH);
+};
+
+/** The finer models drawn (ids of WidgetModels), put in their order of
+    priority, finest first; unknown ids left out. Until the view picks
+    them (spike). */
+window.animSetFineModels = function (ids) {
+  animFineModels = WidgetModels.list.map(function (m) { return m.id; }).filter(function (id) { return ids.indexOf(id) >= 0; });
+  if (anim) animLoad(anim.pastH, anim.futureH);
+  return animFineModels;
 };
 
 /** What the animation holds and has read (spike measures): bytes read by
@@ -521,9 +538,18 @@ window.animMeasure = function () {
     held[name] = f.packed.reduce(function (n, p) { return n + (p ? p.reduce(function (m, a) { return m + a.byteLength; }, 0) : 0); }, 0);
     held[name + ' pictures'] = f.packed.filter(Boolean).length;
   }
-  if (anim) anim.group.tracks.forEach(function (t) { add(t.id, t.frames); add(t.id + ' fine', t.frames.fine); });
-  return { read: Object.assign({}, WidgetOpenData.traffic), held: held, fine: animFine };
+  if (anim) {
+    anim.group.tracks.forEach(function (t) {
+      add(t.id, t.frames);
+      (t.frames.fines || []).forEach(function (f) { add(t.id + ' ' + f.fileModel, f); });
+    });
+  }
+  return { read: Object.assign({}, WidgetOpenData.traffic), held: held, fine: animFine, models: animFineModels };
 };
+
+/** { times (ms), ready, failed, now, index (a position between frames),
+    time (ms) of that position, fromFile (a frame as read, not worked out),
+    playing, layers ({ id: on }) } for the QML bar. */
 
 window.animState = function () {
   if (!anim) return null;

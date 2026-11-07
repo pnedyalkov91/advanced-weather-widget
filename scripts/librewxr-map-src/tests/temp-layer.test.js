@@ -520,7 +520,7 @@ test('manual mode: a finer model brought by the picture draws over the file wher
   const fine = regional(-12, n, 45.33, 6.36, 0.025);
   fine.elev = new Float32Array(n * n).fill(3500);
   fine.weights = T.edgeWeights(fine.values, n, n, 4);
-  layer.showFile(Object.assign(WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW), { fine }));
+  layer.showFile(Object.assign(WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW), { fines: [fine] }));
   assert.equal(layer._shown.fields.length, 2);
   assert.ok(Math.abs(layer.valueAt(45.83, 6.86) - T.correct(-12, 3500, 4792)) < 1e-6);
   assert.ok(Math.abs(layer.valueAt(40, 0) - T.correct(-3, 2076, 4792)) < 1e-6);   // outside: the file, from its own ground
@@ -541,7 +541,7 @@ test('manual mode: with a finer model too, the relief offsets of a tile are comp
   const W = T.edgeWeights(new Float32Array(n * n).fill(1), n, n, 4);
   // Every picture on the same axes, as the animation's frames are.
   const f0 = fineAt(0), c0 = WidgetOpenData.toScalarGrid(new Float32Array(12), 3, 4, NOW);
-  const file = (v) => Object.assign({}, c0, { values: new Float32Array(c0.values.length).fill(v), fine: Object.assign({}, f0, { values: new Float32Array(n * n).fill(v - 5) }) });
+  const file = (v) => Object.assign({}, c0, { values: new Float32Array(c0.values.length).fill(v), fines: [Object.assign({}, f0, { values: new Float32Array(n * n).fill(v - 5) })] });
   const draw = async () => adapter.tiles[adapter.tiles.length - 1].provider(...MONT_BLANC);
   layer.showFile(file(0));
   const p1 = draw();
@@ -577,10 +577,24 @@ test('manual mode: a new fade of the finer model draws again, its relief not kep
   const fine = regional(-12, n, 45.33, 6.36, 0.025);
   Object.assign(fine, { elev: new Float32Array(n * n).fill(3500), weights: T.edgeWeights(fine.values, n, n, 4), fade: 1 });
   const c = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW);
-  layer.showFile(Object.assign({}, c, { fine }));
+  layer.showFile(Object.assign({}, c, { fines: [fine] }));
   const before = adapter.tiles.length;
-  layer.showFile(Object.assign({}, c, { fine: Object.assign({}, fine, { fade: 0.5 }) }));
+  layer.showFile(Object.assign({}, c, { fines: [Object.assign({}, fine, { fade: 0.5 })] }));
   assert.equal(adapter.tiles.length, before + 1);
   assert.equal(layer._reliefKey(layer._shown.fields, new Float32Array(1)), null);
   layer.remove();
+});
+
+test('readFields: two fine models, the finer first, each over its own area, the coarse one outside both', () => {
+  const read = WidgetTemp.TempLayer.readFields, out = {};
+  // A over 40..41 N, 0..1 E; B, coarser, over 39..43 N, -1..3 E.
+  const a = fineField(20, 0), bGrid = regional(15, 9, 39, -1, 0.5);
+  const b = { grid: bGrid, values: bGrid.values, elev: new Float32Array(81).fill(0), weights: T.edgeWeights(bGrid.values, 9, 9, 2) };
+  const fields = [a, b, coarseField()];
+  read(fields, 40.5, 0.5, out);      // A's center, deep in B too
+  assert.equal(out.t, 20);
+  read(fields, 41, 2, out);          // B only, two points in from its edge
+  assert.equal(out.t, 15);
+  read(fields, 45, 5, out);          // neither
+  assert.equal(out.t, 10);
 });

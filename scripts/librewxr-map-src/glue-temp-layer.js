@@ -494,17 +494,17 @@ WidgetTemp.TempLayer = (function () {
     },
 
     /** The file's temperature, with the model's ground height when it
-        matches; before it, the finer model's when the grid brings one
-        (fine, with its own heights and edge weights). */
+        matches; before it, the finer models' the grid brings (fines,
+        finest first, each with its own heights and edge weights). */
     _fileFields: function () {
       var g = this._fileGrid, s = this._surface, out = [];
-      var f = g.fine;
-      if (f && f.weights) {
+      (g.fines || []).forEach(function (f) {
+        if (!f.weights) return;
         out.push({
           grid: f, values: f.values, valuesB: f.valuesB || null, mix: f.mix || 0, elev: f.elev || null,
           weights: f.weights, fade: f.fade == null ? 1 : f.fade
         });
-      }
+      });
       out.push({
         grid: g, values: g.values, valuesB: g.valuesB || null, mix: g.mix || 0,
         elev: s && s.values.length === g.values.length ? s.values : null

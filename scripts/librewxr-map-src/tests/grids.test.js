@@ -86,3 +86,20 @@ test('res: about the step in degrees, for the edge feather', () => {
   near(G.of('ncep_hrrr_conus').res, 3000 / 111195, 1e-4);
   near(G.of('italia_meteo_arpae_icon_2i').res, 0.0225, 1e-9);
 });
+
+test('projected grids: the grid point nearest a city is the one the Open-Meteo API answers with', () => {
+  // City, then the point the API gave on 2026-11-07 for that model (elevation=nan).
+  const cases = {
+    meteoswiss_icon_ch1: [[47.37, 8.54], [47.37077, 8.538208]],
+    cmc_gem_hrdps: [[45.50, -73.57], [45.49491, -73.56671]],
+    ncep_hrrr_conus: [[39.74, -104.99], [39.746895, -104.987076]],
+    ukmo_uk_deterministic_2km: [[51.51, -0.13], [51.51147, -0.13078308]],
+    metno_nordic_pp: [[59.91, 10.75], [59.906296, 10.744095]]
+  };
+  for (const id of Object.keys(cases)) {
+    const d = G.of(id), [[la, lo], [alat, alon]] = cases[id], p = G.index(d, la, lo);
+    const q = G.lonLatAt(d, Math.round(p.col), Math.round(p.row));
+    near(q.lat, alat, 2e-4, id + ' lat');
+    near(q.lon, alon, 2e-4, id + ' lon');
+  }
+});

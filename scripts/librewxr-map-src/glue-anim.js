@@ -50,25 +50,16 @@ var WidgetAnim = (function () {
     return lead >= 0 && (lead <= SHORT_RANGE_H * HOUR || lead % (2 * STEP_H * HOUR) === 0);
   }
 
-  // A finer regional model over part of the map: AROME at 2.5 km over
-  // France, runs every 3 h holding 51 hours, one file an hour.
-  var FINE_MODEL = 'meteofrance_arome_france0025';
-  var FINE_RUN_H = 3, FINE_RANGE_H = 51;
-
   /* When each model's runs start and how far they go: runFor(validMs,
-     latestRefMs) and hasFile(validMs, runMs). ECMWF's above by default. */
-  var SCHEDULES = {};
-  SCHEDULES[FINE_MODEL] = {
-    runFor: function (validMs, latestRefMs) {
-      return Math.min(Math.floor(validMs / (FINE_RUN_H * HOUR)) * FINE_RUN_H * HOUR, latestRefMs);
-    },
-    hasFile: function (validMs, runMs) {
-      var lead = validMs - runMs;
-      return lead >= 0 && lead <= FINE_RANGE_H * HOUR && lead % HOUR === 0;
-    }
-  };
-
-  function scheduleOf(model) { return SCHEDULES[model] || { runFor: runFor, hasFile: hasFile }; }
+     latestRefMs) and hasFile(validMs, runMs). The regional models' come
+     from WidgetModels, ECMWF's are those above. */
+  function scheduleOf(model) {
+    if (typeof WidgetModels === 'undefined' || !WidgetModels.get(model)) return { runFor: runFor, hasFile: hasFile };
+    return {
+      runFor: function (validMs, latestRefMs) { return WidgetModels.runFor(model, validMs, latestRefMs); },
+      hasFile: function (validMs, runMs) { return WidgetModels.hasFile(model, validMs, runMs); }
+    };
+  }
 
   /** The picture halfway between two packed ones, field by field; NaN
       where either is. */
@@ -315,7 +306,7 @@ var WidgetAnim = (function () {
     this.fileModel = opts.fileModel || loader.model;
     this.model = opts.model || this.fileModel;
     this.schedule = scheduleOf(this.fileModel);
-    this.fine = opts.fine || null;   // Frames of a finer model, given along (see gridAt)
+    this.fines = opts.fines || null;   // Frames of finer models, finest first, given along (see gridAt)
     this.surface = opts.surface || null;   // () -> the model's ground heights, once known
     this.pruneH = opts.pruneH || 0;
     this.fromStore = 0;
@@ -458,9 +449,12 @@ var WidgetAnim = (function () {
     if (this.field.feather) g.weights = this.weights();
     var z = this.surface && this.surface();
     if (z && z.length === g.values.length) g.elev = z;
-    if (this.fine) {
-      var f = this.fine.fineAt(pos);
-      if (f) g.fine = f;
+    if (this.fines) {
+      g.fines = [];
+      for (var k = 0; k < this.fines.length; k++) {
+        var f = this.fines[k].fineAt(pos);
+        if (f) g.fines.push(f);
+      }
     }
     return g;
   };
@@ -533,7 +527,7 @@ var WidgetAnim = (function () {
   };
 
   Frames.prototype.stop = function () {
-    if (this.fine) this.fine.stop();
+    if (this.fines) this.fines.forEach(function (f) { f.stop(); });
     this.stopped = true;
     this.packed = this.packed.map(function () { return null; });
     this.unpacked = [];
@@ -542,7 +536,7 @@ var WidgetAnim = (function () {
   /** No more reading, the pictures read kept (packed) for a Frames that
       takes them over later (opts.reuse). */
   Frames.prototype.pause = function () {
-    if (this.fine) this.fine.pause();
+    if (this.fines) this.fines.forEach(function (f) { f.pause(); });
     this.stopped = true;
     this.unpacked = [];
   };
@@ -956,7 +950,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, FINE_MODEL: FINE_MODEL, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
     decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

@@ -642,6 +642,8 @@ test('Switcher: onGone once a layer is gone, after its fade, a flush or a clear'
 const AROME = 'meteofrance_arome_france0025';
 
 test('schedule of AROME: runs every 3 h, hourly files for 51 h', () => {
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
   const s = A.scheduleOf(AROME), latest = at('2026-11-07T15:00:00Z');
   assert.equal(s.runFor(at('2026-11-07T11:00:00Z'), latest), at('2026-11-07T09:00:00Z'));
   assert.equal(s.runFor(at('2026-11-09T12:00:00Z'), latest), latest);
@@ -669,6 +671,7 @@ test('Frames of AROME: its own latest.json and files, a regional grid with its e
   global.WidgetOpenData = require('../glue-wind-open.js');
   global.WidgetTemp = require('../glue-temp.js');
   global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
   const reads = [];
   const f = new A.Frames(aromeLoader(reads), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3 });
   await f.load();
@@ -692,10 +695,10 @@ test('Frames.gridAt: the fine model rides along when it has the picture', () => 
   coarse.meta = { lats: [], lons: [], res: 1 };
   coarse.packed = [[A.pack(Float32Array.from([1]))], [A.pack(Float32Array.from([3]))]];
   coarse.idle = () => {};
-  assert.equal(coarse.gridAt(0).fine, undefined);
-  coarse.fine = { fineAt: (pos) => (pos < 1 ? { tag: pos } : null) };
-  assert.deepEqual(coarse.gridAt(0.5).fine, { tag: 0.5 });
-  assert.equal(coarse.gridAt(1).fine, undefined);
+  assert.equal(coarse.gridAt(0).fines, undefined);
+  coarse.fines = [{ fineAt: (pos) => (pos < 1 ? { tag: 'a' + pos } : null) }, { fineAt: (pos) => ({ tag: 'b' + pos }) }];
+  assert.deepEqual(coarse.gridAt(0.5).fines, [{ tag: 'a0.5' }, { tag: 'b0.5' }]);   // finest first
+  assert.deepEqual(coarse.gridAt(1).fines, [{ tag: 'b1' }]);                       // those without the picture left out
 });
 
 /** Frames of one-point pictures at 0, 3, 6 and 9 h, those of `have` in,
