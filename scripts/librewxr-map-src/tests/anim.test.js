@@ -16,6 +16,13 @@ test('frameTimes: every 3 h around the step nearest to now', () => {
   assert.equal(ft.times[24], at('2026-11-03T15:00:00Z'));
 });
 
+test('frameTimes: no hours before, now is the first picture', () => {
+  const ft = A.frameTimes(at('2026-11-01T14:10:00Z'), 0, 12, 3);
+  assert.equal(ft.times.length, 5);
+  assert.equal(ft.now, 0);
+  assert.equal(ft.times[0], at('2026-11-01T15:00:00Z'));
+});
+
 test('runFor: the run of that hour, never newer than the latest one', () => {
   const latest = at('2026-11-01T06:00:00Z');
   assert.equal(A.runFor(at('2026-10-31T21:00:00Z'), latest), at('2026-10-31T18:00:00Z'));

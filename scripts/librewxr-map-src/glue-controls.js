@@ -429,7 +429,7 @@ window.animStart = function (pastH, futureH, layers) {
     // Not stored: a grid of the whole range would not fit in localStorage.
     api: new WidgetWind.WindSource({ storage: null, world: false })
   };
-  animLoad(pastH || 24, futureH || 48);
+  animLoad(pastH == null ? 24 : pastH, futureH == null ? 48 : futureH);
   _widgetAdapter.setFramesHidden(true);
   document.body.classList.add('lv-anim');
   layers = layers || { temperature: true };
