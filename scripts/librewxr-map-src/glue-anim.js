@@ -22,8 +22,9 @@ var WidgetAnim = (function () {
   var RUN_H = 6;                // runs start at 00, 06, 12 and 18 UTC
   var LONG_RUN_H = 12;          // those of 00 and 12 UTC go 15 days ahead
   var SHORT_RANGE_H = 144;      // those of 06 and 18 UTC, 6 days
-  var PACK_MIN = -80, PACK_NAN = 255;   // byte b is PACK_MIN + b / 2 °C
+  var PACK_MIN = -80, PACK_NAN = 255;   // byte b is PACK_MIN + b / 2 °C (TEMP_QUANTUM)
   var WIND_MIN = -63.5;         // byte b is WIND_MIN + b / 2 m/s
+  var EDGE_JITTER = 2;          // degrees: how far in a finer model may start to blend (see edgeJitter)
 
   /** The hours shown, every stepH hours from pastH before the step nearest
       to nowMs to futureH after it: { times: [ms], now: index of that step }. */
@@ -502,6 +503,19 @@ var WidgetAnim = (function () {
     return g;
   };
 
+  /** How far in (points) the blend of a finer model on grid d starts at
+      each of its points: up to EDGE_JITTER degrees, by WidgetTemp.edgeNoise. */
+  function edgeJitter(d) {
+    var j = new Float32Array(d.nx * d.ny), s = EDGE_JITTER / d.res;
+    for (var r = 0; r < d.ny; r++) {
+      for (var c = 0; c < d.nx; c++) {
+        var p = WidgetGrids.lonLatAt(d, c, r);
+        j[r * d.nx + c] = s * WidgetTemp.edgeNoise(p.lat, p.lon);
+      }
+    }
+    return j;
+  }
+
   /** The edge weights of this model's grid, worked out once from the first
       picture in (every picture has its values at the same points). */
   Frames.prototype.weights = function () {
@@ -511,7 +525,7 @@ var WidgetAnim = (function () {
       if (!this.packed[i] || this.between[i]) continue;
       var vals = this._values(i), d = this.field.grid(m, vals, null, 0, this.times[i]).desc;
       var rows = d ? d.ny : m.lats.length, cols = d ? d.nx : m.lons.length, res = d ? d.res : m.res;
-      this._weights = WidgetTemp.edgeWeights(vals.u || vals, rows, cols, this.field.feather / res);
+      this._weights = WidgetTemp.edgeWeights(vals.u || vals, rows, cols, this.field.feather / res, d ? edgeJitter(d) : null);
       return this._weights;
     }
     return null;
@@ -1038,7 +1052,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
     decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

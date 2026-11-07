@@ -326,7 +326,7 @@ var ANIM_LAYERS = {
     // The graphics chip draws the files far out; the tiles everything else.
     var Layer = WidgetTemp.TempLayerGL || WidgetTemp.TempLayer;
     var layer = new Layer(_widgetAdapter, anim.api, _windOpen, _tempDem, {
-      stops: tempPalette, step: tempStep, unit: tempUnit, opacity: tempOpacity, manual: true
+      stops: tempPalette, step: tempStep, unit: tempUnit, opacity: tempOpacity, manual: true, quantum: WidgetAnim.TEMP_QUANTUM
     });
     layer.addTo(m);
     layer.setMovingStep(anim.movingStep);

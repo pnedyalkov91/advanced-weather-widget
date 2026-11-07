@@ -686,6 +686,12 @@ test('Frames of AROME: its own latest.json and files, a regional grid with its e
   assert.equal(g.weights[1120], 0);                      // grid edge (south-east)
   assert.equal(g.weights[358 * 1121 + 560], 1);          // middle
   assert.equal(f.grid(1).weights, g.weights);            // worked out once
+  // The blend starts up to EDGE_JITTER degrees in, varying along the edge
+  // (2 degrees in from the east edge, 80 points), and is done past both.
+  const along = (c) => { const out = []; for (let r = 300; r < 500; r++) out.push(g.weights[r * 1121 + c]); return out; };
+  const at2 = along(1120 - 80);
+  assert.ok(Math.max(...at2) - Math.min(...at2) > 0.3, 'spread ' + Math.min(...at2) + '..' + Math.max(...at2));
+  assert.ok(along(1120 - 170).every((w) => w === 1));
 });
 
 test('Frames.gridAt: the fine model rides along when it has the picture', () => {

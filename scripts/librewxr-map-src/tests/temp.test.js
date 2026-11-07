@@ -105,3 +105,27 @@ test('edgeWeights: in two dimensions the nearest edge counts', () => {
   assert.equal(w[1 * n + 3], 0.5);       // one row in from the top
   assert.equal(w[3 * n + 3], 1);         // center, three in from every side
 });
+
+test('edgeWeights: a jitter (in points) moves where the blend starts, never past the edge', () => {
+  const n = 9, v = new Float32Array(n * n).fill(1), jitter = new Float32Array(n * n).fill(1);
+  const w = T.edgeWeights(v, n, n, 2, jitter);
+  assert.equal(w[4 * n + 1], 0);          // one in from the edge, pushed back by one
+  assert.equal(w[4 * n + 2], 0.5);
+  assert.equal(w[4 * n + 4], 1);
+  assert.equal(w[0], 0);
+});
+
+test('edgeNoise: the same everywhere it is asked, between 0 and 1, smooth, and not flat', () => {
+  assert.equal(T.edgeNoise(46.2, -11.7), T.edgeNoise(46.2, -11.7));
+  let lo = 1, hi = 0, jump = 0;
+  for (let lat = 30; lat < 40; lat += 0.05) {
+    for (let lon = -20; lon < -10; lon += 0.05) {
+      const a = T.edgeNoise(lat, lon);
+      assert.ok(a >= 0 && a <= 1, 'noise ' + a);
+      lo = Math.min(lo, a); hi = Math.max(hi, a);
+      jump = Math.max(jump, Math.abs(T.edgeNoise(lat, lon + 0.05) - a), Math.abs(T.edgeNoise(lat + 0.05, lon) - a));
+    }
+  }
+  assert.ok(hi - lo > 0.6, 'range ' + lo + '..' + hi);
+  assert.ok(jump < 0.15, 'largest step over 0.05 degrees: ' + jump);
+});

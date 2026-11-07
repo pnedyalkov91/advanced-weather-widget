@@ -105,7 +105,7 @@ WidgetTemp.TempLayer = (function () {
         var t = (t00 * (1 - fc) + t01 * fc) * (1 - fr) + (t10 * (1 - fc) + t11 * fc) * fr;
         if (!isFinite(t)) { px[o + 3] = 0; continue; }
         if (off) t += off[row * TILE + col];
-        var i = WidgetTemp.lutIndex(t) * 3;
+        var i = WidgetTemp.lutIndex(t + job.shift) * 3;
         px[o] = lut[i]; px[o + 1] = lut[i + 1]; px[o + 2] = lut[i + 2]; px[o + 3] = 255;
       }
     }
@@ -140,8 +140,15 @@ WidgetTemp.TempLayer = (function () {
       unit: WidgetTemp.normUnit(options.unit),
       opacity: WidgetTemp.normOpacity(options.opacity),
       fetchDelayMs: options.fetchDelayMs == null ? 600 : options.fetchDelayMs,
-      retryMinMs: options.retryMinMs == null ? 1000 : options.retryMinMs
+      retryMinMs: options.retryMinMs == null ? 1000 : options.retryMinMs,
+      // The step (°C) the data were stored by (the animation's pictures,
+      // half degrees), if any: band limits fall on its steps, and a flat
+      // area stored at a limit would flip band as a whole, its edge
+      // following the grid's cells in stairs. The colors are read half a
+      // step lower, so the limits fall between the steps.
+      quantum: options.quantum > 0 ? +options.quantum : 0
     };
+    this._shift = -this.options.quantum / 2;   // °C added before the color is read
     this._now = options.now || function () { return Date.now(); };
     this._map = null;
     this._token = 0;          // view of the last reset
@@ -304,7 +311,7 @@ WidgetTemp.TempLayer = (function () {
       return demReady.then(function () {
         return new Promise(function (resolve) {
           var job = {
-            px: px, lut: shown.lut, signal: signal, resolve: resolve, row: 0, step: step,
+            px: px, lut: shown.lut, signal: signal, resolve: resolve, row: 0, step: step, shift: self._shift,
             demData: wantsDem ? self._dem.tileData(dz, dx, dy) : null,
             demShift: s, demOffX: (x - (dx << s)) * TILE, demOffY: (y - (dy << s)) * TILE
           };
@@ -543,7 +550,7 @@ WidgetTemp.TempLayer = (function () {
     /** The color of the band temperature tC (°C) is drawn in, as on the map. */
     colorOf: function (tC) {
       var lut = this._lut || WidgetTemp.buildLut(this.options.stops, this.options.step, this.options.unit);
-      var i = WidgetTemp.lutIndex(tC) * 3;
+      var i = WidgetTemp.lutIndex(tC + this._shift) * 3;
       return 'rgb(' + lut[i] + ', ' + lut[i + 1] + ', ' + lut[i + 2] + ')';
     },
 

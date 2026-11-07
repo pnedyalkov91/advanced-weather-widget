@@ -162,8 +162,10 @@ var WidgetTemp = (function () {
   /** How far each point of a grid is inside its data, from 0 on the
       grid's edge or next to a missing value to 1 at feather points in
       (chamfer distance); NaN where the value is missing. A finer model
-      blends into the coarse one with it, so its border leaves no step. */
-  function edgeWeights(values, rows, cols, feather) {
+      blends into the coarse one with it, so its border leaves no step.
+      jitter (points, one per point, optional) pushes the start of the
+      blend that far in: see edgeNoise. */
+  function edgeWeights(values, rows, cols, feather, jitter) {
     var n = rows * cols, d = new Float32Array(n), BIG = 1e9, D = Math.SQRT2, r, c, k;
     for (k = 0; k < n; k++) {
       r = Math.floor(k / cols); c = k - r * cols;
@@ -186,12 +188,36 @@ var WidgetTemp = (function () {
       }
     }
     var w = new Float32Array(n);
-    for (k = 0; k < n; k++) w[k] = d[k] < 0 ? NaN : Math.min(1, d[k] / feather);
+    for (k = 0; k < n; k++) w[k] = d[k] < 0 ? NaN : Math.max(0, Math.min(1, (d[k] - (jitter ? jitter[k] : 0)) / feather));
     return w;
   }
 
+  // Integer hash of a lattice node, 0..1.
+  function hash01(i, j) {
+    var h = (Math.imul(i, 374761393) + Math.imul(j, 668265263)) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  }
+  // Smooth value noise, 0..1, one lattice node per unit.
+  function valueNoise(x, y) {
+    var i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j;
+    fx = fx * fx * (3 - 2 * fx);
+    fy = fy * fy * (3 - 2 * fy);
+    var a = hash01(i, j), b = hash01(i + 1, j), c = hash01(i, j + 1), d = hash01(i + 1, j + 1);
+    return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+  }
+
+  /** A fixed noise of the earth, 0..1, at lat/lon: bumps of about 1.5
+      degrees with finer ones over them. Where a finer model starts to
+      blend in moves by it, so that over a flat sea, where the two models
+      differ by a little, the band their blend crosses follows a ragged
+      line and no longer the model's straight border. */
+  function edgeNoise(lat, lon) {
+    return (2 * valueNoise(lon / 1.5, lat / 1.5) + valueNoise(lon / 0.5 + 17.3, lat / 0.5 + 5.1)) / 3;
+  }
+
   return {
-    LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar, edgeWeights: edgeWeights,
+    LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar, edgeWeights: edgeWeights, edgeNoise: edgeNoise,
     DEFAULT_STOPS: DEFAULT_STOPS, LUT_MIN: LUT_MIN, LUT_STEP: LUT_STEP, LUT_SIZE: LUT_SIZE,
     parsePalette: parsePalette, paletteFromParam: paletteFromParam, formatPalette: formatPalette, colorAt: colorAt,
     bandCenterC: bandCenterC, lutIndex: lutIndex, buildLut: buildLut, legendTicks: legendTicks,

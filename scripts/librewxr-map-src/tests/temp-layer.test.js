@@ -68,7 +68,7 @@ function fakeAdapter(bounds) {
 
 /** The file: 6.3 °C everywhere; the model's ground at 2076 m everywhere. */
 function fakeOpen(opts = {}) {
-  const grid = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(6.3), 3, 4, NOW);
+  const grid = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(opts.value == null ? 6.3 : opts.value), 3, 4, NOW);
   const surface = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(2076), 3, 4, null);
   return {
     res: 0.25,
@@ -597,4 +597,20 @@ test('readFields: two fine models, the finer first, each over its own area, the 
   assert.equal(out.t, 15);
   read(fields, 45, 5, out);          // neither
   assert.equal(out.t, 10);
+});
+
+test('quantum: data stored by half degrees are drawn with the band limits between their steps', async () => {
+  // A stored value right on a band limit (they start bands): its whole
+  // plateau would take the upper band, its edge following the grid's cells.
+  let v = 0;
+  for (let k = 0; k < 100 && colorOf(v) === colorOf(v - 0.25); k++) v += 0.5;
+  assert.notEqual(colorOf(v), colorOf(v - 0.25));
+  for (const [quantum, want] of [[0, colorOf(v)], [0.5, colorOf(v - 0.25)]]) {
+    const layer = new T.TempLayer(fakeAdapter(EUROPE), stubSource(null), fakeOpen({ value: v, noSurface: true }), null, { ...OPTS, quantum });
+    layer.addTo(fakeMap(4));
+    await settle();
+    assert.deepEqual(colors(await drawTile(layer, ...MONT_BLANC)), [want], 'quantum ' + quantum);
+    assert.equal(layer.colorOf(v), 'rgb(' + want.split(',').slice(0, 3).join(', ') + ')');
+    layer.remove();
+  }
 });

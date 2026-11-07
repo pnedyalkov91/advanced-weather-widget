@@ -426,7 +426,7 @@ WidgetTemp.TempLayerGL = (function () {
     gl.uniform2f(u.u_size, cols, rows);
     gl.uniform1f(u.u_mix, f.valuesB ? f.mix || 0 : 0);
     gl.uniform1f(u.u_opacity, o.options.opacity / 100 * layer.fade);
-    gl.uniform1f(u.u_lutMin, WidgetTemp.LUT_MIN);
+    gl.uniform1f(u.u_lutMin, WidgetTemp.LUT_MIN - o._shift);   // the colors read at t + shift
     gl.uniform1f(u.u_lutStep, WidgetTemp.LUT_STEP);
     gl.uniform1f(u.u_lutSize, WidgetTemp.LUT_SIZE);
     layer.drawn = o._gpuVersion;
