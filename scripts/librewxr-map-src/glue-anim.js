@@ -161,15 +161,21 @@ var WidgetAnim = (function () {
     // over the sea, where the two models differ by 1 to 2 degrees).
     temperatureFine: {
       id: 'temperature',
-      store: 'temperature',
+      // Kept as the file holds it (south row first), under its own name:
+      // the pictures of the first trial were kept flipped.
+      store: 'temperature-file',
       vars: ['temperature_2m'],
       feather: 2,
       read: function (e, t, model) {
-        var g = WidgetOpenData.toScalarGrid(e.data[0], e.ny, e.nx, t, WidgetOpenData.domainOf(model, e.ny, e.nx));
-        return { meta: { lats: g.lats, lons: g.lons, res: g.res }, parts: [pack(g.values)] };
+        var g = WidgetOpenData.toModelGrid(e.data[0], e.ny, e.nx, t, model);
+        return { meta: { model: model }, parts: [pack(g.values)] };
       },
       unpack: function (parts) { return unpack(parts[0]); },
-      grid: function (m, a, b, mix, tA, tB, at) { return FIELDS.temperature.grid(m, a, b, mix, tA, tB, at); }
+      grid: function (m, a, b, mix, tA, tB, at) {
+        var desc = WidgetOpenData.gridOf(m.model);
+        if (!b) return { desc: desc, times: [tA / 1000], values: a };
+        return { desc: desc, times: [at / 1000], values: a, valuesB: b, mix: mix };
+      }
     },
     // The 10 m wind, every point of the file as the radar reads it; the
     // wind layer mixes two hours by itself (times and at).
@@ -466,7 +472,9 @@ var WidgetAnim = (function () {
     var m = this.meta;
     for (var i = 0; i < this.packed.length && m; i++) {
       if (!this.packed[i] || this.between[i]) continue;
-      this._weights = WidgetTemp.edgeWeights(this._values(i), m.lats.length, m.lons.length, this.field.feather / m.res);
+      var d = this.field.grid(m, this._values(i), null, 0, this.times[i]).desc;
+      var rows = d ? d.ny : m.lats.length, cols = d ? d.nx : m.lons.length, res = d ? d.res : m.res;
+      this._weights = WidgetTemp.edgeWeights(this._values(i), rows, cols, this.field.feather / res);
       return this._weights;
     }
     return null;

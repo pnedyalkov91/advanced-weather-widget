@@ -33,6 +33,7 @@ GLUE_CONFIG_TOKEN = "/*@__WIDGET_GLUE_CONFIG__*/"
 GLUE_ADAPTER_TOKEN = "/*@__WIDGET_GLUE_ADAPTER__*/"
 GLUE_WIND_TOKEN = "/*@__WIDGET_GLUE_WIND__*/"
 GLUE_CONTROLS_TOKEN = "/*@__WIDGET_GLUE_CONTROLS__*/"
+GLUE_GRIDS_TOKEN = "/*@__WIDGET_GLUE_GRIDS__*/"
 GLUE_WIND_OPEN_TOKEN = "/*@__WIDGET_GLUE_WIND_OPEN__*/"
 GLUE_WIND_TABLE_TOKEN = "/*@__WIDGET_GLUE_WIND_TABLE__*/"
 GLUE_TEMP_TOKEN = "/*@__WIDGET_GLUE_TEMP__*/"
@@ -62,6 +63,7 @@ PAGES = [
         ("glue-prepare.js", GLUE_PREPARE_TOKEN),
         ("glue-adapter-maplibre.js", GLUE_ADAPTER_TOKEN),
         ("glue-wind.js", GLUE_WIND_TOKEN),
+        ("glue-grids.js", GLUE_GRIDS_TOKEN),
         ("glue-wind-open.js", GLUE_WIND_OPEN_TOKEN),
         ("glue-wind-table.js", GLUE_WIND_TABLE_TOKEN),
         ("glue-temp.js", GLUE_TEMP_TOKEN),

@@ -32,6 +32,12 @@ WidgetTemp.TempLayer = (function () {
     return latOfMercY(Math.PI * (1 - 2 * row / (TILE * Math.pow(2, z))));
   }
 
+  /** A field's value at lat/lon: on a regional model's own grid (desc,
+      see WidgetGrids), or on a grid of lats and lons. */
+  function sampleField(grid, values, lat, lon) {
+    return grid.desc ? WidgetGrids.sample(grid.desc, values, lat, lon) : WidgetTemp.sampleScalar(grid, values, lat, lon);
+  }
+
   /** The temperature and the height it is valid at, at lat/lon: from the
       first field that has it. A field between two times (the animation)
       has a second set of values and the share of it (mix). A field with
@@ -42,12 +48,12 @@ WidgetTemp.TempLayer = (function () {
       height when noZ. */
   function readFields(fields, lat, lon, out, noZ, from) {
     for (var i = from || 0; i < fields.length; i++) {
-      var f = fields[i], t = WidgetTemp.sampleScalar(f.grid, f.values, lat, lon);
-      if (f.valuesB && f.mix > 0) t += (WidgetTemp.sampleScalar(f.grid, f.valuesB, lat, lon) - t) * f.mix;
+      var f = fields[i], t = sampleField(f.grid, f.values, lat, lon);
+      if (f.valuesB && f.mix > 0) t += (sampleField(f.grid, f.valuesB, lat, lon) - t) * f.mix;
       if (!isFinite(t)) continue;
-      var z = f.elev && !noZ ? WidgetTemp.sampleScalar(f.grid, f.elev, lat, lon) : NaN;
+      var z = f.elev && !noZ ? sampleField(f.grid, f.elev, lat, lon) : NaN;
       if (f.weights) {
-        var w = WidgetTemp.sampleScalar(f.grid, f.weights, lat, lon) * (f.fade == null ? 1 : f.fade);
+        var w = sampleField(f.grid, f.weights, lat, lon) * (f.fade == null ? 1 : f.fade);
         if (!(w > 0)) continue;
         if (w < 1) {
           readFields(fields, lat, lon, out, noZ, i + 1);
@@ -328,7 +334,7 @@ WidgetTemp.TempLayer = (function () {
         var f = fields[i];
         // A finer model fading in or out blends the heights by its fade.
         if (!f.elev || f.grid.temp || f.fade != null && f.fade !== 1) return null;
-        parts.push(f.grid.lats, f.elev, f.weights || null);
+        parts.push(f.grid.desc || f.grid.lats, f.elev, f.weights || null);
       }
       return parts.length ? { parts: parts, dem: demData } : null;
     },

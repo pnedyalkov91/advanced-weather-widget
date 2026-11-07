@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 
 global.WidgetWind = require('../glue-wind.js');
 global.WidgetTemp = require('../glue-temp.js');
+global.WidgetGrids = require('../glue-grids.js');
 const WidgetOpenData = require('../glue-wind-open.js');
 require('../glue-temp-layer.js');
 const T = global.WidgetTemp;
@@ -472,9 +473,14 @@ test('setFade scales the opacity, tiles and legend, without new tiles; setOpacit
 
 /** A fine field over 40..41 N, 0..1 E (step 0.25): t and ground z
     everywhere, its edge weights over a feather of 2 points. */
+/** A regional grid of n x n points from (south, west), step degrees, at v everywhere. */
+function regional(v, n, south, west, step) {
+  const desc = WidgetGrids.latlon({ nx: n, ny: n, south, west, dLon: step, dLat: step });
+  return { desc, times: [NOW / 1000], values: new Float32Array(n * n).fill(v) };
+}
+
 function fineField(t, z) {
-  const dom = { south: 40, west: 0, step: 0.25 };
-  const grid = WidgetOpenData.toScalarGrid(new Float32Array(25).fill(t), 5, 5, NOW, dom);
+  const grid = regional(t, 5, 40, 0, 0.25);
   const elev = new Float32Array(25).fill(z);
   return { grid, values: grid.values, elev, weights: T.edgeWeights(grid.values, 5, 5, 2) };
 }
@@ -510,8 +516,8 @@ test('manual mode: a finer model brought by the picture draws over the file wher
   layer.addTo(fakeMap(4));
   await settle();
   // A fine grid of 41 x 41 points around Mont Blanc (45.83 N, 6.86 E), ground at 3500 m.
-  const n = 41, dom = { south: 45.33, west: 6.36, step: 0.025 };
-  const fine = WidgetOpenData.toScalarGrid(new Float32Array(n * n).fill(-12), n, n, NOW, dom);
+  const n = 41;
+  const fine = regional(-12, n, 45.33, 6.36, 0.025);
   fine.elev = new Float32Array(n * n).fill(3500);
   fine.weights = T.edgeWeights(fine.values, n, n, 4);
   layer.showFile(Object.assign(WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW), { fine }));
@@ -526,9 +532,9 @@ test('manual mode: with a finer model too, the relief offsets of a tile are comp
   const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(4792), Object.assign({ manual: true }, OPTS));
   layer.addTo(fakeMap(4));
   await settle();
-  const n = 41, dom = { south: 45.33, west: 6.36, step: 0.025 };
+  const n = 41;
   const fineAt = (v) => {
-    const f = WidgetOpenData.toScalarGrid(new Float32Array(n * n).fill(v), n, n, NOW, dom);
+    const f = regional(v, n, 45.33, 6.36, 0.025);
     return Object.assign(f, { elev: ELEV, weights: W });
   };
   const ELEV = new Float32Array(n * n).fill(3500);
@@ -567,8 +573,8 @@ test('manual mode: a new fade of the finer model draws again, its relief not kep
   const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(4792), Object.assign({ manual: true }, OPTS));
   layer.addTo(fakeMap(4));
   await settle();
-  const n = 41, dom = { south: 45.33, west: 6.36, step: 0.025 };
-  const fine = WidgetOpenData.toScalarGrid(new Float32Array(n * n).fill(-12), n, n, NOW, dom);
+  const n = 41;
+  const fine = regional(-12, n, 45.33, 6.36, 0.025);
   Object.assign(fine, { elev: new Float32Array(n * n).fill(3500), weights: T.edgeWeights(fine.values, n, n, 4), fade: 1 });
   const c = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW);
   layer.showFile(Object.assign({}, c, { fine }));

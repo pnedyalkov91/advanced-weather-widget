@@ -668,6 +668,7 @@ function aromeLoader(reads) {
 test('Frames of AROME: its own latest.json and files, a regional grid with its edge weights', async () => {
   global.WidgetOpenData = require('../glue-wind-open.js');
   global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
   const reads = [];
   const f = new A.Frames(aromeLoader(reads), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3 });
   await f.load();
@@ -675,13 +676,12 @@ test('Frames of AROME: its own latest.json and files, a regional grid with its e
   assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1500Z/2026-11-07T1800.om'));
   assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1200Z/2026-11-07T1200.om'));
   const g = f.grid(1);
-  assert.equal(g.lats[0], 55.4);
-  assert.equal(g.lons[0], -12);
+  assert.equal(g.desc.id, AROME);
   assert.equal(g.values.length, 717 * 1121);
   assert.equal(g.weights.length, 717 * 1121);
-  assert.equal(g.weights[0], 0);                         // grid edge
+  assert.ok(Number.isNaN(g.weights[0]));                 // the missing value: first point of the file (south-west)
+  assert.equal(g.weights[1120], 0);                      // grid edge (south-east)
   assert.equal(g.weights[358 * 1121 + 560], 1);          // middle
-  assert.ok(Number.isNaN(g.weights[716 * 1121]));        // the missing value (south-west, last row)
   assert.equal(f.grid(1).weights, g.weights);            // worked out once
 });
 
