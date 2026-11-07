@@ -34,15 +34,32 @@ WidgetTemp.TempLayer = (function () {
 
   /** The temperature and the height it is valid at, at lat/lon: from the
       first field that has it. A field between two times (the animation)
-      has a second set of values and the share of it (mix). Without the
+      has a second set of values and the share of it (mix). A field with
+      weights (a finer model over part of the map) is blended into the
+      fields after it by its weight there, temperature and height alike:
+      the height correction being linear, that is the blend of the
+      corrected temperatures, so its border leaves no step. Without the
       height when noZ. */
-  function readFields(fields, lat, lon, out, noZ) {
-    for (var i = 0; i < fields.length; i++) {
+  function readFields(fields, lat, lon, out, noZ, from) {
+    for (var i = from || 0; i < fields.length; i++) {
       var f = fields[i], t = WidgetTemp.sampleScalar(f.grid, f.values, lat, lon);
       if (f.valuesB && f.mix > 0) t += (WidgetTemp.sampleScalar(f.grid, f.valuesB, lat, lon) - t) * f.mix;
       if (!isFinite(t)) continue;
+      var z = f.elev && !noZ ? WidgetTemp.sampleScalar(f.grid, f.elev, lat, lon) : NaN;
+      if (f.weights) {
+        var w = WidgetTemp.sampleScalar(f.grid, f.weights, lat, lon);
+        if (!(w > 0)) continue;
+        if (w < 1) {
+          readFields(fields, lat, lon, out, noZ, i + 1);
+          if (isFinite(out.t)) {
+            out.t += (t - out.t) * w;
+            out.z = isFinite(out.z) && isFinite(z) ? out.z + (z - out.z) * w : (isFinite(z) ? z : out.z);
+            return;
+          }
+        }
+      }
       out.t = t;
-      out.z = f.elev && !noZ ? WidgetTemp.sampleScalar(f.grid, f.elev, lat, lon) : NaN;
+      out.z = z;
       return;
     }
     out.t = NaN;
@@ -215,7 +232,7 @@ WidgetTemp.TempLayer = (function () {
       if (this._map && this._mode === 'api' && this._drawnApi) {
         this._fileGrid = grid;
         this._fileState = 'ready';
-        this._show(this._apiFields(this._drawnApi.grid, this._fileField()));
+        this._show(this._apiFields(this._drawnApi.grid, this._fileFields()));
         return;
       }
       this._fileIn(grid, true);
@@ -301,17 +318,24 @@ WidgetTemp.TempLayer = (function () {
     },
 
     /* The relief offsets of a tile hold while the heights the data are
-       valid at and the elevation tile stay the same: one field (the file,
-       as in the animation), the same grid and heights, the same elevation.
-       The API grids change with the view, so they are not kept. */
+       valid at and the elevation tile stay the same: the same fields (the
+       file, and a finer model over it, as in the animation), each with the
+       same grid, heights and edge weights, the same elevation. Only the
+       files: the API grids change with the view, so they are not kept. */
     _reliefKey: function (fields, demData) {
-      if (fields.length !== 1 || !fields[0].elev) return null;
-      return { lats: fields[0].grid.lats, elev: fields[0].elev, dem: demData };
+      var parts = [];
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (!f.elev || f.grid.temp) return null;
+        parts.push(f.grid.lats, f.elev, f.weights || null);
+      }
+      return parts.length ? { parts: parts, dem: demData } : null;
     },
 
     _keptRelief: function (z, x, y, fields, demData) {
       var key = this._reliefKey(fields, demData), id = z + '/' + x + '/' + y, e = this._relief.get(id);
-      if (!key || !e || e.key.lats !== key.lats || e.key.elev !== key.elev || e.key.dem !== key.dem) return null;
+      if (!key || !e || e.key.dem !== key.dem || e.key.parts.length !== key.parts.length) return null;
+      for (var i = 0; i < key.parts.length; i++) if (e.key.parts[i] !== key.parts[i]) return null;
       this._relief.delete(id);
       this._relief.set(id, e);
       return e.offsets;
@@ -406,11 +430,11 @@ WidgetTemp.TempLayer = (function () {
       if (!this._map) return;
       var self = this, token = ++this._token, view = this._view();
       if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
-      var file = this._fileState === 'ready' && this._fileGrid ? this._fileField() : null;
+      var file = this._fileState === 'ready' && this._fileGrid ? this._fileFields() : null;
       if (this._open && this._fileState !== 'failed' && !WindField.wantApi(WindField.gridSpec(view.bounds), this._open.res)) {
         this._setMode('file');
         // Still on its way: _fileIn() shows it.
-        if (file) this._show([file]);
+        if (file) this._show(file);
         return;
       }
       this._setMode('api');
@@ -421,7 +445,7 @@ WidgetTemp.TempLayer = (function () {
       this._drawnApi = drawn;
       if (drawn) this._show(this._apiFields(drawn.grid, file));
       // Nothing from the API yet: the picture given meanwhile.
-      else if (this._manual && file) this._show([file]);
+      else if (this._manual && file) this._show(file);
       this._fetchTimer = setTimeout(function () {
         self._fetchTimer = null;
         self._ensureFor(view, token, drawn);
@@ -439,7 +463,7 @@ WidgetTemp.TempLayer = (function () {
         var now = self._source.now(), next = WindField.afterEnsure(view, entry, now, self._source.ttlMs);
         if (next.draw && entry !== drawn && entry.grid.temp) {
           drawn = self._drawnApi = entry;
-          self._show(self._apiFields(entry.grid, self._fileState === 'ready' ? self._fileField() : null));
+          self._show(self._apiFields(entry.grid, self._fileState === 'ready' ? self._fileFields() : null));
         }
         if (!next.retry) return;
         var wait = Math.max(self.options.retryMinMs, (self._source.blockedUntil || 0) - now + 200);
@@ -462,13 +486,20 @@ WidgetTemp.TempLayer = (function () {
       this._adapter.setTempTiles(this._provider, ++this._version, this.options.opacity / 100 * this._fade);
     },
 
-    /** The file's temperature, with the model's ground height when it matches. */
-    _fileField: function () {
-      var g = this._fileGrid, s = this._surface;
-      return {
+    /** The file's temperature, with the model's ground height when it
+        matches; before it, the finer model's when the grid brings one
+        (fine, with its own heights and edge weights). */
+    _fileFields: function () {
+      var g = this._fileGrid, s = this._surface, out = [];
+      var f = g.fine;
+      if (f && f.weights) {
+        out.push({ grid: f, values: f.values, valuesB: f.valuesB || null, mix: f.mix || 0, elev: f.elev || null, weights: f.weights });
+      }
+      out.push({
         grid: g, values: g.values, valuesB: g.valuesB || null, mix: g.mix || 0,
         elev: s && s.values.length === g.values.length ? s.values : null
-      };
+      });
+      return out;
     },
 
     /** An API grid, then the file where the grid ends. */
@@ -477,7 +508,7 @@ WidgetTemp.TempLayer = (function () {
       // manual mode, once per time of the animation.
       var at = this._timeSec(), key = this._manual ? at : null;
       if (!this._api || this._api.grid !== grid || this._api.key !== key) this._api = { grid: grid, key: key, field: this._apiField(grid, at) };
-      return file ? [this._api.field, file] : [this._api.field];
+      return file ? [this._api.field].concat(file) : [this._api.field];
     },
 
     /** The temperature drawn at lat/lon (°C), corrected to the height there
@@ -519,5 +550,6 @@ WidgetTemp.TempLayer = (function () {
     }
   };
 
+  TempLayer.readFields = readFields;
   return TempLayer;
 })();

@@ -469,3 +469,84 @@ test('setFade scales the opacity, tiles and legend, without new tiles; setOpacit
   assert.equal(adapter.opacities[adapter.opacities.length - 1], 0.3);
   assert.equal(adapter.tiles.length, count);
 });
+
+/** A fine field over 40..41 N, 0..1 E (step 0.25): t and ground z
+    everywhere, its edge weights over a feather of 2 points. */
+function fineField(t, z) {
+  const dom = { south: 40, west: 0, step: 0.25 };
+  const grid = WidgetOpenData.toScalarGrid(new Float32Array(25).fill(t), 5, 5, NOW, dom);
+  const elev = new Float32Array(25).fill(z);
+  return { grid, values: grid.values, elev, weights: T.edgeWeights(grid.values, 5, 5, 2) };
+}
+
+/** The coarse field: the whole world at 10 °C, ground at 0 m. */
+function coarseField() {
+  const grid = WidgetOpenData.toScalarGrid(new Float32Array(12).fill(10), 3, 4, NOW);
+  return { grid, values: grid.values, elev: new Float32Array(grid.values.length).fill(0) };
+}
+
+test('readFields: the fine model inside its feather, blended toward its edge, the coarse one outside', () => {
+  const read = WidgetTemp.TempLayer.readFields, fields = [fineField(20, 1000), coarseField()], out = {};
+  read(fields, 40.5, 0.5, out);                 // center: two points in, full weight
+  assert.equal(out.t, 20);
+  assert.equal(out.z, 1000);
+  read(fields, 40.5, 0.125, out);               // half a point in from the west edge: weight 1/4
+  assert.ok(Math.abs(out.t - 12.5) < 1e-6);
+  assert.ok(Math.abs(out.z - 250) < 1e-3);
+  read(fields, 45, 5, out);                     // outside
+  assert.equal(out.t, 10);
+  assert.equal(out.z, 0);
+});
+
+test('readFields: without a fine field, the first that has a value as before', () => {
+  const out = {};
+  WidgetTemp.TempLayer.readFields([coarseField()], 40.5, 0.5, out);
+  assert.equal(out.t, 10);
+});
+
+test('manual mode: a finer model brought by the picture draws over the file where it covers', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(4792), Object.assign({ manual: true }, OPTS));
+  layer.addTo(fakeMap(4));
+  await settle();
+  // A fine grid of 41 x 41 points around Mont Blanc (45.83 N, 6.86 E), ground at 3500 m.
+  const n = 41, dom = { south: 45.33, west: 6.36, step: 0.025 };
+  const fine = WidgetOpenData.toScalarGrid(new Float32Array(n * n).fill(-12), n, n, NOW, dom);
+  fine.elev = new Float32Array(n * n).fill(3500);
+  fine.weights = T.edgeWeights(fine.values, n, n, 4);
+  layer.showFile(Object.assign(WidgetOpenData.toScalarGrid(new Float32Array(12).fill(-3), 3, 4, NOW), { fine }));
+  assert.equal(layer._shown.fields.length, 2);
+  assert.ok(Math.abs(layer.valueAt(45.83, 6.86) - T.correct(-12, 3500, 4792)) < 1e-6);
+  assert.ok(Math.abs(layer.valueAt(40, 0) - T.correct(-3, 2076, 4792)) < 1e-6);   // outside: the file, from its own ground
+  layer.remove();
+});
+
+test('manual mode: with a finer model too, the relief offsets of a tile are computed once', async () => {
+  const adapter = fakeAdapter(EUROPE);
+  const layer = new T.TempLayer(adapter, stubSource(null), fakeOpen(), fakeDem(4792), Object.assign({ manual: true }, OPTS));
+  layer.addTo(fakeMap(4));
+  await settle();
+  const n = 41, dom = { south: 45.33, west: 6.36, step: 0.025 };
+  const fineAt = (v) => {
+    const f = WidgetOpenData.toScalarGrid(new Float32Array(n * n).fill(v), n, n, NOW, dom);
+    return Object.assign(f, { elev: ELEV, weights: W });
+  };
+  const ELEV = new Float32Array(n * n).fill(3500);
+  const W = T.edgeWeights(new Float32Array(n * n).fill(1), n, n, 4);
+  // Every picture on the same axes, as the animation's frames are.
+  const f0 = fineAt(0), c0 = WidgetOpenData.toScalarGrid(new Float32Array(12), 3, 4, NOW);
+  const file = (v) => Object.assign({}, c0, { values: new Float32Array(c0.values.length).fill(v), fine: Object.assign({}, f0, { values: new Float32Array(n * n).fill(v - 5) }) });
+  const draw = async () => adapter.tiles[adapter.tiles.length - 1].provider(...MONT_BLANC);
+  layer.showFile(file(0));
+  const p1 = draw();
+  await settle();
+  await p1;
+  const offsets = [...layer._relief.values()][0].offsets;
+  layer.showFile(file(10));
+  const p2 = draw();
+  await settle();
+  await p2;
+  assert.equal(layer._relief.size, 1);
+  assert.equal([...layer._relief.values()][0].offsets, offsets);
+  layer.remove();
+});

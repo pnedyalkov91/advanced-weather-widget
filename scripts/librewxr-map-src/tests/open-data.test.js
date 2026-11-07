@@ -193,3 +193,21 @@ test('Loader.loadSurface: null when the file cannot be read', async () => {
 test('SURFACE_URL: the model ground height of the open-data bucket', () => {
   assert.equal(WidgetOpenData.SURFACE_URL('ecmwf_ifs025'), 'https://openmeteo.s3.amazonaws.com/data/ecmwf_ifs025/static/HSURF.om');
 });
+
+test('toScalarGrid: a regional grid keeps its own corner and step, no wrap column', () => {
+  const dom = { south: 40, west: -10, step: 0.5 };
+  const g = WidgetOpenData.toScalarGrid(Float32Array.from([1, 2, 3, 4, 5, 6]), 2, 3, 3600000, dom);
+  assert.deepEqual(Array.from(g.values), [4, 5, 6, 1, 2, 3]);
+  assert.deepEqual(g.lats, [40.5, 40]);
+  assert.deepEqual(g.lons, [-10, -9.5, -9]);
+  assert.equal(g.res, 0.5);
+});
+
+test('domainOf: AROME France 0.025 matches its files, a size it does not have is refused', () => {
+  const d = WidgetOpenData.domainOf('meteofrance_arome_france0025', 717, 1121);
+  assert.equal(d.south, 37.5);
+  assert.equal(d.west, -12);
+  assert.equal(d.step, 0.025);
+  assert.throws(() => WidgetOpenData.domainOf('meteofrance_arome_france0025', 700, 1121), /717 x 1121/);
+  assert.equal(WidgetOpenData.domainOf('ecmwf_ifs025', 721, 1440), null);
+});

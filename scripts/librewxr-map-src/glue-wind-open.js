@@ -98,6 +98,9 @@ var WidgetOpenData = (function () {
     return this.open().then(function () { return self.size; });
   };
 
+  // Bytes read from the files so far, by model (measuring).
+  var traffic = {};
+
   TailBackend.prototype.fetchRange = function (offset, size) {
     var self = this;
     return this.fetch(this.url, { headers: { Range: 'bytes=' + offset + '-' + (offset + size - 1) } }).then(function (r) {
@@ -108,6 +111,9 @@ var WidgetOpenData = (function () {
       if (b.length !== size) throw new Error('got ' + b.length + ' bytes, wanted ' + size);
       self.requests++;
       self.bytes += size;
+      var m = /data_spatial\/([^/]+)\//.exec(self.url) || /\/data\/([^/]+)\//.exec(self.url);
+      var k = m ? m[1] : '?';
+      traffic[k] = (traffic[k] || 0) + size;
       return b;
     });
   };
@@ -151,27 +157,54 @@ var WidgetOpenData = (function () {
 
   /** The same for one field (temperature, ground height): { lats, lons,
       times, values, res }, times null for a field without a valid hour. */
-  function toScalarGrid(d, ny, nx, validMs) {
-    var g = gridAxes(ny, nx);
-    return { lats: g.lats, lons: g.lons, times: validMs == null ? null : [validMs / 1000], values: flipRows(d, ny, nx), res: g.res };
+  function toScalarGrid(d, ny, nx, validMs, domain) {
+    var g = gridAxes(ny, nx, domain);
+    return { lats: g.lats, lons: g.lons, times: validMs == null ? null : [validMs / 1000], values: flipRows(d, ny, nx, !domain), res: g.res };
   }
 
-  /** Rows of a field flipped north to south, plus a column at +180. */
-  function flipRows(d, ny, nx) {
-    var cols = nx + 1, out = new Float32Array(ny * cols);
+  /** Rows of a field flipped north to south, plus a column at +180 for a
+      grid of the whole world (wrap). */
+  function flipRows(d, ny, nx, wrap) {
+    if (wrap === undefined) wrap = true;
+    var cols = wrap ? nx + 1 : nx, out = new Float32Array(ny * cols);
     for (var r = 0; r < ny; r++) {
       var src = (ny - 1 - r) * nx, dst = r * cols;
       out.set(d.subarray(src, src + nx), dst);
-      out[dst + nx] = d[src];
+      if (wrap) out[dst + nx] = d[src];
     }
     return out;
   }
 
-  function gridAxes(ny, nx) {
-    var res = 180 / (ny - 1), lats = [], lons = [], i;
+  /** Axes of a grid, north to south and west to east: the whole world, or
+      a regional domain { south, west, step } (its south-west corner). */
+  function gridAxes(ny, nx, domain) {
+    var lats = [], lons = [], i;
+    if (domain) {
+      var st = domain.step, round = function (v) { return Math.round(v * 1e6) / 1e6; };
+      for (i = 0; i < ny; i++) lats.push(round(domain.south + (ny - 1 - i) * st));
+      for (i = 0; i < nx; i++) lons.push(round(domain.west + i * st));
+      return { lats: lats, lons: lons, res: st };
+    }
+    var res = 180 / (ny - 1);
     for (i = 0; i < ny; i++) lats.push(90 - i * res);
     for (i = 0; i <= nx; i++) lons.push(-180 + i * res);
     return { lats: lats, lons: lons, res: res };
+  }
+
+  // Regional models: their south-west corner, step and size (rows south to
+  // north like the global files). Read from latest.json (BBOX) and the
+  // files themselves on 2026-11-07.
+  var DOMAINS = {
+    meteofrance_arome_france0025: { south: 37.5, west: -12, step: 0.025, ny: 717, nx: 1121 }
+  };
+
+  /** The domain of a regional model, null for a global one; an error when
+      a file's size is not the one known. */
+  function domainOf(model, ny, nx) {
+    var d = DOMAINS[model];
+    if (!d) return null;
+    if (d.ny !== ny || d.nx !== nx) throw new Error(model + ' is ' + d.ny + ' x ' + d.nx + ', the file ' + ny + ' x ' + nx);
+    return d;
   }
 
   var TAIL_BYTES = 262144;    // the file's end read at once (headers and chunk indexes)
@@ -318,7 +351,7 @@ var WidgetOpenData = (function () {
         return kept;
       });
     }).then(function (entry) {
-      self.surface = toScalarGrid(entry.d, entry.ny, entry.nx, null);
+      self.surface = toScalarGrid(entry.d, entry.ny, entry.nx, null, domainOf(self.model, entry.ny, entry.nx));
       return self.surface;
     }).catch(function (err) {
       console.warn('[temp] model ground height: ' + err);
@@ -377,7 +410,7 @@ var WidgetOpenData = (function () {
 
   return {
     BASE: BASE, fileUrl: fileUrl, varNames: varNames, mergeRanges: mergeRanges, TailBackend: TailBackend,
-    toGrid: toGrid, toScalarGrid: toScalarGrid, SURFACE_URL: SURFACE_URL, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
+    toGrid: toGrid, toScalarGrid: toScalarGrid, DOMAINS: DOMAINS, domainOf: domainOf, traffic: traffic, SURFACE_URL: SURFACE_URL, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
   };
 })();
 

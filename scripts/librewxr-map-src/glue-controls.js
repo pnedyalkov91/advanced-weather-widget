@@ -294,6 +294,14 @@ var animGate = typeof WidgetAnim === 'undefined' ? null : new WidgetAnim.Gate(6)
 // range back the bar offers (8 days).
 var animStore = typeof WidgetAnim === 'undefined' || typeof indexedDB === 'undefined' ? null : WidgetAnim.frameStore();
 var ANIM_KEEP_H = 192;
+// The finer model over France (AROME 2.5 km) drawn over the temperature,
+// and its ground height for the relief (spike: animSetFine switches it).
+var animFine = true;
+var _fineOpen = typeof WidgetAnim === 'undefined' || !_windOpen ? null : new WidgetOpenData.Loader({
+  base: WIND_FILES_BASE || undefined, model: WidgetAnim.FINE_MODEL,
+  importReader: function () { return import('./vendor/index.browser.js'); }
+});
+var _fineSurface = null;
 window.animAvailable = window.tempAvailable && typeof WidgetAnim !== 'undefined' && !!_windOpen;
 
 // The layers an animation can show, by id (a WidgetAnim.FIELDS key): each
@@ -345,6 +353,20 @@ function animTrack(id, layer, reuse, onShow) {
       else if (!p.playing && (i === Math.floor(p.index) || i === Math.ceil(p.index))) p.seek(p.index);
     }
   });
+  var fine = null;
+  if (id === 'temperature' && animFine && _fineOpen) {
+    if (!_fineSurface) _fineOpen.loadSurface().then(function (g) { if (g) _fineSurface = g.values; });
+    fine = frames.fine = new WidgetAnim.Frames(_windOpen, {
+      field: WidgetAnim.FIELDS.temperatureFine, fileModel: WidgetAnim.FINE_MODEL, now: function () { return anim.nowMs; },
+      pastH: anim.pastH, futureH: anim.futureH, reuse: reuse && reuse.fine, parallel: 6, gate: animGate,
+      store: animStore, pruneH: ANIM_KEEP_H, surface: function () { return _fineSurface; },
+      onFrame: function (i) {
+        var t = anim && anim.group.track(id), p = anim && anim.player;
+        if (!t || t.frames !== frames || p.index < 0 || p.playing) return;
+        if (i === Math.floor(p.index) || i === Math.ceil(p.index)) p.seek(p.index);
+      }
+    });
+  }
   if (reuse) reuse.stop();
   // Loading, it holds no other layer: they play on, it joins them picture
   // by picture; once loaded, they wait for it again where it misses one.
@@ -356,6 +378,13 @@ function animTrack(id, layer, reuse, onShow) {
     console.log('[anim] ' + id + ': ' + frames.packed.filter(Boolean).length + '/' + frames.times.length + ' pictures in ' +
       (Date.now() - t0) + ' ms, ' + frames.fromStore + ' from the store');
   }, function (err) { console.warn('[anim] ' + id + ': ' + err); });
+  if (fine) {
+    var t1 = Date.now();
+    fine.load().then(function () {
+      console.log('[anim] ' + id + ' fine: ' + fine.packed.filter(Boolean).length + '/' + fine.times.length + ' pictures in ' +
+        (Date.now() - t1) + ' ms, ' + fine.fromStore + ' from the store');
+    }, function (err) { console.warn('[anim] ' + id + ' fine: ' + err); });
+  }
 }
 
 /** New pictures for pastH hours before now and futureH after, those
@@ -477,6 +506,25 @@ window.animSetResolution = function (n) {
 /** { times (ms), ready, failed, now, index (a position between frames),
     time (ms) of that position, fromFile (a frame as read, not worked out),
     playing, layers ({ id: on }) } for the QML bar. */
+/** The finer model over France on or off (spike, to compare). */
+window.animSetFine = function (on) {
+  animFine = !!on;
+  if (anim) animLoad(anim.pastH, anim.futureH);
+};
+
+/** What the animation holds and has read (spike measures): bytes read by
+    model, bytes of the packed pictures by layer and model. */
+window.animMeasure = function () {
+  var held = {};
+  function add(name, f) {
+    if (!f) return;
+    held[name] = f.packed.reduce(function (n, p) { return n + (p ? p.reduce(function (m, a) { return m + a.byteLength; }, 0) : 0); }, 0);
+    held[name + ' pictures'] = f.packed.filter(Boolean).length;
+  }
+  if (anim) anim.group.tracks.forEach(function (t) { add(t.id, t.frames); add(t.id + ' fine', t.frames.fine); });
+  return { read: Object.assign({}, WidgetOpenData.traffic), held: held, fine: animFine };
+};
+
 window.animState = function () {
   if (!anim) return null;
   var g = anim.group, layers = {};

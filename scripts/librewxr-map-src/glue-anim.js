@@ -50,6 +50,26 @@ var WidgetAnim = (function () {
     return lead >= 0 && (lead <= SHORT_RANGE_H * HOUR || lead % (2 * STEP_H * HOUR) === 0);
   }
 
+  // A finer regional model over part of the map: AROME at 2.5 km over
+  // France, runs every 3 h holding 51 hours, one file an hour.
+  var FINE_MODEL = 'meteofrance_arome_france0025';
+  var FINE_RUN_H = 3, FINE_RANGE_H = 51;
+
+  /* When each model's runs start and how far they go: runFor(validMs,
+     latestRefMs) and hasFile(validMs, runMs). ECMWF's above by default. */
+  var SCHEDULES = {};
+  SCHEDULES[FINE_MODEL] = {
+    runFor: function (validMs, latestRefMs) {
+      return Math.min(Math.floor(validMs / (FINE_RUN_H * HOUR)) * FINE_RUN_H * HOUR, latestRefMs);
+    },
+    hasFile: function (validMs, runMs) {
+      var lead = validMs - runMs;
+      return lead >= 0 && lead <= FINE_RANGE_H * HOUR && lead % HOUR === 0;
+    }
+  };
+
+  function scheduleOf(model) { return SCHEDULES[model] || { runFor: runFor, hasFile: hasFile }; }
+
   /** The picture halfway between two packed ones, field by field; NaN
       where either is. */
   function midPacked(a, b) {
@@ -135,6 +155,22 @@ var WidgetAnim = (function () {
         return { lats: m.lats, lons: m.lons, res: m.res, times: [at / 1000], values: a, valuesB: b, mix: mix };
       }
     },
+    // The 2 m temperature of the finer model, on its own regional grid;
+    // weights (see WidgetTemp.edgeWeights) blend it into the coarse one
+    // over feather degrees inside its border (0.5 left a line along it
+    // over the sea, where the two models differ by 1 to 2 degrees).
+    temperatureFine: {
+      id: 'temperature',
+      store: 'temperature',
+      vars: ['temperature_2m'],
+      feather: 2,
+      read: function (e, t, model) {
+        var g = WidgetOpenData.toScalarGrid(e.data[0], e.ny, e.nx, t, WidgetOpenData.domainOf(model, e.ny, e.nx));
+        return { meta: { lats: g.lats, lons: g.lons, res: g.res }, parts: [pack(g.values)] };
+      },
+      unpack: function (parts) { return unpack(parts[0]); },
+      grid: function (m, a, b, mix, tA, tB, at) { return FIELDS.temperature.grid(m, a, b, mix, tA, tB, at); }
+    },
     // The 10 m wind, every point of the file as the radar reads it; the
     // wind layer mixes two hours by itself (times and at).
     wind: {
@@ -215,12 +251,13 @@ var WidgetAnim = (function () {
       another run (the future of a run since replaced) and those of a layer
       kept another way before (see FIELDS.store). */
   function pruneStore(store, model, latestRefMs, nowMs, maxPastH) {
+    var runOf = scheduleOf(model).runFor;
     return Promise.resolve().then(function () { return store.keys(); }).then(function (keys) {
       var oldest = nowMs - (maxPastH + STEP_H) * HOUR, known = {};
       for (var id in FIELDS) known[FIELDS[id].store] = true;
       var drop = (keys || []).filter(function (k) {
         var p = parseKey(k);
-        return p && p.model === model && (!known[p.field] || p.validMs < oldest || p.runMs !== runFor(p.validMs, latestRefMs));
+        return p && p.model === model && (!known[p.field] || p.validMs < oldest || p.runMs !== runOf(p.validMs, latestRefMs));
       });
       if (drop.length) {
         console.log('[anim] store: ' + drop.length + ' pictures dropped');
@@ -267,7 +304,13 @@ var WidgetAnim = (function () {
     this.parallel = opts.parallel || 4;
     this.gate = opts.gate || null;
     this.store = opts.store || null;
-    this.model = opts.model || loader.model;
+    // The model the files come from (loader's by default), and the one
+    // the store keys name.
+    this.fileModel = opts.fileModel || loader.model;
+    this.model = opts.model || this.fileModel;
+    this.schedule = scheduleOf(this.fileModel);
+    this.fine = opts.fine || null;   // Frames of a finer model, given along (see gridAt)
+    this.surface = opts.surface || null;   // () -> the model's ground heights, once known
     this.pruneH = opts.pruneH || 0;
     this.fromStore = 0;
     this.onFrame = opts.onFrame || function () {};
@@ -294,19 +337,19 @@ var WidgetAnim = (function () {
 
   /** Read every picture; resolves once all are in or failed. */
   Frames.prototype.load = function () {
-    var self = this, loader = this.loader;
-    return loader.fetch(loader.base + loader.model + '/latest.json', { cache: 'no-store' }).then(function (r) {
+    var self = this, loader = this.loader, sched = this.schedule;
+    return loader.fetch(loader.base + this.fileModel + '/latest.json', { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error('latest.json ' + r.status);
       return r.json();
     }).then(function (latest) {
       var refMs = new Date(latest.reference_time).getTime();
       if (self.store && self.pruneH) pruneStore(self.store, self.model, refMs, self.now(), self.pruneH);
-      self.between = self.times.map(function (t) { return !hasFile(t, runFor(t, refMs)); });
+      self.between = self.times.map(function (t) { return !sched.hasFile(t, sched.runFor(t, refMs)); });
       var queue = loadOrder(self.times.length, self.nowIndex).filter(function (i) { return !self.packed[i] && !self.between[i]; });
       function next() {
         if (self.stopped || !queue.length) return Promise.resolve();
-        var i = queue.shift(), t = self.times[i], run = runFor(t, refMs);
-        var url = frameUrl(t, run, loader.model, loader.base);
+        var i = queue.shift(), t = self.times[i], run = sched.runFor(t, refMs);
+        var url = frameUrl(t, run, self.fileModel, loader.base);
         var key = self.store ? frameKey(self.model, self.field.store, run, t) : null;
         var kept = key ? Promise.resolve().then(function () { return self.store.get(key); }).catch(function () { return null; }) : Promise.resolve(null);
         return kept.then(function (k) {
@@ -320,7 +363,7 @@ var WidgetAnim = (function () {
           var read = function () { return loader._readVars({ url: url, validMs: t }, self.field.vars); };
           return (self.gate ? self.gate.run(read) : read()).then(function (e) {
             if (self.stopped) return;
-            var fr = self.field.read(e, t);
+            var fr = self.field.read(e, t, self.fileModel);
             console.log('[anim] ' + url.split('/').slice(-3).join('/') + ' ' + self.field.id + ' in ' + (Date.now() - t0) + ' ms');
             self._in(i, fr.meta, fr.parts);
             if (key) Promise.resolve().then(function () { return self.store.put(key, { meta: fr.meta, parts: fr.parts }); }).catch(function () {});
@@ -399,7 +442,33 @@ var WidgetAnim = (function () {
   Frames.prototype.grid = function (i) {
     var p = this.packed[i], m = this.meta;
     if (!p || !m) return null;
-    return this.field.grid(m, this._values(i), null, 0, this.times[i]);
+    return this._dress(this.field.grid(m, this._values(i), null, 0, this.times[i]), i);
+  };
+
+  /** A grid with what goes along: the edge weights of a finer model, the
+      finer model's grid at the same position (pos) for the coarse one. */
+  Frames.prototype._dress = function (g, pos) {
+    if (this.field.feather) g.weights = this.weights();
+    var z = this.surface && this.surface();
+    if (z && z.length === g.values.length) g.elev = z;
+    if (this.fine) {
+      var f = this.fine.gridAt(pos);
+      if (f) g.fine = f;
+    }
+    return g;
+  };
+
+  /** The edge weights of this model's grid, worked out once from the first
+      picture in (every picture has its values at the same points). */
+  Frames.prototype.weights = function () {
+    if (this._weights) return this._weights;
+    var m = this.meta;
+    for (var i = 0; i < this.packed.length && m; i++) {
+      if (!this.packed[i] || this.between[i]) continue;
+      this._weights = WidgetTemp.edgeWeights(this._values(i), m.lats.length, m.lons.length, this.field.feather / m.res);
+      return this._weights;
+    }
+    return null;
   };
 
   /** The layer's grid at position pos (frame i plus a fraction toward
@@ -411,7 +480,7 @@ var WidgetAnim = (function () {
     if (!this.packed[i] || !m) return null;
     this._warm(i + 2);
     if (!this.packed[i + 1] || f < 1e-3) return this.grid(i);
-    return this.field.grid(m, this._values(i), this._values(i + 1), f, this.times[i], this.times[i + 1], this.timeAt(pos));
+    return this._dress(this.field.grid(m, this._values(i), this._values(i + 1), f, this.times[i], this.times[i + 1], this.timeAt(pos)), pos);
   };
 
   /** Whether position pos shows a frame as read from its file, rather than
@@ -428,6 +497,7 @@ var WidgetAnim = (function () {
   };
 
   Frames.prototype.stop = function () {
+    if (this.fine) this.fine.stop();
     this.stopped = true;
     this.packed = this.packed.map(function () { return null; });
     this.unpacked = [];
@@ -436,6 +506,7 @@ var WidgetAnim = (function () {
   /** No more reading, the pictures read kept (packed) for a Frames that
       takes them over later (opts.reuse). */
   Frames.prototype.pause = function () {
+    if (this.fine) this.fine.pause();
     this.stopped = true;
     this.unpacked = [];
   };
@@ -849,7 +920,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, FINE_MODEL: FINE_MODEL, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
     decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

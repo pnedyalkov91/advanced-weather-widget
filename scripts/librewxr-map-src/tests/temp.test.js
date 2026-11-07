@@ -87,3 +87,21 @@ test('the vivid palette is the same in the page and in the settings', () => {
   vm.runInNewContext(src, U);
   assert.deepEqual(JSON.parse(JSON.stringify(U.TEMP_BUILTINS[0].stops)), T.DEFAULT_STOPS);
 });
+
+test('edgeWeights: 0 on the grid edge and next to a hole, NaN in the hole', () => {
+  const n = 9, v = new Float32Array(n * n).fill(1);
+  v[4 * n + 4] = NaN;
+  const w = T.edgeWeights(v, n, n, 4);
+  assert.ok(Number.isNaN(w[4 * n + 4]));
+  assert.equal(w[4 * n + 3], 0.25);      // next to the hole
+  assert.equal(w[4 * n + 2], 0.5);       // two from the hole and from the edge
+  assert.equal(w[4 * n + 8], 0);         // on the edge
+});
+
+test('edgeWeights: in two dimensions the nearest edge counts', () => {
+  const n = 7, v = new Float32Array(n * n).fill(1);
+  const w = T.edgeWeights(v, n, n, 2);
+  assert.equal(w[0], 0);                 // corner
+  assert.equal(w[1 * n + 3], 0.5);       // one row in from the top
+  assert.equal(w[3 * n + 3], 1);         // center, three in from every side
+});

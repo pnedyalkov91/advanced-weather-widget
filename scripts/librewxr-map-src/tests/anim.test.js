@@ -638,3 +638,62 @@ test('Switcher: onGone once a layer is gone, after its fade, a flush or a clear'
   s.clear();
   assert.deepEqual(gone, ['a', 'b', 'd']);
 });
+
+const AROME = 'meteofrance_arome_france0025';
+
+test('schedule of AROME: runs every 3 h, hourly files for 51 h', () => {
+  const s = A.scheduleOf(AROME), latest = at('2026-11-07T15:00:00Z');
+  assert.equal(s.runFor(at('2026-11-07T11:00:00Z'), latest), at('2026-11-07T09:00:00Z'));
+  assert.equal(s.runFor(at('2026-11-09T12:00:00Z'), latest), latest);
+  assert.equal(s.hasFile(at('2026-11-09T18:00:00Z'), latest), true);    // +51 h
+  assert.equal(s.hasFile(at('2026-11-09T21:00:00Z'), latest), false);   // +54 h
+  assert.equal(A.scheduleOf('ecmwf_ifs025').runFor, A.runFor);
+});
+
+/** A loader over regional files of AROME's size, latest run 15Z; reads
+    lists the urls asked. */
+function aromeLoader(reads) {
+  return {
+    base: 'b/', model: 'ecmwf_ifs025',
+    fetch: async (url) => { reads.push(url); return { ok: true, json: async () => ({ reference_time: '2026-11-07T15:00:00Z' }) }; },
+    _readVars: async (f) => {
+      reads.push(f.url);
+      const d = new Float32Array(717 * 1121).fill(12);
+      d[0] = NaN;
+      return { data: [d], ny: 717, nx: 1121 };
+    }
+  };
+}
+
+test('Frames of AROME: its own latest.json and files, a regional grid with its edge weights', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  const reads = [];
+  const f = new A.Frames(aromeLoader(reads), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3 });
+  await f.load();
+  assert.equal(reads[0], 'b/' + AROME + '/latest.json');
+  assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1500Z/2026-11-07T1800.om'));
+  assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1200Z/2026-11-07T1200.om'));
+  const g = f.grid(1);
+  assert.equal(g.lats[0], 55.4);
+  assert.equal(g.lons[0], -12);
+  assert.equal(g.values.length, 717 * 1121);
+  assert.equal(g.weights.length, 717 * 1121);
+  assert.equal(g.weights[0], 0);                         // grid edge
+  assert.equal(g.weights[358 * 1121 + 560], 1);          // middle
+  assert.ok(Number.isNaN(g.weights[716 * 1121]));        // the missing value (south-west, last row)
+  assert.equal(f.grid(1).weights, g.weights);            // worked out once
+});
+
+test('Frames.gridAt: the fine model rides along when it has the picture', () => {
+  const coarse = Object.create(A.Frames.prototype);
+  coarse.field = A.FIELDS.temperature;
+  coarse.times = [0, 3 * H];
+  coarse.meta = { lats: [], lons: [], res: 1 };
+  coarse.packed = [[A.pack(Float32Array.from([1]))], [A.pack(Float32Array.from([3]))]];
+  coarse.idle = () => {};
+  assert.equal(coarse.gridAt(0).fine, undefined);
+  coarse.fine = { gridAt: (pos) => (pos < 1 ? { tag: pos } : null) };
+  assert.deepEqual(coarse.gridAt(0.5).fine, { tag: 0.5 });
+  assert.equal(coarse.gridAt(1).fine, undefined);
+});

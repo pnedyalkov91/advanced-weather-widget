@@ -159,8 +159,39 @@ var WidgetTemp = (function () {
     return top * (1 - fr) + bottom * fr;
   }
 
+  /** How far each point of a grid is inside its data, from 0 on the
+      grid's edge or next to a missing value to 1 at feather points in
+      (chamfer distance); NaN where the value is missing. A finer model
+      blends into the coarse one with it, so its border leaves no step. */
+  function edgeWeights(values, rows, cols, feather) {
+    var n = rows * cols, d = new Float32Array(n), BIG = 1e9, D = Math.SQRT2, r, c, k;
+    for (k = 0; k < n; k++) {
+      r = Math.floor(k / cols); c = k - r * cols;
+      d[k] = !isFinite(values[k]) ? -1 : (r === 0 || c === 0 || r === rows - 1 || c === cols - 1 ? 0 : BIG);
+    }
+    function at(i) { return d[i] < 0 ? 0 : d[i]; }
+    function relax(k, i, step) { var v = at(i) + step; if (v < d[k]) d[k] = v; }
+    for (r = 1; r < rows - 1; r++) {
+      for (c = 1; c < cols - 1; c++) {
+        k = r * cols + c;
+        if (d[k] <= 0) continue;
+        relax(k, k - 1, 1); relax(k, k - cols, 1); relax(k, k - cols - 1, D); relax(k, k - cols + 1, D);
+      }
+    }
+    for (r = rows - 2; r > 0; r--) {
+      for (c = cols - 2; c > 0; c--) {
+        k = r * cols + c;
+        if (d[k] <= 0) continue;
+        relax(k, k + 1, 1); relax(k, k + cols, 1); relax(k, k + cols + 1, D); relax(k, k + cols - 1, D);
+      }
+    }
+    var w = new Float32Array(n);
+    for (k = 0; k < n; k++) w[k] = d[k] < 0 ? NaN : Math.min(1, d[k] / feather);
+    return w;
+  }
+
   return {
-    LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar,
+    LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar, edgeWeights: edgeWeights,
     DEFAULT_STOPS: DEFAULT_STOPS, LUT_MIN: LUT_MIN, LUT_STEP: LUT_STEP, LUT_SIZE: LUT_SIZE,
     parsePalette: parsePalette, paletteFromParam: paletteFromParam, formatPalette: formatPalette, colorAt: colorAt,
     bandCenterC: bandCenterC, lutIndex: lutIndex, buildLut: buildLut, legendTicks: legendTicks,
