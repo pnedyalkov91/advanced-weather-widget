@@ -56,6 +56,7 @@ KCM.AbstractKCM {
     property string cfg_librewxrWindPalette: ""
     property string cfg_librewxrTempPalettes: "[]"
     property string cfg_librewxrTempPalette: ""
+    property string cfg_weatherMapDisabledLayers: "[]"
     property int cfg_librewxrTempOpacity: 45
     property real cfg_librewxrTempStep: 5
     property bool cfg_radarGpuWorkaround: false

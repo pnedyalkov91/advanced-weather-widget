@@ -383,6 +383,28 @@ Item {
         } catch (e) {}
         return o;
     }
+    // The layers taken out of the column in the settings (the radar always
+    // stays; the isobars go with the pressure).
+    readonly property var disabledLayers: {
+        try {
+            var d = JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
+            return d.indexOf("pressure") >= 0 ? d.concat(["isobars"]) : d;
+        } catch (e) {
+            return [];
+        }
+    }
+    function layerEnabled(id) {
+        return id === "radar" || disabledLayers.indexOf(id) < 0;
+    }
+    // A layer taken out while on goes off.
+    onDisabledLayersChanged: {
+        if (!started)
+            return;
+        disabledLayers.forEach(function (id) {
+            if (layerOn(id))
+                setLayer(id, false);
+        });
+    }
     function layerOn(id) {
         if (id === "radar" || id === "satellite")
             return animState && animState[id] ? !!animState[id].on : !!layersSaved[id];
@@ -465,6 +487,8 @@ Item {
         js("window.animSetSpan(" + span[0] + ", " + span[1] + ", " + stepH + ")");
     }
     function soloSource(kind) {
+        if (kind !== "radar" && !layerEnabled("satellite"))
+            kind = "radar";
         if (solo === kind) {
             var back = soloSaved;
             solo = "";
@@ -736,7 +760,7 @@ Item {
         code += "if (window.animSetLegendTop) window.animSetLegendTop(" + legendTop + ");";
         if (Plasmoid.configuration.weatherMapLightning === true)
             code += "window.animSetRadarOption('lightning', true);";
-        code += "window.animSetRadar(" + !!layersSaved.radar + "); window.animSetSatellite(" + !!layersSaved.satellite + ");";
+        code += "window.animSetRadar(" + !!layersSaved.radar + "); window.animSetSatellite(" + (!!layersSaved.satellite && layerEnabled("satellite")) + ");";
         js(code);
     }
 
@@ -833,7 +857,7 @@ Item {
                 return;
             }
             var layers = {};
-            radarRoot.animLayerIds.forEach(function (id) { layers[id] = !!radarRoot.layersSaved[id]; });
+            radarRoot.animLayerIds.forEach(function (id) { layers[id] = !!radarRoot.layersSaved[id] && radarRoot.layerEnabled(id); });
             webView.runJavaScript(radarRoot._layerChoices() + "window.animStart ? window.animStart(" + radarRoot.pastH + ", " + radarRoot.futureH + ", " + JSON.stringify(layers) + ") : false", function (ok) {
                 if (!ok || radarRoot.started)
                     return;
@@ -1211,6 +1235,7 @@ Item {
             radarRoot.layerIds.forEach(function (id) { o[id] = radarRoot.layerOn(id); });
             return o;
         }
+        shownIds: radarRoot.layerIds.filter(function (id) { return radarRoot.layerEnabled(id); })
     }
 
     function reload() {

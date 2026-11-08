@@ -378,6 +378,53 @@ GridLayout {
         }
     }
 
+    // The layers of the Weather Map's column: the radar always, the others
+    // each on or off here (an unused one gets out of the way).
+    Label {
+        text: i18n("Weather Map layers:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+    }
+    ColumnLayout {
+        id: mapLayers
+        Layout.fillWidth: true
+        spacing: 0
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        readonly property var disabled: {
+            try {
+                return JSON.parse(radarTab.configRoot.cfg_weatherMapDisabledLayers || "[]") || [];
+            } catch (e) {
+                return [];
+            }
+        }
+        function setEnabled(id, on) {
+            var d = disabled.filter(function (x) { return x !== id; });
+            if (!on)
+                d.push(id);
+            radarTab.configRoot.cfg_weatherMapDisabledLayers = JSON.stringify(d);
+        }
+        Repeater {
+            model: [["satellite", i18n("Satellite")], ["wind", i18n("Wind")], ["temperature", i18n("Temperature")],
+                ["precipitation", i18n("Precipitation")], ["clouds", i18n("Cloud cover")], ["pressure", i18n("Pressure and isobars")],
+                ["humidity", i18n("Relative humidity")], ["dewpoint", i18n("Dew point")], ["airquality", i18n("Air quality")]]
+            delegate: WrappingSwitch {
+                required property var modelData
+                text: modelData[1]
+                checked: mapLayers.disabled.indexOf(modelData[0]) < 0
+                onToggled: mapLayers.setEnabled(modelData[0], checked)
+            }
+        }
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("The radar is always there. A layer switched off here leaves the column of the Weather Map tab.")
+        }
+    }
+
     // How dark the night gets on the map at its deepest, when day and night
     // are shown (the button on the map switches them).
     Label {

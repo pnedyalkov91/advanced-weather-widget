@@ -190,7 +190,18 @@ Rectangle {
         contentWidth: width
         contentHeight: layerColumn.y + layerColumn.height + 12
         boundsBehavior: Flickable.StopAtBounds
-        QQC2.ScrollBar.vertical: QQC2.ScrollBar { policy: QQC2.ScrollBar.AsNeeded }
+        // A thin bar at the very edge, out of the way of the wheels.
+        QQC2.ScrollBar.vertical: QQC2.ScrollBar {
+            policy: QQC2.ScrollBar.AsNeeded
+            width: 5
+            padding: 1
+            background: null
+            contentItem: Rectangle {
+                implicitWidth: 3
+                radius: 1.5
+                color: panel.tint(parent.pressed ? 0.55 : parent.hovered ? 0.4 : 0.25)
+            }
+        }
 
         Column {
             id: layerColumn
@@ -203,6 +214,8 @@ Rectangle {
                 width: panel.colW
                 layoutDirection: Qt.RightToLeft
                 spacing: 8
+                // Side by side open, one under the other folded: they glide there.
+                move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
                 HeadButton {
                     text: "?"
                     tip: i18n("How to read the Weather Map")
@@ -307,6 +320,7 @@ Rectangle {
                 title: i18n("Radar")
                 iconName: "radar"
                 checked: panel.map.layerOn("radar")
+                visible: panel.map.layerEnabled("radar")
                 opacityValue: panel.map.opacities.radar
                 customGear: true
                 soloable: true
@@ -341,6 +355,7 @@ Rectangle {
                 iconName: "satellite"
                 iconMask: true
                 checked: panel.map.layerOn("satellite")
+                visible: panel.map.layerEnabled("satellite")
                 opacityValue: panel.map.opacities.satellite
                 hasOptions: false
                 soloable: true
@@ -359,6 +374,7 @@ Rectangle {
                 title: i18n("Wind")
                 iconName: "vent-glyph"
                 checked: panel.map.layerOn("wind")
+                visible: panel.map.layerEnabled("wind")
                 opacityValue: panel.map.opacities.wind
                 onToggled: function (on) { panel.map.setLayer("wind", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("wind", p); }
@@ -376,6 +392,7 @@ Rectangle {
                 title: i18n("Temperature")
                 iconName: "temperature-glyph"
                 checked: panel.map.layerOn("temperature")
+                visible: panel.map.layerEnabled("temperature")
                 opacityValue: panel.map.opacities.temperature
                 onToggled: function (on) { panel.map.setLayer("temperature", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("temperature", p); }
@@ -396,6 +413,7 @@ Rectangle {
                 title: i18n("Precipitation (rain, snow)")
                 iconName: "precipitations-glyph"
                 checked: panel.map.layerOn("precipitation")
+                visible: panel.map.layerEnabled("precipitation")
                 opacityValue: panel.map.opacities.precipitation
                 onToggled: function (on) { panel.map.setLayer("precipitation", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("precipitation", p); }
@@ -417,6 +435,7 @@ Rectangle {
                 iconName: "nuages-glyph"
                 iconMask: true
                 checked: panel.map.layerOn("clouds")
+                visible: panel.map.layerEnabled("clouds")
                 opacityValue: panel.map.opacities.clouds
                 onToggled: function (on) { panel.map.setLayer("clouds", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("clouds", p); }
@@ -434,6 +453,7 @@ Rectangle {
                 title: i18n("Sea level pressure")
                 iconName: "pression-glyph"
                 checked: panel.map.layerOn("pressure")
+                visible: panel.map.layerEnabled("pressure")
                 active: checked || panel.map.layerOn("isobars")
                 opacityValue: panel.map.opacities.pressure
                 onToggled: function (on) { panel.map.setLayer("pressure", on); }
@@ -456,6 +476,7 @@ Rectangle {
                 title: i18n("Relative humidity")
                 iconName: "humidite-glyph"
                 checked: panel.map.layerOn("humidity")
+                visible: panel.map.layerEnabled("humidity")
                 opacityValue: panel.map.opacities.humidity
                 onToggled: function (on) { panel.map.setLayer("humidity", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("humidity", p); }
@@ -469,6 +490,7 @@ Rectangle {
                 title: i18n("Dew point")
                 iconName: "rosee-glyph"
                 checked: panel.map.layerOn("dewpoint")
+                visible: panel.map.layerEnabled("dewpoint")
                 opacityValue: panel.map.opacities.dewpoint
                 onToggled: function (on) { panel.map.setLayer("dewpoint", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("dewpoint", p); }
@@ -484,6 +506,7 @@ Rectangle {
                 iconName: "qualite-air-glyph"
                 iconMask: true
                 checked: panel.map.layerOn("airquality")
+                visible: panel.map.layerEnabled("airquality")
                 opacityValue: panel.map.opacities.airquality
                 onToggled: function (on) { panel.map.setLayer("airquality", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("airquality", p); }
@@ -503,6 +526,8 @@ Rectangle {
             Flow {
                 width: panel.colW
                 spacing: panel.folded ? 4 : 10
+                // Side by side open, one under the other folded: they glide there.
+                move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
                 RangeIcon {
                     id: pastPick
                     prefix: "−"

@@ -11,6 +11,7 @@ QQC2.Popup {
     id: panel
     property var layers: ({})         // layer id: shown
     property var choices: ({})        // layer id: the [value, text] pairs of its list
+    property var shownIds: []         // the layers in the column (the others are left out)
 
     x: parent ? parent.width - width : 0
     y: 0
@@ -51,7 +52,9 @@ QQC2.Popup {
           text: i18n("The CAMS forecast for the pollutant chosen in the list. The colors follow the bands of the European Air Quality Index: cyan good, green fair, yellow moderate, red poor, dark red very poor, purple extremely poor. Dust shows Saharan dust, AOD how hazy the air is (smoke, dust), UV the UV index of the day. The scale is logarithmic: each band covers a wider range than the one before.") }
     ]
     function isOn(s) { return s.ids.some(function (id) { return !!panel.layers[id]; }); }
-    readonly property var ordered: sections.filter(isOn).concat(sections.filter(function (s) { return !isOn(s); }))
+    function inColumn(s) { return s.ids.some(function (id) { return panel.shownIds.indexOf(id) >= 0; }); }
+    readonly property var kept: sections.filter(inColumn)
+    readonly property var ordered: kept.filter(isOn).concat(kept.filter(function (s) { return !isOn(s); }))
 
     background: Rectangle {
         color: Kirigami.Theme.backgroundColor
