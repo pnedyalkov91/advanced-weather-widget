@@ -786,8 +786,8 @@ function animOverlaysStart() {
   if (typeof WidgetAnimRadar === 'undefined') return;
   if (!animOverlays) {
     animOverlays = {
-      radar: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'radar', gapMs: WidgetAnimRadar.RADAR_GAP, opacity: 0.8, url: animOverlayUrl('radar') }),
-      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, url: animOverlayUrl('satellite') })
+      radar: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'radar', gapMs: WidgetAnimRadar.RADAR_GAP, opacity: 0.8, fadeMs: 400, url: animOverlayUrl('radar') }),
+      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, fadeMs: 400, url: animOverlayUrl('satellite') })
     };
   }
   animCatalog();

@@ -209,3 +209,75 @@ test('Overlay.lastTime: the time of the last image, where a solo view ends (both
   assert.equal(R.frameAt(radar, o.lastTime(), 10 * MIN), 17);
   assert.equal(overlay([]).o.lastTime(), null);
 });
+
+// A clock and frames of the page run by hand, for the fades.
+function fadeClock() {
+  const c = { t: 0, queue: [] };
+  c.now = () => c.t;
+  c.raf = (f) => c.queue.push(f);
+  c.step = (ms) => { c.t += ms; const q = c.queue; c.queue = []; q.forEach((f) => f()); };
+  return c;
+}
+
+test('Overlay: switched on, its first image fades in', () => {
+  const c = fadeClock();
+  const { a, o } = overlay(radar.slice(0, 2), { fadeMs: 400, now: c.now, raf: c.raf });
+  o.show(T0 * 1000);
+  o.setOn(true);
+  c.step(200);
+  assert.deepEqual(a.shown(), []);                   // nothing to fade before the tiles are in
+  a.ready(a.made[0]);
+  const id = a.made[0].layerId;
+  c.step(0);
+  assert.equal(a.opacity[id], 0);
+  c.step(200);
+  assert.ok(Math.abs(a.opacity[id] - 0.4) < 1e-9);  // halfway to 0.8
+  c.step(200);
+  assert.equal(a.opacity[id], 0.8);
+  a.ready(a.made[1]);
+  o.show(T0 * 1000 + 10 * MIN);                      // the next image: at once, no fade
+  assert.equal(a.opacity[a.made[1].layerId], 0.8);
+});
+
+test('Overlay: switched off, it fades out, then its layers go', () => {
+  const c = fadeClock();
+  const { a, o } = overlay(radar.slice(0, 2), { fadeMs: 400, now: c.now, raf: c.raf });
+  o.setOn(true);
+  a.made.forEach((h) => a.ready(h));
+  o.show(T0 * 1000);
+  c.step(0); c.step(400);
+  const id = a.made[0].layerId;
+  assert.equal(a.opacity[id], 0.8);
+  o.setOn(false);
+  c.step(0); c.step(200);
+  assert.ok(Math.abs(a.opacity[id] - 0.4) < 1e-9);
+  assert.equal(a.gone.length, 0);
+  c.step(200);
+  assert.equal(a.gone.length, 2);
+  assert.deepEqual(a.shown(), []);
+});
+
+test('Overlay: switched on again while it fades out, it comes back from where it is', () => {
+  const c = fadeClock();
+  const { a, o } = overlay(radar.slice(0, 2), { fadeMs: 400, now: c.now, raf: c.raf });
+  o.setOn(true);
+  a.made.forEach((h) => a.ready(h));
+  o.show(T0 * 1000);
+  c.step(0); c.step(400);
+  o.setOn(false);
+  c.step(0); c.step(300);
+  o.setOn(true);
+  c.step(0); c.step(400);
+  assert.equal(a.gone.length, 0);                    // the layers stayed
+  assert.equal(a.opacity[a.made[0].layerId], 0.8);
+});
+
+test('Overlay: switched on out of its range, the image that comes in later is not faded', () => {
+  const c = fadeClock();
+  const { a, o } = overlay(radar.slice(0, 2), { fadeMs: 400, now: c.now, raf: c.raf });
+  o.show(T0 * 1000 - H);
+  o.setOn(true);
+  a.made.forEach((h) => a.ready(h));
+  o.show(T0 * 1000);
+  assert.equal(a.opacity[a.made[0].layerId], 0.8);
+});
