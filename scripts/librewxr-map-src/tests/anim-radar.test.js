@@ -151,17 +151,33 @@ test('Overlay: new frames keep the layers still listed, drop the others, make th
   assert.equal(a.made[3].url, 'u' + radar[3].time);
 });
 
-test('Overlay: other tile options make every layer again', () => {
+test('Overlay: other tile options make every layer again, the image shown staying until its new one is in', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  o.setOn(true);
+  a.made.forEach((h) => a.ready(h));
+  o.show(T0 * 1000 + 12 * MIN);                     // image 1 on the map
+  o.setUrl((f) => 'v' + f.time);
+  assert.deepEqual(a.gone.sort(), [a.made[0].layerId, a.made[2].layerId].sort());   // the hidden ones go at once
+  assert.deepEqual(a.shown(), [a.made[1].layerId]);  // no blink: the old image stays
+  assert.equal(o.shownTime(), radar[1].time * 1000);  // and still counts as shown
+  assert.equal(a.made.length, 6);
+  assert.equal(a.made[3].url, 'v' + radar[1].time);  // the image shown is made again first
+  o.setOpacity(0.5);
+  assert.equal(a.opacity[a.made[1].layerId], 0.5);   // the old one follows the opacity meanwhile
+  a.ready(a.made[3]);
+  assert.deepEqual(a.shown(), [a.made[3].layerId]);
+  assert.ok(a.gone.includes(a.made[1].layerId));     // then the old one goes
+});
+
+test('Overlay: the old image goes too when the time leaves the range or the source is switched off', () => {
   const { a, o } = overlay(radar.slice(0, 2));
   o.setOn(true);
   a.made.forEach((h) => a.ready(h));
   o.show(T0 * 1000);
   o.setUrl((f) => 'v' + f.time);
-  assert.equal(a.gone.length, 2);
-  assert.equal(a.made.length, 4);
-  assert.equal(a.made[2].url, 'v' + radar[0].time);
-  a.ready(a.made[2]);
-  assert.deepEqual(a.shown(), [a.made[2].layerId]);   // the time shown comes back with the new tiles
+  o.setOn(false);
+  assert.deepEqual(a.shown(), []);
+  assert.ok(a.gone.includes(a.made[0].layerId));
 });
 
 test('Overlay: range and on/off for the time bar', () => {

@@ -112,3 +112,9 @@ test('toEarthWind: speed and direction (from) as u and v; HRRR turned from its g
   // Other grids keep their u and v.
   assert.equal(M.toEarthWind('dwd_icon_d2', u, v, g).u, u);
 });
+
+test('labels: the global model then the finer ones by their short names', () => {
+  assert.deepEqual(M.labels('ecmwf_ifs025', ['meteofrance_arome_france0025', 'dwd_icon_d2']), ['ECMWF', 'AROME', 'ICON-D2']);
+  assert.deepEqual(M.labels('ecmwf_ifs025', []), ['ECMWF']);
+  assert.deepEqual(M.labels('some_model', ['unknown', 'ukmo_uk_deterministic_2km']), ['some_model', 'UKV']);
+});

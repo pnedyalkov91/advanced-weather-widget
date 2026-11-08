@@ -120,11 +120,11 @@ var WidgetTemp = (function () {
     return STEPS.indexOf(v) >= 0 ? v : DEFAULT_STEP;
   }
 
-  /** Opacity of the layer in percent, 10 to 100; unreadable gives 45. */
+  /** Opacity of the layer in percent, 0 to 100; unreadable gives 45. */
   function normOpacity(n) {
     var v = parseFloat(n);
     if (!isFinite(v)) return DEFAULT_OPACITY;
-    return Math.round(Math.max(10, Math.min(100, v)));
+    return Math.round(Math.max(0, Math.min(100, v)));
   }
 
   function normUnit(u) { return u === 'F' ? 'F' : 'C'; }

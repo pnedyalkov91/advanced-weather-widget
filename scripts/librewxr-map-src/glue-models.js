@@ -51,6 +51,15 @@ var WidgetModels = (function () {
 
   function get(id) { return byId[id] || null; }
 
+  // The short names of the global models the layers start from.
+  var GLOBAL_LABELS = { ecmwf_ifs025: 'ECMWF', gfs_global: 'GFS', icon_global: 'ICON' };
+
+  /** The models drawn, for a reader: global model baseId, then the finer
+      ones of fineIds in their order (unknown ids left out). */
+  function labels(baseId, fineIds) {
+    return [GLOBAL_LABELS[baseId] || baseId].concat((fineIds || []).map(get).filter(Boolean).map(function (m) { return m.label; }));
+  }
+
   /** The share of view { south, west, north, east } inside model m's grid,
       probed at SAMPLES x SAMPLES points. */
   function coverage(m, view) {
@@ -153,7 +162,7 @@ var WidgetModels = (function () {
   }
 
   return {
-    list: list, get: get, runFor: runFor, hasFile: hasFile, coverage: coverage, pickForView: pickForView,
+    list: list, get: get, runFor: runFor, hasFile: hasFile, coverage: coverage, pickForView: pickForView, labels: labels,
     windVars: windVars, toEarthWind: toEarthWind
   };
 })();

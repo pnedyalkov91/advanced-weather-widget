@@ -50,7 +50,7 @@ test('legendTicks: every 10 °C over the palette, every 20 °F in Fahrenheit', (
 
 test('normStep, normOpacity, normUnit', () => {
   assert.equal(T.normStep('2'), 2); assert.equal(T.normStep('2.5'), 2.5); assert.equal(T.normStep(3), 5); assert.equal(T.normStep('0'), 0);
-  assert.equal(T.normOpacity('5'), 10); assert.equal(T.normOpacity('x'), 45); assert.equal(T.normOpacity(100), 100);
+  assert.equal(T.normOpacity('5'), 5); assert.equal(T.normOpacity(0), 0); assert.equal(T.normOpacity(-3), 0); assert.equal(T.normOpacity('x'), 45); assert.equal(T.normOpacity(100), 100);
   assert.equal(T.normUnit('F'), 'F'); assert.equal(T.normUnit('K'), 'C');
 });
 

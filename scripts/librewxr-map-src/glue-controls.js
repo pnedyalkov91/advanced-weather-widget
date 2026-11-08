@@ -370,6 +370,7 @@ function animTrack(id, layer, reuse, onShow) {
     }
   });
   var fines = [];
+  frames.fines = fines;   // none unless the layer takes them (a field taken over may hold some)
   if (animFineField(id) && animFine) {
     if (animFineAuto) animFineModels = animPickFines();
     fines = frames.fines = animFineModels.map(function (model) {
@@ -398,9 +399,12 @@ function animPickFines() {
 }
 
 /** The field of the finer models riding along with layer id's pictures;
-    null for a layer without (pressure, clouds...). */
+    null for a layer without (pressure, clouds...), or whose field says it
+    takes none (fines: false: the wind at 700 hPa, which the regional
+    files do not hold; their 10 m wind would be drawn over it). */
 function animFineField(id) {
   if (typeof WidgetModels === 'undefined') return null;
+  if (WidgetAnim.FIELDS[id] && WidgetAnim.FIELDS[id].fines === false) return null;
   return { temperature: WidgetAnim.FIELDS.temperatureFine, wind: WidgetAnim.FIELDS.windFine }[id] || null;
 }
 
@@ -468,16 +472,25 @@ function animSetFines(ids) {
   if (p.index >= 0 && !p.playing) p.seek(p.index);
 }
 
-/** New pictures for pastH hours before now and futureH after, those
-    already read taken over; the time shown stays. */
-function animLoad(pastH, futureH) {
+/** New pictures for pastH hours before now and futureH after, one every
+    stepH hours (WidgetAnim.STEP_H, the files' own; 1 for the radar and
+    satellite alone, no layer then), those already read taken over; the
+    time shown stays. span { start, end } (ms): from the one to the other
+    instead, the ends themselves (the range of the radar or satellite). */
+function animLoad(pastH, futureH, stepH, span) {
   // Layers fading out belong to the old range: they go at once.
   anim.switcher.flush();
   var old = anim.group, shownMs = old && anim.player.index >= 0 ? old.times[Math.round(anim.player.index)] : null;
   anim.nowMs = Date.now();
+  anim.stepH = stepH || WidgetAnim.STEP_H;
+  if (span) {
+    pastH = Math.max(0, Math.ceil((anim.nowMs - span.start) / 3600e3));
+    futureH = Math.max(0, Math.ceil((span.end - anim.nowMs) / 3600e3));
+  }
   anim.pastH = pastH;
   anim.futureH = futureH;
-  var ft = WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, WidgetAnim.STEP_H);
+  var ft = span ? WidgetAnim.spanTimes(span.start, span.end, anim.nowMs, anim.stepH)
+    : WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, anim.stepH);
   anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
   anim.group.onTime = animOverlayTime;
   // The API's hours count from the present hour, the frames from the
@@ -502,6 +515,7 @@ function animSetLayer(id, on) {
     anim.group.addGhost(key, t.frames, t.layer);
     anim.switcher.leave(key, t.layer, t.frames);
   } else if (on && !t && ANIM_LAYERS[id]) {
+    if (anim.stepH !== WidgetAnim.STEP_H) animLoad(anim.pastH, anim.futureH, WidgetAnim.STEP_H);
     var back = anim.switcher.enter(key);
     if (back.layer) anim.group.removeGhost(key);
     var layer = back.layer || ANIM_LAYERS[id](_widgetAdapter.getMap());
@@ -553,7 +567,9 @@ window.animStart = function (pastH, futureH, layers) {
   return true;
 };
 
-window.animSetRange = function (pastH, futureH) { if (anim) animLoad(pastH, futureH); };
+window.animSetRange = function (pastH, futureH, stepH) { if (anim) animLoad(pastH, futureH, stepH); };
+/** From startMs to endMs (the range of the radar or satellite alone), a picture every stepH hours between. */
+window.animSetSpan = function (startMs, endMs, stepH) { if (anim) animLoad(0, 0, stepH, { start: startMs, end: endMs }); };
 window.animSetLayer = function (id, on) { if (anim) animSetLayer(id, !!on); };
 
 var animMoveHooked = false;
@@ -581,10 +597,11 @@ window.animToggle = function () {
 };
 window.animShow = function (i) { if (anim) anim.player.seek(i); };
 // Paused steps: one hour (dir 1 or -1), or to the next frame from its file.
-window.animStep = function (dir) { if (anim) anim.player.step(dir, WidgetAnim.STEP_H); };
+window.animStep = function (dir) { if (anim) anim.player.step(dir, anim.stepH); };
 window.animStepFile = function (dir) { if (anim) anim.player.stepFile(dir); };
 // Paused steps of h hours (3: one frame).
-window.animStepHours = function (dir, h) { if (anim) anim.player.step(dir, WidgetAnim.STEP_H / h); };
+/** A step of h hours (a fraction for minutes) back (-1) or ahead (1). */
+window.animStepHours = function (dir, h) { if (anim) anim.player.step(dir, anim.stepH / h); };
 window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
 window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
 // Resolution of the temperature while it plays: 1 full, 2 half, 4 quarter; full again on pause.
@@ -598,7 +615,7 @@ window.animSetResolution = function (n) {
 /** The finer models on or off (spike, to compare). */
 window.animSetFine = function (on) {
   animFine = !!on;
-  if (anim) animLoad(anim.pastH, anim.futureH);
+  if (anim) animLoad(anim.pastH, anim.futureH, anim.stepH);
 };
 
 /** The finer models drawn (ids of WidgetModels), put in their order of
@@ -637,7 +654,8 @@ window.animMeasure = function () {
 
 /** { times (ms), ready, failed, now, index (a position between frames),
     time (ms) of that position, fromFile (a frame as read, not worked out),
-    playing, layers ({ id: on }) } for the QML bar. */
+    playing, layers ({ id: on }), models (short names of the models
+    drawn: the global one, then the finer ones in view) } for the QML bar. */
 
 window.animState = function () {
   if (!anim) return null;
@@ -648,7 +666,8 @@ window.animState = function () {
     time: anim.player.index >= 0 ? g.timeAt(anim.player.index) : null,
     fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
     ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,
-    radar: animOverlayState('radar'), satellite: animOverlayState('satellite')
+    radar: animOverlayState('radar'), satellite: animOverlayState('satellite'),
+    models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFine ? animFineModels : [])
   };
 };
 
@@ -722,6 +741,8 @@ function animOverlaysRaise() {
 
 /** How many times slower the animation goes at ms (the radar's range, while it is on). */
 function animSlow(ms) {
+  // Frames already 10 minutes apart (the radar alone): no slowing down.
+  if (anim && anim.stepH < 1) return 1;
   var r = animOverlays && animOverlays.radar;
   return r && r.on ? WidgetAnimRadar.slowFactor(ms, r.range()) : 1;
 }
@@ -785,9 +806,9 @@ var ANIM_OPACITY = {
   clouds: 'cloudSetOpacity', humidity: 'humiditySetOpacity', dewpoint: 'dewpointSetOpacity'
 };
 
-/** Layer id's opacity, in percent (10 to 100). */
+/** Layer id's opacity, in percent (0 to 100). */
 window.animSetOpacity = function (id, pct) {
-  var f = ANIM_OPACITY[id], p = Math.max(10, Math.min(100, Math.round(+pct)));
+  var f = ANIM_OPACITY[id], p = Math.max(0, Math.min(100, Math.round(+pct)));
   if (!f || !isFinite(p)) return;
   if (typeof f === 'string') { if (typeof window[f] === 'function') window[f](p); }
   else f(p);

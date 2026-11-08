@@ -77,13 +77,15 @@ var WidgetAnimRadar = (function () {
     this.wanted = null;         // path of the image of the time asked for
     this.shown = null;          // path of the image on the map
     this.time = null;           // the last time asked for (ms)
+    this.stale = null;          // the image shown before new tile options, kept until its new one is in
   }
 
   Overlay.prototype.range = function () { return rangeOf(this.frames, this.gapMs); };
 
   /** The time of the image on the map (ms), null when none is. */
   Overlay.prototype.shownTime = function () {
-    for (var i = 0; i < this.frames.length; i++) if (this.frames[i].path === this.shown) return this.frames[i].time * 1000;
+    var path = this.shown || (this.stale ? this.stalePath : null);
+    for (var i = 0; i < this.frames.length; i++) if (this.frames[i].path === path) return this.frames[i].time * 1000;
     return null;
   };
 
@@ -106,6 +108,11 @@ var WidgetAnimRadar = (function () {
     if (this.shown === path) this.shown = null;
   };
 
+  Overlay.prototype._dropStale = function () {
+    if (this.stale) this.adapter.destroyFrameLayer(this.stale);
+    this.stale = null;
+  };
+
   /** Image path on the map, the one before off. */
   Overlay.prototype._put = function (path) {
     var e = path ? this.layers[path] : null;
@@ -115,6 +122,7 @@ var WidgetAnimRadar = (function () {
       this.adapter.setFrameOpacity(e.handle, this.opacity);
       if (this.adapter.raise) this.adapter.raise(e.handle);
     }
+    this._dropStale();
   };
 
   /** New images (a new catalog): the layers of those still listed stay. */
@@ -127,12 +135,25 @@ var WidgetAnimRadar = (function () {
     if (this.time !== null) this.show(this.time);
   };
 
-  /** Other tiles (color, smoothing, format...): every layer made again. */
+  /** Other tiles (color, smoothing, arrows, lightning...): every layer
+      made again, the image of the time shown first. That image stays on
+      the map until its new one is in (no blink), the hidden ones go now. */
   Overlay.prototype.setUrl = function (url) {
     this.url = url;
-    var self = this;
+    var self = this, kept = this.shown && this.layers[this.shown];
+    if (kept) {
+      this._dropStale();
+      this.stale = kept.handle;
+      this.stalePath = this.shown;
+      delete this.layers[this.shown];
+      this.shown = null;
+    }
     Object.keys(this.layers).forEach(function (p) { self._drop(p); });
-    if (this.on) this.frames.forEach(function (f) { self._make(f); });
+    if (this.on) {
+      var i = this.time === null ? -1 : frameAt(this.frames, this.time, this.gapMs);
+      if (i >= 0) this._make(this.frames[i]);
+      this.frames.forEach(function (f) { self._make(f); });
+    }
     if (this.time !== null) this.show(this.time);
   };
 
@@ -149,11 +170,13 @@ var WidgetAnimRadar = (function () {
     } else {
       this.wanted = null;
       Object.keys(this.layers).forEach(function (p) { self._drop(p); });
+      this._dropStale();
     }
   };
 
   Overlay.prototype.setOpacity = function (v) {
     this.opacity = v;
+    if (this.stale) this.adapter.setFrameOpacity(this.stale, v);
     if (this.shown && this.layers[this.shown]) this.adapter.setFrameOpacity(this.layers[this.shown].handle, v);
   };
 

@@ -311,7 +311,7 @@ test('Group: ready when every layer is, one grid each, settled when all are', ()
     };
   };
   const g = new A.Group([0, 3 * H], 0);
-  assert.equal(g.ready(0), false);                  // no layer, nothing to show
+  assert.equal(g.ready(0), true);                   // no layer, nothing to wait for (radar alone)
   const s1 = { v: true }, s2 = { v: false };
   const temp = mk([true, true], s1), wind = mk([true, false], s2);
   g.add('temperature', temp.frames, temp.layer);
@@ -886,4 +886,45 @@ test('Group: onTime gets the time of each picture shown', () => {
   const grids = g.gridAt(1.5);
   g.showFile(grids);
   assert.deepEqual(times, [4.5 * H]);
+});
+
+test('Group: without any layer, every picture is ready and its time still goes to onTime (radar or satellite alone)', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 1);
+  const times = [];
+  g.onTime = (t) => times.push(t);
+  assert.equal(g.ready(0), true);
+  const grids = g.gridAt(1.5);
+  assert.ok(grids, 'a grid list, empty');
+  assert.equal(grids.length, 0);
+  g.showFile(grids);
+  assert.deepEqual(times, [4.5 * H]);
+});
+
+test('frameTimes: one an hour (radar and satellite views), now on the nearest hour', () => {
+  const ft = A.frameTimes(Date.parse('2026-11-08T16:40:00Z'), 2, 1, 1);
+  assert.deepEqual(ft.times.map((t) => new Date(t).toISOString().slice(11, 16)), ['15:00', '16:00', '17:00', '18:00']);
+  assert.equal(ft.now, 2);
+});
+
+test('frameTimes: every 10 minutes (the radar alone), whole minutes, the last one kept', () => {
+  const ft = A.frameTimes(Date.parse('2026-11-08T15:52:00Z'), 17 / 6, 1, 1 / 6);
+  const hm = ft.times.map((t) => new Date(t).toISOString().slice(11, 19));
+  assert.equal(hm[0], '13:00:00');                 // 15:50, the nearest 10 minutes, less 2 h 50
+  assert.equal(hm[hm.length - 1], '16:50:00');
+  assert.equal(ft.times.length, 24);
+  assert.equal(ft.now, 17);
+  assert.ok(ft.times.every((t) => t % 60000 === 0));
+});
+
+test('spanTimes: from the start to the end of the sources, a picture each step between, now the nearest', () => {
+  const at = (s) => Date.parse('2026-11-08T' + s + ':00Z');
+  const hm = (ft) => ft.times.map((t) => new Date(t).toISOString().slice(11, 16));
+  let ft = A.spanTimes(at('03:00'), at('16:10'), at('15:52'), 1);
+  assert.deepEqual(hm(ft), ['03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '16:10']);
+  assert.equal(ft.now, 13);
+  ft = A.spanTimes(at('13:10'), at('16:10'), at('15:52'), 1 / 6);
+  assert.equal(ft.times.length, 19);
+  assert.equal(hm(ft)[0], '13:10');
+  assert.equal(hm(ft)[18], '16:10');
+  assert.equal(hm(ft)[ft.now], '15:50');
 });

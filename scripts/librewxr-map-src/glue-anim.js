@@ -29,9 +29,23 @@ var WidgetAnim = (function () {
   /** The hours shown, every stepH hours from pastH before the step nearest
       to nowMs to futureH after it: { times: [ms], now: index of that step }. */
   function frameTimes(nowMs, pastH, futureH, stepH) {
+    // Counted in whole steps, rounded to the minute: a step of a sixth of
+    // an hour (the radar alone) adds up without losing the last one.
     var step = (stepH || STEP_H) * HOUR, mid = Math.round(nowMs / step) * step, times = [];
-    for (var t = mid - pastH * HOUR; t <= mid + futureH * HOUR; t += step) times.push(t);
-    return { times: times, now: pastH * HOUR / step };
+    var back = Math.round(pastH * HOUR / step), ahead = Math.round(futureH * HOUR / step);
+    for (var k = -back; k <= ahead; k++) times.push(Math.round((mid + k * step) / 60000) * 60000);
+    return { times: times, now: back };
+  }
+
+  /** { times, now } from startMs to endMs (the range of the radar or the
+      satellite), one at each whole step of stepH hours between, the ends
+      themselves first and last; now: the one nearest nowMs. */
+  function spanTimes(startMs, endMs, nowMs, stepH) {
+    var step = stepH * HOUR, times = [startMs], now = 0;
+    for (var t = Math.floor(startMs / step) * step + step; t < endMs; t += step) times.push(t);
+    if (endMs > startMs) times.push(endMs);
+    for (var k = 1; k < times.length; k++) if (Math.abs(times[k] - nowMs) < Math.abs(times[now] - nowMs)) now = k;
+    return { times: times, now: now };
   }
 
   /** The run a valid hour is read from: the one that started at or before
@@ -697,7 +711,8 @@ var WidgetAnim = (function () {
     return null;
   };
 
-  Group.prototype._every = function (fn) { var c = this._counted(); return c.length > 0 && c.every(fn); };
+  // Without any layer (radar or satellite alone), nothing to wait for.
+  Group.prototype._every = function (fn) { var c = this._counted(); return !this.tracks.length || (c.length > 0 && c.every(fn)); };
 
   Group.prototype.ready = function (i) { return this._every(function (t) { return t.frames.ready(i); }); };
   Group.prototype.isFile = function (pos) { return this._every(function (t) { return t.frames.isFile(pos); }); };
@@ -711,9 +726,9 @@ var WidgetAnim = (function () {
 
   /** One grid per layer, in the order of tracks (null for a layer still
       loading that misses it), and the position (pos); null while a layer
-      that counts misses it. */
+      that counts misses it. Without any layer, an empty list: the time
+      still moves on for the radar and the satellite. */
   Group.prototype.gridAt = function (pos) {
-    if (!this.tracks.length) return null;
     var counted = this._counted(), grids = [];
     for (var k = 0; k < this.tracks.length; k++) {
       var t = this.tracks[k], g = t.frames.gridAt(pos);
@@ -1058,7 +1073,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
     decimate: decimate, FIELDS: FIELDS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };
