@@ -62,7 +62,7 @@ Item {
     function xOfIndex(i) { return count > 1 ? xOfTime(timeOfIndex(i)) : 0; }
     function inView(x) { return x >= -0.5 && x <= width + 0.5; }
 
-    // The hours written under the line: every labelEvery pictures counted
+    // The hours written under the line: every labelMin minutes counted
     // from now, the fewest leaving labelGap pixels between two (a round
     // number of minutes: 10, 20, 30 min, 1, 2, 3, 6, 12 h, a day...); now
     // always, in bold, the others kept clear of it.
@@ -77,11 +77,13 @@ Item {
                 return steps[k];
         return steps[steps.length - 1];
     }
-    readonly property int labelEvery: count < 2 ? 2 : Math.max(1, Math.round(labelMin / ((anim.times[1] - anim.times[0]) / 60000)))
+    // By time, not by picture: the end of a solo's range falls between two
+    // steps (the end of the radar, 22:10 after 22:00) and gets no label.
     function labelShown(i) {
         if (i === anim.now)
             return true;
-        return (i - anim.now) % labelEvery === 0 && Math.abs(xOfIndex(i) - xOfIndex(anim.now)) >= labelGap;
+        var min = Math.abs(anim.times[i] - anim.times[anim.now]) / 60000, r = min % labelMin;
+        return (r < 0.5 || labelMin - r < 0.5) && Math.abs(xOfIndex(i) - xOfIndex(anim.now)) >= labelGap;
     }
     readonly property real handleIndex: area.pressed ? area.dragIndex
         : anim && anim.index >= 0 ? anim.index : anim ? anim.now : 0
