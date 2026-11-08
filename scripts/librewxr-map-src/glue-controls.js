@@ -583,6 +583,7 @@ window.animStart = function (pastH, futureH, layers) {
     api: new WidgetWind.WindSource({ storage: null, world: false })
   };
   anim.player.slow = animSlow;
+  anim.player.stops = animStops;
   anim.player.loop = animLoop;
   animLoad(pastH == null ? 24 : pastH, futureH == null ? 48 : futureH);
   _widgetAdapter.setFramesHidden(true);
@@ -822,6 +823,21 @@ function animOverlayTime(ms) {
 function animOverlaysRaise() {
   if (!animOverlays) return;
   ['satellite', 'radar'].forEach(function (k) { var o = animOverlays[k]; if (o.shown) o._put(o.shown); });
+}
+
+/** With no layer drawn between frames (the radar and satellite alone),
+    the times their images change: the play goes from one to the next
+    without the pictures in between. null while a layer is on or fading. */
+function animStops() {
+  if (!anim || !animOverlays || anim.group.tracks.length || anim.group.ghosts.length) return null;
+  var out = [];
+  ['radar', 'satellite'].forEach(function (k) {
+    var o = animOverlays[k], r = o.on && o.range();
+    if (!r) return;
+    o.frames.forEach(function (f) { out.push(f.time * 1000); });
+    out.push(r.end);
+  });
+  return out;
 }
 
 /** How many times slower the animation goes at ms (the radar's range, while it is on). */
@@ -1111,6 +1127,26 @@ if (nightBtn) {
     document.title = 'night:' + (_widgetAdapter.getDayNight() ? '1' : '0');
   });
   renderNightBtn();
+}
+
+// === ISOBARS (the animation's layer, under the day and night button) ===
+// The widget shows it (setIsobarsButton) while the pressure is one of its
+// layers, lit while the isobars are on. A click is reported through the
+// title ("isobars:1:n", n counting the clicks so the same state twice is
+// still a change); the widget switches the layer and lights the button back.
+var isoBtn = document.getElementById('lv-isobars'), isoClicks = 0;
+window.setIsobarsButton = function (shown, on) {
+  if (!isoBtn) return;
+  isoBtn.classList.toggle('lv-off', !shown);
+  isoBtn.classList.toggle('active', !!on);
+};
+if (isoBtn) {
+  isoBtn.title = tr('isobars', 'Isobars');
+  isoBtn.addEventListener('click', function () {
+    var on = !isoBtn.classList.contains('active');
+    isoBtn.classList.toggle('active', on);
+    document.title = 'isobars:' + (on ? 1 : 0) + ':' + (++isoClicks);
+  });
 }
 
 // Glow of the globe's atmosphere, from the widget's slider (percent).

@@ -208,6 +208,18 @@
         color: var(--accent);
         border-color: var(--accent);
       }
+      /* Isobars button (the animation's), under the day and night one;
+         shown only while the pressure is a layer of the widget. */
+      .isobars-btn {
+        top: calc(var(--space-2) + 4 * (38px + var(--space-1)));
+      }
+      .isobars-btn.lv-off {
+        display: none;
+      }
+      .isobars-btn.active {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
       .bg-picker {
         position: absolute;
         top: calc(var(--space-2) + 38px + var(--space-1));
@@ -345,6 +357,6 @@ body.lv-anim .replayer { display: none; }
 #lv-legend-stack > .lv-precip-legend canvas { width: 100% !important; }
 /* The widget's layer column opens over the map, which stays where it is:
    the map's buttons on the right slide out of its way, in step with it. */
-body.lv-anim #lv-locate, body.lv-anim #lv-proj, body.lv-anim #lv-night, body.lv-anim #bgPicker,
+body.lv-anim #lv-locate, body.lv-anim #lv-proj, body.lv-anim #lv-night, body.lv-anim #lv-isobars, body.lv-anim #bgPicker,
 body.lv-anim .maplibregl-ctrl-top-right, body.lv-anim .maplibregl-ctrl-bottom-right {
   translate: calc(-1 * var(--aww-inset, 0px)) 0; transition: translate 220ms cubic-bezier(0.33, 1, 0.68, 1); }

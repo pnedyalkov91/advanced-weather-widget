@@ -173,7 +173,8 @@ Item {
         onMoved: row.opacityPicked(Math.round(value / 5) * 5)
         HoverHandler { id: sliderHover }
         QQC2.ToolTip.text: i18n("Opacity: %1 %", row.opacityValue)
-        QQC2.ToolTip.visible: slider.pressed || sliderHover.hovered
+        // A layer off (greyed) needs no tip.
+        QQC2.ToolTip.visible: row.active && (slider.pressed || sliderHover.hovered)
         QQC2.ToolTip.delay: slider.pressed ? 0 : Kirigami.Units.toolTipDelay
     }
 
@@ -207,7 +208,7 @@ Item {
             }
         }
         QQC2.ToolTip.text: i18n("%1: options", row.title)
-        QQC2.ToolTip.visible: gearArea.containsMouse && !popup.visible
+        QQC2.ToolTip.visible: row.active && gearArea.containsMouse && !popup.visible
         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
     }
 

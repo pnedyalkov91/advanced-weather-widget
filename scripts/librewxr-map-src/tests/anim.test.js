@@ -188,6 +188,35 @@ test('Player: the cap of pictures per second holds with a timer of 16 ms', () =>
   }
 });
 
+test('Player: with only still images (stops), straight from one to the next at the same pace', () => {
+  // Frames every 3 h; images change at 0, 1 h and 2.5 h, then the frames.
+  const stops = [0, 1 * H, 2.5 * H];
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 3000, endPauseMs: 0, minFrameMs: 50, stops: () => stops });
+  p.show(0);
+  p.play(true);
+  for (clock.t = 16; clock.t <= 900; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0]);                      // nothing in between: the same image
+  for (; clock.t <= 1100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333]);               // the 1 h image, after a third of a step
+  for (; clock.t <= 2400; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333]);
+  for (; clock.t <= 2600; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333, 0.833]);
+  for (; clock.t <= 3100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333, 0.833, 1]);     // the next frame is a stop too
+  p.play(false);
+});
+
+test('Player: stops() null (a layer drawn between frames) plays in between as before', () => {
+  const { p, shown, clock } = fakePlayer([true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, stops: () => null });
+  p.show(0);
+  p.play(true);
+  clock.t = 250;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.25]);
+  p.play(false);
+});
+
 test('Player: a frame not read is jumped over after stepMs', () => {
   const { p, shown, clock } = fakePlayer([true, false, true], { stepMs: 1000, endPauseMs: 0 });
   p.show(0);

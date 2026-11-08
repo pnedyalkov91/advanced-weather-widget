@@ -994,7 +994,29 @@ var WidgetAnim = (function () {
     // With the loop, the first picture follows the last at the pace of the
     // others and the steps go round; without it, the play stops on the last.
     this.loop = opts.loop == null ? true : !!opts.loop;
+    // () -> the times (ms) where the picture changes when nothing is drawn
+    // between frames (the radar and satellite alone), or null: the play
+    // then goes straight from one to the next at the same pace, without
+    // the pictures in between that would show the same image.
+    this.stops = opts.stops || null;
   }
+
+  /** Position of time ms among times (a frame plus a fraction), -1 out of them. */
+  function posOf(times, ms) {
+    for (var k = 0; k + 1 < times.length; k++)
+      if (ms >= times[k] && ms < times[k + 1]) return k + (ms - times[k]) / (times[k + 1] - times[k]);
+    return -1;
+  }
+
+  /** The first stop after position from, frame j at the latest. */
+  Player.prototype._nextStop = function (from, j, stops) {
+    var best = j;
+    for (var k = 0; k < stops.length; k++) {
+      var pos = posOf(this.frames.times, stops[k]);
+      if (pos > from + 1e-6 && pos < best) best = pos;
+    }
+    return best;
+  };
 
   var DRAWN_MS = 1500;          // a picture taking longer counts as drawn
 
@@ -1135,7 +1157,14 @@ var WidgetAnim = (function () {
       if (now - this.shownAt >= this.stepMs) this.show(j);
     } else if (now >= this.dueAt) {
       var f = this.slow ? Math.max(1, this.slow(this.frames.timeAt(this.index)) || 1) : 1;
-      this.show(Math.min(j, this.index + (now - this.shownAt) / (this.stepMs * f)));
+      var to = Math.min(j, this.index + (now - this.shownAt) / (this.stepMs * f));
+      var stops = this.stops && this.stops();
+      if (stops) {
+        var next = this._nextStop(this.index, j, stops);
+        if (to < next - 1e-6) return;
+        to = next;
+      }
+      this.show(to);
     }
   };
 

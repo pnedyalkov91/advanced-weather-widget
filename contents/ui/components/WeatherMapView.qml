@@ -417,6 +417,13 @@ Item {
                 setLayer(id, false);
         });
     }
+    // The isobars button on the map: shown while the pressure is a layer
+    // of the column, lit while the isobars are on.
+    readonly property string isobarsButton: layerEnabled("pressure") + ", " + layerOn("isobars")
+    onIsobarsButtonChanged: {
+        if (started)
+            js("if (window.setIsobarsButton) window.setIsobarsButton(" + isobarsButton + ");");
+    }
     function layerOn(id) {
         if (id === "radar" || id === "satellite")
             return animState && animState[id] ? !!animState[id].on : !!layersSaved[id];
@@ -772,6 +779,7 @@ Item {
         code += "if (window.animSetLegendTop) window.animSetLegendTop(" + legendTop + ");";
         if (Plasmoid.configuration.weatherMapLightning === true)
             code += "window.animSetRadarOption('lightning', true);";
+        code += "if (window.setIsobarsButton) window.setIsobarsButton(" + isobarsButton + ");";
         code += "window.animSetRadar(" + !!layersSaved.radar + "); window.animSetSatellite(" + (!!layersSaved.satellite && layerEnabled("satellite")) + ");";
         js(code);
     }
@@ -790,6 +798,7 @@ Item {
             "connFailed": i18n("Connection failed"),
             "globe": i18n("Globe"),
             "dayNight": i18n("Day and night"),
+            "isobars": i18n("Isobars"),
             "windUnitLabel": radarRoot.windUnitLabel,
             "dirN": i18n("N"),
             "dirNE": i18n("NE"),
@@ -1061,6 +1070,9 @@ Item {
                             var proj = title.substring(5) === "globe" ? "globe" : "flat";
                             if (proj !== Plasmoid.configuration.librewxrProjection)
                                 Plasmoid.configuration.librewxrProjection = proj;
+                        } else if (title.indexOf("isobars:") === 0) {
+                            // The isobars button on the map (isobars:1:n).
+                            radarRoot.setLayer("isobars", title.substring(8, 9) === "1");
                         } else if (title.indexOf("night:") === 0) {
                             // Switched with the day and night button: the page already shows it.
                             var night = title.substring(6) === "1";

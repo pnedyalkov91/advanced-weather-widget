@@ -483,21 +483,12 @@ Rectangle {
                 iconName: "pression-glyph"
                 checked: panel.map.layerOn("pressure")
                 visible: panel.map.layerEnabled("pressure")
-                active: checked || panel.map.layerOn("isobars")
                 opacityValue: panel.map.opacities.pressure
                 onToggled: function (on) { panel.map.setLayer("pressure", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("pressure", p); }
                 hasLegend: true
                 legendOn: !panel.map.legendsHidden["pressure"]
                 onLegendToggled: function (on) { panel.map.setLegend("pressure", on); }
-                SmallSwitch {
-                    text: i18n("Isobars")
-                    checked: panel.map.layerOn("isobars")
-                    onToggled: {
-                        panel.map.setLayer("isobars", checked);
-                        checked = Qt.binding(function () { return panel.map.layerOn("isobars"); });
-                    }
-                }
             }
             LayerRow {
                 width: panel.colW
