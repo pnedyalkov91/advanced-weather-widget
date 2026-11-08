@@ -226,8 +226,8 @@ test('Player.seek: a map that never answers does not hold it for ever', () => {
   p.play(false);
 });
 
-test('Player.step: one hour at a time on the hour grid, paused, held at the ends', () => {
-  const { p, shown } = fakePlayer([true, true, true], {});
+test('Player.step: one hour at a time on the hour grid, paused, held at the ends without the loop', () => {
+  const { p, shown } = fakePlayer([true, true, true], { loop: false });
   p.show(0);
   p.play(true);
   p.step(1, 3);
@@ -243,8 +243,8 @@ test('Player.step: one hour at a time on the hour grid, paused, held at the ends
   assert.deepEqual(shown.slice(-1), [0]);
 });
 
-test('Player.stepFile: to the next frame from its file, none past the ends', () => {
-  const { p, shown } = fakePlayer([true, true, true, true], { between: [false, false, true, false] });
+test('Player.stepFile: to the next frame from its file, none past the ends without the loop', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { between: [false, false, true, false], loop: false });
   p.show(0.5);
   p.stepFile(1);
   assert.deepEqual(shown.slice(-1), [1]);
@@ -254,6 +254,83 @@ test('Player.stepFile: to the next frame from its file, none past the ends', () 
   assert.deepEqual(shown.slice(-1), [3]);
   p.stepFile(-1);
   assert.deepEqual(shown.slice(-1), [1]);
+});
+
+test('Player with the loop: the first picture follows the last at the pace of the others', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, minFrameMs: 100 });
+  p.show(2);
+  p.play(true);
+  clock.t = 50;
+  p._tick();
+  assert.deepEqual(shown, [2]);
+  clock.t = 100;
+  p._tick();
+  assert.deepEqual(shown, [2, 0]);
+  p.play(false);
+});
+
+test('Player without the loop: the play stops on the last picture, and starts again from the first', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, minFrameMs: 100, loop: false });
+  p.show(1);
+  p.play(true);
+  clock.t = 5000;
+  p._tick();
+  assert.deepEqual(shown, [1, 2]);
+  clock.t = 6000;
+  p._tick();
+  assert.equal(p.playing, false);
+  assert.deepEqual(shown, [1, 2]);
+  p.play(true);
+  p._tick();
+  assert.deepEqual(shown, [1, 2, 0]);
+  assert.equal(p.playing, true);
+  p.play(false);
+});
+
+test('Player.step and stepFile with the loop: past the last to the first, before the first to the last', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { between: [false, false, true, false] });
+  p.show(3);
+  p.step(1, 3);
+  assert.deepEqual(shown.slice(-1), [0]);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [3]);
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [0]);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [3]);
+  p.loop = false;
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [3]);
+});
+
+test('Frames.gridAt: near the end, the first two frames are unpacked ahead for the loop', () => {
+  const f = Object.create(A.Frames.prototype), asked = [];
+  f.times = [0, 3 * H, 6 * H, 9 * H, 12 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = A.FIELDS.temperature;
+  f.packed = [0, 10, 20, 30, 40].map((t) => [A.pack(Float32Array.from([t]))]);
+  f._warm = (i) => asked.push(i);
+  f.gridAt(1.5);
+  assert.deepEqual(asked, [3]);
+  asked.length = 0;
+  f.gridAt(2.5);
+  assert.deepEqual(asked.sort(), [0, 1, 4]);
+});
+
+test('windField: the 10 m wind as it was, another level a field of its own without finer models', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  assert.equal(A.windField('10m'), A.FIELDS.wind);
+  const f = A.windField('700hPa');
+  assert.equal(A.windField('700hPa'), f);
+  assert.equal(f.id, 'wind');
+  assert.equal(f.store, 'wind-700hPa-0.25');
+  assert.equal(f.fines, false);
+  assert.deepEqual(f.vars, ['wind_u_component_700hPa', 'wind_v_component_700hPa']);
+  const read = [];
+  const frames = new A.Frames(windLoader(read), { field: f, now: () => at('2026-11-01T14:00:00Z'), pastH: 3, futureH: 3 });
+  await frames.load();
+  assert.equal(read[0], 'wind_u_component_700hPa,wind_v_component_700hPa');
+  assert.equal(frames.grid(1).u[0][22], 15);
 });
 
 test('FIELDS.wind: u and v by half m/s on one byte, ends held, NaN kept', () => {
@@ -397,6 +474,7 @@ test('pruneStore: hours past the longest range and those of a run since replaced
   const keep = [
     A.frameKey('m', A.FIELDS.wind.store, at('2026-10-31T18:00:00Z'), at('2026-10-31T21:00:00Z')),   // the past, from its own run
     A.frameKey('m', 'temperature', latest, at('2026-11-02T00:00:00Z')),                // the future, from the latest run
+    A.frameKey('m', 'wind-700hPa-0.25', latest, at('2026-11-02T00:00:00Z')),           // the wind at another level, even never asked for here
   ];
   const drop = [
     A.frameKey('m', A.FIELDS.wind.store, at('2026-11-01T00:00:00Z'), at('2026-11-02T00:00:00Z')),   // future of an older run

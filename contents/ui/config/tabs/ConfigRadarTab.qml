@@ -695,7 +695,7 @@ GridLayout {
 
         Slider {
             Layout.preferredWidth: 220
-            from: 10
+            from: 0
             to: 100
             stepSize: 5
             value: radarTab.configRoot.cfg_librewxrTempOpacity

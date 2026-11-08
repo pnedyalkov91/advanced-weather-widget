@@ -626,9 +626,10 @@ Rectangle {
                                 label: i18n("Forecast"),
                                 logicalIdx: 1
                             });
+                        // LibreWXR's map plays the weather's layers: the Weather Map.
                         if (fullView.showRadarTab)
                             tabs.push({
-                                label: i18n("Radar"),
+                                label: (Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr" ? i18n("Weather Map") : i18n("Radar"),
                                 logicalIdx: 2
                             });
                         if (fullView.showHistoryTab)

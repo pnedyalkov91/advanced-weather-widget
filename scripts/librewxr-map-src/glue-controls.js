@@ -335,7 +335,7 @@ var ANIM_LAYERS = {
   },
   wind: function (m) {
     var layer = _widgetAdapter.createWindLayer(anim.api, null, _windDem, {
-      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: '10m',
+      fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: animWindLevel,
       lineWidth: windLineWidth, palette: windPalette, density: windDensity, manual: true, opacity: animWindOpacity
     });
     if (!layer) return null;
@@ -348,15 +348,41 @@ var ANIM_LAYERS = {
 // The name the pictures of a layer are kept under while it is off, for
 // layers whose pictures depend on a choice within them (by id: a function
 // giving that name); the layer's id otherwise.
-var ANIM_KEYS = {};
+var ANIM_KEYS = { wind: function () { return 'wind:' + animWindLevel; } };
 function animKey(id) { return ANIM_KEYS[id] ? ANIM_KEYS[id]() : id; }
+
+// The wind of the animation at 10 m or at 700 hPa (about 3000 m, the flow
+// that steers the rain), the two levels the radar's wind offers; each has
+// its own pictures, kept apart, so a new level fades in over the old one.
+var animWindLevel = WIND_LEVEL;
+/** The field the pictures of layer id are read with. */
+function animField(id) { return id === 'wind' ? WidgetAnim.windField(animWindLevel) : WidgetAnim.FIELDS[id]; }
+
+/** Another level of the wind ('10m' or '700hPa'): the layer goes off and
+    comes back at it. The level now. */
+window.animSetWindLevel = function (level) {
+  if (WidgetAnim.WIND_LEVELS.indexOf(level) < 0 || level === animWindLevel) return animWindLevel;
+  var on = anim && anim.group && anim.group.track('wind');
+  if (on) animSetLayer('wind', false);
+  animWindLevel = level;
+  if (on) animSetLayer('wind', true);
+  return animWindLevel;
+};
+
+// Looping or not (WidgetAnim.Player.loop), kept across starts.
+var animLoop = true;
+window.animSetLoop = function (on) {
+  animLoop = !!on;
+  if (anim) anim.player.loop = animLoop;
+  return animLoop;
+};
 
 /** Pictures of layer id for the range of the animation, those of `reuse`
     (the same layer's Frames of another range, or kept while it was off)
     taken over; onShow once its first picture is drawn. */
 function animTrack(id, layer, reuse, onShow) {
   var frames = new WidgetAnim.Frames(_windOpen, {
-    field: WidgetAnim.FIELDS[id], now: function () { return anim.nowMs; },
+    field: animField(id), now: function () { return anim.nowMs; },
     pastH: anim.pastH, futureH: anim.futureH, reuse: reuse, parallel: 6, gate: animGate,
     store: animStore, pruneH: ANIM_KEEP_H,
     onFrame: function (i) {
@@ -404,7 +430,7 @@ function animPickFines() {
     files do not hold; their 10 m wind would be drawn over it). */
 function animFineField(id) {
   if (typeof WidgetModels === 'undefined') return null;
-  if (WidgetAnim.FIELDS[id] && WidgetAnim.FIELDS[id].fines === false) return null;
+  if (animField(id) && animField(id).fines === false) return null;
   return { temperature: WidgetAnim.FIELDS.temperatureFine, wind: WidgetAnim.FIELDS.windFine }[id] || null;
 }
 
@@ -557,9 +583,11 @@ window.animStart = function (pastH, futureH, layers) {
     api: new WidgetWind.WindSource({ storage: null, world: false })
   };
   anim.player.slow = animSlow;
+  anim.player.loop = animLoop;
   animLoad(pastH == null ? 24 : pastH, futureH == null ? 48 : futureH);
   _widgetAdapter.setFramesHidden(true);
   document.body.classList.add('lv-anim');
+  legendGather();
   layers = layers || { temperature: true };
   for (var id in ANIM_LAYERS) if (layers[id]) animSetLayer(id, true);
   creditOpenMeteo();
@@ -667,8 +695,56 @@ window.animState = function () {
     fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
     ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,
     radar: animOverlayState('radar'), satellite: animOverlayState('satellite'),
-    models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFine ? animFineModels : [])
+    models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFine ? animFineModels : []),
+    loop: animLoop, windLevel: animWindLevel
   };
+};
+
+// === LEGENDS AND THE WIDGET'S LAYER COLUMN ===
+// The color legends of the layers, each made by its own layer, go into one
+// column at the top left while the animation runs (overrides.css). Hidden
+// legends stay hidden when their layer makes them again. A legend tells
+// its layer by data-layer, or by its id or class for the older ones.
+var legendHidden = {};
+var legendStack = null;
+var LEGEND_SEL = '#lv-temp-legend, #lv-pres-legend, .lv-aq-legend, .lv-precip-legend, [data-legend]';
+function legendLayer(el) {
+  if (el.dataset.layer) return el.dataset.layer;
+  if (el.id === 'lv-temp-legend') return 'temperature';
+  if (el.id === 'lv-pres-legend') return 'pressure';
+  if (el.classList.contains('lv-precip-legend')) return 'precipitation';
+  return '';
+}
+function legendGather() {
+  var host = document.getElementById('lv-map');
+  if (!host || !document.body.classList.contains('lv-anim')) return;
+  if (!legendStack || legendStack.parentNode !== host) {
+    legendStack = document.createElement('div');
+    legendStack.id = 'lv-legend-stack';
+    host.appendChild(legendStack);
+  }
+  host.querySelectorAll(LEGEND_SEL).forEach(function (el) {
+    if (el.parentNode !== legendStack) legendStack.appendChild(el);
+    var off = !!legendHidden[legendLayer(el)];
+    if (el.classList.contains('lv-legend-off') !== off) el.classList.toggle('lv-legend-off', off);
+  });
+}
+/** Show (on) or hide the color legend of layer id. */
+window.animSetLegend = function (id, on) {
+  legendHidden[id] = !on;
+  legendGather();
+};
+if (typeof MutationObserver !== 'undefined') new MutationObserver(legendGather).observe(document.body, { childList: true, subtree: true });
+
+/** How much of the map's right the widget's layer column covers (px): the
+    map's own buttons there slide left by as much. */
+window.animSetRightInset = function (px) {
+  document.documentElement.style.setProperty('--aww-inset', Math.max(0, +px || 0) + 'px');
+};
+/** How far down the legends start (px): under the widget's date when the
+    map is too narrow for both side by side. */
+window.animSetLegendTop = function (px) {
+  document.documentElement.style.setProperty('--aww-legend-top', Math.max(0, +px || 0) + 'px');
 };
 
 // === RADAR AND SATELLITE OVER THE ANIMATION (glue-anim-radar.js) ===
@@ -678,7 +754,7 @@ window.animState = function () {
 // and changing one here changes the viewer's too.
 var animRadarOpts = {
   color: CURRENT_COLOR, smooth: SMOOTH_INIT, snow: SNOW_INIT, format: FORMAT_INIT, tileSize: TILESIZE_INIT,
-  arrows: ARROWS_ON, lightning: false, alerts: ALERTS_INIT
+  arrows: ARROWS_ON, lightning: false, alerts: ALERTS_INIT, cells: CELLS_INIT
 };
 var animOverlays = null;       // { radar, satellite } (WidgetAnimRadar.Overlay)
 var animCatalogData = null;
@@ -689,7 +765,7 @@ function animTileOpts() {
   var o = animRadarOpts, size = o.tileSize === 'auto' ? (window.devicePixelRatio >= 1.5 ? 512 : 256) : parseInt(o.tileSize, 10) || 256;
   return {
     size: size, color: o.color, smooth: o.smooth, snow: o.snow, format: o.format,
-    arrows: o.arrows ? (currentTheme() === 'dark' ? 'light' : 'dark') : '', cells: '', lightning: o.lightning ? 'bolts' : ''
+    arrows: o.arrows ? (currentTheme() === 'dark' ? 'light' : 'dark') : '', cells: o.cells || '', lightning: o.lightning ? 'bolts' : ''
   };
 }
 
@@ -769,7 +845,8 @@ window.animRadarSchemes = function () {
 };
 
 /** A tile option of the radar (color, smooth, snow, lightning, arrows,
-    alerts, format, tileSize), for the animation's images and the viewer's. */
+    alerts, format, tileSize, cells: the storm cells' theme, 'light',
+    'dark' or '' for none), for the animation's images and the viewer's. */
 window.animSetRadarOption = function (key, value) {
   if (!(key in animRadarOpts)) return;
   animRadarOpts[key] = value;
@@ -781,7 +858,8 @@ window.animSetRadarOption = function (key, value) {
     arrows: function () { window.setArrows(!!value); },
     alerts: function () { viewer.setAlertsEnabled(!!value); },
     format: function () { viewer.setFormat(value); },
-    tileSize: function () { viewer.setTileSize(String(value)); }
+    tileSize: function () { viewer.setTileSize(String(value)); },
+    cells: function () { window.setCells(value || ''); }
   }[key];
   apply();
   if (!animOverlays || key === 'alerts') return;
@@ -929,6 +1007,9 @@ document.addEventListener('mousemove', function (e) {
   readoutShow(e.ctrlKey || readout.keyDown);
 });
 document.addEventListener('keydown', function (e) {
+  // Esc in the page is told to the widget (its help panel): the map takes
+  // the keys once clicked.
+  if (e.key === 'Escape') console.log('[keys] escape');
   if (e.key !== 'Control' || e.repeat) return;
   readout.keyDown = true;
   readoutShow(true);
