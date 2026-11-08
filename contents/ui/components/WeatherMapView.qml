@@ -396,6 +396,18 @@ Item {
     function layerEnabled(id) {
         return id === "radar" || disabledLayers.indexOf(id) < 0;
     }
+    // Takes a layer out of the column or puts it back (the settings of the
+    // column and the Weather Maps settings share the key).
+    function setLayerEnabled(id, on) {
+        var d = [];
+        try {
+            d = JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
+        } catch (e) {}
+        d = d.filter(function (x) { return x !== id; });
+        if (!on)
+            d.push(id);
+        Plasmoid.configuration.weatherMapDisabledLayers = JSON.stringify(d);
+    }
     // A layer taken out while on goes off.
     onDisabledLayersChanged: {
         if (!started)
@@ -1143,7 +1155,7 @@ Item {
                     width: parent.width - Kirigami.Units.gridUnit * 4
                     visible: radarRoot.startFailed
                     icon.name: "dialog-warning"
-                    text: i18n("The Weather Map cannot play here")
+                    text: i18n("The weather maps cannot play here")
                     explanation: i18n("The map page needs WebGL, which this graphics setup does not offer.")
                 }
 

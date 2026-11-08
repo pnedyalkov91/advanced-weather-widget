@@ -629,7 +629,8 @@ KCM.AbstractKCM {
         }
         PlasmaComponents.TabButton {
             icon.name: "weather-showers-scattered"
-            text: i18n("Radar")
+            // Named like the popup's tab: LibreWXR plays the weather maps.
+            text: root.cfg_radarProvider === "librewxr" ? i18n("Weather Maps") : i18n("Radar")
         }
         PlasmaComponents.TabButton {
             icon.name: "task-attention"

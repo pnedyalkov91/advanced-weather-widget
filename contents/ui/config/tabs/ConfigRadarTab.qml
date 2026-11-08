@@ -381,7 +381,7 @@ GridLayout {
     // The layers of the Weather Map's column: the radar always, the others
     // each on or off here (an unused one gets out of the way).
     Label {
-        text: i18n("Weather Map layers:")
+        text: i18n("Layers of the weather maps:")
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
@@ -421,7 +421,7 @@ GridLayout {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            text: i18n("The radar is always there. A layer switched off here leaves the column of the Weather Map tab.")
+            text: i18n("The radar is always there. A layer switched off here leaves the column of the Weather Maps tab.")
         }
     }
 

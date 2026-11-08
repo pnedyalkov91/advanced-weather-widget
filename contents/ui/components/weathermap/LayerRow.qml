@@ -232,7 +232,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: 4
             }
-            QQC2.Switch {
+            SmallSwitch {
                 visible: row.hasLegend
                 text: i18n("Color legend on the map")
                 checked: row.legendOn

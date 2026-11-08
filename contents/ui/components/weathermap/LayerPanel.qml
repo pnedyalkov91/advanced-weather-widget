@@ -99,7 +99,7 @@ Rectangle {
                 closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
                 contentItem: ColumnLayout {
                     spacing: 0
-                    QQC2.Switch {
+                    SmallSwitch {
                         text: i18n("All")
                         font.bold: true
                         checked: ok.checkedValues.length === ok.choices.length
@@ -110,7 +110,7 @@ Rectangle {
                     }
                     Repeater {
                         model: ok.choices
-                        delegate: QQC2.Switch {
+                        delegate: SmallSwitch {
                             required property var modelData
                             text: modelData[1]
                             checked: ok.checkedValues.indexOf(modelData[0]) >= 0
@@ -218,7 +218,7 @@ Rectangle {
                 move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
                 HeadButton {
                     text: "?"
-                    tip: i18n("How to read the Weather Map")
+                    tip: i18n("How to read the weather maps")
                     on: panel.map.helpOpen
                     onClicked: panel.map.toggleHelp()
                 }
@@ -227,7 +227,7 @@ Rectangle {
                 HeadButton {
                     id: settingsButton
                     iconName: "gear"
-                    tip: i18n("Settings: pictures per second,<br>resolution while playing, coasts and borders, dark map")
+                    tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, layers shown")
                     on: settingsMenu.visible
                     onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
                     QQC2.Popup {
@@ -235,7 +235,7 @@ Rectangle {
                         margins: 6
                         x: parent.width - width
                         y: parent.height + 6
-                        width: 290
+                        width: 320
                         padding: 12
                         closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
                         contentItem: ColumnLayout {
@@ -285,7 +285,7 @@ Rectangle {
                                 current: [1, 2, 4].indexOf(panel.map.resolution)
                                 onPicked: function (v) { panel.map.setResolution(v); }
                             }
-                            QQC2.Switch {
+                            SmallSwitch {
                                 text: i18n("Coasts and borders")
                                 checked: panel.map.mapLinesOn
                                 onToggled: {
@@ -293,7 +293,7 @@ Rectangle {
                                     checked = Qt.binding(function () { return panel.map.mapLinesOn; });
                                 }
                             }
-                            QQC2.Switch {
+                            SmallSwitch {
                                 text: i18n("Dark map")
                                 enabled: !panel.map.darkMapLocked
                                 checked: panel.map.mapTheme === "dark"
@@ -304,6 +304,35 @@ Rectangle {
                                 QQC2.ToolTip.text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
                                 QQC2.ToolTip.visible: hovered
                                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                            }
+                            // The layers of the column, two by two: one switched off
+                            // leaves the column (the radar always stays).
+                            QQC2.Label {
+                                text: i18n("Layers shown")
+                                color: panel.dimText
+                                Layout.topMargin: 4
+                            }
+                            GridLayout {
+                                Layout.fillWidth: true
+                                columns: 2
+                                columnSpacing: 6
+                                rowSpacing: 0
+                                Repeater {
+                                    model: [["satellite", i18n("Satellite")], ["wind", i18n("Wind")], ["temperature", i18n("Temperature")],
+                                        ["precipitation", i18n("Precipitation")], ["clouds", i18n("Cloud cover")], ["pressure", i18n("Pressure")],
+                                        ["humidity", i18n("Humidity")], ["dewpoint", i18n("Dew point")], ["airquality", i18n("Air quality")]]
+                                    SmallSwitch {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredWidth: 1
+                                        text: modelData[1]
+                                        checked: panel.map.layerEnabled(modelData[0])
+                                        onToggled: {
+                                            panel.map.setLayerEnabled(modelData[0], checked);
+                                            checked = Qt.binding(function () { return panel.map.layerEnabled(modelData[0]); });
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -461,7 +490,7 @@ Rectangle {
                 hasLegend: true
                 legendOn: !panel.map.legendsHidden["pressure"]
                 onLegendToggled: function (on) { panel.map.setLegend("pressure", on); }
-                QQC2.Switch {
+                SmallSwitch {
                     text: i18n("Isobars")
                     checked: panel.map.layerOn("isobars")
                     onToggled: {

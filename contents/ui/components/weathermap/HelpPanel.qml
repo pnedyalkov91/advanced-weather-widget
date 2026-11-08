@@ -70,7 +70,7 @@ QQC2.Popup {
                 Layout.fillWidth: true
                 Layout.leftMargin: Kirigami.Units.smallSpacing
                 level: 3
-                text: i18n("Reading the Weather Map")
+                text: i18n("Reading the weather maps")
             }
             QQC2.ToolButton {
                 icon.name: "window-close"
