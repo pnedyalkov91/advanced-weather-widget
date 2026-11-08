@@ -31,6 +31,7 @@ import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
 import "components"
+import "js/debug.js" as Dbg
 
 Rectangle {
     id: fullView
@@ -293,7 +294,10 @@ Rectangle {
         onTriggered: fullView._restoreDefaultLocation()
     }
 
-    Component.onCompleted: _startupRestoreTimer.start()
+    Component.onCompleted: {
+        Dbg.mark("Popup", "popup content (FullView) created", "the Details/Forecast/History pages are being built; this is GUI-thread work");
+        _startupRestoreTimer.start();
+    }
 
     // ── Catch-all background ────────────────────────────────────────────
     // Swallows clicks (including right-clicks) on any gap not covered by an

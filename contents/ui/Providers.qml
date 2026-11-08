@@ -138,8 +138,28 @@ QtObject {
     /** Parallel-safe hourly fetch for providers that support it. Returns true
      *  if handled (result delivered via callback), false to let the caller use
      *  its inline path. Needed by BBC and AEMET, whose id/municipio
-     *  resolution is an async step that lives in-module. */
+     *  resolution is an async step that lives in-module, and by Open-Meteo,
+     *  which shares its request with the Forecast tab's hourly fetch. */
+    /** Hours of every day firstDate..lastDate in ONE request, for providers that can do that
+     *  (Open-Meteo). callback({ dateStr: [hours] }) - {} on failure. Returns false when the
+     *  provider cannot, and nothing is called back. */
+    function fetchHourlyAll(ap, service, firstDate, lastDate, callback) {
+        if (ap === "openMeteo") {
+            OpenMeteoJS.fetchHourlyAll(service, firstDate, lastDate, callback);
+            return true;
+        }
+        return false;
+    }
+
     function fetchHourlyDirect(ap, service, dateStr, callback) {
+        if (ap === "openMeteo") {
+            // callback(arr, true): the second argument says the answer is the complete one the
+            // Forecast tab would ask for itself (see main.qml fetchHourlyForDateDirect)
+            OpenMeteoJS.fetchHourlyDirect(service, dateStr, function (arr) {
+                callback(arr, arr && arr.length > 0);
+            });
+            return true;
+        }
         if (ap === "bbc") {
             BbcWeatherJS.fetchHourlyDirect(service, W, dateStr, callback);
             return true;

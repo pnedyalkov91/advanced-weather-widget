@@ -323,49 +323,145 @@ function _mergeDailyArrays(primary, backup, requestedDays) {
 
 
 function fetchHourly(service, dateStr) {
-    var gen = service._refreshGen;
     var r = service.weatherRoot;
+    _loadHourlyRange(service, dateStr, dateStr, "fetchHourly", true,
+        function (map) { r.setHourlyResult(dateStr, map[dateStr] || []); },
+        function () { r.hourlyData = []; });
+}
+
+// Same request and the same result as fetchHourly (all columns, the closing midnight entry, the
+// best-match backfill), but handed to `callback(hourlyArray)` instead of being written into the
+// shared hourlyData - so several days can be loaded side by side, and so the answer is the one the
+// Forecast tab would ask for itself (the hourly cache can serve it without a second request).
+// `callback` is called exactly once; with [] when the request failed.
+function fetchHourlyDirect(service, dateStr, callback) {
+    _loadHourlyRange(service, dateStr, dateStr, "hourlyDirect", false,
+        function (map) { callback(map[dateStr] || []); },
+        function () { callback([]); });
+}
+
+// The hours of every day from firstDate to lastDate (yyyy-MM-dd) in ONE request. Open-Meteo
+// answers the whole forecast (16 days x 24 hours) in a single reply of a few KB, and counts such a
+// request as ~1.1 calls - the same as one day. `callback(map)` gets { "yyyy-MM-dd": [hours] } in the
+// same shape as fetchHourly, or {} when the request failed. Called exactly once.
+function fetchHourlyAll(service, firstDate, lastDate, callback) {
+    _loadHourlyRange(service, firstDate, lastDate, "hourlyAll", false,
+        function (map) { callback(map); },
+        function () { callback({}); });
+}
+
+function _hourlyUrl(service, firstDate, endDate, withModel) {
     var tz = service.timezone;
-    // end_date is one day past dateStr (not dateStr itself) so the response
-    // also carries the following day's 00:00 hour - the entry that closes
-    // the hourly forecast's loop at midnight - in the same single request.
-    var nextDateStr = _nextDateStr(dateStr);
-    var url = "https://api.open-meteo.com/v1/forecast?latitude="
+    return "https://api.open-meteo.com/v1/forecast?latitude="
         + service.latitude
         + "&longitude=" + service.longitude
         + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
         + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
-        + "&start_date=" + dateStr + "&end_date=" + nextDateStr
-        + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
-    var req = Dbg.xhr("Open-Meteo", "fetchHourly");
-    req.open("GET", url);
-    req.onreadystatechange = function () {
-        if (req.readyState !== XMLHttpRequest.DONE)
-            return;
-        if (service._refreshGen !== gen) return;
-        if (req.status !== 200) {
-            r.hourlyData = [];
-            return;
-        }
-        var d = JSON.parse(req.responseText);
-        var arr = _parseHourlyArray(d, dateStr, nextDateStr);
+        + "&start_date=" + firstDate + "&end_date=" + endDate
+        + (withModel ? W.openMeteoModelParam(service.openMeteoModel, service.countryCode) : "");
+}
 
-        // Same national-model horizon issue as the daily forecast: if
-        // dateStr falls outside the high-res model's coverage, Open-Meteo
-        // returns either an empty hourly.time array or null-filled hours
-        // for it. Backfill from the global best-match blend when needed.
-        var needsBackfill = arr.length === 0 || arr.some(_isHourlyIncomplete);
-        if (!needsBackfill) {
-            r.setHourlyResult(dateStr, arr);
-            return;
-        }
+function _addDays(dateStr, n) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return Qt.formatDate(d, "yyyy-MM-dd");
+}
 
-        _fetchHourlyBackup(service, gen, dateStr, nextDateStr, function (backupArr) {
-            if (service._refreshGen !== gen) return;
-            r.setHourlyResult(dateStr, _mergeHourlyArrays(arr, backupArr));
+function _dateRange(firstDate, lastDate) {
+    var out = [];
+    var d = firstDate;
+    while (d <= lastDate && out.length < 20) {
+        out.push(d);
+        d = _nextDateStr(d);
+    }
+    return out;
+}
+
+// The request behind fetchHourly / fetchHourlyDirect / fetchHourlyAll. onDone(map) gets
+// { dateStr: [hours] } for every day of the range, onFail() is called when the request (or its
+// answer) was unusable. useGen=true drops the answer silently when a newer refresh cycle has
+// started in the meantime (the shared hourlyData path).
+function _loadHourlyRange(service, firstDate, lastDate, label, useGen, onDone, onFail) {
+    var gen = service._refreshGen;
+    var dates = _dateRange(firstDate, lastDate);
+    if (dates.length === 0) {
+        onFail();
+        return;
+    }
+    function stale() { return useGen && service._refreshGen !== gen; }
+    function build(d) {
+        var map = {};
+        for (var i = 0; i < dates.length; ++i)
+            map[dates[i]] = _parseHourlyArray(d, dates[i], _nextDateStr(dates[i]));
+        return map;
+    }
+    function send(endDate, withModel, lbl, handler) {
+        var req = Dbg.xhr("Open-Meteo", lbl);
+        req.open("GET", _hourlyUrl(service, firstDate, endDate, withModel));
+        req.onreadystatechange = function () {
+            if (req.readyState === XMLHttpRequest.DONE)
+                handler(req);
+        };
+        req.send();
+    }
+    function primary(endDate) {
+        send(endDate, true, label, function (req) {
+            if (stale()) return;
+            // end_date is one day past the last day so the answer also carries that day's closing
+            // midnight hour. On the very last day of the forecast range that day does not exist
+            // (HTTP 400): ask again without it.
+            if (req.status === 400 && endDate !== lastDate) {
+                Dbg.log("Open-Meteo", "hourly " + firstDate + " … " + endDate + " refused (HTTP 400, probably past the end of the forecast) → asking again up to " + lastDate + ", without the closing midnight hour");
+                primary(lastDate);
+                return;
+            }
+            if (req.status !== 200) {
+                onFail();
+                return;
+            }
+            var map;
+            try {
+                map = build(JSON.parse(req.responseText));
+            } catch (e) {
+                Dbg.warn("Open-Meteo", "hourly answer for " + firstDate + " … " + lastDate + " could not be read: " + e);
+                onFail();
+                return;
+            }
+
+            // Same national-model horizon issue as the daily forecast: if a day falls outside the
+            // high-res model's coverage, Open-Meteo returns either no hours or null-filled hours
+            // for it. Backfill those days from the global best-match blend (one extra request).
+            var needy = dates.filter(function (ds) {
+                return map[ds].length === 0 || map[ds].some(_isHourlyIncomplete);
+            });
+            if (needy.length === 0) {
+                onDone(map);
+                return;
+            }
+            Dbg.log("Open-Meteo", "hourly data incomplete for " + needy.length + " day(s) (" + needy.join(", ") + ") → backfilling from the global best-match model");
+            send(endDate, false, "_fetchHourlyBackup", function (breq) {
+                if (stale()) return;
+                if (breq.status === 200) {
+                    try {
+                        var bmap = build(JSON.parse(breq.responseText));
+                        needy.forEach(function (ds) {
+                            map[ds] = _mergeHourlyArrays(map[ds], bmap[ds]);
+                        });
+                    } catch (e) {
+                        Dbg.warn("Open-Meteo", "hourly backfill answer could not be read: " + e);
+                    }
+                }
+                onDone(map);
+            });
         });
-    };
-    req.send();
+    }
+    // end_date: one day past the last day, for the closing midnight hour - except when that day is
+    // beyond what the API serves (it answers up to today + 15 days; a later end_date is refused with
+    // HTTP 400, as the last day of a 16-day forecast would be). The 400 retry above stays as the
+    // safety net for the time-zone edges, where "today" differs by a day.
+    var closingEnd = _nextDateStr(lastDate);
+    var maxEnd = _addDays(Qt.formatDate(new Date(), "yyyy-MM-dd"), 15);
+    primary(closingEnd > maxEnd ? lastDate : closingEnd);
 }
 
 // Parses the "hourly" block of an Open-Meteo /v1/forecast response into the
@@ -423,38 +519,6 @@ function _isHourlyIncomplete(entry) {
 // entry) from Open-Meteo's global best-match blend to use as backfill.
 // Deliberately omits &models= so Open-Meteo picks its own default, which has
 // full worldwide coverage.
-function _fetchHourlyBackup(service, gen, dateStr, nextDateStr, callback) {
-    var tz = service.timezone;
-    var url = "https://api.open-meteo.com/v1/forecast?latitude="
-        + service.latitude
-        + "&longitude=" + service.longitude
-        + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto")
-        + "&hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,precipitation_probability,precipitation,pressure_msl,visibility,uv_index"
-        + "&start_date=" + dateStr + "&end_date=" + nextDateStr;
-    var req = Dbg.xhr("Open-Meteo", "_fetchHourlyBackup");
-    req.open("GET", url);
-    req.onreadystatechange = function () {
-        if (req.readyState !== XMLHttpRequest.DONE)
-            return;
-        if (service._refreshGen !== gen || req.status !== 200) {
-            callback([]);
-            return;
-        }
-        try {
-            var d = JSON.parse(req.responseText);
-            callback(_parseHourlyArray(d, dateStr, nextDateStr));
-        } catch (e) {
-            callback([]);
-        }
-    };
-    req.send();
-}
-
-// Merges the model-specific hourly array with the best-match backup on a
-// PER-FIELD basis, matched by timeIso (positional fallback for hours the
-// primary fetch didn't return at all) - same rationale as _mergeDailyArrays:
-// an hour missing just uvIndex keeps its high-res tempC/windKmh/etc.
-// instead of being swapped wholesale for the coarser blend's numbers.
 function _mergeHourlyArrays(primary, backup) {
     var backupByTime = {};
     for (var i = 0; i < backup.length; ++i)

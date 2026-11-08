@@ -99,7 +99,12 @@ Item {
             _perDayHourlyData = {};
     }
 
-    function _startExpandAll() {
+    // reload=true: new weather data has just arrived, so every day is asked from the provider again;
+    // otherwise days whose hours were fetched in full a moment ago are reused.
+    property bool _expandAllReload: false
+    function _startExpandAll(reload) {
+        _expandAllReload = reload === true;
+        Dbg.log("Forecast", "expand-all started (" + (reload === true ? "new weather data → every day is asked again" : "cached hours are reused when fresh") + "), popup visible=" + forecastRoot.visible + ", forecast days in data=" + (weatherRoot ? weatherRoot.dailyData.length : 0));
         if (!weatherRoot || weatherRoot.dailyData.length === 0)
             return;
         _expandAllFetchGeneration++;
@@ -140,7 +145,7 @@ Item {
                         forecastRoot._expandAllActiveFetches = Math.max(0, forecastRoot._expandAllActiveFetches - 1);
                         if (forecastRoot._expandAllQueue.length > 0)
                             expandAllFetchPump.restart();
-                    });
+                    }, !forecastRoot._expandAllReload);
                 })(dateStr, generation);
         }
     }
@@ -189,18 +194,20 @@ Item {
             _doAutoOpen();
     }
 
-    function _doAutoOpen() {
+    function _doAutoOpen(reload) {
         if (_autoOpenDone)
             return;
         if (!weatherRoot || weatherRoot.dailyData.length === 0)
             return;
         _autoOpenDone = true;
         if (expandAll) {
+            Dbg.log("Forecast", "Forecast tab shown → expand-all is on, loading every day");
             _startExpandAll();
             return;
         }
         if (!autoOpen)
             return;
+        Dbg.log("Forecast", "Forecast tab shown → opening the first day automatically" + (reload === true ? " (new weather data)" : ""));
         var firstDataIndex = forecastRoot.showToday ? 0 : 1;
         if (firstDataIndex >= weatherRoot.dailyData.length)
             return;
@@ -214,7 +221,7 @@ Item {
         if (!keepHours)
             weatherRoot.hourlyData = [];
         forecastRoot._autoOpenKey = openKey;
-        weatherRoot.fetchHourlyForDate(firstDate);
+        weatherRoot.fetchHourlyForDate(firstDate, reload === true);
     }
 
     onVisibleChanged: {
@@ -238,7 +245,7 @@ Item {
                 // independent of autoOpen and _autoOpenDone.
                 forecastRoot._perDayHourlyData = {};
                 forecastRoot._loadingDays = {};
-                forecastRoot._startExpandAll();
+                forecastRoot._startExpandAll(true);
             } else if (forecastRoot.expandedIndex >= 0) {
                 // A day is already expanded (auto-opened or clicked) - re-fetch
                 // its hourly data so the panel doesn't keep showing the forecast
@@ -246,11 +253,11 @@ Item {
                 // fetch is in flight to avoid a collapse/flash.
                 var dataIndex = forecastRoot.showToday ? forecastRoot.expandedIndex : forecastRoot.expandedIndex + 1;
                 if (dataIndex < weatherRoot.dailyData.length)
-                    weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "");
+                    weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "", true);
                 else
                     forecastRoot.expandedIndex = -1;
             } else {
-                forecastRoot._doAutoOpen();
+                forecastRoot._doAutoOpen(true);
             }
         }
     }

@@ -51,7 +51,7 @@ var DAILY_CORE = [
     "apparent_temperature_max", "apparent_temperature_min",
     "precipitation_sum", "rain_sum", "snowfall_sum", "precipitation_hours",
     "wind_speed_10m_max", "wind_gusts_10m_max", "wind_direction_10m_dominant",
-    "sunrise", "sunset", "sunshine_duration", "shortwave_radiation_sum"
+    "sunrise", "sunset", "sunshine_duration"
 ];
 var DAILY_EXTRA = [
     "relative_humidity_2m_mean", "pressure_msl_mean", "cloud_cover_mean"
@@ -253,7 +253,6 @@ function parseDaily(d) {
             gustKmh: _at(q.wind_gusts_10m_max, i),
             windDir: _at(q.wind_direction_10m_dominant, i),
             sunshineSec: _at(q.sunshine_duration, i),
-            radiationMj: _at(q.shortwave_radiation_sum, i),
             humidity: _at(q.relative_humidity_2m_mean, i),
             pressureHpa: _at(q.pressure_msl_mean, i),
             cloudPercent: _at(q.cloud_cover_mean, i),
@@ -352,18 +351,39 @@ function _errorFrom(req) {
     return { status: req.status, message: reason };
 }
 
-// ── Small result cache (module state persists across view instances) ─────
-var CACHE_TTL_MS = 15 * 60 * 1000;
-var CACHE_MAX = 8;
+// ── Result cache (module state persists across view instances) ───────────
+// Archive data of finished days does not change, so an answer is kept for 24 h:
+// switching periods only goes to the network for a range that was never loaded.
+// The key contains the end date, so after midnight "last 7 days" is a new key
+// (the range moved) and is fetched once. The newest days of the archive can
+// still be empty or preliminary, so an answer with missing days is only kept
+// for the short time, and the next visit asks again.
+var CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+var CACHE_TTL_INCOMPLETE_MS = 15 * 60 * 1000;
+var CACHE_MAX = 32;
 var _cache = {};
-function _remember(key, result) {
-    _cache[key] = { t: Date.now(), result: result };
-    var keys = Object.keys(_cache);
-    if (keys.length > CACHE_MAX) {
-        keys.sort(function (a, b) { return _cache[a].t - _cache[b].t; });
-        for (var i = 0; i < keys.length - CACHE_MAX; ++i)
-            delete _cache[keys[i]];
+function _isFresh(hit) {
+    return !!hit && Date.now() - hit.t < hit.ttl;
+}
+function _prune(store, max) {
+    var keys = Object.keys(store);
+    for (var i = 0; i < keys.length; ++i)
+        if (!_isFresh(store[keys[i]]))
+            delete store[keys[i]];
+    keys = Object.keys(store);
+    if (keys.length > max) {
+        keys.sort(function (a, b) { return store[a].t - store[b].t; });
+        for (var j = 0; j < keys.length - max; ++j)
+            delete store[keys[j]];
     }
+}
+function _remember(key, result) {
+    _cache[key] = {
+        t: Date.now(),
+        ttl: result && result.missingDays > 0 ? CACHE_TTL_INCOMPLETE_MS : CACHE_TTL_MS,
+        result: result
+    };
+    _prune(_cache, CACHE_MAX);
 }
 
 /**
@@ -380,7 +400,10 @@ function fetchHistory(opts, callback) {
     var cacheKey = _buildUrl(opts, DAILY_CORE.concat(DAILY_EXTRA));
     if (!opts.force) {
         var hit = _cache[cacheKey];
-        if (hit && Date.now() - hit.t < CACHE_TTL_MS) {
+        if (_isFresh(hit)) {
+            Dbg.log("Open-Meteo History", "range " + opts.start + " … " + opts.end + " taken from the cache ("
+                    + Math.round((Date.now() - hit.t) / 60000) + " min old, kept "
+                    + Math.round(hit.ttl / 60000) + " min) - request skipped");
             callback(null, hit.result);
             return { aborted: false, abort: function () {} };
         }
@@ -445,20 +468,27 @@ function fetchHistory(opts, callback) {
 // computes its daily maxima and minima from the hourly values, so the hour of
 // an extreme can be read from the hourly series of that one day. This is done
 // for the few days the summary tiles point at (warmest, coldest, strongest
-// wind, strongest gust): up to four tiny requests, made after the daily data
+// wind, strongest gust): up to four days, fetched in one request when they lie within
+// a month of each other and one tiny request per day otherwise, made after the daily data
 // has arrived. If any of them fails, the tile just has no time.
 var HOURLY_VARS = ["temperature_2m", "wind_speed_10m", "wind_gusts_10m"];
 var _hourlyCache = {};
 
-function _hourlyUrl(opts, date) {
+/** Hourly request for first..last (inclusive). A range of up to
+ *  HOURLY_RANGE_MAX_DAYS days stays inside the minimum API weight (1 call). */
+var HOURLY_RANGE_MAX_DAYS = 31;
+function _hourlyRangeUrl(opts, first, last) {
     var tz = (opts.timezone && opts.timezone.length > 0) ? opts.timezone : "auto";
     return ARCHIVE_URL
         + "?latitude=" + Number(opts.latitude).toFixed(4)
         + "&longitude=" + Number(opts.longitude).toFixed(4)
-        + "&start_date=" + date
-        + "&end_date=" + date
+        + "&start_date=" + first
+        + "&end_date=" + last
         + "&timezone=" + encodeURIComponent(tz)
         + "&hourly=" + HOURLY_VARS.join(",");
+}
+function _hourlyUrl(opts, date) {
+    return _hourlyRangeUrl(opts, date, date);
 }
 
 /** First hour holding the largest (dir=1) / smallest (dir=-1) value, as { v, t }, or null. */
@@ -486,6 +516,32 @@ function parseHourlyPeaks(d) {
         wind: _peak(h.time, h.wind_speed_10m, 1),
         gust: _peak(h.time, h.wind_gusts_10m, 1)
     };
+}
+
+/** Same as parseHourlyPeaks, for an answer that spans several days:
+ *  { "<YYYY-MM-DD>": peaks } (days without any value are left out). */
+function parseHourlyPeaksByDay(d) {
+    var h = d && d.hourly ? d.hourly : null;
+    if (!h || !h.time)
+        return {};
+    var groups = {};
+    for (var i = 0; i < h.time.length; ++i) {
+        var day = String(h.time[i]).substring(0, 10);
+        var g = groups[day];
+        if (!g)
+            g = groups[day] = { time: [], temperature_2m: [], wind_speed_10m: [], wind_gusts_10m: [] };
+        g.time.push(h.time[i]);
+        g.temperature_2m.push(h.temperature_2m ? h.temperature_2m[i] : null);
+        g.wind_speed_10m.push(h.wind_speed_10m ? h.wind_speed_10m[i] : null);
+        g.wind_gusts_10m.push(h.wind_gusts_10m ? h.wind_gusts_10m[i] : null);
+    }
+    var out = {};
+    for (var day2 in groups) {
+        var p = parseHourlyPeaks({ hourly: groups[day2] });
+        if (p && (p.maxT || p.wind || p.gust))
+            out[day2] = p;
+    }
+    return out;
 }
 
 /** A copy of `summary` whose hottest / coldest / maxWind / maxGust entries
@@ -533,10 +589,29 @@ function fetchExtremeTimes(opts, summary, callback) {
         }
     };
     var peaks = {};
-    var pending = dates.length;
-    if (pending === 0)
-        return handle;
+    var missing = [];
+    dates.forEach(function (date) {
+        var hit = _hourlyCache[_hourlyUrl(opts, date)];
+        if (_isFresh(hit)) {
+            Dbg.log("Open-Meteo History", "extreme-time lookup for " + date + " taken from the cache - request skipped");
+            peaks[date] = hit.peaks;
+        } else {
+            missing.push(date);
+        }
+    });
+    missing.sort();
 
+    // One request when the missing days lie close together (the short periods),
+    // otherwise one tiny request per day - for a year that is cheaper than a
+    // hourly range of months.
+    var groups = [];
+    if (missing.length > 1
+            && daysBetween(missing[0], missing[missing.length - 1]) + 1 <= HOURLY_RANGE_MAX_DAYS)
+        groups.push({ first: missing[0], last: missing[missing.length - 1], dates: missing });
+    else
+        missing.forEach(function (date) { groups.push({ first: date, last: date, dates: [date] }); });
+
+    var pending = groups.length;
     function oneDone() {
         if (--pending > 0 || handle.aborted)
             return;
@@ -545,28 +620,34 @@ function fetchExtremeTimes(opts, summary, callback) {
                 || s.maxWind !== summary.maxWind || s.maxGust !== summary.maxGust)
             callback(s);
     }
-
-    dates.forEach(function (date) {
-        var url = _hourlyUrl(opts, date);
-        var hit = _hourlyCache[url];
-        if (hit && Date.now() - hit.t < CACHE_TTL_MS) {
-            peaks[date] = hit.peaks;
-            oneDone();
-            return;
+    if (pending === 0) {
+        // everything came from the cache
+        if (dates.length > 0) {
+            var s0 = withTimes(summary, peaks);
+            if (s0.hottest !== summary.hottest || s0.coldest !== summary.coldest
+                    || s0.maxWind !== summary.maxWind || s0.maxGust !== summary.maxGust)
+                callback(s0);
         }
-        var req = Dbg.xhr("Open-Meteo History", "oneDone");
+        return handle;
+    }
+
+    groups.forEach(function (grp) {
+        var req = Dbg.xhr("Open-Meteo History", grp.dates.length > 1 ? "extremeTimes(range)" : "extremeTimes(day)");
         handle._reqs.push(req);
-        req.open("GET", url);
+        req.open("GET", _hourlyRangeUrl(opts, grp.first, grp.last));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
             if (req.status === 200) {
                 try {
-                    var p = parseHourlyPeaks(JSON.parse(req.responseText));
-                    if (p) {
-                        peaks[date] = p;
-                        _hourlyCache[url] = { t: Date.now(), peaks: p };
+                    var byDay = parseHourlyPeaksByDay(JSON.parse(req.responseText));
+                    // keep every day of the answer (a later period may need them), not only the asked ones
+                    for (var day in byDay) {
+                        _hourlyCache[_hourlyUrl(opts, day)] = { t: Date.now(), ttl: CACHE_TTL_MS, peaks: byDay[day] };
+                        if (grp.dates.indexOf(day) >= 0)
+                            peaks[day] = byDay[day];
                     }
+                    _prune(_hourlyCache, CACHE_MAX * 8);
                 } catch (e) {}
             }
             oneDone();

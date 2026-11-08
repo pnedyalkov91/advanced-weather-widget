@@ -109,11 +109,44 @@ function _args(a, from) {
     return Array.prototype.slice.call(a, from);
 }
 
+// The last few debug lines (time + start of the text), so a stall report can say what the widget
+// was doing right before the GUI thread went quiet.
+var _ring = [];
+var _RING_MAX = 40;
+function _remember(component, firstPart) {
+    _ring.push({ at: now(), text: "[" + component + "] " + String(firstPart === undefined ? "" : firstPart).substring(0, 100) });
+    if (_ring.length > _RING_MAX)
+        _ring.shift();
+}
+/** The last debug line logged at or before `atMs` (ms since widget start), as text; "" if none. */
+function lastLineBefore(atMs) {
+    for (var i = _ring.length - 1; i >= 0; i--)
+        if (_ring[i].at <= atMs)
+            return _ring[i].text + " (+" + _ring[i].at + " ms)";
+    return "";
+}
+/** How many debug lines were logged strictly between the two moments (ms since widget start). */
+function linesBetween(fromMs, toMs) {
+    var n = 0;
+    for (var i = 0; i < _ring.length; i++)
+        if (_ring[i].at > fromMs && _ring[i].at < toMs)
+            n++;
+    return n;
+}
+/** The first debug line logged after `atMs`, as text; "" if none yet. */
+function firstLineAfter(atMs) {
+    for (var i = 0; i < _ring.length; i++)
+        if (_ring[i].at > atMs)
+            return _ring[i].text + " (+" + _ring[i].at + " ms)";
+    return "";
+}
+
 /** Debug-only message. log(component, ...parts) */
 function log(component) {
     if (!_enabled)
         return;
     var a = _args(arguments, 1);
+    _remember(component, a[0]);
     a.unshift(prefix(component));
     console.log.apply(console, a);
 }

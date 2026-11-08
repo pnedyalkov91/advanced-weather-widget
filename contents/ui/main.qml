@@ -194,6 +194,9 @@ PlasmoidItem {
     property real _wdStamp: 0
     property string _wdProvider: ""
     property var _hourlyCacheObj: null
+    // Hours of the forecast days after tomorrow. Kept in memory only (not in the saved settings, so
+    // the config file does not grow by a few KB per day); reset when the place or provider changes.
+    property var _hourlyExtraObj: ({ prov: "", lat: 0, lon: 0, days: ({}) })
     property var _pastHoursObj: null
     property bool _dirtyWeather: false
     property bool _dirtyHourly: false
@@ -333,15 +336,47 @@ PlasmoidItem {
         };
         return _hourlyCacheObj;
     }
+    // The in-memory days (after tomorrow) for the current place and provider.
+    function _hourlyExtraDays() {
+        var prov = _cacheProviderKey();
+        var o = _hourlyExtraObj;
+        if (o.prov !== prov || !_sameLocation(o.lat, o.lon)) {
+            o = { prov: prov, lat: _locLat(), lon: _locLon(), days: {} };
+            _hourlyExtraObj = o;
+        }
+        return o.days;
+    }
+    // The saved entry of a day: the persisted ones (today, tomorrow) first, then the in-memory ones.
+    function _hourlyCacheEntry(dateStr) {
+        return _hourlyCacheEnsure().days[dateStr] || _hourlyExtraDays()[dateStr] || null;
+    }
     function _hourlyCacheGet(dateStr) {
         if (!dateStr || !hasSelectedTown)
             return null;
-        var e = _hourlyCacheEnsure().days[dateStr];
+        var e = _hourlyCacheEntry(dateStr);
         if (!e || !e.arr || !e.arr.length || !(Date.now() - e.ms <= _cacheMaxAgeMs))
             return null;
         return e.arr;
     }
-    function _hourlyCachePut(dateStr, arr) {
+    // How long hours that were fetched in full stay good enough for the Forecast tab to show without
+    // asking again: never longer than the refresh interval (the daily data is that old at most), and
+    // at most 10 minutes.
+    function _hourlyFreshMs() {
+        return Math.min(Math.max(1, Plasmoid.configuration.refreshIntervalMinutes || 15), 10) * 60000;
+    }
+    // The saved hours of `dateStr` when they came from the complete request and are still fresh
+    // (same place and provider - the cache is reset when either changes); null otherwise.
+    function _hourlyCacheGetFresh(dateStr) {
+        if (!dateStr || !hasSelectedTown)
+            return null;
+        var e = _hourlyCacheEntry(dateStr);
+        if (!e || e.full !== true || !e.arr || !e.arr.length)
+            return null;
+        return (Date.now() - e.ms) <= _hourlyFreshMs() ? e : null;
+    }
+    // `full` = the hours came from the complete hourly request (the one the Forecast tab makes), so
+    // _hourlyCacheGetFresh may hand them to the Forecast tab instead of asking the provider again.
+    function _hourlyCachePut(dateStr, arr, full) {
         if (!dateStr || !arr || !arr.length || !hasSelectedTown)
             return;
         // Only the two first forecast days (today and tomorrow) are kept: it bounds the size even
@@ -358,14 +393,28 @@ PlasmoidItem {
             keep[Qt.formatDate(new Date(d0.getTime() + 86400000), "yyyy-MM-dd")] = true;
         }
         var o = _hourlyCacheEnsure();
-        if (keep[dateStr])
-            o.days[dateStr] = {
-                ms: Date.now(),
-                arr: arr
-            };
+        var entry = {
+            ms: Date.now(),
+            arr: arr,
+            full: full === true
+        };
+        var extra = _hourlyExtraDays();
+        if (keep[dateStr]) {
+            o.days[dateStr] = entry;
+            delete extra[dateStr];
+        } else if (full === true) {
+            // later days: complete hours only, in memory only
+            extra[dateStr] = entry;
+        }
         Object.keys(o.days).forEach(function (k) {
             if (!keep[k])
                 delete o.days[k];
+        });
+        // forget the days that are over (and today/tomorrow, which live in the saved cache)
+        var todayStr = Qt.formatDate(new Date(), "yyyy-MM-dd");
+        Object.keys(extra).forEach(function (k) {
+            if (k < todayStr || keep[k])
+                delete extra[k];
         });
         _scheduleCacheSave("hourly");
     }
@@ -677,6 +726,15 @@ PlasmoidItem {
     property var _notificationHourlyWindow: []
     property int _notificationHourlyReqId: 0
     property real _notificationHourlyLastFetchMs: 0
+    // Which provider the notification rain window was last fetched from, and whether the refresh
+    // that is running now was asked for by the person (Refresh button / menu). They decide whether
+    // a finished refresh has to re-fetch the window at once or can leave it to its own schedule.
+    property string _notificationHourlyProvUsed: ""
+    property bool _manualRefreshPending: false
+    function _effectiveHourlyProvider() {
+        var p = Plasmoid.configuration.weatherProvider || "adaptive";
+        return p === "adaptive" ? (weatherService._updateProvider || "openMeteo") : p;
+    }
     property var pollenDataStaged: []
     property var pollenData: []             // [{key, value}] UPI 0-12 per pollen type - set via _applyPollenData
     function _applyPollenData() {
@@ -1362,18 +1420,110 @@ PlasmoidItem {
     function refreshWeather(force) {
         Dbg.log("Refresh", "refreshWeather(" + (force === true ? "force" : "") + ") called");
         refreshDebounce.stop();
+        if (force === true)
+            _manualRefreshPending = true;
         weatherService.refreshNow(force === true);
     }
 
-    /** Fetch hourly data for a specific date - called by FullView */
-    function fetchHourlyForDate(dateStr) {
+    // ── All forecast days in one request (Open-Meteo) ───────────────────────────────────────
+    // Open-Meteo answers the hours of the whole forecast in a single small reply, so instead of one
+    // request per day the widget asks once and keeps every day in the hourly cache. Requests that
+    // arrive while it is in flight (the Forecast tab, expand-all, the notification check) wait for it.
+    property var _hourlyBulkWaiters: null
+    // { first, last } = today .. the last forecast day (as many days as the daily forecast asks for,
+    // at most 16 - Open-Meteo's limit); null when this provider cannot do it. It does not wait for
+    // the daily data, so it can run at startup, right after the saved place is read.
+    function _hourlyBulkRange() {
+        if (!hasSelectedTown || _effectiveHourlyProvider() !== "openMeteo")
+            return null;
+        var days = Math.max(1, Math.min(16, Plasmoid.configuration.forecastDays || 7));
+        var d0 = new Date();
+        var d1 = new Date(d0.getTime());
+        d1.setDate(d1.getDate() + days - 1);
+        return { first: Qt.formatDate(d0, "yyyy-MM-dd"), last: Qt.formatDate(d1, "yyyy-MM-dd") };
+    }
+    // callback(map) with { dateStr: [hours] }, or callback(null) when the request failed or this
+    // provider cannot fetch all days at once.
+    function _fetchHourlyBulk(callback) {
+        var r = _hourlyBulkRange();
+        if (!r) {
+            callback(null);
+            return;
+        }
+        if (_hourlyBulkWaiters) {
+            Dbg.log("Hourly", "another hourly request joined the all-days request that is already in flight (" + (_hourlyBulkWaiters.length + 1) + " waiting)");
+            _hourlyBulkWaiters.push(callback);
+            return;
+        }
+        _hourlyBulkWaiters = [callback];
+        var placeKey = _cacheProviderKey() + "|" + _locLat() + "|" + _locLon();
+        var t0 = Date.now();
+        var handled = weatherService.fetchHourlyAllDays(r.first, r.last, function (map) {
+            var waiters = _hourlyBulkWaiters || [];
+            _hourlyBulkWaiters = null;
+            var n = 0;
+            if (placeKey !== _cacheProviderKey() + "|" + _locLat() + "|" + _locLon()) {
+                Dbg.log("Hourly", "hourly forecast of all days arrived after the place/provider changed → dropped");
+                map = null;
+            } else if (map) {
+                Object.keys(map).forEach(function (ds) {
+                    var a = map[ds];
+                    if (a && a.length) {
+                        _hourlyCachePut(ds, a, true);
+                        rememberTodayHours(ds, a);
+                        n++;
+                    }
+                });
+                if (n > 0)
+                    Dbg.mark("Hourly", "hourly forecast of all days received", n + " day(s) (" + r.first + " … " + r.last + ") in one request, " + (Date.now() - t0) + " ms");
+                else
+                    Dbg.warn("Hourly", "the one-request hourly forecast (" + r.first + " … " + r.last + ") failed or came back empty after " + (Date.now() - t0) + " ms");
+            }
+            waiters.forEach(function (w) {
+                w(n > 0 ? map : null);
+            });
+        });
+        if (!handled) {
+            var w0 = _hourlyBulkWaiters || [];
+            _hourlyBulkWaiters = null;
+            w0.forEach(function (w) {
+                w(null);
+            });
+        }
+    }
+
+    /** Fetch hourly data for a specific date - called by FullView.
+     *  reload=true (new weather data just arrived) always asks the provider; otherwise hours that
+     *  were fetched in full a moment ago are reused. */
+    function fetchHourlyForDate(dateStr, reload) {
         _hourlyReqDate = dateStr;
+        // The same hours were fetched in full a moment ago (e.g. by the notification check after the
+        // last refresh): show them and spare the provider a second identical request.
+        var fresh = reload === true ? null : _hourlyCacheGetFresh(dateStr);
+        if (fresh) {
+            Dbg.log("Hourly", "hourly forecast for " + dateStr + " taken from the cache - fetched in full " + Math.round((Date.now() - fresh.ms) / 1000) + " s ago (fresh for " + Math.round(_hourlyFreshMs() / 1000) + " s), request skipped");
+            _applyHourly(_withPastHours(dateStr, fresh.arr));
+            return;
+        }
         // Nothing on screen yet: show the saved hours of that day at once, the provider replaces
         // them when it answers. (Hours already on screen are kept while the new ones load.)
         if (!hourlyData || hourlyData.length === 0) {
             var cached = _hourlyCacheGet(dateStr);
             if (cached)
                 _applyHourly(_withPastHours(dateStr, cached));
+        }
+        if (_hourlyBulkRange()) {
+            // Open-Meteo: one request brings every forecast day, so the next days are instant too
+            _fetchHourlyBulk(function (map) {
+                if (_hourlyReqDate !== dateStr)
+                    return;
+                var arr = map ? map[dateStr] : null;
+                if (arr && arr.length)
+                    setHourlyResult(dateStr, arr);
+                else
+                    weatherService.fetchHourlyForDate(dateStr); // failed, or not in the range: that day alone
+            });
+            return;
         }
         weatherService.fetchHourlyForDate(dateStr);
     }
@@ -1388,16 +1538,43 @@ PlasmoidItem {
             return;
         }
         Dbg.mark("Hourly", "hourly forecast received for " + dateStr, (arr ? arr.length : 0) + " hour(s)");
-        _hourlyCachePut(dateStr, arr);
+        _hourlyCachePut(dateStr, arr, true);
         rememberTodayHours(dateStr, arr);
         hourlyData = _withPastHours(dateStr, arr);
     }
 
-    /** Fetch hourly data without touching shared hourlyData - used by expand-all forecast */
-    function fetchHourlyForDateDirect(dateStr, callback) {
-        weatherService.fetchHourlyForDateDirect(dateStr, function (arr) {
+    /** Fetch hourly data without touching shared hourlyData - used by expand-all forecast.
+     *  reuseFresh=true hands out hours that were fetched in full a moment ago instead of asking again. */
+    function fetchHourlyForDateDirect(dateStr, callback, reuseFresh) {
+        if (reuseFresh === true) {
+            var fresh = _hourlyCacheGetFresh(dateStr);
+            if (fresh) {
+                Dbg.log("Hourly", "hourly forecast for " + dateStr + " taken from the cache (asked a second time, e.g. by the notification check or expand-all) - fetched in full " + Math.round((Date.now() - fresh.ms) / 1000) + " s ago, request skipped");
+                callback(_withPastHours(dateStr, fresh.arr));
+                return;
+            }
+        }
+        if (_hourlyBulkRange()) {
+            _fetchHourlyBulk(function (map) {
+                var arr = map ? map[dateStr] : null;
+                if (arr && arr.length)
+                    callback(_withPastHours(dateStr, arr));
+                else if (map)
+                    _fetchHourlyDay(dateStr, callback); // answered, but this day is not in the range
+                else {
+                    var cached = _hourlyCacheGet(dateStr);
+                    callback(cached ? _withPastHours(dateStr, cached) : []);
+                }
+            });
+            return;
+        }
+        _fetchHourlyDay(dateStr, callback);
+    }
+    // One day on its own, through the provider's parallel-safe path
+    function _fetchHourlyDay(dateStr, callback) {
+        weatherService.fetchHourlyForDateDirect(dateStr, function (arr, full) {
             if (arr && arr.length) {
-                _hourlyCachePut(dateStr, arr);
+                _hourlyCachePut(dateStr, arr, full === true);
                 rememberTodayHours(dateStr, arr);
                 callback(_withPastHours(dateStr, arr));
             } else {
@@ -3022,6 +3199,7 @@ PlasmoidItem {
         if (!force && (nowMs - _notificationHourlyLastFetchMs) < pollMs)
             return;
         _notificationHourlyLastFetchMs = nowMs;
+        _notificationHourlyProvUsed = _effectiveHourlyProvider();
 
         var today = Qt.formatDate(new Date(), "yyyy-MM-dd");
         var tomorrowDate = new Date();
@@ -3040,6 +3218,9 @@ PlasmoidItem {
                     rows = rows || [];
                     for (var i = 0; i < rows.length; i++) {
                         var h = rows[i];
+                        // the closing entry (the next day's 00:00) belongs to the next day's own list
+                        if (h.isNextDay === true)
+                            continue;
                         var tms = _hourSampleEpoch(dateStr, h.hour || "");
                         if (isNaN(tms))
                             continue;
@@ -3068,7 +3249,7 @@ PlasmoidItem {
                 });
                 _notificationHourlyWindow = merged;
                 _evaluateNotifications();
-            });
+            }, true); // reuse: with Open-Meteo, today's request has just brought tomorrow as well
         });
     }
 
@@ -3404,7 +3585,17 @@ PlasmoidItem {
             weatherService._safetyTimer.stop();
             if (weatherData && !isNaN(weatherData.temperatureC))
                 _computeMoonTimes();
-            _refreshNotificationRainWindowIfNeeded(true);
+            // The rain/snow/tomorrow window is re-fetched right away only when something changed
+            // that it depends on (a manual refresh, or the refresh ended up on another provider
+            // than the one the window came from). Otherwise it stays on its own schedule (the
+            // refresh interval, checked every 30 s) instead of asking for the same hours again
+            // after every refresh.
+            var _manualRefresh = _manualRefreshPending;
+            _manualRefreshPending = false;
+            var _provChanged = _notificationHourlyProvUsed !== _effectiveHourlyProvider();
+            if ((_manualRefresh || _provChanged) && hasSelectedTown && (_notificationTypeEnabled("rain") || _notificationTypeEnabled("snow") || _notificationTypeEnabled("tomorrow")))
+                Dbg.log("Hourly", "refresh finished → re-fetching the notification hours now (" + (_manualRefresh ? "manual refresh" : "provider is now '" + _effectiveHourlyProvider() + "'") + ")");
+            _refreshNotificationRainWindowIfNeeded(_manualRefresh || _provChanged);
             _evaluateNotifications();
         }
     }
@@ -3938,7 +4129,7 @@ PlasmoidItem {
         interval: 600
         repeat: false
         onTriggered: {
-            Dbg.log("Refresh", "settings/location settled (debounce 600 ms elapsed) → refreshing");
+            Dbg.log("Refresh", "settings/location settled (debounce done or skipped) → refreshing");
             refreshWeather();
             if (root._pendingRainWindowRefresh) {
                 root._pendingRainWindowRefresh = false;
@@ -4003,6 +4194,38 @@ PlasmoidItem {
         Dbg.dumpConfig("Startup", Plasmoid.configuration, _debugConfigKeys);
         Dbg.log("Startup", "API keys are never printed - only whether one is set. URLs in the log have their key/appid/token parameters removed.");
     }
+    // ── GUI-thread stall detector (debug mode only, first 60 s after the widget starts) ───────
+    // A 50 ms timer that fires much later than due means the GUI thread was busy: nothing ran, no
+    // timer, no network reply. The report says when, for how long and what was logged just before.
+    property bool _stallWatchActive: true
+    property real _stallLastTickMs: 0
+    Timer {
+        id: _stallWatch
+        interval: 50
+        repeat: true
+        running: Plasmoid.configuration.debugMode === true && root._stallWatchActive
+        onRunningChanged: {
+            if (running)
+                root._stallLastTickMs = Dbg.now();
+        }
+        onTriggered: {
+            var t = Dbg.now();
+            var gap = t - root._stallLastTickMs;
+            var from = root._stallLastTickMs;
+            root._stallLastTickMs = t;
+            if (gap - interval >= 150) {
+                // lines logged right at the start of the gap are what triggered the work (a click), not proof that the thread was free
+                var between = Dbg.linesBetween(from + 60, t - 60);
+                var msg = "QML timers were late by ~" + (gap - interval) + " ms (from +" + from + " ms to +" + t + " ms). ";
+                msg += "Debug lines logged inside it (apart from the first/last 60 ms): " + between
+                     + ". A line inside the gap does not prove the thread was free - it can be the work itself logging just before it blocks (e.g. a click opening a day).";
+                Dbg.log("Stall", msg + " Last debug line before it: " + (Dbg.lastLineBefore(from) || "(none)") + " | first line after it: " + (Dbg.firstLineAfter(from) || "(none yet)"));
+            }
+            if (t > 60000)
+                root._stallWatchActive = false;
+        }
+    }
+
     function _syncDebugMode(source) {
         // Missing key = the entry was not added to contents/config/main.xml yet, so the
         // Settings switch can never take effect. Say so once instead of staying silent.
@@ -4050,6 +4273,19 @@ PlasmoidItem {
         _restoreWeatherCache();   // the last known weather at once, replaced by the first refresh
         Dbg.log("Startup", "first refresh scheduled in 600 ms (debounce)");
         refreshDebounce.restart();
+        // Timer items can stay silent for the first ~2-2.5 s after plasmashell starts (see the "Stall"
+        // lines in the debug log), which would hold the first refresh back although the debounce is only
+        // there to let changing settings settle. With a saved place nothing is left to settle at startup,
+        // so the refresh starts on the next event-loop turn (after the cached weather has been staged);
+        // the debounce timer is stopped by it, so there is no second refresh.
+        if (hasSelectedTown)
+            Qt.callLater(function () {
+                if (!refreshDebounce.running)
+                    return;
+                Dbg.log("Startup", "saved place known → starting the first refresh now instead of waiting for the debounce timer");
+                refreshDebounce.stop();
+                refreshDebounce.triggered();
+            });
         // Restore the once-per-day "already sent" keys BEFORE the first evaluation
         // so a plasmashell restart doesn't re-fire daily notifications already
         // shown today (e.g. the geomagnetic-activity summary).

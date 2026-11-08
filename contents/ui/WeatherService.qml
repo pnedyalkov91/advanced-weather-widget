@@ -505,6 +505,20 @@ QtObject {
         }
     }
 
+    /** The hours of every day firstDate..lastDate in one request (Open-Meteo only).
+     *  Returns false - and never calls back - when the active provider cannot do that. */
+    function fetchHourlyAllDays(firstDate, lastDate, callback) {
+        var provider = Plasmoid.configuration.weatherProvider || "adaptive";
+        var ap = (provider === "adaptive") ? (service._updateProvider || "openMeteo") : provider;
+        if (ap !== "openMeteo")
+            return false;
+        var _p = _providers();
+        if (!_p)
+            return false;
+        Dbg.log("Hourly", "requesting the hourly forecast for " + firstDate + " … " + lastDate + " via 'openMeteo' (all days in one request)");
+        return _p.fetchHourlyAll(ap, service, firstDate, lastDate, callback);
+    }
+
     /**
      * Parallel variant used by ForecastView's expand-all mode.
      * Fires a real XHR for the given dateStr and calls callback(hourlyArray)
@@ -544,41 +558,12 @@ QtObject {
         }
 
         // ── Open-Meteo ────────────────────────────────────────────────────────
+        // Same request as the Forecast tab's own hourly fetch (all columns, closing midnight
+        // entry, best-match backfill), so one answer serves both - see Providers.fetchHourlyDirect.
         if (ap === "openMeteo") {
-            var url = "https://api.open-meteo.com/v1/forecast" + "?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&timezone=" + encodeURIComponent(tz) + "&hourly=temperature_2m,weather_code,wind_speed_10m," + "wind_direction_10m,relative_humidity_2m," + "precipitation_probability,precipitation" + "&start_date=" + encodeURIComponent(dateStr) + "&end_date=" + encodeURIComponent(dateStr) + "&wind_speed_unit=kmh" + W.openMeteoModelParam(service.openMeteoModel, service.countryCode);
-            var xhr = Dbg.xhr("WeatherService", "hourlyDirect/openMeteo");
-            xhr.open("GET", url);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== XMLHttpRequest.DONE)
-                    return;
-                if (xhr.status !== 200) {
-                    callback([]);
-                    return;
-                }
-                try {
-                    var d = JSON.parse(xhr.responseText);
-                    var h = d.hourly || {};
-                    var times = h.time || [];
-                    var arr = [];
-                    for (var i = 0; i < times.length; i++) {
-                        var t = times[i];
-                        arr.push({
-                            hour: t.length >= 16 ? t.substr(11, 5) : "--",
-                            tempC: h.temperature_2m ? h.temperature_2m[i] : NaN,
-                            code: h.weather_code ? h.weather_code[i] : 0,
-                            windKmh: h.wind_speed_10m ? h.wind_speed_10m[i] : NaN,
-                            windDeg: h.wind_direction_10m ? h.wind_direction_10m[i] : NaN,
-                            humidity: h.relative_humidity_2m ? h.relative_humidity_2m[i] : NaN,
-                            precipProb: h.precipitation_probability ? h.precipitation_probability[i] : NaN,
-                            precipMm: h.precipitation ? h.precipitation[i] : NaN
-                        });
-                    }
-                    callback(arr);
-                } catch (e) {
-                    callback([]);
-                }
-            };
-            xhr.send();
+            var _pO = _providers();
+            if (!_pO || !_pO.fetchHourlyDirect(ap, service, dateStr, callback))
+                callback([]);
             return;
         }
 
