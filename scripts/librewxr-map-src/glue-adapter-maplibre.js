@@ -313,6 +313,15 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     }
     return undefined;
   }
+  /** The lowest image of the animation on the map (a satellite one first). */
+  function firstAnimFrameId() {
+    var order = map.getLayersOrder ? map.getLayersOrder() : map.getStyle().layers.map(function (l) { return l.id; });
+    for (var i = 0; i < order.length; i++) {
+      var e = entryOf({ layerId: order[i] });
+      if (e && e.anim) return order[i];
+    }
+    return undefined;
+  }
   function animFrameBefore(entry) {
     var lines = map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined;
     if (entry.kind !== 'satellite') return lines;
@@ -762,7 +771,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (!swapInProgress) applyLines();
     },
     getLinesShown: function () { return linesShown; },
-    linesBefore: function () { return map && map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined; },
+    /** Where a weather layer goes: under the animation's satellite and
+        radar images when there are any (the radar over all), else under
+        the coasts and borders. */
+    linesBefore: function () {
+      if (!map) return undefined;
+      return firstAnimFrameId() || (map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined);
+    },
 
     /** Credit Open-Meteo while the wind or the temperature shows. */
     setDataAttribution: function (on) {

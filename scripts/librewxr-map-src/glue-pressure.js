@@ -149,6 +149,11 @@ var WidgetPressure = (function () {
   }
   /** Color layers go under the coasts and borders the adapter draws. */
   function beforeLines(map) { return _widgetAdapter.linesBefore() || beforeOverlays(map); }
+  /** The isobars' line layer (by the chip or not), null without them. */
+  function isoLine(map) { return map.getLayer('lv-iso-gl') ? 'lv-iso-gl' : map.getLayer('lv-iso') ? 'lv-iso' : null; }
+  /** Rain and clouds go right under the isobars when they show, so the
+      lines stay readable over them; else as the color layers. */
+  function beforeIsobars(map) { return isoLine(map) || (map.getLayer('lv-iso-label') ? 'lv-iso-label' : null) || beforeLines(map); }
   function firstCustom(map) {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) if (layers[i].type === 'custom') return layers[i].id;
@@ -547,7 +552,8 @@ var WidgetPressure = (function () {
       this.map = map;
       var empty = { type: 'FeatureCollection', features: [] };
       map.addSource('lv-iso-src', { type: 'geojson', data: empty, tolerance: 0.5, buffer: 64 });
-      var before = firstCustom(map);
+      // Under the animation's satellite and radar (or the coasts), over the rest.
+      var before = _widgetAdapter.linesBefore() || firstCustom(map);
       map.addLayer({ id: 'lv-iso', type: 'line', source: 'lv-iso-src', layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': ink, 'line-width': ['case', ['==', ['get', 'major'], 1], 1.3, ['==', ['get', 'minor'], 1], 0.5, 0.75],
           'line-opacity': ['case', ['==', ['get', 'minor'], 1], 0.6, 1] } }, before);
@@ -564,11 +570,25 @@ var WidgetPressure = (function () {
       map.on('sourcedata', this._onData);
       this._onMoveEnd = function () { if (opts.clip && !self.moving) self.redraw(); };
       map.on('moveend', this._onMoveEnd);
+      // Satellite or radar images made after them go right under the
+      // coasts, so over them: they go back under those images.
+      this._onStyle = function () { self.keepUnder(); };
+      map.on('styledata', this._onStyle);
       return this;
+    },
+    keepUnder: function () {
+      var map = this.map, before = _widgetAdapter.linesBefore();
+      if (!map || !before || !map.getLayer('lv-iso-label')) return;
+      var order = map.getLayersOrder();
+      if (order[order.indexOf('lv-iso-label') + 1] !== before) map.moveLayer('lv-iso-label', before);
+      var line = isoLine(map);
+      order = map.getLayersOrder();
+      if (line && order[order.indexOf(line) + 1] !== 'lv-iso-label') map.moveLayer(line, 'lv-iso-label');
     },
     remove: function () {
       var map = this.map;
       if (!map) return;
+      map.off('styledata', this._onStyle);
       map.off('sourcedata', this._onData);
       map.off('moveend', this._onMoveEnd);
       (this._pool || []).forEach(function (mk) { mk.marker.remove(); });
@@ -1123,5 +1143,5 @@ var WidgetPressure = (function () {
       '</span><span>' + localNumber(p, 1) + ' hPa</span></div>';
   };
 
-  return { contours: contours, extrema: extrema, smoothHalf: smoothHalf, opts: opts, GLLayer: GLLayer, readdGL: readdGL, FS_HEAD: FS_HEAD, beforeOverlays: beforeOverlays, beforeLines: beforeLines, sample: sample };
+  return { contours: contours, extrema: extrema, smoothHalf: smoothHalf, opts: opts, GLLayer: GLLayer, readdGL: readdGL, FS_HEAD: FS_HEAD, beforeOverlays: beforeOverlays, beforeLines: beforeLines, beforeIsobars: beforeIsobars, sample: sample };
 })();

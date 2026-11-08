@@ -631,6 +631,22 @@ test('the animation: the lines go over its satellite and radar images, the satel
   check();
 });
 
+test('the animation: a weather layer goes under its satellite and radar images, so the radar is over all', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('precipitation', true);
+  await tick(); await tick();
+  const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite', { anim: true });
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar', { anim: true });
+  adapter.raise(radar);
+  adapter.raise(sat);
+  // Added, or put back on top as the precipitation and clouds do after a change of the style.
+  map.addLayer({ id: 'lv-precip-gl', type: 'custom' }, adapter.linesBefore());
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-precip-gl') < order.indexOf(sat.layerId));
+  assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+});
+
 test('the animation: images made before the lines come, then the lines: the images go under them', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   const viewer = adapter.createFrameLayer('https://radar/live/{z}/{x}/{y}.webp', 'radar');   // the live view's, hidden

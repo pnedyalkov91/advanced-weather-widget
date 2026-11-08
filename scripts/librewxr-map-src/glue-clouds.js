@@ -125,7 +125,7 @@ var WidgetClouds = (function () {
     this.gl.owner = this;
   }
   /** What the clouds go just under: the precipitation, else the lines. */
-  function target(map) { return map.getLayer(PRECIP_ID) ? PRECIP_ID : WidgetPressure.beforeLines(map); }
+  function target(map) { return map.getLayer(PRECIP_ID) ? PRECIP_ID : WidgetPressure.beforeIsobars(map); }
   CloudLayer.prototype = {
     addTo: function (map) {
       var self = this;

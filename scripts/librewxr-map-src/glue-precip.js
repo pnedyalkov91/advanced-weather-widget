@@ -333,7 +333,7 @@ var WidgetPrecip = (function () {
     addTo: function (map) {
       var self = this;
       this.map = map;
-      map.addLayer(this.gl, WidgetPressure.beforeLines(map));
+      map.addLayer(this.gl, WidgetPressure.beforeIsobars(map));
       _widgetAdapter.setLines('precipitation', true);
       this.showLegend();
       // A colored layer switched on later goes under the lines too, so over
@@ -345,7 +345,7 @@ var WidgetPrecip = (function () {
     keepOnTop: function () {
       var map = this.map;
       if (!map || !map.getLayer(this.gl.id)) return;
-      var order = map.getLayersOrder(), before = WidgetPressure.beforeLines(map);
+      var order = map.getLayersOrder(), before = WidgetPressure.beforeIsobars(map);
       if (before && order[order.indexOf(this.gl.id) + 1] !== before) map.moveLayer(this.gl.id, before);
     },
     remove: function () {
