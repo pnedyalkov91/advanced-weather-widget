@@ -789,6 +789,7 @@ function animOverlaysStart() {
 function animOverlaysStop() {
   if (animCatalogTimer) { clearInterval(animCatalogTimer); animCatalogTimer = null; }
   if (animOverlays) { animOverlays.radar.setOn(false); animOverlays.satellite.setOn(false); }
+  _widgetAdapter.setLines('satellite', false);
 }
 
 function animCatalog() {
@@ -836,7 +837,12 @@ function animOverlayState(kind) {
 }
 
 window.animSetRadar = function (on) { if (animOverlays) animOverlays.radar.setOn(on); };
-window.animSetSatellite = function (on) { if (animOverlays) animOverlays.satellite.setOn(on); };
+/** The satellite over the animation; the coasts and borders come over it. */
+window.animSetSatellite = function (on) {
+  if (!animOverlays) return;
+  animOverlays.satellite.setOn(on);
+  _widgetAdapter.setLines('satellite', !!on);
+};
 
 /** The color schemes of the radar, [[id, name]], from the catalog. */
 window.animRadarSchemes = function () {

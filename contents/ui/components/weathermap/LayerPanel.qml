@@ -39,6 +39,14 @@ Rectangle {
     clip: true
     color: Kirigami.Theme.backgroundColor
     Rectangle { width: 1; height: parent.height; color: panel.tint(0.10) }
+    // The column lies over the map: a wheel that nothing of the column
+    // takes (the scrolling, the clocks, an opacity) stops here instead of
+    // zooming the map under it.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.NoButton
+        onWheel: function (wheel) { wheel.accepted = true; }
+    }
 
     // An option of a layer with one value: its name, then a list under it.
     component OptCombo: ColumnLayout {
