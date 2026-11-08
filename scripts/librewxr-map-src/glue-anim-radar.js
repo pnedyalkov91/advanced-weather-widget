@@ -29,16 +29,16 @@ var WidgetAnimRadar = (function () {
     return (r.past || []).concat(r.nowcast || []);
   }
 
-  /** { start, end } in ms: from the first image to one gap past the last;
-      null without images. */
-  function rangeOf(frames, gapMs) {
+  /** { start, end } in ms: from the first image to one gap past the last,
+      or to untilMs when later; null without images. */
+  function rangeOf(frames, gapMs, untilMs) {
     if (!frames || !frames.length) return null;
-    return { start: frames[0].time * 1000, end: frames[frames.length - 1].time * 1000 + gapMs };
+    return { start: frames[0].time * 1000, end: Math.max(frames[frames.length - 1].time * 1000 + gapMs, untilMs || 0) };
   }
 
   /** The index of the latest image at or before ms, -1 out of the range. */
-  function frameAt(frames, ms, gapMs) {
-    var r = rangeOf(frames, gapMs);
+  function frameAt(frames, ms, gapMs, untilMs) {
+    var r = rangeOf(frames, gapMs, untilMs);
     if (!r || ms < r.start || ms >= r.end) return -1;
     for (var i = frames.length - 1; i >= 0; i--) if (frames[i].time * 1000 <= ms) return i;
     return -1;
@@ -69,6 +69,9 @@ var WidgetAnimRadar = (function () {
     this.adapter = adapter;
     this.kind = opts.kind;
     this.gapMs = opts.gapMs;
+    // () -> ms the last image stays on until, when later than one gap past
+    // it (the satellite's, an hour late, until the end of the radar).
+    this.until = opts.until || null;
     this.opacity = opts.opacity == null ? 0.8 : opts.opacity;
     this.url = opts.url;
     this.frames = [];
@@ -80,7 +83,8 @@ var WidgetAnimRadar = (function () {
     this.stale = null;          // the image shown before new tile options, kept until its new one is in
   }
 
-  Overlay.prototype.range = function () { return rangeOf(this.frames, this.gapMs); };
+  Overlay.prototype._until = function () { return this.until ? this.until() : null; };
+  Overlay.prototype.range = function () { return rangeOf(this.frames, this.gapMs, this._until()); };
 
   /** The time of the image on the map (ms), null when none is. */
   Overlay.prototype.shownTime = function () {
@@ -150,7 +154,7 @@ var WidgetAnimRadar = (function () {
     }
     Object.keys(this.layers).forEach(function (p) { self._drop(p); });
     if (this.on) {
-      var i = this.time === null ? -1 : frameAt(this.frames, this.time, this.gapMs);
+      var i = this.time === null ? -1 : frameAt(this.frames, this.time, this.gapMs, this._until());
       if (i >= 0) this._make(this.frames[i]);
       this.frames.forEach(function (f) { self._make(f); });
     }
@@ -184,7 +188,7 @@ var WidgetAnimRadar = (function () {
   Overlay.prototype.show = function (ms) {
     this.time = ms;
     if (!this.on) return;
-    var i = frameAt(this.frames, ms, this.gapMs);
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
     if (i < 0) { this.wanted = null; this._put(null); return; }
     var f = this.frames[i];
     this.wanted = f.path;

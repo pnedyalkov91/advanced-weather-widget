@@ -774,12 +774,19 @@ function animOverlayUrl(kind) {
   return function (frame) { return WidgetAnimRadar.tileUrl(API_BASE, frame, kind, o); };
 }
 
+/** The satellite's last image stays on until the end of the radar's
+    range: it comes about an hour late, and would be gone at now. */
+function animSatUntil() {
+  var r = animOverlays && animOverlays.radar.range();
+  return r ? r.end : null;
+}
+
 function animOverlaysStart() {
   if (typeof WidgetAnimRadar === 'undefined') return;
   if (!animOverlays) {
     animOverlays = {
       radar: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'radar', gapMs: WidgetAnimRadar.RADAR_GAP, opacity: 0.8, url: animOverlayUrl('radar') }),
-      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, opacity: 0.6, url: animOverlayUrl('satellite') })
+      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, url: animOverlayUrl('satellite') })
     };
   }
   animCatalog();

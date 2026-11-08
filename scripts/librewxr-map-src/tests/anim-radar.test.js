@@ -185,3 +185,20 @@ test('Overlay: range and on/off for the time bar', () => {
   assert.deepEqual(o.range(), { start: T0 * 1000, end: T0 * 1000 + 180 * MIN });
   assert.equal(o.on, false);
 });
+
+test('the satellite: its last image stays until the end of the radar, as it comes about an hour late', () => {
+  const last = T0 * 1000, radarEnd = last + 100 * MIN;   // the last satellite image, the end of the radar's nowcast
+  assert.deepEqual(R.rangeOf(sat, H, radarEnd), { start: (T0 - 11 * 3600) * 1000, end: radarEnd });
+  assert.deepEqual(R.rangeOf(sat, H, last + 10 * MIN), { start: (T0 - 11 * 3600) * 1000, end: last + H });   // never shorter than its gap
+  assert.equal(R.frameAt(sat, radarEnd - MIN, H, radarEnd), 11);
+  assert.equal(R.frameAt(sat, radarEnd, H, radarEnd), -1);
+  assert.equal(R.frameAt(sat, last - 30 * MIN, H, radarEnd), 10);   // before the last, each image keeps its hour
+  let until = radarEnd;
+  const { o } = overlay(sat, { kind: 'satellite', gapMs: H, until: () => until });
+  assert.deepEqual(o.range(), { start: (T0 - 11 * 3600) * 1000, end: radarEnd });
+  o.setOn(true);
+  o.show(last + 90 * MIN);
+  assert.equal(o.wanted, sat[11].path);
+  until = null;                                          // no radar known: one gap, as before
+  assert.deepEqual(o.range(), { start: (T0 - 11 * 3600) * 1000, end: last + H });
+});
