@@ -656,6 +656,7 @@ var WidgetAnim = (function () {
     this.nowIndex = nowIndex;
     this.tracks = [];           // { id, frames, layer, onShow, optional }
     this.ghosts = [];           // { id, frames, layer }
+    this.onTime = null;         // (ms) the time of each picture shown (the radar and satellite follow it)
   }
 
   /** opts.onShow: called once, after the layer's first picture;
@@ -733,6 +734,7 @@ var WidgetAnim = (function () {
       var g = grids.pos == null ? null : t.frames.gridAt(grids.pos);
       if (g) t.layer.showFile(g);
     });
+    if (this.onTime && grids.pos != null) this.onTime(this.timeAt(grids.pos));
   };
 
   var raf = typeof requestAnimationFrame === 'function' ? function (f) { requestAnimationFrame(f); } : function (f) { setTimeout(f, 16); };
@@ -942,6 +944,9 @@ var WidgetAnim = (function () {
     this.shownAt = 0;
     this.dueAt = 0;             // when the next picture may come
     this.timer = null;
+    // (ms) -> how many times slower the time goes there (1: not at all):
+    // the radar's images of 10 min each get their own moment.
+    this.slow = opts.slow || null;
   }
 
   var DRAWN_MS = 1500;          // a picture taking longer counts as drawn
@@ -1045,7 +1050,8 @@ var WidgetAnim = (function () {
       // A frame missing on the way: straight to the next one read.
       if (now - this.shownAt >= this.stepMs) this.show(j);
     } else if (now >= this.dueAt) {
-      this.show(Math.min(j, this.index + (now - this.shownAt) / this.stepMs));
+      var f = this.slow ? Math.max(1, this.slow(this.frames.timeAt(this.index)) || 1) : 1;
+      this.show(Math.min(j, this.index + (now - this.shownAt) / (this.stepMs * f)));
     }
   };
 

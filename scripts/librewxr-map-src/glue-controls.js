@@ -287,6 +287,7 @@ if (TEMP_ON) window.setTemp(true);
 // radar, its bar and the live wind hide meanwhile. QML drives it and reads
 // window.animState() for its own time bar.
 var anim = null;
+var animWindOpacity = 1;       // the wind's opacity in the animation (0..1)
 // Six file reads at once for all the layers together: as many as the
 // temperature alone used to have; twelve ran the reader out of memory.
 var animGate = typeof WidgetAnim === 'undefined' ? null : new WidgetAnim.Gate(6);
@@ -335,7 +336,7 @@ var ANIM_LAYERS = {
   wind: function (m) {
     var layer = _widgetAdapter.createWindLayer(anim.api, null, _windDem, {
       fps: windFps, maxFps: windMaxFps, relief: WIND_RELIEF, theme: currentTheme(), level: '10m',
-      lineWidth: windLineWidth, palette: windPalette, density: windDensity, manual: true
+      lineWidth: windLineWidth, palette: windPalette, density: windDensity, manual: true, opacity: animWindOpacity
     });
     if (!layer) return null;
     layer.addTo(m);
@@ -478,6 +479,7 @@ function animLoad(pastH, futureH) {
   anim.futureH = futureH;
   var ft = WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, WidgetAnim.STEP_H);
   anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
+  anim.group.onTime = animOverlayTime;
   // The API's hours count from the present hour, the frames from the
   // nearest 3-hour step: one step more each way covers them.
   anim.api.setHours(pastH + WidgetAnim.STEP_H, futureH + WidgetAnim.STEP_H);
@@ -521,6 +523,7 @@ function animRestyle() {
   anim.switcher.flush();
   anim.group.tracks.forEach(function (t) { if (t.layer.restyle) t.layer.restyle(m); });
   if (anim.player.index >= 0) anim.player.show(anim.player.index);
+  animOverlaysRaise();
 }
 
 /** Start with the layers of `layers` ({ temperature: true, wind: false }),
@@ -539,12 +542,14 @@ window.animStart = function (pastH, futureH, layers) {
     // Not stored: a grid of the whole range would not fit in localStorage.
     api: new WidgetWind.WindSource({ storage: null, world: false })
   };
+  anim.player.slow = animSlow;
   animLoad(pastH == null ? 24 : pastH, futureH == null ? 48 : futureH);
   _widgetAdapter.setFramesHidden(true);
   document.body.classList.add('lv-anim');
   layers = layers || { temperature: true };
   for (var id in ANIM_LAYERS) if (layers[id]) animSetLayer(id, true);
   creditOpenMeteo();
+  animOverlaysStart();
   return true;
 };
 
@@ -559,6 +564,7 @@ window.animStop = function () {
   anim.player.stop();
   anim.group.tracks.forEach(function (t) { t.frames.stop(); t.layer.remove(); });
   anim.switcher.clear();
+  animOverlaysStop();
   anim = null;
   if (windLayer) windLayer.setActive(true);
   _widgetAdapter.setFramesHidden(false);
@@ -577,6 +583,8 @@ window.animShow = function (i) { if (anim) anim.player.seek(i); };
 // Paused steps: one hour (dir 1 or -1), or to the next frame from its file.
 window.animStep = function (dir) { if (anim) anim.player.step(dir, WidgetAnim.STEP_H); };
 window.animStepFile = function (dir) { if (anim) anim.player.stepFile(dir); };
+// Paused steps of h hours (3: one frame).
+window.animStepHours = function (dir, h) { if (anim) anim.player.step(dir, WidgetAnim.STEP_H / h); };
 window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
 window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
 // Resolution of the temperature while it plays: 1 full, 2 half, 4 quarter; full again on pause.
@@ -639,8 +647,150 @@ window.animState = function () {
     times: g.times, now: g.nowIndex, index: anim.player.index, playing: anim.player.playing,
     time: anim.player.index >= 0 ? g.timeAt(anim.player.index) : null,
     fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
-    ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers
+    ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,
+    radar: animOverlayState('radar'), satellite: animOverlayState('satellite')
   };
+};
+
+// === RADAR AND SATELLITE OVER THE ANIMATION (glue-anim-radar.js) ===
+// Their images from the LibreWXR catalog, each shown while the time of the
+// animation is in its range; the animation slows down through the radar's
+// (WidgetAnimRadar.slowFactor). Their tile options mirror the viewer's,
+// and changing one here changes the viewer's too.
+var animRadarOpts = {
+  color: CURRENT_COLOR, smooth: SMOOTH_INIT, snow: SNOW_INIT, format: FORMAT_INIT, tileSize: TILESIZE_INIT,
+  arrows: ARROWS_ON, lightning: false, alerts: ALERTS_INIT
+};
+var animOverlays = null;       // { radar, satellite } (WidgetAnimRadar.Overlay)
+var animCatalogData = null;
+var animCatalogTimer = null;
+var ANIM_CATALOG_MS = 5 * 60e3;
+
+function animTileOpts() {
+  var o = animRadarOpts, size = o.tileSize === 'auto' ? (window.devicePixelRatio >= 1.5 ? 512 : 256) : parseInt(o.tileSize, 10) || 256;
+  return {
+    size: size, color: o.color, smooth: o.smooth, snow: o.snow, format: o.format,
+    arrows: o.arrows ? (currentTheme() === 'dark' ? 'light' : 'dark') : '', cells: '', lightning: o.lightning ? 'bolts' : ''
+  };
+}
+
+function animOverlayUrl(kind) {
+  var o = animTileOpts();
+  return function (frame) { return WidgetAnimRadar.tileUrl(API_BASE, frame, kind, o); };
+}
+
+function animOverlaysStart() {
+  if (typeof WidgetAnimRadar === 'undefined') return;
+  if (!animOverlays) {
+    animOverlays = {
+      radar: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'radar', gapMs: WidgetAnimRadar.RADAR_GAP, opacity: 0.8, url: animOverlayUrl('radar') }),
+      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, opacity: 0.6, url: animOverlayUrl('satellite') })
+    };
+  }
+  animCatalog();
+  if (!animCatalogTimer) animCatalogTimer = setInterval(animCatalog, ANIM_CATALOG_MS);
+}
+
+function animOverlaysStop() {
+  if (animCatalogTimer) { clearInterval(animCatalogTimer); animCatalogTimer = null; }
+  if (animOverlays) { animOverlays.radar.setOn(false); animOverlays.satellite.setOn(false); }
+}
+
+function animCatalog() {
+  return fetch(API_BASE + '/public/weather-maps.json', { cache: 'no-store' }).then(function (r) {
+    if (!r.ok) throw new Error('catalog ' + r.status);
+    return r.json();
+  }).then(function (c) {
+    animCatalogData = c;
+    if (!animOverlays) return;
+    animOverlays.radar.setFrames(WidgetAnimRadar.framesOf(c, 'radar'));
+    animOverlays.satellite.setFrames(WidgetAnimRadar.framesOf(c, 'satellite'));
+  }).catch(function (err) { console.warn('[anim] radar catalog: ' + err); });
+}
+
+/** The time of the picture shown: the radar and satellite follow. */
+function animOverlayTime(ms) {
+  if (!animOverlays) return;
+  animOverlays.satellite.show(ms);
+  animOverlays.radar.show(ms);
+}
+
+function animOverlaysRaise() {
+  if (!animOverlays) return;
+  ['satellite', 'radar'].forEach(function (k) { var o = animOverlays[k]; if (o.shown) o._put(o.shown); });
+}
+
+/** How many times slower the animation goes at ms (the radar's range, while it is on). */
+function animSlow(ms) {
+  var r = animOverlays && animOverlays.radar;
+  return r && r.on ? WidgetAnimRadar.slowFactor(ms, r.range()) : 1;
+}
+
+function animOverlayState(kind) {
+  var o = animOverlays && animOverlays[kind];
+  if (!o) return null;
+  var r = o.range();
+  // Where the radar's nowcast starts: the bar of its range is paler from there.
+  var nc = kind === 'radar' && animCatalogData && animCatalogData.radar && animCatalogData.radar.nowcast;
+  return {
+    on: o.on, start: r ? r.start : null, end: r ? r.end : null, time: o.shownTime(), opacity: Math.round(o.opacity * 100),
+    forecastFrom: nc && nc.length ? nc[0].time * 1000 : null
+  };
+}
+
+window.animSetRadar = function (on) { if (animOverlays) animOverlays.radar.setOn(on); };
+window.animSetSatellite = function (on) { if (animOverlays) animOverlays.satellite.setOn(on); };
+
+/** The color schemes of the radar, [[id, name]], from the catalog. */
+window.animRadarSchemes = function () {
+  var list = animCatalogData && animCatalogData.radar && animCatalogData.radar.colorSchemes || [];
+  return list.map(function (c) { return [c.id, c.name]; });
+};
+
+/** A tile option of the radar (color, smooth, snow, lightning, arrows,
+    alerts, format, tileSize), for the animation's images and the viewer's. */
+window.animSetRadarOption = function (key, value) {
+  if (!(key in animRadarOpts)) return;
+  animRadarOpts[key] = value;
+  var apply = {
+    color: function () { viewer.setColorScheme(value); },
+    smooth: function () { viewer.setSmooth(!!value); },
+    snow: function () { viewer.setSnow(!!value); },
+    lightning: function () { viewer.setLightning(value ? 'bolts' : ''); },
+    arrows: function () { window.setArrows(!!value); },
+    alerts: function () { viewer.setAlertsEnabled(!!value); },
+    format: function () { viewer.setFormat(value); },
+    tileSize: function () { viewer.setTileSize(String(value)); }
+  }[key];
+  apply();
+  if (!animOverlays || key === 'alerts') return;
+  animOverlays.radar.setUrl(animOverlayUrl('radar'));
+  if (key === 'format' || key === 'tileSize') animOverlays.satellite.setUrl(animOverlayUrl('satellite'));
+};
+
+window.animRadarOptions = function () { return Object.assign({}, animRadarOpts); };
+
+// The opacity setters of the layers by id, in percent: the page's own,
+// and those of the spikes injected after it (looked up when called).
+var ANIM_OPACITY = {
+  temperature: function (p) { window.setTempOpacity(p); },
+  wind: function (p) {
+    animWindOpacity = p / 100;
+    var t = anim && anim.group.track('wind');
+    if (t && t.layer.setOpacity) t.layer.setOpacity(animWindOpacity);
+  },
+  radar: function (p) { if (animOverlays) animOverlays.radar.setOpacity(p / 100); },
+  satellite: function (p) { if (animOverlays) animOverlays.satellite.setOpacity(p / 100); },
+  pressure: 'presSetOpacity', airquality: 'aqSetOpacity', precipitation: 'precipSetOpacity',
+  clouds: 'cloudSetOpacity', humidity: 'humiditySetOpacity', dewpoint: 'dewpointSetOpacity'
+};
+
+/** Layer id's opacity, in percent (10 to 100). */
+window.animSetOpacity = function (id, pct) {
+  var f = ANIM_OPACITY[id], p = Math.max(10, Math.min(100, Math.round(+pct)));
+  if (!f || !isFinite(p)) return;
+  if (typeof f === 'string') { if (typeof window[f] === 'function') window[f](p); }
+  else f(p);
 };
 
 // === READOUT UNDER THE POINTER (Ctrl) ===

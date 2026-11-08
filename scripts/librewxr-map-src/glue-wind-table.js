@@ -29,6 +29,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     this._open = openData;
     this._dem = dem;
     this._fade = 1;           // 0..1, the canvas's opacity while the layer fades in or out
+    this._opacity = options && options.opacity != null ? Math.max(0, Math.min(1, options.opacity)) : 1;   // set by the user
     this.options = {
       fps: 10, maxFps: 20, stepPx: 2.5, cadenceFraction: 0.98,
       relief: true, reliefMinZoom: 9, sigma: 250,
@@ -63,7 +64,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._canvas = document.createElement('canvas');
       this._canvas.className = 'lv-wind-canvas';
       this._canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
-      this._canvas.style.opacity = String(this._fade);
+      this._canvas.style.opacity = String(this._fade * this._opacity);
       // Right over the map's own canvas: markers and popups stay on top.
       var gl = map.getCanvas();
       gl.parentNode.insertBefore(this._canvas, gl.nextSibling);
@@ -119,8 +120,16 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     /** Fade in or out (0..1): the canvas's opacity, the particles go on. */
     setFade: function (f) {
       this._fade = Math.max(0, Math.min(1, f));
-      if (this._canvas) this._canvas.style.opacity = String(this._fade);
+      if (this._canvas) this._canvas.style.opacity = String(this._fade * this._opacity);
     },
+
+    /** The opacity chosen for the layer (0..1), under its fade. */
+    setOpacity: function (v) {
+      this._opacity = Math.max(0, Math.min(1, v));
+      if (this._canvas) this._canvas.style.opacity = String(this._fade * this._opacity);
+    },
+
+    getOpacity: function () { return this._opacity; },
 
     /** Pause (popup collapsed) or resume. */
     setActive: function (active) {
@@ -373,7 +382,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         self._canvas.style.visibility = '';
         if (self._fadeIn) {
           self._fadeIn = false;
-          if (self._canvas.animate) self._canvas.animate([{ opacity: 0 }, { opacity: self._fade }], { duration: REVEAL_MS, easing: 'ease-out' });
+          if (self._canvas.animate) self._canvas.animate([{ opacity: 0 }, { opacity: self._fade * self._opacity }], { duration: REVEAL_MS, easing: 'ease-out' });
         }
         self._running = true;
         self._schedule();

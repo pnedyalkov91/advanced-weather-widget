@@ -226,3 +226,16 @@ test('table layer: setFade is the opacity of its canvas, kept across a new one',
   assert.equal(layer._canvas.style.opacity, '1');
   layer.remove();
 });
+
+test('table layer: its opacity times the fade is the canvas opacity', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const layer = new Layer(source, null, {}, { manual: true, opacity: 0.8 });
+  layer.addTo(fakeMap());
+  assert.equal(layer._canvas.style.opacity, '0.8');
+  layer.setFade(0.5);
+  assert.equal(layer._canvas.style.opacity, '0.4');
+  layer.setOpacity(0.6);
+  assert.equal(layer._canvas.style.opacity, '0.3');
+  assert.equal(layer.getOpacity(), 0.6);
+  layer.remove();
+});

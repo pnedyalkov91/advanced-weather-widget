@@ -850,3 +850,40 @@ test('FineKeep: the temperature and the wind of one model kept apart', () => {
   assert.equal(keep.take('wind|m'), w);
   assert.equal(keep.take('temperature|m'), t);
 });
+
+test('Player: slow(time) stretches the steps where it asks (the radar range)', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100 });
+  p._ensureTimer = () => {};                       // ticks by hand only
+  p.frames.timeAt = (pos) => pos * 3 * H;
+  // Six times slower from the start to 1 h, the time of position 1/3.
+  p.slow = (t) => (t < H ? 6 : 1);
+  p.show(0);
+  p.play(true);
+  clock.t = 600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1]);                 // 600 ms of a 6000 ms step
+  clock.t = 1600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267]);          // still slowed: 1000 ms more, 1/6 of a step
+  clock.t = 1700;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267, 0.283]);   // 0.267 is before 1 h: still slowed
+  clock.t = 2700;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267, 0.283, 0.45]);
+  clock.t = 2800;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267, 0.283, 0.45, 0.55]);   // past 1 h: full speed again
+  p.play(false);
+});
+
+test('Group: onTime gets the time of each picture shown', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 0);
+  const layer = { showFile: () => {} };
+  g.add('t', { times: g.times, ready: () => true, gridAt: (pos) => ({ pos }) }, layer);
+  const times = [];
+  g.onTime = (t) => times.push(t);
+  const grids = g.gridAt(1.5);
+  g.showFile(grids);
+  assert.deepEqual(times, [4.5 * H]);
+});

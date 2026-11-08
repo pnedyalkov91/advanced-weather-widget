@@ -290,8 +290,20 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         'raster-opacity-transition': { duration: 0, delay: 0 },
         'raster-fade-duration': 0
       }
-    }, entry.kind === 'satellite' ? firstRuntimeLayerId() : undefined);
-    if (entry.kind !== 'satellite') assertAlertsPosition();
+    }, entry.anim ? animFrameBefore(entry) : entry.kind === 'satellite' ? firstRuntimeLayerId() : undefined);
+    if (entry.kind !== 'satellite' && !entry.anim) assertAlertsPosition();
+  }
+
+  // The animation's images go over every layer of the map, its satellite
+  // under its radar.
+  function animFrameBefore(entry) {
+    if (entry.kind !== 'satellite') return undefined;
+    var layers = map.getStyle().layers;
+    for (var i = 0; i < layers.length; i++) {
+      var e = entryOf({ layerId: layers[i].id });
+      if (e && e.anim && e.kind !== 'satellite') return layers[i].id;
+    }
+    return undefined;
   }
 
   // Severity colors come from the engine's style function, computed once per
@@ -334,7 +346,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // comes back at once.
   var REVEAL_BATCH = 2;
   var moving = false, revealJob = 0;
-  function frameVisibility(e) { return e.held || framesHidden ? 'none' : 'visible'; }
+  // The animation's own radar and satellite images (anim) stay out of setFramesHidden.
+  function frameVisibility(e) { return e.held || (framesHidden && !e.anim) ? 'none' : 'visible'; }
   function holdFrame(e, held) {
     e.held = held;
     if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
@@ -501,12 +514,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       drawShade(WidgetEarth.subsolarPoint(new Date()));
     },
 
-    createFrameLayer: function (url, kind) {
-      var id = 'lv-frame-' + (frameSeq++);
+    /** opts.anim: an image of the animation (glue-anim-radar.js), shown
+        while the viewer's are hidden, over the animation's layers. */
+    createFrameLayer: function (url, kind, opts) {
+      var id = 'lv-frame-' + (frameSeq++), anim = !!(opts && opts.anim);
       var entry = {
         sourceId: 'lv-src-' + id,
-        layerId: (kind === 'satellite' ? 'lv-layer-sat-' : 'lv-layer-radar-') + id,
-        kind: kind, url: url, maxZoom: maxZoom, opacity: 0
+        layerId: (anim ? 'lv-anim-' : '') + (kind === 'satellite' ? 'lv-layer-sat-' : 'lv-layer-radar-') + id,
+        kind: kind, url: url, maxZoom: maxZoom, opacity: 0, anim: anim
       };
       frameRegistry.push(entry);
       prepareNewFrame();
@@ -573,6 +588,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       }
       if (map.getLayer(handle.layerId)) map.removeLayer(handle.layerId);
       if (map.getSource(handle.sourceId)) map.removeSource(handle.sourceId);
+    },
+
+    /** An image of the animation back over the layers added since (a
+        layer switched on puts itself on top), its satellite under its radar. */
+    raise: function (handle) {
+      var e = entryOf(handle);
+      if (!e || !e.anim || !map.getLayer(e.layerId)) return;
+      map.moveLayer(e.layerId, animFrameBefore(e));
     },
 
     /** Hide every radar and satellite frame, those to come too. */
