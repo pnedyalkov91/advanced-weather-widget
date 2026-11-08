@@ -333,6 +333,15 @@ test('windField: the 10 m wind as it was, another level a field of its own witho
   assert.equal(frames.grid(1).u[0][22], 15);
 });
 
+test('Frames: a read of the global model takes a place of the gate per million points read, one per variable', () => {
+  const loader = { base: 'b/', model: 'ecmwf_ifs025' };
+  const weight = (vars) => new A.Frames(loader, { field: { id: 'x', store: 'x', vars }, now: () => 0, pastH: 0, futureH: 3 }).weight;
+  assert.equal(weight(['temperature_2m']), 1);
+  assert.equal(weight(['wind_u_component_10m', 'wind_v_component_10m']), 2);
+  assert.equal(weight(['precipitation', 'precipitation_type', 'snowfall_water_equivalent']), 3);
+  assert.equal(weight(['cloud_cover', 'cloud_cover_high', 'cloud_cover_mid', 'cloud_cover_low']), 4);
+});
+
 test('FIELDS.wind: u and v by half m/s on one byte, ends held, NaN kept', () => {
   const w = A.FIELDS.wind;
   const back = w.unpackPart(w.packPart(Float32Array.from([3.26, -12.7, NaN, 80, -80])));

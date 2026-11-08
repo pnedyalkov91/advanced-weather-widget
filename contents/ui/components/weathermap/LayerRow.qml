@@ -217,7 +217,8 @@ Item {
         margins: 6                   // kept inside the window
         x: gear.x + gear.width - width
         y: gear.y + gear.height + 6
-        width: 230
+        // As wide as its longest line (the translations differ), 230 at least.
+        width: Math.max(230, Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding)
         padding: 12
         closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
         contentItem: ColumnLayout {

@@ -239,7 +239,7 @@
     <entry name="librewxrSnow"          type="Bool"><default>true</default></entry>
     <entry name="librewxrFormat"        type="String"><default>webp</default></entry>
     <entry name="librewxrTileSize"      type="String"><default>auto</default></entry>
-    <!-- Weather Map tab: the layers switched on, JSON { "id": true|false } (radar, satellite, wind, temperature) -->
+    <!-- Weather Map tab: the layers switched on, JSON { "id": true|false } -->
     <entry name="weatherMapLayers"      type="String"><default>{"radar":true,"satellite":true,"wind":true,"temperature":true}</default></entry>
     <!-- Weather Map: the opacity of each layer but the temperature (librewxrTempOpacity), JSON { "id": percent } -->
     <entry name="weatherMapOpacities"   type="String"><default>{}</default></entry>
@@ -260,6 +260,12 @@
     <entry name="weatherMapLoop"        type="Bool"><default>true</default></entry>
     <!-- Weather Map: lightning strikes over the radar -->
     <entry name="weatherMapLightning"   type="Bool"><default>false</default></entry>
+    <!-- Weather Map: the kinds of precipitation shown, JSON list of ids; empty for all -->
+    <entry name="weatherMapPrecipKinds" type="String"><default></default></entry>
+    <!-- Weather Map: the cloud levels shown, JSON list of ids (high, mid, low); empty for all -->
+    <entry name="weatherMapCloudLevels" type="String"><default></default></entry>
+    <!-- Weather Map: the pollutant of the air quality layer (pm2_5, pm10, ozone, nitrogen_dioxide, sulphur_dioxide, dust, aerosol_optical_depth, uv_index) -->
+    <entry name="weatherMapPollutant"   type="String"><default>pm2_5</default></entry>
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->
     <entry name="radarGpuWorkaround"    type="Bool"><default>false</default></entry>

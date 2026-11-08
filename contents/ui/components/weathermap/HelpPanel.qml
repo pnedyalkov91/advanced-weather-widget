@@ -35,7 +35,20 @@ QQC2.Popup {
         { ids: ["wind"], icon: icons + "flat-color/22/wi-strong-wind.svg", title: i18n("Wind"), range: sixDays,
           text: i18n("The lines flow with the wind. Their color is the speed, from your wind palette: by default white when calm, green and blue for a breeze, yellow and orange for a strong wind, red and violet for a storm. The options of its line (the wheel) pick the height: 10 m is the wind you feel, shaped by the relief; 700 hPa (about 3000 m) is the flow that carries the clouds and the rain, stronger and smoother. At 700 hPa only the global model is drawn: the regional files hold the 10 m wind only. Watch where the lines bunch up and turn: that is where the weather changes.") },
         { ids: ["temperature"], icon: icons + "flat-color/22/wi-thermometer.svg", title: i18n("Temperature"), range: sixDays,
-          text: i18n("Air temperature at 2 m, in the bands of the legend. Play a whole day to see the land warm up in the afternoon and cool down at night, while the sea hardly changes. A sharp edge that moves is a front.") }
+          text: i18n("Air temperature at 2 m, in the bands of the legend. Play a whole day to see the land warm up in the afternoon and cool down at night, while the sea hardly changes. A sharp edge that moves is a front.") },
+        { ids: ["precipitation"], icon: icons + "flat-color/22/wi-rain.svg", title: i18n("Precipitation"), range: sixDays,
+          text: i18n("What falls in the three hours around the time shown, in mm per hour. Each kind has its colors: rain from blue to green, yellow, red and magenta as it gets heavier; snow in lilac and violet; the dangerous ones (freezing rain, freezing drizzle, ice pellets) in colors of their own. Pick the kinds in the options of its line (the wheel). Under 0.05 mm/h nothing is drawn.") },
+        { ids: ["clouds"], icon: icons + "flat-color/22/wi-cloudy.svg", title: i18n("Clouds"), range: sixDays,
+          text: i18n("White is cloud: the whiter, the more of the sky it covers. Low clouds (under about 2 km) make grey days, fog and drizzle. Mid clouds (2 to 6 km) often come before rain. High clouds (above 6 km) are thin veils of ice: the sun still gets through. With all three levels ticked you see the total cover as the model counts it, without counting twice the clouds that sit over each other.") },
+        { ids: ["pressure", "isobars"], icon: icons + "flat-color/22/wi-barometer.svg", title: i18n("Pressure and isobars"), range: sixDays,
+          text: i18n("Air pressure brought to sea level, in hPa. Blue and purple are lows: clouds, rain and wind. Orange and red are highs: settled weather, fog in winter. The isobars join the points of equal pressure, every 4 hPa. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer the lines, the stronger the wind.") },
+        { ids: ["humidity"], icon: icons + "flat-color/22/wi-humidity.svg", title: i18n("Humidity"), range: sixDays,
+          text: i18n("Relative humidity at 2 m: how close the air is to being saturated with water. Brown is dry (under 30 %: dry skin, fire risk), sand and green are usual, blue is near 100 % (fog, low clouds, rain). It goes up at night and down in the afternoon even when the air keeps the same water, because warm air can hold more: for the water itself, look at the dew point.") },
+        { ids: ["dewpoint"], icon: icons + "flat-color/22/wi-dew-point.svg", title: i18n("Dew point"), range: sixDays,
+          text: i18n("The temperature the air would have to cool to for dew to form. It tells how much water the air really holds, and how muggy it feels. Under 10 °C the air feels dry, 13 to 16 °C you notice it, from 18 °C it is muggy, from 21 °C oppressive, and from 24 °C tropical. When the night temperature falls to the dew point, dew or fog forms.") },
+        { ids: ["airquality"], icon: icons + "flat-color/22/wi-smoke.svg", title: i18n("Air quality"),
+          range: i18n("Up to 5 days ahead only: the CAMS forecast stops there, later pictures stay empty. About 7 days back."),
+          text: i18n("The CAMS forecast for the pollutant chosen in the list. The colors follow the bands of the European Air Quality Index: cyan good, green fair, yellow moderate, red poor, dark red very poor, purple extremely poor. Dust shows Saharan dust, AOD how hazy the air is (smoke, dust), UV the UV index of the day. The scale is logarithmic: each band covers a wider range than the one before.") }
     ]
     function isOn(s) { return s.ids.some(function (id) { return !!panel.layers[id]; }); }
     readonly property var ordered: sections.filter(isOn).concat(sections.filter(function (s) { return !isOn(s); }))
@@ -135,7 +148,7 @@ QQC2.Popup {
                     QQC2.Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        text: i18n("A click on the icon of a line switches the layer on or off; the slider sets its opacity, from 0 to 100 %. The wheel at the end of the line opens its options: what it shows, and its color legend on the map, which can be hidden. The thin button on the left edge of the column folds it to its icons: the opacity is then the bar under each icon, set with the wheel over it. The map stays where it is when the column opens over it.")
+                        text: i18n("A click on the icon of a line switches the layer on or off; the slider sets its opacity, from 0 to 100 %. The wheel at the end of the line opens its options: what it shows, and its color legend on the map, which can be hidden. The colors share one layer at a time (temperature, pressure, humidity, dew point, air quality); precipitation, clouds, wind, isobars, radar and satellite go over them. The thin button on the left edge of the column folds it to its icons: the opacity is then the bar under each icon, set with the wheel over it. The map stays where it is when the column opens over it.")
                     }
                     QQC2.Label { text: i18n("Time"); font.bold: true }
                     QQC2.Label {

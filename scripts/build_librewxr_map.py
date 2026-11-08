@@ -44,6 +44,14 @@ GLUE_ANIM_TOKEN = "/*@__WIDGET_GLUE_ANIM__*/"
 GLUE_ANIM_RADAR_TOKEN = "/*@__WIDGET_GLUE_ANIM_RADAR__*/"
 GLUE_EARTH_TOKEN = "/*@__WIDGET_GLUE_EARTH__*/"
 GLUE_PREPARE_TOKEN = "/*@__WIDGET_GLUE_PREPARE__*/"
+# The layers of the animation beyond temperature and wind, after the
+# controls in the page's module: each reaches ANIM_LAYERS, anim and the
+# adapter, and the later ones borrow the pressure's GL layer.
+GLUE_PRESSURE_TOKEN = "/*@__WIDGET_GLUE_PRESSURE__*/"
+GLUE_AIRQUALITY_TOKEN = "/*@__WIDGET_GLUE_AIRQUALITY__*/"
+GLUE_PRECIP_TOKEN = "/*@__WIDGET_GLUE_PRECIP__*/"
+GLUE_CLOUDS_TOKEN = "/*@__WIDGET_GLUE_CLOUDS__*/"
+GLUE_HUMIDITY_TOKEN = "/*@__WIDGET_GLUE_HUMIDITY__*/"
 
 # Vendored in this repository under scripts/librewxr-map-src/. shell.html is
 # the assembly base and carries no token of its own; the remaining fragments
@@ -77,6 +85,11 @@ PAGES = [
         ("glue-anim-radar.js", GLUE_ANIM_RADAR_TOKEN),
         ("glue-earth.js", GLUE_EARTH_TOKEN),
         ("glue-controls.js", GLUE_CONTROLS_TOKEN),
+        ("glue-pressure.js", GLUE_PRESSURE_TOKEN),
+        ("glue-airquality.js", GLUE_AIRQUALITY_TOKEN),
+        ("glue-precip.js", GLUE_PRECIP_TOKEN),
+        ("glue-clouds.js", GLUE_CLOUDS_TOKEN),
+        ("glue-humidity.js", GLUE_HUMIDITY_TOKEN),
     ]),
     ("librewxr-map-leaflet.html", "shell.html", LOCAL_SOURCES[1:]),
 ]

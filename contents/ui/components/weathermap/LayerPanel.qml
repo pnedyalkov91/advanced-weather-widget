@@ -20,6 +20,10 @@ Rectangle {
     readonly property alias satRow: satRow
     readonly property alias windRow: windRow
     readonly property alias tempRow: tempRow
+    readonly property alias precipRow: precipRow
+    readonly property alias cloudRow: cloudRow
+    readonly property alias presRow: presRow
+    readonly property alias aqRow: aqRow
     readonly property alias radarMenu: radarMenu
     readonly property alias settingsMenu: settingsMenu
     readonly property alias pastPick: pastPick
@@ -51,6 +55,68 @@ Rectangle {
             model: oc.choices.map(function (c) { return c[1]; })
             currentIndex: oc.current
             onActivated: function (i) { oc.current = i; oc.picked(oc.choices[i][0]); }
+        }
+    }
+    // The kinds of a layer shown, several at once: a list that opens on a
+    // switch for each, "All" first. Each change is sent at once.
+    component OptKinds: ColumnLayout {
+        id: ok
+        property string title
+        property var choices: []        // [[value, text]]
+        property var checkedValues: choices.map(function (c) { return c[0]; })
+        signal picked(var values)
+        Layout.fillWidth: true
+        spacing: 2
+        readonly property var _labels: choices.filter(function (c) { return checkedValues.indexOf(c[0]) >= 0; }).map(function (c) { return c[1]; })
+        readonly property string label: _labels.length === choices.length ? i18n("All")
+            : _labels.length === 0 ? i18n("None")
+            : _labels.length <= 2 ? _labels.join(" + ")
+            : i18np("%1 kind", "%1 kinds", _labels.length)
+        function set(values) {
+            // In the order of the choices.
+            var v = choices.map(function (c) { return c[0]; }).filter(function (x) { return values.indexOf(x) >= 0; });
+            picked(v);
+        }
+        QQC2.Label { text: ok.title; color: panel.dimText }
+        QQC2.ComboBox {
+            id: kindsCombo
+            Layout.fillWidth: true
+            model: []
+            displayText: ok.label
+            popup: QQC2.Popup {
+                y: kindsCombo.height + 2
+                width: kindsCombo.width
+                padding: 6
+                margins: 6
+                closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+                contentItem: ColumnLayout {
+                    spacing: 0
+                    QQC2.Switch {
+                        text: i18n("All")
+                        font.bold: true
+                        checked: ok.checkedValues.length === ok.choices.length
+                        onToggled: {
+                            ok.set(checked ? ok.choices.map(function (c) { return c[0]; }) : []);
+                            checked = Qt.binding(function () { return ok.checkedValues.length === ok.choices.length; });
+                        }
+                    }
+                    Repeater {
+                        model: ok.choices
+                        delegate: QQC2.Switch {
+                            required property var modelData
+                            text: modelData[1]
+                            checked: ok.checkedValues.indexOf(modelData[0]) >= 0
+                            onToggled: {
+                                var v = ok.checkedValues.filter(function (x) { return x !== modelData[0]; });
+                                if (checked)
+                                    v.push(modelData[0]);
+                                ok.set(v);
+                                checked = Qt.binding(function () { return ok.checkedValues.indexOf(modelData[0]) >= 0; });
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     component Caption: QQC2.Label {
@@ -313,6 +379,114 @@ Rectangle {
                     choices: panel.map.tempStepChoices
                     current: panel.map.tempStepChoices.map(function (c) { return c[0]; }).indexOf(panel.map.tempStep)
                     onPicked: function (v) { panel.map.setTempStep(v); }
+                }
+            }
+            LayerRow {
+                id: precipRow
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Precipitation (rain, snow)")
+                iconName: "precipitations-glyph"
+                checked: panel.map.layerOn("precipitation")
+                opacityValue: panel.map.opacities.precipitation
+                onToggled: function (on) { panel.map.setLayer("precipitation", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("precipitation", p); }
+                hasLegend: true
+                legendOn: !panel.map.legendsHidden["precipitation"]
+                onLegendToggled: function (on) { panel.map.setLegend("precipitation", on); }
+                OptKinds {
+                    title: i18n("Kinds shown")
+                    choices: panel.map.precipChoices
+                    checkedValues: panel.map.precipKinds
+                    onPicked: function (values) { panel.map.setPrecipKinds(values); }
+                }
+            }
+            LayerRow {
+                id: cloudRow
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Cloud cover")
+                iconName: "nuages-glyph"
+                iconMask: true
+                checked: panel.map.layerOn("clouds")
+                opacityValue: panel.map.opacities.clouds
+                onToggled: function (on) { panel.map.setLayer("clouds", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("clouds", p); }
+                OptKinds {
+                    title: i18n("Levels shown")
+                    choices: panel.map.cloudChoices
+                    checkedValues: panel.map.cloudLevels
+                    onPicked: function (values) { panel.map.setCloudLevels(values); }
+                }
+            }
+            LayerRow {
+                id: presRow
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Sea level pressure")
+                iconName: "pression-glyph"
+                checked: panel.map.layerOn("pressure")
+                active: checked || panel.map.layerOn("isobars")
+                opacityValue: panel.map.opacities.pressure
+                onToggled: function (on) { panel.map.setLayer("pressure", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("pressure", p); }
+                hasLegend: true
+                legendOn: !panel.map.legendsHidden["pressure"]
+                onLegendToggled: function (on) { panel.map.setLegend("pressure", on); }
+                QQC2.Switch {
+                    text: i18n("Isobars")
+                    checked: panel.map.layerOn("isobars")
+                    onToggled: {
+                        panel.map.setLayer("isobars", checked);
+                        checked = Qt.binding(function () { return panel.map.layerOn("isobars"); });
+                    }
+                }
+            }
+            LayerRow {
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Relative humidity")
+                iconName: "humidite-glyph"
+                checked: panel.map.layerOn("humidity")
+                opacityValue: panel.map.opacities.humidity
+                onToggled: function (on) { panel.map.setLayer("humidity", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("humidity", p); }
+                hasLegend: true
+                legendOn: !panel.map.legendsHidden["humidity"]
+                onLegendToggled: function (on) { panel.map.setLegend("humidity", on); }
+            }
+            LayerRow {
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Dew point")
+                iconName: "rosee-glyph"
+                checked: panel.map.layerOn("dewpoint")
+                opacityValue: panel.map.opacities.dewpoint
+                onToggled: function (on) { panel.map.setLayer("dewpoint", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("dewpoint", p); }
+                hasLegend: true
+                legendOn: !panel.map.legendsHidden["dewpoint"]
+                onLegendToggled: function (on) { panel.map.setLegend("dewpoint", on); }
+            }
+            LayerRow {
+                id: aqRow
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Air quality (CAMS)")
+                iconName: "qualite-air-glyph"
+                iconMask: true
+                checked: panel.map.layerOn("airquality")
+                opacityValue: panel.map.opacities.airquality
+                onToggled: function (on) { panel.map.setLayer("airquality", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("airquality", p); }
+                hasLegend: true
+                legendOn: !panel.map.legendsHidden["airquality"]
+                onLegendToggled: function (on) { panel.map.setLegend("airquality", on); }
+                OptCombo {
+                    title: i18n("Pollutant")
+                    choices: panel.map.aqChoices
+                    current: Math.max(0, panel.map.aqChoices.map(function (c) { return c[0]; }).indexOf(panel.map.pollutant))
+                    onPicked: function (v) { panel.map.setPollutant(v); }
                 }
             }
             Divider {}

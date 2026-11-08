@@ -374,8 +374,8 @@ Item {
     }
 
     // The layers switched on, kept in weatherMapLayers.
-    readonly property var layerIds: ["radar", "satellite", "wind", "temperature"]
-    readonly property var animLayerIds: ["wind", "temperature"]
+    readonly property var layerIds: ["radar", "satellite"].concat(animLayerIds)
+    readonly property var animLayerIds: ["wind", "temperature", "precipitation", "clouds", "pressure", "isobars", "humidity", "dewpoint", "airquality"]
     readonly property var layersSaved: {
         var o = {};
         try {
@@ -392,7 +392,9 @@ Item {
         var o = {};
         for (var i = 0; i < layerIds.length; i++)
             o[layerIds[i]] = layerIds[i] === id ? on : layerOn(layerIds[i]);
-        Plasmoid.configuration.weatherMapLayers = JSON.stringify(o);
+        var j = JSON.stringify(o);
+        if (j !== Plasmoid.configuration.weatherMapLayers)
+            Plasmoid.configuration.weatherMapLayers = j;
     }
     function setLayer(id, on) {
         // A layer changed by hand: the solo is over, as it stands (the page
@@ -506,9 +508,45 @@ Item {
     readonly property real stepHours: solo === "radar" ? 1 / 6 : solo ? 1 : 3
     readonly property string stepText: solo === "radar" ? i18n("%1 min", 10) : solo ? i18n("%1 h", 1) : i18n("%1 h", 3)
 
+    // The kinds of precipitation and the cloud levels shown, the pollutant.
+    readonly property var precipChoices: [["rain", i18n("Rain")], ["snow", i18n("Snow")], ["wet_snow", i18n("Wet snow")], ["mix", i18n("Rain and snow")], ["freezing_rain", i18n("Freezing rain")], ["freezing_drizzle", i18n("Freezing drizzle")], ["ice_pellets", i18n("Ice pellets")]]
+    readonly property var cloudChoices: [["high", i18nc("@item cloud level", "High")], ["mid", i18nc("@item cloud level", "Mid")], ["low", i18nc("@item cloud level", "Low")]]
+    readonly property var aqChoices: [["pm2_5", "PM2.5"], ["pm10", "PM10"], ["ozone", "O₃"], ["nitrogen_dioxide", "NO₂"], ["sulphur_dioxide", "SO₂"], ["dust", i18n("Dust")], ["aerosol_optical_depth", i18n("AOD")], ["uv_index", i18n("UV")]]
+    function _list(json, choices) {
+        var all = choices.map(function (c) { return c[0]; });
+        try {
+            var v = JSON.parse(json || "null");
+            if (Array.isArray(v))
+                return all.filter(function (x) { return v.indexOf(x) >= 0; });
+        } catch (e) {}
+        return all;
+    }
+    readonly property var precipKinds: _list(Plasmoid.configuration.weatherMapPrecipKinds, precipChoices)
+    readonly property var cloudLevels: _list(Plasmoid.configuration.weatherMapCloudLevels, cloudChoices)
+    readonly property string pollutant: aqChoices.some(function (c) { return c[0] === Plasmoid.configuration.weatherMapPollutant; }) ? Plasmoid.configuration.weatherMapPollutant : "pm2_5"
+    function setPrecipKinds(values) {
+        Plasmoid.configuration.weatherMapPrecipKinds = JSON.stringify(values);
+        js("window.precipSetKinds(" + JSON.stringify(values) + ")");
+    }
+    function setCloudLevels(values) {
+        Plasmoid.configuration.weatherMapCloudLevels = JSON.stringify(values);
+        js("window.cloudSetLevels(" + JSON.stringify(values) + ")");
+    }
+    function setPollutant(v) {
+        Plasmoid.configuration.weatherMapPollutant = v;
+        js("window.aqSetPollutant('" + v + "')");
+    }
+    // What the layers show, told to the page before it starts: the
+    // pictures of the right pollutant are the first read.
+    function _layerChoices() {
+        return "if (window.precipSetKinds) window.precipSetKinds(" + JSON.stringify(precipKinds) + ");"
+            + "if (window.cloudSetLevels) window.cloudSetLevels(" + JSON.stringify(cloudLevels) + ");"
+            + "if (window.aqSetPollutant) window.aqSetPollutant('" + pollutant + "');";
+    }
+
     // The opacity of each layer, in percent: the temperature's is the
     // Radar settings' one, the others are kept in weatherMapOpacities.
-    readonly property var opacityDefaults: ({ radar: 80, satellite: 60, wind: 100 })
+    readonly property var opacityDefaults: ({ radar: 80, satellite: 60, wind: 100, precipitation: 80, clouds: 70, pressure: 60, humidity: 60, dewpoint: 60, airquality: 60 })
     readonly property var opacities: {
         var kept = {};
         try {
@@ -610,8 +648,7 @@ Item {
         if (solo) {
             solo = "";
             soloSaved = null;
-            var keep = { radar: layerOn("radar"), satellite: layerOn("satellite"), wind: layerOn("wind"), temperature: layerOn("temperature") };
-            Plasmoid.configuration.weatherMapLayers = JSON.stringify(keep);
+            _saveLayers("", false);
         }
         stepH = 3;
         Plasmoid.configuration.weatherMapPastHours = p;
@@ -643,6 +680,8 @@ Item {
     function testUi(what) {
         var popups = { radar: layerPanel.radarMenu, days: dateBox.daysMenu, settings: layerPanel.settingsMenu,
             "opts-wind": layerPanel.windRow.optionsPopup, "opts-temp": layerPanel.tempRow.optionsPopup,
+            "opts-precip": layerPanel.precipRow.optionsPopup, "opts-clouds": layerPanel.cloudRow.optionsPopup,
+            "opts-pressure": layerPanel.presRow.optionsPopup, "opts-aq": layerPanel.aqRow.optionsPopup,
             past: layerPanel.pastPick.menu, future: layerPanel.futurePick.menu };
         if (what === "fold" || what === "unfold") {
             setFolded(what === "fold");
@@ -720,7 +759,22 @@ Item {
             "dirS": i18n("S"),
             "dirSW": i18n("SW"),
             "dirW": i18n("W"),
-            "dirNW": i18n("NW")
+            "dirNW": i18n("NW"),
+            "precip_rain": i18n("Rain"),
+            "precip_snow": i18n("Snow"),
+            "precip_wet_snow": i18n("Wet snow"),
+            "precip_mix": i18n("Rain and snow"),
+            "precip_freezing_rain": i18n("Freezing rain"),
+            "precip_freezing_drizzle": i18n("Freezing drizzle"),
+            "precip_ice_pellets": i18n("Ice pellets"),
+            "precipDry": i18nc("@label no precipitation at that place", "Dry"),
+            "cloud_total": i18nc("@label total cloud cover", "Total"),
+            "cloud_high": i18nc("@item cloud level", "High"),
+            "cloud_mid": i18nc("@item cloud level", "Mid"),
+            "cloud_low": i18nc("@item cloud level", "Low"),
+            "humidity": i18n("Humidity"),
+            "dewpoint": i18n("Dew point"),
+            "aqDust": i18n("Dust")
         };
         // The live wind and temperature stay off (wind=0, temp=0): the
         // animation draws its own.
@@ -777,7 +831,7 @@ Item {
             }
             var layers = {};
             radarRoot.animLayerIds.forEach(function (id) { layers[id] = !!radarRoot.layersSaved[id]; });
-            webView.runJavaScript("window.animStart ? window.animStart(" + radarRoot.pastH + ", " + radarRoot.futureH + ", " + JSON.stringify(layers) + ") : false", function (ok) {
+            webView.runJavaScript(radarRoot._layerChoices() + "window.animStart ? window.animStart(" + radarRoot.pastH + ", " + radarRoot.futureH + ", " + JSON.stringify(layers) + ") : false", function (ok) {
                 if (!ok || radarRoot.started)
                     return;
                 radarRoot.started = true;
@@ -806,6 +860,10 @@ Item {
             var t = st.times;
             if (t.length !== radarRoot.frameTimes.length || t[0] !== radarRoot.frameTimes[0])
                 radarRoot.frameTimes = t;
+            // A colored layer switched on switches the others off in the
+            // page: the layers kept follow, outside a solo.
+            if (!radarRoot.solo)
+                radarRoot._saveLayers("", false);
         })
     }
 
@@ -1144,8 +1202,12 @@ Item {
     HelpPanel {
         id: helpPanel
         parent: radarRoot
-        choices: ({ wind: radarRoot.windLevelChoices })
-        layers: ({ radar: radarRoot.layerOn("radar"), satellite: radarRoot.layerOn("satellite"), wind: radarRoot.layerOn("wind"), temperature: radarRoot.layerOn("temperature") })
+        choices: ({ wind: radarRoot.windLevelChoices, precipitation: radarRoot.precipChoices, clouds: radarRoot.cloudChoices, airquality: radarRoot.aqChoices })
+        layers: {
+            var o = {};
+            radarRoot.layerIds.forEach(function (id) { o[id] = radarRoot.layerOn(id); });
+            return o;
+        }
     }
 
     function reload() {

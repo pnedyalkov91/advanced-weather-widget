@@ -367,6 +367,8 @@ var WidgetAnim = (function () {
      looked for in opts.store first (see frameStore), and put there once
      read; with opts.pruneH, the store is sorted out on each load (see
      pruneStore). The pictures of opts.reuse (the Frames of another range) are taken over. */
+  var GLOBAL_POINTS = 1440 * 721;   // a file of ECMWF IFS 0.25 degree
+
   function Frames(loader, opts) {
     opts = opts || {};
     this.loader = loader;
@@ -382,10 +384,13 @@ var WidgetAnim = (function () {
     this.fileModel = opts.fileModel || loader.model;
     this.model = opts.model || this.fileModel;
     this.schedule = scheduleOf(this.fileModel);
-    // A read takes a place of the gate per million points of the file.
+    // A read takes a place of the gate per million points read: the
+    // reader unpacks every variable whole. A file of the global model has
+    // 1440 x 721 points.
     var rm = typeof WidgetModels !== 'undefined' && WidgetModels.get(this.fileModel);
     this.names = typeof this.field.vars === 'function' ? this.field.vars(this.fileModel) : this.field.vars;
-    this.weight = rm ? Math.max(1, Math.round(rm.grid.nx * rm.grid.ny * this.names.length / 1e6)) : 1;
+    var points = rm ? rm.grid.nx * rm.grid.ny : GLOBAL_POINTS;
+    this.weight = Math.max(1, Math.round(points * this.names.length / 1e6));
     this.fines = opts.fines || null;   // Frames of finer models, finest first, given along (see gridAt)
     this.surface = opts.surface || null;   // () -> the model's ground heights, once known
     this.pruneH = opts.pruneH || 0;
