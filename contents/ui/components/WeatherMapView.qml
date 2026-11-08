@@ -441,16 +441,19 @@ Item {
     // One picture every 10 minutes for the radar alone, an hour for the
     // satellite or both, the files' three hours otherwise.
     property real stepH: 3
-    // The range of kind, [start, end] in ms: the radar's, the satellite's, or both together.
+    // The range of kind, [start, end] in ms: the radar's, the satellite's,
+    // or both together. Each ends on the radar's last image, where both
+    // show (the satellite's last one stays on until the radar ends).
     function _soloSpan(kind) {
         var H = 3600e3, now = Date.now();
-        var r = animState && animState.radar && animState.radar.start !== null ? animState.radar : { start: now - 2 * H, end: now + H };
-        var sat = animState && animState.satellite && animState.satellite.start !== null ? animState.satellite : { start: now - 12 * H, end: now };
+        var r = animState && animState.radar && animState.radar.start !== null ? animState.radar : { start: now - 2 * H, last: now + 50 * 60e3 };
+        var sat = animState && animState.satellite && animState.satellite.start !== null ? animState.satellite : { start: now - 12 * H, last: now - H };
+        var end = r.last !== null && r.last !== undefined ? r.last : sat.last;
         if (kind === "radar")
-            return [r.start, r.end];
+            return [r.start, end];
         if (kind === "satellite")
-            return [sat.start, sat.end];
-        return [Math.min(r.start, sat.start), Math.max(r.end, sat.end)];
+            return [sat.start, end];
+        return [Math.min(r.start, sat.start), end];
     }
     function _soloTo(kind) {
         solo = kind;

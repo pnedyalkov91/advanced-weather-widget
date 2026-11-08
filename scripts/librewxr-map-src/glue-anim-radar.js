@@ -83,6 +83,10 @@ var WidgetAnimRadar = (function () {
     this.stale = null;          // the image shown before new tile options, kept until its new one is in
   }
 
+  /** The time of the last image (ms), null without images. */
+  Overlay.prototype.lastTime = function () {
+    return this.frames.length ? this.frames[this.frames.length - 1].time * 1000 : null;
+  };
   Overlay.prototype._until = function () { return this.until ? this.until() : null; };
   Overlay.prototype.range = function () { return rangeOf(this.frames, this.gapMs, this._until()); };
 

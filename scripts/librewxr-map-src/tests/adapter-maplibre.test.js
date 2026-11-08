@@ -614,22 +614,24 @@ test('a satellite frame added later goes over the lines too', async () => {
   assert.ok(ids(map).indexOf('lv-lines') < ids(map).indexOf(sat.layerId));
 });
 
-test('the animation: the lines go over its satellite images, under its radar images, raised or not', async () => {
+test('the animation: the lines go over its satellite and radar images, the satellite under the radar, raised or not', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   adapter.setLines('satellite', true);
   await tick(); await tick();
   const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite', { anim: true });
   const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar', { anim: true });
-  const order = () => ids(map);
-  assert.ok(order().indexOf(sat.layerId) < order().indexOf('lv-lines'));
-  assert.ok(order().indexOf('lv-lines') < order().indexOf(radar.layerId));
+  const check = () => {
+    const order = ids(map);
+    assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId));
+    assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+  };
+  check();
   adapter.raise(sat);
   adapter.raise(radar);
-  assert.ok(order().indexOf(sat.layerId) < order().indexOf('lv-lines'));
-  assert.ok(order().indexOf('lv-lines') < order().indexOf(radar.layerId));
+  check();
 });
 
-test('the animation: satellite images made before the lines come, then the lines: the images go under them', async () => {
+test('the animation: images made before the lines come, then the lines: the images go under them', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   const viewer = adapter.createFrameLayer('https://radar/live/{z}/{x}/{y}.webp', 'radar');   // the live view's, hidden
   const sats = [1, 2, 3].map((n) => adapter.createFrameLayer('https://sat/' + n + '/{z}/{x}/{y}.webp', 'satellite', { anim: true }));
@@ -637,8 +639,8 @@ test('the animation: satellite images made before the lines come, then the lines
   adapter.setLines('satellite', true);
   await tick(); await tick();
   const order = ids(map);
-  for (const sat of sats) assert.ok(order.indexOf(sat.layerId) < order.indexOf('lv-lines'), sat.layerId);
-  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+  for (const sat of sats) assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId), sat.layerId);
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
 });
 
 test('a base map change puts the lines back over the temperature', async () => {

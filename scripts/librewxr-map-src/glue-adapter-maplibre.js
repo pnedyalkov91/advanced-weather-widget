@@ -196,7 +196,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) {
       var id = layers[i].id;
-      if (id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0 || id.indexOf('lv-anim-lv-layer-radar-') === 0) return id;
+      if (id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0) return id;
     }
     return undefined;
   }
@@ -232,11 +232,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         'line-width': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 6, 1.2, 10, 1.8]
       }
     }, firstOverlayLayerId());
-    // The animation's satellite images made before them go under them.
-    for (var i = 0; i < frameRegistry.length; i++) {
-      var e = frameRegistry[i];
-      if (e.anim && e.kind === 'satellite' && map.getLayer(e.layerId)) map.moveLayer(e.layerId, LINES_LAYER);
-    }
+    // The animation's images made before them go under them, the
+    // satellite's under the radar's.
+    ['satellite', 'radar'].forEach(function (kind) {
+      for (var i = 0; i < frameRegistry.length; i++) {
+        var e = frameRegistry[i];
+        if (e.anim && (e.kind === 'satellite') === (kind === 'satellite') && map.getLayer(e.layerId)) map.moveLayer(e.layerId, LINES_LAYER);
+      }
+    });
   }
   function setLines(owner, on) {
     if (on) linesOwners[owner] = true; else delete linesOwners[owner];
@@ -299,18 +302,21 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (entry.kind !== 'satellite' && !entry.anim) assertAlertsPosition();
   }
 
-  // The animation's images go over every layer of the map, its satellite
-  // under the coasts and borders, its radar over them.
-  function animFrameBefore(entry) {
-    if (entry.kind !== 'satellite') return undefined;
-    // Under the coasts and borders, so they show over the clouds.
-    if (map.getLayer(LINES_LAYER)) return LINES_LAYER;
+  // The animation's images go over every layer of the map and under the
+  // coasts and borders, so these show over the clouds and the rain; its
+  // satellite under its radar.
+  function firstAnimRadarId() {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) {
       var e = entryOf({ layerId: layers[i].id });
       if (e && e.anim && e.kind !== 'satellite') return layers[i].id;
     }
     return undefined;
+  }
+  function animFrameBefore(entry) {
+    var lines = map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined;
+    if (entry.kind !== 'satellite') return lines;
+    return firstAnimRadarId() || lines;
   }
 
   // Severity colors come from the engine's style function, computed once per

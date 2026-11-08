@@ -202,3 +202,10 @@ test('the satellite: its last image stays until the end of the radar, as it come
   until = null;                                          // no radar known: one gap, as before
   assert.deepEqual(o.range(), { start: (T0 - 11 * 3600) * 1000, end: last + H });
 });
+
+test('Overlay.lastTime: the time of the last image, where a solo view ends (both sources show there)', () => {
+  const { o } = overlay(radar);
+  assert.equal(o.lastTime(), (T0 + 17 * 600) * 1000);
+  assert.equal(R.frameAt(radar, o.lastTime(), 10 * MIN), 17);
+  assert.equal(overlay([]).o.lastTime(), null);
+});

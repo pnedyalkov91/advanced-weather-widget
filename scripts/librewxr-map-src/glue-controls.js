@@ -797,6 +797,7 @@ function animOverlaysStop() {
   if (animCatalogTimer) { clearInterval(animCatalogTimer); animCatalogTimer = null; }
   if (animOverlays) { animOverlays.radar.setOn(false); animOverlays.satellite.setOn(false); }
   _widgetAdapter.setLines('satellite', false);
+  _widgetAdapter.setLines('radar', false);
 }
 
 function animCatalog() {
@@ -838,12 +839,17 @@ function animOverlayState(kind) {
   // Where the radar's nowcast starts: the bar of its range is paler from there.
   var nc = kind === 'radar' && animCatalogData && animCatalogData.radar && animCatalogData.radar.nowcast;
   return {
-    on: o.on, start: r ? r.start : null, end: r ? r.end : null, time: o.shownTime(), opacity: Math.round(o.opacity * 100),
+    on: o.on, start: r ? r.start : null, end: r ? r.end : null, last: o.lastTime(), time: o.shownTime(), opacity: Math.round(o.opacity * 100),
     forecastFrom: nc && nc.length ? nc[0].time * 1000 : null
   };
 }
 
-window.animSetRadar = function (on) { if (animOverlays) animOverlays.radar.setOn(on); };
+/** The radar over the animation; the coasts and borders come over it. */
+window.animSetRadar = function (on) {
+  if (!animOverlays) return;
+  animOverlays.radar.setOn(on);
+  _widgetAdapter.setLines('radar', !!on);
+};
 /** The satellite over the animation; the coasts and borders come over it. */
 window.animSetSatellite = function (on) {
   if (!animOverlays) return;
