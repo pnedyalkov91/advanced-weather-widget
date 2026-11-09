@@ -27,7 +27,7 @@
  *   NOAA scales: https://services.swpc.noaa.gov/products/noaa-scales.json
  *   Solar wind: https://services.swpc.noaa.gov/products/summary/solar-wind-speed.json
  *   Bz        : https://services.swpc.noaa.gov/products/summary/solar-wind-mag-field.json
- *   X-ray flux: https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json
+ *   X-ray flux: https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json
  */
 
 .pragma library

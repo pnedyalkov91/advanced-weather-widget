@@ -222,8 +222,10 @@ function fetchSpaceWeather(service) {
         function() { state.bz = NaN; _tryAssemble(); }
     );
 
-    // ── 4) X-ray flux (GOES primary, 1-day, latest entry) ────────────────
-    _get("https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json",
+    // ── 4) X-ray flux (GOES primary, latest entry) ───────────────────────
+    // Only the LAST long-channel reading is used, so the 6-hour file (same fields, about 160 KB) is enough;
+    // the 1-day file is about four times as big (640 KB) and was the bulk of every refresh's download.
+    _get("https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json",
         function(text) {
             try {
                 var arr = JSON.parse(text);

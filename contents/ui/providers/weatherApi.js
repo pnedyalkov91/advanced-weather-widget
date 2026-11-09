@@ -221,6 +221,55 @@ function _parseAlerts(r, alerts) {
     return false;
 }
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    function buildEntry(h) {
+        return {
+            hour: Qt.formatTime(new Date(h.time_epoch * 1000), "HH:mm"),
+            tempC: h.temp_c,
+            code: W.weatherApiCodeToWmo(h.condition.code),
+            windKmh: h.wind_kph,
+            windDeg: h.wind_degree,
+            humidity: h.humidity,
+            precipProb: (h.chance_of_rain !== undefined)
+                ? h.chance_of_rain : NaN,
+            precipMm: (h.precip_mm !== undefined) ? h.precip_mm : NaN
+        };
+    }
+    var nextDateStr = _nextDateStr(dateStr);
+    var arr = [];
+    if (d.forecast && d.forecast.forecastday) {
+        d.forecast.forecastday.forEach(function (day) {
+            if (day.date === dateStr && day.hour)
+                day.hour.forEach(function (h) { arr.push(buildEntry(h)); });
+        });
+        var tomorrow = d.forecast.forecastday.filter(function (day) {
+            return day.date === nextDateStr;
+        })[0];
+        if (tomorrow && tomorrow.hour && tomorrow.hour.length > 0) {
+            var closing = buildEntry(tomorrow.hour[0]);
+            closing.isNextDay = true;
+            arr.push(closing);
+        }
+    }
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -256,36 +305,56 @@ function fetchHourly(service, W, dateStr) {
         }
         var d = JSON.parse(req.responseText);
 
-        function buildEntry(h) {
-            return {
-                hour: Qt.formatTime(new Date(h.time_epoch * 1000), "HH:mm"),
-                tempC: h.temp_c,
-                code: W.weatherApiCodeToWmo(h.condition.code),
-                windKmh: h.wind_kph,
-                windDeg: h.wind_degree,
-                humidity: h.humidity,
-                precipProb: (h.chance_of_rain !== undefined)
-                    ? h.chance_of_rain : NaN,
-                precipMm: (h.precip_mm !== undefined) ? h.precip_mm : NaN
-            };
+
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
+
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._waKey();
+    if (!key) {
+        Dbg.log("WeatherAPI", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
+    var nextDateStr = _nextDateStr(dateStr);
+    // WeatherAPI's `dt` parameter "restricts date output" to that single day
+    // only, which left no way to reach the next day's 00:00 (the entry that
+    // closes the hourly forecast's loop at midnight) without a second
+    // request. Requesting the same multi-day window fetchCurrent already
+    // uses instead - wide enough to cover dateStr's following day even when
+    // dateStr is the last configured forecast day - keeps this to one
+    // request and lets both dates be picked out of the same response.
+    var days = Math.min(14, Math.max(3, service.forecastDays) + 1);
+    var url = "https://api.weatherapi.com/v1/forecast.json?key="
+        + encodeURIComponent(key)
+        + "&q=" + encodeURIComponent(
+            service.latitude + "," + service.longitude)
+        + "&days=" + days + "&aqi=no&alerts=no";
+    var req = Dbg.xhr("WeatherAPI", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
+        }
+        var d;
+        try {
+            d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
         }
 
-        var arr = [];
-        if (d.forecast && d.forecast.forecastday) {
-            d.forecast.forecastday.forEach(function (day) {
-                if (day.date === dateStr && day.hour)
-                    day.hour.forEach(function (h) { arr.push(buildEntry(h)); });
-            });
-            var tomorrow = d.forecast.forecastday.filter(function (day) {
-                return day.date === nextDateStr;
-            })[0];
-            if (tomorrow && tomorrow.hour && tomorrow.hour.length > 0) {
-                var closing = buildEntry(tomorrow.hour[0]);
-                closing.isNextDay = true;
-                arr.push(closing);
-            }
-        }
-        r.setHourlyResult(dateStr, arr);
+
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

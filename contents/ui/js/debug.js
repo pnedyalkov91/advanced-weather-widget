@@ -509,7 +509,8 @@ function _finish(x, rec) {
         ctype = x.getResponseHeader("content-type") || "";
     } catch (e) {}
 
-    var ok = status >= 200 && status < 300;
+    // 304 Not Modified is the normal answer to a conditional request (If-Modified-Since), not a failure
+    var ok = (status >= 200 && status < 300) || status === 304;
     var cyc = rec.cycle;
     if (cyc) {
         cyc.done++;

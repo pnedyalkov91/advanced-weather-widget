@@ -153,6 +153,11 @@ PlasmoidItem {
     property bool syncLost: false
 
     function _applyWeatherData() {
+        // Qt.callLater does not merge a call made while the queue is being processed into the one already
+        // waiting, so a second staging in the same turn (e.g. the sunrise/sunset patch right after the provider
+        // data) queues a second run for the very same object. Nothing to do then: the UI already shows it.
+        if (weatherData === weatherDataStaged)
+            return;
         weatherData = weatherDataStaged;
         if (weatherDataStaged) {
             var _fromCache = (weatherDataStaged === _cacheRestoredObj);
@@ -172,7 +177,19 @@ PlasmoidItem {
             _scheduleCacheSave("weather");
         }
     }
-    onWeatherDataStagedChanged: Qt.callLater(_applyWeatherData)
+    onWeatherDataStagedChanged: {
+        if (Dbg.enabled() && weatherDataStaged) {
+            // who replaced the weather data: lets the debug log explain why it is applied more than once
+            var st = "";
+            try {
+                st = String(new Error().stack || "").split("\n").slice(0, 4).map(function (l) {
+                    return l.replace(/file:\/\/\/[^:]*\//, "");
+                }).join(" ← ");
+            } catch (e) {}
+            Dbg.log("Weather", "new weather data staged" + (st ? " by: " + st : ""));
+        }
+        Qt.callLater(_applyWeatherData);
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // Caches - something useful on screen at once after a restart
@@ -303,6 +320,7 @@ PlasmoidItem {
             _cacheRestoredObj = c.data;
             weatherService._updateTimestampMs = c.ts;
             weatherService._updateProvider = c.prov || "";
+            weatherService._seedSunTimes(c.data, c.ts);
             weatherDataStaged = c.data;
             var t = weatherService._buildRelativeUpdateText(c.prov || "");
             if (t.length > 0)
@@ -1430,11 +1448,34 @@ PlasmoidItem {
     // request per day the widget asks once and keeps every day in the hourly cache. Requests that
     // arrive while it is in flight (the Forecast tab, expand-all, the notification check) wait for it.
     property var _hourlyBulkWaiters: null
+    property int _hourlyBulkToken: 0
+    // Open-Meteo is asked for an explicit range, so a day missing from its answer can still be tried on its
+    // own. The other providers answer with whatever window they have: a day missing from it is simply not
+    // forecast hourly, and asking again would send the same request for nothing.
+    function _hourlyBulkIsAuthoritative() {
+        return _effectiveHourlyProvider() !== "openMeteo";
+    }
+    // A provider that never answers (a request that was dropped) must not leave later callers waiting forever
+    Timer {
+        id: _hourlyBulkWatchdog
+        interval: 30000
+        repeat: false
+        onTriggered: {
+            if (!root._hourlyBulkWaiters)
+                return;
+            Dbg.warn("Hourly", "the all-days hourly request got no answer in 30 s → giving up on it");
+            root._hourlyBulkToken++;
+            var w = root._hourlyBulkWaiters;
+            root._hourlyBulkWaiters = null;
+            w.forEach(function (f) { f(null); });
+        }
+    }
     // { first, last } = today .. the last forecast day (as many days as the daily forecast asks for,
-    // at most 16 - Open-Meteo's limit); null when this provider cannot do it. It does not wait for
+    // at most 16 - Open-Meteo's limit); null when this provider cannot do it. Every provider's hourly
+    // answer holds several days, so all of them share this one request (see Providers.hasHourlyAll). It does not wait for
     // the daily data, so it can run at startup, right after the saved place is read.
     function _hourlyBulkRange() {
-        if (!hasSelectedTown || _effectiveHourlyProvider() !== "openMeteo")
+        if (!hasSelectedTown || !weatherService.canFetchHourlyAllDays())
             return null;
         var days = Math.max(1, Math.min(16, Plasmoid.configuration.forecastDays || 7));
         var d0 = new Date();
@@ -1456,12 +1497,18 @@ PlasmoidItem {
             return;
         }
         _hourlyBulkWaiters = [callback];
+        var token = ++_hourlyBulkToken;
+        _hourlyBulkWatchdog.restart();
         var placeKey = _cacheProviderKey() + "|" + _locLat() + "|" + _locLon();
         var t0 = Date.now();
         var handled = weatherService.fetchHourlyAllDays(r.first, r.last, function (map) {
+            if (token !== _hourlyBulkToken)
+                return; // already given up on (watchdog)
+            _hourlyBulkWatchdog.stop();
             var waiters = _hourlyBulkWaiters || [];
             _hourlyBulkWaiters = null;
             var n = 0;
+            var firstGot = "", lastGot = "";
             if (placeKey !== _cacheProviderKey() + "|" + _locLat() + "|" + _locLon()) {
                 Dbg.log("Hourly", "hourly forecast of all days arrived after the place/provider changed → dropped");
                 map = null;
@@ -1472,10 +1519,14 @@ PlasmoidItem {
                         _hourlyCachePut(ds, a, true);
                         rememberTodayHours(ds, a);
                         n++;
+                        if (!firstGot || ds < firstGot)
+                            firstGot = ds;
+                        if (!lastGot || ds > lastGot)
+                            lastGot = ds;
                     }
                 });
                 if (n > 0)
-                    Dbg.mark("Hourly", "hourly forecast of all days received", n + " day(s) (" + r.first + " … " + r.last + ") in one request, " + (Date.now() - t0) + " ms");
+                    Dbg.mark("Hourly", "hourly forecast of all days received", n + " day(s) (" + firstGot + " … " + lastGot + ") in one request, " + (Date.now() - t0) + " ms");
                 else
                     Dbg.warn("Hourly", "the one-request hourly forecast (" + r.first + " … " + r.last + ") failed or came back empty after " + (Date.now() - t0) + " ms");
             }
@@ -1484,6 +1535,7 @@ PlasmoidItem {
             });
         });
         if (!handled) {
+            _hourlyBulkWatchdog.stop();
             var w0 = _hourlyBulkWaiters || [];
             _hourlyBulkWaiters = null;
             w0.forEach(function (w) {
@@ -1520,6 +1572,15 @@ PlasmoidItem {
                 var arr = map ? map[dateStr] : null;
                 if (arr && arr.length)
                     setHourlyResult(dateStr, arr);
+                else if (_hourlyBulkIsAuthoritative()) {
+                    // not in the provider's hourly window, or the request failed: no second identical request;
+                    // saved hours of that day if there are any, otherwise an empty list
+                    var kept = map ? null : _hourlyCacheGet(dateStr);
+                    if (kept)
+                        _applyHourly(_withPastHours(dateStr, kept));
+                    else
+                        setHourlyResult(dateStr, []);
+                }
                 else
                     weatherService.fetchHourlyForDate(dateStr); // failed, or not in the range: that day alone
             });
@@ -1559,7 +1620,7 @@ PlasmoidItem {
                 var arr = map ? map[dateStr] : null;
                 if (arr && arr.length)
                     callback(_withPastHours(dateStr, arr));
-                else if (map)
+                else if (map && !_hourlyBulkIsAuthoritative())
                     _fetchHourlyDay(dateStr, callback); // answered, but this day is not in the range
                 else {
                     var cached = _hourlyCacheGet(dateStr);

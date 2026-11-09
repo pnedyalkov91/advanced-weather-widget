@@ -254,6 +254,59 @@ function _parseAlerts(r, alerts) {
 }
 
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    if (d.hourly && d.hourly.data) {
+        d.hourly.data.forEach(function (h) {
+            var dt = new Date(h.time * 1000);
+            var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
+            var isTarget = hDateStr === dateStr;
+            var isClosing = !nextEntry && hDateStr === nextDateStr;
+            if (!isTarget && !isClosing) return;
+
+            var entry = {
+                hour: Qt.formatTime(dt, "HH:mm"),
+                tempC: h.temperature,
+                code: _iconToWmo(h.icon),
+                windKmh: (h.windSpeed !== undefined) ? h.windSpeed : NaN,
+                windDeg: (h.windBearing !== undefined) ? h.windBearing : NaN,
+                humidity: (h.humidity !== undefined) ? Math.round(h.humidity * 100) : NaN,
+                precipProb: (h.precipProbability !== undefined) ? Math.round(h.precipProbability * 100) : NaN,
+                precipMm: (h.precipIntensity !== undefined) ? h.precipIntensity : NaN
+            };
+            if (isTarget) {
+                arr.push(entry);
+            } else {
+                // Data is chronological, so the first match for the next
+                // date is its earliest (00:00) hour - append it to close
+                // the hourly forecast's loop at midnight.
+                entry.isNextDay = true;
+                nextEntry = entry;
+            }
+        });
+    }
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -287,40 +340,46 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        if (d.hourly && d.hourly.data) {
-            d.hourly.data.forEach(function (h) {
-                var dt = new Date(h.time * 1000);
-                var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
-                var isTarget = hDateStr === dateStr;
-                var isClosing = !nextEntry && hDateStr === nextDateStr;
-                if (!isTarget && !isClosing) return;
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
 
-                var entry = {
-                    hour: Qt.formatTime(dt, "HH:mm"),
-                    tempC: h.temperature,
-                    code: _iconToWmo(h.icon),
-                    windKmh: (h.windSpeed !== undefined) ? h.windSpeed : NaN,
-                    windDeg: (h.windBearing !== undefined) ? h.windBearing : NaN,
-                    humidity: (h.humidity !== undefined) ? Math.round(h.humidity * 100) : NaN,
-                    precipProb: (h.precipProbability !== undefined) ? Math.round(h.precipProbability * 100) : NaN,
-                    precipMm: (h.precipIntensity !== undefined) ? h.precipIntensity : NaN
-                };
-                if (isTarget) {
-                    arr.push(entry);
-                } else {
-                    // Data is chronological, so the first match for the next
-                    // date is its earliest (00:00) hour - append it to close
-                    // the hourly forecast's loop at midnight.
-                    entry.isNextDay = true;
-                    nextEntry = entry;
-                }
-            });
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._pwKey();
+    if (!key) {
+        Dbg.log("Pirate Weather", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
+
+    // Pirate Weather returns 48h of hourly data by default, 168h with extend=hourly
+    var url = "https://api.pirateweather.net/forecast/"
+        + encodeURIComponent(key) + "/"
+        + service.latitude + "," + service.longitude
+        + "?units=ca&exclude=minutely,daily,alerts&extend=hourly";
+
+    var req = Dbg.xhr("Pirate Weather", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
         }
-        if (nextEntry) arr.push(nextEntry);
-        r.setHourlyResult(dateStr, arr);
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

@@ -321,6 +321,34 @@ function fetchHourly(service, W, dateStr) {
     });
 }
 
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure.
+ *  BBC's aggregated forecast holds all its days, so the days are cut out of that single answer. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var gen = service._refreshGen;
+    _resolveLocationId(service, gen, function (id) {
+        if (!id) { callback({}); return; }
+        var req = Dbg.xhr("BBC Weather", "fetchHourlyAll");
+        req.open("GET", _forecastUrl(id));
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return;
+            if (req.status !== 200) { callback({}); return; }
+            var map = {};
+            try {
+                var d = JSON.parse(req.responseText);
+                var ds = firstDate;
+                for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+                    var a = _parseHourly(d, W, ds);
+                    if (a && a.length)
+                        map[ds] = a;
+                    ds = _nextDateStr(ds);
+                }
+            } catch (e) { map = {}; }
+            callback(map);
+        };
+        req.send();
+    });
+}
+
 /**
  * Parallel-safe hourly fetch (ForecastView expand-all). Resolves the location
  * id, fetches the aggregated forecast, and hands the hourly array to `cb`

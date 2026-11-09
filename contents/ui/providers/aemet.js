@@ -1207,6 +1207,31 @@ function fetchHourly(service, W, dateStr, muniData) {
     });
 }
 
+/** Hours of every day firstDate..lastDate: callback({ dateStr: [hours] }), {} on any failure. AEMET's hourly
+ *  product is one answer (kept in service._aemetHourlyCache), so this cuts every day out of it.
+ *  The product only reaches today+tomorrow, so later days are simply left out. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback, muniData) {
+    var gen = service._refreshGen;
+    var key = service._aemetKey();
+    if (!key) { callback({}); return; }
+    service.weatherRoot.aemetRateLimited = false;
+
+    _resolveMunicipio(service, gen, muniData, function (muniId) {
+        if (!muniId) { callback({}); return; }
+        _withHourlyData(service, key, muniId, function (hd) {
+            var map = {};
+            var ds = firstDate;
+            for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+                var a = _dayHourlyForDate(hd, ds, W, service);
+                if (a && a.length)
+                    map[ds] = a;
+                ds = _nextDateStr(ds);
+            }
+            callback(map);
+        });
+    });
+}
+
 /**
  * Parallel-safe hourly fetch for ForecastView's "expand all days" mode -
  * mirrors bbcWeather.js's fetchHourlyDirect (the only other provider that

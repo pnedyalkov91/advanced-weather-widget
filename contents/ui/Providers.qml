@@ -140,15 +140,56 @@ QtObject {
      *  its inline path. Needed by BBC and AEMET, whose id/municipio
      *  resolution is an async step that lives in-module, and by Open-Meteo,
      *  which shares its request with the Forecast tab's hourly fetch. */
-    /** Hours of every day firstDate..lastDate in ONE request, for providers that can do that
-     *  (Open-Meteo). callback({ dateStr: [hours] }) - {} on failure. Returns false when the
-     *  provider cannot, and nothing is called back. */
+    /** Hours of every day firstDate..lastDate in ONE request. callback({ dateStr: [hours] }) - {} on
+     *  failure. Returns false (and never calls back) for a provider without an hourly endpoint.
+     *  Every provider's hourly answer already holds many days (Open-Meteo: the range asked for; met.no, Pirate
+     *  Weather, Tomorrow.io, StormGlass, Weatherbit, QWeather, OpenWeather, WeatherAPI, BBC, AEMET: their whole
+     *  window; Visual Crossing: the range asked for), so one request serves every day of the Forecast tab. */
+    function hasHourlyAll(ap) {
+        return ["openMeteo", "metno", "openWeather", "weatherApi", "pirateWeather", "visualCrossing",
+                "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "bbc", "aemet"].indexOf(ap) >= 0;
+    }
     function fetchHourlyAll(ap, service, firstDate, lastDate, callback) {
-        if (ap === "openMeteo") {
+        switch (ap) {
+        case "openMeteo":
             OpenMeteoJS.fetchHourlyAll(service, firstDate, lastDate, callback);
             return true;
+        case "aemet":
+            AemetJS.fetchHourlyAll(service, W, firstDate, lastDate, callback, AemetMunicipiosData);
+            return true;
+        case "pirateWeather":
+            PirateWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "openWeather":
+            OpenWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "weatherApi":
+            WeatherApiJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "metno":
+            MetNoJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "bbc":
+            BbcWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "visualCrossing":
+            VisualCrossingJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "tomorrowIo":
+            TomorrowIoJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "stormGlass":
+            StormGlassJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "weatherbit":
+            WeatherbitJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "qWeather":
+            QWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        default:
+            return false;
         }
-        return false;
     }
 
     function fetchHourlyDirect(ap, service, dateStr, callback) {

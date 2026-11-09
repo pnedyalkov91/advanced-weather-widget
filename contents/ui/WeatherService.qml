@@ -505,17 +505,23 @@ QtObject {
         }
     }
 
-    /** The hours of every day firstDate..lastDate in one request (Open-Meteo only).
-     *  Returns false - and never calls back - when the active provider cannot do that. */
+    /** True when the active provider can deliver all forecast days' hours in one request. */
+    function canFetchHourlyAllDays() {
+        var provider = Plasmoid.configuration.weatherProvider || "adaptive";
+        var ap = (provider === "adaptive") ? (service._updateProvider || "openMeteo") : provider;
+        var _p = _providers();
+        return !!_p && _p.hasHourlyAll(ap);
+    }
+
+    /** The hours of every day firstDate..lastDate in one request. callback({ dateStr: [hours] }).
+     *  Returns false - and never calls back - when the active provider has no hourly endpoint. */
     function fetchHourlyAllDays(firstDate, lastDate, callback) {
         var provider = Plasmoid.configuration.weatherProvider || "adaptive";
         var ap = (provider === "adaptive") ? (service._updateProvider || "openMeteo") : provider;
-        if (ap !== "openMeteo")
-            return false;
         var _p = _providers();
-        if (!_p)
+        if (!_p || !_p.hasHourlyAll(ap))
             return false;
-        Dbg.log("Hourly", "requesting the hourly forecast for " + firstDate + " … " + lastDate + " via 'openMeteo' (all days in one request)");
+        Dbg.log("Hourly", "requesting the hourly forecast for " + firstDate + " … " + lastDate + " via '" + ap + "' (all days in one request)");
         return _p.fetchHourlyAll(ap, service, firstDate, lastDate, callback);
     }
 
@@ -1670,11 +1676,74 @@ QtObject {
      * into weatherRoot.  Called after met.no succeeds so night-icon logic
      * and isNightTime() work correctly even without a primary API for these.
      */
+    // Sunrise/sunset of a place on a given date never change, so the answer is kept for the rest of that day:
+    // later refreshes need no request, and the "--" that would otherwise show until the answer arrives is gone.
+    // After a restart the times of the restored weather cache stand in ("seeded") so the first refresh does not
+    // blank them either; the request is still made then, and its answer replaces the seeded values.
+    property var _sunCache: null
+
+    function _sunKey() {
+        var tz = (Plasmoid.configuration.timezone || "").trim();
+        return Number(Plasmoid.configuration.latitude).toFixed(3) + "," + Number(Plasmoid.configuration.longitude).toFixed(3) + "|" + tz + "|" + Qt.formatDate(new Date(), "yyyy-MM-dd");
+    }
+
+    function _seedSunTimes(data, stampMs) {
+        if (!data || !data.sunriseTimeText || data.sunriseTimeText === "--" || !data.sunsetTimeText || data.sunsetTimeText === "--")
+            return;
+        if (Qt.formatDate(new Date(stampMs), "yyyy-MM-dd") !== Qt.formatDate(new Date(), "yyyy-MM-dd"))
+            return; // the saved times are from another day
+        _sunCache = {
+            key: _sunKey(),
+            sunriseText: data.sunriseTimeText,
+            sunsetText: data.sunsetTimeText,
+            utcOffsetSeconds: (data.locationUtcOffsetMins !== undefined && !isNaN(data.locationUtcOffsetMins)) ? data.locationUtcOffsetMins * 60 : undefined,
+            seeded: true
+        };
+    }
+
+    function _applySunTimes(r, c) {
+        var base = r.weatherDataStaged || r.weatherData;
+        if (!base || !c.sunriseText || !c.sunsetText)
+            return;
+        var newOffset = (c.utcOffsetSeconds !== undefined) ? Math.round(c.utcOffsetSeconds / 60) : base.locationUtcOffsetMins;
+        if (base.sunriseTimeText === c.sunriseText && base.sunsetTimeText === c.sunsetText && base.locationUtcOffsetMins === newOffset) {
+            Dbg.log("WeatherService", "sunrise/sunset answer matches what is already shown (" + c.sunriseText + " / " + c.sunsetText + ") → UI not updated again");
+            return;
+        }
+        var patched = Object.assign({}, base);
+        patched.sunriseTimeText = c.sunriseText;
+        patched.sunsetTimeText = c.sunsetText;
+        if (c.utcOffsetSeconds !== undefined)
+            patched.locationUtcOffsetMins = Math.round(c.utcOffsetSeconds / 60);
+        r.weatherDataStaged = patched;
+        Dbg.log("WeatherService", "sunrise/sunset " + (c.seeded ? "taken from the saved weather" : (c.fromMemory ? "taken from memory" : "backfilled from Open-Meteo")) + ": " + c.sunriseText + " / " + c.sunsetText);
+    }
+
     function _fetchSunTimesOpenMeteo() {
         var gen = _refreshGen;
         var r = weatherRoot;
         var tz = (Plasmoid.configuration.timezone || "").trim();
         var today = Qt.formatDate(new Date(), "yyyy-MM-dd");
+        var cacheKey = _sunKey();
+        if (_sunCache && _sunCache.key === cacheKey) {
+            var hit = _sunCache;
+            // the provider assigns its data right after calling this, so the patch is applied on the next turn
+            // (before the data reaches the UI) and nothing is shown without the times
+            Qt.callLater(function () {
+                if (_refreshGen !== gen)
+                    return;
+                _applySunTimes(r, {
+                    sunriseText: hit.sunriseText,
+                    sunsetText: hit.sunsetText,
+                    utcOffsetSeconds: hit.utcOffsetSeconds,
+                    seeded: hit.seeded === true,
+                    fromMemory: true
+                });
+            });
+            if (hit.seeded !== true)
+                return;
+            // seeded from the saved weather: show it now, but still ask once for the real values
+        }
         var url = "https://api.open-meteo.com/v1/forecast" + "?latitude=" + Plasmoid.configuration.latitude + "&longitude=" + Plasmoid.configuration.longitude + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto") + "&daily=sunrise,sunset" + "&start_date=" + today + "&end_date=" + today;
         var req = Dbg.xhr("WeatherService", "sunrise/sunset backfill (Open-Meteo)");
         req.open("GET", url);
@@ -1684,19 +1753,18 @@ QtObject {
             if (_refreshGen !== gen)
                 return;
             if (req.status !== 200)
-                return;  // leave "--" in place - better than crashing
+                return;  // leave what is shown in place - better than crashing
             try {
                 var d = JSON.parse(req.responseText);
-                if (r.weatherData && ((d.daily && d.daily.sunrise && d.daily.sunrise.length > 0) || (d.daily && d.daily.sunset && d.daily.sunset.length > 0))) {
-                    var patched = Object.assign({}, r.weatherData);
-                    if (d.daily.sunrise && d.daily.sunrise.length > 0)
-                        patched.sunriseTimeText = Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm");
-                    if (d.daily.sunset && d.daily.sunset.length > 0)
-                        patched.sunsetTimeText = Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm");
-                    if (d.utc_offset_seconds !== undefined)
-                        patched.locationUtcOffsetMins = Math.round(d.utc_offset_seconds / 60);
-                    r.weatherDataStaged = patched;
-                    Dbg.log("WeatherService", "sunrise/sunset backfilled from Open-Meteo: " + patched.sunriseTimeText + " / " + patched.sunsetTimeText);
+                if (d.daily && d.daily.sunrise && d.daily.sunrise.length > 0 && d.daily.sunset && d.daily.sunset.length > 0) {
+                    var c = {
+                        key: cacheKey,
+                        sunriseText: Qt.formatTime(new Date(d.daily.sunrise[0]), "HH:mm"),
+                        sunsetText: Qt.formatTime(new Date(d.daily.sunset[0]), "HH:mm"),
+                        utcOffsetSeconds: d.utc_offset_seconds
+                    };
+                    _sunCache = c;
+                    _applySunTimes(r, c);
                 }
             } catch (e) {
                 Dbg.warn("WeatherService", "could not parse the Open-Meteo sunrise/sunset response:", e);
