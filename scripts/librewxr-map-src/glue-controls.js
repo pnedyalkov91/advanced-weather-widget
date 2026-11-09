@@ -1053,6 +1053,26 @@ document.addEventListener('mousemove', function (e) {
   // of its own, without the modifiers, when the window changes the cursor.
   readoutShow(e.ctrlKey || readout.keyDown);
 });
+// The animation's keys, told to the widget: once the map has the keyboard
+// (clicked, or given it when the popup opens), the widget's own shortcuts
+// get no key. Before MapLibre (capture), so the arrows step and do not pan.
+window.animKeyFor = function (e) {
+  if (!anim) return null;   // no animation (the Leaflet page): the map keeps its keys
+  var t = e.target, tag = t && t.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return null;
+  if (e.altKey || e.metaKey || e.shiftKey) return null;
+  if (e.key === ' ' && !e.ctrlKey) return e.repeat ? '' : 'play';
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') return (e.ctrlKey ? 'file:' : 'step:') + (e.key === 'ArrowLeft' ? -1 : 1);
+  if ((e.key === 'PageUp' || e.key === 'PageDown') && !e.ctrlKey) return 'file:' + (e.key === 'PageUp' ? -1 : 1);
+  return null;
+};
+document.addEventListener('keydown', function (e) {
+  var k = window.animKeyFor(e);
+  if (k === null) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (k) console.log('[keys] ' + k);
+}, true);
 document.addEventListener('keydown', function (e) {
   // Esc in the page is told to the widget (its help panel): the map takes
   // the keys once clicked.

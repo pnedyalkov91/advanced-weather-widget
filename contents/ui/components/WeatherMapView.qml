@@ -1033,6 +1033,17 @@ Item {
     // forecast file. Only while the map can be seen: the shortcuts belong
     // to the whole popup.
     readonly property bool keysOn: started && shown
+    // The same keys from the page (window.animKeyFor): "play", "step:1", "file:-1".
+    function pageKey(k) {
+        if (!keysOn)
+            return;
+        if (k === "play")
+            toggle();
+        else if (k.indexOf("step:") === 0)
+            js("window.animStep(" + (+k.slice(5)) + ")");
+        else if (k.indexOf("file:") === 0)
+            js("window.animStepFile(" + (+k.slice(5)) + ")");
+    }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
     Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(-1)") }
     Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(1)") }
@@ -1105,6 +1116,9 @@ Item {
                         if (message === "[keys] escape") {
                             if (helpPanel.opened)
                                 helpPanel.close();
+                        } else if (message.indexOf("[keys] ") === 0) {
+                            // The shortcuts above, while the page has the keyboard.
+                            radarRoot.pageKey(message.slice(7));
                         } else if (message.indexOf("[ui] ") === 0) {
                             radarRoot.testUi(message.slice(5));
                         } else if (message.indexOf("[readout] ctrl:") === 0) {
