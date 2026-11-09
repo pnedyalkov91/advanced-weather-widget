@@ -556,6 +556,17 @@ test('the lines are thicker on the whole globe, where they are dense and small',
   assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
 });
 
+test('a layer that asks for the lines before the style loads gets them once it has', async () => {
+  // The widget switches the radar on as soon as the page is up, which can
+  // be before MapLibre's 'load' (the popup closed, the page kept loaded).
+  const { adapter, map } = loadAdapter(linesGlobals([]), { load: false });
+  adapter.setLines('radar', true);
+  assert.equal(map.getLayer('lv-lines'), undefined);
+  map.fire('load');
+  await tick(); await tick();
+  assert.ok(linesVisible(map));
+});
+
 test('the lines are fetched once, whatever asks for them', async () => {
   const fetched = [];
   const { adapter } = loadAdapter(linesGlobals(fetched));

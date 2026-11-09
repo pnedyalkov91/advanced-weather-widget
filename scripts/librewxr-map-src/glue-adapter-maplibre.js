@@ -514,7 +514,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
       makeAttribution();
       homeMarker = new maplibregl.Marker().setLngLat([view.lon, view.lat]).addTo(map);
-      map.once('load', function () { styleReady = true; applyProjection(); applyDayNight(); addTempLayer(); fitMinZoom(); });
+      // applyLines(): the layers that asked for the lines before the style
+      // loaded (the radar, switched on as soon as the page is up) get them now.
+      map.once('load', function () { styleReady = true; applyProjection(); applyDayNight(); addTempLayer(); applyLines(); fitMinZoom(); });
       map.on('movestart', function () { holdHiddenFrames(true); });
       map.on('moveend', function () { holdHiddenFrames(false); });
       map.on('resize', fitMinZoom);
