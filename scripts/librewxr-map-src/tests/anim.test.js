@@ -316,6 +316,17 @@ test('Player.stepFile: to the next frame from its file, none past the ends witho
   assert.deepEqual(shown.slice(-1), [1]);
 });
 
+test('Player.toEnd: Home and End, to the first or last picture read, paused', () => {
+  const { p, shown } = fakePlayer([false, true, true, true, false]);
+  p.show(2);
+  p.play(true);
+  p.toEnd(1);
+  assert.equal(p.playing, false);
+  assert.deepEqual(shown.slice(-1), [3]);            // 4 not read yet
+  p.toEnd(-1);
+  assert.deepEqual(shown.slice(-1), [1]);
+});
+
 test('Player with the loop: the first picture follows the last at the pace of the others', () => {
   const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, minFrameMs: 100 });
   p.show(2);

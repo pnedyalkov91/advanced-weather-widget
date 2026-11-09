@@ -640,6 +640,8 @@ window.animShow = function (i) { if (anim) anim.player.seek(i); };
 // Paused steps: one hour (dir 1 or -1), or to the next frame from its file.
 window.animStep = function (dir) { if (anim) anim.player.step(dir, anim.stepH); };
 window.animStepFile = function (dir) { if (anim) anim.player.stepFile(dir); };
+/** Home (-1) and End (1): the first or the last picture of the range. */
+window.animToEnd = function (dir) { if (anim) anim.player.toEnd(dir); };
 // Paused steps of h hours (3: one frame).
 /** A step of h hours (a fraction for minutes) back (-1) or ahead (1). */
 window.animStepHours = function (dir, h) { if (anim) anim.player.step(dir, anim.stepH / h); };
@@ -1064,6 +1066,7 @@ window.animKeyFor = function (e) {
   if (e.key === ' ' && !e.ctrlKey) return e.repeat ? '' : 'play';
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') return (e.ctrlKey ? 'file:' : 'step:') + (e.key === 'ArrowLeft' ? -1 : 1);
   if ((e.key === 'PageUp' || e.key === 'PageDown') && !e.ctrlKey) return 'file:' + (e.key === 'PageUp' ? -1 : 1);
+  if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey) return 'end:' + (e.key === 'Home' ? -1 : 1);
   return null;
 };
 document.addEventListener('keydown', function (e) {

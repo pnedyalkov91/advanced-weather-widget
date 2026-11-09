@@ -65,6 +65,51 @@ Rectangle {
             onActivated: function (i) { oc.current = i; oc.picked(oc.choices[i][0]); }
         }
     }
+    // A setting with a few values: its name, then the values side by side,
+    // the one taken highlighted.
+    component Segmented: RowLayout {
+        id: sg
+        property string title
+        property var choices: []        // [[value, text]]
+        property var current            // the value taken
+        signal picked(var value)
+        Layout.fillWidth: true
+        QQC2.Label { text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+        Rectangle {
+            implicitWidth: sgRow.implicitWidth + 4
+            implicitHeight: 26
+            radius: 4
+            color: panel.tint(0.06)
+            border.color: panel.tint(0.12)
+            Row {
+                id: sgRow
+                anchors.centerIn: parent
+                Repeater {
+                    model: sg.choices
+                    Rectangle {
+                        required property var modelData
+                        readonly property bool taken: sg.current === modelData[0]
+                        width: Math.max(34, sgLabel.implicitWidth + 12)
+                        height: 22
+                        radius: 3
+                        color: taken ? panel.accent : "transparent"
+                        QQC2.Label {
+                            id: sgLabel
+                            anchors.centerIn: parent
+                            text: parent.modelData[1]
+                            font.bold: parent.taken
+                            color: parent.taken ? Kirigami.Theme.highlightedTextColor : panel.dimText
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: sg.picked(parent.modelData[0])
+                        }
+                    }
+                }
+            }
+        }
+    }
     // The kinds of a layer shown, several at once: a list that opens on a
     // switch for each, "All" first. Each change is sent at once.
     component OptKinds: ColumnLayout {
@@ -217,54 +262,22 @@ Rectangle {
                     margins: 6
                     x: parent.width - width
                     y: parent.height + 6
-                    width: 320
+                    width: 350
                     padding: 12
                     closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
                     contentItem: ColumnLayout {
                         spacing: 8
                         QQC2.Label { text: i18n("Settings"); font.bold: true }
-                        // Pictures per second at most: three side by side, the one taken highlighted.
-                        RowLayout {
-                            Layout.fillWidth: true
-                            QQC2.Label { text: i18n("Pictures per second"); color: panel.dimText; Layout.fillWidth: true }
-                            Rectangle {
-                                implicitWidth: fpsRow.implicitWidth + 4
-                                implicitHeight: 26
-                                radius: 4
-                                color: panel.tint(0.06)
-                                border.color: panel.tint(0.12)
-                                Row {
-                                    id: fpsRow
-                                    anchors.centerIn: parent
-                                    Repeater {
-                                        model: [4, 8, 15]
-                                        Rectangle {
-                                            required property int modelData
-                                            readonly property bool taken: panel.map.maxFps === modelData
-                                            width: 34
-                                            height: 22
-                                            radius: 3
-                                            color: taken ? panel.accent : "transparent"
-                                            QQC2.Label {
-                                                anchors.centerIn: parent
-                                                text: parent.modelData
-                                                font.bold: parent.taken
-                                                color: parent.taken ? Kirigami.Theme.highlightedTextColor : panel.dimText
-                                            }
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                cursorShape: Qt.PointingHandCursor
-                                                onClicked: panel.map.setMaxFps(parent.modelData)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        Segmented {
+                            title: i18n("Pictures per second")
+                            choices: [[4, "4"], [8, "8"], [15, "15"]]
+                            current: panel.map.maxFps
+                            onPicked: function (v) { panel.map.setMaxFps(v); }
                         }
-                        OptCombo {
+                        Segmented {
                             title: i18n("Resolution while playing")
                             choices: [[1, i18n("Full")], [2, i18n("Half")], [4, i18n("Quarter")]]
-                            current: [1, 2, 4].indexOf(panel.map.resolution)
+                            current: panel.map.resolution
                             onPicked: function (v) { panel.map.setResolution(v); }
                         }
                         SmallSwitch {

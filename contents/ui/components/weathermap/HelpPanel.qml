@@ -163,7 +163,7 @@ QQC2.Popup {
                     QQC2.Label {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        text: i18n("Space plays or pauses. The arrows move one hour; the -/+ buttons of the time bar move 3 hours, an hour for the satellite alone or with the radar, 10 minutes for the radar alone. Page Up and Page Down (or Ctrl and an arrow) jump to the previous or next picture from a forecast file. Hold Ctrl over the map to read the wind and the temperature under the pointer. Esc closes this panel.")
+                        text: i18n("Space plays or pauses. The arrows move one hour; the -/+ buttons of the time bar move 3 hours, an hour for the satellite alone or with the radar, 10 minutes for the radar alone. Page Up and Page Down (or Ctrl and an arrow) jump to the previous or next picture from a forecast file. Home and End go to the first or the last picture. Hold Ctrl over the map to read the wind and the temperature under the pointer. Esc closes this panel.")
                     }
                 }
             }

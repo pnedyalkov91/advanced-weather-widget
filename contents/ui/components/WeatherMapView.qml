@@ -1043,12 +1043,16 @@ Item {
             js("window.animStep(" + (+k.slice(5)) + ")");
         else if (k.indexOf("file:") === 0)
             js("window.animStepFile(" + (+k.slice(5)) + ")");
+        else if (k.indexOf("end:") === 0)
+            js("window.animToEnd(" + (+k.slice(4)) + ")");
     }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
     Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(-1)") }
     Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(1)") }
     Shortcut { sequences: [StandardKey.MoveToPreviousPage, "Ctrl+Left"]; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepFile(-1)") }
     Shortcut { sequences: [StandardKey.MoveToNextPage, "Ctrl+Right"]; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepFile(1)") }
+    Shortcut { sequence: "Home"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(-1)") }
+    Shortcut { sequence: "End"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(1)") }
     Shortcut { sequence: "Escape"; enabled: helpPanel.opened; onActivated: helpPanel.close() }
 
     // ── Main layout ──────────────────────────────────────────────────────

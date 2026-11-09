@@ -1117,6 +1117,14 @@ var WidgetAnim = (function () {
     this.seek(Math.max(0, Math.min(last, k / perFrame)));
   };
 
+  /** Home (dir -1) and End (1): pause on the first or the last frame read. */
+  Player.prototype.toEnd = function (dir) {
+    var to = this._firstFrom(dir > 0 ? -1 : 1, function () { return true; });
+    if (to < 0) return;
+    this.play(false);
+    this.seek(to);
+  };
+
   /** Pause and move to the next frame read from its file, forward (dir 1)
       or back (-1); round the ends with the loop, else nothing when there is
       none that way. */
