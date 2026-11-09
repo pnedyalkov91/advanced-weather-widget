@@ -362,6 +362,25 @@ Item {
         js("if (window.setMapLines) window.setMapLines(" + on + ")");
     }
 
+    // The palettes of the wind and the temperature, those of the Radar
+    // settings: [id, name], the id being what the setting holds ("" for the
+    // default one). The page follows a change (onWindPaletteChanged,
+    // onTempPaletteChanged).
+    function _paletteNames(json) {
+        try {
+            return JSON.parse(json || "[]").map(function (p) { return p.name; }).filter(function (n) { return !!n; });
+        } catch (e) {
+            return [];
+        }
+    }
+    readonly property var windPaletteChoices: [["", i18n("Default")]].concat(_paletteNames(Plasmoid.configuration.librewxrWindPalettes).map(function (n) { return [n, n]; }))
+    readonly property string windPaletteId: Plasmoid.configuration.librewxrWindPalette || ""
+    function setWindPaletteId(id) { Plasmoid.configuration.librewxrWindPalette = id; }
+    readonly property var tempPaletteChoices: [["", i18n("Vivid")], ["builtin:muted", i18n("Muted")], ["builtin:bluered", i18n("Blue-red")]]
+        .concat(_paletteNames(Plasmoid.configuration.librewxrTempPalettes).map(function (n) { return [n, n]; }))
+    readonly property string tempPaletteId: Plasmoid.configuration.librewxrTempPalette || ""
+    function setTempPaletteId(id) { Plasmoid.configuration.librewxrTempPalette = id; }
+
     // The temperature's bands, shared with the Radar settings.
     readonly property var tempStepChoices: [[0, i18n("Smooth")], [2, "2 °"], [2.5, Number(2.5).toLocaleString(Qt.locale(), "f", 1) + " °"], [5, "5 °"], [10, "10 °"]]
     function setTempStep(v) {
@@ -826,6 +845,15 @@ Item {
         if (what === "clocks") {
             console.log("[ui] clocks: " + layerPanel.pastPick.label + " | " + layerPanel.futurePick.label
                 + " | kind=" + rangeKind + " step=" + stepH);
+            return;
+        }
+        // "palette-temp:builtin:bluered", "palette-wind:": a palette picked in the options.
+        if (what.indexOf("palette-") === 0) {
+            var pid = what.slice(what.indexOf(":") + 1);
+            if (what.indexOf("palette-temp:") === 0)
+                setTempPaletteId(pid);
+            else
+                setWindPaletteId(pid);
             return;
         }
         // "place-45.9,6.87": the widget's place changed, as from its settings.

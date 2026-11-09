@@ -192,6 +192,8 @@ window.setWindDensity = function (d) {
 window.setWindPalette = function (s) {
   windPalette = WidgetWind.WindField.parsePalette(s);
   if (windLayer) windLayer.setPalette(windPalette);
+  var t = anim && anim.group.track('wind');
+  if (t) t.layer.setPalette(windPalette);
 };
 
 // '10m' (surface, relief-aware) or '700hPa' (the flow that steers the rain).
@@ -245,6 +247,8 @@ window.setTempPalette = function (s) {
   if (!window.tempAvailable) return;
   tempPalette = WidgetTemp.paletteFromParam(s);
   if (tempLayer) tempLayer.setPalette(tempPalette);
+  var t = anim && anim.group.track('temperature');
+  if (t) t.layer.setPalette(tempPalette);
 };
 
 // Opacity of the layer in percent, from the widget settings.

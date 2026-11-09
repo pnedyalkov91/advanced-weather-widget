@@ -48,6 +48,24 @@ Rectangle {
         onWheel: function (wheel) { wheel.accepted = true; }
     }
 
+    // An option with one value among a list that can be long: its name,
+    // then the list under it.
+    component OptCombo: ColumnLayout {
+        id: oc
+        property string title
+        property var choices: []        // [[value, text]]
+        property var current            // the value taken
+        signal picked(var value)
+        Layout.fillWidth: true
+        spacing: 2
+        QQC2.Label { text: oc.title; color: panel.dimText }
+        QQC2.ComboBox {
+            Layout.fillWidth: true
+            model: oc.choices.map(function (c) { return c[1]; })
+            currentIndex: Math.max(0, oc.choices.map(function (c) { return c[0]; }).indexOf(oc.current))
+            onActivated: function (i) { oc.picked(oc.choices[i][0]); }
+        }
+    }
     // An option with one value among several: its name, then a switch for
     // each, two by two. Switching one on switches the one before off; the
     // one on stays on.
@@ -456,6 +474,12 @@ Rectangle {
                     current: panel.map.windLevel
                     onPicked: function (v) { panel.map.setWindLevel(v); }
                 }
+                OptCombo {
+                    title: i18n("Colors")
+                    choices: panel.map.windPaletteChoices
+                    current: panel.map.windPaletteId
+                    onPicked: function (v) { panel.map.setWindPaletteId(v); }
+                }
             }
             LayerRow {
                 id: tempRow
@@ -477,6 +501,12 @@ Rectangle {
                     choices: panel.map.tempStepChoices
                     current: panel.map.tempStep
                     onPicked: function (v) { panel.map.setTempStep(v); }
+                }
+                OptCombo {
+                    title: i18n("Colors")
+                    choices: panel.map.tempPaletteChoices
+                    current: panel.map.tempPaletteId
+                    onPicked: function (v) { panel.map.setTempPaletteId(v); }
                 }
             }
             LayerRow {
