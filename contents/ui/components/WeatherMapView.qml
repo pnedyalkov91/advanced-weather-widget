@@ -790,6 +790,20 @@ Item {
             pickRange(isNaN(+v) ? v : +v, savedFutureH);
             return;
         }
+        // "pick-past-satellite", "pick-future-12": that entry of a clock's
+        // menu, as clicked; "clocks": what both clocks show, in the log.
+        if (what.indexOf("pick-") === 0) {
+            var pp = what.split("-"), pick = pp[1] === "past" ? layerPanel.pastPick : layerPanel.futurePick;
+            var at = pick.choices.map(function (c) { return String(c[0]); }).indexOf(pp[2]);
+            if (at >= 0)
+                pick.menu.itemAt(at).triggered();
+            return;
+        }
+        if (what === "clocks") {
+            console.log("[ui] clocks: " + layerPanel.pastPick.label + " | " + layerPanel.futurePick.label
+                + " | kind=" + rangeKind + " step=" + stepH);
+            return;
+        }
         // "place-45.9,6.87": the widget's place changed, as from its settings.
         if (what.indexOf("place-") === 0) {
             var ll = what.slice(6).split(",");

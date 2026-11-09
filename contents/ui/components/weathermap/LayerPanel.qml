@@ -561,7 +561,9 @@ Rectangle {
             RangeIcon {
                 id: pastPick
                 prefix: "−"
-                override: panel.map.solo || panel.map.rangeKind ? "−" + panel.map.hoursText(panel.map.pastH) : ""
+                // A source's range shows its name on both clocks, its hours in the bubble.
+                override: panel.map.solo ? "−" + panel.map.hoursText(panel.map.pastH) : ""
+                detail: panel.map.rangeKind && !panel.map.solo ? "−" + panel.map.hoursText(panel.map.pastH) : ""
                 choices: panel.map.pastChoices
                 current: Math.max(0, panel.map.pastChoices.map(function (c) { return c[0]; }).indexOf(panel.map.rangeKind || panel.map.savedPastH))
                 tip: i18n("How far back")
@@ -570,7 +572,9 @@ Rectangle {
             RangeIcon {
                 id: futurePick
                 prefix: "+"
-                override: panel.map.solo || panel.map.rangeKind ? "+" + panel.map.hoursText(panel.map.futureH) : ""
+                // A source's range shows its name on both clocks, its hours in the bubble.
+                override: panel.map.solo ? "+" + panel.map.hoursText(panel.map.futureH) : ""
+                detail: panel.map.rangeKind && !panel.map.solo ? "+" + panel.map.hoursText(panel.map.futureH) : ""
                 mirror: true
                 choices: panel.map.futureChoices
                 current: Math.max(0, panel.map.futureChoices.map(function (c) { return c[0]; }).indexOf(panel.map.rangeKind || panel.map.savedFutureH))

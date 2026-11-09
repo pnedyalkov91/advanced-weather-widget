@@ -19,9 +19,15 @@ Item {
     signal picked(var value)
     readonly property alias menu: riMenu
     property string override           // shown instead of the choice (a solo's range)
+    property string detail             // added to the bubble (the hours of a source's range)
+    // The choice on its way (wheel turned, not sent yet), -1 for none:
+    // current itself stays bound to what the view has, so both clocks
+    // keep showing the range really chosen.
+    property int _pick: -1
+    readonly property int shown: _pick >= 0 ? _pick : current
     // A choice named by a word (a source's range) takes no sign.
     function textOf(c) { return typeof c[0] === "string" ? c[1] : prefix + c[1]; }
-    readonly property string label: override !== "" ? override : choices.length ? textOf(choices[current]) : ""
+    readonly property string label: override !== "" ? override : choices.length ? textOf(choices[Math.min(shown, choices.length - 1)]) : ""
     readonly property color fg: Kirigami.Theme.textColor
 
     implicitWidth: 36
@@ -84,7 +90,7 @@ Item {
         cursorShape: Qt.PointingHandCursor
         onClicked: riMenu.visible ? riMenu.close() : riMenu.open()
     }
-    QQC2.ToolTip.text: ri._turning ? "<b>" + ri.label + "</b>" : ri.tip + ": <b>" + ri.label + "</b><br><i>" + i18n("Wheel or click to change") + "</i>"
+    QQC2.ToolTip.text: ri._turning ? "<b>" + ri.label + "</b>" : ri.tip + ": <b>" + ri.label + "</b>" + (ri.detail ? " (" + ri.detail + ")" : "") + "<br><i>" + i18n("Wheel or click to change") + "</i>"
     QQC2.ToolTip.visible: (riArea.containsMouse || ri._turning) && !riMenu.visible
     QQC2.ToolTip.delay: ri._turning ? 0 : Kirigami.Units.toolTipDelay
     Timer { id: turnEnd; interval: 1200; onTriggered: ri._turning = false }
@@ -92,7 +98,11 @@ Item {
     Timer {
         id: settle
         interval: ri.settleMs
-        onTriggered: ri.picked(ri.choices[ri.current][0])
+        onTriggered: {
+            var v = ri.choices[ri._pick][0];
+            ri._pick = -1;
+            ri.picked(v);
+        }
     }
     WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
@@ -103,12 +113,12 @@ Item {
             if (notches === 0)
                 return;
             ri._wheel -= notches * 120;
-            var next = Math.max(0, Math.min(ri.choices.length - 1, ri.current + notches));
+            var next = Math.max(0, Math.min(ri.choices.length - 1, ri.shown + notches));
             ri._turning = true;
             turnEnd.restart();
-            if (next === ri.current)
+            if (next === ri.shown)
                 return;
-            ri.current = next;
+            ri._pick = next;
             settle.restart();
         }
     }
@@ -128,7 +138,7 @@ Item {
                 checked: index === ri.current
                 onTriggered: {
                     settle.stop();
-                    ri.current = index;
+                    ri._pick = -1;
                     checked = Qt.binding(function () { return index === ri.current; });
                     ri.picked(modelData[0]);
                 }

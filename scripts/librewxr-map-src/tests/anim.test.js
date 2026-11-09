@@ -198,8 +198,10 @@ test('Player: the cap of pictures per second holds with a timer of 16 ms', () =>
   }
 });
 
-test('Player: with only still images (stops), straight from one to the next at the same pace', () => {
+test('Player: with only still images (stops), one image every third of a step, however far apart', () => {
   // Frames every 3 h; images change at 0, 1 h and 2.5 h, then the frames.
+  // Each stays stepMs / 3, whatever the hours between: the radar's 10
+  // minutes and the satellite's hour go by as fast as the files' 3 h.
   const stops = [0, 1 * H, 2.5 * H];
   const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 3000, endPauseMs: 0, minFrameMs: 50, stops: () => stops });
   p.show(0);
@@ -208,10 +210,10 @@ test('Player: with only still images (stops), straight from one to the next at t
   assert.deepEqual(shown, [0]);                      // nothing in between: the same image
   for (; clock.t <= 1100; clock.t += 16) p._tick();
   assert.deepEqual(shown, [0, 0.333]);               // the 1 h image, after a third of a step
-  for (; clock.t <= 2400; clock.t += 16) p._tick();
+  for (; clock.t <= 1900; clock.t += 16) p._tick();
   assert.deepEqual(shown, [0, 0.333]);
-  for (; clock.t <= 2600; clock.t += 16) p._tick();
-  assert.deepEqual(shown, [0, 0.333, 0.833]);
+  for (; clock.t <= 2100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333, 0.833]);        // 1.5 h later, the same third of a step
   for (; clock.t <= 3100; clock.t += 16) p._tick();
   assert.deepEqual(shown, [0, 0.333, 0.833, 1]);     // the next frame is a stop too
   p.play(false);

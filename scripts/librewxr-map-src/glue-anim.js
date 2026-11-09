@@ -1010,8 +1010,8 @@ var WidgetAnim = (function () {
     this.loop = opts.loop == null ? true : !!opts.loop;
     // () -> the times (ms) where the picture changes when nothing is drawn
     // between frames (the radar and satellite alone), or null: the play
-    // then goes straight from one to the next at the same pace, without
-    // the pictures in between that would show the same image.
+    // then goes straight from one to the next, one every third of stepMs,
+    // without the pictures in between that would show the same image.
     this.stops = opts.stops || null;
   }
 
@@ -1174,9 +1174,10 @@ var WidgetAnim = (function () {
       var to = Math.min(j, this.index + (now - this.shownAt) / (this.stepMs * f));
       var stops = this.stops && this.stops();
       if (stops) {
-        var next = this._nextStop(this.index, j, stops);
-        if (to < next - 1e-6) return;
-        to = next;
+        // Still images only: each stays a third of a step, however many
+        // hours apart (10 minutes of radar, an hour of satellite).
+        if (now - this.shownAt < this.stepMs / 3) return;
+        to = this._nextStop(this.index, j, stops);
       }
       this.show(to);
     }
