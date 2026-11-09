@@ -434,6 +434,7 @@ Item {
     // draws them so (the wind, a canvas over the map, over all wherever it
     // is) and the column lists them so.
     readonly property var layerOrder: ConfigUtils.weatherStackOrder(Plasmoid.configuration.weatherMapLayerOrder)
+    function setLayerOrder(json) { Plasmoid.configuration.weatherMapLayerOrder = json; }
     onLayerOrderChanged: if (started) js("if (window.setLayerOrder) window.setLayerOrder(" + JSON.stringify(layerOrder) + ")")
     // A layer taken out while on goes off.
     onDisabledLayersChanged: {
@@ -819,7 +820,7 @@ Item {
     // "console.log('[ui] radar')"): opens or closes a menu, so captures can
     // be taken without the mouse.
     function testUi(what) {
-        var popups = { radar: layerPanel.radarMenu, days: dateBox.daysMenu, settings: layerPanel.settingsMenu,
+        var popups = { radar: layerPanel.radarMenu, days: dateBox.daysMenu, settings: layerPanel.settingsMenu, order: layerPanel.orderMenu,
             "opts-wind": layerPanel.windRow.optionsPopup, "opts-temp": layerPanel.tempRow.optionsPopup,
             "opts-precip": layerPanel.precipRow.optionsPopup, "opts-clouds": layerPanel.cloudRow.optionsPopup,
             "opts-pressure": layerPanel.presRow.optionsPopup, "opts-aq": layerPanel.aqRow.optionsPopup,

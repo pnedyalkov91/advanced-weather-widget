@@ -107,7 +107,8 @@ QQC2.Popup {
     readonly property var otherSections: [
         { title: i18n("The layer column"),
           intro: i18n("The thin button on its left edge opens or folds it. The map stays where it is when the column opens over it."),
-          rows: [{ head: i18n("Open") },
+          rows: [{ label: i18n("Order of the layers"), text: i18n("the button left of the settings: drag a layer by its handle to stack it, the first one on top; its switch takes it out of the column or puts it back.") },
+                 { head: i18n("Open") },
                  { label: i18n("Click on the icon"), text: panel.switchText, indent: true },
                  { label: i18n("Slider"), text: i18n("the opacity of the layer, from 0 to 100 %."), indent: true },
                  { icon: "gear", mask: true, label: i18n("Wheel"), text: i18n("its options and its color legend, which can be hidden."), indent: true },

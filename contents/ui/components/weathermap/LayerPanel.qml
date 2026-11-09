@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
+import "../../js/configUtils.js" as ConfigUtils
+import "../../config/tabs"
 
 // The layer column of the Weather Map, at the right of the map: the help
 // and the settings at the top, the layers (radar and satellite, then the
@@ -26,6 +28,7 @@ Rectangle {
     readonly property alias aqRow: aqRow
     readonly property alias radarMenu: radarMenu
     readonly property alias settingsMenu: settingsMenu
+    readonly property alias orderMenu: orderMenu
     readonly property alias pastPick: pastPick
     readonly property alias futurePick: futurePick
 
@@ -216,6 +219,7 @@ Rectangle {
         id: hb
         property string text
         property string iconName
+        property string themeIcon      // an icon of the icon theme, drawn as a mask
         property string tip
         property bool on: false
         signal clicked()
@@ -232,8 +236,17 @@ Rectangle {
             font.bold: true
             font.pixelSize: 19
         }
+        Kirigami.Icon {
+            visible: hb.themeIcon !== ""
+            anchors.centerIn: parent
+            width: 21
+            height: 21
+            source: hb.themeIcon
+            isMask: true
+            color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+        }
         WmIcon {
-            visible: hb.text === ""
+            visible: hb.text === "" && hb.themeIcon === ""
             anchors.centerIn: parent
             width: 21
             height: 21
@@ -264,7 +277,7 @@ Rectangle {
         // other, folded): the row glides to the left as the second glides
         // under the first, in step with the time's below.
         Flow {
-            readonly property real rowW: 2 * 34 + spacing
+            readonly property real rowW: 3 * 34 + 2 * spacing
             x: panel.folded ? 0 : panel.colW - rowW
             width: panel.folded ? panel.colW : rowW
             Behavior on x { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
@@ -277,12 +290,58 @@ Rectangle {
                 on: panel.map.helpOpen
                 onClicked: panel.map.toggleHelp()
             }
+            // The stack of the layers, as in the settings: a handle drags a
+            // layer up or down, a switch takes it out of the column.
+            HeadButton {
+                themeIcon: "dialog-layers"
+                tip: i18n("Order of the layers")
+                on: orderMenu.visible
+                onClicked: orderMenu.visible ? orderMenu.close() : orderMenu.open()
+                QQC2.Popup {
+                    id: orderMenu
+                    margins: 6
+                    x: parent.width - width
+                    y: parent.height + 6
+                    width: 300
+                    padding: 12
+                    closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+                    contentItem: ColumnLayout {
+                        spacing: 6
+                        QQC2.Label { text: i18n("Order of the layers"); font.bold: true }
+                        LayerStackList {
+                            Layout.fillWidth: true
+                            saved: JSON.stringify(panel.map.layerOrder)
+                            disabled: panel.map.disabledLayers
+                            labels: ({
+                                wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"),
+                                precipitation: i18n("Precipitation"), clouds: i18n("Cloud cover"), temperature: i18n("Temperature"),
+                                pressure: i18n("Pressure"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
+                            })
+                            onOrderPicked: function (json) { panel.map.setLayerOrder(json); }
+                            onLayerToggled: function (id, on) { panel.map.setLayerEnabled(id, on); }
+                        }
+                        QQC2.Button {
+                            text: i18n("Default order")
+                            icon.name: "edit-undo"
+                            enabled: JSON.stringify(panel.map.layerOrder) !== JSON.stringify(ConfigUtils.WEATHER_STACK)
+                            onClicked: panel.map.setLayerOrder("[]")
+                        }
+                        QQC2.Label {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 276
+                            wrapMode: Text.WordWrap
+                            color: panel.dimText
+                            text: i18n("The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only.")
+                        }
+                    }
+                }
+            }
             // Set once: pictures per second at most, the resolution
             // while playing, coasts and borders, the dark map.
             HeadButton {
                 id: settingsButton
                 iconName: "gear"
-                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, layers shown")
+                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map")
                 on: settingsMenu.visible
                 onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
                 QQC2.Popup {
@@ -329,35 +388,6 @@ Rectangle {
                             QQC2.ToolTip.text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
                             QQC2.ToolTip.visible: hovered
                             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                        }
-                        // The layers of the column, two by two: one switched off
-                        // leaves the column (the radar always stays).
-                        QQC2.Label {
-                            text: i18n("Layers shown")
-                            color: panel.dimText
-                            Layout.topMargin: 4
-                        }
-                        GridLayout {
-                            Layout.fillWidth: true
-                            columns: 2
-                            columnSpacing: 6
-                            rowSpacing: 0
-                            Repeater {
-                                model: [["satellite", i18n("Satellite")], ["wind", i18n("Wind")], ["temperature", i18n("Temperature")],
-                                    ["precipitation", i18n("Precipitation")], ["clouds", i18n("Cloud cover")], ["pressure", i18n("Pressure")],
-                                    ["humidity", i18n("Humidity")], ["dewpoint", i18n("Dew point")], ["airquality", i18n("Air quality")]]
-                                SmallSwitch {
-                                    required property var modelData
-                                    Layout.fillWidth: true
-                                    Layout.preferredWidth: 1
-                                    text: modelData[1]
-                                    checked: panel.map.layerEnabled(modelData[0])
-                                    onToggled: {
-                                        panel.map.setLayerEnabled(modelData[0], checked);
-                                        checked = Qt.binding(function () { return panel.map.layerEnabled(modelData[0]); });
-                                    }
-                                }
-                            }
                         }
                     }
                 }
