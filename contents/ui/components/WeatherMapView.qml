@@ -607,7 +607,14 @@ Item {
     // The steps of the -/+ buttons: 10 minutes through the radar alone, an
     // hour through the satellite, 3 hours over the forecast.
     readonly property real stepHours: stepH < 1 ? 1 / 6 : stepH < 3 ? 1 : 3
-    readonly property string stepText: stepH < 1 ? i18n("%1 min", 10) : stepH < 3 ? i18n("%1 h", 1) : i18n("%1 h", 3)
+    readonly property string stepText: stepLabel(stepHours)
+    // The step buttons follow the time shown (window.animStepButton): the
+    // radar's 10 min or the satellite's hour in their ranges, while on.
+    readonly property real stepBackH: animState && animState.stepBack ? animState.stepBack : stepHours
+    readonly property real stepAheadH: animState && animState.stepAhead ? animState.stepAhead : stepHours
+    function stepLabel(h) {
+        return h < 1 ? i18n("%1 min", Math.round(h * 60)) : i18n("%1 h", h);
+    }
 
     // The kinds of precipitation and the cloud levels shown, the pollutant.
     readonly property var precipChoices: [["rain", i18n("Rain")], ["snow", i18n("Snow")], ["wet_snow", i18n("Wet snow")], ["mix", i18n("Rain and snow")], ["freezing_rain", i18n("Freezing rain")], ["freezing_drizzle", i18n("Freezing drizzle")], ["ice_pellets", i18n("Ice pellets")]]

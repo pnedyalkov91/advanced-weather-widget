@@ -123,7 +123,7 @@ QQC2.Popup {
           note: i18n("A layer stops where its data stops.") },
         { title: i18n("Time line"),
           rows: [{ icon: "debut-glyph", mask: true, label: i18n("First picture"), text: i18nc("@info keyboard key", "Home") },
-                 { sym: "‹ −", label: i18n("One step back"), text: i18n("3 hours; one hour for the satellite alone or with the radar; 10 minutes for the radar alone. Left arrow: one hour.") },
+                 { sym: "‹ −", label: i18n("One step back"), text: i18n("3 hours. In the range of the satellite one hour, in that of the radar 10 minutes, while they are on: the button shows it. It stops on their first and last image. Left arrow: one hour.") },
                  { sym: "▶", label: i18n("Play or pause"), text: i18n("Space") },
                  { sym: "+ ›", label: i18n("One step ahead"), text: i18n("the same steps. Right arrow: one hour.") },
                  { icon: "fin-glyph", mask: true, label: i18n("Last picture"), text: i18nc("@info keyboard key", "End") },

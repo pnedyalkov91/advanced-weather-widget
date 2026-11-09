@@ -62,6 +62,44 @@ var WidgetAnimRadar = (function () {
     return range && ms >= range.start && ms < range.end ? RADAR_SLOW : 1;
   }
 
+  /* The step buttons over a forecast animation. sources: { start, end,
+     last, gap } in ms of the radar and the satellite switched on, finer
+     than the files' step. Where the time is in one (just before it going
+     back), the button steps on its images; elsewhere it keeps the files'
+     step but stops on the first or the last image of a source on the way. */
+  function _inside(src, t, dir) {
+    var x = dir > 0 ? t : t - 1;
+    return x >= src.start && x < src.end;
+  }
+  function _finest(t, dir, sources) {
+    var best = null;
+    (sources || []).forEach(function (src) {
+      if (_inside(src, t, dir) && (!best || src.gap < best.gap)) best = src;
+    });
+    return best;
+  }
+  /** The step in hours of the button going dir at time t (baseH elsewhere). */
+  function stepHours(t, dir, baseH, sources) {
+    var src = _finest(t, dir, sources);
+    return src && src.gap < baseH * 3600e3 ? src.gap / 3600e3 : baseH;
+  }
+  /** The time the button going dir from t lands on; baseTarget: the files' step. */
+  function stepTime(t, dir, baseTarget, sources) {
+    var src = _finest(t, dir, sources), eps = 1e-9, to = baseTarget;
+    if (src) {
+      var k = (t - src.start) / src.gap;
+      k = dir > 0 ? Math.floor(k + eps) + 1 : Math.ceil(k - eps) - 1;
+      to = Math.min(src.start + k * src.gap, src.end);
+    }
+    // A finer source on the way: stop on its first (or last) image.
+    (sources || []).forEach(function (s) {
+      if (src && s.gap >= src.gap) return;
+      if (dir > 0 && s.start > t && s.start < to) to = s.start;
+      if (dir < 0 && s.last !== null && s.last < t && s.last > to) to = s.last;
+    });
+    return to;
+  }
+
   /* The images of one source over the animation. opts: kind, gapMs,
      opacity (0..1), url(frame) -> its tile address, fadeMs: switched on,
      its first image fades in, switched off it fades out before its layers
@@ -264,7 +302,8 @@ var WidgetAnimRadar = (function () {
 
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
-    framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, slowFactor: slowFactor, Overlay: Overlay
+    framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, slowFactor: slowFactor,
+    stepHours: stepHours, stepTime: stepTime, Overlay: Overlay
   };
 })();
 

@@ -281,3 +281,42 @@ test('Overlay: switched on out of its range, the image that comes in later is no
   o.show(T0 * 1000);
   assert.equal(a.opacity[a.made[0].layerId], 0.8);
 });
+
+// The step buttons over a forecast animation: the radar's 10 min or the
+// satellite's hour where they are on, the files' 3 h elsewhere.
+test('stepTime: the source finer than the step where the time is', () => {
+  const r = { start: 12 * H, end: 15 * H, last: 15 * H - 10 * MIN, gap: 10 * MIN };
+  const s = { start: 3 * H, end: 15 * H, last: 14 * H, gap: H };
+  // In the radar: 10 min on its grid, both ways.
+  assert.equal(R.stepTime(13 * H, 1, 16 * H, [r, s]), 13 * H + 10 * MIN);
+  assert.equal(R.stepTime(13 * H + 5 * MIN, -1, 10 * H, [r, s]), 13 * H);
+  // Back from the radar's first image: the satellite's hour.
+  assert.equal(R.stepTime(12 * H, -1, 9 * H, [r, s]), 11 * H);
+  // In the satellite only: an hour.
+  assert.equal(R.stepTime(6 * H, 1, 9 * H, [r, s]), 7 * H);
+  // The satellite off: 3 h, stopping on the radar's first image.
+  assert.equal(R.stepTime(6 * H, 1, 9 * H, [r]), 9 * H);
+  assert.equal(R.stepTime(10 * H, 1, 13 * H, [r]), 12 * H);
+  // Back into the radar from after it: its last image.
+  assert.equal(R.stepTime(17 * H, -1, 14 * H, [r]), 15 * H - 10 * MIN);
+  // Out of every range and no edge on the way: the files' step.
+  assert.equal(R.stepTime(18 * H, 1, 21 * H, [r, s]), 21 * H);
+  // Nothing on: the files' step.
+  assert.equal(R.stepTime(13 * H, 1, 15 * H, []), 15 * H);
+  // An hour of the satellite stops on the radar's first or last image too.
+  const r2 = { start: 13 * H + 50 * MIN, end: 17 * H, last: 16 * H + 50 * MIN, gap: 10 * MIN };
+  assert.equal(R.stepTime(13 * H, 1, 16 * H, [r2, s]), 13 * H + 50 * MIN);
+  const s2 = { start: 3 * H, end: 20 * H, last: 19 * H, gap: H };
+  assert.equal(R.stepTime(18 * H, -1, 15 * H, [r2, s2]), 17 * H);
+  assert.equal(R.stepTime(17 * H, -1, 15 * H, [r2, s2]), 16 * H + 50 * MIN);
+});
+
+test('stepHours: the step of each button where the time is', () => {
+  const r = { start: 12 * H, end: 15 * H, last: 15 * H - 10 * MIN, gap: 10 * MIN };
+  const s = { start: 3 * H, end: 15 * H, last: 14 * H, gap: H };
+  assert.equal(R.stepHours(13 * H, 1, 3, [r, s]), 1 / 6);
+  assert.equal(R.stepHours(12 * H, -1, 3, [r, s]), 1);
+  assert.equal(R.stepHours(12 * H, 1, 3, [r, s]), 1 / 6);
+  assert.equal(R.stepHours(20 * H, 1, 3, [r, s]), 3);
+  assert.equal(R.stepHours(13 * H, 1, 1 / 6, [r, s]), 1 / 6);
+});

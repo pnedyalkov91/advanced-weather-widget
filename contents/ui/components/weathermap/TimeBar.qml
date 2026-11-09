@@ -57,8 +57,10 @@ Rectangle {
         id: pill
         property alias text: pillText.text
         property string tip
+        property string widest        // the longest text it takes: its width does not jump while playing
         signal clicked()
-        implicitWidth: Math.max(62, pillText.implicitWidth + 20)
+        implicitWidth: Math.max(62, Math.max(pillText.implicitWidth, widestMetrics.advanceWidth) + 20)
+        TextMetrics { id: widestMetrics; font: pillText.font; text: pill.widest }
         implicitHeight: 30
         radius: 8
         color: bar.tint(pillArea.containsMouse ? 0.13 : 0.07)
@@ -93,10 +95,11 @@ Rectangle {
             onClicked: bar.map.showIndex(0)
         }
         StepPill {
-            text: "‹  −" + bar.map.stepText
-            tip: i18n("%1 back (Left: one hour)", bar.map.stepText)
+            text: "‹  −" + bar.map.stepLabel(bar.map.stepBackH)
+            widest: "‹  −" + bar.map.stepLabel(1 / 6)
+            tip: i18n("%1 back (Left: one hour)", bar.map.stepLabel(bar.map.stepBackH))
             enabled: bar.map.count > 0
-            onClicked: bar.map.js("window.animStepHours(-1, " + bar.map.stepHours + ")")
+            onClicked: bar.map.js("window.animStepButton(-1)")
         }
         // Play or pause: the big round.
         Rectangle {
@@ -140,10 +143,11 @@ Rectangle {
             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
         StepPill {
-            text: "+" + bar.map.stepText + "  ›"
-            tip: i18n("%1 ahead (Right: one hour)", bar.map.stepText)
+            text: "+" + bar.map.stepLabel(bar.map.stepAheadH) + "  ›"
+            widest: "+" + bar.map.stepLabel(1 / 6) + "  ›"
+            tip: i18n("%1 ahead (Right: one hour)", bar.map.stepLabel(bar.map.stepAheadH))
             enabled: bar.map.count > 0
-            onClicked: bar.map.js("window.animStepHours(1, " + bar.map.stepHours + ")")
+            onClicked: bar.map.js("window.animStepButton(1)")
         }
         BarIcon {
             iconName: "fin-glyph"

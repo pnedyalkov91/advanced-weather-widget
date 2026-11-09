@@ -645,6 +645,39 @@ window.animToEnd = function (dir) { if (anim) anim.player.toEnd(dir); };
 // Paused steps of h hours (3: one frame).
 /** A step of h hours (a fraction for minutes) back (-1) or ahead (1). */
 window.animStepHours = function (dir, h) { if (anim) anim.player.step(dir, anim.stepH / h); };
+// The step buttons follow the time shown: the radar's 10 min in its range,
+// the satellite's hour in its range, where they are on; the files' step
+// elsewhere (WidgetAnimRadar.stepTime).
+function animStepBaseH() { return anim.stepH < 1 ? 1 / 6 : anim.stepH < 3 ? 1 : 3; }
+function animStepSources(baseH) {
+  if (!animOverlays || typeof WidgetAnimRadar === 'undefined') return [];
+  return ['radar', 'satellite'].map(function (k) { return animOverlays[k]; }).filter(function (o) {
+    return o.on && o.range() && o.gapMs < baseH * 3600e3;
+  }).map(function (o) {
+    var r = o.range();
+    return { start: r.start, end: r.end, last: o.lastTime(), gap: o.gapMs };
+  });
+}
+/** The step in hours of the button back (-1) or ahead (1) at the time shown. */
+function animButtonStepH(dir) {
+  if (!anim || anim.player.index < 0 || typeof WidgetAnimRadar === 'undefined') return anim ? animStepBaseH() : null;
+  var baseH = animStepBaseH(), p = anim.player;
+  return WidgetAnimRadar.stepHours(anim.group.timeAt(p._base()), dir, baseH, animStepSources(baseH));
+}
+window.animStepButton = function (dir) {
+  if (!anim) return;
+  var p = anim.player, g = anim.group, baseH = animStepBaseH(), times = g.times, last = times.length - 1;
+  var sources = typeof WidgetAnimRadar === 'undefined' ? [] : animStepSources(baseH);
+  if (!sources.length || p._round(dir, function () { return true; }) >= 0) { p.step(dir, anim.stepH / baseH); return; }
+  // Where the files' step would land, as Player.step counts it.
+  var perFrame = anim.stepH / baseH, base = p._base() * perFrame;
+  var k = dir > 0 ? Math.floor(base + 1e-6) + 1 : Math.ceil(base - 1e-6) - 1;
+  var t = g.timeAt(p._base()), to = WidgetAnimRadar.stepTime(t, dir, g.timeAt(Math.max(0, Math.min(last, k / perFrame))), sources);
+  var pos = last;
+  for (var i = 0; i < last; i++) if (to < times[i + 1]) { pos = i + Math.max(0, to - times[i]) / (times[i + 1] - times[i]); break; }
+  p.play(false);
+  p.seek(Math.max(0, Math.min(last, pos)));
+};
 window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
 window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
 // Resolution of the temperature while it plays: 1 full, 2 half, 4 quarter; full again on pause.
@@ -711,7 +744,8 @@ window.animState = function () {
     ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,
     radar: animOverlayState('radar'), satellite: animOverlayState('satellite'),
     models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFine ? animFineModels : []),
-    loop: animLoop, windLevel: animWindLevel
+    loop: animLoop, windLevel: animWindLevel,
+    stepBack: animButtonStepH(-1), stepAhead: animButtonStepH(1)
   };
 };
 
