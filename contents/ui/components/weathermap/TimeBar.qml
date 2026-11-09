@@ -97,7 +97,7 @@ Rectangle {
         StepPill {
             text: "‹  −" + bar.map.stepLabel(bar.map.stepBackH)
             widest: "‹  −" + bar.map.stepLabel(1 / 6)
-            tip: i18n("%1 back (Left: one hour)", bar.map.stepLabel(bar.map.stepBackH))
+            tip: i18n("%1 back", bar.map.stepLabel(bar.map.stepBackH)) + " (←)"
             enabled: bar.map.count > 0
             onClicked: bar.map.js("window.animStepButton(-1)")
         }
@@ -145,7 +145,7 @@ Rectangle {
         StepPill {
             text: "+" + bar.map.stepLabel(bar.map.stepAheadH) + "  ›"
             widest: "+" + bar.map.stepLabel(1 / 6) + "  ›"
-            tip: i18n("%1 ahead (Right: one hour)", bar.map.stepLabel(bar.map.stepAheadH))
+            tip: i18n("%1 ahead", bar.map.stepLabel(bar.map.stepAheadH)) + " (→)"
             enabled: bar.map.count > 0
             onClicked: bar.map.js("window.animStepButton(1)")
         }

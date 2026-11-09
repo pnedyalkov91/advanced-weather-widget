@@ -1040,7 +1040,7 @@ Item {
         })
     }
 
-    // Space plays or pauses, the arrows step one hour, Page Up and Page Down
+    // Space plays or pauses, the arrows step as the -/+ buttons, Page Up and Page Down
     // (or Ctrl and an arrow) go to the previous or next picture from the
     // forecast file. Only while the map can be seen: the shortcuts belong
     // to the whole popup.
@@ -1053,7 +1053,7 @@ Item {
         if (k === "play")
             toggle();
         else if (k.indexOf("step:") === 0)
-            js("window.animStep(" + (+k.slice(5)) + ")");
+            js("window.animStepButton(" + (+k.slice(5)) + ")");
         else if (k.indexOf("file:") === 0)
             js("window.animStepFile(" + (+k.slice(5)) + ")");
         else if (k.indexOf("end:") === 0)
@@ -1095,8 +1095,8 @@ Item {
             showIndex(animState.now);
     }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
-    Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(-1)") }
-    Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(1)") }
+    Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepButton(-1)") }
+    Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepButton(1)") }
     Shortcut { sequences: [StandardKey.MoveToPreviousPage, "Ctrl+Left"]; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepFile(-1)") }
     Shortcut { sequences: [StandardKey.MoveToNextPage, "Ctrl+Right"]; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepFile(1)") }
     Shortcut { sequence: "Home"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(-1)") }

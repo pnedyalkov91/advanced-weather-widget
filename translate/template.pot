@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-09 16:42+0100\n"
+"POT-Creation-Date: 2026-11-09 16:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,11 +41,11 @@ msgid "%1 - Tomorrow"
 msgstr ""
 
 #: contents/ui/components/weathermap/TimeBar.qml:148
-msgid "%1 ahead (Right: one hour)"
+msgid "%1 ahead"
 msgstr ""
 
 #: contents/ui/components/weathermap/TimeBar.qml:100
-msgid "%1 back (Left: one hour)"
+msgid "%1 back"
 msgstr ""
 
 #: contents/ui/HistoryView.qml:689
@@ -221,7 +221,7 @@ msgid "3 d"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:126
-msgid "3 hours. In the range of the satellite one hour, in that of the radar 10 minutes, while they are on: the button shows it. It stops on their first and last image. Left arrow: one hour."
+msgid "3 hours. In the range of the satellite one hour, in that of the radar 10 minutes, while they are on: the button shows it. It stops on their first and last image."
 msgstr ""
 
 #: contents/ui/config/configAppearance.qml:265
@@ -2483,10 +2483,6 @@ msgstr ""
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
 msgstr ""
 
-#: contents/ui/components/weathermap/HelpPanel.qml:143
-msgid "Left / Right arrow"
-msgstr ""
-
 #: contents/ui/components/weathermap/LayerPanel.qml:506
 msgid "Levels shown"
 msgstr ""
@@ -3266,11 +3262,11 @@ msgid "Olive"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:128
-msgid "One step ahead"
+msgid "One step ahead (→)"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:126
-msgid "One step back"
+msgid "One step back (←)"
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1694
@@ -5872,12 +5868,12 @@ msgstr ""
 msgid "on, the animation plays round again from the start; off, it stops on the last picture."
 msgstr ""
 
-#: contents/ui/components/weathermap/HelpPanel.qml:143
-msgid "one hour back or ahead."
-msgstr ""
-
 #: contents/ui/components/weathermap/HelpPanel.qml:134
 msgid "one per picture, colored once loaded, red when it failed."
+msgstr ""
+
+#: contents/ui/components/weathermap/HelpPanel.qml:143
+msgid "one step back or ahead, as the buttons of the time bar."
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:118
@@ -6052,7 +6048,7 @@ msgid "the recent strikes."
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:128
-msgid "the same steps. Right arrow: one hour."
+msgid "the same steps."
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:65
