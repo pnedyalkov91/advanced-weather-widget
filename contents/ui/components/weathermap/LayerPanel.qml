@@ -187,10 +187,10 @@ Rectangle {
         x: 9.5
         y: 8
         spacing: 7
-        // The help and the settings, top right of the column (one under the other, folded).
+        // The help and the settings side by side (one under the other, folded),
+        // from the left as the time's below: the first stays, the other glides.
         Flow {
             width: panel.colW
-            layoutDirection: Qt.RightToLeft
             spacing: 8
             // Side by side open, one under the other folded: they glide there.
             move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
@@ -325,6 +325,8 @@ Rectangle {
         anchors.fill: parent
         anchors.leftMargin: 1
         anchors.topMargin: headBox.y + headBox.height
+        // In step with the buttons gliding one under the other.
+        Behavior on anchors.topMargin { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
         anchors.bottomMargin: timeBox.height + 12
         clip: true
         contentWidth: width
@@ -346,7 +348,7 @@ Rectangle {
         Column {
             id: layerColumn
             x: 9.5
-            y: 0
+            y: 4
             spacing: 7
 
             Caption { text: i18n("Layers") }
