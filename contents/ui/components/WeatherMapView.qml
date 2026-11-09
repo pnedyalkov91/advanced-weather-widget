@@ -232,6 +232,9 @@ Item {
 
     // Whether the map can be seen: a closed popup does not hide its items.
     readonly property bool shown: visible && (!weatherRoot || weatherRoot.expanded !== false)
+    // The help panel does not outlive the tab: it closes with the popup or on
+    // another tab, so the next opening starts on the map.
+    onShownChanged: if (!shown) helpPanel.close()
 
     Connections {
         target: radarRoot.weatherRoot ? radarRoot.weatherRoot : null
