@@ -180,11 +180,151 @@ Rectangle {
         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
     }
 
+    // The help and the settings, always in sight at the top of the column
+    // (the layers scroll under them), as the time is at the bottom.
+    Column {
+        id: headBox
+        x: 9.5
+        y: 8
+        spacing: 7
+        // The help and the settings, top right of the column (one under the other, folded).
+        Flow {
+            width: panel.colW
+            layoutDirection: Qt.RightToLeft
+            spacing: 8
+            // Side by side open, one under the other folded: they glide there.
+            move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
+            HeadButton {
+                text: "?"
+                tip: i18n("How to read the weather maps")
+                on: panel.map.helpOpen
+                onClicked: panel.map.toggleHelp()
+            }
+            // Set once: pictures per second at most, the resolution
+            // while playing, coasts and borders, the dark map.
+            HeadButton {
+                id: settingsButton
+                iconName: "gear"
+                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, layers shown")
+                on: settingsMenu.visible
+                onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
+                QQC2.Popup {
+                    id: settingsMenu
+                    margins: 6
+                    x: parent.width - width
+                    y: parent.height + 6
+                    width: 320
+                    padding: 12
+                    closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+                    contentItem: ColumnLayout {
+                        spacing: 8
+                        QQC2.Label { text: i18n("Settings"); font.bold: true }
+                        // Pictures per second at most: three side by side, the one taken highlighted.
+                        RowLayout {
+                            Layout.fillWidth: true
+                            QQC2.Label { text: i18n("Pictures per second"); color: panel.dimText; Layout.fillWidth: true }
+                            Rectangle {
+                                implicitWidth: fpsRow.implicitWidth + 4
+                                implicitHeight: 26
+                                radius: 4
+                                color: panel.tint(0.06)
+                                border.color: panel.tint(0.12)
+                                Row {
+                                    id: fpsRow
+                                    anchors.centerIn: parent
+                                    Repeater {
+                                        model: [4, 8, 15]
+                                        Rectangle {
+                                            required property int modelData
+                                            readonly property bool taken: panel.map.maxFps === modelData
+                                            width: 34
+                                            height: 22
+                                            radius: 3
+                                            color: taken ? panel.accent : "transparent"
+                                            QQC2.Label {
+                                                anchors.centerIn: parent
+                                                text: parent.modelData
+                                                font.bold: parent.taken
+                                                color: parent.taken ? Kirigami.Theme.highlightedTextColor : panel.dimText
+                                            }
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: panel.map.setMaxFps(parent.modelData)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        OptCombo {
+                            title: i18n("Resolution while playing")
+                            choices: [[1, i18n("Full")], [2, i18n("Half")], [4, i18n("Quarter")]]
+                            current: [1, 2, 4].indexOf(panel.map.resolution)
+                            onPicked: function (v) { panel.map.setResolution(v); }
+                        }
+                        SmallSwitch {
+                            text: i18n("Coasts and borders")
+                            checked: panel.map.mapLinesOn
+                            onToggled: {
+                                panel.map.setMapLines(checked);
+                                checked = Qt.binding(function () { return panel.map.mapLinesOn; });
+                            }
+                        }
+                        SmallSwitch {
+                            text: i18n("Dark map")
+                            enabled: !panel.map.darkMapLocked
+                            checked: panel.map.mapTheme === "dark"
+                            onToggled: {
+                                panel.map.setDarkMap(checked);
+                                checked = Qt.binding(function () { return panel.map.mapTheme === "dark"; });
+                            }
+                            QQC2.ToolTip.text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
+                            QQC2.ToolTip.visible: hovered
+                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                        }
+                        // The layers of the column, two by two: one switched off
+                        // leaves the column (the radar always stays).
+                        QQC2.Label {
+                            text: i18n("Layers shown")
+                            color: panel.dimText
+                            Layout.topMargin: 4
+                        }
+                        GridLayout {
+                            Layout.fillWidth: true
+                            columns: 2
+                            columnSpacing: 6
+                            rowSpacing: 0
+                            Repeater {
+                                model: [["satellite", i18n("Satellite")], ["wind", i18n("Wind")], ["temperature", i18n("Temperature")],
+                                    ["precipitation", i18n("Precipitation")], ["clouds", i18n("Cloud cover")], ["pressure", i18n("Pressure")],
+                                    ["humidity", i18n("Humidity")], ["dewpoint", i18n("Dew point")], ["airquality", i18n("Air quality")]]
+                                SmallSwitch {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredWidth: 1
+                                    text: modelData[1]
+                                    checked: panel.map.layerEnabled(modelData[0])
+                                    onToggled: {
+                                        panel.map.setLayerEnabled(modelData[0], checked);
+                                        checked = Qt.binding(function () { return panel.map.layerEnabled(modelData[0]); });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Divider {}
+    }
+
     // The whole column scrolls when the popup is too short for it.
     Flickable {
         id: layerScroll
         anchors.fill: parent
         anchors.leftMargin: 1
+        anchors.topMargin: headBox.y + headBox.height
         anchors.bottomMargin: timeBox.height + 12
         clip: true
         contentWidth: width
@@ -206,138 +346,8 @@ Rectangle {
         Column {
             id: layerColumn
             x: 9.5
-            y: 8
+            y: 0
             spacing: 7
-
-            // The help and the settings, top right of the column (one under the other, folded).
-            Flow {
-                width: panel.colW
-                layoutDirection: Qt.RightToLeft
-                spacing: 8
-                // Side by side open, one under the other folded: they glide there.
-                move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
-                HeadButton {
-                    text: "?"
-                    tip: i18n("How to read the weather maps")
-                    on: panel.map.helpOpen
-                    onClicked: panel.map.toggleHelp()
-                }
-                // Set once: pictures per second at most, the resolution
-                // while playing, coasts and borders, the dark map.
-                HeadButton {
-                    id: settingsButton
-                    iconName: "gear"
-                    tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, layers shown")
-                    on: settingsMenu.visible
-                    onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
-                    QQC2.Popup {
-                        id: settingsMenu
-                        margins: 6
-                        x: parent.width - width
-                        y: parent.height + 6
-                        width: 320
-                        padding: 12
-                        closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
-                        contentItem: ColumnLayout {
-                            spacing: 8
-                            QQC2.Label { text: i18n("Settings"); font.bold: true }
-                            // Pictures per second at most: three side by side, the one taken highlighted.
-                            RowLayout {
-                                Layout.fillWidth: true
-                                QQC2.Label { text: i18n("Pictures per second"); color: panel.dimText; Layout.fillWidth: true }
-                                Rectangle {
-                                    implicitWidth: fpsRow.implicitWidth + 4
-                                    implicitHeight: 26
-                                    radius: 4
-                                    color: panel.tint(0.06)
-                                    border.color: panel.tint(0.12)
-                                    Row {
-                                        id: fpsRow
-                                        anchors.centerIn: parent
-                                        Repeater {
-                                            model: [4, 8, 15]
-                                            Rectangle {
-                                                required property int modelData
-                                                readonly property bool taken: panel.map.maxFps === modelData
-                                                width: 34
-                                                height: 22
-                                                radius: 3
-                                                color: taken ? panel.accent : "transparent"
-                                                QQC2.Label {
-                                                    anchors.centerIn: parent
-                                                    text: parent.modelData
-                                                    font.bold: parent.taken
-                                                    color: parent.taken ? Kirigami.Theme.highlightedTextColor : panel.dimText
-                                                }
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: panel.map.setMaxFps(parent.modelData)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            OptCombo {
-                                title: i18n("Resolution while playing")
-                                choices: [[1, i18n("Full")], [2, i18n("Half")], [4, i18n("Quarter")]]
-                                current: [1, 2, 4].indexOf(panel.map.resolution)
-                                onPicked: function (v) { panel.map.setResolution(v); }
-                            }
-                            SmallSwitch {
-                                text: i18n("Coasts and borders")
-                                checked: panel.map.mapLinesOn
-                                onToggled: {
-                                    panel.map.setMapLines(checked);
-                                    checked = Qt.binding(function () { return panel.map.mapLinesOn; });
-                                }
-                            }
-                            SmallSwitch {
-                                text: i18n("Dark map")
-                                enabled: !panel.map.darkMapLocked
-                                checked: panel.map.mapTheme === "dark"
-                                onToggled: {
-                                    panel.map.setDarkMap(checked);
-                                    checked = Qt.binding(function () { return panel.map.mapTheme === "dark"; });
-                                }
-                                QQC2.ToolTip.text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
-                                QQC2.ToolTip.visible: hovered
-                                QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                            }
-                            // The layers of the column, two by two: one switched off
-                            // leaves the column (the radar always stays).
-                            QQC2.Label {
-                                text: i18n("Layers shown")
-                                color: panel.dimText
-                                Layout.topMargin: 4
-                            }
-                            GridLayout {
-                                Layout.fillWidth: true
-                                columns: 2
-                                columnSpacing: 6
-                                rowSpacing: 0
-                                Repeater {
-                                    model: [["satellite", i18n("Satellite")], ["wind", i18n("Wind")], ["temperature", i18n("Temperature")],
-                                        ["precipitation", i18n("Precipitation")], ["clouds", i18n("Cloud cover")], ["pressure", i18n("Pressure")],
-                                        ["humidity", i18n("Humidity")], ["dewpoint", i18n("Dew point")], ["airquality", i18n("Air quality")]]
-                                    SmallSwitch {
-                                        required property var modelData
-                                        Layout.fillWidth: true
-                                        Layout.preferredWidth: 1
-                                        text: modelData[1]
-                                        checked: panel.map.layerEnabled(modelData[0])
-                                        onToggled: {
-                                            panel.map.setLayerEnabled(modelData[0], checked);
-                                            checked = Qt.binding(function () { return panel.map.layerEnabled(modelData[0]); });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
             Caption { text: i18n("Layers") }
 
