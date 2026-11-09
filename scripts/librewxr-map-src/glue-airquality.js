@@ -16,12 +16,12 @@ var WidgetAirQuality = (function () {
   // that have one; the others on scales of their own. log: the byte is
   // log10(v + 1) / log10(max + 1) * 254, else v / step.
   // floorAlpha: how much of the first color shows at 0 (opts.floorAlpha
-  // when not given); the dust's first color is near white, it would veil
-  // the whole map, so clean air shows none of it.
+  // when not given). The particles (dust, PM2.5, PM10) show none of it:
+  // clean air leaves the map as it is.
   var EAQI = ['#50f0e6', '#50ccaa', '#f0e641', '#ff5050', '#960032', '#7d2181'];
   var POLL = {
-    pm2_5: { label: 'PM2.5', unit: 'µg/m³', max: 2000, log: true, edges: [0, 10, 20, 25, 50, 75, 250], colors: EAQI.concat('#3d0a40') },
-    pm10: { label: 'PM10', unit: 'µg/m³', max: 5000, log: true, edges: [0, 20, 40, 50, 100, 150, 600], colors: EAQI.concat('#3d0a40') },
+    pm2_5: { label: 'PM2.5', unit: 'µg/m³', max: 2000, log: true, floorAlpha: 0, edges: [0, 10, 20, 25, 50, 75, 250], colors: EAQI.concat('#3d0a40') },
+    pm10: { label: 'PM10', unit: 'µg/m³', max: 5000, log: true, floorAlpha: 0, edges: [0, 20, 40, 50, 100, 150, 600], colors: EAQI.concat('#3d0a40') },
     ozone: { label: 'O₃', unit: 'µg/m³', max: 1000, log: true, edges: [0, 50, 100, 130, 240, 380], colors: EAQI },
     nitrogen_dioxide: { label: 'NO₂', unit: 'µg/m³', max: 1000, log: true, edges: [0, 40, 90, 120, 230, 340], colors: EAQI },
     sulphur_dioxide: { label: 'SO₂', unit: 'µg/m³', max: 3000, log: true, edges: [0, 100, 200, 350, 500, 750], colors: EAQI },
