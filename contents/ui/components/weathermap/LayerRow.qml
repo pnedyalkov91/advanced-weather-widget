@@ -32,6 +32,7 @@ Item {
     property string key               // the keyboard letter that switches the layer, shown in the tip
     readonly property string _keyText: key ? " (" + key + ")" : ""
     property real _wheel: 0
+    property bool _turning: false      // Shift + wheel just moved: the tip shows the opacity
     default property alias options: optionsColumn.data
     readonly property alias optionsPopup: popup
     readonly property alias gearItem: gear
@@ -110,15 +111,19 @@ Item {
                     return;
                 row._wheel -= notches * 120;
                 var v = Math.max(0, Math.min(100, row.opacityValue + notches * 5));
+                row._turning = true;
+                turnEnd.restart();
                 if (v !== row.opacityValue)
                     row.opacityPicked(v);
             }
         }
-        QQC2.ToolTip.text: row.compact && row.opacityValue >= 0
+        Timer { id: turnEnd; interval: 1200; onTriggered: row._turning = false }
+        QQC2.ToolTip.text: row._turning ? "<b>" + i18n("Opacity: %1 %", row.opacityValue) + "</b>"
+            : row.compact && row.opacityValue >= 0
             ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (Shift + wheel)", row.opacityValue) : "")
             : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
-        QQC2.ToolTip.visible: iconArea.containsMouse
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        QQC2.ToolTip.visible: iconArea.containsMouse || row._turning
+        QQC2.ToolTip.delay: row._turning ? 0 : Kirigami.Units.toolTipDelay
     }
 
     // Folded: the opacity as a bar under the icon, as wide as the icon.
