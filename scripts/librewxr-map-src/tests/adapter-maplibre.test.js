@@ -95,20 +95,35 @@ function loadAdapter(globals, opts = {}) {
   Object.assign(ctx, globals);
   vm.runInNewContext(src + '\nthis.WidgetMapLibreAdapter = WidgetMapLibreAdapter;', ctx);
   const protocols = {};
+  const markers = [];
   const maplibregl = {
     Map: function () { map = new FakeMap(); return map; },
     addProtocol: (name, handler) => { protocols[name] = handler; },
     NavigationControl: function () {},
     AttributionControl: function (opts) { this.opts = opts || {}; },
-    Marker: function () { this.setLngLat = () => this; this.addTo = () => this; },
+    Marker: function () {
+      // The default marker's SVG, its shadow a black group of ellipses.
+      const shadow = { removed: false, remove() { this.removed = true; } };
+      const el = { querySelector: (sel) => (sel === 'g[fill="#000000"]' ? shadow : null) };
+      this.shadow = shadow;
+      this.getElement = () => el;
+      this.setLngLat = () => this;
+      this.addTo = () => { markers.push(this); return this; };
+    },
   };
   const adapter = ctx.WidgetMapLibreAdapter(maplibregl);
   adapter.createMap('lv-map', { lat: 48, lon: 6, zoom: 6, maxZoom: 12 });
   if (opts.load !== false) map.fire('load');
-  return { adapter, map, ctx, protocols };
+  return { adapter, map, ctx, protocols, markers };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
+
+test('the place marker has no shadow', () => {
+  const { markers } = loadAdapter();
+  assert.equal(markers.length, 1);
+  assert.equal(markers[0].shadow.removed, true);
+});
 
 test('a frame layer destroyed while loading settles at once, not 25 s later', async () => {
   const { adapter } = loadAdapter();

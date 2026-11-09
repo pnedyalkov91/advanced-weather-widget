@@ -518,6 +518,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
       makeAttribution();
       homeMarker = new maplibregl.Marker().setLngLat([view.lon, view.lat]).addTo(map);
+      // The default marker without its shadow (a black group of ellipses
+      // at its foot in MapLibre's SVG).
+      var markerShadow = homeMarker.getElement && homeMarker.getElement().querySelector('g[fill="#000000"]');
+      if (markerShadow) markerShadow.remove();
       // applyLines(): the layers that asked for the lines before the style
       // loaded (the radar, switched on as soon as the page is up) get them now.
       map.once('load', function () { styleReady = true; applyProjection(); applyDayNight(); addTempLayer(); applyLines(); fitMinZoom(); });
