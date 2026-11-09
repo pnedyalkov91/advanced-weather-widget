@@ -187,10 +187,14 @@ Rectangle {
         x: 9.5
         y: 8
         spacing: 7
-        // The help and the settings side by side (one under the other, folded),
-        // from the left as the time's below: the first stays, the other glides.
+        // The help and the settings side by side at the right (one under the
+        // other, folded): the row glides to the left as the second glides
+        // under the first, in step with the time's below.
         Flow {
-            width: panel.colW
+            readonly property real rowW: 2 * 34 + spacing
+            x: panel.folded ? 0 : panel.colW - rowW
+            width: panel.folded ? panel.colW : rowW
+            Behavior on x { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
             spacing: 8
             // Side by side open, one under the other folded: they glide there.
             move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
