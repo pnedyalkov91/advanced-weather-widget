@@ -406,11 +406,11 @@ Item {
         return o;
     }
     // The layers taken out of the column in the settings (the radar always
-    // stays; the isobars go with the pressure).
+    // stays; the isobars, switched on the map, are never taken out).
     readonly property var disabledLayers: {
         try {
             var d = JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
-            return d.indexOf("pressure") >= 0 ? d.concat(["isobars"]) : d;
+            return d.filter(function (id) { return id !== "isobars"; });
         } catch (e) {
             return [];
         }
@@ -444,9 +444,9 @@ Item {
                 setLayer(id, false);
         });
     }
-    // The isobars button on the map: shown while the pressure is a layer
-    // of the column, lit while the isobars are on.
-    readonly property string isobarsButton: layerEnabled("pressure") + ", " + layerOn("isobars")
+    // The isobars button on the map: always shown, lit while the isobars
+    // are on (the pressure out of the column takes nothing from it).
+    readonly property string isobarsButton: "true, " + layerOn("isobars")
     onIsobarsButtonChanged: {
         if (started)
             js("if (window.setIsobarsButton) window.setIsobarsButton(" + isobarsButton + ");");
@@ -1118,8 +1118,7 @@ Item {
     readonly property var layerKeys: ({ radar: "R", satellite: "S", wind: "V", temperature: "T", precipitation: "P",
         clouds: "N", pressure: "B", isobars: "I", humidity: "H", dewpoint: "D", airquality: "A" })
     function keyLayer(id) {
-        // The isobars go with the pressure: out of the column with it.
-        if (!layerEnabled(id === "isobars" ? "pressure" : id))
+        if (!layerEnabled(id))
             return;
         if (id === "radar" || id === "satellite")
             clickSource(id, !layerOn(id));
