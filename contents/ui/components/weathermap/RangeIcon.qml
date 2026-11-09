@@ -19,7 +19,9 @@ Item {
     signal picked(var value)
     readonly property alias menu: riMenu
     property string override           // shown instead of the choice (a solo's range)
-    readonly property string label: override !== "" ? override : choices.length ? prefix + choices[current][1] : ""
+    // A choice named by a word (a source's range) takes no sign.
+    function textOf(c) { return typeof c[0] === "string" ? c[1] : prefix + c[1]; }
+    readonly property string label: override !== "" ? override : choices.length ? textOf(choices[current]) : ""
     readonly property color fg: Kirigami.Theme.textColor
 
     implicitWidth: 36
@@ -121,7 +123,7 @@ Item {
             delegate: QQC2.MenuItem {
                 required property var modelData
                 required property int index
-                text: ri.prefix + modelData[1]
+                text: ri.textOf(modelData)
                 checkable: true
                 checked: index === ri.current
                 onTriggered: {

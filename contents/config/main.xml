@@ -254,6 +254,7 @@
     <!-- Weather Map: hours shown before and after now -->
     <entry name="weatherMapPastHours"   type="Int"><default>24</default><min>0</min><max>192</max></entry>
     <entry name="weatherMapFutureHours" type="Int"><default>48</default><min>12</min><max>144</max></entry>
+    <entry name="weatherMapRangeKind"   type="String"><default></default></entry>
     <!-- Weather Map: speed, x1 to x3 -->
     <entry name="weatherMapSpeed"       type="Int"><default>1</default><min>1</min><max>3</max></entry>
     <!-- Weather Map: back to the first picture after the last one, or stop there -->

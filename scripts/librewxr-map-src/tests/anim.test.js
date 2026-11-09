@@ -8,6 +8,16 @@ const A = require('../glue-anim.js');
 const H = 3600e3;
 const at = (s) => Date.parse(s);
 
+test('alignedTimes: the steps of the files that cover a range, its ends rounded out', () => {
+  // The radar's range, 21:10 to 00:20: from 21:00 to 03:00, every 3 h.
+  const a = A.alignedTimes(at('2026-11-08T21:10:00Z'), at('2026-11-09T00:20:00Z'), at('2026-11-08T23:00:00Z'), 3);
+  assert.deepEqual(a.times.map((t) => new Date(t).toISOString().substring(11, 16)), ['21:00', '00:00', '03:00']);
+  assert.equal(a.now, 1);                           // 00:00 is nearest to 23:00
+  const b = A.alignedTimes(at('2026-11-08T21:00:00Z'), at('2026-11-09T00:00:00Z'), at('2026-11-08T21:00:00Z'), 3);
+  assert.equal(b.times.length, 2);                  // ends on steps: nothing added
+  assert.equal(b.now, 0);
+});
+
 test('frameTimes: every 3 h around the step nearest to now', () => {
   const ft = A.frameTimes(at('2026-11-01T14:10:00Z'), 24, 48, 3);
   assert.equal(ft.times.length, 25);

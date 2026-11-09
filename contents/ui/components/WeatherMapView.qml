@@ -441,14 +441,20 @@ Item {
         // A layer changed by hand: the solo is over, as it stands (the page
         // goes back to the files' step for a layer).
         if (!_soloing) {
+            // The solo is over; its range stays.
             if (solo) {
                 solo = "";
                 soloSaved = null;
-                stepH = 3;
-                pastH = savedPastH;
-                futureH = savedFutureH;
             }
             _saveLayers(id, on);
+            // A forecast layer on a source's range: the files' steps over it.
+            if (on && id !== "radar" && id !== "satellite" && rangeKind && stepH < 3) {
+                stepH = 3;
+                var shown = _aligned(_soloSpan(rangeKind)), now = Date.now();
+                pastH = Math.max(0, (now - shown[0]) / 3600e3);
+                futureH = Math.max(0, (shown[1] - now) / 3600e3);
+                timeBar.timeLine.glideTo(shown[0], shown[1]);
+            }
         }
         if (id === "radar")
             js("window.animSetRadar(" + on + ")");
@@ -498,12 +504,38 @@ Item {
     }
     function _soloTo(kind) {
         solo = kind;
+        _rangeTo(kind, false);
+    }
+    // The range of a source ("radar", "satellite", "both"; "" for hours):
+    // the time line on that source's range, kept when a forecast layer is
+    // switched on. Its pictures then come on the files' 3 h steps that
+    // cover it; without one, every 10 minutes (radar) or hour.
+    property string rangeKind: ""
+    property bool _kindPending: false    // a source's range kept, set once its images are known
+    readonly property string savedRangeKind: Plasmoid.configuration.weatherMapRangeKind || ""
+    readonly property bool forecastOn: animLayerIds.some(function (id) { return layerOn(id); })
+    function _aligned(span) {
+        var S = 3 * 3600e3;
+        return [Math.floor(span[0] / S) * S, Math.ceil(span[1] / S) * S];
+    }
+    function _rangeTo(kind, forecast) {
+        rangeKind = kind;
         var span = _soloSpan(kind), now = Date.now();
-        stepH = kind === "radar" ? 1 / 6 : 1;
-        pastH = Math.max(0, (now - span[0]) / 3600e3);
-        futureH = Math.max(0, (span[1] - now) / 3600e3);
-        timeBar.timeLine.glideTo(span[0], span[1]);
+        stepH = forecast ? 3 : kind === "radar" ? 1 / 6 : 1;
+        var shown = forecast ? _aligned(span) : span;
+        pastH = Math.max(0, (now - shown[0]) / 3600e3);
+        futureH = Math.max(0, (shown[1] - now) / 3600e3);
+        timeBar.timeLine.glideTo(shown[0], shown[1]);
         js("window.animSetSpan(" + span[0] + ", " + span[1] + ", " + stepH + ")");
+    }
+    onAnimStateChanged: {
+        if (!_kindPending || !animState || !animState.radar || animState.radar.start === null)
+            return;
+        if (savedRangeKind === "satellite" && (!animState.satellite || animState.satellite.start === null))
+            return;
+        _kindPending = false;
+        if (!solo)
+            _rangeTo(savedRangeKind, forecastOn);
     }
     function soloSource(kind) {
         if (kind !== "radar" && !layerEnabled("satellite"))
@@ -514,15 +546,20 @@ Item {
             soloSaved = null;
             if (back) {
                 _applyLayers(back.on);
-                stepH = 3;
-                _goRange(back.pastH, back.futureH);
+                if (back.kind) {
+                    _rangeTo(back.kind, animLayerIds.some(function (id) { return !!back.on[id]; }));
+                } else {
+                    rangeKind = "";
+                    stepH = 3;
+                    _goRange(back.pastH, back.futureH);
+                }
             }
             return;
         }
         if (!solo) {
             var was = {};
             layerIds.forEach(function (id) { was[id] = layerOn(id); });
-            soloSaved = { on: was, pastH: pastH, futureH: futureH };
+            soloSaved = { on: was, pastH: pastH, futureH: futureH, kind: rangeKind };
         }
         _applyLayers({ radar: kind !== "satellite", satellite: kind !== "radar" });
         _soloTo(kind);
@@ -551,8 +588,8 @@ Item {
     }
     // The steps of the -/+ buttons: 10 minutes through the radar alone, an
     // hour through the satellite, 3 hours over the forecast.
-    readonly property real stepHours: solo === "radar" ? 1 / 6 : solo ? 1 : 3
-    readonly property string stepText: solo === "radar" ? i18n("%1 min", 10) : solo ? i18n("%1 h", 1) : i18n("%1 h", 3)
+    readonly property real stepHours: stepH < 1 ? 1 / 6 : stepH < 3 ? 1 : 3
+    readonly property string stepText: stepH < 1 ? i18n("%1 min", 10) : stepH < 3 ? i18n("%1 h", 1) : i18n("%1 h", 3)
 
     // The kinds of precipitation and the cloud levels shown, the pollutant.
     readonly property var precipChoices: [["rain", i18n("Rain")], ["snow", i18n("Snow")], ["wet_snow", i18n("Wet snow")], ["mix", i18n("Rain and snow")], ["freezing_rain", i18n("Freezing rain")], ["freezing_drizzle", i18n("Freezing drizzle")], ["ice_pellets", i18n("Ice pellets")]]
@@ -672,8 +709,10 @@ Item {
     }
 
     // Hours before and after now. The range picked is kept; a solo's range is not.
-    readonly property var pastChoices: [[0, i18n("0 h")], [12, i18n("12 h")], [24, i18n("1 d")], [48, i18n("2 d")], [72, i18n("3 d")], [120, i18n("5 d")], [192, i18n("8 d")]]
-    readonly property var futureChoices: [[12, i18n("12 h")], [24, i18n("1 d")], [48, i18n("2 d")], [72, i18n("3 d")], [96, i18n("4 d")], [144, i18n("6 d")]]
+    // The radar's and the satellite's ranges, before the hours.
+    readonly property var sourceChoices: [["radar", i18n("Radar")]].concat(layerEnabled("satellite") ? [["satellite", i18n("Satellite")]] : [])
+    readonly property var pastChoices: sourceChoices.concat([[0, i18n("0 h")], [12, i18n("12 h")], [24, i18n("1 d")], [48, i18n("2 d")], [72, i18n("3 d")], [120, i18n("5 d")], [192, i18n("8 d")]])
+    readonly property var futureChoices: sourceChoices.concat([[12, i18n("12 h")], [24, i18n("1 d")], [48, i18n("2 d")], [72, i18n("3 d")], [96, i18n("4 d")], [144, i18n("6 d")]])
     readonly property real savedPastH: Plasmoid.configuration.weatherMapPastHours >= 0 ? Plasmoid.configuration.weatherMapPastHours : 24
     readonly property real savedFutureH: Plasmoid.configuration.weatherMapFutureHours > 0 ? Plasmoid.configuration.weatherMapFutureHours : 48
     property real pastH: savedPastH
@@ -696,6 +735,14 @@ Item {
             soloSaved = null;
             _saveLayers("", false);
         }
+        // "radar" or "satellite" from either clock: that source's range.
+        var kind = typeof p === "string" ? p : typeof f === "string" ? f : "";
+        Plasmoid.configuration.weatherMapRangeKind = kind;
+        if (kind) {
+            _rangeTo(kind, forecastOn);
+            return;
+        }
+        rangeKind = "";
         stepH = 3;
         Plasmoid.configuration.weatherMapPastHours = p;
         Plasmoid.configuration.weatherMapFutureHours = f;
@@ -735,6 +782,24 @@ Item {
         }
         if (what.indexOf("solo-") === 0) {
             soloSource(what.slice(5));
+            return;
+        }
+        // "range-radar", "range-satellite", "range-24": a range picked; "layer-wind-on": a layer switched.
+        if (what.indexOf("range-") === 0) {
+            var v = what.slice(6);
+            pickRange(isNaN(+v) ? v : +v, savedFutureH);
+            return;
+        }
+        // "place-45.9,6.87": the widget's place changed, as from its settings.
+        if (what.indexOf("place-") === 0) {
+            var ll = what.slice(6).split(",");
+            Plasmoid.configuration.latitude = +ll[0];
+            Plasmoid.configuration.longitude = +ll[1];
+            return;
+        }
+        if (what.indexOf("layer-") === 0) {
+            var parts = what.split("-");
+            setLayer(parts[1], parts[2] === "on");
             return;
         }
         if (what === "click-radar") {
@@ -851,6 +916,26 @@ Item {
             webView.reload();
         else
             webView.url = url;
+    }
+
+    // A new place while the map plays: the page moves there, nothing is
+    // reloaded (a reload showed the viewer's own radar a moment and the
+    // time line started over). Before that, a load as for any parameter.
+    function _placeChanged() {
+        if (started)
+            homeTimer.restart();
+        else
+            pageLoadTimer.restart();
+    }
+    Timer {
+        id: homeTimer
+        interval: 150
+        onTriggered: {
+            radarRoot.js("if (window.setHome) window.setHome(" + radarRoot.lat + ", " + radarRoot.lon + ")");
+            // The page holds this place now: a later load request with
+            // the same parameters is not needed.
+            radarRoot._lastPageUrl = radarRoot._pageUrl();
+        }
     }
 
     // Coalesce page loads: at creation lat and lon arrive one after the
@@ -1009,6 +1094,8 @@ Item {
                             radarRoot.animState = null;
                             radarRoot.solo = "";
                             radarRoot.soloSaved = null;
+                            radarRoot.rangeKind = "";
+                            radarRoot._kindPending = radarRoot.savedRangeKind !== "";
                             radarRoot.stepH = 3;
                             radarRoot.pastH = radarRoot.savedPastH;
                             radarRoot.futureH = radarRoot.savedFutureH;
@@ -1072,7 +1159,10 @@ Item {
                                 Plasmoid.configuration.librewxrProjection = proj;
                         } else if (title.indexOf("isobars:") === 0) {
                             // The isobars button on the map (isobars:1:n).
-                            radarRoot.setLayer("isobars", title.substring(8, 9) === "1");
+                            var isoOn = title.substring(8, 9) === "1";
+                            radarRoot.setLayer("isobars", isoOn);
+                            // The button lights from here at once (the state read back follows).
+                            radarRoot.js("if (window.setIsobarsButton) window.setIsobarsButton(" + radarRoot.layerEnabled("pressure") + ", " + isoOn + ");");
                         } else if (title.indexOf("night:") === 0) {
                             // Switched with the day and night button: the page already shows it.
                             var night = title.substring(6) === "1";
@@ -1094,10 +1184,10 @@ Item {
                     Connections {
                         target: radarRoot
                         function onLatChanged() {
-                            pageLoadTimer.restart();
+                            radarRoot._placeChanged();
                         }
                         function onLonChanged() {
-                            pageLoadTimer.restart();
+                            radarRoot._placeChanged();
                         }
                         function onServerUrlChanged() {
                             pageLoadTimer.restart();
@@ -1172,13 +1262,13 @@ Item {
                 }
 
                 // Pictures loaded out of those of the range, and the pictures
-                // per second at most: small, at the bottom left of the map.
+                // per second at most: small, at the bottom left of the map,
+                // the models drawn under them.
                 Rectangle {
                     anchors.left: parent.left
-                    anchors.bottom: parent.bottom
+                    anchors.bottom: modelsBadge.visible ? modelsBadge.top : parent.bottom
                     anchors.leftMargin: 10
-                    // Above the map's credits, which may take the whole width.
-                    anchors.bottomMargin: 30
+                    anchors.bottomMargin: modelsBadge.visible ? 4 : 30
                     width: countLabel.implicitWidth + 12
                     height: countLabel.implicitHeight + 4
                     radius: height / 2
@@ -1197,9 +1287,39 @@ Item {
                     QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
                 }
 
+                // The models drawn: the global one, then the finer ones over
+                // this view. Above the map's credits, which may take the whole width.
+                Rectangle {
+                    id: modelsBadge
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: 10
+                    anchors.bottomMargin: 30
+                    width: modelsLabel.implicitWidth + 12
+                    height: modelsLabel.implicitHeight + 4
+                    radius: height / 2
+                    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
+                    visible: !!(radarRoot.animState && radarRoot.animState.models && radarRoot.animState.models.length)
+                    QQC2.Label {
+                        id: modelsLabel
+                        anchors.centerIn: parent
+                        color: Kirigami.Theme.disabledTextColor
+                        font.pixelSize: 11
+                        text: modelsBadge.visible ? radarRoot.animState.models.join(", ") : ""
+                    }
+                    HoverHandler { id: modelsHover }
+                    QQC2.ToolTip.text: i18n("The global model, then the finer regional<br>ones drawn over it in this view")
+                    QQC2.ToolTip.visible: modelsHover.hovered
+                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                }
+
                 // The cross while Ctrl is held, set by Qt at once. Only over
                 // the map left uncovered: over the open column, no readout.
+                // Only there while Ctrl is held: over the map, it kept every
+                // hover from the page, whose cursor then stayed the map's
+                // open hand over its buttons.
                 Item {
+                    visible: radarRoot.ctrlDown
                     anchors.fill: parent
                     anchors.rightMargin: layerPanel.width - layerPanel.foldedWidth
                     HoverHandler {

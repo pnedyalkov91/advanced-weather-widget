@@ -184,6 +184,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // (setLines) and the widget's setting lets them (setLinesShown), the
   // file read once. Hidden, never removed: from one color layer to another
   // they stay as they are, tiles and all.
+  var homeMarker = null;      // the widget's place
   var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
   var linesOwners = {}, linesData = null, linesLoading = false;
   var linesShown = typeof LINES_INIT === 'undefined' || LINES_INIT !== false;
@@ -510,7 +511,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       // Zoom buttons and compass, where the Leaflet page has them.
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-left');
       makeAttribution();
-      new maplibregl.Marker().setLngLat([view.lon, view.lat]).addTo(map);
+      homeMarker = new maplibregl.Marker().setLngLat([view.lon, view.lat]).addTo(map);
       map.once('load', function () { styleReady = true; applyProjection(); applyDayNight(); addTempLayer(); fitMinZoom(); });
       map.on('movestart', function () { holdHiddenFrames(true); });
       map.on('moveend', function () { holdHiddenFrames(false); });
@@ -664,6 +665,12 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     flyTo: function (lat, lon, zoom) {
       map.flyTo({ center: [lon, lat], zoom: zoom == null ? map.getZoom() : toGl(zoom) });
+    },
+
+    /** A new place for the widget: its marker there, the map on it at once. */
+    setHome: function (lat, lon) {
+      if (homeMarker) homeMarker.setLngLat([lon, lat]);
+      if (map) map.jumpTo({ center: [lon, lat] });
     },
 
     onViewportChange: function (cb) {

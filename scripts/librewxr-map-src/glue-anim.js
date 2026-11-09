@@ -48,6 +48,20 @@ var WidgetAnim = (function () {
     return { times: times, now: now };
   }
 
+  /** { times, now } every stepH hours on the files' own steps, from the
+      one at or before startMs to the one at or after endMs: a range of
+      the radar or satellite with the forecast layers on it; now: the one
+      nearest nowMs. */
+  function alignedTimes(startMs, endMs, nowMs, stepH) {
+    var step = stepH * HOUR, times = [], now = 0;
+    for (var t = Math.floor(startMs / step) * step; t < endMs + step; t += step) {
+      times.push(t);
+      if (t >= endMs) break;
+    }
+    for (var k = 1; k < times.length; k++) if (Math.abs(times[k] - nowMs) < Math.abs(times[now] - nowMs)) now = k;
+    return { times: times, now: now };
+  }
+
   /** The run a valid hour is read from: the one that started at or before
       it, but never newer than the latest published run; past the 6 days of
       a run of 06 or 18 UTC, the latest of 00 or 12 UTC. */
@@ -1171,7 +1185,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
     decimate: decimate, FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

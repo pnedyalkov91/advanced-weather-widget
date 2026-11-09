@@ -185,7 +185,7 @@ Rectangle {
         id: layerScroll
         anchors.fill: parent
         anchors.leftMargin: 1
-        anchors.bottomMargin: modelsBox.visible ? modelsBox.height + 18 : 0
+        anchors.bottomMargin: timeBox.height + 12
         clip: true
         contentWidth: width
         contentHeight: layerColumn.y + layerColumn.height + 12
@@ -540,117 +540,99 @@ Rectangle {
                     onPicked: function (v) { panel.map.setPollutant(v); }
                 }
             }
-            Divider {}
-            Caption { text: i18n("Time") }
-            // How far back, how far ahead (the wheel steps them), the speed.
-            Flow {
-                width: panel.colW
-                spacing: panel.folded ? 4 : 10
-                // Side by side open, one under the other folded: they glide there.
-                move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
-                RangeIcon {
-                    id: pastPick
-                    prefix: "−"
-                    override: panel.map.solo ? "−" + panel.map.hoursText(panel.map.pastH) : ""
-                    choices: panel.map.pastChoices
-                    current: Math.max(0, panel.map.pastChoices.map(function (c) { return c[0]; }).indexOf(panel.map.savedPastH))
-                    tip: i18n("How far back")
-                    onPicked: function (h) { panel.map.pickRange(h, panel.map.futureH); }
-                }
-                RangeIcon {
-                    id: futurePick
-                    prefix: "+"
-                    override: panel.map.solo ? "+" + panel.map.hoursText(panel.map.futureH) : ""
-                    mirror: true
-                    choices: panel.map.futureChoices
-                    current: Math.max(0, panel.map.futureChoices.map(function (c) { return c[0]; }).indexOf(panel.map.savedFutureH))
-                    tip: i18n("How far ahead")
-                    onPicked: function (h) { panel.map.pickRange(panel.map.pastH, h); }
-                }
-                // x1, x2, x3 in turn, one a click: 3 hours of weather in 1.5 s, 0.75 s, 0.5 s.
-                Item {
-                    id: speedIcon
-                    readonly property int speed: panel.map.speed
-                    implicitWidth: 36
-                    implicitHeight: 40
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 4
-                        color: panel.tint(speedArea.containsMouse ? 0.10 : 0)
-                    }
-                    // One triangle a step of speed.
-                    Canvas {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        y: 5
-                        width: 26
-                        height: 16
-                        property int n: speedIcon.speed
-                        property color fill: panel.fg
-                        onNChanged: requestPaint()
-                        onFillChanged: requestPaint()
-                        onPaint: {
-                            var c = getContext("2d"), w = 8, gap = 1, total = n * w + (n - 1) * gap, x0 = (width - total) / 2;
-                            c.reset();
-                            c.fillStyle = fill;
-                            for (var i = 0; i < n; i++) {
-                                var x = x0 + i * (w + gap);
-                                c.beginPath();
-                                c.moveTo(x, 2);
-                                c.lineTo(x + w, 8);
-                                c.lineTo(x, 14);
-                                c.closePath();
-                                c.fill();
-                            }
-                        }
-                    }
-                    QQC2.Label {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        y: 25
-                        text: "x" + speedIcon.speed
-                        color: panel.fg
-                        font.pixelSize: 11
-                        font.bold: true
-                    }
-                    MouseArea {
-                        id: speedArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: panel.map.setSpeed(speedIcon.speed % 3 + 1)
-                    }
-                    QQC2.ToolTip.text: i18n("Speed x%1: 3 hours in %2 s", speedIcon.speed, Number(1.5 / speedIcon.speed).toLocaleString(Qt.locale(), "f", 2).replace(/0$/, "")) + "<br><i>" + i18n("Click for the next speed") + "</i>"
-                    QQC2.ToolTip.visible: speedArea.containsMouse
-                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
-                }
-            }
         }
     }
 
-    // The models drawn, at the bottom of the open column: the global one,
-    // then the finer ones over this view.
+    // The time, always in sight at the bottom of the column (the column
+    // scrolls above it): how far back, how far ahead, the speed.
     Column {
-        id: modelsBox
-        visible: !panel.folded
-        x: 10.5
+        id: timeBox
+        x: 9.5
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-        spacing: 2
-        QQC2.Label {
-            text: i18n("Models")
-            color: panel.dimText
-            font.pixelSize: 12
-            font.bold: true
-        }
-        QQC2.Label {
-            width: 165
-            wrapMode: Text.Wrap
-            color: panel.fg
-            font.pixelSize: 13
-            text: panel.map.animState && panel.map.animState.models ? panel.map.animState.models.join(", ") : "…"
-            HoverHandler { id: modelsHover }
-            QQC2.ToolTip.text: i18n("The global model, then the finer regional<br>ones drawn over it in this view")
-            QQC2.ToolTip.visible: modelsHover.hovered
-            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        anchors.bottomMargin: 8
+        spacing: 7
+        Divider {}
+        Caption { text: i18n("Time") }
+        // How far back, how far ahead (the wheel steps them), the speed.
+        Flow {
+            width: panel.colW
+            spacing: panel.folded ? 4 : 10
+            // Side by side open, one under the other folded: they glide there.
+            move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
+            RangeIcon {
+                id: pastPick
+                prefix: "−"
+                override: panel.map.solo || panel.map.rangeKind ? "−" + panel.map.hoursText(panel.map.pastH) : ""
+                choices: panel.map.pastChoices
+                current: Math.max(0, panel.map.pastChoices.map(function (c) { return c[0]; }).indexOf(panel.map.rangeKind || panel.map.savedPastH))
+                tip: i18n("How far back")
+                onPicked: function (h) { panel.map.pickRange(h, panel.map.rangeKind ? panel.map.savedFutureH : panel.map.futureH); }
+            }
+            RangeIcon {
+                id: futurePick
+                prefix: "+"
+                override: panel.map.solo || panel.map.rangeKind ? "+" + panel.map.hoursText(panel.map.futureH) : ""
+                mirror: true
+                choices: panel.map.futureChoices
+                current: Math.max(0, panel.map.futureChoices.map(function (c) { return c[0]; }).indexOf(panel.map.rangeKind || panel.map.savedFutureH))
+                tip: i18n("How far ahead")
+                onPicked: function (h) { panel.map.pickRange(panel.map.rangeKind ? panel.map.savedPastH : panel.map.pastH, h); }
+            }
+            // x1, x2, x3 in turn, one a click: 3 hours of weather in 1.5 s, 0.75 s, 0.5 s.
+            Item {
+                id: speedIcon
+                readonly property int speed: panel.map.speed
+                implicitWidth: 36
+                implicitHeight: 40
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 4
+                    color: panel.tint(speedArea.containsMouse ? 0.10 : 0)
+                }
+                // One triangle a step of speed.
+                Canvas {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: 5
+                    width: 26
+                    height: 16
+                    property int n: speedIcon.speed
+                    property color fill: panel.fg
+                    onNChanged: requestPaint()
+                    onFillChanged: requestPaint()
+                    onPaint: {
+                        var c = getContext("2d"), w = 8, gap = 1, total = n * w + (n - 1) * gap, x0 = (width - total) / 2;
+                        c.reset();
+                        c.fillStyle = fill;
+                        for (var i = 0; i < n; i++) {
+                            var x = x0 + i * (w + gap);
+                            c.beginPath();
+                            c.moveTo(x, 2);
+                            c.lineTo(x + w, 8);
+                            c.lineTo(x, 14);
+                            c.closePath();
+                            c.fill();
+                        }
+                    }
+                }
+                QQC2.Label {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: 25
+                    text: "x" + speedIcon.speed
+                    color: panel.fg
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+                MouseArea {
+                    id: speedArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: panel.map.setSpeed(speedIcon.speed % 3 + 1)
+                }
+                QQC2.ToolTip.text: i18n("Speed x%1: 3 hours in %2 s", speedIcon.speed, Number(1.5 / speedIcon.speed).toLocaleString(Qt.locale(), "f", 2).replace(/0$/, "")) + "<br><i>" + i18n("Click for the next speed") + "</i>"
+                QQC2.ToolTip.visible: speedArea.containsMouse
+                QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+            }
         }
     }
 

@@ -515,7 +515,11 @@ function animLoad(pastH, futureH, stepH, span) {
   }
   anim.pastH = pastH;
   anim.futureH = futureH;
-  var ft = span ? WidgetAnim.spanTimes(span.start, span.end, anim.nowMs, anim.stepH)
+  // A range of the radar or satellite stays when a forecast layer comes:
+  // then on the files' steps that cover it.
+  anim.span = span || null;
+  var ft = span ? (anim.stepH >= WidgetAnim.STEP_H ? WidgetAnim.alignedTimes(span.start, span.end, anim.nowMs, anim.stepH)
+    : WidgetAnim.spanTimes(span.start, span.end, anim.nowMs, anim.stepH))
     : WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, anim.stepH);
   anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
   anim.group.onTime = animOverlayTime;
@@ -541,7 +545,7 @@ function animSetLayer(id, on) {
     anim.group.addGhost(key, t.frames, t.layer);
     anim.switcher.leave(key, t.layer, t.frames);
   } else if (on && !t && ANIM_LAYERS[id]) {
-    if (anim.stepH !== WidgetAnim.STEP_H) animLoad(anim.pastH, anim.futureH, WidgetAnim.STEP_H);
+    if (anim.stepH !== WidgetAnim.STEP_H) animLoad(anim.pastH, anim.futureH, WidgetAnim.STEP_H, anim.span);
     var back = anim.switcher.enter(key);
     if (back.layer) anim.group.removeGhost(key);
     var layer = back.layer || ANIM_LAYERS[id](_widgetAdapter.getMap());
@@ -599,6 +603,12 @@ window.animStart = function (pastH, futureH, layers) {
 window.animSetRange = function (pastH, futureH, stepH) { if (anim) animLoad(pastH, futureH, stepH); };
 /** From startMs to endMs (the range of the radar or satellite alone), a picture every stepH hours between. */
 window.animSetSpan = function (startMs, endMs, stepH) { if (anim) animLoad(0, 0, stepH, { start: startMs, end: endMs }); };
+/** The widget's place changed: the map moves there, nothing reloaded. */
+window.setHome = function (lat, lon) {
+  config.view.lat = lat;
+  config.view.lon = lon;
+  if (_widgetAdapter.setHome) _widgetAdapter.setHome(lat, lon);
+};
 window.animSetLayer = function (id, on) { if (anim) animSetLayer(id, !!on); };
 
 var animMoveHooked = false;
@@ -1133,7 +1143,8 @@ if (nightBtn) {
 // The widget shows it (setIsobarsButton) while the pressure is one of its
 // layers, lit while the isobars are on. A click is reported through the
 // title ("isobars:1:n", n counting the clicks so the same state twice is
-// still a change); the widget switches the layer and lights the button back.
+// still a change); the widget switches the layer and lights the button: it
+// alone says the state.
 var isoBtn = document.getElementById('lv-isobars'), isoClicks = 0;
 window.setIsobarsButton = function (shown, on) {
   if (!isoBtn) return;
@@ -1144,7 +1155,6 @@ if (isoBtn) {
   isoBtn.title = tr('isobars', 'Isobars');
   isoBtn.addEventListener('click', function () {
     var on = !isoBtn.classList.contains('active');
-    isoBtn.classList.toggle('active', on);
     document.title = 'isobars:' + (on ? 1 : 0) + ':' + (++isoClicks);
   });
 }

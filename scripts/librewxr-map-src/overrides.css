@@ -216,9 +216,9 @@
       .isobars-btn.lv-off {
         display: none;
       }
-      .isobars-btn.active {
-        color: var(--accent);
-        border-color: var(--accent);
+      /* On: the drawing bright, no colored frame. */
+      .isobars-btn.active svg {
+        stroke: var(--text);
       }
       .bg-picker {
         position: absolute;
