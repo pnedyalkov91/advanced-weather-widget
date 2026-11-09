@@ -380,7 +380,9 @@ var WidgetAnim = (function () {
      opts.gate when the reads are shared with other layers. Each picture is
      looked for in opts.store first (see frameStore), and put there once
      read; with opts.pruneH, the store is sorted out on each load (see
-     pruneStore). The pictures of opts.reuse (the Frames of another range) are taken over. */
+     pruneStore). The pictures of opts.reuse (the Frames of another range) are taken over.
+     Its hours: opts.times (and opts.nowIndex) when given, else every 3 h
+     from opts.pastH before now to opts.futureH after. */
   var GLOBAL_POINTS = 1440 * 721;   // a file of ECMWF IFS 0.25 degree
 
   function Frames(loader, opts) {
@@ -410,7 +412,10 @@ var WidgetAnim = (function () {
     this.pruneH = opts.pruneH || 0;
     this.fromStore = 0;
     this.onFrame = opts.onFrame || function () {};
-    var ft = frameTimes(this.now(), this.pastH, this.futureH, STEP_H);
+    // opts.times: the animation's own (a range of the radar or satellite
+    // starts on its first image, not on a count of hours from now); the
+    // animation asks for pictures by their index, so both must agree.
+    var ft = opts.times ? { times: opts.times.slice(), now: opts.nowIndex || 0 } : frameTimes(this.now(), this.pastH, this.futureH, STEP_H);
     this.times = ft.times;
     this.nowIndex = ft.now;
     this.packed = this.times.map(function () { return null; });

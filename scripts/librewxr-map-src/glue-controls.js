@@ -383,7 +383,8 @@ window.animSetLoop = function (on) {
 function animTrack(id, layer, reuse, onShow) {
   var frames = new WidgetAnim.Frames(_windOpen, {
     field: animField(id), now: function () { return anim.nowMs; },
-    pastH: anim.pastH, futureH: anim.futureH, reuse: reuse, parallel: 6, gate: animGate,
+    pastH: anim.pastH, futureH: anim.futureH, times: anim.group.times, nowIndex: anim.group.nowIndex,
+    reuse: reuse, parallel: 6, gate: animGate,
     store: animStore, pruneH: ANIM_KEEP_H,
     onFrame: function (i) {
       var t = anim && anim.group.track(id);
@@ -442,7 +443,8 @@ function animMakeFine(id, model, frames, reuse) {
   if (temp) fineSurface(model);
   var fine = new WidgetAnim.Frames(_windOpen, {
     field: animFineField(id), fileModel: model, now: function () { return anim.nowMs; },
-    pastH: anim.pastH, futureH: anim.futureH, reuse: reuse, parallel: 6, gate: animGate,
+    pastH: anim.pastH, futureH: anim.futureH, times: anim.group.times, nowIndex: anim.group.nowIndex,
+    reuse: reuse, parallel: 6, gate: animGate,
     store: animStore, pruneH: ANIM_KEEP_H, surface: temp ? function () { return fineSurface(model); } : null,
     onFrame: function (i) {
       var t = anim && anim.group.track(id), p = anim && anim.player;

@@ -45,6 +45,25 @@ test('runFor: the run of that hour, never newer than the latest one', () => {
   assert.equal(A.runFor(at('2026-11-07T09:00:00Z'), at('2026-11-01T12:00:00Z')), at('2026-11-01T12:00:00Z'));
 });
 
+test('Frames: given the times of the animation (a range of the radar or satellite), it reads those, not its own', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-09T06:00:00Z' }) }),
+    _readVars: async (f) => { read.push(new Date(f.validMs).toISOString().slice(11, 16)); return { data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 }; },
+  };
+  // The satellite's range, 23:00 to 12:00, on the files' steps: 21:00 to 12:00.
+  const times = A.alignedTimes(at('2026-11-08T23:00:00Z'), at('2026-11-09T12:00:00Z'), at('2026-11-09T10:50:00Z'), 3);
+  // pastH and futureH as the page works them out: from now they give 00:00 to 15:00.
+  const f = new A.Frames(loader, { now: () => at('2026-11-09T10:50:00Z'), pastH: 12, futureH: 2, times: times.times, nowIndex: times.now });
+  assert.deepEqual(f.times, times.times);
+  assert.equal(f.nowIndex, times.now);
+  await f.load();
+  assert.deepEqual(read.sort(), ['00:00', '03:00', '06:00', '09:00', '12:00', '21:00']);
+  assert.ok(f.times.every((_, i) => f.ready(i)));
+});
+
 test('hasFile: every 3 h for 6 days, then every 6 h', () => {
   const run = at('2026-11-01T00:00:00Z');
   assert.equal(A.hasFile(at('2026-11-07T00:00:00Z'), run), true);

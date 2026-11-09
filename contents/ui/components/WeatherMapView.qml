@@ -440,21 +440,24 @@ Item {
     function setLayer(id, on) {
         // A layer changed by hand: the solo is over, as it stands (the page
         // goes back to the files' step for a layer).
+        var fine = false;
         if (!_soloing) {
             // The solo is over; its range stays.
-            if (solo) {
-                solo = "";
-                soloSaved = null;
-            }
+            _endSolo();
             _saveLayers(id, on);
+            var forecast = animLayerIds.indexOf(id) >= 0;
             // A forecast layer on a source's range: the files' steps over it.
-            if (on && id !== "radar" && id !== "satellite" && rangeKind && stepH < 3) {
+            if (on && forecast && rangeKind && stepH < 3) {
                 stepH = 3;
                 var shown = _aligned(_soloSpan(rangeKind)), now = Date.now();
                 pastH = Math.max(0, (now - shown[0]) / 3600e3);
                 futureH = Math.max(0, (shown[1] - now) / 3600e3);
                 timeBar.timeLine.glideTo(shown[0], shown[1]);
             }
+            // The last one off: the source's own steps again (once the page
+            // has taken the layer off).
+            fine = !on && forecast && rangeKind !== "" && stepH >= 3
+                && !animLayerIds.some(function (x) { return x !== id && layerOn(x); });
         }
         if (id === "radar")
             js("window.animSetRadar(" + on + ")");
@@ -462,6 +465,19 @@ Item {
             js("window.animSetSatellite(" + on + ")");
         else
             js("window.animSetLayer('" + id + "', " + on + ")");
+        if (fine)
+            _rangeTo(rangeKind, false);
+    }
+    // A solo ends as it stands: its range stays. Radar and satellite
+    // together cover the satellite's range (it starts first), the one the
+    // clocks know.
+    function _endSolo() {
+        if (!solo)
+            return;
+        solo = "";
+        soloSaved = null;
+        if (rangeKind === "both")
+            rangeKind = "satellite";
     }
     // A click on the radar or the satellite: in a solo, it changes the solo.
     function clickSource(id, on) {
@@ -576,8 +592,7 @@ Item {
         if (kind) {
             _soloTo(kind);
         } else {
-            solo = "";
-            soloSaved = null;
+            _endSolo();
             _saveLayers(id, on);
         }
     }
@@ -731,8 +746,7 @@ Item {
     // A range picked by hand ends the solo, as it stands.
     function pickRange(p, f) {
         if (solo) {
-            solo = "";
-            soloSaved = null;
+            _endSolo();
             _saveLayers("", false);
         }
         // "radar" or "satellite" from either clock: that source's range.
