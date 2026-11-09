@@ -116,7 +116,7 @@ QQC2.Popup {
                  { label: i18n("Click on the icon"), text: panel.switchText, indent: true },
                  { label: i18n("Shift + mouse wheel on the icon"), text: i18n("the opacity, shown in a bubble while it changes and drawn as the bar under the icon."), indent: true },
                  { label: i18n("Mouse wheel"), text: i18n("scrolls the column."), indent: true }],
-          note: i18n("The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. The column lists the layers as they are stacked on the map, the top one first; the order is set in the widget settings. The wind always goes over the others.") },
+          note: i18n("The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. The column lists the layers as they are stacked on the map, the top one first; the order is set with the button left of the settings. The wind always goes over the others.") },
         { title: i18n("Time"),
           rows: [{ head: i18n("The two clocks: how far back and how far ahead") },
                  { label: i18n("Click"), text: i18n("opens the list of choices. It also gives the range of the radar or of the satellite, which stays when another layer is switched on."), indent: true },

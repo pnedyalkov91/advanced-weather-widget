@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import "../../js/configUtils.js" as ConfigUtils
-import "../../config/tabs"
 
 // The layer column of the Weather Map, at the right of the map: the help
 // and the settings at the top, the layers (radar and satellite, then the

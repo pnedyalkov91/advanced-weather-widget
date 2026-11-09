@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import "../../js/configUtils.js" as ConfigUtils
 
-// The stack of the Weather Maps' layers in the settings, top first: a line
+// The stack of the Weather Maps' layers in its popup, top first: a line
 // a layer, its drag handle then its switch. A line dragged by its handle
 // floats over the list while the others make room for it; dropped, the
 // new order is given by orderPicked(). saved: weatherMapLayerOrder;
