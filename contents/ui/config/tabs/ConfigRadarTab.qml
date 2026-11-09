@@ -406,22 +406,94 @@ GridLayout {
                 d.push(id);
             radarTab.configRoot.cfg_weatherMapDisabledLayers = JSON.stringify(d);
         }
-        Repeater {
-            model: [["satellite", i18n("Satellite")], ["wind", i18n("Wind")], ["temperature", i18n("Temperature")],
-                ["precipitation", i18n("Precipitation")], ["clouds", i18n("Cloud cover")], ["pressure", i18n("Pressure and isobars")],
-                ["humidity", i18n("Relative humidity")], ["dewpoint", i18n("Dew point")], ["airquality", i18n("Air quality")]]
-            delegate: WrappingSwitch {
-                required property var modelData
-                text: modelData[1]
-                checked: mapLayers.disabled.indexOf(modelData[0]) < 0
-                onToggled: mapLayers.setEnabled(modelData[0], checked)
+        // Wind first: drawn over the map, it stays on top of the others.
+        readonly property var labels: ({
+            wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"), isobars: i18n("Isobars"),
+            precipitation: i18n("Precipitation"), clouds: i18n("Cloud cover"), temperature: i18n("Temperature"),
+            pressure: i18n("Pressure"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
+        })
+        function isOn(id) {
+            if (id === "radar")
+                return true;
+            return disabled.indexOf(id === "isobars" ? "pressure" : id) < 0;
+        }
+        RowLayout {
+            id: windLine
+            Layout.fillWidth: true
+            // Where the others have their handle.
+            Kirigami.ListItemDragHandle {
+                opacity: 0
+                enabled: false
+                listItem: windLine
+                listView: stackList
             }
+            WrappingSwitch {
+                text: mapLayers.labels.wind
+                checked: mapLayers.isOn("wind")
+                onToggled: mapLayers.setEnabled("wind", checked)
+            }
+        }
+        // The stack, top first: a handle drags a layer up or down.
+        ListView {
+            id: stackList
+            Layout.fillWidth: true
+            implicitHeight: contentHeight
+            interactive: false
+            model: ListModel { id: stackModel }
+            readonly property string saved: radarTab.configRoot.cfg_weatherMapLayerOrder
+            property string written: ""
+            function reload() {
+                stackModel.clear();
+                ConfigUtils.weatherStackOrder(saved).forEach(function (id) { stackModel.append({ lid: id }); });
+            }
+            function save() {
+                var order = [];
+                for (var i = 0; i < stackModel.count; i++)
+                    order.push(stackModel.get(i).lid);
+                written = JSON.stringify(order);
+                radarTab.configRoot.cfg_weatherMapLayerOrder = written;
+            }
+            Component.onCompleted: reload()
+            onSavedChanged: if (saved !== written) reload()
+            moveDisplaced: Transition {
+                YAnimator { duration: Kirigami.Units.longDuration; easing.type: Easing.InOutQuad }
+            }
+            delegate: Item {
+                id: stackRow
+                required property string lid
+                required property int index
+                width: stackList.width
+                implicitHeight: stackLine.implicitHeight
+                RowLayout {
+                    id: stackLine
+                    width: parent.width
+                    Kirigami.ListItemDragHandle {
+                        listItem: stackRow
+                        listView: stackList
+                        onMoveRequested: function (oldIndex, newIndex) { stackModel.move(oldIndex, newIndex, 1); }
+                        onDropped: stackList.save()
+                    }
+                    // The radar always shows; the isobars come and go with the pressure.
+                    WrappingSwitch {
+                        text: mapLayers.labels[stackRow.lid]
+                        enabled: stackRow.lid !== "radar" && stackRow.lid !== "isobars"
+                        checked: mapLayers.isOn(stackRow.lid)
+                        onToggled: mapLayers.setEnabled(stackRow.lid, checked)
+                    }
+                }
+            }
+        }
+        Button {
+            text: i18n("Default order")
+            icon.name: "edit-undo"
+            enabled: JSON.stringify(ConfigUtils.weatherStackOrder(stackList.saved)) !== JSON.stringify(ConfigUtils.WEATHER_STACK)
+            onClicked: radarTab.configRoot.cfg_weatherMapLayerOrder = "[]"
         }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            text: i18n("The radar is always there. A layer switched off here leaves the column of the Weather Maps tab.")
+            text: i18n("Drag a layer by its handle to stack it: the first one is drawn on top. The wind always goes over the others, the coasts and borders over the layers. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab.")
         }
     }
 

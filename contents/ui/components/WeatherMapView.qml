@@ -430,6 +430,11 @@ Item {
             d.push(id);
         Plasmoid.configuration.weatherMapDisabledLayers = JSON.stringify(d);
     }
+    // The stack of the layers, top first, chosen in the settings: the map
+    // draws them so and the column lists them so (the wind, drawn over
+    // the map, first).
+    readonly property var layerOrder: ConfigUtils.weatherStackOrder(Plasmoid.configuration.weatherMapLayerOrder)
+    onLayerOrderChanged: if (started) js("if (window.setLayerOrder) window.setLayerOrder(" + JSON.stringify(layerOrder) + ")")
     // A layer taken out while on goes off.
     onDisabledLayersChanged: {
         if (!started)
@@ -842,9 +847,19 @@ Item {
                 pick.menu.itemAt(at).triggered();
             return;
         }
+        if (what === "rows") {
+            console.log("[ui] rows: " + layerPanel.rowTitles().join(" | "));
+            return;
+        }
         if (what === "clocks") {
             console.log("[ui] clocks: " + layerPanel.pastPick.label + " | " + layerPanel.futurePick.label
                 + " | kind=" + rangeKind + " step=" + stepH);
+            return;
+        }
+        // "order:temperature,radar": the stack of the layers, as set in the settings ("order:" the default).
+        if (what.indexOf("order:") === 0) {
+            var ord = what.slice(6);
+            Plasmoid.configuration.weatherMapLayerOrder = JSON.stringify(ord ? ord.split(",") : []);
             return;
         }
         // "palette-temp:builtin:bluered", "palette-wind:": a palette picked in the options.
@@ -901,7 +916,8 @@ Item {
             + "window.animSetMaxFps(" + maxFps + ");"
             + "window.animSetResolution(" + resolution + ");"
             + "if (window.animSetLoop) window.animSetLoop(" + loop + ");"
-            + "if (window.animSetWindLevel) window.animSetWindLevel('" + windLevel + "');";
+            + "if (window.animSetWindLevel) window.animSetWindLevel('" + windLevel + "');"
+            + "if (window.setLayerOrder) window.setLayerOrder(" + JSON.stringify(layerOrder) + ");";
         for (var id in opacities)
             code += "window.animSetOpacity('" + id + "', " + opacities[id] + ");";
         for (var l in legendsHidden)

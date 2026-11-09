@@ -471,6 +471,65 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     });
   }
 
+  // The stack of the weather layers, set by the widget: its ids top first
+  // (the wind, a canvas over the map, is not in it). The night stays at
+  // the bottom, the coasts and borders on top. restack() puts every layer
+  // of the map at its place, with as few moves as it can; a layer added
+  // anywhere goes back to its place on the next 'styledata'.
+  var STACK_DEFAULT = ['radar', 'satellite', 'isobars', 'precipitation', 'clouds',
+    'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
+  var stackOrder = STACK_DEFAULT.slice(), restacking = false;
+  function normStackOrder(order) {
+    var out = [];
+    (order || []).concat(STACK_DEFAULT).forEach(function (g) {
+      if (STACK_DEFAULT.indexOf(g) >= 0 && out.indexOf(g) < 0) out.push(g);
+    });
+    return out;
+  }
+  /** [group, rank inside the group] of a layer id; null for one not stacked. */
+  function stackGroup(id) {
+    if (id === 'lv-night') return ['night', 0];
+    if (id === LINES_LAYER) return ['lines', 0];
+    if (id.indexOf('lv-alerts') === 0) return ['radar', 0];
+    if (id.indexOf('lv-layer-sat-') >= 0) return ['satellite', 1];
+    if (id.indexOf('lv-layer-radar-') >= 0) return ['radar', 1];
+    if (id === 'lv-iso' || id === 'lv-iso-gl') return ['isobars', 0];
+    if (id === 'lv-iso-label') return ['isobars', 1];
+    if (id === 'lv-precip-gl') return ['precipitation', 0];
+    if (id === 'lv-clouds-gl') return ['clouds', 0];
+    if (id === 'lv-temp-gl' || id === TEMP_LAYER) return ['temperature', 0];
+    if (id === 'lv-pres-gl' || id === 'lv-pres') return ['pressure', 0];
+    if (id === 'lv-humidity-gl') return ['humidity', 0];
+    if (id === 'lv-dewpoint-gl') return ['dewpoint', 0];
+    if (id.indexOf('lv-aq-gl-') === 0) return ['airquality', 0];
+    return null;
+  }
+  function layersOrder() {
+    return map.getLayersOrder ? map.getLayersOrder() : map.getStyle().layers.map(function (l) { return l.id; });
+  }
+  function restack() {
+    if (!map || restacking || swapInProgress) return;
+    var n = stackOrder.length, ids = layersOrder(), known = [];
+    ids.forEach(function (id, pos) {
+      var g = stackGroup(id);
+      if (!g) return;
+      var level = g[0] === 'night' ? -1 : g[0] === 'lines' ? n : n - 1 - stackOrder.indexOf(g[0]);
+      known.push({ id: id, level: level, sub: g[1], pos: pos });
+    });
+    var want = known.slice().sort(function (a, b) { return a.level - b.level || a.sub - b.sub || a.pos - b.pos; });
+    if (want.every(function (k, i) { return k === known[i]; })) return;
+    restacking = true;
+    try {
+      // Each one right under the one above it, from the top one down.
+      for (var i = want.length - 2; i >= 0; i--) {
+        ids = layersOrder();
+        if (ids[ids.indexOf(want[i].id) + 1] !== want[i + 1].id) map.moveLayer(want[i].id, want[i + 1].id);
+      }
+    } finally {
+      restacking = false;
+    }
+  }
+
   function restoreRuntimeStyle(key) {
     appliedKey = key;
     var i;
@@ -485,10 +544,18 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     moveSun();
     swapInProgress = false;
     for (i = 0; i < restyleCbs.length; i++) restyleCbs[i]();
+    restack();
     if (desired && desired.key !== appliedKey) swapToStyle(desired);
   }
 
   var adapter = {
+    /** The stack of the weather layers, ids top first (see restack()). */
+    setLayerOrder: function (order) {
+      stackOrder = normStackOrder(order);
+      restack();
+    },
+    restack: restack,
+
     // MapLibre takes no sources or layers before its style has loaded.
     onMapReady: function (cb) {
       if (styleReady) { cb(); return; }
@@ -529,6 +596,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.on('moveend', function () { holdHiddenFrames(false); });
       map.on('resize', fitMinZoom);
       map.on('render', checkPrepared);
+      map.on('styledata', restack);
       return map;
     },
 
@@ -625,12 +693,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (map.getSource(handle.sourceId)) map.removeSource(handle.sourceId);
     },
 
-    /** An image of the animation back over the layers added since (a
-        layer switched on puts itself on top), its satellite under its radar. */
+    /** An image of the animation back to its place in the stack. */
     raise: function (handle) {
       var e = entryOf(handle);
       if (!e || !e.anim || !map.getLayer(e.layerId)) return;
-      map.moveLayer(e.layerId, animFrameBefore(e));
+      restack();
     },
 
     /** Hide every radar and satellite frame, those to come too. */

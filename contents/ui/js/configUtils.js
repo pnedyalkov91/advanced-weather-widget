@@ -277,3 +277,41 @@ function tempAddStop(stops, unit) {
     var next = tempFromUnit(tempToUnit(last.t, unit) + 5, unit);
     return stops.concat([{ t: next, color: last.color }]);
 }
+
+/**
+ * The stack of the Weather Maps' layers, top first (the wind, drawn over
+ * the map, is not in it). The map page has the same default (STACK_DEFAULT
+ * in glue-adapter-maplibre.js).
+ */
+var WEATHER_STACK = ["radar", "satellite", "isobars", "precipitation", "clouds",
+    "temperature", "pressure", "humidity", "dewpoint", "airquality"];
+
+/**
+ * The stack chosen in the settings: weatherMapLayerOrder read, unknown ids
+ * and repeats left out, the missing ones added in the default order.
+ * @param {string} json - weatherMapLayerOrder
+ * @returns {Array} - every id of WEATHER_STACK, top first
+ */
+function weatherStackOrder(json) {
+    var list = [];
+    try {
+        list = JSON.parse(json || "[]");
+    } catch (e) {
+        list = [];
+    }
+    var out = [];
+    (Array.isArray(list) ? list : []).concat(WEATHER_STACK).forEach(function (id) {
+        if (WEATHER_STACK.indexOf(id) >= 0 && out.indexOf(id) < 0)
+            out.push(id);
+    });
+    return out;
+}
+
+/** A new list with the item at from moved to to; the same items when either is out of range. */
+function weatherStackMove(order, from, to) {
+    var out = order.slice();
+    if (from < 0 || from >= out.length || to < 0 || to >= out.length)
+        return out;
+    out.splice(to, 0, out.splice(from, 1)[0]);
+    return out;
+}

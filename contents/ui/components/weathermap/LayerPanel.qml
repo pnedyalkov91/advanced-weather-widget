@@ -366,6 +366,30 @@ Rectangle {
         Divider {}
     }
 
+    // The rows in the order of the stack (map.layerOrder, top first), the
+    // wind first: drawn over the map, it is over all. Each row hung again
+    // on the column, in turn, goes after those before it.
+    function arrangeRows() {
+        var rowOf = { radar: radarRow, satellite: satRow, precipitation: precipRow, clouds: cloudRow, temperature: tempRow,
+            pressure: presRow, humidity: humRow, dewpoint: dewRow, airquality: aqRow };
+        var rows = [layersCaption, windRow].concat(map.layerOrder.filter(function (id) { return !!rowOf[id]; })
+            .map(function (id) { return rowOf[id]; }));
+        rows.forEach(function (r) {
+            r.parent = null;
+            r.parent = layerColumn;
+        });
+    }
+    Component.onCompleted: arrangeRows()
+    /** The titles of the column's rows, in their order (the test hook "rows"). */
+    function rowTitles() {
+        return layerColumn.children.filter(function (r) { return r.title !== undefined && r.visible; })
+            .map(function (r) { return r.title; });
+    }
+    Connections {
+        target: panel.map
+        function onLayerOrderChanged() { panel.arrangeRows(); }
+    }
+
     // The whole column scrolls when the popup is too short for it.
     Flickable {
         id: layerScroll
@@ -398,7 +422,7 @@ Rectangle {
             y: 4
             spacing: 7
 
-            Caption { text: i18n("Layers") }
+            Caption { id: layersCaption; text: i18n("Layers") }
 
             // Radar and satellite; the radar's wheel opens their tile options.
             LayerRow {
@@ -454,7 +478,6 @@ Rectangle {
                 onToggled: function (on) { panel.map.clickSource("satellite", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("satellite", p); }
             }
-            Divider {}
 
             LayerRow {
                 id: windRow
@@ -568,6 +591,7 @@ Rectangle {
                 onLegendToggled: function (on) { panel.map.setLegend("pressure", on); }
             }
             LayerRow {
+                id: humRow
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Relative humidity")
@@ -583,6 +607,7 @@ Rectangle {
                 onLegendToggled: function (on) { panel.map.setLegend("humidity", on); }
             }
             LayerRow {
+                id: dewRow
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Dew point")

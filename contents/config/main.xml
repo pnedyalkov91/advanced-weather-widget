@@ -268,6 +268,8 @@
     <!-- Weather Map: the pollutant of the air quality layer (pm2_5, pm10, ozone, nitrogen_dioxide, sulphur_dioxide, dust, aerosol_optical_depth, uv_index) -->
     <!-- Weather Map: the layers taken out of the column (the radar always stays), JSON list of ids -->
     <entry name="weatherMapDisabledLayers" type="String"><default>[]</default></entry>
+    <!-- Weather Map: the stack of the layers on the map and in the column, JSON list of ids top first; empty for the default one -->
+    <entry name="weatherMapLayerOrder" type="String"><default>[]</default></entry>
     <entry name="weatherMapPollutant"   type="String"><default>pm2_5</default></entry>
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->

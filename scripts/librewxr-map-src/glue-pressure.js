@@ -570,25 +570,12 @@ var WidgetPressure = (function () {
       map.on('sourcedata', this._onData);
       this._onMoveEnd = function () { if (opts.clip && !self.moving) self.redraw(); };
       map.on('moveend', this._onMoveEnd);
-      // Satellite or radar images made after them go right under the
-      // coasts, so over them: they go back under those images.
-      this._onStyle = function () { self.keepUnder(); };
-      map.on('styledata', this._onStyle);
+      // Its place in the stack: the adapter's restack().
       return this;
-    },
-    keepUnder: function () {
-      var map = this.map, before = _widgetAdapter.linesBefore();
-      if (!map || !before || !map.getLayer('lv-iso-label')) return;
-      var order = map.getLayersOrder();
-      if (order[order.indexOf('lv-iso-label') + 1] !== before) map.moveLayer('lv-iso-label', before);
-      var line = isoLine(map);
-      order = map.getLayersOrder();
-      if (line && order[order.indexOf(line) + 1] !== 'lv-iso-label') map.moveLayer(line, 'lv-iso-label');
     },
     remove: function () {
       var map = this.map;
       if (!map) return;
-      map.off('styledata', this._onStyle);
       map.off('sourcedata', this._onData);
       map.off('moveend', this._onMoveEnd);
       (this._pool || []).forEach(function (mk) { mk.marker.remove(); });

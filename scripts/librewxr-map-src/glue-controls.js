@@ -278,6 +278,13 @@ window.setTempUnit = function (u) {
   if (t) t.layer.setUnit(tempUnit);
 };
 
+// The stack of the weather layers, chosen in the widget settings: ids top
+// first (radar, satellite, isobars, precipitation, clouds, temperature,
+// pressure, humidity, dewpoint, airquality).
+window.setLayerOrder = function (order) {
+  if (_widgetAdapter.setLayerOrder) _widgetAdapter.setLayerOrder(order);
+};
+
 // Coasts and borders over the color layers, from the widget's setting.
 window.setMapLines = function (on) {
   if (_widgetAdapter.setLinesShown) _widgetAdapter.setLinesShown(!!on);

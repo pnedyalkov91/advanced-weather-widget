@@ -88,3 +88,19 @@ test('tempAddStop: one more point 5 degrees of the unit above the last, same col
   assert.deepEqual(plain(U.tempAddStop(two, 'F')).pop(), { t: 12.8, color: '#ff0000' });
   assert.equal(two.length, 2, 'the list given is left as it is');
 });
+
+test('weatherStackOrder: the stack of the weather layers, top first, from the setting', () => {
+  const all = ['radar', 'satellite', 'isobars', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
+  assert.deepEqual(plain(U.weatherStackOrder('')), all);
+  assert.deepEqual(plain(U.weatherStackOrder('not json')), all);
+  assert.deepEqual(plain(U.weatherStackOrder('["clouds","wind","radar","clouds"]')).slice(0, 3), ['clouds', 'radar', 'satellite']);
+  assert.equal(U.weatherStackOrder('["clouds"]').length, all.length);
+});
+
+test('weatherStackMove: a layer dragged from one place to another', () => {
+  const o = ['a', 'b', 'c', 'd'];
+  assert.deepEqual(plain(U.weatherStackMove(o, 3, 0)), ['d', 'a', 'b', 'c']);
+  assert.deepEqual(plain(U.weatherStackMove(o, 0, 2)), ['b', 'c', 'a', 'd']);
+  assert.deepEqual(plain(U.weatherStackMove(o, 1, 9)), o);
+  assert.deepEqual(o, ['a', 'b', 'c', 'd'], 'the list given is left as it is');
+});

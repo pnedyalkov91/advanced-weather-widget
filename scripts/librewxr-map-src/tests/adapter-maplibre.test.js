@@ -42,7 +42,9 @@ class FakeMap {
     if (i >= 0) this.layers.splice(i, 0, layer); else this.layers.push(layer);
   }
   removeLayer(id) { this.layers = this.layers.filter((l) => l.id !== id); }
+  getLayersOrder() { return this.layers.map((l) => l.id); }
   moveLayer(id, before) {
+    this.moves = (this.moves || 0) + 1;
     const l = this.getLayer(id);
     if (!l) return;
     this.removeLayer(id);
@@ -118,6 +120,42 @@ function loadAdapter(globals, opts = {}) {
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
+
+// The weather layers as MapLibre ids, scrambled, over a base map layer.
+function stackMap() {
+  const r = loadAdapter();
+  const ids = ['lv-lines', 'lv-anim-lv-layer-radar-1', 'lv-clouds-gl', 'lv-temp-gl', 'lv-iso-gl', 'lv-alerts-fill',
+    'lv-anim-lv-layer-radar-2', 'lv-iso-label', 'lv-precip-gl', 'lv-anim-lv-layer-sat-1', 'lv-night', 'lv-pres-gl', 'lv-aq-gl-pm10'];
+  r.map.layers = [{ id: 'base-water' }].concat(ids.map((id) => ({ id })));
+  return r;
+}
+const weather = (map) => map.getLayersOrder().filter((id) => id.indexOf('lv-') === 0);
+
+test('the weather layers stack in the default order, bottom to top, the lines over all', () => {
+  const { adapter, map } = stackMap();
+  adapter.restack();
+  assert.equal(map.getLayersOrder()[0], 'base-water');
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl',
+    'lv-iso-gl', 'lv-iso-label', 'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-lines']);
+});
+
+test('an order from the widget: first on top; the radar frames keep their own order', () => {
+  const { adapter, map } = stackMap();
+  adapter.setLayerOrder(['temperature', 'clouds', 'radar', 'nonsense', 'clouds']);
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-precip-gl', 'lv-iso-gl', 'lv-iso-label',
+    'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-clouds-gl', 'lv-temp-gl', 'lv-lines']);
+});
+
+test('a stack already in order moves nothing, a layer added on top goes back to its place', () => {
+  const { adapter, map } = stackMap();
+  adapter.restack();
+  map.moves = 0;
+  adapter.restack();
+  assert.equal(map.moves, 0);
+  map.addLayer({ id: 'lv-humidity-gl' });
+  map.fire('styledata');
+  assert.deepEqual(weather(map).slice(0, 4), ['lv-night', 'lv-aq-gl-pm10', 'lv-humidity-gl', 'lv-pres-gl']);
+});
 
 test('the place marker has no shadow', () => {
   const { markers } = loadAdapter();

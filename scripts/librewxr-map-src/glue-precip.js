@@ -331,27 +331,16 @@ var WidgetPrecip = (function () {
   }
   PrecipLayer.prototype = {
     addTo: function (map) {
-      var self = this;
       this.map = map;
       map.addLayer(this.gl, WidgetPressure.beforeIsobars(map));
       _widgetAdapter.setLines('precipitation', true);
       this.showLegend();
-      // A colored layer switched on later goes under the lines too, so over
-      // this one: it is put back on top of them.
-      this.onStyle = function () { self.keepOnTop(); };
-      map.on('styledata', this.onStyle);
+      // Its place in the stack: the adapter's restack().
       return this;
-    },
-    keepOnTop: function () {
-      var map = this.map;
-      if (!map || !map.getLayer(this.gl.id)) return;
-      var order = map.getLayersOrder(), before = WidgetPressure.beforeIsobars(map);
-      if (before && order[order.indexOf(this.gl.id) + 1] !== before) map.moveLayer(this.gl.id, before);
     },
     remove: function () {
       this.hideLegend();
       if (!this.map) return;
-      this.map.off('styledata', this.onStyle);
       if (this.map.getLayer(this.gl.id)) this.map.removeLayer(this.gl.id);
       _widgetAdapter.setLines('precipitation', false);
       this.map = null;

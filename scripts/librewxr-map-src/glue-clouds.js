@@ -128,25 +128,14 @@ var WidgetClouds = (function () {
   function target(map) { return map.getLayer(PRECIP_ID) ? PRECIP_ID : WidgetPressure.beforeIsobars(map); }
   CloudLayer.prototype = {
     addTo: function (map) {
-      var self = this;
       this.map = map;
       map.addLayer(this.gl, target(map));
       _widgetAdapter.setLines('clouds', true);
-      // A colored layer switched on later goes under the lines, so over
-      // this one: it is put back on top of them (under the precipitation).
-      this.onStyle = function () { self.keepOnTop(); };
-      map.on('styledata', this.onStyle);
+      // Its place in the stack: the adapter's restack().
       return this;
-    },
-    keepOnTop: function () {
-      var map = this.map;
-      if (!map || !map.getLayer(this.gl.id)) return;
-      var order = map.getLayersOrder(), before = target(map);
-      if (before && order[order.indexOf(this.gl.id) + 1] !== before) map.moveLayer(this.gl.id, before);
     },
     remove: function () {
       if (!this.map) return;
-      this.map.off('styledata', this.onStyle);
       if (this.map.getLayer(this.gl.id)) this.map.removeLayer(this.gl.id);
       _widgetAdapter.setLines('clouds', false);
       this.map = null;
