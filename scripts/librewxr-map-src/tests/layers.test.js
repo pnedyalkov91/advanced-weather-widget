@@ -64,10 +64,9 @@ test('air quality: a value and its byte, on the log scale and on the UV steps', 
   assert.equal(aq.valueOf(60, aq.POLL.uv_index), 6);
 });
 
-test('air quality: clean air shows no particles, the gases keep their floor', () => {
+test('air quality: clean air shows nothing, whatever the pollutant', () => {
   const aq = L.WidgetAirQuality;
-  for (const id of ['dust', 'pm2_5', 'pm10']) assert.equal(aq.buildLut(aq.POLL[id])[3], 0, id);
-  assert.equal(aq.buildLut(aq.POLL.ozone)[3], Math.round(255 * aq.opts.floorAlpha));
+  for (const id of Object.keys(aq.POLL)) assert.equal(aq.buildLut(aq.POLL[id])[3], 0, id);
   assert.equal(aq.buildLut(aq.POLL.dust)[Math.ceil(aq.byteOf(20, aq.POLL.dust)) * 4 + 3], 255);
 });
 
