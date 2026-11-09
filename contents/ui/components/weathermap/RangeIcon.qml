@@ -90,8 +90,11 @@ Item {
         cursorShape: Qt.PointingHandCursor
         onClicked: riMenu.visible ? riMenu.close() : riMenu.open()
     }
-    QQC2.ToolTip.text: ri._turning ? "<b>" + ri.label + "</b>" : ri.tip + ": <b>" + ri.label + "</b>" + (ri.detail ? " (" + ri.detail + ")" : "") + "<br><i>" + i18n("Wheel or click to change") + "</i>"
+    // Just the value (a source's range: its name, its hours under it); it
+    // follows the wheel and stays while the pointer is over the clock.
+    QQC2.ToolTip.text: "<b>" + ri.label + "</b>" + (ri.detail && ri._pick < 0 ? "<br>" + ri.detail : "")
     QQC2.ToolTip.visible: (riArea.containsMouse || ri._turning) && !riMenu.visible
+    QQC2.ToolTip.timeout: -1
     QQC2.ToolTip.delay: ri._turning ? 0 : Kirigami.Units.toolTipDelay
     Timer { id: turnEnd; interval: 1200; onTriggered: ri._turning = false }
 

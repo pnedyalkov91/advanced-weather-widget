@@ -48,34 +48,57 @@ Rectangle {
         onWheel: function (wheel) { wheel.accepted = true; }
     }
 
-    // An option of a layer with one value: its name, then a list under it.
-    component OptCombo: ColumnLayout {
-        id: oc
-        property string title
-        property var choices: []        // [[value, text]]
-        property int current: 0
-        signal picked(var value)
-        Layout.fillWidth: true
-        spacing: 2
-        QQC2.Label { text: oc.title; color: panel.dimText }
-        QQC2.ComboBox {
-            Layout.fillWidth: true
-            model: oc.choices.map(function (c) { return c[1]; })
-            currentIndex: oc.current
-            onActivated: function (i) { oc.current = i; oc.picked(oc.choices[i][0]); }
-        }
-    }
-    // A setting with a few values: its name, then the values side by side,
-    // the one taken highlighted.
-    component Segmented: RowLayout {
-        id: sg
+    // An option with one value among several: its name, then a switch for
+    // each, two by two. Switching one on switches the one before off; the
+    // one on stays on.
+    component OptSwitches: ColumnLayout {
+        id: os
         property string title
         property var choices: []        // [[value, text]]
         property var current            // the value taken
         signal picked(var value)
         Layout.fillWidth: true
-        QQC2.Label { text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+        spacing: 2
+        QQC2.Label { text: os.title; color: panel.dimText }
+        GridLayout {
+            Layout.fillWidth: true
+            columns: 2
+            columnSpacing: 6
+            rowSpacing: 0
+            Repeater {
+                model: os.choices
+                SmallSwitch {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    text: modelData[1]
+                    checked: os.current === modelData[0]
+                    onToggled: {
+                        if (checked)
+                            os.picked(modelData[0]);
+                        checked = Qt.binding(function () { return os.current === modelData[0]; });
+                    }
+                }
+            }
+        }
+    }
+    // A setting with a few values: its name, then the values side by side,
+    // the one taken highlighted. When both do not fit in room (the width of
+    // the menu), the values go on the line under the name.
+    component Segmented: GridLayout {
+        id: sg
+        property string title
+        property var choices: []        // [[value, text]]
+        property var current            // the value taken
+        property real room: 206         // a layer's options: 230 less the padding
+        signal picked(var value)
+        readonly property bool wrapped: sgTitle.implicitWidth + columnSpacing + sgBox.implicitWidth > room
+        Layout.fillWidth: true
+        columns: wrapped ? 1 : 2
+        rowSpacing: 2
+        QQC2.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
         Rectangle {
+            id: sgBox
             implicitWidth: sgRow.implicitWidth + 4
             implicitHeight: 26
             radius: 4
@@ -110,8 +133,8 @@ Rectangle {
             }
         }
     }
-    // The kinds of a layer shown, several at once: a list that opens on a
-    // switch for each, "All" first. Each change is sent at once.
+    // The kinds of a layer shown, several at once: a switch for each, two
+    // by two, "All" first. Each change is sent at once.
     component OptKinds: ColumnLayout {
         id: ok
         property string title
@@ -120,53 +143,40 @@ Rectangle {
         signal picked(var values)
         Layout.fillWidth: true
         spacing: 2
-        readonly property var _labels: choices.filter(function (c) { return checkedValues.indexOf(c[0]) >= 0; }).map(function (c) { return c[1]; })
-        readonly property string label: _labels.length === choices.length ? i18n("All")
-            : _labels.length === 0 ? i18n("None")
-            : _labels.length <= 2 ? _labels.join(" + ")
-            : i18np("%1 kind", "%1 kinds", _labels.length)
         function set(values) {
             // In the order of the choices.
             var v = choices.map(function (c) { return c[0]; }).filter(function (x) { return values.indexOf(x) >= 0; });
             picked(v);
         }
         QQC2.Label { text: ok.title; color: panel.dimText }
-        QQC2.ComboBox {
-            id: kindsCombo
+        SmallSwitch {
+            text: i18n("All")
+            font.bold: true
+            checked: ok.checkedValues.length === ok.choices.length
+            onToggled: {
+                ok.set(checked ? ok.choices.map(function (c) { return c[0]; }) : []);
+                checked = Qt.binding(function () { return ok.checkedValues.length === ok.choices.length; });
+            }
+        }
+        GridLayout {
             Layout.fillWidth: true
-            model: []
-            displayText: ok.label
-            popup: QQC2.Popup {
-                y: kindsCombo.height + 2
-                width: kindsCombo.width
-                padding: 6
-                margins: 6
-                closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
-                contentItem: ColumnLayout {
-                    spacing: 0
-                    SmallSwitch {
-                        text: i18n("All")
-                        font.bold: true
-                        checked: ok.checkedValues.length === ok.choices.length
-                        onToggled: {
-                            ok.set(checked ? ok.choices.map(function (c) { return c[0]; }) : []);
-                            checked = Qt.binding(function () { return ok.checkedValues.length === ok.choices.length; });
-                        }
-                    }
-                    Repeater {
-                        model: ok.choices
-                        delegate: SmallSwitch {
-                            required property var modelData
-                            text: modelData[1]
-                            checked: ok.checkedValues.indexOf(modelData[0]) >= 0
-                            onToggled: {
-                                var v = ok.checkedValues.filter(function (x) { return x !== modelData[0]; });
-                                if (checked)
-                                    v.push(modelData[0]);
-                                ok.set(v);
-                                checked = Qt.binding(function () { return ok.checkedValues.indexOf(modelData[0]) >= 0; });
-                            }
-                        }
+            columns: 2
+            columnSpacing: 6
+            rowSpacing: 0
+            Repeater {
+                model: ok.choices
+                SmallSwitch {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    text: modelData[1]
+                    checked: ok.checkedValues.indexOf(modelData[0]) >= 0
+                    onToggled: {
+                        var v = ok.checkedValues.filter(function (x) { return x !== modelData[0]; });
+                        if (checked)
+                            v.push(modelData[0]);
+                        ok.set(v);
+                        checked = Qt.binding(function () { return ok.checkedValues.indexOf(modelData[0]) >= 0; });
                     }
                 }
             }
@@ -270,12 +280,14 @@ Rectangle {
                         QQC2.Label { text: i18n("Settings"); font.bold: true }
                         Segmented {
                             title: i18n("Pictures per second")
+                            room: 326
                             choices: [[4, "4"], [8, "8"], [15, "15"]]
                             current: panel.map.maxFps
                             onPicked: function (v) { panel.map.setMaxFps(v); }
                         }
                         Segmented {
                             title: i18n("Resolution while playing")
+                            room: 326
                             choices: [[1, i18n("Full")], [2, i18n("Half")], [4, i18n("Quarter")]]
                             current: panel.map.resolution
                             onPicked: function (v) { panel.map.setResolution(v); }
@@ -438,10 +450,10 @@ Rectangle {
                 opacityValue: panel.map.opacities.wind
                 onToggled: function (on) { panel.map.setLayer("wind", on); }
                 onOpacityPicked: function (p) { panel.map.setOpacity("wind", p); }
-                OptCombo {
+                Segmented {
                     title: i18n("Height")
                     choices: panel.map.windLevelChoices
-                    current: panel.map.windLevelChoices.map(function (c) { return c[0]; }).indexOf(panel.map.windLevel)
+                    current: panel.map.windLevel
                     onPicked: function (v) { panel.map.setWindLevel(v); }
                 }
             }
@@ -460,10 +472,10 @@ Rectangle {
                 hasLegend: true
                 legendOn: !panel.map.legendsHidden["temperature"]
                 onLegendToggled: function (on) { panel.map.setLegend("temperature", on); }
-                OptCombo {
+                Segmented {
                     title: i18n("Width of the bands")
                     choices: panel.map.tempStepChoices
-                    current: panel.map.tempStepChoices.map(function (c) { return c[0]; }).indexOf(panel.map.tempStep)
+                    current: panel.map.tempStep
                     onPicked: function (v) { panel.map.setTempStep(v); }
                 }
             }
@@ -571,10 +583,10 @@ Rectangle {
                 hasLegend: true
                 legendOn: !panel.map.legendsHidden["airquality"]
                 onLegendToggled: function (on) { panel.map.setLegend("airquality", on); }
-                OptCombo {
+                OptSwitches {
                     title: i18n("Pollutant")
                     choices: panel.map.aqChoices
-                    current: Math.max(0, panel.map.aqChoices.map(function (c) { return c[0]; }).indexOf(panel.map.pollutant))
+                    current: panel.map.pollutant
                     onPicked: function (v) { panel.map.setPollutant(v); }
                 }
             }
@@ -671,7 +683,7 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: panel.map.setSpeed(speedIcon.speed % 3 + 1)
                 }
-                QQC2.ToolTip.text: i18n("Speed x%1: 3 hours in %2 s", speedIcon.speed, Number(1.5 / speedIcon.speed).toLocaleString(Qt.locale(), "f", 2).replace(/0$/, "")) + "<br><i>" + i18n("Click for the next speed") + " (+ −)</i>"
+                QQC2.ToolTip.text: "<b>" + i18n("Speed x%1", speedIcon.speed) + "</b> (+ −)"
                 QQC2.ToolTip.visible: speedArea.containsMouse
                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }

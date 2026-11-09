@@ -96,12 +96,15 @@ Item {
             interval: 230
             onTriggered: row.toggled(!row.checked)
         }
-        // Folded: the wheel sets the opacity (5 % a notch, toward you more opaque).
+        // Folded: Shift + wheel sets the opacity (5 % a notch, toward you more
+        // opaque); the wheel alone scrolls the column.
         WheelHandler {
             enabled: row.compact && row.opacityValue >= 0 && row.checked
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            acceptedModifiers: Qt.ShiftModifier
             onWheel: function (event) {
-                row._wheel -= event.angleDelta.y;
+                // Some systems turn Shift + wheel into a sideways wheel.
+                row._wheel -= event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
                 var notches = Math.trunc(row._wheel / 120);
                 if (notches === 0)
                     return;
@@ -112,7 +115,7 @@ Item {
             }
         }
         QQC2.ToolTip.text: row.compact && row.opacityValue >= 0
-            ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (wheel)", row.opacityValue) : "")
+            ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (Shift + wheel)", row.opacityValue) : "")
             : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
         QQC2.ToolTip.visible: iconArea.containsMouse
         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
