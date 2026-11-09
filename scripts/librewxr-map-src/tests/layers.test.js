@@ -64,6 +64,14 @@ test('air quality: a value and its byte, on the log scale and on the UV steps', 
   assert.equal(aq.valueOf(60, aq.POLL.uv_index), 6);
 });
 
+test('air quality: clean air shows no dust, the other pollutants keep their floor', () => {
+  const aq = L.WidgetAirQuality;
+  const dust = aq.buildLut(aq.POLL.dust), pm = aq.buildLut(aq.POLL.pm2_5);
+  assert.equal(dust[3], 0);
+  assert.equal(pm[3], Math.round(255 * aq.opts.floorAlpha));
+  assert.equal(dust[Math.ceil(aq.byteOf(20, aq.POLL.dust)) * 4 + 3], 255);
+});
+
 test('precipitation: the run of a file, never newer than the latest, the long range from the runs of 00 and 12', () => {
   const p = L.WidgetPrecip, ref = at('2026-11-08T06:00:00Z');
   assert.equal(p.runOf(at('2026-11-08T09:00:00Z'), ref), ref);

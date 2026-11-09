@@ -15,6 +15,9 @@ var WidgetAirQuality = (function () {
   // The bands of the European air quality index (µg/m³) for the pollutants
   // that have one; the others on scales of their own. log: the byte is
   // log10(v + 1) / log10(max + 1) * 254, else v / step.
+  // floorAlpha: how much of the first color shows at 0 (opts.floorAlpha
+  // when not given); the dust's first color is near white, it would veil
+  // the whole map, so clean air shows none of it.
   var EAQI = ['#50f0e6', '#50ccaa', '#f0e641', '#ff5050', '#960032', '#7d2181'];
   var POLL = {
     pm2_5: { label: 'PM2.5', unit: 'µg/m³', max: 2000, log: true, edges: [0, 10, 20, 25, 50, 75, 250], colors: EAQI.concat('#3d0a40') },
@@ -22,7 +25,7 @@ var WidgetAirQuality = (function () {
     ozone: { label: 'O₃', unit: 'µg/m³', max: 1000, log: true, edges: [0, 50, 100, 130, 240, 380], colors: EAQI },
     nitrogen_dioxide: { label: 'NO₂', unit: 'µg/m³', max: 1000, log: true, edges: [0, 40, 90, 120, 230, 340], colors: EAQI },
     sulphur_dioxide: { label: 'SO₂', unit: 'µg/m³', max: 3000, log: true, edges: [0, 100, 200, 350, 500, 750], colors: EAQI },
-    dust: { label: tr('aqDust', 'Dust'), unit: 'µg/m³', max: 10000, log: true, edges: [0, 20, 50, 100, 250, 500, 1000, 3000], colors: ['#f6efe0', '#ead9a8', '#ddb86a', '#c98f3c', '#a8622a', '#7e3d1e', '#55220f', '#2e1007'] },
+    dust: { label: tr('aqDust', 'Dust'), unit: 'µg/m³', max: 10000, log: true, floorAlpha: 0, edges: [0, 20, 50, 100, 250, 500, 1000, 3000], colors: ['#f6efe0', '#ead9a8', '#ddb86a', '#c98f3c', '#a8622a', '#7e3d1e', '#55220f', '#2e1007'] },
     aerosol_optical_depth: { label: 'AOD', unit: '', max: 10, log: true, edges: [0, 0.1, 0.2, 0.4, 0.7, 1, 2], colors: ['#50f0e6', '#50ccaa', '#f0e641', '#ffaa40', '#ff5050', '#960032', '#7d2181'] },
     uv_index: { label: 'UV', unit: '', step: 0.1, log: false, edges: [0, 3, 6, 8, 11, 14], colors: ['#4eb400', '#f7e400', '#f85900', '#d8001d', '#6b49c8', '#3b2075'] }
   };
@@ -66,7 +69,7 @@ var WidgetAirQuality = (function () {
     var out = new Uint8Array(256 * 4), first = s.edges[1];
     for (var b = 0; b < 256; b++) {
       var v = valueOf(Math.min(b, 254), s), c = colorAt(v, s);
-      var t = Math.max(0, Math.min(1, v / first)), fade = opts.floorAlpha + (1 - opts.floorAlpha) * t * t * (3 - 2 * t);
+      var t = Math.max(0, Math.min(1, v / first)), floor = s.floorAlpha !== undefined ? s.floorAlpha : opts.floorAlpha, fade = floor + (1 - floor) * t * t * (3 - 2 * t);
       out[b * 4] = c[0]; out[b * 4 + 1] = c[1]; out[b * 4 + 2] = c[2]; out[b * 4 + 3] = Math.round(255 * fade);
     }
     return out;
@@ -351,5 +354,5 @@ var WidgetAirQuality = (function () {
       '</span><span>' + s.label + ' ' + localNumber(v, v < 10 ? 1 : 0) + (s.unit ? ' ' + s.unit : '') + '</span></div>';
   };
 
-  return { POLL: POLL, valueOf: valueOf, byteOf: byteOf, opts: opts };
+  return { POLL: POLL, valueOf: valueOf, byteOf: byteOf, buildLut: buildLut, opts: opts };
 })();
