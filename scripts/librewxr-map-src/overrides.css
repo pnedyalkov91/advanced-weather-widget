@@ -216,9 +216,26 @@
       .isobars-btn.lv-off {
         display: none;
       }
-      /* On: the drawing bright, no colored frame. */
+      /* The map's five buttons (locate, base map, globe, day and night,
+         isobars) share one look, the globe's: under the hand and while on,
+         the drawing turns accent with an accent frame. */
+      .bg-btn:hover {
+        border-color: var(--accent);
+      }
+      .bg-btn:hover svg,
+      .bg-picker:has(.bg-menu.open) .bg-btn svg,
+      .proj-btn.active svg,
+      .night-btn.active svg,
       .isobars-btn.active svg {
-        stroke: var(--text);
+        stroke: var(--accent);
+      }
+      .night-btn:hover svg path,
+      .night-btn.active svg path {
+        fill: var(--accent);
+      }
+      .bg-picker:has(.bg-menu.open) .bg-btn,
+      .isobars-btn.active {
+        border-color: var(--accent);
       }
       .bg-picker {
         position: absolute;
