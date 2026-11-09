@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-09 18:43+0100\n"
+"POT-Creation-Date: 2026-11-09 18:47+0100\n"
 "PO-Revision-Date: 2026-08-04 09:53+0200\n"
 "Last-Translator: rcspam\n"
 "Language-Team: French\n"
@@ -1457,8 +1457,8 @@ msgid "Double-click: satellite range"
 msgstr "Double-clic : la plage du satellite"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:434
-msgid "Drag a layer by its handle to stack it: the first one is drawn on top, the coasts and borders over all. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab."
-msgstr "Faites glisser un calque par sa poignée pour l'empiler : le premier est dessiné au-dessus, les côtes et frontières par-dessus tout. Le radar est toujours là ; les isobares suivent la pression. Un calque désactivé ici quitte la colonne de l'onglet Cartes météo."
+msgid "Drag a layer by its handle to stack it: the first one is drawn on top, the isobars over the colors, the coasts and borders over all. The radar is always there. A layer switched off here leaves the column of the Weather Maps tab."
+msgstr "Faites glisser un calque par sa poignée pour l'empiler : le premier est dessiné au-dessus, les isobares au-dessus des couleurs, les côtes et frontières par-dessus tout. Le radar est toujours là. Un calque désactivé ici quitte la colonne de l'onglet Cartes météo."
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:654
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:642
@@ -2325,7 +2325,6 @@ msgid "Invalid response from QWeather."
 msgstr "Réponse invalide de QWeather."
 
 #: contents/ui/components/WeatherMapView.qml:948
-#: contents/ui/config/tabs/ConfigRadarTab.qml:410
 msgid "Isobars"
 msgstr "Isobares"
 
@@ -6162,11 +6161,14 @@ msgstr "µg/m³"
 msgid "×%1"
 msgstr "×%1"
 
-#~ msgid "Drag a layer by its handle to stack it: the first one is drawn on top. The wind always goes over the others, the coasts and borders over the layers. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab."
-#~ msgstr "Faites glisser un calque par sa poignée pour l'empiler : le premier est dessiné au-dessus. Le vent passe toujours au-dessus des autres, les côtes et frontières au-dessus des calques. Le radar est toujours là ; les isobares suivent la pression. Un calque désactivé ici quitte la colonne de l'onglet Cartes météo."
-
 #~ msgid "Pressure and isobars"
 #~ msgstr "Pression et isobares"
+
+#~ msgid "Drag a layer by its handle to stack it: the first one is drawn on top, the coasts and borders over all. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab."
+#~ msgstr "Faites glisser un calque par sa poignée pour l'empiler : le premier est dessiné au-dessus, les côtes et frontières par-dessus tout. Le radar est toujours là ; les isobares suivent la pression. Un calque désactivé ici quitte la colonne de l'onglet Cartes météo."
+
+#~ msgid "Drag a layer by its handle to stack it: the first one is drawn on top. The wind always goes over the others, the coasts and borders over the layers. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab."
+#~ msgstr "Faites glisser un calque par sa poignée pour l'empiler : le premier est dessiné au-dessus. Le vent passe toujours au-dessus des autres, les côtes et frontières au-dessus des calques. Le radar est toujours là ; les isobares suivent la pression. Un calque désactivé ici quitte la colonne de l'onglet Cartes météo."
 
 #~ msgid "The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. Precipitation, clouds, wind, isobars, radar and satellite go over them."
 #~ msgstr "Les calques de couleur se partagent la carte, un seul à la fois : température, pression, humidité, point de rosée, qualité de l'air. Précipitations, nuages, vent, isobares, radar et satellite passent par-dessus."

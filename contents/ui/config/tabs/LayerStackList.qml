@@ -9,7 +9,7 @@ import "../../js/configUtils.js" as ConfigUtils
 // floats over the list while the others make room for it; dropped, the
 // new order is given by orderPicked(). saved: weatherMapLayerOrder;
 // disabled: the ids switched off (weatherMapDisabledLayers). The radar
-// always shows; the isobars come and go with the pressure.
+// always shows.
 ListView {
     id: stackList
     property string saved
@@ -20,7 +20,7 @@ ListView {
     property string _written: ""
 
     function isOn(id) {
-        return id === "radar" || disabled.indexOf(id === "isobars" ? "pressure" : id) < 0;
+        return id === "radar" || disabled.indexOf(id) < 0;
     }
     function reload() {
         stackModel.clear();
@@ -74,7 +74,7 @@ ListView {
                 Switch {
                     Layout.fillWidth: true
                     text: stackList.labels[model.lid] || model.lid
-                    enabled: model.lid !== "radar" && model.lid !== "isobars"
+                    enabled: model.lid !== "radar"
                     checked: stackList.isOn(model.lid)
                     onToggled: {
                         stackList.layerToggled(model.lid, checked);

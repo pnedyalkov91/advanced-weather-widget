@@ -90,10 +90,10 @@ test('tempAddStop: one more point 5 degrees of the unit above the last, same col
 });
 
 test('weatherStackOrder: the stack of the weather layers, top first, from the setting', () => {
-  const all = ['radar', 'satellite', 'wind', 'isobars', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
+  const all = ['radar', 'satellite', 'wind', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
   assert.deepEqual(plain(U.weatherStackOrder('')), all);
   assert.deepEqual(plain(U.weatherStackOrder('not json')), all);
-  assert.deepEqual(plain(U.weatherStackOrder('["clouds","snow","wind","radar","clouds"]')).slice(0, 4), ['clouds', 'wind', 'radar', 'satellite']);
+  assert.deepEqual(plain(U.weatherStackOrder('["clouds","isobars","wind","radar","clouds"]')).slice(0, 4), ['clouds', 'wind', 'radar', 'satellite']);
   assert.equal(U.weatherStackOrder('["clouds"]').length, all.length);
 });
 

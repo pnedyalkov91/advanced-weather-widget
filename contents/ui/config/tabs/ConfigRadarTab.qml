@@ -407,7 +407,7 @@ GridLayout {
             radarTab.configRoot.cfg_weatherMapDisabledLayers = JSON.stringify(d);
         }
         readonly property var labels: ({
-            wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"), isobars: i18n("Isobars"),
+            wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"),
             precipitation: i18n("Precipitation"), clouds: i18n("Cloud cover"), temperature: i18n("Temperature"),
             pressure: i18n("Pressure"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
         })
@@ -431,7 +431,7 @@ GridLayout {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            text: i18n("Drag a layer by its handle to stack it: the first one is drawn on top, the coasts and borders over all. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab.")
+            text: i18n("Drag a layer by its handle to stack it: the first one is drawn on top, the isobars over the colors, the coasts and borders over all. The radar is always there. A layer switched off here leaves the column of the Weather Maps tab.")
         }
         Kirigami.InlineMessage {
             Layout.fillWidth: true

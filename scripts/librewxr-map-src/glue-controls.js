@@ -279,8 +279,8 @@ window.setTempUnit = function (u) {
 };
 
 // The stack of the weather layers, chosen in the widget settings: ids top
-// first (radar, satellite, isobars, precipitation, clouds, temperature,
-// pressure, humidity, dewpoint, airquality).
+// first (radar, satellite, precipitation, clouds, temperature, pressure,
+// humidity, dewpoint, airquality); the isobars go over the highest field.
 window.setLayerOrder = function (order) {
   if (_widgetAdapter.setLayerOrder) _widgetAdapter.setLayerOrder(order);
 };
