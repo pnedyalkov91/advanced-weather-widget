@@ -124,7 +124,7 @@ Rectangle {
                 enabled: box.map.count > 0
                 onClicked: box.map.showIndex(box.map.animState.now)
             }
-            QQC2.ToolTip.text: i18n("Back to now")
+            QQC2.ToolTip.text: i18n("Back to now") + " (0)"
             QQC2.ToolTip.visible: nowArea.containsMouse
             QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }

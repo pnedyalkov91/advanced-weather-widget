@@ -3,15 +3,17 @@ import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 
-// How to read the Weather Map's layers, in a panel that slides in over the
-// right of the tab. The layers shown now come first and are marked; the
-// others follow in the order of the column. A popup of the tab (parent),
-// not a drawer: a drawer would cover the whole Plasma popup.
+// How to read the Weather Map, in a panel that slides in over the right of
+// the tab. The layers shown now come first and are marked; the others
+// follow in the order of the column; then the column, the time, the time
+// line, the date and the keys. Each part: a title, lines ("label: text",
+// some under a heading), then a note in italics. A popup of the tab
+// (parent), not a drawer: a drawer would cover the whole Plasma popup.
 QQC2.Popup {
     id: panel
     property var layers: ({})         // layer id: shown
-    property var choices: ({})        // layer id: the [value, text] pairs of its list
     property var shownIds: []         // the layers in the column (the others are left out)
+    property var keys: ({})           // layer id: its keyboard letter
 
     x: parent ? parent.width - width : 0
     y: 0
@@ -23,42 +25,218 @@ QQC2.Popup {
     enter: Transition { NumberAnimation { property: "x"; from: panel.parent ? panel.parent.width : 0; to: panel.parent ? panel.parent.width - panel.width : 0; duration: 220; easing.type: Easing.OutCubic } }
     exit: Transition { NumberAnimation { property: "x"; to: panel.parent ? panel.parent.width : 0; duration: 180; easing.type: Easing.InCubic } }
 
-    readonly property string icons: Qt.resolvedUrl("../../../icons/")
-    readonly property string sixDays: i18n("Up to 6 days ahead and about 7 days back (Open-Meteo deletes older forecast files).")
-    // ids: the page's layer, icon: a file under contents/icons.
-    readonly property var sections: [
-        { ids: ["radar"], icon: icons + "weathermap/radar.svg", title: i18n("Radar"),
-          range: i18n("Every 10 minutes, from about 2 hours back to 1 hour ahead (LibreWXR's nowcast, paler on the time line)."),
-          text: i18n("What the weather radars see falling now, from LibreWXR, over the animation in its range: the time line slows down to its 10 minute steps there. The wheel of its line sets its colors, snow, smoothing, lightning, storm cells, wind arrows and alerts. The arrows show how the rain moves now, the same on every picture: they are not the wind of the time shown. A double click on its icon shows the radar alone, on its own range; then a click on the satellite adds it (both, on their joint range). The same double click gives back the layers from before.") },
-        { ids: ["satellite"], icon: icons + "weathermap/satellite.svg", title: i18n("Satellite"),
-          range: i18n("Every hour over the past 12 hours."),
-          text: i18n("The infrared picture of the clouds from LibreWXR: the colder the top, the higher and whiter the cloud. A double click on its icon shows the satellite alone, on its own range; then a click on the radar adds it. Ctrl and a double click on either shows both at once.") },
-        { ids: ["wind"], icon: icons + "flat-color/22/wi-strong-wind.svg", title: i18n("Wind"), range: sixDays,
-          text: i18n("The lines flow with the wind. Their color is the speed, from your wind palette: by default white when calm, green and blue for a breeze, yellow and orange for a strong wind, red and violet for a storm. The options of its line (the wheel) pick the height: 10 m is the wind you feel, shaped by the relief; 700 hPa (about 3000 m) is the flow that carries the clouds and the rain, stronger and smoother. At 700 hPa only the global model is drawn: the regional files hold the 10 m wind only. Watch where the lines bunch up and turn: that is where the weather changes.") },
-        { ids: ["temperature"], icon: icons + "flat-color/22/wi-thermometer.svg", title: i18n("Temperature"), range: sixDays,
-          text: i18n("Air temperature at 2 m, in the bands of the legend. Play a whole day to see the land warm up in the afternoon and cool down at night, while the sea hardly changes. A sharp edge that moves is a front.") },
-        { ids: ["precipitation"], icon: icons + "flat-color/22/wi-rain.svg", title: i18n("Precipitation"), range: sixDays,
-          text: i18n("What falls in the three hours around the time shown, in mm per hour. Each kind has its colors: rain from blue to green, yellow, red and magenta as it gets heavier; snow in lilac and violet; the dangerous ones (freezing rain, freezing drizzle, ice pellets) in colors of their own. Pick the kinds in the options of its line (the wheel). Under 0.05 mm/h nothing is drawn.") },
-        { ids: ["clouds"], icon: icons + "flat-color/22/wi-cloudy.svg", title: i18n("Clouds"), range: sixDays,
-          text: i18n("White is cloud: the whiter, the more of the sky it covers. Low clouds (under about 2 km) make grey days, fog and drizzle. Mid clouds (2 to 6 km) often come before rain. High clouds (above 6 km) are thin veils of ice: the sun still gets through. With all three levels ticked you see the total cover as the model counts it, without counting twice the clouds that sit over each other.") },
-        { ids: ["pressure", "isobars"], icon: icons + "flat-color/22/wi-barometer.svg", title: i18n("Pressure and isobars"), range: sixDays,
-          text: i18n("Air pressure brought to sea level, in hPa. Blue and purple are lows: clouds, rain and wind. Orange and red are highs: settled weather, fog in winter. The isobars join the points of equal pressure, every 4 hPa. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer the lines, the stronger the wind. The isobars have their own button on the map, under the day and night one.") },
-        { ids: ["humidity"], icon: icons + "flat-color/22/wi-humidity.svg", title: i18n("Humidity"), range: sixDays,
-          text: i18n("Relative humidity at 2 m: how close the air is to being saturated with water. Brown is dry (under 30 %: dry skin, fire risk), sand and green are usual, blue is near 100 % (fog, low clouds, rain). It goes up at night and down in the afternoon even when the air keeps the same water, because warm air can hold more: for the water itself, look at the dew point.") },
-        { ids: ["dewpoint"], icon: icons + "flat-color/22/wi-dew-point.svg", title: i18n("Dew point"), range: sixDays,
-          text: i18n("The temperature the air would have to cool to for dew to form. It tells how much water the air really holds, and how muggy it feels. Under 10 °C the air feels dry, 13 to 16 °C you notice it, from 18 °C it is muggy, from 21 °C oppressive, and from 24 °C tropical. When the night temperature falls to the dew point, dew or fog forms.") },
-        { ids: ["airquality"], icon: icons + "flat-color/22/wi-smoke.svg", title: i18n("Air quality"),
-          range: i18n("Up to 5 days ahead only: the CAMS forecast stops there, later pictures stay empty. About 7 days back."),
-          text: i18n("The CAMS forecast for the pollutant chosen in the list. The colors follow the bands of the European Air Quality Index: cyan good, green fair, yellow moderate, red poor, dark red very poor, purple extremely poor. Dust shows Saharan dust, AOD how hazy the air is (smoke, dust), UV the UV index of the day. The scale is logarithmic: each band covers a wider range than the one before.") }
+    readonly property string sixDays: i18n("about 7 days back to 6 days ahead.")
+    readonly property string switchText: i18n("switches the layer on or off.")
+    function letter(id) { return panel.keys[id] || ""; }
+
+    // A layer: its range, its options, its shortcuts (the letter last), as lines.
+    function layerRows(s) {
+        var rows = [{ label: i18n("Range"), text: s.range }];
+        if (s.options && s.options.length) {
+            rows.push({ head: i18n("Options") });
+            s.options.forEach(function (o) { rows.push({ label: o[0], text: o[1], indent: true }); });
+        }
+        rows.push({ head: i18n("Shortcuts") });
+        (s.shortcuts || []).forEach(function (o) { rows.push({ label: o[0], text: o[1], indent: true }); });
+        s.ids.forEach(function (id) {
+            if (panel.letter(id))
+                rows.push({ label: panel.letter(id), text: id === "isobars" ? i18n("switches the isobars on or off.") : panel.switchText, indent: true });
+        });
+        return rows;
+    }
+
+    // ids: the page's layers; icon: a drawing of contents/icons/weathermap
+    // (mask: white, tinted with the text).
+    readonly property var layerSections: [
+        { ids: ["radar"], icon: "radar", title: i18n("Radar"),
+          range: i18n("2 hours back to 1 hour ahead, every 10 minutes. It stays so when a longer range is set."),
+          options: [[i18n("Colors"), i18n("the palette of the radar.")],
+                    [i18n("Snow"), i18n("snow in colors of its own.")],
+                    [i18n("Smoothing"), i18n("softens the edges of the rain.")],
+                    [i18n("Lightning"), i18n("the recent strikes.")],
+                    [i18n("Storm cells"), i18n("the storms tracked.")],
+                    [i18n("Wind arrows"), i18n("how the rain moves now. They are the same on every picture: they are not the wind of the time shown.")],
+                    [i18n("Alerts"), i18n("the warnings in force.")],
+                    [i18n("Format and Tiles"), i18n("WebP or PNG, 256 or 512 px. The satellite follows them too.")]],
+          shortcuts: [[i18n("Double click on the icon"), i18n("the radar alone, on its range. A click on the satellite then adds it. The same double click gives back the layers from before.")]],
+          note: i18n("What the weather radars see falling, from LibreWXR. After now it is LibreWXR's nowcast, paler on the time line. In its range the time line slows down to its 10 minute steps.") },
+        { ids: ["satellite"], icon: "satellite", title: i18n("Satellite"),
+          range: i18n("12 hours back to now, every hour."),
+          shortcuts: [[i18n("Double click on the icon"), i18n("the satellite alone, on its range. A click on the radar then adds it.")],
+                      [i18n("Ctrl + double click"), i18n("on the radar or the satellite: both at once.")]],
+          note: i18n("The infrared picture of the clouds, from LibreWXR: the colder the top, the higher and whiter the cloud.") },
+        { ids: ["wind"], icon: "vent-glyph", title: i18n("Wind"), range: sixDays,
+          options: [[i18n("10 m"), i18n("the wind you feel, shaped by the relief.")],
+                    [i18n("700 hPa"), i18n("about 3000 m: the flow that carries the clouds and the rain, stronger and smoother. Only the global model is drawn: the regional models hold the 10 m wind only.")]],
+          note: i18n("The lines flow with the wind, their color is the speed (the wind palette of the settings). By default: white when calm, green and blue for a breeze, yellow and orange for a strong wind, red and violet for a storm. Where the lines bunch up and turn, the weather changes.") },
+        { ids: ["temperature"], icon: "temperature-glyph", title: i18n("Temperature"), range: sixDays,
+          options: [[i18n("Width of the bands"), i18n("how many degrees each color band covers.")]],
+          note: i18n("Air temperature at 2 m. Play a whole day: the land warms up in the afternoon and cools down at night, the sea hardly changes. A sharp edge that moves is a front.") },
+        { ids: ["precipitation"], icon: "precipitations-glyph", title: i18n("Precipitation"), range: sixDays,
+          options: [[i18n("Kinds shown"), i18n("rain, snow, wet snow, rain and snow, freezing rain, freezing drizzle, ice pellets.")]],
+          note: i18n("What falls in the three hours around the time shown, in mm/h. Rain goes from blue to green, yellow, red and magenta as it gets heavier; snow is lilac and violet; the dangerous kinds (ice) have colors of their own. Under 0.05 mm/h nothing is drawn.") },
+        { ids: ["clouds"], icon: "nuages-glyph", mask: true, title: i18n("Clouds"), range: sixDays,
+          options: [[i18nc("@item cloud level", "Low"), i18n("under about 2 km: grey days, fog, drizzle.")],
+                    [i18nc("@item cloud level", "Mid"), i18n("2 to 6 km: they often come before rain.")],
+                    [i18nc("@item cloud level", "High"), i18n("above 6 km: thin veils of ice, the sun still gets through.")]],
+          note: i18n("The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other.") },
+        { ids: ["pressure", "isobars"], icon: "pression-glyph", title: i18n("Pressure"), range: sixDays,
+          shortcuts: [[i18n("Isobars button on the map"), i18n("shows or hides the isobars.")]],
+          note: i18n("Air pressure brought to sea level, in hPa. Blue and purple: lows (clouds, rain, wind). Orange and red: highs (settled weather, fog in winter). The isobars join the points of equal pressure, every 4 hPa. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer they are, the stronger the wind.") },
+        { ids: ["humidity"], icon: "humidite-glyph", title: i18n("Humidity"), range: sixDays,
+          note: i18n("Relative humidity at 2 m: how close the air is to being saturated. Brown: dry (under 30 %, fire risk). Sand and green: usual. Blue: near 100 % (fog, low clouds, rain). It goes up at night and down in the afternoon even when the air keeps the same water. For the water itself, see the dew point.") },
+        { ids: ["dewpoint"], icon: "rosee-glyph", title: i18n("Dew point"), range: sixDays,
+          note: i18n("The temperature at which dew forms. It tells how much water the air really holds. Under 10 °C the air feels dry, at 13 to 16 °C you notice it, from 18 °C it is muggy, from 21 °C oppressive, from 24 °C tropical. When the night cools down to the dew point, dew or fog forms.") },
+        { ids: ["airquality"], icon: "qualite-air-glyph", mask: true, title: i18n("Air quality"),
+          range: i18n("about 7 days back to 5 days ahead. Further on the CAMS forecast stops and the pictures stay empty."),
+          options: [["PM2.5, PM10, O₃, NO₂, SO₂", i18n("the pollutants.")],
+                    [i18n("Dust"), i18n("the Saharan dust.")],
+                    [i18n("AOD"), i18n("how hazy the air is (smoke, dust).")],
+                    [i18n("UV"), i18n("the UV index of the day.")]],
+          note: i18n("The CAMS forecast. The colors follow the European Air Quality Index: cyan good, green fair, yellow moderate, red poor, dark red very poor, purple extremely poor. The scale is logarithmic: each band covers a wider range than the one before.") }
     ]
     function isOn(s) { return s.ids.some(function (id) { return !!panel.layers[id]; }); }
     function inColumn(s) { return s.ids.some(function (id) { return panel.shownIds.indexOf(id) >= 0; }); }
-    readonly property var kept: sections.filter(inColumn)
-    readonly property var ordered: kept.filter(isOn).concat(kept.filter(function (s) { return !isOn(s); }))
+    readonly property var kept: layerSections.filter(inColumn)
+    readonly property var orderedLayers: kept.filter(isOn).concat(kept.filter(function (s) { return !isOn(s); }))
+
+    // The rest of the tab. A line: label (bold) and text, an icon of the
+    // map (icon) or a few characters (sym) before it.
+    readonly property var otherSections: [
+        { title: i18n("The layer column"),
+          intro: i18n("The thin button on its left edge opens or folds it. The map stays where it is when the column opens over it."),
+          rows: [{ head: i18n("Open") },
+                 { label: i18n("Click on the icon"), text: panel.switchText, indent: true },
+                 { label: i18n("Slider"), text: i18n("the opacity of the layer, from 0 to 100 %."), indent: true },
+                 { icon: "gear", mask: true, label: i18n("Wheel"), text: i18n("its options and its color legend, which can be hidden."), indent: true },
+                 { head: i18n("Folded") },
+                 { label: i18n("Click on the icon"), text: panel.switchText, indent: true },
+                 { label: i18n("Mouse wheel on the icon"), text: i18n("the opacity, drawn as the bar under the icon."), indent: true }],
+          note: i18n("The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. Precipitation, clouds, wind, isobars, radar and satellite go over them.") },
+        { title: i18n("Time"),
+          rows: [{ head: i18n("The two clocks: how far back and how far ahead") },
+                 { label: i18n("Click"), text: i18n("opens the list of choices. It also gives the range of the radar or of the satellite, which stays when another layer is switched on."), indent: true },
+                 { label: i18n("Mouse wheel"), text: i18n("the next or previous choice."), indent: true },
+                 { head: i18n("Speed") },
+                 { label: i18n("Click"), text: i18n("the next speed: x1, x2, x3, then x1 again."), indent: true },
+                 { label: "+ / −", text: i18n("the next or previous speed, from the keyboard or the keypad."), indent: true }],
+          note: i18n("A layer stops where its data stops.") },
+        { title: i18n("Time line"),
+          rows: [{ icon: "debut-glyph", mask: true, label: i18n("First picture"), text: i18nc("@info keyboard key", "Home") },
+                 { sym: "‹ −", label: i18n("One step back"), text: i18n("3 hours; one hour for the satellite alone or with the radar; 10 minutes for the radar alone. Left arrow: one hour.") },
+                 { sym: "▶", label: i18n("Play or pause"), text: i18n("Space") },
+                 { sym: "+ ›", label: i18n("One step ahead"), text: i18n("the same steps. Right arrow: one hour.") },
+                 { icon: "fin-glyph", mask: true, label: i18n("Last picture"), text: i18nc("@info keyboard key", "End") },
+                 { icon: "boucle-glyph", mask: true, label: i18n("Loop (L)"), text: i18n("on, the animation plays round again from the start; off, it stops on the last picture.") },
+                 { label: i18n("The line"), text: i18n("a click or a drag shows the picture under the pointer, and pauses.") },
+                 { label: i18n("Magenta band"), text: i18n("the range of the radar, paler for its nowcast.") },
+                 { label: i18n("Grey-blue band"), text: i18n("the range of the satellite.") },
+                 { label: i18n("Marks under the line"), text: i18n("one per picture, colored once loaded, red when it failed.") }] },
+        { title: i18n("Date"),
+          rows: [{ label: i18n("Green dot"), text: i18n("a picture straight from a forecast file.") },
+                 { label: i18n("Orange dot"), text: i18n("a picture worked out between two files.") },
+                 { sym: "↺", label: i18n("Back to now"), text: "0" },
+                 { sym: "▾", label: i18n("Days"), text: i18n("lists the days of the range. The mouse wheel over the date goes to the next or previous day.") }],
+          note: i18n("At the bottom left of the map, small: the pictures loaded out of those of the range, and the pictures per second at most. Under them, the models: the global one, then the finer regional ones drawn over it in this view.") },
+        { title: i18n("Keys"),
+          rows: [{ label: i18n("Space"), text: i18n("play or pause.") },
+                 { label: i18n("Left / Right arrow"), text: i18n("one hour back or ahead.") },
+                 { label: i18n("Page Up / Page Down (or Ctrl + arrow)"), text: i18n("the previous or next picture from a forecast file.") },
+                 { label: i18n("Home / End"), text: i18n("the first or last picture.") },
+                 { label: "0", text: i18n("back to now.") },
+                 { label: "+ / −", text: i18n("the next or previous speed.") },
+                 { label: i18n("Ctrl + / Ctrl −"), text: i18n("zoom in or out.") },
+                 { label: "L", text: i18n("the loop on or off.") },
+                 { label: Object.keys(panel.keys).map(function (id) { return panel.keys[id]; }).join(", "),
+                   text: i18n("switch radar, satellite, wind, temperature, precipitation, clouds, pressure, isobars, humidity, dew point, air quality on or off.") },
+                 { label: i18n("Ctrl held over the map"), text: i18n("the wind and the temperature under the pointer.") },
+                 { label: i18n("Esc"), text: i18n("closes this panel.") }],
+          note: i18n("The same keys in every language. They work while the Weather Map tab is shown.") }
+    ]
 
     background: Rectangle {
         color: Kirigami.Theme.backgroundColor
         Rectangle { width: 1; height: parent.height; color: Kirigami.Theme.disabledTextColor; opacity: 0.4 }
+    }
+
+    // One part: title (icon, letter, "shown" for a layer on), an intro in
+    // italics, the lines, a note in italics.
+    component Part: ColumnLayout {
+        id: part
+        property var section
+        property bool on: false
+        property bool dim: false
+        property var rows: []
+        Layout.fillWidth: true
+        Layout.leftMargin: Kirigami.Units.largeSpacing
+        Layout.rightMargin: Kirigami.Units.largeSpacing
+        spacing: Kirigami.Units.smallSpacing
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
+            WmIcon {
+                visible: !!part.section.icon
+                implicitWidth: 22
+                implicitHeight: 22
+                name: part.section.icon || ""
+                mask: !!part.section.mask
+            }
+            QQC2.Label {
+                text: part.section.title + (part.section.ids && panel.letter(part.section.ids[0]) ? " (" + panel.letter(part.section.ids[0]) + ")" : "")
+                font.bold: true
+            }
+            QQC2.Label {
+                visible: part.on
+                text: i18nc("@info a layer of the map is shown now", "shown")
+                color: Kirigami.Theme.highlightColor
+                font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+        }
+        QQC2.Label {
+            visible: !!part.section.intro
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            font.italic: true
+            opacity: 0.8
+            text: part.section.intro || ""
+        }
+        Repeater {
+            model: part.rows
+            RowLayout {
+                required property var modelData
+                Layout.fillWidth: true
+                Layout.leftMargin: modelData.indent ? Kirigami.Units.largeSpacing : 0
+                spacing: Kirigami.Units.smallSpacing
+                opacity: part.dim ? 0.75 : 1.0
+                WmIcon {
+                    visible: !!modelData.icon
+                    Layout.alignment: Qt.AlignTop
+                    implicitWidth: 16
+                    implicitHeight: 16
+                    name: modelData.icon || ""
+                    mask: !!modelData.mask
+                }
+                QQC2.Label {
+                    visible: !!modelData.sym
+                    Layout.alignment: Qt.AlignTop
+                    text: modelData.sym || ""
+                }
+                QQC2.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.StyledText
+                    text: modelData.head ? "<b>" + modelData.head + "</b>"
+                        : "<b>" + modelData.label + "</b>" + (modelData.text ? i18nc("@info label: text", ": ") + modelData.text : "")
+                }
+            }
+        }
+        QQC2.Label {
+            visible: !!part.section.note
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            font.italic: true
+            opacity: 0.8
+            text: part.section.note || ""
+        }
     }
 
     contentItem: ColumnLayout {
@@ -70,7 +248,7 @@ QQC2.Popup {
                 Layout.fillWidth: true
                 Layout.leftMargin: Kirigami.Units.smallSpacing
                 level: 3
-                text: i18n("Reading the weather maps")
+                text: i18n("Weather maps")
             }
             QQC2.ToolButton {
                 icon.name: "window-close"
@@ -87,85 +265,24 @@ QQC2.Popup {
                 width: scroll.availableWidth
                 spacing: Kirigami.Units.largeSpacing
                 Repeater {
-                    model: panel.ordered
-                    ColumnLayout {
+                    model: panel.orderedLayers
+                    Part {
                         required property var modelData
-                        readonly property bool on: panel.isOn(modelData)
-                        Layout.fillWidth: true
-                        Layout.leftMargin: Kirigami.Units.largeSpacing
-                        Layout.rightMargin: Kirigami.Units.largeSpacing
-                        spacing: Kirigami.Units.smallSpacing
-                        RowLayout {
-                            spacing: Kirigami.Units.smallSpacing
-                            Kirigami.Icon {
-                                implicitWidth: 22
-                                implicitHeight: 22
-                                roundToIconSize: false
-                                source: modelData.icon
-                                isMask: !!modelData.mask
-                                color: modelData.mask ? Kirigami.Theme.textColor : "transparent"
-                            }
-                            QQC2.Label {
-                                text: modelData.title
-                                font.bold: true
-                            }
-                            QQC2.Label {
-                                visible: on
-                                text: i18nc("@info a layer of the map is shown now", "shown")
-                                color: Kirigami.Theme.highlightColor
-                                font.pointSize: Kirigami.Theme.smallFont.pointSize
-                            }
-                        }
-                        QQC2.Label {
-                            Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            opacity: on ? 1.0 : 0.75
-                            text: modelData.text
-                        }
-                        QQC2.Label {
-                            Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            opacity: 0.7
-                            font.italic: true
-                            text: modelData.range
-                        }
-                        // The choices of the layer's list, in the order of the list.
-                        QQC2.Label {
-                            readonly property var list: panel.choices[modelData.ids[0]] || []
-                            visible: list.length > 0
-                            Layout.fillWidth: true
-                            wrapMode: Text.WordWrap
-                            color: Kirigami.Theme.linkColor
-                            font.italic: true
-                            text: list.map(function (c) { return c[1]; }).join(", ")
-                        }
+                        section: modelData
+                        on: panel.isOn(modelData)
+                        dim: !on
+                        rows: panel.layerRows(modelData)
                     }
                 }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: Kirigami.Units.largeSpacing
-                    Layout.rightMargin: Kirigami.Units.largeSpacing
-                    Layout.bottomMargin: Kirigami.Units.largeSpacing
-                    spacing: Kirigami.Units.smallSpacing
-                    QQC2.Label { text: i18n("Layers"); font.bold: true }
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        wrapMode: Text.WordWrap
-                        text: i18n("A click on the icon of a line switches the layer on or off; the slider sets its opacity, from 0 to 100 %. The wheel at the end of the line opens its options: what it shows, and its color legend on the map, which can be hidden. The colors share one layer at a time (temperature, pressure, humidity, dew point, air quality); precipitation, clouds, wind, isobars, radar and satellite go over them. The thin button on the left edge of the column folds it to its icons: the opacity is then the bar under each icon, set with the wheel over it. The map stays where it is when the column opens over it.")
-                    }
-                    QQC2.Label { text: i18n("Time"); font.bold: true }
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        wrapMode: Text.WordWrap
-                        text: i18n("The two clocks at the bottom of the column set how far back and how far ahead the animation goes (the wheel over one steps through its choices, a click opens them); a layer stops where its data stops. Their lists also give the range of the radar or of the satellite, which stays when another layer is switched on. The triangles beside them set the speed, x1, x2 or x3, one click to the next. The round arrow beside the date goes back to now; the arrow after it lists the days of the range. A green dot is a picture straight from a forecast file, an orange one is worked out between two of them. At the bottom left of the map, small: the pictures loaded out of those of the range, and the pictures per second at most; under them, the models: the global one, then the finer regional ones drawn over it in this view. The loop button at the end of the time bar plays round again from the start, or stops on the last picture.")
-                    }
-                    QQC2.Label { text: i18n("Keys"); font.bold: true }
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        wrapMode: Text.WordWrap
-                        text: i18n("Space plays or pauses. The arrows move one hour; the -/+ buttons of the time bar move 3 hours, an hour for the satellite alone or with the radar, 10 minutes for the radar alone. Page Up and Page Down (or Ctrl and an arrow) jump to the previous or next picture from a forecast file. Home and End go to the first or the last picture. Hold Ctrl over the map to read the wind and the temperature under the pointer. Esc closes this panel.")
+                Repeater {
+                    model: panel.otherSections
+                    Part {
+                        required property var modelData
+                        section: modelData
+                        rows: modelData.rows
                     }
                 }
+                Item { implicitHeight: Kirigami.Units.smallSpacing }
             }
         }
     }

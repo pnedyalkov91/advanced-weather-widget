@@ -507,6 +507,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         maxZoom: toGl(view.maxZoom),
         // Made by makeAttribution(), which adds a line for Open-Meteo's data.
         attributionControl: false,
+        // The zoom buttons' tips, in the widget's language, with their keys.
+        // (tr: the page's, absent in the unit tests).
+        locale: { 'NavigationControl.ZoomIn': (typeof tr === 'function' ? tr('zoomIn', 'Zoom in') : 'Zoom in') + ' (Ctrl +)',
+                  'NavigationControl.ZoomOut': (typeof tr === 'function' ? tr('zoomOut', 'Zoom out') : 'Zoom out') + ' (Ctrl -)' },
         // Tile fetches from a file:// page (CORS with a null origin)
         transformRequest: function (url) { return { url: url, credentials: 'omit' }; }
       });

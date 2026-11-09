@@ -29,6 +29,8 @@ Item {
     property bool soloable: false
     property bool soloed: false
     property string soloTip
+    property string key               // the keyboard letter that switches the layer, shown in the tip
+    readonly property string _keyText: key ? " (" + key + ")" : ""
     property real _wheel: 0
     default property alias options: optionsColumn.data
     readonly property alias optionsPopup: popup
@@ -110,8 +112,8 @@ Item {
             }
         }
         QQC2.ToolTip.text: row.compact && row.opacityValue >= 0
-            ? "<b>" + row.title + "</b>" + (row.checked ? "<br>" + i18n("Opacity: %1 % (wheel)", row.opacityValue) : "")
-            : row.title + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
+            ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (wheel)", row.opacityValue) : "")
+            : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
         QQC2.ToolTip.visible: iconArea.containsMouse
         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
     }

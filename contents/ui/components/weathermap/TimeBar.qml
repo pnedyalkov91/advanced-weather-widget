@@ -88,7 +88,7 @@ Rectangle {
 
         BarIcon {
             iconName: "debut-glyph"
-            tip: i18n("First picture")
+            tip: i18n("First picture") + " (" + i18nc("@info keyboard key", "Home") + ")"
             enabled: bar.map.count > 0
             onClicked: bar.map.showIndex(0)
         }
@@ -147,7 +147,7 @@ Rectangle {
         }
         BarIcon {
             iconName: "fin-glyph"
-            tip: i18n("Last picture")
+            tip: i18n("Last picture") + " (" + i18nc("@info keyboard key", "End") + ")"
             enabled: bar.map.count > 0
             onClicked: bar.map.showIndex(bar.map.count - 1)
         }
@@ -167,7 +167,7 @@ Rectangle {
         BarIcon {
             iconName: "boucle-glyph"
             on: bar.map.loop
-            tip: on ? i18n("Loop: on") : i18n("Loop: off, stops at the end")
+            tip: (on ? i18n("Loop: on") : i18n("Loop: off, stops at the end")) + " (L)"
             enabled: bar.map.count > 0
             onClicked: bar.map.setLoop(!on)
         }

@@ -376,6 +376,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Radar")
+                key: panel.map.layerKeys.radar
                 iconName: "radar"
                 checked: panel.map.layerOn("radar")
                 visible: panel.map.layerEnabled("radar")
@@ -410,6 +411,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Satellite")
+                key: panel.map.layerKeys.satellite
                 iconName: "satellite"
                 checked: panel.map.layerOn("satellite")
                 visible: panel.map.layerEnabled("satellite")
@@ -429,6 +431,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Wind")
+                key: panel.map.layerKeys.wind
                 iconName: "vent-glyph"
                 checked: panel.map.layerOn("wind")
                 visible: panel.map.layerEnabled("wind")
@@ -447,6 +450,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Temperature")
+                key: panel.map.layerKeys.temperature
                 iconName: "temperature-glyph"
                 checked: panel.map.layerOn("temperature")
                 visible: panel.map.layerEnabled("temperature")
@@ -468,6 +472,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Precipitation (rain, snow)")
+                key: panel.map.layerKeys.precipitation
                 iconName: "precipitations-glyph"
                 checked: panel.map.layerOn("precipitation")
                 visible: panel.map.layerEnabled("precipitation")
@@ -489,6 +494,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Cloud cover")
+                key: panel.map.layerKeys.clouds
                 iconName: "nuages-glyph"
                 iconMask: true
                 checked: panel.map.layerOn("clouds")
@@ -508,6 +514,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Sea level pressure")
+                key: panel.map.layerKeys.pressure
                 iconName: "pression-glyph"
                 checked: panel.map.layerOn("pressure")
                 visible: panel.map.layerEnabled("pressure")
@@ -522,6 +529,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Relative humidity")
+                key: panel.map.layerKeys.humidity
                 iconName: "humidite-glyph"
                 checked: panel.map.layerOn("humidity")
                 visible: panel.map.layerEnabled("humidity")
@@ -536,6 +544,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Dew point")
+                key: panel.map.layerKeys.dewpoint
                 iconName: "rosee-glyph"
                 checked: panel.map.layerOn("dewpoint")
                 visible: panel.map.layerEnabled("dewpoint")
@@ -551,6 +560,7 @@ Rectangle {
                 width: panel.colW
                 compact: panel.folded
                 title: i18n("Air quality (CAMS)")
+                key: panel.map.layerKeys.airquality
                 iconName: "qualite-air-glyph"
                 iconMask: true
                 checked: panel.map.layerOn("airquality")
@@ -661,7 +671,7 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: panel.map.setSpeed(speedIcon.speed % 3 + 1)
                 }
-                QQC2.ToolTip.text: i18n("Speed x%1: 3 hours in %2 s", speedIcon.speed, Number(1.5 / speedIcon.speed).toLocaleString(Qt.locale(), "f", 2).replace(/0$/, "")) + "<br><i>" + i18n("Click for the next speed") + "</i>"
+                QQC2.ToolTip.text: i18n("Speed x%1: 3 hours in %2 s", speedIcon.speed, Number(1.5 / speedIcon.speed).toLocaleString(Qt.locale(), "f", 2).replace(/0$/, "")) + "<br><i>" + i18n("Click for the next speed") + " (+ −)</i>"
                 QQC2.ToolTip.visible: speedArea.containsMouse
                 QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
             }

@@ -1058,15 +1058,34 @@ document.addEventListener('mousemove', function (e) {
 // The animation's keys, told to the widget: once the map has the keyboard
 // (clicked, or given it when the popup opens), the widget's own shortcuts
 // get no key. Before MapLibre (capture), so the arrows step and do not pan.
+var ANIM_LAYER_KEYS = { R: 'radar', S: 'satellite', V: 'wind', T: 'temperature', P: 'precipitation',
+  N: 'clouds', B: 'pressure', I: 'isobars', H: 'humidity', D: 'dewpoint', A: 'airquality' };
+// Ctrl and + or -, from the widget: the map zooms as with its buttons.
+window.animZoom = function (d) {
+  var m = _widgetAdapter ? _widgetAdapter.getMap() : null;
+  if (m) { if (d > 0) m.zoomIn(); else m.zoomOut(); }
+};
 window.animKeyFor = function (e) {
   if (!anim) return null;   // no animation (the Leaflet page): the map keeps its keys
   var t = e.target, tag = t && t.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return null;
-  if (e.altKey || e.metaKey || e.shiftKey) return null;
+  if (e.altKey || e.metaKey) return null;
+  // 0 and + need Shift on some layouts (AZERTY). Ctrl and + or -: zoom.
+  if (e.ctrlKey && (e.key === '+' || e.key === '=' || e.key === '-')) return 'zoom:' + (e.key === '-' ? -1 : 1);
+  if (!e.ctrlKey && e.key === '0') return 'now';
+  if (!e.ctrlKey && (e.key === '+' || e.key === '-')) return 'speed:' + (e.key === '-' ? -1 : 1);
+  if (e.shiftKey) return null;
   if (e.key === ' ' && !e.ctrlKey) return e.repeat ? '' : 'play';
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') return (e.ctrlKey ? 'file:' : 'step:') + (e.key === 'ArrowLeft' ? -1 : 1);
   if ((e.key === 'PageUp' || e.key === 'PageDown') && !e.ctrlKey) return 'file:' + (e.key === 'PageUp' ? -1 : 1);
   if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey) return 'end:' + (e.key === 'Home' ? -1 : 1);
+  // One letter per layer (the widget's layerKeys), L for the loop.
+  if (!e.ctrlKey && e.key.length === 1) {
+    var c = e.key.toUpperCase();
+    if (c === 'L') return 'loop';
+    var id = ANIM_LAYER_KEYS[c];
+    if (id) return 'layer:' + id;
+  }
   return null;
 };
 document.addEventListener('keydown', function (e) {
@@ -1177,7 +1196,7 @@ window.setIsobarsButton = function (shown, on) {
   isoBtn.classList.toggle('active', !!on);
 };
 if (isoBtn) {
-  isoBtn.title = tr('isobars', 'Isobars');
+  isoBtn.title = tr('isobars', 'Isobars') + ' (I)';
   isoBtn.addEventListener('click', function () {
     var on = !isoBtn.classList.contains('active');
     document.title = 'isobars:' + (on ? 1 : 0) + ':' + (++isoClicks);

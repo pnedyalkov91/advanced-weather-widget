@@ -895,6 +895,8 @@ Item {
             "globe": i18n("Globe"),
             "dayNight": i18n("Day and night"),
             "isobars": i18n("Isobars"),
+            "zoomIn": i18n("Zoom in"),
+            "zoomOut": i18n("Zoom out"),
             "windUnitLabel": radarRoot.windUnitLabel,
             "dirN": i18n("N"),
             "dirNE": i18n("NE"),
@@ -1036,7 +1038,8 @@ Item {
     // forecast file. Only while the map can be seen: the shortcuts belong
     // to the whole popup.
     readonly property bool keysOn: started && shown
-    // The same keys from the page (window.animKeyFor): "play", "step:1", "file:-1".
+    // The same keys from the page (window.animKeyFor): "play", "step:1",
+    // "file:-1", "layer:wind", "loop", "now", "speed:1", "zoom:-1".
     function pageKey(k) {
         if (!keysOn)
             return;
@@ -1048,6 +1051,41 @@ Item {
             js("window.animStepFile(" + (+k.slice(5)) + ")");
         else if (k.indexOf("end:") === 0)
             js("window.animToEnd(" + (+k.slice(4)) + ")");
+        else if (k.indexOf("layer:") === 0)
+            keyLayer(k.slice(6));
+        else if (k === "loop")
+            setLoop(!loop);
+        else if (k === "now")
+            keyNow();
+        else if (k.indexOf("speed:") === 0)
+            stepSpeed(+k.slice(6));
+        else if (k.indexOf("zoom:") === 0)
+            zoomBy(+k.slice(5));
+    }
+    // One letter per layer, the same in every language: it switches the
+    // layer on or off as a click on its icon does. Shown in the icons' tips.
+    readonly property var layerKeys: ({ radar: "R", satellite: "S", wind: "V", temperature: "T", precipitation: "P",
+        clouds: "N", pressure: "B", isobars: "I", humidity: "H", dewpoint: "D", airquality: "A" })
+    function keyLayer(id) {
+        // The isobars go with the pressure: out of the column with it.
+        if (!layerEnabled(id === "isobars" ? "pressure" : id))
+            return;
+        if (id === "radar" || id === "satellite")
+            clickSource(id, !layerOn(id));
+        else
+            setLayer(id, !layerOn(id));
+    }
+    // + and -: the next or previous speed, round x1, x2, x3 like the click.
+    function stepSpeed(d) {
+        setSpeed((speed - 1 + d + 3) % 3 + 1);
+    }
+    // Ctrl and + or -: the map's zoom, as its buttons.
+    function zoomBy(d) {
+        js("if (window.animZoom) window.animZoom(" + d + ")");
+    }
+    function keyNow() {
+        if (count > 0 && animState)
+            showIndex(animState.now);
     }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
     Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStep(-1)") }
@@ -1057,6 +1095,22 @@ Item {
     Shortcut { sequence: "Home"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(-1)") }
     Shortcut { sequence: "End"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(1)") }
     Shortcut { sequence: "Escape"; enabled: helpPanel.opened; onActivated: helpPanel.close() }
+    Instantiator {
+        model: Object.keys(radarRoot.layerKeys)
+        delegate: Shortcut {
+            required property string modelData
+            sequence: radarRoot.layerKeys[modelData]
+            enabled: radarRoot.keysOn
+            onActivated: radarRoot.keyLayer(modelData)
+        }
+    }
+    Shortcut { sequence: "L"; enabled: radarRoot.keysOn; onActivated: radarRoot.setLoop(!radarRoot.loop) }
+    // 0 and + need Shift on some layouts (AZERTY): both forms.
+    Shortcut { sequences: ["0", "Shift+0"]; enabled: radarRoot.keysOn; onActivated: radarRoot.keyNow() }
+    Shortcut { sequences: ["+", "Shift++"]; enabled: radarRoot.keysOn; onActivated: radarRoot.stepSpeed(1) }
+    Shortcut { sequence: "-"; enabled: radarRoot.keysOn; onActivated: radarRoot.stepSpeed(-1) }
+    Shortcut { sequences: ["Ctrl++", "Ctrl+Shift++", "Ctrl+="]; enabled: radarRoot.keysOn; onActivated: radarRoot.zoomBy(1) }
+    Shortcut { sequence: "Ctrl+-"; enabled: radarRoot.keysOn; onActivated: radarRoot.zoomBy(-1) }
 
     // ── Main layout ──────────────────────────────────────────────────────
     ColumnLayout {
@@ -1422,7 +1476,7 @@ Item {
     HelpPanel {
         id: helpPanel
         parent: radarRoot
-        choices: ({ wind: radarRoot.windLevelChoices, precipitation: radarRoot.precipChoices, clouds: radarRoot.cloudChoices, airquality: radarRoot.aqChoices })
+        keys: radarRoot.layerKeys
         layers: {
             var o = {};
             radarRoot.layerIds.forEach(function (id) { o[id] = radarRoot.layerOn(id); });
