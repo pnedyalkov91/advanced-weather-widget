@@ -118,12 +118,19 @@ Item {
             }
         }
         Timer { id: turnEnd; interval: 1200; onTriggered: row._turning = false }
-        QQC2.ToolTip.text: row._turning ? "<b>" + i18n("Opacity: %1 %", row.opacityValue) + "</b>"
-            : row.compact && row.opacityValue >= 0
+        // The opacity while Shift + wheel changes it: a tip of its own, the
+        // shared one may already be shown (or timed out) for the hover.
+        QQC2.ToolTip {
+            visible: row._turning
+            delay: 0
+            timeout: -1
+            text: "<b>" + i18n("Opacity: %1 %", row.opacityValue) + "</b>"
+        }
+        QQC2.ToolTip.text: row.compact && row.opacityValue >= 0
             ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (Shift + wheel)", row.opacityValue) : "")
             : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
-        QQC2.ToolTip.visible: iconArea.containsMouse || row._turning
-        QQC2.ToolTip.delay: row._turning ? 0 : Kirigami.Units.toolTipDelay
+        QQC2.ToolTip.visible: iconArea.containsMouse && !row._turning
+        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
     }
 
     // Folded: the opacity as a bar under the icon, as wide as the icon.
