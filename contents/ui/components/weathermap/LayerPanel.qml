@@ -382,7 +382,6 @@ Rectangle {
                 compact: panel.folded
                 title: i18n("Satellite")
                 iconName: "satellite"
-                iconMask: true
                 checked: panel.map.layerOn("satellite")
                 visible: panel.map.layerEnabled("satellite")
                 opacityValue: panel.map.opacities.satellite

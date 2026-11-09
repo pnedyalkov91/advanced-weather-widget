@@ -30,7 +30,7 @@ QQC2.Popup {
         { ids: ["radar"], icon: icons + "weathermap/radar.svg", title: i18n("Radar"),
           range: i18n("Every 10 minutes, from about 2 hours back to 1 hour ahead (LibreWXR's nowcast, paler on the time line)."),
           text: i18n("What the weather radars see falling now, from LibreWXR, over the animation in its range: the time line slows down to its 10 minute steps there. The wheel of its line sets its colors, snow, smoothing, lightning, storm cells, wind arrows and alerts. The arrows show how the rain moves now, the same on every picture: they are not the wind of the time shown. A double click on its icon shows the radar alone, on its own range; then a click on the satellite adds it (both, on their joint range). The same double click gives back the layers from before.") },
-        { ids: ["satellite"], icon: icons + "weathermap/satellite.svg", mask: true, title: i18n("Satellite"),
+        { ids: ["satellite"], icon: icons + "weathermap/satellite.svg", title: i18n("Satellite"),
           range: i18n("Every hour over the past 12 hours."),
           text: i18n("The infrared picture of the clouds from LibreWXR: the colder the top, the higher and whiter the cloud. A double click on its icon shows the satellite alone, on its own range; then a click on the radar adds it. Ctrl and a double click on either shows both at once.") },
         { ids: ["wind"], icon: icons + "flat-color/22/wi-strong-wind.svg", title: i18n("Wind"), range: sixDays,
