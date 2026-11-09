@@ -230,7 +230,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       layout: { 'line-join': 'round', visibility: 'visible' },
       paint: {
         'line-color': 'rgba(20, 20, 20, 0.6)',
-        'line-width': ['interpolate', ['linear'], ['zoom'], 0, 0.6, 6, 1.2, 10, 1.8]
+        // Thicker far out: on the whole globe (zoom ~1) a hairline is lost
+        // in the colors. Thinnest around zoom 4, then wider again close in.
+        'line-width': ['interpolate', ['linear'], ['zoom'], 0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8]
       }
     }, firstOverlayLayerId());
     // The animation's images made before them go under them, the

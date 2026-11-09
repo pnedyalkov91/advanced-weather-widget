@@ -529,6 +529,33 @@ test('the temperature brings the coasts and borders right over it, under the fra
   assert.deepEqual(fetched, ['vendor/coast-borders.bin']);
 });
 
+// The value of a linear ['interpolate', ['linear'], ['zoom'], z0, v0, ...] at a zoom.
+function widthAt(expr, zoom) {
+  const stops = expr.slice(3);
+  if (zoom <= stops[0]) return stops[1];
+  for (let i = 2; i < stops.length; i += 2) {
+    if (zoom <= stops[i]) {
+      const t = (zoom - stops[i - 2]) / (stops[i] - stops[i - 2]);
+      return stops[i - 1] + t * (stops[i + 1] - stops[i - 1]);
+    }
+  }
+  return stops[stops.length - 1];
+}
+
+test('the lines are thicker on the whole globe, where they are dense and small', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const width = map.getLayer('lv-lines').paint['line-width'];
+  assert.equal(JSON.stringify(width.slice(0, 3)), '["interpolate",["linear"],["zoom"]]');
+  // The whole globe sits around zoom 1 in the widget.
+  assert.ok(widthAt(width, 1) >= 1.3);
+  assert.ok(widthAt(width, 0) >= widthAt(width, 2));
+  // Close in, as before.
+  assert.ok(Math.abs(widthAt(width, 6) - 1.2) < 1e-9);
+  assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
+});
+
 test('the lines are fetched once, whatever asks for them', async () => {
   const fetched = [];
   const { adapter } = loadAdapter(linesGlobals(fetched));
