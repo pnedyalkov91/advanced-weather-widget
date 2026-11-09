@@ -431,8 +431,8 @@ Item {
         Plasmoid.configuration.weatherMapDisabledLayers = JSON.stringify(d);
     }
     // The stack of the layers, top first, chosen in the settings: the map
-    // draws them so and the column lists them so (the wind, drawn over
-    // the map, first).
+    // draws them so (the wind, a canvas over the map, over all wherever it
+    // is) and the column lists them so.
     readonly property var layerOrder: ConfigUtils.weatherStackOrder(Plasmoid.configuration.weatherMapLayerOrder)
     onLayerOrderChanged: if (started) js("if (window.setLayerOrder) window.setLayerOrder(" + JSON.stringify(layerOrder) + ")")
     // A layer taken out while on goes off.

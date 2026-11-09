@@ -279,11 +279,12 @@ function tempAddStop(stops, unit) {
 }
 
 /**
- * The stack of the Weather Maps' layers, top first (the wind, drawn over
- * the map, is not in it). The map page has the same default (STACK_DEFAULT
- * in glue-adapter-maplibre.js).
+ * The stack of the Weather Maps' layers, top first. The map page has the
+ * same default (STACK_DEFAULT in glue-adapter-maplibre.js), without the
+ * wind: its particles are drawn on a canvas over the map, so over every
+ * layer whatever its place here, which orders the column only.
  */
-var WEATHER_STACK = ["radar", "satellite", "isobars", "precipitation", "clouds",
+var WEATHER_STACK = ["radar", "satellite", "wind", "isobars", "precipitation", "clouds",
     "temperature", "pressure", "humidity", "dewpoint", "airquality"];
 
 /**

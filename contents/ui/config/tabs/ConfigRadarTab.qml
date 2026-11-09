@@ -406,28 +406,11 @@ GridLayout {
                 d.push(id);
             radarTab.configRoot.cfg_weatherMapDisabledLayers = JSON.stringify(d);
         }
-        // Wind first: drawn over the map, it stays on top of the others.
         readonly property var labels: ({
             wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"), isobars: i18n("Isobars"),
             precipitation: i18n("Precipitation"), clouds: i18n("Cloud cover"), temperature: i18n("Temperature"),
             pressure: i18n("Pressure"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
         })
-        RowLayout {
-            id: windLine
-            Layout.fillWidth: true
-            // Where the others have their handle.
-            Kirigami.ListItemDragHandle {
-                opacity: 0
-                enabled: false
-                listItem: windLine
-                listView: stackList
-            }
-            WrappingSwitch {
-                text: mapLayers.labels.wind
-                checked: mapLayers.disabled.indexOf("wind") < 0
-                onToggled: mapLayers.setEnabled("wind", checked)
-            }
-        }
         // The stack, top first: a handle drags a layer up or down.
         LayerStackList {
             id: stackList
@@ -448,7 +431,14 @@ GridLayout {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             opacity: 0.7
-            text: i18n("Drag a layer by its handle to stack it: the first one is drawn on top. The wind always goes over the others, the coasts and borders over the layers. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab.")
+            text: i18n("Drag a layer by its handle to stack it: the first one is drawn on top, the coasts and borders over all. The radar is always there; the isobars come and go with the pressure. A layer switched off here leaves the column of the Weather Maps tab.")
+        }
+        Kirigami.InlineMessage {
+            Layout.fillWidth: true
+            Layout.topMargin: Kirigami.Units.smallSpacing
+            visible: true
+            type: Kirigami.MessageType.Warning
+            text: i18n("The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only.")
         }
     }
 

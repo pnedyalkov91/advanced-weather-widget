@@ -366,13 +366,13 @@ Rectangle {
         Divider {}
     }
 
-    // The rows in the order of the stack (map.layerOrder, top first), the
-    // wind first: drawn over the map, it is over all. Each row hung again
-    // on the column, in turn, goes after those before it.
+    // The rows in the order of the stack (map.layerOrder, top first; the
+    // wind's place orders the column only, it is drawn over the map). Each
+    // row hung again on the column, in turn, goes after those before it.
     function arrangeRows() {
-        var rowOf = { radar: radarRow, satellite: satRow, precipitation: precipRow, clouds: cloudRow, temperature: tempRow,
+        var rowOf = { radar: radarRow, satellite: satRow, wind: windRow, precipitation: precipRow, clouds: cloudRow, temperature: tempRow,
             pressure: presRow, humidity: humRow, dewpoint: dewRow, airquality: aqRow };
-        var rows = [layersCaption, windRow].concat(map.layerOrder.filter(function (id) { return !!rowOf[id]; })
+        var rows = [layersCaption].concat(map.layerOrder.filter(function (id) { return !!rowOf[id]; })
             .map(function (id) { return rowOf[id]; }));
         rows.forEach(function (r) {
             r.parent = null;
