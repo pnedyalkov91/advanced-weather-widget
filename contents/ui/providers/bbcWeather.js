@@ -35,6 +35,7 @@
  */
 
 .import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
 
 var _LOCATOR_KEY = "AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv";
 
@@ -91,6 +92,9 @@ function _dailyDerived(fcs, dateStr) {
  * keyed by rounded coordinates so we don't re-resolve on every refresh.
  */
 function _resolveLocationId(service, gen, cb) {
+    // gen === null: the caller is not tied to one refresh cycle (the hourly forecast, which can be asked for
+    // before the first refresh has even started) - the answer is then always handed on. A refresh passes its
+    // generation, and its answer is dropped when a newer refresh has started meanwhile.
     var lat = service.latitude;
     var lon = service.longitude;
     var key = Number(lat).toFixed(3) + "," + Number(lon).toFixed(3);
@@ -107,11 +111,11 @@ function _resolveLocationId(service, gen, cb) {
         + "&latitude=" + encodeURIComponent(lat)
         + "&longitude=" + encodeURIComponent(lon)
         + "&format=json";
-    var req = Dbg.xhr("BBC Weather", "_resolveLocationId");
+    var req = Shared.xhr("BBC Weather", "_resolveLocationId");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
-        if (service._refreshGen !== gen) return;
+        if (gen !== null && service._refreshGen !== gen) return;
         if (req.status !== 200) return cb(null);
         try {
             var d = JSON.parse(req.responseText);
@@ -155,7 +159,7 @@ function fetchCurrent(service, W, chain, idx) {
 
 function _fetchCurrentForId(service, W, chain, idx, gen, id) {
     var r = service.weatherRoot;
-    var req = Dbg.xhr("BBC Weather", "_fetchCurrentForId");
+    var req = Shared.xhr("BBC Weather", "_fetchCurrentForId");
     req.open("GET", _forecastUrl(id));
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -308,7 +312,7 @@ function fetchHourly(service, W, dateStr) {
     _resolveLocationId(service, gen, function (id) {
         if (service._refreshGen !== gen) return;
         if (!id) { r.hourlyData = []; return; }
-        var req = Dbg.xhr("BBC Weather", "fetchHourly");
+        var req = Shared.xhr("BBC Weather", "fetchHourly");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -324,10 +328,9 @@ function fetchHourly(service, W, dateStr) {
 /** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure.
  *  BBC's aggregated forecast holds all its days, so the days are cut out of that single answer. */
 function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
-    var gen = service._refreshGen;
-    _resolveLocationId(service, gen, function (id) {
+    _resolveLocationId(service, null, function (id) {
         if (!id) { callback({}); return; }
-        var req = Dbg.xhr("BBC Weather", "fetchHourlyAll");
+        var req = Shared.xhr("BBC Weather", "fetchHourlyAll");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -356,10 +359,10 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
  */
 function fetchHourlyDirect(service, W, dateStr, cb) {
     var gen = service._refreshGen;
-    _resolveLocationId(service, gen, function (id) {
+    _resolveLocationId(service, null, function (id) {
         if (service._refreshGen !== gen) { cb([]); return; }
         if (!id) { cb([]); return; }
-        var req = Dbg.xhr("BBC Weather", "fetchHourlyDirect");
+        var req = Shared.xhr("BBC Weather", "fetchHourlyDirect");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;

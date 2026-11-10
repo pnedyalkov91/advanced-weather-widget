@@ -667,9 +667,12 @@ function weatherSummary(d) {
     if (!d)
         return "(none)";
     function n(v, digits) {
+        // -9999 is the widget's "this provider has no such value" marker (W.NOT_SUPPORTED), shown as n/a
+        if (v === -9999)
+            return "n/a";
         return (v === undefined || v === null || isNaN(v)) ? "--" : (digits !== undefined ? Number(v).toFixed(digits) : v);
     }
-    return "temp=" + n(d.temperatureC, 1) + "°C feels=" + n(d.apparentC, 1) + "°C code=" + n(d.weatherCode) + " wind=" + n(d.windKmh, 1) + "km/h@" + n(d.windDirection) + "° hum=" + n(d.humidityPercent) + "% press=" + n(d.pressureHpa, 0) + "hPa uv=" + n(d.uvIndex, 1) + " vis=" + n(d.visibilityKm, 1) + "km precip=" + n(d.precipMmh, 1) + "mm/h sunrise=" + (d.sunriseTimeText || "--") + " sunset=" + (d.sunsetTimeText || "--") + " daily=" + (d.dailyData ? d.dailyData.length : 0) + " day(s)";
+    return "temp=" + n(d.temperatureC, 1) + "°C feels=" + n(d.apparentC, 1) + "°C code=" + n(d.weatherCode) + " wind=" + n(d.windKmh, 1) + "km/h@" + n(d.windDirection) + "° hum=" + n(d.humidityPercent) + "% press=" + n(d.pressureHpa, 0) + "hPa uv=" + n(d.uvIndex, 1) + " vis=" + n(d.visibilityKm, 1) + "km precip=" + (d.precipMmh === -9999 ? "n/a" : n(d.precipMmh, 1) + "mm/h") + " sunrise=" + (d.sunriseTimeText || "--") + " sunset=" + (d.sunsetTimeText || "--") + " daily=" + (d.dailyData ? d.dailyData.length : 0) + " day(s)";
 }
 
 /** Lists which numeric fields of weatherData are missing (NaN/undefined). */
@@ -680,7 +683,9 @@ function missingFields(d) {
     var miss = [];
     for (var i = 0; i < keys.length; i++) {
         var v = d[keys[i]];
-        if (v === undefined || v === null || (typeof v === "number" && isNaN(v)))
+        if (v === -9999)
+            miss.push(keys[i] + " (not offered by this provider)");
+        else if (v === undefined || v === null || (typeof v === "number" && isNaN(v)))
             miss.push(keys[i]);
     }
     return miss.join(", ");

@@ -1727,9 +1727,7 @@ QtObject {
         var cacheKey = _sunKey();
         if (_sunCache && _sunCache.key === cacheKey) {
             var hit = _sunCache;
-            // the provider assigns its data right after calling this, so the patch is applied on the next turn
-            // (before the data reaches the UI) and nothing is shown without the times
-            Qt.callLater(function () {
+            var patchFromHit = function () {
                 if (_refreshGen !== gen)
                     return;
                 _applySunTimes(r, {
@@ -1739,7 +1737,16 @@ QtObject {
                     seeded: hit.seeded === true,
                     fromMemory: true
                 });
-            });
+            };
+            // Providers differ in the order: met.no / Tomorrow.io call this and assign their data right
+            // after, so the patch runs on the next turn, before the data reaches the UI. The others
+            // (BBC, QWeather, Weatherbit, WeatherAPI, AEMET, StormGlass) assign first and call this
+            // afterwards: their data is staged but not on screen yet, so patch it right now - otherwise
+            // the UI shows it once without the times and a second time with them.
+            if (r.weatherDataStaged && r.weatherDataStaged !== r.weatherData)
+                patchFromHit();
+            else
+                Qt.callLater(patchFromHit);
             if (hit.seeded !== true)
                 return;
             // seeded from the saved weather: show it now, but still ask once for the real values
