@@ -584,11 +584,13 @@ function animRestyle() {
 }
 
 /** Start with the layers of `layers` ({ temperature: true, wind: false }),
-    the temperature alone by default. */
+    the temperature alone by default. false until the map takes layers (its
+    style loaded): the widget asks again. */
 window.animStart = function (pastH, futureH, layers) {
   var m = _widgetAdapter.getMap();
   if (!m || !window.animAvailable) return false;
   if (anim) return true;
+  if (_widgetAdapter.isReady && !_widgetAdapter.isReady()) return false;
   if (!animRestyleHooked && _widgetAdapter.onRestyle) { _widgetAdapter.onRestyle(animRestyle); animRestyleHooked = true; }
   if (!animMoveHooked) { m.on('moveend', animFineMoved); animMoveHooked = true; }
   if (tempLayer) { tempLayer.remove(); tempLayer = null; }

@@ -576,15 +576,15 @@ const linesGlobals = (fetched) => ({
   WidgetEarth: Object.assign({}, require('../glue-earth.js'), { decodeLines: (b) => (b === 'bin' ? LINES : null) })
 });
 
-test('the temperature brings the coasts and borders right over it, under the frames', async () => {
+test('the temperature brings the coasts and borders, on top of the stack, over the frames too', async () => {
   const fetched = [];
   const { adapter, map } = loadAdapter(linesGlobals(fetched));
   const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
   adapter.setTempTiles(provider, 1, 0.45);
   await tick(); await tick();
   const order = ids(map);
-  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 1);
-  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf('lv-temp') < order.indexOf(radar.layerId));
+  assert.equal(order[order.length - 1], 'lv-lines');
   assert.equal(map.getLayer('lv-lines').type, 'line');
   assert.equal(map.getSource('lv-lines-src').data, LINES);
   // The widget's own file, read once.
@@ -664,7 +664,7 @@ test('one color layer for another: the same lines, never made again', async () =
   const source = map.getSource('lv-lines-src'), layer = map.getLayer('lv-lines');
   adapter.clearTemp();
   adapter.setLines('pressure', true);
-  map.addLayer({ id: 'lv-pres-gl', type: 'custom' }, adapter.linesBefore());
+  adapter.addLayer({ id: 'lv-pres-gl', type: 'custom' });
   assert.equal(map.getSource('lv-lines-src'), source);
   assert.equal(map.getLayer('lv-lines'), layer);
   assert.ok(linesVisible(map));
@@ -672,7 +672,7 @@ test('one color layer for another: the same lines, never made again', async () =
   adapter.setTempTiles(provider, 2, 0.45);
   const order = ids(map);
   assert.ok(order.indexOf('lv-temp') < order.indexOf('lv-lines'), order.join());
-  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
   assert.ok(linesVisible(map));
 });
 
@@ -693,25 +693,27 @@ test('turned off before the file arrives: no lines', async () => {
   assert.equal(linesVisible(map), false);
 });
 
-test('a color layer of another script goes under the lines through linesBefore()', async () => {
+test('a color layer of another script goes at its place through addLayer(), under the frames and the lines', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
-  assert.equal(adapter.linesBefore(), undefined);
+  assert.equal(adapter.beforeFor('lv-lines'), undefined);
+  assert.equal(adapter.beforeFor('lv-pres-gl'), radar.layerId);
+  assert.equal(adapter.beforeFor('some-label'), undefined);
   adapter.setLines('pressure', true);
   await tick(); await tick();
-  assert.equal(adapter.linesBefore(), 'lv-lines');
-  map.addLayer({ id: 'lv-pres-gl', type: 'custom' }, adapter.linesBefore());
+  adapter.addLayer({ id: 'lv-pres-gl', type: 'custom' });
   const order = ids(map);
-  assert.ok(order.indexOf('lv-pres-gl') < order.indexOf('lv-lines'));
-  assert.ok(order.indexOf('lv-lines') < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf('lv-pres-gl') < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
 });
 
-test('a satellite frame added later goes over the lines too', async () => {
+test('a satellite frame added later goes over the temperature, under the lines', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   adapter.setTempTiles(provider, 1, 0.45);
   await tick(); await tick();
   const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite');
-  assert.ok(ids(map).indexOf('lv-lines') < ids(map).indexOf(sat.layerId));
+  assert.ok(ids(map).indexOf('lv-temp') < ids(map).indexOf(sat.layerId));
+  assert.ok(ids(map).indexOf(sat.layerId) < ids(map).indexOf('lv-lines'));
 });
 
 test('the animation: the lines go over its satellite and radar images, the satellite under the radar, raised or not', async () => {
@@ -740,7 +742,7 @@ test('the animation: a weather layer goes under its satellite and radar images, 
   adapter.raise(radar);
   adapter.raise(sat);
   // Added, or put back on top as the precipitation and clouds do after a change of the style.
-  map.addLayer({ id: 'lv-precip-gl', type: 'custom' }, adapter.linesBefore());
+  adapter.addLayer({ id: 'lv-precip-gl', type: 'custom' });
   const order = ids(map);
   assert.ok(order.indexOf('lv-precip-gl') < order.indexOf(sat.layerId));
   assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId));

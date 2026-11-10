@@ -442,17 +442,6 @@ WidgetTemp.TempLayerGL = (function () {
 
   var TempLayer = WidgetTemp.TempLayer;
 
-  /** Where the page's own layers start (the first custom one, or one of
-      the page's sources): the temperature goes under them. */
-  function beforeOverlays(map) {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      var id = layers[i].id;
-      if (layers[i].type === 'custom' || id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0) return id;
-    }
-    return undefined;
-  }
-
   function TempLayerGL(adapter, source, open, dem, options) {
     TempLayer.call(this, adapter, source, open, dem, options);
     var self = this;
@@ -477,12 +466,10 @@ WidgetTemp.TempLayerGL = (function () {
   TempLayerGL.prototype = Object.create(TempLayer.prototype);
   TempLayerGL.prototype.constructor = TempLayerGL;
 
-  TempLayerGL.prototype._before = function (map) { return this._adapter.linesBefore() || beforeOverlays(map); };
-
   TempLayerGL.prototype.addTo = function (map) {
     var self = this;
     TempLayer.prototype.addTo.call(this, map);
-    map.addLayer(this._gl, this._before(map));
+    this._adapter.addLayer(this._gl);
     this._onAtlas = function () { self._buildAtlas(); };
     map.on('moveend', this._onAtlas);
     this._buildAtlas();
@@ -525,8 +512,7 @@ WidgetTemp.TempLayerGL = (function () {
   };
   /** Put back after a new base map, at its place. */
   TempLayerGL.prototype.restyle = function () {
-    var map = this._map;
-    if (map && !map.getLayer(this._gl.id)) map.addLayer(this._gl, this._before(map));
+    if (this._map && !this._map.getLayer(this._gl.id)) this._adapter.addLayer(this._gl);
   };
   TempLayerGL.prototype.settled = function () {
     return this._gpuOn ? this._gl.drawn === this._gpuVersion : TempLayer.prototype.settled.call(this);

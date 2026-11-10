@@ -38,7 +38,7 @@ function loadLayers() {
       getElementById() { return null; }, addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; }
     },
     ANIM_LAYERS: {}, ANIM_KEYS: {}, anim: null,
-    _widgetAdapter: { getMap() { return null; }, setLines() {}, linesBefore() { return null; } },
+    _widgetAdapter: { getMap() { return null; }, setLines() {}, addLayer() {} },
     maplibregl: { addProtocol() {} },
     _windOpen: { base: 'b/', model: 'ecmwf_ifs025', importReader() {}, fetch() {} }, tempUnit: 'C', readout: {},
     readoutHtml() { return ''; },

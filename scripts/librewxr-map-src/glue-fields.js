@@ -9,37 +9,22 @@ var WidgetFields = (function () {
   'use strict';
   var GL = WidgetTemp.TempLayerGL;
 
-  // --- the place of a layer in the map's stack ---
+  // --- the place of a layer: the adapter's stack (addLayer) ---
 
-  /** Where the page's own layers start: the colors go right under them,
-      over the base map, its night and the temperature. */
-  function beforeOverlays(map) {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      var id = layers[i].id;
-      if (layers[i].type === 'custom' || id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0) return id;
-    }
-    return undefined;
-  }
-  /** Color layers go under the coasts and borders the adapter draws. */
-  function beforeLines(map) { return _widgetAdapter.linesBefore() || beforeOverlays(map); }
-  /** The isobars' line layer (by the chip or not), null without them. */
-  function isoLine(map) { return map.getLayer('lv-iso-gl') ? 'lv-iso-gl' : map.getLayer('lv-iso') ? 'lv-iso' : null; }
-  /** Rain and clouds go right under the isobars when they show, so the
-      lines stay readable over them; else as the color layers. */
-  function beforeIsobars(map) { return isoLine(map) || (map.getLayer('lv-iso-label') ? 'lv-iso-label' : null) || beforeLines(map); }
-  /** A GL layer put back after a new base map, under the lines (its place
-      in the stack: the adapter's restack()). */
+  /** A GL layer put back after a new base map, at its place. */
   function readdGL(map, gl) {
-    if (map && !map.getLayer(gl.id)) map.addLayer(gl, beforeLines(map));
+    if (map && !map.getLayer(gl.id)) _widgetAdapter.addLayer(gl);
   }
 
   // --- values ---
 
-  /** The value at lat/lon of a grid given to showFile (mixed when it has two). */
+  /** The value at lat/lon of a grid given to showFile (mixed when it has
+      two), its cell found once. */
+  var CELL = { k: 0, nx: 0, fr: 0, fc: 0 };
   function sample(g, lat, lon) {
-    var v = WidgetTemp.sampleScalar(g, g.values, lat, lon);
-    if (g.valuesB && g.mix > 0) v += (WidgetTemp.sampleScalar(g, g.valuesB, lat, lon) - v) * g.mix;
+    if (!WidgetTemp.scalarCell(g, lat, lon, CELL)) return NaN;
+    var v = WidgetTemp.cellValue(g.values, CELL);
+    if (g.valuesB && g.mix > 0) v += (WidgetTemp.cellValue(g.valuesB, CELL) - v) * g.mix;
     return v;
   }
   /** Values on one byte each (0..254) by toByte(value); missing ones 0. */
@@ -172,12 +157,12 @@ var WidgetFields = (function () {
   }
 
   /** A layer of the animation drawn by the chip from the grids its field
-      gives (showFile). o: { id (its lines' key), glId, opacity() 0..1,
-      and either lut() (a byte picture in a 256 color table) or fs and
-      draw(gl, u, layer) of its own; before(map) its place (under the
-      lines), pick(shown, grid, two) for more of the grid, legend(layer)
-      its legend element }. layer.shown is what draw reads: { grid, a, b
-      (the two pictures), mix, version }. */
+      gives (showFile), at its place in the adapter's stack. o: { id (its
+      lines' key), glId, opacity() 0..1, and either lut() (a byte picture
+      in a 256 color table) or fs and draw(gl, u, layer) of its own;
+      onShow(shown, grid, two) on each picture (more of the grid for draw),
+      legend(layer) its legend element }. layer.shown is what draw reads: { grid, a, b (the two
+      pictures), mix, version }. */
   function FieldLayer(o) {
     this.o = o;
     this.id = o.id;
@@ -190,12 +175,11 @@ var WidgetFields = (function () {
     this.gl.owner = this;
   }
   FieldLayer.prototype = {
-    _before: function (map) { return (this.o.before || beforeLines)(map); },
     /** Its color table, made once (lut = null to make it again). */
     colors: function () { return this.lut || (this.lut = this.o.lut()); },
     addTo: function (map) {
       this.map = map;
-      map.addLayer(this.gl, this._before(map));
+      _widgetAdapter.addLayer(this.gl);
       _widgetAdapter.setLines(this.id, true);
       this.showLegend();
       return this;
@@ -213,7 +197,7 @@ var WidgetFields = (function () {
       sh.a = grid.values;
       sh.b = two ? grid.valuesB : grid.values;
       sh.mix = two ? grid.mix : 0;
-      if (this.o.pick) this.o.pick(sh, grid, two);
+      if (this.o.onShow) this.o.onShow(sh, grid, two);
       sh.version++;
       this.redraw();
     },
@@ -225,9 +209,7 @@ var WidgetFields = (function () {
     redraw: function () { if (this.map) this.map.triggerRepaint(); },
     /** Its colors changed: the table made again, the legend too. */
     recolor: function () { this.lut = null; this.redraw(); this.showLegend(); },
-    restyle: function () {
-      if (this.map && !this.map.getLayer(this.gl.id)) this.map.addLayer(this.gl, this._before(this.map));
-    },
+    restyle: function () { readdGL(this.map, this.gl); },
     settled: function () { return this.gl.drawn === this.shown.version; },
     reload: function () {},
     showLegend: function () {
@@ -249,7 +231,7 @@ var WidgetFields = (function () {
   function track(id) { return anim && anim.group.track(id) || null; }
 
   return {
-    beforeOverlays: beforeOverlays, beforeLines: beforeLines, beforeIsobars: beforeIsobars, readdGL: readdGL,
+    readdGL: readdGL,
     sample: sample, packBytes: packBytes, byteField: byteField, percent: percent,
     hex: hex, colorAt: colorAt, css: css, smoothstep: smoothstep, byteLut: byteLut,
     legendBox: legendBox, legendBar: legendBar, lutLegend: lutLegend,

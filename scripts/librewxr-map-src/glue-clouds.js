@@ -112,11 +112,8 @@ var WidgetClouds = (function () {
     return true;
   }
 
-  var PRECIP_ID = 'lv-precip-gl';
-  /** What the clouds go just under: the precipitation, else the lines. */
-  function target(map) { return map.getLayer(PRECIP_ID) ? PRECIP_ID : F.beforeIsobars(map); }
   ANIM_LAYERS.clouds = function (m) {
-    return new F.FieldLayer({ id: 'clouds', glId: 'lv-clouds-gl', fs: FS, draw: draw, before: target, opacity: function () { return opts.opacity; } }).addTo(m);
+    return new F.FieldLayer({ id: 'clouds', glId: 'lv-clouds-gl', fs: FS, draw: draw, opacity: function () { return opts.opacity; } }).addTo(m);
   };
 
   function track() { return F.track('clouds'); }

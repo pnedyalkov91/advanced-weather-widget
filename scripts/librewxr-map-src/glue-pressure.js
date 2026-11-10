@@ -1,24 +1,25 @@
 // === PRESSURE AND ISOBARS (glue-pressure.js; MapLibre page, after glue-fields.js) ===
-// Mean sea level pressure in the animation: a colored field drawn in tiles
-// (layer 'pressure') and isobars drawn by MapLibre as lines with labels and
-// H/L marks (layer 'isobars'). Both read pressure_msl from the same files
-// and share the store key. It lives inside the page's module, where it reaches
+// Mean sea level pressure in the animation: a colored field (layer
+// 'pressure', a FieldLayer of glue-fields.js) and isobars (layer
+// 'isobars'), both drawn by the graphics chip from the same smoothed
+// pictures; the values along the isobars are MapLibre's labels, the highs
+// and lows HTML markers. Both read pressure_msl from the same files and
+// share the store key. It lives inside the page's module, where it reaches
 // ANIM_LAYERS, anim and the adapter. Timings in window.presStats.
 var WidgetPressure = (function () {
   'use strict';
-  var F = WidgetFields, beforeOverlays = F.beforeOverlays, beforeLines = F.beforeLines, sample = F.sample;
+  var F = WidgetFields, sample = F.sample;
   var DEG = Math.PI / 180;
-  var TILE = 256, LATTICE = 4, MAXZOOM = 8;
   var P_MIN = 910, P_SCALE = 1.5;        // byte b is P_MIN + b / 1.5 hPa (910 to 1079 hPa)
   var NAN_B = 255;
-  var opts = { step: 4, smooth: 2, opacity: 0.6, bands: 0, chaikin: 1, hlRadius: 6, hlMin: 2.5, linkDeg: 8, tropicLat: 20, tropicMin: 5, weakRatio: 0.6, minFrames: 3, clip: true, hideLabels: true, minorZoom: 4, gpu: true };
-  var stats = { tile: [], contour: [], hl: [], setData: [], upload: [], render: [], atlas: [], features: 0, segments: 0 };
+  var opts = { step: 4, smooth: 2, opacity: 0.6, bands: 0, chaikin: 1, hlRadius: 6, hlMin: 2.5, linkDeg: 8, tropicLat: 20, tropicMin: 5, weakRatio: 0.6, minFrames: 3, clip: true, hideLabels: true, minorZoom: 4 };
+  var stats = { contour: [], hl: [], setData: [], upload: [], render: [], features: 0, segments: 0 };
   function note(list, ms) { list.push(ms); if (list.length > 40) list.shift(); }
   function mean(list) { return list.length ? list.reduce(function (a, b) { return a + b; }, 0) / list.length : 0; }
   window.presStats = function () {
     return {
-      tileMs: +mean(stats.tile).toFixed(2), contourMs: +mean(stats.contour).toFixed(1), hlMs: +mean(stats.hl).toFixed(1),
-      setDataToLoadedMs: +mean(stats.setData).toFixed(1), uploadMs: +mean(stats.upload).toFixed(1), renderMs: +mean(stats.render).toFixed(2), atlasMs: +mean(stats.atlas).toFixed(1), features: stats.features, segments: stats.segments
+      contourMs: +mean(stats.contour).toFixed(1), hlMs: +mean(stats.hl).toFixed(1), setDataToLoadedMs: +mean(stats.setData).toFixed(1),
+      uploadMs: +mean(stats.upload).toFixed(1), renderMs: +mean(stats.render).toFixed(2), features: stats.features, segments: stats.segments
     };
   };
   // Opacity of the pressure colors in percent (the isobars keep theirs):
@@ -26,8 +27,7 @@ var WidgetPressure = (function () {
   window.presSetOpacity = function (percent) {
     opts.opacity = F.percent(percent, 60);
     var t = F.track('pressure');
-    if (t) t.layer.redraw();
-    if (presLegend) presLegend.querySelector('canvas').style.opacity = String(opts.opacity);
+    if (t) t.layer.setOpacity(opts.opacity);
     return opts.opacity;
   };
   // The isobars' own settings: their opacity (0..1), the width of the
@@ -36,14 +36,18 @@ var WidgetPressure = (function () {
   // Their color ('' follows the theme) and the size of the values in px.
   var iso = { opacity: 0.8, width: 1, labels: true, marks: true, color: '', textSize: 11 };
   /** The ink of the lines and their values: [r, g, b] 0..1 and as CSS. */
+  var inkKept = { key: null, ink: null };
   function isoInk() {
+    var key = (iso.color || '') + '|' + currentTheme();
+    if (inkKept.key === key) return inkKept.ink;
     var m = /^#?([0-9a-f]{6})$/i.exec(iso.color || ''), rgb;
     if (m) {
       var n = parseInt(m[1], 16);
       rgb = [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255];
     } else rgb = currentTheme() === 'dark' ? [1, 1, 1] : [0.1, 0.1, 0.14];
     var css = 'rgb(' + rgb.map(function (c) { return Math.round(c * 255); }).join(',') + ')';
-    return { rgb: rgb, css: css };
+    inkKept = { key: key, ink: { rgb: rgb, css: css } };
+    return inkKept.ink;
   }
   function isoLayer() { var t = F.track('isobars'); return t ? t.layer : null; }
   window.isoSetOpacity = function (percent) {
@@ -71,7 +75,9 @@ var WidgetPressure = (function () {
   window.presOptions = function (o) {
     for (var k in o) opts[k] = o[k];
     lut = null;
-    if (anim) ['pressure', 'isobars'].forEach(function (id) { var t = anim.group.track(id); if (t) t.layer.redraw(); });
+    var p = F.track('pressure'), i = F.track('isobars');
+    if (p) p.layer.recolor();
+    if (i) i.layer.redraw();
     return opts;
   };
 
@@ -115,15 +121,6 @@ var WidgetPressure = (function () {
   WidgetAnim.FIELDS.pressure = field('pressure');
   WidgetAnim.FIELDS.isobars = field('isobars');
 
-  /** A layer of its own sources and layers, put back after a new base
-      map: taken off what is left of it, added again, its picture shown. */
-  function readd(layer) {
-    var map = layer.map, grid = layer.grid;
-    if (!map) return;
-    layer.remove();
-    layer.addTo(map);
-    if (grid) layer.showFile(grid);
-  }
   // --- colors ---
   var STOPS = [[960, '#4b1d6e'], [975, '#2c4f9e'], [990, '#2f8fd0'], [1003, '#6cc4c0'], [1013, '#d9e8c4'],
     [1020, '#f3d58a'], [1030, '#ee9a50'], [1040, '#d6504a'], [1052, '#7d1834']];
@@ -140,106 +137,6 @@ var WidgetPressure = (function () {
     }
     return out;
   }
-
-  function latOfRow(row, z) {
-    var y = Math.PI * (1 - 2 * row / (TILE * Math.pow(2, z)));
-    return (2 * Math.atan(Math.exp(y)) - Math.PI / 2) / DEG;
-  }
-
-  // --- the colored field, in tiles of a protocol of its own ---
-  var fillLayer = null;
-  maplibregl.addProtocol('lvpres', function (params) {
-    var m = /^lvpres:\/\/(\d+)\/(\d+)\/(\d+)\/(\d+)/.exec(params.url);
-    var px = fillLayer ? fillLayer.tile(+m[1], +m[2], +m[3], +m[4]) : new Uint8ClampedArray(TILE * TILE * 4);
-    return createImageBitmap(new ImageData(px, TILE, TILE)).then(function (bitmap) {
-      if (fillLayer) fillLayer.served(+m[1]);
-      return { data: bitmap };
-    });
-  });
-
-  function firstCustom(map) {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) if (layers[i].type === 'custom') return layers[i].id;
-    return undefined;
-  }
-
-  function FillLayer() {
-    this.map = null;
-    this.grid = null;
-    this.version = 0;
-    this.servedVersion = -1;
-    this.inflight = 0;
-  }
-  FillLayer.prototype = {
-    addTo: function (map) {
-      this.map = map;
-      fillLayer = this;
-      map.addSource('lv-pres-src', { type: 'raster', tiles: this._tiles(), tileSize: 2 * TILE, maxzoom: MAXZOOM });
-      map.addLayer({ id: 'lv-pres', type: 'raster', source: 'lv-pres-src',
-        paint: { 'raster-opacity': opts.opacity, 'raster-fade-duration': 0, 'raster-resampling': 'linear' } }, beforeLines(map));
-      _widgetAdapter.setLines('pressure', true);
-      return this;
-    },
-    _tiles: function () { return ['lvpres://' + this.version + '/{z}/{x}/{y}']; },
-    remove: function () {
-      var map = this.map;
-      if (!map) return;
-      if (map.getLayer('lv-pres')) map.removeLayer('lv-pres');
-      if (map.getSource('lv-pres-src')) map.removeSource('lv-pres-src');
-      _widgetAdapter.setLines('pressure', false);
-      if (fillLayer === this) fillLayer = null;
-      this.map = null;
-    },
-    showFile: function (grid) {
-      this.grid = grid;
-      this.redraw();
-    },
-    redraw: function () {
-      if (!this.map || !this.grid) return;
-      this.version++;
-      this.inflight = 0;
-      var src = this.map.getSource('lv-pres-src');
-      if (src) src.setTiles(this._tiles());
-      this.map.setPaintProperty('lv-pres', 'raster-opacity', opts.opacity * (this.fade == null ? 1 : this.fade));
-    },
-    setFade: function (f) {
-      this.fade = f;
-      if (this.map && this.map.getLayer('lv-pres')) this.map.setPaintProperty('lv-pres', 'raster-opacity', opts.opacity * f);
-    },
-    settled: function () { return this.servedVersion === this.version && this.inflight === 0; },
-    served: function (v) { if (v === this.version) { this.inflight = Math.max(0, this.inflight - 1); this.servedVersion = v; } },
-    reload: function () {},
-    tile: function (version, z, x, y) {
-      var px = new Uint8ClampedArray(TILE * TILE * 4), g = this.grid;
-      if (!g || version !== this.version) return px;
-      this.inflight++;
-      var t0 = performance.now();
-      lut = lut || buildLut();
-      // The pressure on a lattice every 4 px, blended between: it is smooth.
-      var n = TILE / LATTICE + 1, lat = new Float32Array(n * n), scale = TILE * Math.pow(2, z);
-      for (var i = 0; i < n; i++) {
-        var la = latOfRow(y * TILE + i * LATTICE, z);
-        for (var j = 0; j < n; j++) {
-          var lo = (x * TILE + j * LATTICE) / scale * 360 - 180;
-          lat[i * n + j] = sample(g, la, lo);
-        }
-      }
-      for (var row = 0; row < TILE; row++) {
-        var li = (row / LATTICE) | 0, fr = (row - li * LATTICE) / LATTICE;
-        for (var col = 0; col < TILE; col++) {
-          var lj = (col / LATTICE) | 0, fc = (col - lj * LATTICE) / LATTICE, k = li * n + lj;
-          var top = lat[k] + (lat[k + 1] - lat[k]) * fc, bot = lat[k + n] + (lat[k + n + 1] - lat[k + n]) * fc;
-          var p = top + (bot - top) * fr, o = (row * TILE + col) * 4;
-          if (!isFinite(p)) continue;
-          var li3 = Math.max(0, Math.min(LUT_N - 1, Math.round((p - LUT_MIN) / LUT_STEP))) * 3;
-          px[o] = lut[li3]; px[o + 1] = lut[li3 + 1]; px[o + 2] = lut[li3 + 2]; px[o + 3] = 255;
-        }
-      }
-      note(stats.tile, performance.now() - t0);
-      return px;
-    },
-    valueAt: function (lat, lon) { return this.grid ? sample(this.grid, lat, lon) : null; }
-  };
 
   // --- isobars ---
   /** The field on a 0.5 degree grid, smoothed `passes` times by a 1-2-1
@@ -542,144 +439,11 @@ var WidgetPressure = (function () {
     return out.join(' ');
   };
 
-  function IsobarLayer() {
-    this.map = null;
-    this.grid = null;
-    this.version = 0;
-    this.loaded = -1;
-  }
-  IsobarLayer.prototype = {
-    addTo: function (map) {
-      var self = this, dark = currentTheme() === 'dark';
-      var ink = dark ? 'rgba(255,255,255,0.8)' : 'rgba(25,25,35,0.8)';
-      this.map = map;
-      var empty = { type: 'FeatureCollection', features: [] };
-      map.addSource('lv-iso-src', { type: 'geojson', data: empty, tolerance: 0.5, buffer: 64 });
-      // Under the animation's satellite and radar (or the coasts), over the rest.
-      var before = _widgetAdapter.linesBefore() || firstCustom(map);
-      map.addLayer({ id: 'lv-iso', type: 'line', source: 'lv-iso-src', layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': ink, 'line-width': ['case', ['==', ['get', 'major'], 1], 1.3, ['==', ['get', 'minor'], 1], 0.5, 0.75],
-          'line-opacity': ['case', ['==', ['get', 'minor'], 1], 0.6, 1] } }, before);
-      map.addLayer({ id: 'lv-iso-label', type: 'symbol', source: 'lv-iso-src',
-        layout: { 'symbol-placement': 'line', 'symbol-spacing': 350, 'text-field': ['to-string', ['get', 'p']],
-          'text-font': ['Noto Sans Regular'], 'text-size': 11, 'text-keep-upright': true },
-        paint: { 'text-color': ink } }, before);
-      this._onData = function (e) {
-        if (e.sourceId === 'lv-iso-src' && e.isSourceLoaded && self._sentAt && self.loaded !== self.version) {
-          self.loaded = self.version;
-          note(stats.setData, performance.now() - self._sentAt);
-        }
-      };
-      map.on('sourcedata', this._onData);
-      this.restyleIso();
-      this._onMoveEnd = function () { if (opts.clip && !self.moving) self.redraw(); };
-      map.on('moveend', this._onMoveEnd);
-      // Its place in the stack: the adapter's restack().
-      return this;
-    },
-    remove: function () {
-      var map = this.map;
-      if (!map) return;
-      map.off('sourcedata', this._onData);
-      map.off('moveend', this._onMoveEnd);
-      (this._pool || []).forEach(function (mk) { mk.marker.remove(); });
-      this._pool = null;
-      ['lv-iso-label', 'lv-iso'].forEach(function (id) { if (map.getLayer(id)) map.removeLayer(id); });
-      ['lv-iso-src'].forEach(function (id) { if (map.getSource(id)) map.removeSource(id); });
-      this.map = null;
-    },
-    showFile: function (grid) { this.grid = grid; this.redraw(); },
-    redraw: function () {
-      var g = this.grid, map = this.map;
-      if (!g || !map) return;
-      var t0 = performance.now(), a = smoothOf(g, g.values), f = a;
-      if (g.valuesB && g.mix > 0) {
-        var b = smoothOf(g, g.valuesB), m = g.mix, out = new Float32Array(a.values.length);
-        for (var k = 0; k < out.length; k++) out[k] = a.values[k] + (b.values[k] - a.values[k]) * m;
-        f = { values: out, rows: a.rows, cols: a.cols };
-      }
-      var res = 2 * g.res, box = opts.clip ? viewBox(map, res, f.cols) : null;
-      // Closer in, a line between two: 1034 between 1032 and 1036.
-      var step = map.getZoom() >= opts.minorZoom ? opts.step / 2 : opts.step;
-      var lines = contours(f, res, step, 84, box, this.moving ? 0 : opts.chaikin);
-      var t1 = performance.now();
-      var track = F.track('isobars'), pos = anim ? anim.player.index : -1;
-      var marks = track && pos >= 0 ? trackedMarks(track.frames, pos) : [];
-      note(stats.contour, t1 - t0);
-      stats.features = lines.length;
-      this.version++;
-      this._sentAt = performance.now();
-      map.getSource('lv-iso-src').setData({ type: 'FeatureCollection', features: lines });
-      this._marks(marks);
-    },
-    settled: function () { return this.loaded === this.version; },
-    reload: function () {},
-    /** H and L as HTML markers, moved each picture: a symbol layer costs a
-        new placement of every label of the map each time. */
-    /** One marker per followed centre (its track id): a centre keeps its
-        marker from birth to end. Handed out by place in the list, a marker
-        jumped to another centre whenever one started to fade. */
-    _marks: function (marks) {
-      if (!iso.marks) marks = [];
-      var pool = this._pool || (this._pool = new Map()), dark = currentTheme() === 'dark', seen = new Set();
-      for (var k = 0; k < marks.length; k++) {
-        var m = marks[k], mk = pool.get(m.id);
-        seen.add(m.id);
-        if (!mk) {
-          var el = document.createElement('div');
-          el.className = 'lv-hl-mark';
-          el.dataset.id = m.id;
-          el.style.cssText = 'font: bold 20px/1 "Noto Sans", sans-serif; text-align: center; pointer-events: none; text-shadow: 0 0 3px ' + (dark ? '#000' : '#fff') + ', 0 0 3px ' + (dark ? '#000' : '#fff');
-          el.innerHTML = '<div></div><div style="font-size: 11px"></div>';
-          el.firstChild.textContent = m.sym;
-          el.style.color = m.sym === 'H' ? (dark ? '#ff8a7a' : '#c0392b') : (dark ? '#8ab8ff' : '#1f5fbf');
-          mk = { el: el, marker: new maplibregl.Marker({ element: el }).setLngLat([m.lon, m.lat]).addTo(this.map), p: null };
-          pool.set(m.id, mk);
-        }
-        var p = Math.round(m.p);
-        if (mk.p !== p) { mk.el.lastChild.textContent = p; mk.p = p; }
-        // Hidden where the globe covers it (MapLibre leaves it at 0.2).
-        mk.op = m.op;
-        mk.marker.setOpacity(String(m.op * Math.min(1, iso.opacity / 0.8)), '0');
-        mk.marker.setLngLat([m.lon, m.lat]);
-      }
-      pool.forEach(function (mk, id) {
-        if (!seen.has(id)) { mk.marker.remove(); pool.delete(id); }
-      });
-    },
-    /** The isobars' settings (iso) on the layers MapLibre draws. */
-    restyleIso: function () {
-      var map = this.map;
-      if (!map) return;
-      var ink = isoInk();
-      if (map.getLayer('lv-iso')) {
-        var w = iso.width;
-        map.setPaintProperty('lv-iso', 'line-width', ['case', ['==', ['get', 'major'], 1], 1.3 * w, ['==', ['get', 'minor'], 1], 0.5 * w, 0.75 * w]);
-        map.setPaintProperty('lv-iso', 'line-color', ink.css);
-        map.setPaintProperty('lv-iso', 'line-opacity', ['case', ['==', ['get', 'minor'], 1], Math.min(1, 0.6 * iso.opacity / 0.8), Math.min(1, iso.opacity / 0.8)]);
-      }
-      if (map.getLayer('lv-iso-label')) {
-        map.setPaintProperty('lv-iso-label', 'text-opacity', Math.min(1, iso.opacity / 0.8));
-        map.setPaintProperty('lv-iso-label', 'text-color', ink.css);
-        map.setLayoutProperty('lv-iso-label', 'text-size', iso.textSize);
-        map.setLayoutProperty('lv-iso-label', 'visibility', iso.labels && !(this.moving && opts.hideLabels) ? 'visible' : 'none');
-      }
-      (this._pool || new Map()).forEach(function (mk) { mk.marker.setOpacity(String(mk.op * Math.min(1, iso.opacity / 0.8)), '0'); });
-      map.triggerRepaint();
-    },
-    /** While it plays: rougher lines, no labels on them; all back on pause. */
-    setMoving: function (on) {
-      this.moving = !!on;
-      if (!this.map) return;
-      this.restyleIso();
-      if (!on) this.redraw();
-    }
-  };
-
-  // --- drawing by the graphics chip (opts.gpu): the shared GL layer of
+  // --- drawing by the graphics chip: the shared GL layer of
   // glue-temp-gl.js; the fragment shader works out lat/lon and reads the
   // fields from textures, the two forecast pictures and their share
-  // (u_mix), so a picture between two costs one number ---
+  // (u_mix), so a picture between two costs one number. One shader for
+  // the colors and the lines (u_fill, u_lines) ---
   var GL = WidgetTemp.TempLayerGL, GLLayer = GL.GLLayer, FS_HEAD = GL.FS_HEAD, rgba = GL.rgba;
   var PRES_FS = FS_HEAD + [
     'uniform sampler2D u_a, u_b, u_lut;',
@@ -707,9 +471,6 @@ var WidgetPressure = (function () {
     '  fragColor = col;',
     '}'
   ].join('\n');
-
-  // -- the pressure --
-  var glShared = { grid: null, a: null, b: null, mix: 0, version: 0 };
 
   /* The smoothed pictures, as pressure - 1000 hPa (half floats keep 0.06
      hPa there), kept by forecast picture (its packed bytes, which last the
@@ -787,10 +548,13 @@ var WidgetPressure = (function () {
     });
   }
 
+  /** What a layer drawn by the chip shows (owner.shown: grid, a, b, mix,
+      version), as colors (mode 'fill') or lines ('lines'). */
   function presDraw(mode) {
     return function (gl, u, layer) {
-      if (!glShared.a) return false;
-      var a = texData(glShared.grid, glShared.a), b = texData(glShared.grid, glShared.b);
+      var sh = layer.owner.shown;
+      if (!sh.a) return false;
+      var a = texData(sh.grid, sh.a), b = texData(sh.grid, sh.b);
       layer.texture(gl, 0, a.q, a.cols, a.rows); gl.uniform1i(u.u_a, 0);
       layer.texture(gl, 1, b.q, b.cols, b.rows); gl.uniform1i(u.u_b, 1);
       if (mode === 'fill') {
@@ -798,7 +562,7 @@ var WidgetPressure = (function () {
         layer.texture(gl, 2, rgba(lut), LUT_N, 1, 'rgba'); gl.uniform1i(u.u_lut, 2);
       }
       gl.uniform2f(u.u_size, a.cols, a.rows);
-      gl.uniform1f(u.u_mix, glShared.mix);
+      gl.uniform1f(u.u_mix, sh.mix);
       gl.uniform1f(u.u_fill, mode === 'fill' ? 1 : 0);
       gl.uniform1f(u.u_lines, mode === 'lines' ? 1 : 0);
       gl.uniform1f(u.u_opacity, opts.opacity * layer.fade);
@@ -809,107 +573,200 @@ var WidgetPressure = (function () {
       if (u.u_width) gl.uniform1f(u.u_width, iso.width);
       var ink = isoInk().rgb;
       gl.uniform4f(u.u_ink, ink[0], ink[1], ink[2], mode === 'lines' ? iso.opacity : 0.8);
-      layer.drawn = glShared.version;
+      layer.drawn = sh.version;
       return true;
     };
   }
 
-  /** Both pressure layers take the picture at once. */
-  function glShow(grid) {
-    glShared.grid = grid;
-    glShared.a = grid.values;
-    glShared.b = grid.valuesB && grid.mix > 0 ? grid.valuesB : grid.values;
-    glShared.mix = grid.valuesB ? grid.mix || 0 : 0;
-    glShared.version++;
-    warmTex();
-  }
-
   /** A pressure GL layer, its times noted in window.presStats. */
   function presGL(id, mode) { var l = new GLLayer(id, PRES_FS, presDraw(mode)); l.timings = stats; return l; }
-  function FillLayerGL() { this.map = null; this.grid = null; this.gl = presGL('lv-pres-gl', 'fill'); }
-  FillLayerGL.prototype = {
-    addTo: function (map) { this.map = map; map.addLayer(this.gl, beforeLines(map)); _widgetAdapter.setLines('pressure', true); return this; },
-    remove: function () {
-      if (!this.map) return;
-      if (this.map.getLayer('lv-pres-gl')) this.map.removeLayer('lv-pres-gl');
-      _widgetAdapter.setLines('pressure', false);
-      this.map = null;
-    },
-    showFile: function (grid) { this.grid = grid; glShow(grid); if (this.map) this.map.triggerRepaint(); },
-    restyle: function () { F.readdGL(this.map, this.gl); },
-    redraw: function () { lut = null; if (this.map) this.map.triggerRepaint(); },
-    setFade: function (f) { this.gl.fade = f; if (this.map) this.map.triggerRepaint(); },
-    settled: function () { return this.gl.drawn === glShared.version; },
-    reload: function () {}
-  };
 
-  /** Isobars by the chip; the values on them (CPU lines, labels only) and
-      the highs and lows as before. */
-  function IsobarLayerGL() { IsobarLayer.call(this); this.gl = presGL('lv-iso-gl', 'lines'); }
-  IsobarLayerGL.prototype = Object.create(IsobarLayer.prototype);
-  IsobarLayerGL.prototype.addTo = function (map) {
-    IsobarLayer.prototype.addTo.call(this, map);
-    // The lines come from the chip: MapLibre keeps only the values on them.
-    map.removeLayer('lv-iso');
-    map.addLayer(this.gl, 'lv-iso-label');
-    return this;
-  };
-  IsobarLayerGL.prototype.remove = function () {
-    if (this.map && this.map.getLayer('lv-iso-gl')) this.map.removeLayer('lv-iso-gl');
-    IsobarLayer.prototype.remove.call(this);
-  };
-  IsobarLayer.prototype.restyle = function () { readd(this); };
-  FillLayer.prototype.restyle = function () { readd(this); };
-  IsobarLayerGL.prototype.showFile = function (grid) {
-    this.grid = grid;
-    glShow(grid);
-    var track = F.track('isobars'), pos = anim ? anim.player.index : -1;
-    this._marks(track && pos >= 0 ? trackedMarks(track.frames, pos) : []);
-    if (!this.moving) IsobarLayer.prototype.redraw.call(this);
-    if (this.map) this.map.triggerRepaint();
-  };
-  IsobarLayerGL.prototype.redraw = function () {
-    if (this.grid && !this.moving) IsobarLayer.prototype.redraw.call(this);
-    if (this.map) this.map.triggerRepaint();
-  };
-  IsobarLayerGL.prototype.settled = function () {
-    return this.gl.drawn === glShared.version && (this.moving || this.loaded === this.version);
-  };
-
-  // Legend of the pressure colors, as the temperature's (same place, same
-  // look: the two never show together), its colors as light as the layer.
-  var PRES_LEGEND_LO = 950, PRES_LEGEND_HI = 1050, presLegend = null;
+  // --- the colors: a FieldLayer, its legend as the temperature's (same
+  // place, same look), its colors as light as the layer ---
+  var LEGEND_LO = 950, LEGEND_HI = 1050;
   /** The color of p in the table, as CSS. */
   function colorOf(p) {
     lut = lut || buildLut();
     var i = Math.max(0, Math.min(LUT_N - 1, Math.round((p - LUT_MIN) / LUT_STEP))) * 3;
     return 'rgb(' + lut[i] + ', ' + lut[i + 1] + ', ' + lut[i + 2] + ')';
   }
-  function showPresLegend(map) {
-    if (presLegend) return;
-    var ticks = [], span = PRES_LEGEND_HI - PRES_LEGEND_LO, W = 240;
-    for (var p = 960; p <= 1040; p += 20) ticks.push([(p - PRES_LEGEND_LO) / span * 100, String(p)]);
-    presLegend = F.legendBox('', 'pressure', ticks, 'hPa');
-    presLegend.id = 'lv-pres-legend';
-    var bar = F.legendBar(W, 10, function (x) { return colorOf(PRES_LEGEND_LO + (x + 0.5) / W * span); });
+  function legend() {
+    var ticks = [], span = LEGEND_HI - LEGEND_LO, W = 240;
+    for (var p = 960; p <= 1040; p += 20) ticks.push([(p - LEGEND_LO) / span * 100, String(p)]);
+    var el = F.legendBox('', 'pressure', ticks, 'hPa');
+    el.id = 'lv-pres-legend';
+    var bar = F.legendBar(W, 10, function (x) { return colorOf(LEGEND_LO + (x + 0.5) / W * span); });
     bar.className = 'lv-temp-bar';
     bar.style.opacity = String(opts.opacity);
-    presLegend.appendChild(bar);
-    (document.getElementById('lv-map') || map.getContainer()).appendChild(presLegend);
-  }
-  function hidePresLegend() {
-    if (presLegend) presLegend.remove();
-    presLegend = null;
+    el.appendChild(bar);
+    return el;
   }
   ANIM_LAYERS.pressure = function (m) {
-    var layer = (opts.gpu ? new FillLayerGL() : new FillLayer()).addTo(m), plainRemove = layer.remove;
-    showPresLegend(m);
-    layer.remove = function () { hidePresLegend(); return plainRemove.apply(this, arguments); };
-    var plainFade = layer.setFade;
-    layer.setFade = function (f) { if (presLegend) presLegend.style.opacity = String(f); return plainFade.call(this, f); };
-    return layer;
+    var layer = new F.FieldLayer({
+      id: 'pressure', glId: 'lv-pres-gl', fs: PRES_FS, draw: presDraw('fill'), onShow: warmTex, legend: legend,
+      opacity: function () { return opts.opacity; }
+    });
+    layer.gl.timings = stats;
+    return layer.addTo(m);
   };
-  ANIM_LAYERS.isobars = function (m) { return (opts.gpu ? new IsobarLayerGL() : new IsobarLayer()).addTo(m); };
+
+  // --- the isobars: lines by the chip, the values along them MapLibre's
+  // labels (on lines worked out here, while paused), the highs and lows
+  // HTML markers ---
+  /** The highs and lows at the position the animation shows. */
+  function currentMarks() {
+    var track = F.track('isobars'), pos = anim ? anim.player.index : -1;
+    return track && pos >= 0 ? trackedMarks(track.frames, pos) : [];
+  }
+
+  function IsobarLayer() {
+    this.map = null;
+    this.grid = null;
+    this.version = 0;              // of the labels' lines given to MapLibre
+    this.loaded = -1;              // the version MapLibre has loaded
+    this.moving = false;
+    this.shown = { grid: null, a: null, b: null, mix: 0, version: 0 };
+    this.gl = presGL('lv-iso-gl', 'lines');
+    this.gl.owner = this;
+  }
+  IsobarLayer.prototype = {
+    addTo: function (map) {
+      var self = this;
+      this.map = map;
+      map.addSource('lv-iso-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, tolerance: 0.5, buffer: 64 });
+      // At their place in the stack, the values over the lines.
+      _widgetAdapter.addLayer(this.gl);
+      _widgetAdapter.addLayer({ id: 'lv-iso-label', type: 'symbol', source: 'lv-iso-src',
+        layout: { 'symbol-placement': 'line', 'symbol-spacing': 350, 'text-field': ['to-string', ['get', 'p']],
+          'text-font': ['Noto Sans Regular'], 'text-size': 11, 'text-keep-upright': true },
+        paint: { 'text-color': isoInk().css } });
+      this._onData = function (e) {
+        if (e.sourceId === 'lv-iso-src' && e.isSourceLoaded && self._sentAt && self.loaded !== self.version) {
+          self.loaded = self.version;
+          note(stats.setData, performance.now() - self._sentAt);
+        }
+      };
+      map.on('sourcedata', this._onData);
+      this.restyleIso();
+      this._onMoveEnd = function () { if (opts.clip && !self.moving) self.redraw(); };
+      map.on('moveend', this._onMoveEnd);
+      return this;
+    },
+    remove: function () {
+      var map = this.map;
+      if (!map) return;
+      map.off('sourcedata', this._onData);
+      map.off('moveend', this._onMoveEnd);
+      (this._pool || []).forEach(function (mk) { mk.marker.remove(); });
+      this._pool = null;
+      ['lv-iso-label', 'lv-iso-gl'].forEach(function (id) { if (map.getLayer(id)) map.removeLayer(id); });
+      if (map.getSource('lv-iso-src')) map.removeSource('lv-iso-src');
+      this.map = null;
+    },
+    /** Put back after a new base map: taken off what is left of it, added
+        again, its picture shown. */
+    restyle: function () {
+      var map = this.map, grid = this.grid;
+      if (!map) return;
+      this.remove();
+      this.addTo(map);
+      if (grid) this.showFile(grid);
+    },
+    showFile: function (grid) {
+      var sh = this.shown, two = !!(grid.valuesB && grid.mix > 0);
+      this.grid = sh.grid = grid;
+      sh.a = grid.values;
+      sh.b = two ? grid.valuesB : grid.values;
+      sh.mix = two ? grid.mix : 0;
+      sh.version++;
+      warmTex();
+      this.redraw();
+    },
+    /** The marks, the lines; the values along them only while paused. */
+    redraw: function () {
+      if (!this.map || !this.grid) return;
+      this._marks(currentMarks());
+      if (!this.moving) this._labels();
+      this.map.triggerRepaint();
+    },
+    /** The lines the values are put along, given to MapLibre. */
+    _labels: function () {
+      var g = this.grid, map = this.map;
+      var t0 = performance.now(), a = smoothOf(g, g.values), f = a;
+      if (g.valuesB && g.mix > 0) {
+        var b = smoothOf(g, g.valuesB), m = g.mix, out = new Float32Array(a.values.length);
+        for (var k = 0; k < out.length; k++) out[k] = a.values[k] + (b.values[k] - a.values[k]) * m;
+        f = { values: out, rows: a.rows, cols: a.cols };
+      }
+      var res = 2 * g.res, box = opts.clip ? viewBox(map, res, f.cols) : null;
+      // Closer in, a line between two: 1034 between 1032 and 1036.
+      var step = map.getZoom() >= opts.minorZoom ? opts.step / 2 : opts.step;
+      var lines = contours(f, res, step, 84, box, opts.chaikin);
+      note(stats.contour, performance.now() - t0);
+      stats.features = lines.length;
+      this.version++;
+      this._sentAt = performance.now();
+      map.getSource('lv-iso-src').setData({ type: 'FeatureCollection', features: lines });
+    },
+    settled: function () { return this.gl.drawn === this.shown.version && (this.moving || this.loaded === this.version); },
+    reload: function () {},
+    /** H and L as HTML markers, moved each picture: a symbol layer costs a
+        new placement of every label of the map each time. */
+    /** One marker per followed centre (its track id): a centre keeps its
+        marker from birth to end. Handed out by place in the list, a marker
+        jumped to another centre whenever one started to fade. */
+    _marks: function (marks) {
+      if (!iso.marks) marks = [];
+      var pool = this._pool || (this._pool = new Map()), dark = currentTheme() === 'dark', seen = new Set();
+      for (var k = 0; k < marks.length; k++) {
+        var m = marks[k], mk = pool.get(m.id);
+        seen.add(m.id);
+        if (!mk) {
+          var el = document.createElement('div');
+          el.className = 'lv-hl-mark';
+          el.dataset.id = m.id;
+          el.style.cssText = 'font: bold 20px/1 "Noto Sans", sans-serif; text-align: center; pointer-events: none; text-shadow: 0 0 3px ' + (dark ? '#000' : '#fff') + ', 0 0 3px ' + (dark ? '#000' : '#fff');
+          el.innerHTML = '<div></div><div style="font-size: 11px"></div>';
+          el.firstChild.textContent = m.sym;
+          el.style.color = m.sym === 'H' ? (dark ? '#ff8a7a' : '#c0392b') : (dark ? '#8ab8ff' : '#1f5fbf');
+          mk = { el: el, marker: new maplibregl.Marker({ element: el }).setLngLat([m.lon, m.lat]).addTo(this.map), p: null };
+          pool.set(m.id, mk);
+        }
+        var p = Math.round(m.p);
+        if (mk.p !== p) { mk.el.lastChild.textContent = p; mk.p = p; }
+        // Hidden where the globe covers it (MapLibre leaves it at 0.2).
+        mk.op = m.op;
+        mk.marker.setOpacity(String(m.op * Math.min(1, iso.opacity / 0.8)), '0');
+        mk.marker.setLngLat([m.lon, m.lat]);
+      }
+      pool.forEach(function (mk, id) {
+        if (!seen.has(id)) { mk.marker.remove(); pool.delete(id); }
+      });
+    },
+    /** The isobars' settings (iso) on what MapLibre draws: the values and
+        the marks; the lines read them as they are drawn. */
+    restyleIso: function () {
+      var map = this.map;
+      if (!map) return;
+      var op = Math.min(1, iso.opacity / 0.8);
+      if (map.getLayer('lv-iso-label')) {
+        map.setPaintProperty('lv-iso-label', 'text-opacity', op);
+        map.setPaintProperty('lv-iso-label', 'text-color', isoInk().css);
+        map.setLayoutProperty('lv-iso-label', 'text-size', iso.textSize);
+        map.setLayoutProperty('lv-iso-label', 'visibility', iso.labels && !(this.moving && opts.hideLabels) ? 'visible' : 'none');
+      }
+      (this._pool || new Map()).forEach(function (mk) { mk.marker.setOpacity(String(mk.op * op), '0'); });
+      map.triggerRepaint();
+    },
+    /** While it plays: no values on the lines; back on pause. */
+    setMoving: function (on) {
+      this.moving = !!on;
+      if (!this.map) return;
+      this.restyleIso();
+      if (!on) this.redraw();
+    }
+  };
+  ANIM_LAYERS.isobars = function (m) { return new IsobarLayer().addTo(m); };
 
   // The Ctrl readout gets the pressure too: a barometer dial in the color
   // of the pressure there, its needle from 960 hPa (left) to 1050 (right).

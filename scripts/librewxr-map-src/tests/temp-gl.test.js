@@ -76,7 +76,7 @@ function layerOn() {
     setLines(owner, on) { if (on) this.lines.add(owner); else this.lines.delete(owner); },
     clearTemp() { this.cleared++; this.lines.delete('temperature'); },
     setTempTiles() { this.tiles++; this.lines.add('temperature'); },
-    linesBefore: () => undefined
+    addLayer() {}
   };
   const layer = new GL(adapter, null, null, null, { manual: true });
   layer._map = { repaints: 0, triggerRepaint() { this.repaints++; } };

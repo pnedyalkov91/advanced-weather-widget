@@ -338,8 +338,8 @@ var WidgetPrecip = (function () {
 
   ANIM_LAYERS.precipitation = function (m) {
     return new F.FieldLayer({
-      id: 'precipitation', glId: 'lv-precip-gl', fs: FS, draw: draw, pick: pickKinds, legend: legend,
-      before: F.beforeIsobars, opacity: function () { return opts.opacity; }
+      id: 'precipitation', glId: 'lv-precip-gl', fs: FS, draw: draw, onShow: pickKinds, legend: legend,
+      opacity: function () { return opts.opacity; }
     }).addTo(m);
   };
 

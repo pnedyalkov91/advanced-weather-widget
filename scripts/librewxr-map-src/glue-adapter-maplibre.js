@@ -10,6 +10,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var maxZoom = 12;
   var frameSeq = 0;
   var frameRegistry = [];      // runtime frame entries, creation order
+  var frameById = new Map();   // their layer id -> entry
   var framesHidden = false;    // the radar and satellite frames off (the animations)
   var pendingReady = {};       // source id -> finishers of onLayerReady still waiting
   var alertsEntry = null;      // { geojson } while the alerts overlay is on
@@ -59,25 +60,6 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         layers: [{ id: 'lv-base', type: 'raster', source: 'lv-base', paint: paint }]
       }
     };
-  }
-
-  function firstRadarFrameLayerId() {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      if (layers[i].id.indexOf('lv-layer-radar-') === 0) return layers[i].id;
-    }
-    return undefined;
-  }
-
-  // First layer the page added over the base map and its day and night:
-  // satellite frames go right below it.
-  function firstRuntimeLayerId() {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      var id = layers[i].id;
-      if (id.indexOf('lv-') === 0 && id !== 'lv-base' && id !== 'lv-night' && id !== TEMP_LAYER && id !== LINES_LAYER) return id;
-    }
-    return undefined;
   }
 
   // A percentage from the widget, held within 0..100; null if unreadable.
@@ -133,10 +115,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (!map.getSource('lv-night')) {
       map.addSource('lv-night', { type: 'raster', tiles: shadeTiles(), tileSize: 256, maxzoom: SHADE_MAXZOOM });
     }
-    if (!map.getLayer('lv-night')) {
-      map.addLayer({ id: 'lv-night', type: 'raster', source: 'lv-night', paint: { 'raster-fade-duration': 0 } },
-        map.getLayer(TEMP_LAYER) ? TEMP_LAYER : map.getLayer(LINES_LAYER) ? LINES_LAYER : firstRuntimeLayerId());
-    }
+    if (!map.getLayer('lv-night')) addLayer({ id: 'lv-night', type: 'raster', source: 'lv-night', paint: { 'raster-fade-duration': 0 } });
   }
 
   // The temperature (glue-temp-layer.js): raster tiles the layer draws,
@@ -168,10 +147,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.addSource(TEMP_SOURCE, { type: 'raster', tiles: tempTiles(), tileSize: 2 * TEMP_TILE, maxzoom: TEMP_MAXZOOM });
     }
     if (!map.getLayer(TEMP_LAYER)) {
-      map.addLayer({
+      addLayer({
         id: TEMP_LAYER, type: 'raster', source: TEMP_SOURCE,
         paint: { 'raster-opacity': tempEntry.opacity, 'raster-fade-duration': 0, 'raster-resampling': 'linear' }
-      }, map.getLayer(LINES_LAYER) ? LINES_LAYER : firstRuntimeLayerId());
+      });
     }
     setLines('temperature', true);
   }
@@ -179,11 +158,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // The color layers hide the base map: the coasts and land borders drawn
   // again over them, from the widget's own file (vendor/coast-borders.bin,
   // Natural Earth, about 500 m), the same on every base map and offline.
-  // Right under the frames and the alerts; color layers of other scripts
-  // go under them through linesBefore(). Shown while a layer wants them
-  // (setLines) and the widget's setting lets them (setLinesShown), the
-  // file read once. Hidden, never removed: from one color layer to another
-  // they stay as they are, tiles and all.
+  // On top of the weather layers (see the stack below). Shown while a layer
+  // wants them (setLines) and the widget's setting lets them
+  // (setLinesShown), the file read once. Hidden, never removed: from one
+  // color layer to another they stay as they are, tiles and all.
   var homeMarker = null;      // the widget's place
   var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
   var linesOwners = {}, linesData = null, linesLoading = false;
@@ -192,14 +170,6 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (!linesShown) return false;
     for (var k in linesOwners) return true;
     return false;
-  }
-  function firstOverlayLayerId() {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      var id = layers[i].id;
-      if (id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0) return id;
-    }
-    return undefined;
   }
   // Called by restoreRuntimeStyle() while the swap ends, so not held by it.
   function applyLines() {
@@ -225,7 +195,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.setLayoutProperty(LINES_LAYER, 'visibility', 'visible');
       return;
     }
-    map.addLayer({
+    addLayer({
       id: LINES_LAYER, type: 'line', source: LINES_SOURCE,
       layout: { 'line-join': 'round', visibility: 'visible' },
       paint: {
@@ -233,14 +203,6 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         // Thicker far out: on the whole globe (zoom ~1) a hairline is lost
         // in the colors. Thinnest around zoom 4, then wider again close in.
         'line-width': ['interpolate', ['linear'], ['zoom'], 0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8]
-      }
-    }, firstOverlayLayerId());
-    // The animation's images made before them go under them, the
-    // satellite's under the radar's.
-    ['satellite', 'radar'].forEach(function (kind) {
-      for (var i = 0; i < frameRegistry.length; i++) {
-        var e = frameRegistry[i];
-        if (e.anim && (e.kind === 'satellite') === (kind === 'satellite') && map.getLayer(e.layerId)) map.moveLayer(e.layerId, LINES_LAYER);
       }
     });
   }
@@ -278,20 +240,12 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (Math.abs(z - map.getMinZoom()) > 0.001) map.setMinZoom(z);
   }
 
-  // Alerts sit right below the radar frames, above satellite frames.
-  function assertAlertsPosition() {
-    if (!map.getLayer('lv-alerts-fill') || !map.getLayer('lv-alerts-line')) return;
-    var radar = firstRadarFrameLayerId();
-    map.moveLayer('lv-alerts-fill', radar);
-    map.moveLayer('lv-alerts-line', radar);
-  }
-
   function addFrameEntry(entry) {
     if (!map.getSource(entry.sourceId)) {
       map.addSource(entry.sourceId, { type: 'raster', tiles: [entry.url], tileSize: 256, maxzoom: entry.maxZoom });
     }
     if (map.getLayer(entry.layerId)) return;
-    map.addLayer({
+    addLayer({
       id: entry.layerId,
       type: 'raster',
       source: entry.sourceId,
@@ -301,50 +255,23 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         'raster-opacity-transition': { duration: 0, delay: 0 },
         'raster-fade-duration': 0
       }
-    }, entry.anim ? animFrameBefore(entry) : entry.kind === 'satellite' ? firstRuntimeLayerId() : undefined);
-    if (entry.kind !== 'satellite' && !entry.anim) assertAlertsPosition();
-  }
-
-  // The animation's images go over every layer of the map and under the
-  // coasts and borders, so these show over the clouds and the rain; its
-  // satellite under its radar.
-  function firstAnimRadarId() {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      var e = entryOf({ layerId: layers[i].id });
-      if (e && e.anim && e.kind !== 'satellite') return layers[i].id;
-    }
-    return undefined;
-  }
-  /** The lowest image of the animation on the map (a satellite one first). */
-  function firstAnimFrameId() {
-    var order = map.getLayersOrder ? map.getLayersOrder() : map.getStyle().layers.map(function (l) { return l.id; });
-    for (var i = 0; i < order.length; i++) {
-      var e = entryOf({ layerId: order[i] });
-      if (e && e.anim) return order[i];
-    }
-    return undefined;
-  }
-  function animFrameBefore(entry) {
-    var lines = map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined;
-    if (entry.kind !== 'satellite') return lines;
-    return firstAnimRadarId() || lines;
+    });
   }
 
   // Severity colors come from the engine's style function, computed once per
-  // feature into its properties, as the Leaflet page styles each path.
+  // feature into its properties, as the Leaflet page styles each path. Right
+  // under the radar's images (see the stack), the line over the fill.
   function addAlertsLayers() {
     if (map.getLayer('lv-alerts-fill')) return;
     if (!map.getSource('lv-alerts')) map.addSource('lv-alerts', { type: 'geojson', data: alertsEntry.geojson });
-    var before = firstRadarFrameLayerId();
-    map.addLayer({
+    addLayer({
       id: 'lv-alerts-fill', type: 'fill', source: 'lv-alerts',
       paint: { 'fill-color': ['get', '__fillColor'], 'fill-opacity': ['get', '__fillOpacity'] }
-    }, before);
-    map.addLayer({
+    });
+    addLayer({
       id: 'lv-alerts-line', type: 'line', source: 'lv-alerts',
       paint: { 'line-color': ['get', '__color'], 'line-width': ['get', '__weight'] }
-    }, before);
+    });
   }
 
   function registerAlertsPopup() {
@@ -377,10 +304,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     e.held = held;
     if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
   }
-  function entryOf(handle) {
-    for (var i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].layerId === handle.layerId) return frameRegistry[i];
-    return null;
-  }
+  function entryOf(handle) { return frameById.get(handle.layerId) || null; }
   function holdHiddenFrames(hold) {
     moving = hold;
     var job = ++revealJob, i;
@@ -473,9 +397,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
   // The stack of the weather layers, set by the widget: its ids top first
   // (the wind, a canvas over the map, is not in it). The night stays at
-  // the bottom, the coasts and borders on top. restack() puts every layer
-  // of the map at its place, with as few moves as it can; a layer added
-  // anywhere goes back to its place on the next 'styledata'.
+  // the bottom, the coasts and borders on top, the whole stack over the
+  // base map. A layer is added right at its place (addLayer, beforeFor);
+  // restack() puts every layer back at its place, with as few moves as it
+  // can, after a new order and on each 'styledata' (a layer added some
+  // other way).
   var STACK_DEFAULT = ['radar', 'satellite', 'isobars', 'precipitation', 'clouds',
     'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
   var stackOrder = STACK_DEFAULT.slice(), restacking = false;
@@ -515,19 +441,40 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (id.indexOf('lv-aq-gl-') === 0) return ['airquality', 0];
     return null;
   }
+  /** The place of a layer id in the stack, bottom first: its group's level
+      times 2 plus its rank inside the group; null for one not stacked. */
+  function rankOf(id) {
+    var g = stackGroup(id);
+    if (!g) return null;
+    var n = stackOrder.length, level = g[0] === 'night' ? -1 : g[0] === 'lines' ? n : n - 1 - stackOrder.indexOf(g[0]);
+    return level * 2 + g[1];
+  }
   function layersOrder() {
     return map.getLayersOrder ? map.getLayersOrder() : map.getStyle().layers.map(function (l) { return l.id; });
   }
+  /** The layer a new layer id goes right under: the lowest of the stack
+      above its place, undefined (on top) when none is, or for a layer not
+      stacked. */
+  function beforeFor(id) {
+    var r = rankOf(id);
+    if (r === null || !map) return undefined;
+    var ids = layersOrder();
+    for (var i = 0; i < ids.length; i++) {
+      var q = rankOf(ids[i]);
+      if (q !== null && q > r) return ids[i];
+    }
+    return undefined;
+  }
+  /** A layer (a style layer, or a custom one) added at its place. */
+  function addLayer(layer) { map.addLayer(layer, beforeFor(layer.id)); }
   function restack() {
     if (!map || restacking || swapInProgress) return;
-    var n = stackOrder.length, ids = layersOrder(), known = [];
+    var ids = layersOrder(), known = [];
     ids.forEach(function (id, pos) {
-      var g = stackGroup(id);
-      if (!g) return;
-      var level = g[0] === 'night' ? -1 : g[0] === 'lines' ? n : n - 1 - stackOrder.indexOf(g[0]);
-      known.push({ id: id, level: level, sub: g[1], pos: pos });
+      var r = rankOf(id);
+      if (r !== null) known.push({ id: id, rank: r, pos: pos });
     });
-    var want = known.slice().sort(function (a, b) { return a.level - b.level || a.sub - b.sub || a.pos - b.pos; });
+    var want = known.slice().sort(function (a, b) { return a.rank - b.rank || a.pos - b.pos; });
     if (want.every(function (k, i) { return k === known[i]; })) return;
     restacking = true;
     try {
@@ -550,7 +497,6 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind === 'satellite') addFrameEntry(frameRegistry[i]);
     if (alertsEntry) { addAlertsLayers(); registerAlertsPopup(); }
     for (i = 0; i < frameRegistry.length; i++) if (frameRegistry[i].kind !== 'satellite') addFrameEntry(frameRegistry[i]);
-    assertAlertsPosition();
     applyProjection();
     moveSun();
     swapInProgress = false;
@@ -572,6 +518,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (styleReady) { cb(); return; }
       map.once('load', function () { styleReady = true; cb(); });
     },
+    /** Whether the map takes layers now (its first style has loaded). */
+    isReady: function () { return styleReady; },
 
     createMap: function (containerId, view) {
       maxZoom = view.maxZoom;
@@ -638,6 +586,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         kind: kind, url: url, maxZoom: maxZoom, opacity: 0, anim: anim
       };
       frameRegistry.push(entry);
+      frameById.set(entry.layerId, entry);
       prepareNewFrame();
       // The handle is due now; only the map change waits for the style.
       if (!styleReady) map.once('load', function () { addFrameEntry(entry); });
@@ -697,8 +646,10 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       var waiting = pendingReady[handle.sourceId];
       delete pendingReady[handle.sourceId];
       if (waiting && waiting.length) setTimeout(function () { waiting.slice().forEach(function (f) { f(); }); }, 0);
-      for (var i = 0; i < frameRegistry.length; i++) {
-        if (frameRegistry[i].layerId === handle.layerId) { frameRegistry.splice(i, 1); break; }
+      var e = frameById.get(handle.layerId);
+      if (e) {
+        frameById.delete(handle.layerId);
+        frameRegistry.splice(frameRegistry.indexOf(e), 1);
       }
       if (map.getLayer(handle.layerId)) map.removeLayer(handle.layerId);
       if (map.getSource(handle.sourceId)) map.removeSource(handle.sourceId);
@@ -749,7 +700,6 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       alertsEntry = { geojson: { type: 'FeatureCollection', features: features } };
       if (swapInProgress) return;   // restoreRuntimeStyle() adds it afterwards
       addAlertsLayers();
-      assertAlertsPosition();
       registerAlertsPopup();
     },
 
@@ -861,20 +811,18 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     },
 
     /** Coasts and borders over the color layers while at least one owner
-        wants them; the layer to put a color layer before, to stay under. */
+        wants them. */
     setLines: setLines,
     setLinesShown: function (on) {
       linesShown = !!on;
       if (!swapInProgress) applyLines();
     },
     getLinesShown: function () { return linesShown; },
-    /** Where a weather layer goes: under the animation's satellite and
-        radar images when there are any (the radar over all), else under
-        the coasts and borders. */
-    linesBefore: function () {
-      if (!map) return undefined;
-      return firstAnimFrameId() || (map.getLayer(LINES_LAYER) ? LINES_LAYER : undefined);
-    },
+    /** The layer a weather layer of id goes right under, to be at its
+        place in the stack (map.addLayer(layer, beforeFor(layer.id))). */
+    beforeFor: beforeFor,
+    /** A weather layer of the page's other scripts added at its place. */
+    addLayer: function (layer) { addLayer(layer); },
 
     /** Credit Open-Meteo while the wind or the temperature shows. */
     setDataAttribution: function (on) {
