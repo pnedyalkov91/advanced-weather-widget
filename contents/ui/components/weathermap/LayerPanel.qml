@@ -342,7 +342,7 @@ Rectangle {
     Column {
         id: headBox
         x: 9.5
-        y: 8
+        y: 8 + panel.map.edgeTop
         spacing: 7
         // The help and the settings side by side at the right (one under the
         // other, folded): the row glides to the left as the second glides

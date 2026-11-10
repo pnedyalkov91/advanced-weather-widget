@@ -941,7 +941,13 @@ Item {
 
     // The legends at the top left go under the date when the map is too
     // narrow for both side by side (zoom buttons, legends 320 px, the date).
-    readonly property real legendTop: mapArea.width - layerPanel.width - dateBox.width < 52 + 320 + 12 ? dateBox.height + 8 : 0
+    readonly property real legendTop: mapArea.width - layerPanel.width - dateBox.width - 2 * edgeX < 52 + 320 + 12 ? dateBox.height + 8 : 0
+    // Full screen: what lies over the map (the page's buttons and legends,
+    // the date, the badges, the column's head) stands further from the
+    // screen's edges.
+    readonly property real edgeX: fullScreen ? 28 : 0
+    readonly property real edgeTop: fullScreen ? 36 : 0
+    onEdgeTopChanged: if (started) call("animSetEdges", edgeX, edgeTop)
     onLegendTopChanged: if (started) call("animSetLegendTop", legendTop)
 
     // Everything the page needs once the animation has started.
@@ -952,7 +958,7 @@ Item {
             code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
             code.push(jsCall("animSetLegend", l, false));
-        code.push(jsCall("animSetRightInset", panelFolded ? 0 : panelOver), jsCall("animSetLegendTop", legendTop));
+        code.push(jsCall("animSetRightInset", panelFolded ? 0 : panelOver), jsCall("animSetLegendTop", legendTop), jsCall("animSetEdges", edgeX, edgeTop));
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
@@ -1511,7 +1517,7 @@ Item {
                 Rectangle {
                     anchors.left: parent.left
                     anchors.bottom: modelsBadge.visible ? modelsBadge.top : parent.bottom
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 10 + radarRoot.edgeX
                     anchors.bottomMargin: modelsBadge.visible ? 4 : 30
                     width: countLabel.implicitWidth + 12
                     height: countLabel.implicitHeight + 4
@@ -1537,7 +1543,7 @@ Item {
                     id: modelsBadge
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 10 + radarRoot.edgeX
                     anchors.bottomMargin: 30
                     width: modelsLabel.implicitWidth + 12
                     height: modelsLabel.implicitHeight + 4
@@ -1586,8 +1592,8 @@ Item {
                     anchors.top: parent.top
                     // The page's buttons slide left with the open column
                     // (panelOver): the date keeps clear of them too.
-                    anchors.rightMargin: layerPanel.width
-                    anchors.topMargin: 8
+                    anchors.rightMargin: layerPanel.width + radarRoot.edgeX
+                    anchors.topMargin: 8 + radarRoot.edgeTop
                 }
             }
 

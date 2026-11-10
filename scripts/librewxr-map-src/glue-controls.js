@@ -800,6 +800,13 @@ if (typeof MutationObserver !== 'undefined' && document.getElementById('lv-map')
 window.animSetRightInset = function (px) {
   document.documentElement.style.setProperty('--aww-inset', Math.max(0, +px || 0) + 'px');
 };
+/** How far everything over the map stands from its sides and from its
+    top (px), on top of its own margins: more in full screen. */
+window.animSetEdges = function (x, top) {
+  var s = document.documentElement.style;
+  s.setProperty('--aww-edge-x', Math.max(0, +x || 0) + 'px');
+  s.setProperty('--aww-edge-top', Math.max(0, +top || 0) + 'px');
+};
 /** How far down the legends start (px): under the widget's date when the
     map is too narrow for both side by side. */
 window.animSetLegendTop = function (px) {
