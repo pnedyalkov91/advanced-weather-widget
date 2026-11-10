@@ -7,13 +7,22 @@ import org.kde.kirigami as Kirigami
 // hours, now in bold; above it the days, each from a line at its midnight,
 // and the ranges of the satellite and the radar (the radar's nowcast
 // paler). Pressing pauses, dragging shows the picture under the hand.
-// anim: window.animState().
+// What changes seldom (the times, the frames read or failed, now) comes
+// apart from what changes while playing (position, fromFile): the marks are
+// not worked out again on every picture.
 Item {
     id: line
-    property var anim: null
+    property var times: []           // the frames' times (ms)
+    property var ready: []           // read, by frame
+    property var failed: []          // failed, by frame
+    property int nowIndex: 0         // the frame of now
+    property real position: -1       // the position shown (a frame and a fraction), -1 for none
+    property bool fromFile: false    // a frame as read from its file, not worked out
+    property var radar: null         // the radar's range (window.animState().radar)
+    property var satellite: null     // the satellite's
     // The time of a Date as the widget writes it (its date and time settings).
     property var formatTime: function (d) { return d.toLocaleTimeString(Qt.locale(), Locale.ShortFormat); }
-    readonly property int count: anim ? anim.times.length : 0
+    readonly property int count: times.length
     signal pressedOn()
     signal showIndex(int i)
 
@@ -24,8 +33,8 @@ Item {
 
     implicitHeight: 62
     readonly property real trackY: 28
-    readonly property real t0: count ? anim.times[0] : 0
-    readonly property real t1: count ? anim.times[count - 1] : 1
+    readonly property real t0: count ? times[0] : 0
+    readonly property real t1: count ? times[count - 1] : 1
     // The span drawn: it follows t0 and t1, gliding when the range changes,
     // so the line stretches or shrinks instead of jumping. The marks out of
     // it hide while it glides.
@@ -57,7 +66,7 @@ Item {
         if (!count)
             return 0;
         var k = Math.max(0, Math.min(count - 1, Math.floor(i))), f = i - k;
-        return k + 1 < count ? anim.times[k] + (anim.times[k + 1] - anim.times[k]) * f : anim.times[k];
+        return k + 1 < count ? times[k] + (times[k + 1] - times[k]) * f : times[k];
     }
     function xOfIndex(i) { return count > 1 ? xOfTime(timeOfIndex(i)) : 0; }
     function inView(x) { return x >= -0.5 && x <= width + 0.5; }
@@ -70,7 +79,7 @@ Item {
     readonly property int labelMin: {
         if (count < 2 || v1 <= v0)
             return 180;
-        var perMin = width / ((v1 - v0) / 60000), stepMin = (anim.times[1] - anim.times[0]) / 60000;
+        var perMin = width / ((v1 - v0) / 60000), stepMin = (times[1] - times[0]) / 60000;
         var steps = [10, 20, 30, 60, 120, 180, 360, 720, 1440, 2880, 10080];
         for (var k = 0; k < steps.length; k++)
             if (steps[k] >= stepMin - 0.5 && steps[k] * perMin >= labelGap)
@@ -80,13 +89,12 @@ Item {
     // By time, not by picture: the end of a solo's range falls between two
     // steps (the end of the radar, 22:10 after 22:00) and gets no label.
     function labelShown(i) {
-        if (i === anim.now)
+        if (i === nowIndex)
             return true;
-        var min = Math.abs(anim.times[i] - anim.times[anim.now]) / 60000, r = min % labelMin;
-        return (r < 0.5 || labelMin - r < 0.5) && Math.abs(xOfIndex(i) - xOfIndex(anim.now)) >= labelGap;
+        var min = Math.abs(times[i] - times[nowIndex]) / 60000, r = min % labelMin;
+        return (r < 0.5 || labelMin - r < 0.5) && Math.abs(xOfIndex(i) - xOfIndex(nowIndex)) >= labelGap;
     }
-    readonly property real handleIndex: area.pressed ? area.dragIndex
-        : anim && anim.index >= 0 ? anim.index : anim ? anim.now : 0
+    readonly property real handleIndex: area.pressed ? area.dragIndex : position >= 0 ? position : nowIndex
 
     // The local midnights inside the range.
     readonly property var midnights: {
@@ -104,7 +112,7 @@ Item {
     // paler from forecastFrom; its name beside it.
     component Band: Item {
         id: band
-        property var src: null         // anim.radar or anim.satellite
+        property var src: null         // line.radar or line.satellite
         property color color
         property string title
         property bool nameAfter: true
@@ -129,8 +137,8 @@ Item {
     }
 
     // The satellite in the grey of the theme's text, the radar in magenta.
-    Band { y: 4; src: line.anim ? line.anim.satellite : null; color: Qt.tint(line.dimText, "#3080a0d0"); title: i18n("Satellite"); nameAfter: false }
-    Band { y: 12; src: line.anim ? line.anim.radar : null; color: "#c93fc2"; title: i18n("Radar") }
+    Band { y: 4; src: line.satellite; color: Qt.tint(line.dimText, "#3080a0d0"); title: i18n("Satellite"); nameAfter: false }
+    Band { y: 12; src: line.radar; color: "#c93fc2"; title: i18n("Radar") }
 
     // The days: a line at each midnight, the day's name after it (the first one at the start).
     QQC2.Label {
@@ -187,17 +195,17 @@ Item {
                 y: line.trackY + 10
                 width: 1.5
                 height: 5
-                color: line.anim.failed[index] ? Kirigami.Theme.negativeTextColor
-                     : line.anim.ready[index] ? line.accent : line.dimText
+                color: line.failed[index] ? Kirigami.Theme.negativeTextColor
+                     : line.ready[index] ? line.accent : line.dimText
             }
             QQC2.Label {
                 visible: line.labelShown(index)
                 x: -width / 2
                 y: line.trackY + 17
-                text: line.formatTime(new Date(line.anim.times[index]))
+                text: line.formatTime(new Date(line.times[index]))
                 font.pixelSize: 11
-                font.bold: index === line.anim.now
-                color: index === line.anim.now ? line.fg : line.dimText
+                font.bold: index === line.nowIndex
+                color: index === line.nowIndex ? line.fg : line.dimText
             }
         }
     }
@@ -209,7 +217,7 @@ Item {
         width: 18
         height: 18
         radius: 9
-        color: line.anim && line.anim.fromFile ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
+        color: line.fromFile ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
         border.color: Kirigami.Theme.backgroundColor
         border.width: 2
     }

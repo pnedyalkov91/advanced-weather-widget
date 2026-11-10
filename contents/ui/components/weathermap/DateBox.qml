@@ -122,7 +122,7 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 enabled: box.map.count > 0
-                onClicked: box.map.showIndex(box.map.animState.now)
+                onClicked: box.map.showIndex(box.map.nowIndex)
             }
             QQC2.ToolTip.text: i18n("Back to now") + " (0)"
             QQC2.ToolTip.visible: nowArea.containsMouse

@@ -99,7 +99,7 @@ Rectangle {
             widest: "‹  −" + bar.map.stepLabel(1 / 6)
             tip: i18n("%1 back", bar.map.stepLabel(bar.map.stepBackH)) + " (←)"
             enabled: bar.map.count > 0
-            onClicked: bar.map.js("window.animStepButton(-1)")
+            onClicked: bar.map.call("animStepButton", -1)
         }
         // Play or pause: the big round.
         Rectangle {
@@ -147,7 +147,7 @@ Rectangle {
             widest: "+" + bar.map.stepLabel(1 / 6) + "  ›"
             tip: i18n("%1 ahead", bar.map.stepLabel(bar.map.stepAheadH)) + " (→)"
             enabled: bar.map.count > 0
-            onClicked: bar.map.js("window.animStepButton(1)")
+            onClicked: bar.map.call("animStepButton", 1)
         }
         BarIcon {
             iconName: "fin-glyph"
@@ -162,10 +162,17 @@ Rectangle {
             Layout.rightMargin: 18
             Layout.preferredHeight: implicitHeight
             Layout.topMargin: -6
-            anim: bar.map.animState
+            times: bar.map.frameTimes
+            ready: bar.map.frameReady
+            failed: bar.map.frameFailed
+            nowIndex: bar.map.nowIndex
+            position: bar.map.animState ? bar.map.animState.index : -1
+            fromFile: !!(bar.map.animState && bar.map.animState.fromFile)
+            radar: bar.map.animState ? bar.map.animState.radar : null
+            satellite: bar.map.animState ? bar.map.animState.satellite : null
             formatTime: bar.map.formatTime
-            onPressedOn: bar.map.js("window.animPlay(false)")
-            onShowIndex: function (i) { bar.map.js("window.animShow(" + i + ")"); }
+            onPressedOn: bar.map.call("animPlay", false)
+            onShowIndex: function (i) { bar.map.call("animShow", i); }
         }
         // Round again from the start at the end, or stop there.
         BarIcon {

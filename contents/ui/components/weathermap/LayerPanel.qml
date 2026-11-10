@@ -269,6 +269,22 @@ Rectangle {
         height: 9
         Rectangle { y: 4; width: parent.width; height: 1; color: panel.tint(0.22) }
     }
+    // The row of layer layerId: its switch, opacity and legend as the map
+    // keeps them.
+    component MapLayerRow: LayerRow {
+        id: mlr
+        property string layerId
+        width: panel.colW
+        compact: panel.folded
+        key: panel.map.layerKeys[mlr.layerId] || ""
+        checked: panel.map.layerOn(mlr.layerId)
+        visible: panel.map.layerEnabled(mlr.layerId)
+        opacityValue: panel.map.opacities[mlr.layerId]
+        legendOn: !panel.map.legendsHidden[mlr.layerId]
+        onToggled: function (on) { panel.map.toggleLayer(mlr.layerId, on); }
+        onOpacityPicked: function (p) { panel.map.setOpacity(mlr.layerId, p); }
+        onLegendToggled: function (on) { panel.map.setLegend(mlr.layerId, on); }
+    }
     // A round button of the head: the help, the settings.
     component HeadButton: Rectangle {
         id: hb
@@ -455,8 +471,8 @@ Rectangle {
     // wind's place orders the column only, it is drawn over the map). Each
     // row hung again on the column, in turn, goes after those before it.
     function arrangeRows() {
-        var rowOf = { radar: radarRow, satellite: satRow, wind: windRow, precipitation: precipRow, clouds: cloudRow, temperature: tempRow,
-            pressure: presRow, isobars: isoRow, humidity: humRow, dewpoint: dewRow, airquality: aqRow };
+        var rowOf = {};
+        layerColumn.children.forEach(function (r) { if (r.layerId) rowOf[r.layerId] = r; });
         var rows = [layersCaption].concat(map.layerOrder.filter(function (id) { return !!rowOf[id]; })
             .map(function (id) { return rowOf[id]; }));
         rows.forEach(function (r) {
@@ -516,23 +532,16 @@ Rectangle {
             Caption { id: layersCaption; text: i18n("Layers") }
 
             // Radar and satellite; the radar's wheel opens their tile options.
-            LayerRow {
+            MapLayerRow {
                 id: radarRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "radar"
                 title: i18n("Radar")
-                key: panel.map.layerKeys.radar
                 iconName: "radar"
-                checked: panel.map.layerOn("radar")
-                visible: panel.map.layerEnabled("radar")
-                opacityValue: panel.map.opacities.radar
                 customGear: true
                 soloable: true
                 soloed: panel.map.solo === "radar" || panel.map.solo === "both"
                 soloTip: i18n("Double-click: radar range")
                 onSoloRequested: function (withCtrl) { panel.map.soloSource(withCtrl ? "both" : "radar"); }
-                onToggled: function (on) { panel.map.clickSource("radar", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("radar", p); }
                 onGearClicked: {
                     if (radarMenu.visible) {
                         radarMenu.close();
@@ -552,37 +561,23 @@ Rectangle {
                 options: panel.map.radarOptions
                 onOptionPicked: function (key, value) { panel.map.setRadarOption(key, value); }
             }
-            LayerRow {
+            MapLayerRow {
                 id: satRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "satellite"
                 title: i18n("Satellite")
-                key: panel.map.layerKeys.satellite
                 iconName: "satellite"
-                checked: panel.map.layerOn("satellite")
-                visible: panel.map.layerEnabled("satellite")
-                opacityValue: panel.map.opacities.satellite
                 hasOptions: false
                 soloable: true
                 soloed: panel.map.solo === "satellite" || panel.map.solo === "both"
                 soloTip: i18n("Double-click: satellite range")
                 onSoloRequested: function (withCtrl) { panel.map.soloSource(withCtrl ? "both" : "satellite"); }
-                onToggled: function (on) { panel.map.clickSource("satellite", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("satellite", p); }
             }
 
-            LayerRow {
+            MapLayerRow {
                 id: windRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "wind"
                 title: i18n("Wind")
-                key: panel.map.layerKeys.wind
                 iconName: "vent-glyph"
-                checked: panel.map.layerOn("wind")
-                visible: panel.map.layerEnabled("wind")
-                opacityValue: panel.map.opacities.wind
-                onToggled: function (on) { panel.map.setLayer("wind", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("wind", p); }
                 Segmented {
                     title: i18n("Height")
                     choices: panel.map.windLevelChoices
@@ -596,21 +591,12 @@ Rectangle {
                     onPicked: function (v) { panel.map.setWindPaletteId(v); }
                 }
             }
-            LayerRow {
+            MapLayerRow {
                 id: tempRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "temperature"
                 title: i18n("Temperature")
-                key: panel.map.layerKeys.temperature
                 iconName: "temperature-glyph"
-                checked: panel.map.layerOn("temperature")
-                visible: panel.map.layerEnabled("temperature")
-                opacityValue: panel.map.opacities.temperature
-                onToggled: function (on) { panel.map.setLayer("temperature", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("temperature", p); }
                 hasLegend: true
-                legendOn: !panel.map.legendsHidden["temperature"]
-                onLegendToggled: function (on) { panel.map.setLegend("temperature", on); }
                 Segmented {
                     title: i18n("Width of the bands")
                     choices: panel.map.tempStepChoices
@@ -624,21 +610,12 @@ Rectangle {
                     onPicked: function (v) { panel.map.setTempPaletteId(v); }
                 }
             }
-            LayerRow {
+            MapLayerRow {
                 id: precipRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "precipitation"
                 title: i18n("Precipitation (rain, snow)")
-                key: panel.map.layerKeys.precipitation
                 iconName: "precipitations-glyph"
-                checked: panel.map.layerOn("precipitation")
-                visible: panel.map.layerEnabled("precipitation")
-                opacityValue: panel.map.opacities.precipitation
-                onToggled: function (on) { panel.map.setLayer("precipitation", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("precipitation", p); }
                 hasLegend: true
-                legendOn: !panel.map.legendsHidden["precipitation"]
-                onLegendToggled: function (on) { panel.map.setLegend("precipitation", on); }
                 OptKinds {
                     title: i18n("Kinds shown")
                     choices: panel.map.precipChoices
@@ -646,19 +623,12 @@ Rectangle {
                     onPicked: function (values) { panel.map.setPrecipKinds(values); }
                 }
             }
-            LayerRow {
+            MapLayerRow {
                 id: cloudRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "clouds"
                 title: i18n("Cloud cover")
-                key: panel.map.layerKeys.clouds
                 iconName: "nuages-glyph"
                 iconMask: true
-                checked: panel.map.layerOn("clouds")
-                visible: panel.map.layerEnabled("clouds")
-                opacityValue: panel.map.opacities.clouds
-                onToggled: function (on) { panel.map.setLayer("clouds", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("clouds", p); }
                 OptKinds {
                     title: i18n("Levels shown")
                     choices: panel.map.cloudChoices
@@ -666,35 +636,19 @@ Rectangle {
                     onPicked: function (values) { panel.map.setCloudLevels(values); }
                 }
             }
-            LayerRow {
+            MapLayerRow {
                 id: presRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "pressure"
                 title: i18n("Sea level pressure")
-                key: panel.map.layerKeys.pressure
                 iconName: "pression-glyph"
-                checked: panel.map.layerOn("pressure")
-                visible: panel.map.layerEnabled("pressure")
-                opacityValue: panel.map.opacities.pressure
-                onToggled: function (on) { panel.map.setLayer("pressure", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("pressure", p); }
                 hasLegend: true
-                legendOn: !panel.map.legendsHidden["pressure"]
-                onLegendToggled: function (on) { panel.map.setLegend("pressure", on); }
             }
             // The isobars: the lines of the pressure, a layer of their own.
-            LayerRow {
+            MapLayerRow {
                 id: isoRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "isobars"
                 title: i18n("Isobars")
-                key: panel.map.layerKeys.isobars
                 iconName: "isobares-glyph"
-                checked: panel.map.layerOn("isobars")
-                visible: panel.map.layerEnabled("isobars")
-                opacityValue: panel.map.opacities.isobars
-                onToggled: function (on) { panel.map.setLayer("isobars", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("isobars", p); }
                 Segmented {
                     title: i18n("Lines")
                     choices: panel.map.isoWidthChoices
@@ -732,54 +686,27 @@ Rectangle {
                     onToggled: panel.map.setIsobars("marks", checked)
                 }
             }
-            LayerRow {
+            MapLayerRow {
                 id: humRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "humidity"
                 title: i18n("Relative humidity")
-                key: panel.map.layerKeys.humidity
                 iconName: "humidite-glyph"
-                checked: panel.map.layerOn("humidity")
-                visible: panel.map.layerEnabled("humidity")
-                opacityValue: panel.map.opacities.humidity
-                onToggled: function (on) { panel.map.setLayer("humidity", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("humidity", p); }
                 hasLegend: true
-                legendOn: !panel.map.legendsHidden["humidity"]
-                onLegendToggled: function (on) { panel.map.setLegend("humidity", on); }
             }
-            LayerRow {
+            MapLayerRow {
                 id: dewRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "dewpoint"
                 title: i18n("Dew point")
-                key: panel.map.layerKeys.dewpoint
                 iconName: "rosee-glyph"
-                checked: panel.map.layerOn("dewpoint")
-                visible: panel.map.layerEnabled("dewpoint")
-                opacityValue: panel.map.opacities.dewpoint
-                onToggled: function (on) { panel.map.setLayer("dewpoint", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("dewpoint", p); }
                 hasLegend: true
-                legendOn: !panel.map.legendsHidden["dewpoint"]
-                onLegendToggled: function (on) { panel.map.setLegend("dewpoint", on); }
             }
-            LayerRow {
+            MapLayerRow {
                 id: aqRow
-                width: panel.colW
-                compact: panel.folded
+                layerId: "airquality"
                 title: i18n("Air quality (CAMS)")
-                key: panel.map.layerKeys.airquality
                 iconName: "qualite-air-glyph"
                 iconMask: true
-                checked: panel.map.layerOn("airquality")
-                visible: panel.map.layerEnabled("airquality")
-                opacityValue: panel.map.opacities.airquality
-                onToggled: function (on) { panel.map.setLayer("airquality", on); }
-                onOpacityPicked: function (p) { panel.map.setOpacity("airquality", p); }
                 hasLegend: true
-                legendOn: !panel.map.legendsHidden["airquality"]
-                onLegendToggled: function (on) { panel.map.setLegend("airquality", on); }
                 OptSwitches {
                     title: i18n("Pollutant")
                     choices: panel.map.aqChoices

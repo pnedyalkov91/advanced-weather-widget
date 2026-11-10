@@ -76,12 +76,7 @@ Item {
         var name = Plasmoid.configuration.librewxrWindPalette || "";
         if (!name)
             return "";
-        var list = [];
-        try {
-            list = JSON.parse(Plasmoid.configuration.librewxrWindPalettes || "[]");
-        } catch (e) {
-            return "";
-        }
+        var list = radarRoot.jsonOf(Plasmoid.configuration.librewxrWindPalettes, []);
         for (var i = 0; i < list.length; i++) {
             var levels = list[i].levels;
             if (list[i].name !== name || !levels || levels.length !== 8)
@@ -301,29 +296,57 @@ Item {
     function js(code) {
         webView.runJavaScript(code);
     }
-    /** Calls window[fn](args...) in the page when it has it, the arguments
-        as JSON. */
-    function call(fn) {
+    /** The code that calls window[fn](args...) in the page when it has it,
+        the arguments as JSON. */
+    function jsCall(fn) {
         var args = [];
         for (var i = 1; i < arguments.length; i++)
             args.push(JSON.stringify(arguments[i]));
-        js("if (window." + fn + ") window." + fn + "(" + args.join(", ") + ")");
+        return "if (window." + fn + ") window." + fn + "(" + args.join(", ") + ");";
+    }
+    /** Calls window[fn](args...) in the page when it has it. */
+    function call(fn) {
+        js(jsCall.apply(null, arguments));
+    }
+    /** A setting kept as JSON text, fallback when it is empty or does not read. */
+    function jsonOf(text, fallback) {
+        try {
+            var v = JSON.parse(text || "null");
+            return v === null || v === undefined ? fallback : v;
+        } catch (e) {
+            return fallback;
+        }
     }
 
-    property var animState: null      // window.animState()
+    property var animState: null      // window.animState(), the last one read
+    property string _stateText: ""    // as the page wrote it: the same text read again changes nothing
     property bool started: false      // window.animStart() took
     property bool startFailed: false  // the page cannot animate here (no WebGL)
     property bool ctrlDown: false     // Ctrl held: readout under the pointer, cross cursor
     onCtrlDownChanged: if (ctrlDown && !mapHover.hovered) call("setReadout", false)
-    readonly property int count: animState ? animState.times.length : 0
-    readonly property int readyCount: animState ? animState.ready.filter(function (r) { return r; }).length : 0
+    // None while a page loads (its pictures are not known yet).
+    readonly property int count: animState ? frameTimes.length : 0
+    readonly property int readyCount: animState ? frameReady.filter(function (r) { return r; }).length : 0
 
     // The time shown, between two frames while playing, and now. The last
     // ones shown are kept while the range reloads (no picture shown then).
     property var shownTime: null
     property var shownNow: null
-    // The times of the frames: changes with the range only.
-    property var frameTimes: []
+    // The parts of animState that change seldom, each set only when it
+    // changes (_keep): what reads them (the marks of the time line, the
+    // switches of the column) is not worked out again ten times a second.
+    property var frameTimes: []       // the times of the frames: changes with the range only
+    property var frameReady: []       // read, by frame
+    property var frameFailed: []      // failed, by frame
+    property int nowIndex: 0          // the frame of now
+    property var layersOn: ({})       // { id: on } as the page has them, radar and satellite too
+    /** radarRoot[name] = value, unless it holds the same already; whether it changed. */
+    function _keep(name, value) {
+        if (JSON.stringify(radarRoot[name]) === JSON.stringify(value))
+            return false;
+        radarRoot[name] = value;
+        return true;
+    }
     // The days of the range, for the list under the date: [index of the
     // day's first picture, its name].
     readonly property var days: {
@@ -376,11 +399,8 @@ Item {
     // default one). The page follows a change (onWindPaletteChanged,
     // onTempPaletteChanged).
     function _paletteNames(json) {
-        try {
-            return JSON.parse(json || "[]").map(function (p) { return p.name; }).filter(function (n) { return !!n; });
-        } catch (e) {
-            return [];
-        }
+        var list = jsonOf(json, []);
+        return Array.isArray(list) ? list.map(function (p) { return p.name; }).filter(function (n) { return !!n; }) : [];
     }
     readonly property var windPaletteChoices: [["", i18n("Default")]].concat(_paletteNames(Plasmoid.configuration.librewxrWindPalettes).map(function (n) { return [n, n]; }))
     readonly property string windPaletteId: Plasmoid.configuration.librewxrWindPalette || ""
@@ -407,32 +427,16 @@ Item {
     // The layers switched on, kept in weatherMapLayers.
     readonly property var layerIds: ["radar", "satellite"].concat(animLayerIds)
     readonly property var animLayerIds: ["wind", "temperature", "precipitation", "clouds", "pressure", "isobars", "humidity", "dewpoint", "airquality"]
-    readonly property var layersSaved: {
-        var o = {};
-        try {
-            o = JSON.parse(Plasmoid.configuration.weatherMapLayers || "{}") || {};
-        } catch (e) {}
-        return o;
-    }
+    readonly property var layersSaved: jsonOf(Plasmoid.configuration.weatherMapLayers, {})
     // The layers taken out of the column (the radar always stays).
-    readonly property var disabledLayers: {
-        try {
-            return JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
-        } catch (e) {
-            return [];
-        }
-    }
+    readonly property var disabledLayers: jsonOf(Plasmoid.configuration.weatherMapDisabledLayers, [])
     function layerEnabled(id) {
         return id === "radar" || disabledLayers.indexOf(id) < 0;
     }
     // Takes a layer out of the column or puts it back (the settings of the
     // column and the Weather Maps settings share the key).
     function setLayerEnabled(id, on) {
-        var d = [];
-        try {
-            d = JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
-        } catch (e) {}
-        d = d.filter(function (x) { return x !== id; });
+        var d = disabledLayers.filter(function (x) { return x !== id; });
         if (!on)
             d.push(id);
         Plasmoid.configuration.weatherMapDisabledLayers = JSON.stringify(d);
@@ -453,9 +457,7 @@ Item {
         });
     }
     function layerOn(id) {
-        if (id === "radar" || id === "satellite")
-            return animState && animState[id] ? !!animState[id].on : !!layersSaved[id];
-        return animState && animState.layers ? !!animState.layers[id] : !!layersSaved[id];
+        return id in layersOn ? !!layersOn[id] : !!layersSaved[id];
     }
     function _saveLayers(id, on) {
         var o = {};
@@ -646,13 +648,8 @@ Item {
     readonly property var cloudChoices: [["high", i18nc("@item cloud level", "High")], ["mid", i18nc("@item cloud level", "Mid")], ["low", i18nc("@item cloud level", "Low")]]
     readonly property var aqChoices: [["pm2_5", "PM2.5"], ["pm10", "PM10"], ["ozone", "O₃"], ["nitrogen_dioxide", "NO₂"], ["sulphur_dioxide", "SO₂"], ["dust", i18n("Dust")], ["aerosol_optical_depth", i18n("AOD")], ["uv_index", i18n("UV")]]
     function _list(json, choices) {
-        var all = choices.map(function (c) { return c[0]; });
-        try {
-            var v = JSON.parse(json || "null");
-            if (Array.isArray(v))
-                return all.filter(function (x) { return v.indexOf(x) >= 0; });
-        } catch (e) {}
-        return all;
+        var all = choices.map(function (c) { return c[0]; }), v = jsonOf(json, null);
+        return Array.isArray(v) ? all.filter(function (x) { return v.indexOf(x) >= 0; }) : all;
     }
     readonly property var precipKinds: _list(Plasmoid.configuration.weatherMapPrecipKinds, precipChoices)
     readonly property var cloudLevels: _list(Plasmoid.configuration.weatherMapCloudLevels, cloudChoices)
@@ -673,10 +670,7 @@ Item {
     // "" follows the theme (white on dark, near black on light).
     readonly property var isoColorChoices: [["", i18nc("color", "Theme")], ["#ffffff", i18nc("color", "White")], ["#000000", i18nc("color", "Black")], ["#4aa3ff", i18nc("color", "Blue")], ["#ffd23f", i18nc("color", "Yellow")], ["#ff6b6b", i18nc("color", "Red")], ["#7ee07e", i18nc("color", "Green")]]
     readonly property var isobars: {
-        var o = {};
-        try {
-            o = JSON.parse(Plasmoid.configuration.weatherMapIsobars || "{}") || {};
-        } catch (e) {}
+        var o = jsonOf(Plasmoid.configuration.weatherMapIsobars, {});
         if (o.color === "#1a1a24")      // the black of before
             o.color = "#000000";
         return {
@@ -703,31 +697,20 @@ Item {
     // What the layers show, told to the page before it starts: the
     // pictures of the right pollutant are the first read.
     function _layerChoices() {
-        return "if (window.precipSetKinds) window.precipSetKinds(" + JSON.stringify(precipKinds) + ");"
-            + "if (window.cloudSetLevels) window.cloudSetLevels(" + JSON.stringify(cloudLevels) + ");"
-            + "if (window.aqSetPollutant) window.aqSetPollutant(" + JSON.stringify(pollutant) + ");"
-            + "if (window.isoSetOptions) window.isoSetOptions(" + JSON.stringify(isobars) + ");";
+        return jsCall("precipSetKinds", precipKinds) + jsCall("cloudSetLevels", cloudLevels)
+            + jsCall("aqSetPollutant", pollutant) + jsCall("isoSetOptions", isobars);
     }
 
     // The opacity of each layer, in percent: the temperature's is the
     // Radar settings' one, the others are kept in weatherMapOpacities.
     readonly property var opacityDefaults: ({ radar: 80, satellite: 60, wind: 100, precipitation: 80, clouds: 70, pressure: 60, isobars: 80, humidity: 60, dewpoint: 60, airquality: 60 })
-    readonly property var opacities: {
-        var kept = {};
-        try {
-            kept = JSON.parse(Plasmoid.configuration.weatherMapOpacities || "{}") || {};
-        } catch (e) {}
-        return Object.assign({}, opacityDefaults, kept, { temperature: tempOpacity });
-    }
+    readonly property var opacities: Object.assign({}, opacityDefaults, jsonOf(Plasmoid.configuration.weatherMapOpacities, {}), { temperature: tempOpacity })
     function setOpacity(id, pct) {
         if (id === "temperature") {
             Plasmoid.configuration.librewxrTempOpacity = pct;   // the page follows (onTempOpacityChanged)
             return;
         }
-        var o = {};
-        try {
-            o = JSON.parse(Plasmoid.configuration.weatherMapOpacities || "{}") || {};
-        } catch (e) {}
+        var o = jsonOf(Plasmoid.configuration.weatherMapOpacities, {});
         o[id] = pct;
         Plasmoid.configuration.weatherMapOpacities = JSON.stringify(o);
         call("animSetOpacity", id, pct);
@@ -744,13 +727,7 @@ Item {
     }
 
     // The color legends hidden, by layer id.
-    readonly property var legendsHidden: {
-        try {
-            return JSON.parse(Plasmoid.configuration.weatherMapLegendsHidden || "{}") || {};
-        } catch (e) {
-            return {};
-        }
-    }
+    readonly property var legendsHidden: jsonOf(Plasmoid.configuration.weatherMapLegendsHidden, {})
     function setLegend(id, on) {
         var h = Object.assign({}, legendsHidden);
         if (on)
@@ -866,7 +843,7 @@ Item {
         var popups = { radar: layerPanel.radarMenu, days: dateBox.daysMenu, settings: layerPanel.settingsMenu, order: layerPanel.orderMenu,
             "opts-wind": layerPanel.windRow.optionsPopup, "opts-temp": layerPanel.tempRow.optionsPopup,
             "opts-precip": layerPanel.precipRow.optionsPopup, "opts-clouds": layerPanel.cloudRow.optionsPopup,
-            "opts-pressure": layerPanel.presRow.optionsPopup, "opts-aq": layerPanel.aqRow.optionsPopup,
+            "opts-pressure": layerPanel.presRow.optionsPopup, "opts-iso": layerPanel.isoRow.optionsPopup, "opts-aq": layerPanel.aqRow.optionsPopup,
             past: layerPanel.pastPick.menu, future: layerPanel.futurePick.menu };
         if (what === "fold" || what === "unfold") {
             setFolded(what === "fold");
@@ -965,22 +942,17 @@ Item {
 
     // Everything the page needs once the animation has started.
     function _afterStart() {
-        var code = "window.animSetStep(" + Math.round(1500 / speed) + ");"
-            + "window.animSetMaxFps(" + maxFps + ");"
-            + "window.animSetResolution(" + resolution + ");"
-            + "if (window.animSetLoop) window.animSetLoop(" + loop + ");"
-            + "if (window.animSetWindLevel) window.animSetWindLevel('" + windLevel + "');"
-            + "if (window.setLayerOrder) window.setLayerOrder(" + JSON.stringify(layerOrder) + ");";
+        var code = [jsCall("animSetStep", Math.round(1500 / speed)), jsCall("animSetMaxFps", maxFps), jsCall("animSetResolution", resolution),
+            jsCall("animSetLoop", loop), jsCall("animSetWindLevel", windLevel), jsCall("setLayerOrder", layerOrder)];
         for (var id in opacities)
-            code += "window.animSetOpacity('" + id + "', " + opacities[id] + ");";
+            code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
-            code += "if (window.animSetLegend) window.animSetLegend('" + l + "', false);";
-        code += "if (window.animSetRightInset) window.animSetRightInset(" + (panelFolded ? 0 : panelOver) + ");";
-        code += "if (window.animSetLegendTop) window.animSetLegendTop(" + legendTop + ");";
+            code.push(jsCall("animSetLegend", l, false));
+        code.push(jsCall("animSetRightInset", panelFolded ? 0 : panelOver), jsCall("animSetLegendTop", legendTop));
         if (Plasmoid.configuration.weatherMapLightning === true)
-            code += "window.animSetRadarOption('lightning', true);";
-        code += "window.animSetRadar(" + !!layersSaved.radar + "); window.animSetSatellite(" + (!!layersSaved.satellite && layerEnabled("satellite")) + ");";
-        js(code);
+            code.push(jsCall("animSetRadarOption", "lightning", true));
+        code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
+        js(code.join(""));
     }
 
     // ── Page URL ─────────────────────────────────────────────────────────
@@ -1027,7 +999,19 @@ Item {
         };
         // The live wind and temperature stay off (wind=0, temp=0): the
         // animation draws its own.
-        return Qt.resolvedUrl("librewxr-map.html") + "?lat=" + radarRoot.lat + "&lon=" + radarRoot.lon + "&zoom=" + radarRoot.initialZoom + "&layer=radar" + "&color=" + radarRoot.colorScheme + "&arrows=" + (radarRoot.arrowsOn ? "1" : "0") + "&wind=0" + "&windlevel=" + radarRoot.windLevel + "&windfps=" + radarRoot.windRate[0] + "&windmaxfps=" + radarRoot.windRate[1] + "&windwidth=" + radarRoot.windLineWidth + "&proj=" + radarRoot.projection + "&night=" + (radarRoot.dayNight ? "1" : "0") + "&glow=" + radarRoot.glow + "&nightdepth=" + radarRoot.nightDepth + "&prepare=" + radarRoot.prepareMode + "&windpalette=" + encodeURIComponent(radarRoot.windPalette) + "&winddensity=" + radarRoot.windDensity + "&temp=0" + "&temppalette=" + encodeURIComponent(radarRoot.tempPalette) + "&tempopacity=" + radarRoot.tempOpacity + "&tempstep=" + radarRoot.tempStep + "&tempunit=" + radarRoot.tempUnit + "&lines=" + (radarRoot.mapLinesOn ? "1" : "0") + "&windunit=" + radarRoot.windUnit + "&cells=" + encodeURIComponent(radarRoot.activeCells) + "&alerts=" + (radarRoot.alertsOn ? "1" : "0") + "&smooth=" + (radarRoot.smoothOn ? "1" : "0") + "&snow=" + (radarRoot.snowOn ? "1" : "0") + "&format=" + encodeURIComponent(radarRoot.tileFormat) + "&tilesize=" + encodeURIComponent(radarRoot.tileSizeChoice) + "&theme=" + radarRoot.mapTheme + "&server=" + encodeURIComponent(radarRoot.serverUrl) + "&hour12=" + (radarRoot.is24h ? "0" : "1") + "&dtfmt=" + encodeURIComponent(weatherRoot ? weatherRoot.dateTimeSpec : "") + "&locale=" + encodeURIComponent(Qt.locale().name.replace("_", "-")) + "&strings=" + encodeURIComponent(JSON.stringify(strings)) + "&bg=" + encodeURIComponent(radarRoot.mapBackground) + "&bglist=" + encodeURIComponent(radarRoot.backgroundChoices.toJson()) + "&font=" + encodeURIComponent(Kirigami.Theme.defaultFont.family || "");
+        var params = [
+            ["lat", lat], ["lon", lon], ["zoom", initialZoom], ["layer", "radar"], ["color", colorScheme], ["arrows", arrowsOn ? 1 : 0],
+            ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
+            ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
+            ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0],
+            ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
+            ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
+            ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],
+            ["strings", JSON.stringify(strings)], ["bg", mapBackground], ["bglist", backgroundChoices.toJson()],
+            ["font", Kirigami.Theme.defaultFont.family || ""]
+        ];
+        return Qt.resolvedUrl("librewxr-map.html") + "?" + params.map(function (kv) { return kv[0] + "=" + encodeURIComponent(kv[1]); }).join("&");
     }
 
     // Last url handed to the view; compared as built here, since webView.url
@@ -1085,7 +1069,8 @@ Item {
     }
 
     // The map comes a little after the page: ask until the animation takes,
-    // for 15 s at most (a page without WebGL cannot animate).
+    // for 15 s at most (a page without WebGL cannot animate); the page says
+    // "wait" while its map loads its style, which does not count.
     Timer {
         id: startTimer
         property int tries: 0
@@ -1101,7 +1086,9 @@ Item {
             var layers = {};
             radarRoot.animLayerIds.forEach(function (id) { layers[id] = !!radarRoot.layersSaved[id] && radarRoot.layerEnabled(id); });
             webView.runJavaScript(radarRoot._layerChoices() + "window.animStart ? window.animStart(" + radarRoot.pastH + ", " + radarRoot.futureH + ", " + JSON.stringify(layers) + ") : false", function (ok) {
-                if (!ok || radarRoot.started)
+                if (ok === "wait")
+                    startTimer.tries = 0;
+                if (ok !== true || radarRoot.started)
                     return;
                 radarRoot.started = true;
                 startTimer.stop();
@@ -1110,17 +1097,28 @@ Item {
         }
     }
 
-    // What the page shows, ten times a second while it can be seen.
+    // What the page shows, ten times a second while it can be seen. A text
+    // read as before (paused, everything loaded) changes nothing.
     Timer {
         interval: 100
         repeat: true
         running: radarRoot.started && radarRoot.shown
         onTriggered: webView.runJavaScript("JSON.stringify(window.animState())", function (s) {
-            if (!s)
+            if (!s || s === radarRoot._stateText)
                 return;
             var st = JSON.parse(s);
             if (!st)
                 return;
+            radarRoot._stateText = s;
+            radarRoot._keep("frameTimes", st.times);
+            radarRoot._keep("frameReady", st.ready);
+            radarRoot._keep("frameFailed", st.failed);
+            radarRoot.nowIndex = st.now;
+            var on = Object.assign({ radar: !!(st.radar && st.radar.on), satellite: !!(st.satellite && st.satellite.on) }, st.layers);
+            // A colored layer switched on switches the others off in the
+            // page: the layers kept follow, outside a solo.
+            if (radarRoot._keep("layersOn", on) && !radarRoot.solo)
+                radarRoot._saveLayers("", false);
             radarRoot.animState = st;
             if (!st.playing && Date.now() - radarRoot._rolledMs > 300000 && ConfigUtils.timeLineStale(st.times, st.now, Date.now()))
                 radarRoot._rollRange();
@@ -1128,13 +1126,6 @@ Item {
                 radarRoot.shownTime = st.time;
                 radarRoot.shownNow = st.times[st.now];
             }
-            var t = st.times;
-            if (t.length !== radarRoot.frameTimes.length || t[0] !== radarRoot.frameTimes[0])
-                radarRoot.frameTimes = t;
-            // A colored layer switched on switches the others off in the
-            // page: the layers kept follow, outside a solo.
-            if (!radarRoot.solo)
-                radarRoot._saveLayers("", false);
         })
     }
 
@@ -1172,12 +1163,16 @@ Item {
     readonly property var layerKeys: ({ radar: "R", satellite: "S", wind: "V", temperature: "T", precipitation: "P",
         clouds: "N", pressure: "B", isobars: "I", humidity: "H", dewpoint: "D", airquality: "A" })
     function keyLayer(id) {
-        if (!layerEnabled(id))
-            return;
+        if (layerEnabled(id))
+            toggleLayer(id, !layerOn(id));
+    }
+    // A layer switched from its icon or its key: the radar and the
+    // satellite may change a solo.
+    function toggleLayer(id, on) {
         if (id === "radar" || id === "satellite")
-            clickSource(id, !layerOn(id));
+            clickSource(id, on);
         else
-            setLayer(id, !layerOn(id));
+            setLayer(id, on);
     }
     // + and -: the next or previous speed, round x1, x2, x3 like the click.
     function stepSpeed(d) {
@@ -1188,8 +1183,8 @@ Item {
         call("animZoom", d);
     }
     function keyNow() {
-        if (count > 0 && animState)
-            showIndex(animState.now);
+        if (count > 0)
+            showIndex(nowIndex);
     }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
     Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepButton", -1) }
@@ -1299,6 +1294,8 @@ Item {
                             radarRoot.started = false;
                             radarRoot.startFailed = false;
                             radarRoot.animState = null;
+                            radarRoot._stateText = "";
+                            radarRoot.layersOn = {};
                             radarRoot.solo = "";
                             radarRoot.soloSaved = null;
                             radarRoot.rangeKind = "";
