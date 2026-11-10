@@ -1025,17 +1025,41 @@ var READOUT_ARROW = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M8
 var READOUT_THERMO = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M6.2 2.2a1.8 1.8 0 0 1 3.6 0v6.7a3.6 3.6 0 1 1-3.6 0Z" ' +
   'fill="currentColor" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/></svg>';
 
+/** Where the pointer is on the map ({ lat, lng }), null when it is off the
+    map, past the Mercator edge, or off the globe. */
+function readoutPoint() {
+  var m = _widgetAdapter.getMap();
+  if (!m || !readout.known) return null;
+  var c = m.getContainer().getBoundingClientRect(), x = readout.x - c.left, y = readout.y - c.top;
+  if (x < 0 || y < 0 || x > c.width || y > c.height) return null;
+  var ll = m.unproject([x, y]);
+  if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) return null;
+  var back = m.project(ll);
+  if (Math.abs(back.x - x) > 1 || Math.abs(back.y - y) > 1) return null;   // off the globe
+  return ll;
+}
+/** One line of the readout: an icon in a color, then its text. */
+function readoutRow(icon, color, text) {
+  return '<div class="lv-readout-row"><span class="lv-readout-icon" style="color:' + color + '">' + icon + '</span><span>' + text + '</span></div>';
+}
+/** Adds a line to the readout for layer track() when it shows a picture:
+    line(track, latLng) gives its html, '' for none. */
+function addReadout(track, line) {
+  var plain = readoutHtml;
+  readoutHtml = function () {
+    var html = plain(), t = track();
+    if (!t || !t.layer.grid) return html;
+    var ll = readoutPoint();
+    return ll ? html + (line(t, ll) || '') : html;
+  };
+}
+
 /** The lines of the box at the pointer, '' where nothing is drawn. */
 function readoutHtml() {
-  var m = _widgetAdapter.getMap(), layers = readoutLayers();
+  var layers = readoutLayers();
   var hasWind = !!(layers.wind && layers.wind.valueAt), hasTemp = !!(layers.temp && layers.temp.valueAt);
-  if (!m || !(hasWind || hasTemp)) return '';
-  var c = m.getContainer().getBoundingClientRect(), x = readout.x - c.left, y = readout.y - c.top;
-  if (x < 0 || y < 0 || x > c.width || y > c.height) return '';
-  var ll = m.unproject([x, y]);
-  if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) return '';
-  var back = m.project(ll);
-  if (Math.abs(back.x - x) > 1 || Math.abs(back.y - y) > 1) return '';   // off the globe
+  var ll = hasWind || hasTemp ? readoutPoint() : null;
+  if (!ll) return '';
   var lines = [];
   var w = hasWind ? layers.wind.valueAt(ll.lat, ll.lng) : null;
   if (w) {

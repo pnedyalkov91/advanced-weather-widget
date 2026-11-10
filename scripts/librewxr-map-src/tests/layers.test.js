@@ -119,3 +119,41 @@ test('dew point: the Magnus formula, the air temperature itself when saturated',
   assert.ok(Math.abs(dp(-5, 100) + 5) < 1e-9);
   assert.ok(Math.abs(dp(30, 70) - 23.9) < 0.1, String(dp(30, 70)));
 });
+
+test('fields: colors between stops, clamped at both ends, on a log scale too', () => {
+  const F = L.WidgetFields, stops = [[0, '#000000'], [10, '#ff0000'], [100, '#ffffff']];
+  assert.deepEqual(plain(F.colorAt(stops, -5)), [0, 0, 0]);
+  assert.deepEqual(plain(F.colorAt(stops, 5)), [128, 0, 0]);
+  assert.deepEqual(plain(F.colorAt(stops, 55)), [255, 128, 128]);
+  assert.deepEqual(plain(F.colorAt(stops, 1e6)), [255, 255, 255]);
+  assert.deepEqual(plain(F.colorAt([[1, '#000000'], [100, '#ffffff']], 10, Math.log)), [128, 128, 128]);
+});
+
+test('fields: values packed on a byte, missing ones 0; the table of the 256 bytes', () => {
+  const F = L.WidgetFields;
+  assert.deepEqual(Array.from(F.packBytes(new Float32Array([NaN, -3, 12.4, 999]), (v) => v)), [0, 0, 12, 254]);
+  const lut = F.byteLut((b) => b, (v) => [v, 0, 0], (v) => v / 254);
+  assert.deepEqual(Array.from(lut.slice(0, 4)), [0, 0, 0, 0]);
+  assert.deepEqual(Array.from(lut.slice(255 * 4)), [254, 0, 0, 255]);   // 255 reads as 254
+  assert.equal(F.percent('', 60), 0.6);
+  assert.equal(F.percent(150, 60), 1);
+});
+
+test('fields: a layer shows one picture, or two and their share', () => {
+  const F = L.WidgetFields, layer = new F.FieldLayer({ id: 'x', glId: 'lv-x-gl', lut: () => new Uint8Array(1024), opacity: () => 1 });
+  const a = new Uint8Array(4), b = new Uint8Array(4);
+  layer.showFile({ lats: [0, 1], lons: [0, 1], values: a });
+  assert.equal(layer.shown.a, a);
+  assert.equal(layer.shown.b, a);
+  assert.equal(layer.shown.mix, 0);
+  layer.showFile({ lats: [0, 1], lons: [0, 1], values: a, valuesB: b, mix: 0.25 });
+  assert.equal(layer.shown.b, b);
+  assert.equal(layer.shown.mix, 0.25);
+  assert.equal(layer.shown.version, 2);
+  assert.equal(layer.settled(), false);   // not drawn yet
+});
+
+test('fields: each colored layer adds its line to the Ctrl readout', () => {
+  assert.equal(L.ctx.readouts.length, 5);   // pressure, air quality, precipitation, clouds, humidity and dew point
+  for (const r of L.ctx.readouts) assert.equal(r.track(), null);   // nothing on while no animation runs
+});

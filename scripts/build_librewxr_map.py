@@ -47,6 +47,7 @@ GLUE_PREPARE_TOKEN = "/*@__WIDGET_GLUE_PREPARE__*/"
 # The layers of the animation beyond temperature and wind, after the
 # controls in the page's module: each reaches ANIM_LAYERS, anim and the
 # adapter, and the later ones borrow the pressure's GL layer.
+GLUE_FIELDS_TOKEN = "/*@__WIDGET_GLUE_FIELDS__*/"
 GLUE_PRESSURE_TOKEN = "/*@__WIDGET_GLUE_PRESSURE__*/"
 GLUE_AIRQUALITY_TOKEN = "/*@__WIDGET_GLUE_AIRQUALITY__*/"
 GLUE_PRECIP_TOKEN = "/*@__WIDGET_GLUE_PRECIP__*/"
@@ -85,6 +86,7 @@ PAGES = [
         ("glue-anim-radar.js", GLUE_ANIM_RADAR_TOKEN),
         ("glue-earth.js", GLUE_EARTH_TOKEN),
         ("glue-controls.js", GLUE_CONTROLS_TOKEN),
+        ("glue-fields.js", GLUE_FIELDS_TOKEN),
         ("glue-pressure.js", GLUE_PRESSURE_TOKEN),
         ("glue-airquality.js", GLUE_AIRQUALITY_TOKEN),
         ("glue-precip.js", GLUE_PRECIP_TOKEN),

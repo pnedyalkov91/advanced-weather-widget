@@ -172,7 +172,9 @@ WidgetTemp.TempLayerGL = (function () {
       textures and uniforms and says whether there is anything to draw.
       Textures are uploaded in render(), where MapLibre expects the GL
       state to change, and kept while in use. onFail() is called once if
-      the shader does not build. */
+      the shader does not build. timings: { upload: [], render: [] } to
+      keep the last times in ms (the pressure's window.presStats).
+      Shared by every layer drawn by the chip (WidgetPressure.GLLayer). */
   function GLLayer(id, fs, draw) {
     this.id = id;
     this.type = 'custom';
@@ -186,7 +188,9 @@ WidgetTemp.TempLayerGL = (function () {
     this.frame = 0;
     this.failed = false;
     this.onFail = null;
+    this.timings = null;
   }
+  function note(list, ms) { list.push(ms); if (list.length > 40) list.shift(); }
   GLLayer.prototype = {
     onAdd: function (map, gl) {
       this.map = map;
@@ -239,12 +243,12 @@ WidgetTemp.TempLayerGL = (function () {
         '  vec2 raw = vec2(0.0, a_pos.z < -0.5 ? -32768.0 : (a_pos.z > 0.5 ? 32767.0 : 0.0));\n' +
         '  gl_Position = projectTile(v_merc, raw);\n' +
         '}';
-      var ok = true;
+      var ok = true, self = this;
       function sh(type, src) {
         var s = gl.createShader(type);
         gl.shaderSource(s, src);
         gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { ok = false; console.warn('[temp-gl] shader: ' + gl.getShaderInfoLog(s)); }
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { ok = false; console.warn('[gl] ' + self.id + ' shader: ' + gl.getShaderInfoLog(s)); }
         return s;
       }
       var p = gl.createProgram(), v = sh(gl.VERTEX_SHADER, vs), f = sh(gl.FRAGMENT_SHADER, this.fs);
@@ -254,7 +258,7 @@ WidgetTemp.TempLayerGL = (function () {
       gl.deleteShader(v);
       gl.deleteShader(f);
       if (!ok || !gl.getProgramParameter(p, gl.LINK_STATUS)) {
-        console.warn('[temp-gl] link: ' + gl.getProgramInfoLog(p));
+        console.warn('[gl] ' + self.id + ' link: ' + gl.getProgramInfoLog(p));
         gl.deleteProgram(p);
         return (this.programs[sd.variantName] = null);
       }
@@ -274,21 +278,22 @@ WidgetTemp.TempLayerGL = (function () {
       return (this.programs[sd.variantName] = { p: p, loc: loc, vao: vao });
     },
     /** The texture of a data array (made once): R16F floats, RG16F pairs
-        ('rg'), or RGBA8 bytes ('rgba', 'rgba-nearest'). unit: the texture
-        unit it is bound to. */
+        ('rg'), R8 bytes ('r8'), or RGBA8 bytes ('rgba', 'rgba-nearest').
+        unit: the texture unit it is bound to. */
     texture: function (gl, unit, data, w, h, kind) {
       var hit = this.textures.get(data);
       // The unit first: a new texture is bound to make it, and bound on the
       // unit still active it would take the place of the one before.
       gl.activeTexture(gl.TEXTURE0 + unit);
       if (!hit) {
-        var tex = gl.createTexture();
+        var t0 = this.timings ? performance.now() : 0, tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
         var filter = kind === 'rgba-nearest' ? gl.NEAREST : gl.LINEAR;
         if (kind === 'rgba' || kind === 'rgba-nearest') gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+        else if (kind === 'r8') gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, w, h, 0, gl.RED, gl.UNSIGNED_BYTE, data);
         else if (kind === 'rg') gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, w, h, 0, gl.RG, gl.FLOAT, data);
         else gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, w, h, 0, gl.RED, gl.FLOAT, data);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
@@ -297,6 +302,7 @@ WidgetTemp.TempLayerGL = (function () {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         hit = { tex: tex, used: 0 };
         this.textures.set(data, hit);
+        if (this.timings) note(this.timings.upload, performance.now() - t0);
       }
       hit.used = this.frame;
       gl.bindTexture(gl.TEXTURE_2D, hit.tex);
@@ -312,7 +318,7 @@ WidgetTemp.TempLayerGL = (function () {
     },
     render: function (gl, args) {
       if (this.failed) return;
-      var sd = args.shaderData, pr = this.program(gl, sd), d = args.defaultProjectionData;
+      var t0 = this.timings ? performance.now() : 0, sd = args.shaderData, pr = this.program(gl, sd), d = args.defaultProjectionData;
       if (!pr) {
         this.failed = true;
         if (this.onFail) this.onFail();
@@ -341,6 +347,7 @@ WidgetTemp.TempLayerGL = (function () {
       }
       gl.bindVertexArray(null);
       this._sweep(gl);
+      if (this.timings) note(this.timings.render, performance.now() - t0);
     }
   };
 
@@ -577,5 +584,7 @@ WidgetTemp.TempLayerGL = (function () {
   TempLayerGL.packWZ = packWZ;
   TempLayerGL.clean = clean;
   TempLayerGL.GLLayer = GLLayer;
+  TempLayerGL.FS_HEAD = FS_HEAD;
+  TempLayerGL.rgba = rgba;
   return TempLayerGL;
 })();

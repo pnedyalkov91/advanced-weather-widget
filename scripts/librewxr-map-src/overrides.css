@@ -315,9 +315,11 @@
       body { opacity: 0; transition: opacity 400ms ease-out; }
       body.lv-ready { opacity: 1; }
 
-      /* Temperature legend (glue-temp-layer.js): the palette's colors with
-         their ticks, top center over the map, the unit at the right end. */
-      #lv-temp-legend {
+      /* Color legends of one bar: temperature (glue-temp-layer.js),
+         pressure, air quality, humidity, dew point (glue-fields.js): the
+         palette's colors with their ticks, top center over the map, the
+         unit at the right end. */
+      #lv-temp-legend, #lv-pres-legend, .lv-aq-legend {
         position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
         z-index: 5; pointer-events: none;
         display: grid; grid-template-columns: 240px auto; column-gap: 6px;
@@ -325,12 +327,28 @@
         font: 11px var(--font-ui, sans-serif);
         background: rgba(20, 22, 28, 0.72); color: #eee;
       }
-      body[data-theme="light"] #lv-temp-legend { background: rgba(255, 255, 255, 0.82); color: #222; }
-      #lv-temp-legend .lv-temp-ticks { grid-column: 1; grid-row: 1; position: relative; height: 14px; }
-      #lv-temp-legend .lv-temp-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
-      #lv-temp-legend .lv-temp-bar { grid-column: 1; grid-row: 2; width: 240px; height: 8px; border-radius: 2px; }
-      #lv-temp-legend .lv-temp-unit { grid-column: 2; grid-row: 2; align-self: center; }
-      @media (max-width: 320px) { #lv-temp-legend { display: none; } }
+      body[data-theme="light"] :is(#lv-temp-legend, #lv-pres-legend, .lv-aq-legend) { background: rgba(255, 255, 255, 0.82); color: #222; }
+      :is(#lv-temp-legend, #lv-pres-legend, .lv-aq-legend) .lv-temp-ticks { grid-column: 1; grid-row: 1; position: relative; height: 14px; }
+      :is(#lv-temp-legend, #lv-pres-legend, .lv-aq-legend, .lv-precip-legend) .lv-temp-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+      :is(#lv-temp-legend, #lv-pres-legend, .lv-aq-legend) .lv-temp-bar { grid-column: 1; grid-row: 2; width: 240px; height: 8px; border-radius: 2px; }
+      :is(#lv-temp-legend, #lv-pres-legend, .lv-aq-legend) .lv-temp-unit { grid-column: 2; grid-row: 2; align-self: center; }
+      @media (max-width: 320px) { #lv-temp-legend, #lv-pres-legend, .lv-aq-legend { display: none; } }
+
+      /* Precipitation legend (glue-precip.js): bottom left, a bar for each
+         kind shown, its name before it. */
+      .lv-precip-legend {
+        position: absolute; bottom: 8px; left: 8px; z-index: 5; pointer-events: none;
+        display: grid; grid-template-columns: auto 180px auto; column-gap: 6px; row-gap: 1px;
+        padding: 3px 8px 5px; border-radius: 6px;
+        font: 11px var(--font-ui, sans-serif);
+        background: rgba(20, 22, 28, 0.72); color: #eee;
+      }
+      body[data-theme="light"] .lv-precip-legend { background: rgba(255, 255, 255, 0.82); color: #222; }
+      .lv-precip-legend .lv-temp-ticks { grid-column: 2; grid-row: 1; position: relative; height: 14px; }
+      .lv-precip-legend canvas { grid-column: 2; width: 180px; height: 6px; border-radius: 2px; align-self: center; }
+      .lv-precip-legend .lv-precip-name { grid-column: 1; text-align: right; line-height: 12px; }
+      .lv-precip-legend .lv-temp-unit { grid-column: 3; grid-row: 1; align-self: end; }
+      @media (max-width: 480px) { .lv-precip-legend { display: none; } }
 
 /* Readout under the pointer while Ctrl is held (glue-controls.js). */
 #lv-readout {

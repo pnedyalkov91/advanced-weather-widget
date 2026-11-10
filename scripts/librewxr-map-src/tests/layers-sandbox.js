@@ -1,5 +1,5 @@
 'use strict';
-// Loads the layer fragments (glue-pressure.js, glue-airquality.js,
+// Loads the layer fragments (glue-fields.js, glue-pressure.js, glue-airquality.js,
 // glue-precip.js, glue-clouds.js, glue-humidity.js) under Node. In the page
 // they run inside its module, after glue-controls.js, and reach its
 // variables (ANIM_LAYERS, anim, the adapter, the readout): here those are
@@ -10,6 +10,7 @@ const vm = require('node:vm');
 
 const SRC = path.join(__dirname, '..');
 const LAYERS = [
+  ['glue-fields.js', 'WidgetFields'],
   ['glue-pressure.js', 'WidgetPressure'],
   ['glue-airquality.js', 'WidgetAirQuality'],
   ['glue-precip.js', 'WidgetPrecip'],
@@ -41,6 +42,10 @@ function loadLayers() {
     maplibregl: { addProtocol() {} },
     _windOpen: { base: 'b/', model: 'ecmwf_ifs025', importReader() {}, fetch() {} }, tempUnit: 'C', readout: {},
     readoutHtml() { return ''; },
+    // The readout's helpers of glue-controls.js: the lines the layers add are noted.
+    readouts: [],
+    addReadout(track, line) { ctx.readouts.push({ track, line }); },
+    readoutRow(icon, color, text) { return color + '|' + text; },
     animSetLayer() {},
     currentTheme() { return 'dark'; },
     tr(key, fallback) { return fallback; }
@@ -49,6 +54,14 @@ function loadLayers() {
   ctx.WidgetOpenData = require('../glue-wind-open.js');
   ctx.WidgetTemp = require('../glue-temp.js');
   ctx.WidgetGrids = require('../glue-grids.js');
+  // The shared GL layer (WidgetTemp.TempLayerGL), as the page loads it before them.
+  if (!ctx.WidgetTemp.TempLayerGL) {
+    global.WidgetWind = global.WidgetWind || require('../glue-wind.js');
+    global.WidgetTemp = ctx.WidgetTemp;
+    global.WidgetGrids = ctx.WidgetGrids;
+    require('../glue-temp-layer.js');
+    require('../glue-temp-gl.js');
+  }
   ctx.self = ctx.window;
   vm.createContext(ctx);
   const code = LAYERS.map(([file]) => fs.readFileSync(path.join(SRC, file), 'utf8')).join('\n');

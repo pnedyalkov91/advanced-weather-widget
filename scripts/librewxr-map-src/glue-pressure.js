@@ -1,12 +1,12 @@
-// === PRESSURE AND ISOBARS (glue-pressure.js; MapLibre page, after glue-controls.js) ===
+// === PRESSURE AND ISOBARS (glue-pressure.js; MapLibre page, after glue-fields.js) ===
 // Mean sea level pressure in the animation: a colored field drawn in tiles
 // (layer 'pressure') and isobars drawn by MapLibre as lines with labels and
 // H/L marks (layer 'isobars'). Both read pressure_msl from the same files
 // and share the store key. It lives inside the page's module, where it reaches
-// ANIM_LAYERS, anim and the adapter; the other layers after it borrow its
-// drawing by the graphics chip (GLLayer, FS_HEAD). Timings in window.presStats.
+// ANIM_LAYERS, anim and the adapter. Timings in window.presStats.
 var WidgetPressure = (function () {
   'use strict';
+  var F = WidgetFields, beforeOverlays = F.beforeOverlays, beforeLines = F.beforeLines, sample = F.sample;
   var DEG = Math.PI / 180;
   var TILE = 256, LATTICE = 4, MAXZOOM = 8;
   var P_MIN = 910, P_SCALE = 1.5;        // byte b is P_MIN + b / 1.5 hPa (910 to 1079 hPa)
@@ -24,8 +24,8 @@ var WidgetPressure = (function () {
   // Opacity of the pressure colors in percent (the isobars keep theirs):
   // only the colors are drawn again, the lines stay as they are.
   window.presSetOpacity = function (percent) {
-    opts.opacity = Math.max(0, Math.min(100, percent === "" || percent === null || !isFinite(+percent) ? 60 : +percent)) / 100;
-    var t = anim && anim.group.track('pressure');
+    opts.opacity = F.percent(percent, 60);
+    var t = F.track('pressure');
     if (t) t.layer.redraw();
     if (presLegend) presLegend.querySelector('canvas').style.opacity = String(opts.opacity);
     return opts.opacity;
@@ -45,7 +45,7 @@ var WidgetPressure = (function () {
     var css = 'rgb(' + rgb.map(function (c) { return Math.round(c * 255); }).join(',') + ')';
     return { rgb: rgb, css: css };
   }
-  function isoLayer() { var t = anim && anim.group.track('isobars'); return t ? t.layer : null; }
+  function isoLayer() { var t = F.track('isobars'); return t ? t.layer : null; }
   window.isoSetOpacity = function (percent) {
     iso.opacity = Math.max(0, Math.min(100, isFinite(+percent) ? +percent : 80)) / 100;
     var l = isoLayer();
@@ -109,10 +109,7 @@ var WidgetPressure = (function () {
         return { meta: { lats: g.lats, lons: g.lons, res: g.res }, parts: [pack(g.values)] };
       },
       unpack: function (parts) { return unpack(parts[0]); },
-      grid: function (m, a, b, mix, tA, tB, at) {
-        if (!b) return { lats: m.lats, lons: m.lons, res: m.res, times: [tA / 1000], values: a };
-        return { lats: m.lats, lons: m.lons, res: m.res, times: [at / 1000], values: a, valuesB: b, mix: mix };
-      }
+      grid: WidgetAnim.latLonGrid
     };
   }
   WidgetAnim.FIELDS.pressure = field('pressure');
@@ -127,25 +124,12 @@ var WidgetPressure = (function () {
     layer.addTo(map);
     if (grid) layer.showFile(grid);
   }
-  /** A GL layer put back after a new base map, at its place. */
-  function readdGL(map, gl, under) {
-    if (map && !map.getLayer(gl.id)) map.addLayer(gl, under ? beforeLines(map) : beforeOverlays(map));
-  }
-
-  /** Pressure at lat/lon of a grid given to showFile (mixed when it has two). */
-  function sample(g, lat, lon) {
-    var p = WidgetTemp.sampleScalar(g, g.values, lat, lon);
-    if (g.valuesB && g.mix > 0) p += (WidgetTemp.sampleScalar(g, g.valuesB, lat, lon) - p) * g.mix;
-    return p;
-  }
-
   // --- colors ---
   var STOPS = [[960, '#4b1d6e'], [975, '#2c4f9e'], [990, '#2f8fd0'], [1003, '#6cc4c0'], [1013, '#d9e8c4'],
     [1020, '#f3d58a'], [1030, '#ee9a50'], [1040, '#d6504a'], [1052, '#7d1834']];
   var lut = null, LUT_MIN = 940, LUT_STEP = 0.25, LUT_N = 520;
-  function rgb(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
   function buildLut() {
-    var out = new Uint8Array(LUT_N * 3), s = STOPS.map(function (x) { return [x[0], rgb(x[1])]; });
+    var out = new Uint8Array(LUT_N * 3), s = STOPS.map(function (x) { return [x[0], F.hex(x[1])]; });
     for (var i = 0; i < LUT_N; i++) {
       var p = LUT_MIN + i * LUT_STEP;
       if (opts.bands > 0) p = (Math.floor(p / opts.bands) + 0.5) * opts.bands;
@@ -173,23 +157,6 @@ var WidgetPressure = (function () {
     });
   });
 
-  /** Where the page's own layers start: the pressure goes right under them,
-      over the base map, its night and the temperature. */
-  function beforeOverlays(map) {
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-      var id = layers[i].id;
-      if (layers[i].type === 'custom' || id.indexOf('lv-layer-') === 0 || id.indexOf('lv-alerts') === 0) return id;
-    }
-    return undefined;
-  }
-  /** Color layers go under the coasts and borders the adapter draws. */
-  function beforeLines(map) { return _widgetAdapter.linesBefore() || beforeOverlays(map); }
-  /** The isobars' line layer (by the chip or not), null without them. */
-  function isoLine(map) { return map.getLayer('lv-iso-gl') ? 'lv-iso-gl' : map.getLayer('lv-iso') ? 'lv-iso' : null; }
-  /** Rain and clouds go right under the isobars when they show, so the
-      lines stay readable over them; else as the color layers. */
-  function beforeIsobars(map) { return isoLine(map) || (map.getLayer('lv-iso-label') ? 'lv-iso-label' : null) || beforeLines(map); }
   function firstCustom(map) {
     var layers = map.getStyle().layers;
     for (var i = 0; i < layers.length; i++) if (layers[i].type === 'custom') return layers[i].id;
@@ -562,7 +529,7 @@ var WidgetPressure = (function () {
   /** Bench: per forecast picture, the marks shown and those born or gone
       since the one before. */
   window.presTrackStats = function () {
-    var t = anim && anim.group.track('isobars');
+    var t = F.track('isobars');
     if (!t) return null;
     var T = tracks(t.frames), out = [];
     for (var k = 1; k < T.marks.length; k++) {
@@ -636,7 +603,7 @@ var WidgetPressure = (function () {
       var step = map.getZoom() >= opts.minorZoom ? opts.step / 2 : opts.step;
       var lines = contours(f, res, step, 84, box, this.moving ? 0 : opts.chaikin);
       var t1 = performance.now();
-      var track = anim && anim.group.track('isobars'), pos = anim ? anim.player.index : -1;
+      var track = F.track('isobars'), pos = anim ? anim.player.index : -1;
       var marks = track && pos >= 0 ? trackedMarks(track.frames, pos) : [];
       note(stats.contour, t1 - t0);
       stats.features = lines.length;
@@ -709,30 +676,11 @@ var WidgetPressure = (function () {
     }
   };
 
-  // --- drawing by the graphics chip (opts.gpu) ---
-  /* A layer of MapLibre's own (type custom) drawing one mesh over the
-     world, Mercator 0..1, fine enough to follow the globe, with a row on
-     each side reaching the pole. The fragment shader works out lat/lon and
-     reads the fields from textures: the two forecast pictures and their
-     share (u_mix), so a picture between two costs one number. Textures
-     are uploaded in render(), where MapLibre expects the GL state to
-     change, and kept while in use. */
-  var MESH_X = 256, MESH_Y = 128, MERC_MAX_LAT = 85.0511;
-  var FS_HEAD = [
-    '#version 300 es',
-    'precision highp float;',
-    'in vec2 v_merc;',
-    'out vec4 fragColor;',
-    'const float PI = 3.141592653589793;',
-    'uniform vec2 u_size;',
-    // lat/lon of the fragment, and where it falls in a grid of u_size from 90N/180W
-    'vec2 gridUv(out float lat) {',
-    '  float lon = fract(v_merc.x) * 360.0 - 180.0;',
-    '  lat = degrees(atan(sinh(PI * (1.0 - 2.0 * v_merc.y))));',
-    '  return vec2((lon + 180.0) / 360.0 * (u_size.x - 1.0) + 0.5, (90.0 - lat) / 180.0 * (u_size.y - 1.0) + 0.5) / u_size;',
-    '}'
-  ].join('\n') + '\n';
-
+  // --- drawing by the graphics chip (opts.gpu): the shared GL layer of
+  // glue-temp-gl.js; the fragment shader works out lat/lon and reads the
+  // fields from textures, the two forecast pictures and their share
+  // (u_mix), so a picture between two costs one number ---
+  var GL = WidgetTemp.TempLayerGL, GLLayer = GL.GLLayer, FS_HEAD = GL.FS_HEAD, rgba = GL.rgba;
   var PRES_FS = FS_HEAD + [
     'uniform sampler2D u_a, u_b, u_lut;',
     'uniform float u_mix, u_fill, u_lines, u_opacity, u_step, u_dpr, u_lutMin, u_lutSpan, u_width;',
@@ -760,177 +708,6 @@ var WidgetPressure = (function () {
     '}'
   ].join('\n');
 
-  function mercY(lat) { return (1 - Math.log(Math.tan(Math.PI / 4 + lat * DEG / 2)) / Math.PI) / 2; }
-
-  /** A custom layer drawing with fragment shader fs; draw(gl, u, layer)
-      binds its textures and uniforms and says whether there is anything to
-      draw. */
-  function GLLayer(id, fs, draw) {
-    this.id = id;
-    this.type = 'custom';
-    this.renderingMode = '2d';
-    this.fs = fs;
-    this.draw = draw;
-    this.programs = {};
-    this.drawn = -1;
-    this.fade = 1;                    // 0..1 over the opacity (fading in or out)
-    this.textures = new Map();        // data array -> { tex, used }
-    this.frame = 0;
-  }
-  GLLayer.prototype = {
-    onAdd: function (map, gl) {
-      this.map = map;
-      // x, y in Mercator (0..1) and the pole flag: the rows past the edges
-      // reach the poles on the globe (as MapLibre's own tiles do) with the
-      // colors of the edge; flat they are not drawn.
-      var v = [];
-      for (var j = -1; j <= MESH_Y + 1; j++) {
-        var jj = Math.max(0, Math.min(MESH_Y, j));
-        var y = mercY(MERC_MAX_LAT) + (mercY(-MERC_MAX_LAT) - mercY(MERC_MAX_LAT)) * jj / MESH_Y;
-        for (var i = 0; i <= MESH_X; i++) v.push(i / MESH_X, y, j < 0 ? -1 : j > MESH_Y ? 1 : 0);
-      }
-      var idx = [];
-      for (j = 0; j < MESH_Y + 2; j++) {
-        for (i = 0; i < MESH_X; i++) {
-          var k = j * (MESH_X + 1) + i;
-          idx.push(k, k + 1, k + MESH_X + 1, k + 1, k + MESH_X + 2, k + MESH_X + 1);
-        }
-      }
-      this.vbo = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
-      this.ibo = gl.createBuffer();
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), gl.STATIC_DRAW);
-      this.count = idx.length;
-    },
-    onRemove: function (map, gl) {
-      var self = this;
-      this.textures.forEach(function (t) { gl.deleteTexture(t.tex); });
-      this.textures.clear();
-      Object.keys(this.programs).forEach(function (k) { gl.deleteProgram(self.programs[k].p); gl.deleteVertexArray(self.programs[k].vao); });
-      gl.deleteBuffer(this.vbo);
-      gl.deleteBuffer(this.ibo);
-      // Made again by onAdd and program() if the layer is put back (new base map).
-      this.programs = {};
-      this.drawn = -1;
-    },
-    program: function (gl, sd) {
-      var hit = this.programs[sd.variantName];
-      if (hit) return hit;
-      var vs = '#version 300 es\n' + sd.vertexShaderPrelude + '\n' + sd.define + '\n' +
-        'in vec3 a_pos;\nuniform float u_shift;\nout vec2 v_merc;\n' +
-        'void main() {\n' +
-        '  v_merc = vec2(a_pos.x + u_shift, a_pos.y);\n' +
-        '  vec2 raw = vec2(0.0, a_pos.z < -0.5 ? -32768.0 : (a_pos.z > 0.5 ? 32767.0 : 0.0));\n' +
-        '  gl_Position = projectTile(v_merc, raw);\n' +
-        '}';
-      function sh(type, src) {
-        var s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.warn('[gl] shader: ' + gl.getShaderInfoLog(s));
-        return s;
-      }
-      var p = gl.createProgram();
-      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs));
-      gl.attachShader(p, sh(gl.FRAGMENT_SHADER, this.fs));
-      gl.linkProgram(p);
-      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.warn('[gl] link: ' + gl.getProgramInfoLog(p));
-      var loc = {}, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
-      for (var i = 0; i < n; i++) {
-        var name = gl.getActiveUniform(p, i).name.replace(/\[0\]$/, '');
-        loc[name] = gl.getUniformLocation(p, name);
-      }
-      var vao = gl.createVertexArray();
-      gl.bindVertexArray(vao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-      var ap = gl.getAttribLocation(p, 'a_pos');
-      gl.enableVertexAttribArray(ap);
-      gl.vertexAttribPointer(ap, 3, gl.FLOAT, false, 0, 0);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
-      gl.bindVertexArray(null);
-      hit = this.programs[sd.variantName] = { p: p, loc: loc, vao: vao };
-      return hit;
-    },
-    /** The texture of a data array (made once): R16F floats, or RGBA8
-        bytes (then nearest). unit: the texture unit it is bound to. */
-    texture: function (gl, unit, data, w, h, kind) {
-      var hit = this.textures.get(data);
-      // The unit first: a new texture is bound to make it, and bound on the
-      // unit still active it took the place of the one before (picture A
-      // read as B for a frame, at every new picture).
-      gl.activeTexture(gl.TEXTURE0 + unit);
-      if (!hit) {
-        var t0 = performance.now(), tex = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-        var filter = kind === 'rgba-nearest' ? gl.NEAREST : gl.LINEAR;
-        if (kind === 'rgba' || kind === 'rgba-nearest') gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-        else if (kind === 'r8') gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, w, h, 0, gl.RED, gl.UNSIGNED_BYTE, data);
-        else if (kind === 'rg') gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG16F, w, h, 0, gl.RG, gl.FLOAT, data);
-        else gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, w, h, 0, gl.RED, gl.FLOAT, data);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        hit = { tex: tex, used: 0 };
-        this.textures.set(data, hit);
-        note(stats.upload, performance.now() - t0);
-      }
-      hit.used = this.frame;
-      gl.bindTexture(gl.TEXTURE_2D, hit.tex);
-      return hit.tex;
-    },
-    /** Drop the textures no draw has used for a few frames. */
-    _sweep: function (gl) {
-      var self = this;
-      if (this.textures.size <= 6) return;
-      this.textures.forEach(function (t, key) {
-        if (self.frame - t.used > 2) { gl.deleteTexture(t.tex); self.textures.delete(key); }
-      });
-    },
-    render: function (gl, args) {
-      var t0 = performance.now(), sd = args.shaderData, pr = this.program(gl, sd), u = pr.loc, d = args.defaultProjectionData;
-      this.frame++;
-      gl.useProgram(pr.p);
-      if (!this.draw(gl, u, this)) return;
-      gl.uniformMatrix4fv(u.u_projection_matrix, false, d.mainMatrix);
-      if (u.u_projection_fallback_matrix) gl.uniformMatrix4fv(u.u_projection_fallback_matrix, false, d.fallbackMatrix);
-      if (u.u_projection_tile_mercator_coords) gl.uniform4fv(u.u_projection_tile_mercator_coords, d.tileMercatorCoords);
-      if (u.u_projection_clipping_plane) gl.uniform4fv(u.u_projection_clipping_plane, d.clippingPlane);
-      if (u.u_projection_transition) gl.uniform1f(u.u_projection_transition, d.projectionTransition);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      gl.disable(gl.DEPTH_TEST);
-      gl.disable(gl.STENCIL_TEST);
-      gl.disable(gl.CULL_FACE);
-      gl.bindVertexArray(pr.vao);
-      // Flat, the copies of the world on either side; on the globe one is all.
-      var shifts = sd.variantName === 'globe' ? [0] : [-1, 0, 1];
-      for (var k = 0; k < shifts.length; k++) {
-        gl.uniform1f(u.u_shift, shifts[k]);
-        gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_INT, 0);
-      }
-      gl.bindVertexArray(null);
-      this._sweep(gl);
-      note(stats.render, performance.now() - t0);
-    }
-  };
-
-  /** A palette of RGB triplets as RGBA bytes, made once per palette. */
-  var rgbaOf = new WeakMap();
-  function rgba(rgb) {
-    var hit = rgbaOf.get(rgb);
-    if (hit) return hit;
-    var n = rgb.length / 3, out = new Uint8Array(n * 4);
-    for (var i = 0; i < n; i++) { out[i * 4] = rgb[i * 3]; out[i * 4 + 1] = rgb[i * 3 + 1]; out[i * 4 + 2] = rgb[i * 3 + 2]; out[i * 4 + 3] = 255; }
-    rgbaOf.set(rgb, out);
-    return out;
-  }
-
   // -- the pressure --
   var glShared = { grid: null, a: null, b: null, mix: 0, version: 0 };
 
@@ -952,7 +729,7 @@ var WidgetPressure = (function () {
   function partsOf(values) {
     var ids = ['isobars', 'pressure'];
     for (var n = 0; n < ids.length; n++) {
-      var t = anim && anim.group.track(ids[n]), kept = t && t.frames.unpacked || [];
+      var t = F.track(ids[n]), kept = t && t.frames.unpacked || [];
       for (var k = 0; k < kept.length; k++) if (kept[k].values === values) return t.frames.packed[kept[k].i];
     }
     return values;
@@ -1010,11 +787,6 @@ var WidgetPressure = (function () {
     });
   }
 
-  var arrIds = new WeakMap(), arrNext = 0;
-  function arrId(x) { if (!x) return 0; var k = arrIds.get(x); if (!k) { k = ++arrNext; arrIds.set(x, k); } return k; }
-  window.presDrawLog = [];
-  function drawLog(e) { var L = window.presDrawLog; L.push(e); if (L.length > 4000) L.shift(); }
-
   function presDraw(mode) {
     return function (gl, u, layer) {
       if (!glShared.a) return false;
@@ -1027,7 +799,6 @@ var WidgetPressure = (function () {
       }
       gl.uniform2f(u.u_size, a.cols, a.rows);
       gl.uniform1f(u.u_mix, glShared.mix);
-      drawLog({ t: performance.timeOrigin + performance.now(), mode: mode, a: arrId(glShared.a), b: arrId(glShared.b), qa: arrId(a.q), qb: arrId(b.q), mix: +glShared.mix.toFixed(3), pos: anim ? +anim.player.index.toFixed(3) : -1 });
       gl.uniform1f(u.u_fill, mode === 'fill' ? 1 : 0);
       gl.uniform1f(u.u_lines, mode === 'lines' ? 1 : 0);
       gl.uniform1f(u.u_opacity, opts.opacity * layer.fade);
@@ -1053,7 +824,9 @@ var WidgetPressure = (function () {
     warmTex();
   }
 
-  function FillLayerGL() { this.map = null; this.grid = null; this.gl = new GLLayer('lv-pres-gl', PRES_FS, presDraw('fill')); }
+  /** A pressure GL layer, its times noted in window.presStats. */
+  function presGL(id, mode) { var l = new GLLayer(id, PRES_FS, presDraw(mode)); l.timings = stats; return l; }
+  function FillLayerGL() { this.map = null; this.grid = null; this.gl = presGL('lv-pres-gl', 'fill'); }
   FillLayerGL.prototype = {
     addTo: function (map) { this.map = map; map.addLayer(this.gl, beforeLines(map)); _widgetAdapter.setLines('pressure', true); return this; },
     remove: function () {
@@ -1063,7 +836,7 @@ var WidgetPressure = (function () {
       this.map = null;
     },
     showFile: function (grid) { this.grid = grid; glShow(grid); if (this.map) this.map.triggerRepaint(); },
-    restyle: function () { readdGL(this.map, this.gl, true); },
+    restyle: function () { F.readdGL(this.map, this.gl); },
     redraw: function () { lut = null; if (this.map) this.map.triggerRepaint(); },
     setFade: function (f) { this.gl.fade = f; if (this.map) this.map.triggerRepaint(); },
     settled: function () { return this.gl.drawn === glShared.version; },
@@ -1072,7 +845,7 @@ var WidgetPressure = (function () {
 
   /** Isobars by the chip; the values on them (CPU lines, labels only) and
       the highs and lows as before. */
-  function IsobarLayerGL() { IsobarLayer.call(this); this.gl = new GLLayer('lv-iso-gl', PRES_FS, presDraw('lines')); }
+  function IsobarLayerGL() { IsobarLayer.call(this); this.gl = presGL('lv-iso-gl', 'lines'); }
   IsobarLayerGL.prototype = Object.create(IsobarLayer.prototype);
   IsobarLayerGL.prototype.addTo = function (map) {
     IsobarLayer.prototype.addTo.call(this, map);
@@ -1090,7 +863,7 @@ var WidgetPressure = (function () {
   IsobarLayerGL.prototype.showFile = function (grid) {
     this.grid = grid;
     glShow(grid);
-    var track = anim && anim.group.track('isobars'), pos = anim ? anim.player.index : -1;
+    var track = F.track('isobars'), pos = anim ? anim.player.index : -1;
     this._marks(track && pos >= 0 ? trackedMarks(track.frames, pos) : []);
     if (!this.moving) IsobarLayer.prototype.redraw.call(this);
     if (this.map) this.map.triggerRepaint();
@@ -1106,42 +879,21 @@ var WidgetPressure = (function () {
   // Legend of the pressure colors, as the temperature's (same place, same
   // look: the two never show together), its colors as light as the layer.
   var PRES_LEGEND_LO = 950, PRES_LEGEND_HI = 1050, presLegend = null;
-  (function () {
-    var css = document.createElement('style');
-    css.textContent = [
-      '#lv-pres-legend { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none;',
-      '  display: grid; grid-template-columns: 240px auto; column-gap: 6px; padding: 3px 8px 5px; border-radius: 6px;',
-      '  font: 11px var(--font-ui, sans-serif); background: rgba(20, 22, 28, 0.72); color: #eee; }',
-      'body[data-theme="light"] #lv-pres-legend { background: rgba(255, 255, 255, 0.82); color: #222; }',
-      '#lv-pres-legend .lv-temp-ticks { grid-column: 1; grid-row: 1; position: relative; height: 14px; }',
-      '#lv-pres-legend .lv-temp-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }',
-      '#lv-pres-legend .lv-temp-bar { grid-column: 1; grid-row: 2; width: 240px; height: 8px; border-radius: 2px; }',
-      '#lv-pres-legend .lv-temp-unit { grid-column: 2; grid-row: 2; align-self: center; }',
-      '@media (max-width: 320px) { #lv-pres-legend { display: none; } }'
-    ].join('\n');
-    document.head.appendChild(css);
-  })();
+  /** The color of p in the table, as CSS. */
+  function colorOf(p) {
+    lut = lut || buildLut();
+    var i = Math.max(0, Math.min(LUT_N - 1, Math.round((p - LUT_MIN) / LUT_STEP))) * 3;
+    return 'rgb(' + lut[i] + ', ' + lut[i + 1] + ', ' + lut[i + 2] + ')';
+  }
   function showPresLegend(map) {
     if (presLegend) return;
-    lut = lut || buildLut();
-    presLegend = document.createElement('div');
+    var ticks = [], span = PRES_LEGEND_HI - PRES_LEGEND_LO, W = 240;
+    for (var p = 960; p <= 1040; p += 20) ticks.push([(p - PRES_LEGEND_LO) / span * 100, String(p)]);
+    presLegend = F.legendBox('', 'pressure', ticks, 'hPa');
     presLegend.id = 'lv-pres-legend';
-    var ticks = [];
-    for (var p = 960; p <= 1040; p += 20) {
-      ticks.push('<span style="left:' + ((p - PRES_LEGEND_LO) / (PRES_LEGEND_HI - PRES_LEGEND_LO) * 100).toFixed(2) + '%">' + p + '</span>');
-    }
-    presLegend.innerHTML = '<div class="lv-temp-ticks">' + ticks.join('') + '</div><span class="lv-temp-unit">hPa</span>';
-    var bar = document.createElement('canvas'), g = bar.getContext('2d'), W = 240;
-    bar.width = W;
-    bar.height = 10;
+    var bar = F.legendBar(W, 10, function (x) { return colorOf(PRES_LEGEND_LO + (x + 0.5) / W * span); });
     bar.className = 'lv-temp-bar';
     bar.style.opacity = String(opts.opacity);
-    for (var x = 0; x < W; x++) {
-      var v = PRES_LEGEND_LO + (x + 0.5) / W * (PRES_LEGEND_HI - PRES_LEGEND_LO);
-      var i = Math.max(0, Math.min(LUT_N - 1, Math.round((v - LUT_MIN) / LUT_STEP))) * 3;
-      g.fillStyle = 'rgb(' + lut[i] + ',' + lut[i + 1] + ',' + lut[i + 2] + ')';
-      g.fillRect(x, 0, 1, 10);
-    }
     presLegend.appendChild(bar);
     (document.getElementById('lv-map') || map.getContainer()).appendChild(presLegend);
   }
@@ -1168,28 +920,10 @@ var WidgetPressure = (function () {
       '<g transform="rotate(' + a.toFixed(0) + ' 8 8)"><path d="M8 8.6V2.6" stroke="rgba(0,0,0,0.75)" stroke-width="1.4" stroke-linecap="round"/></g>' +
       '<circle cx="8" cy="8" r="1.3" fill="rgba(0,0,0,0.75)"/></svg>';
   }
-  function colorOf(p) {
-    lut = lut || buildLut();
-    var i = Math.max(0, Math.min(LUT_N - 1, Math.round((p - LUT_MIN) / LUT_STEP))) * 3;
-    return 'rgb(' + lut[i] + ', ' + lut[i + 1] + ', ' + lut[i + 2] + ')';
-  }
-  var plainReadout = readoutHtml;
-  readoutHtml = function () {
-    var html = plainReadout(), map = _widgetAdapter.getMap();
-    var t = anim && (anim.group.track('pressure') || anim.group.track('isobars'));
-    if (!t || !t.layer.grid || !map || !readout.known) return html;
-    // Inside the map and on the globe, as for the other lines.
-    var c = map.getContainer().getBoundingClientRect(), x = readout.x - c.left, y = readout.y - c.top;
-    if (x < 0 || y < 0 || x > c.width || y > c.height) return html;
-    var ll = map.unproject([x, y]);
-    if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) return html;
-    var back = map.project(ll);
-    if (Math.abs(back.x - x) > 1 || Math.abs(back.y - y) > 1) return html;
+  addReadout(function () { return F.track('pressure') || F.track('isobars'); }, function (t, ll) {
     var p = sample(t.layer.grid, ll.lat, ll.lng);
-    if (!isFinite(p)) return html;
-    return html + '<div class="lv-readout-row"><span class="lv-readout-icon" style="color:' + colorOf(p) + '">' + barometer(p) +
-      '</span><span>' + localNumber(p, 1) + ' hPa</span></div>';
-  };
+    return isFinite(p) ? readoutRow(barometer(p), colorOf(p), localNumber(p, 1) + ' hPa') : '';
+  });
 
-  return { contours: contours, extrema: extrema, smoothHalf: smoothHalf, opts: opts, GLLayer: GLLayer, readdGL: readdGL, FS_HEAD: FS_HEAD, beforeOverlays: beforeOverlays, beforeLines: beforeLines, beforeIsobars: beforeIsobars, sample: sample };
+  return { contours: contours, extrema: extrema, smoothHalf: smoothHalf, opts: opts };
 })();

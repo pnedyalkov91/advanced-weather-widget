@@ -176,6 +176,12 @@ var WidgetAnim = (function () {
      unpack(parts): the values in full; grid(meta, a, b, mix, tA, tB, at):
      what the layer is given, frame a alone (b null) or a and b with the
      share of b. */
+  /** grid() of a field on a latitude/longitude grid from 90N/180W: frame a
+      alone, or a and b with the share of b (the layer mixes them). */
+  function latLonGrid(m, a, b, mix, tA, tB, at) {
+    if (!b) return { lats: m.lats, lons: m.lons, res: m.res, times: [tA / 1000], values: a };
+    return { lats: m.lats, lons: m.lons, res: m.res, times: [at / 1000], values: a, valuesB: b, mix: mix };
+  }
   var FIELDS = {
     temperature: {
       id: 'temperature',
@@ -188,10 +194,7 @@ var WidgetAnim = (function () {
       unpack: function (parts) { return unpack(parts[0]); },
       // The layer mixes the two where it reads them, a few thousand points
       // a picture instead of the whole world.
-      grid: function (m, a, b, mix, tA, tB, at) {
-        if (!b) return { lats: m.lats, lons: m.lons, res: m.res, times: [tA / 1000], values: a };
-        return { lats: m.lats, lons: m.lons, res: m.res, times: [at / 1000], values: a, valuesB: b, mix: mix };
-      }
+      grid: latLonGrid
     },
     // The 2 m temperature of the finer model, on its own regional grid;
     // weights (see WidgetTemp.edgeWeights) blend it into the coarse one
@@ -1211,7 +1214,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack, latLonGrid: latLonGrid,
     decimate: decimate, FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

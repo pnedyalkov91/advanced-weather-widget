@@ -9,10 +9,11 @@
 // The shader mixes two pictures, the kind taken from the wetter one, and
 // looks the colors up in a table of a row per kind; the kinds not chosen
 // are left out (window.precipSetKinds). Mostly see-through, it goes over
-// the other colors. It borrows the GL layer of glue-pressure.js.
+// the other colors. A FieldLayer of glue-fields.js.
 // window.precipSetOpacity, precipOptions.
 var WidgetPrecip = (function () {
   'use strict';
+  var F = WidgetFields;
   var HOUR = 3600e3, RUN_H = 6, LONG_RUN_H = 12, SHORT_RANGE_H = 144, HALF = 1.5 * HOUR;
   var MODEL_KEY = 'ecmwf_ifs025~precip';   // its own model in the store: pruneStore would drop its runs
   var FILE_STORE = 'precip-file2';         // what is kept: the files, the pictures are worked out from them
@@ -231,31 +232,14 @@ var WidgetPrecip = (function () {
 
   // --- colors: a row of 256 per kind (row 0, none, see-through); nothing
   // under minRate, faded in up to fullRate ---
-  function hex(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
-  function colorAt(v, stops) {
-    if (v <= stops[0][0]) return hex(stops[0][1]);
-    for (var k = 0; k < stops.length - 1; k++) {
-      if (v <= stops[k + 1][0]) {
-        var f = (Math.log(v) - Math.log(stops[k][0])) / (Math.log(stops[k + 1][0]) - Math.log(stops[k][0]));
-        var a = hex(stops[k][1]), b = hex(stops[k + 1][1]);
-        return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * f); });
-      }
-    }
-    return hex(stops[stops.length - 1][1]);
-  }
-  function alphaAt(v) {
-    var t = Math.max(0, Math.min(1, (v - opts.minRate) / (opts.fullRate - opts.minRate)));
-    return t * t * (3 - 2 * t);
-  }
+  function colorAt(v, stops) { return F.colorAt(stops, v, Math.log); }
+  function alphaAt(v) { return F.smoothstep((v - opts.minRate) / (opts.fullRate - opts.minRate)); }
   var lut = null;
+  function rateAt(b) { return RATES[b]; }
   function buildLut() {
     var out = new Uint8Array(256 * N_ROWS * 4);
     KINDS.forEach(function (kd, row) {
-      if (!kd) return;
-      for (var b = 0; b < 256; b++) {
-        var v = RATES[b], c = colorAt(v, kd.stops), o = (row * 256 + b) * 4;
-        out[o] = c[0]; out[o + 1] = c[1]; out[o + 2] = c[2]; out[o + 3] = Math.round(255 * alphaAt(v));
-      }
+      if (kd) out.set(F.byteLut(rateAt, function (v) { return colorAt(v, kd.stops); }, alphaAt), row * 256 * 4);
     });
     return out;
   }
@@ -265,7 +249,7 @@ var WidgetPrecip = (function () {
   }
 
   // --- the GL layer ---
-  var FS = WidgetPressure.FS_HEAD + [
+  var FS = WidgetTemp.TempLayerGL.FS_HEAD + [
     'uniform sampler2D u_ra, u_ka, u_rb, u_kb, u_lut;',
     'uniform float u_mix, u_opacity;',
     'uniform float u_show[' + N_ROWS + '];',
@@ -308,9 +292,9 @@ var WidgetPrecip = (function () {
     if (!g) return false;
     var rows = g.lats.length, cols = g.lons.length;
     lut = lut || buildLut();
-    layer.texture(gl, 0, sh.ra, cols, rows, 'r8'); gl.uniform1i(u.u_ra, 0);
+    layer.texture(gl, 0, sh.a, cols, rows, 'r8'); gl.uniform1i(u.u_ra, 0);
     layer.texture(gl, 1, sh.ka, cols, rows, 'r8'); nearest(gl); gl.uniform1i(u.u_ka, 1);
-    layer.texture(gl, 2, sh.rb, cols, rows, 'r8'); gl.uniform1i(u.u_rb, 2);
+    layer.texture(gl, 2, sh.b, cols, rows, 'r8'); gl.uniform1i(u.u_rb, 2);
     layer.texture(gl, 3, sh.kb, cols, rows, 'r8'); nearest(gl); gl.uniform1i(u.u_kb, 3);
     layer.texture(gl, 4, lut, 256, N_ROWS, 'rgba-nearest'); gl.uniform1i(u.u_lut, 4);
     gl.uniform1fv(u.u_show, showMask());
@@ -321,80 +305,17 @@ var WidgetPrecip = (function () {
     return true;
   }
 
-  function PrecipLayer() {
-    this.map = null;
-    this.grid = null;
-    this.legend = null;
-    this.shown = { grid: null, ra: null, ka: null, rb: null, kb: null, mix: 0, version: 0 };
-    this.gl = new WidgetPressure.GLLayer('lv-precip-gl', FS, draw);
-    this.gl.owner = this;
-  }
-  PrecipLayer.prototype = {
-    addTo: function (map) {
-      this.map = map;
-      map.addLayer(this.gl, WidgetPressure.beforeIsobars(map));
-      _widgetAdapter.setLines('precipitation', true);
-      this.showLegend();
-      // Its place in the stack: the adapter's restack().
-      return this;
-    },
-    remove: function () {
-      this.hideLegend();
-      if (!this.map) return;
-      if (this.map.getLayer(this.gl.id)) this.map.removeLayer(this.gl.id);
-      _widgetAdapter.setLines('precipitation', false);
-      this.map = null;
-    },
-    showFile: function (grid) {
-      var sh = this.shown, two = grid.valuesB && grid.mix > 0;
-      this.grid = grid;
-      sh.grid = grid;
-      sh.ra = grid.values; sh.ka = grid.kind;
-      sh.rb = two ? grid.valuesB : grid.values; sh.kb = two ? grid.kindB : grid.kind;
-      sh.mix = two ? grid.mix : 0;
-      sh.version++;
-      if (this.map) this.map.triggerRepaint();
-    },
-    setFade: function (f) {
-      this.gl.fade = f;
-      if (this.legend) this.legend.style.opacity = String(f);
-      if (this.map) this.map.triggerRepaint();
-    },
-    redraw: function () { if (this.map) this.map.triggerRepaint(); },
-    restyle: function () { WidgetPressure.readdGL(this.map, this.gl, true); },
-    settled: function () { return this.gl.drawn === this.shown.version; },
-    reload: function () {},
-    showLegend: function () { if (this.map) { this.hideLegend(); this.legend = makeLegend(this.map); this.legend.style.opacity = String(this.gl.fade); } },
-    hideLegend: function () { if (this.legend) this.legend.remove(); this.legend = null; }
-  };
+  /** The kinds of a grid point come with its rates (the kind is not mixed). */
+  function pickKinds(sh, grid, two) { sh.ka = grid.kind; sh.kb = two ? grid.kindB : grid.kind; }
 
   // --- legend: bottom left (the temperature's is top center, and both can
   // show; the map's buttons are top left), a bar for each kind shown ---
-  (function () {
-    var css = document.createElement('style');
-    css.textContent = [
-      '.lv-precip-legend { position: absolute; bottom: 8px; left: 8px; z-index: 5; pointer-events: none;',
-      '  display: grid; grid-template-columns: auto 180px auto; column-gap: 6px; row-gap: 1px; padding: 3px 8px 5px; border-radius: 6px;',
-      '  font: 11px var(--font-ui, sans-serif); background: rgba(20, 22, 28, 0.72); color: #eee; }',
-      'body[data-theme="light"] .lv-precip-legend { background: rgba(255, 255, 255, 0.82); color: #222; }',
-      '.lv-precip-legend .lv-temp-ticks { grid-column: 2; grid-row: 1; position: relative; height: 14px; }',
-      '.lv-precip-legend .lv-temp-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }',
-      '.lv-precip-legend canvas { grid-column: 2; width: 180px; height: 6px; border-radius: 2px; align-self: center; }',
-      '.lv-precip-legend .lv-precip-name { grid-column: 1; text-align: right; line-height: 12px; }',
-      '.lv-precip-legend .lv-temp-unit { grid-column: 3; grid-row: 1; align-self: end; }',
-      '@media (max-width: 480px) { .lv-precip-legend { display: none; } }'
-    ].join('\n');
-    document.head.appendChild(css);
-  })();
   var TICKS = [0.1, 1, 2, 5, 10, 20, 50];
-  function makeLegend(map) {
+  function legend() {
     var W = 180, lo = byteOf(0.1), hi = byteOf(64), table = lut = lut || buildLut();
-    var legend = document.createElement('div');
-    legend.className = 'lv-precip-legend';
-    var ticks = TICKS.map(function (v) {
-      return '<span style="left:' + ((byteOf(v) - lo) / (hi - lo) * 100).toFixed(2) + '%">' + localNumber(v, v < 1 ? 1 : 0) + '</span>';
-    });
-    legend.innerHTML = '<div class="lv-temp-ticks">' + ticks.join('') + '</div><span class="lv-temp-unit">mm/h</span>';
+    var el = F.legendBox('lv-precip-legend', 'precipitation', TICKS.map(function (v) {
+      return [(byteOf(v) - lo) / (hi - lo) * 100, localNumber(v, v < 1 ? 1 : 0)];
+    }), 'mm/h');
     var line = 2;
     KINDS.forEach(function (kd, row) {
       if (!isShown(kd)) return;
@@ -402,34 +323,31 @@ var WidgetPrecip = (function () {
       label.className = 'lv-precip-name';
       label.style.gridRow = String(line);
       label.textContent = kd.label;
-      var bar = document.createElement('canvas'), g = bar.getContext('2d');
-      bar.width = W;
-      bar.height = 6;
+      // The faint end drawn opaque: the legend shows the colors, the map the fade.
+      var bar = F.legendBar(W, 6, function (x) {
+        var o = (row * 256 + Math.round(lo + (x + 0.5) / W * (hi - lo))) * 4;
+        return 'rgb(' + table[o] + ',' + table[o + 1] + ',' + table[o + 2] + ')';
+      });
       bar.style.gridRow = String(line++);
       bar.style.opacity = String(opts.opacity);
-      for (var x = 0; x < W; x++) {
-        var o = (row * 256 + Math.round(lo + (x + 0.5) / W * (hi - lo))) * 4;
-        // The faint end drawn opaque: the legend shows the colors, the map the fade.
-        g.fillStyle = 'rgb(' + table[o] + ',' + table[o + 1] + ',' + table[o + 2] + ')';
-        g.fillRect(x, 0, 1, 6);
-      }
-      legend.appendChild(label);
-      legend.appendChild(bar);
+      el.appendChild(label);
+      el.appendChild(bar);
     });
-    (document.getElementById('lv-map') || map.getContainer()).appendChild(legend);
-    return legend;
+    return el;
   }
 
-  ANIM_LAYERS.precipitation = function (m) { return new PrecipLayer().addTo(m); };
+  ANIM_LAYERS.precipitation = function (m) {
+    return new F.FieldLayer({
+      id: 'precipitation', glId: 'lv-precip-gl', fs: FS, draw: draw, pick: pickKinds, legend: legend,
+      before: F.beforeIsobars, opacity: function () { return opts.opacity; }
+    }).addTo(m);
+  };
 
-  function track() { return anim && anim.group.track('precipitation'); }
+  function track() { return F.track('precipitation'); }
   window.precipSetOpacity = function (percent) {
-    opts.opacity = Math.max(0, Math.min(100, percent === "" || percent === null || !isFinite(+percent) ? 80 : +percent)) / 100;
+    opts.opacity = F.percent(percent, 80);
     var t = track();
-    if (t) {
-      t.layer.redraw();
-      if (t.layer.legend) t.layer.legend.querySelectorAll('canvas').forEach(function (c) { c.style.opacity = String(opts.opacity); });
-    }
+    if (t) t.layer.setOpacity(opts.opacity);
     return opts.opacity;
   };
   /** The kinds shown: ids, several at once, or 'all' (nothing read
@@ -453,7 +371,8 @@ var WidgetPrecip = (function () {
     for (var k in o) opts[k] = o[k];
     lut = null;
     var t = track();
-    if (t) { t.layer.gl.textures.clear(); t.layer.redraw(); t.layer.showLegend(); }
+    // A new table is a new texture; the old one goes with the unused ones.
+    if (t) t.layer.recolor();
     return opts;
   };
 
@@ -464,28 +383,18 @@ var WidgetPrecip = (function () {
     c = ((c % (cols - 1)) + (cols - 1)) % (cols - 1);
     return values[Math.max(0, Math.min(g.lats.length - 1, r)) * cols + c];
   }
-  var plainReadout = readoutHtml;
-  readoutHtml = function () {
-    var html = plainReadout(), map = _widgetAdapter.getMap(), t = track();
-    if (!t || !t.layer.grid || !map || !readout.known) return html;
-    var c = map.getContainer().getBoundingClientRect(), x = readout.x - c.left, y = readout.y - c.top;
-    if (x < 0 || y < 0 || x > c.width || y > c.height) return html;
-    var ll = map.unproject([x, y]);
-    if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) return html;
-    var back = map.project(ll);
-    if (Math.abs(back.x - x) > 1 || Math.abs(back.y - y) > 1) return html;
+  var DROP = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M8 2 C8 2 3.5 7.6 3.5 10.2 A4.5 4.5 0 0 0 12.5 10.2 C12.5 7.6 8 2 8 2 Z" fill="currentColor" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/></svg>';
+  addReadout(track, function (t, ll) {
     var g = t.layer.grid, m = g.valuesB && g.mix > 0 ? g.mix : 0;
     var ra = WidgetTemp.sampleScalar(g, g.values, ll.lat, ll.lng);
     var rb = m ? WidgetTemp.sampleScalar(g, g.valuesB, ll.lat, ll.lng) : ra;
-    if (!isFinite(ra) || !isFinite(rb)) return html;
+    if (!isFinite(ra) || !isFinite(rb)) return '';
     var k = ra * (1 - m) >= rb * m ? nearestByte(g, g.kind, ll.lat, ll.lng) : nearestByte(g, g.kindB, ll.lat, ll.lng);
     var v = rateOf(ra + (rb - ra) * m), kd = KINDS[k];
     var dry = !kd || v < opts.minRate || !isShown(kd);
-    var col = colorAt(Math.max(v, 0.1), kd ? kd.stops : RAIN);
-    var drop = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M8 2 C8 2 3.5 7.6 3.5 10.2 A4.5 4.5 0 0 0 12.5 10.2 C12.5 7.6 8 2 8 2 Z" fill="currentColor" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/></svg>';
-    return html + '<div class="lv-readout-row"><span class="lv-readout-icon" style="color:rgb(' + col.join(',') + ')">' + drop +
-      '</span><span>' + (dry ? tr('precipDry', 'Dry') : kd.label + ' ' + localNumber(v, v < 10 ? 1 : 0) + ' mm/h') + '</span></div>';
-  };
+    return readoutRow(DROP, F.css(colorAt(Math.max(v, 0.1), kd ? kd.stops : RAIN)),
+      dry ? tr('precipDry', 'Dry') : kd.label + ' ' + localNumber(v, v < 10 ? 1 : 0) + ' mm/h');
+  });
 
-  return { runOf: runOf, hasFile: hasFile, filesFor: filesFor, combine: combine, rateOf: rateOf, byteOf: byteOf, KINDS: KINDS, opts: opts };
+  return { runOf: runOf, hasFile: hasFile, filesFor: filesFor, combine: combine, rateOf: rateOf, byteOf: byteOf, buildLut: buildLut, KINDS: KINDS, opts: opts };
 })();

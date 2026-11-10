@@ -6,10 +6,11 @@
 // point out of two, so a picture weighs what a temperature one does), so
 // other levels show without reading anything again
 // (window.cloudSetLevels). Mostly see-through, it goes over the colored
-// layers and under the precipitation. It borrows the GL layer of
-// glue-pressure.js. window.cloudSetOpacity, cloudOptions.
+// layers and under the precipitation. A FieldLayer of glue-fields.js.
+// window.cloudSetOpacity, cloudOptions.
 var WidgetClouds = (function () {
   'use strict';
+  var F = WidgetFields;
   var opts = { opacity: 0.7, minCover: 0.1, color: '#f4f6f8' };
 
   // ch: the channel of each level in the picture.
@@ -58,10 +59,7 @@ var WidgetClouds = (function () {
     id: 'clouds', store: 'clouds-0.5', vars: LEVELS.map(function (l) { return l.v; }),
     read: readFile,
     unpack: function (parts) { return parts[0]; },
-    grid: function (m, a, b, mix, tA, tB, at) {
-      if (!b) return { lats: m.lats, lons: m.lons, res: m.res, times: [tA / 1000], values: a };
-      return { lats: m.lats, lons: m.lons, res: m.res, times: [at / 1000], values: a, valuesB: b, mix: mix };
-    }
+    grid: WidgetAnim.latLonGrid
   };
   WidgetAnim.FIELDS.clouds = FIELD;
 
@@ -80,7 +78,7 @@ var WidgetClouds = (function () {
   WidgetAnim.Frames.prototype = Before.prototype;
 
   // --- the GL layer: the levels drawn, in white, each over the others ---
-  var FS = WidgetPressure.FS_HEAD + [
+  var FS = WidgetTemp.TempLayerGL.FS_HEAD + [
     'uniform sampler2D u_a, u_b;',
     'uniform float u_mix, u_opacity, u_min;',
     'uniform vec4 u_pick;',               // 1 on the channels drawn
@@ -96,12 +94,10 @@ var WidgetClouds = (function () {
     '}'
   ].join('\n');
 
-  function hex(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
-
   function draw(gl, u, layer) {
     var o = layer.owner, sh = o.shown, g = sh.grid;
     if (!g) return false;
-    var rows = g.lats.length, cols = g.lons.length, c = hex(opts.color);
+    var rows = g.lats.length, cols = g.lons.length, c = F.hex(opts.color);
     layer.texture(gl, 0, sh.a, cols, rows, 'rgba'); gl.uniform1i(u.u_a, 0);
     layer.texture(gl, 1, sh.b, cols, rows, 'rgba'); gl.uniform1i(u.u_b, 1);
     var pick = [0, 0, 0, 0];
@@ -117,56 +113,15 @@ var WidgetClouds = (function () {
   }
 
   var PRECIP_ID = 'lv-precip-gl';
-  function CloudLayer() {
-    this.map = null;
-    this.grid = null;
-    this.shown = { grid: null, a: null, b: null, mix: 0, version: 0 };
-    this.gl = new WidgetPressure.GLLayer('lv-clouds-gl', FS, draw);
-    this.gl.owner = this;
-  }
   /** What the clouds go just under: the precipitation, else the lines. */
-  function target(map) { return map.getLayer(PRECIP_ID) ? PRECIP_ID : WidgetPressure.beforeIsobars(map); }
-  CloudLayer.prototype = {
-    addTo: function (map) {
-      this.map = map;
-      map.addLayer(this.gl, target(map));
-      _widgetAdapter.setLines('clouds', true);
-      // Its place in the stack: the adapter's restack().
-      return this;
-    },
-    remove: function () {
-      if (!this.map) return;
-      if (this.map.getLayer(this.gl.id)) this.map.removeLayer(this.gl.id);
-      _widgetAdapter.setLines('clouds', false);
-      this.map = null;
-    },
-    showFile: function (grid) {
-      var sh = this.shown, two = grid.valuesB && grid.mix > 0;
-      this.grid = grid;
-      sh.grid = grid;
-      sh.a = grid.values;
-      sh.b = two ? grid.valuesB : grid.values;
-      sh.mix = two ? grid.mix : 0;
-      sh.version++;
-      if (this.map) this.map.triggerRepaint();
-    },
-    setFade: function (f) {
-      this.gl.fade = f;
-      if (this.map) this.map.triggerRepaint();
-    },
-    redraw: function () { if (this.map) this.map.triggerRepaint(); },
-    restyle: function () {
-      if (this.map && !this.map.getLayer(this.gl.id)) this.map.addLayer(this.gl, target(this.map));
-    },
-    settled: function () { return this.gl.drawn === this.shown.version; },
-    reload: function () {}
+  function target(map) { return map.getLayer(PRECIP_ID) ? PRECIP_ID : F.beforeIsobars(map); }
+  ANIM_LAYERS.clouds = function (m) {
+    return new F.FieldLayer({ id: 'clouds', glId: 'lv-clouds-gl', fs: FS, draw: draw, before: target, opacity: function () { return opts.opacity; } }).addTo(m);
   };
 
-  ANIM_LAYERS.clouds = function (m) { return new CloudLayer().addTo(m); };
-
-  function track() { return anim && anim.group.track('clouds'); }
+  function track() { return F.track('clouds'); }
   window.cloudSetOpacity = function (percent) {
-    opts.opacity = Math.max(0, Math.min(100, percent === "" || percent === null || !isFinite(+percent) ? 70 : +percent)) / 100;
+    opts.opacity = F.percent(percent, 70);
     var t = track();
     if (t) t.layer.redraw();
     return opts.opacity;
@@ -201,27 +156,16 @@ var WidgetClouds = (function () {
     var bottom = data[k + cols * 4] * (1 - fc) + data[k + cols * 4 + 4] * fc;
     return (top * (1 - fr) + bottom * fr) / 2.55;
   }
-  var plainReadout = readoutHtml;
-  readoutHtml = function () {
-    var html = plainReadout(), map = _widgetAdapter.getMap(), t = track();
-    if (!t || !t.layer.grid || !map || !readout.known) return html;
-    var c = map.getContainer().getBoundingClientRect(), x = readout.x - c.left, y = readout.y - c.top;
-    if (x < 0 || y < 0 || x > c.width || y > c.height) return html;
-    var ll = map.unproject([x, y]);
-    if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) return html;
-    var back = map.project(ll);
-    if (Math.abs(back.x - x) > 1 || Math.abs(back.y - y) > 1) return html;
+  var CLOUD = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M4.5 12.5 A3 3 0 0 1 4.2 6.6 A3.8 3.8 0 0 1 11.4 5.8 A3.4 3.4 0 0 1 11.8 12.5 Z" fill="currentColor" stroke="rgba(0,0,0,0.35)" stroke-width="0.8"/></svg>';
+  addReadout(track, function (t, ll) {
     var g = t.layer.grid, m = g.valuesB && g.mix > 0 ? g.mix : 0;
     var parts = drawn().map(function (l) {
       var v = sampleCh(g, g.values, l.ch, ll.lat, ll.lng);
       if (m) v += (sampleCh(g, g.valuesB, l.ch, ll.lat, ll.lng) - v) * m;
       return l.label.toLowerCase() + ' ' + Math.round(v) + ' %';
     });
-    if (!parts.length) return html;
-    var cloud = '<svg viewBox="0 0 16 16" width="20" height="20"><path d="M4.5 12.5 A3 3 0 0 1 4.2 6.6 A3.8 3.8 0 0 1 11.4 5.8 A3.4 3.4 0 0 1 11.8 12.5 Z" fill="currentColor" stroke="rgba(0,0,0,0.35)" stroke-width="0.8"/></svg>';
-    return html + '<div class="lv-readout-row"><span class="lv-readout-icon" style="color:' + opts.color + '">' + cloud +
-      '</span><span>Clouds: ' + parts.join(', ') + '</span></div>';
-  };
+    return parts.length ? readoutRow(CLOUD, opts.color, 'Clouds: ' + parts.join(', ')) : '';
+  });
 
   return { LEVELS: LEVELS, readFile: readFile, opts: opts };
 })();
