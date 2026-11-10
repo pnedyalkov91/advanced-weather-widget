@@ -662,7 +662,7 @@ Item {
     readonly property var isoStepChoices: [[2, "2"], [4, "4"], [8, "8"]]
     readonly property var isoTextChoices: [[11, i18nc("text size", "Small")], [13, i18nc("text size", "Medium")], [16, i18nc("text size", "Large")]]
     // "" follows the theme (white on dark, near black on light).
-    readonly property var isoColorChoices: [["", i18nc("color", "Automatic")], ["#ffffff", i18nc("color", "White")], ["#1a1a24", i18nc("color", "Black")], ["#4aa3ff", i18nc("color", "Blue")], ["#ffd23f", i18nc("color", "Yellow")], ["#ff6b6b", i18nc("color", "Red")], ["#7ee07e", i18nc("color", "Green")]]
+    readonly property var isoColorChoices: [["", i18nc("color", "Theme")], ["#ffffff", i18nc("color", "White")], ["#1a1a24", i18nc("color", "Black")], ["#4aa3ff", i18nc("color", "Blue")], ["#ffd23f", i18nc("color", "Yellow")], ["#ff6b6b", i18nc("color", "Red")], ["#7ee07e", i18nc("color", "Green")]]
     readonly property var isobars: {
         var o = {};
         try {

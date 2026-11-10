@@ -45,7 +45,10 @@ var WidgetPressure = (function () {
     } else rgb = currentTheme() === 'dark' ? [1, 1, 1] : [0.1, 0.1, 0.14];
     var light = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2] > 0.5;
     var css = 'rgb(' + rgb.map(function (c) { return Math.round(c * 255); }).join(',') + ')';
-    return { rgb: rgb, css: css, halo: light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)' };
+    // On a map of the same lightness the line gets an edge of the other.
+    var close = light === (currentTheme() !== 'dark');
+    return { rgb: rgb, css: css, halo: light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)',
+      edge: close ? (light ? [0, 0, 0, 0.6] : [1, 1, 1, 0.55]) : [0, 0, 0, 0] };
   }
   function isoLayer() { var t = anim && anim.group.track('isobars'); return t ? t.layer : null; }
   window.isoSetOpacity = function (percent) {
@@ -739,7 +742,7 @@ var WidgetPressure = (function () {
   var PRES_FS = FS_HEAD + [
     'uniform sampler2D u_a, u_b, u_lut;',
     'uniform float u_mix, u_fill, u_lines, u_opacity, u_step, u_dpr, u_lutMin, u_lutSpan, u_width;',
-    'uniform vec4 u_ink;',
+    'uniform vec4 u_ink, u_halo;',
     'void main() {',
     '  float lat; vec2 uv = gridUv(lat);',
     '  float p = 1000.0 + mix(texture(u_a, uv).r, texture(u_b, uv).r, u_mix);',
@@ -757,7 +760,10 @@ var WidgetPressure = (function () {
     '    bool major = m20 < 0.5 || m20 > 19.5, minor = m4 > 0.5 && m4 < 3.5;',
     '    float width = (major ? 1.3 : (minor ? 0.5 : 0.75)) * u_dpr * u_width;',
     '    float a = clamp(width * 0.5 + 0.5 - dist, 0.0, 1.0) * (minor ? 0.6 : 1.0) * u_ink.a;',
-    '    col = vec4(u_ink.rgb * a, a) + col * (1.0 - a);',
+    // A thin edge of u_halo around the line, for an ink close to the map.
+    '    float h = clamp(width * 0.5 + 1.5 - dist, 0.0, 1.0) * (minor ? 0.6 : 1.0) * u_ink.a * u_halo.a;',
+    '    vec4 ln = vec4(u_ink.rgb * a, a) + vec4(u_halo.rgb * h, h) * (1.0 - a);',
+    '    col = ln + col * (1.0 - ln.a);',
     '  }',
     '  fragColor = col;',
     '}'
@@ -1039,8 +1045,9 @@ var WidgetPressure = (function () {
       gl.uniform1f(u.u_lutMin, LUT_MIN);
       gl.uniform1f(u.u_lutSpan, LUT_N * LUT_STEP);
       if (u.u_width) gl.uniform1f(u.u_width, iso.width);
-      var ink = isoInk().rgb;
-      gl.uniform4f(u.u_ink, ink[0], ink[1], ink[2], mode === 'lines' ? iso.opacity : 0.8);
+      var ink = isoInk(), e = ink.edge;
+      gl.uniform4f(u.u_ink, ink.rgb[0], ink.rgb[1], ink.rgb[2], mode === 'lines' ? iso.opacity : 0.8);
+      if (u.u_halo) gl.uniform4f(u.u_halo, e[0], e[1], e[2], e[3]);
       layer.drawn = glShared.version;
       return true;
     };
