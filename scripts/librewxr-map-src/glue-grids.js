@@ -41,24 +41,34 @@ var WidgetGrids = (function () {
     return { kind: 'laea', lon0: lon0 * DEG, s1: Math.sin(f), c1: Math.cos(f) };
   }
 
-  function forward(proj, lat, lon) {
+  /** forward() into out.x and out.y, without making an object: the wind
+      projects every particle on every frame. */
+  function forwardInto(proj, lat, lon, out) {
     var f = lat * DEG, l = lon * DEG;
     if (proj.kind === 'rotated') {
       var x = Math.cos(l) * Math.cos(f), y = Math.sin(l) * Math.cos(f), z = Math.sin(f);
       var x2 = proj.ct * proj.cp * x + proj.ct * proj.sp * y + proj.st * z;
       var y2 = -proj.sp * x + proj.cp * y;
       var z2 = -proj.st * proj.cp * x - proj.st * proj.sp * y + proj.ct * z;
-      return { x: -Math.atan2(y2, x2) / DEG, y: -Math.asin(Math.max(-1, Math.min(1, z2))) / DEG };
+      out.x = -Math.atan2(y2, x2) / DEG;
+      out.y = -Math.asin(Math.max(-1, Math.min(1, z2))) / DEG;
+      return out;
     }
     var dl = wrap180(lon - proj.lon0 / DEG) * DEG;
     if (proj.kind === 'lcc') {
       var rho = proj.F / Math.pow(Math.tan(Math.PI / 4 + f / 2), proj.n), th = proj.n * dl;
-      return { x: R * rho * Math.sin(th), y: R * (proj.rho0 - rho * Math.cos(th)) };
+      out.x = R * rho * Math.sin(th);
+      out.y = R * (proj.rho0 - rho * Math.cos(th));
+      return out;
     }
     var cf = Math.cos(f), sf = Math.sin(f), cd = Math.cos(dl);
     var k = Math.sqrt(2 / (1 + proj.s1 * sf + proj.c1 * cf * cd));
-    return { x: R * k * cf * Math.sin(dl), y: R * k * (proj.c1 * sf - proj.s1 * cf * cd) };
+    out.x = R * k * cf * Math.sin(dl);
+    out.y = R * k * (proj.c1 * sf - proj.s1 * cf * cd);
+    return out;
   }
+
+  function forward(proj, lat, lon) { return forwardInto(proj, lat, lon, { x: 0, y: 0 }); }
 
   function inverse(proj, x, y) {
     if (proj.kind === 'rotated') {
@@ -106,16 +116,45 @@ var WidgetGrids = (function () {
     return { id: o.id || null, kind: o.proj.kind, nx: o.nx, ny: o.ny, x0: x0, y0: y0, dx: dx, dy: dy, proj: o.proj, res: o.proj.kind === 'rotated' ? step : step / KM_PER_DEG };
   }
 
-  /** Where lat/lon falls in grid d: { col, row }, fractional; NaN for both
-      outside it. */
-  function index(d, lat, lon) {
+  /** A place in a grid, filled by cellInto() (one per caller, used again
+      and again: no object made per point). */
+  function Cell() {
+    this.x = 0; this.y = 0; this.col = 0; this.row = 0;
+    this.k = 0; this.nx = 0; this.fr = 0; this.fc = 0;
+  }
+
+  /* The latitudes and longitudes a projected grid spans, a step wider each
+     way (bounds() samples its edges), worked out once per grid: a point
+     outside is outside without projecting it. The wind asks for every
+     particle in every finer model in view, most of them far from it. */
+  var boxes = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function boxOf(d) {
+    var key = d.full || d, b = boxes && boxes.get(key);
+    if (b) return b;
+    var r = bounds(key), m = 2 * (key.res || 0.1);
+    b = { south: r.south - m, north: r.north + m, west: r.west - m, east: r.east + m };
+    // Across the antimeridian bounds() spans every longitude: no test then.
+    b.allLons = b.east - b.west >= 360 - 2 * m;
+    if (boxes) boxes.set(key, b);
+    return b;
+  }
+
+  /** Where lat/lon falls in grid d into out.col and out.row (fractional);
+      false outside it. */
+  function locate(d, lat, lon, out) {
     var x, y;
     if (d.kind === 'latlon') {
       x = lon;
       y = lat;
     } else {
-      var p = forward(d.proj, lat, lon);
-      x = p.x; y = p.y;
+      var b = boxOf(d);
+      if (lat < b.south || lat > b.north) return false;
+      if (!b.allLons) {
+        var wl = wrap180(lon);
+        if ((wl < b.west || wl > b.east) && (wl + 360 < b.west || wl + 360 > b.east) && (wl - 360 < b.west || wl - 360 > b.east)) return false;
+      }
+      forwardInto(d.proj, lat, lon, out);
+      x = out.x; y = out.y;
     }
     // Longitudes (plain or rotated) on the copy of the world the grid is
     // on; their steps can go west (dx < 0).
@@ -124,8 +163,17 @@ var WidgetGrids = (function () {
       x = mid + wrap180(x - mid);
     }
     var col = (x - d.x0) / d.dx, row = (y - d.y0) / d.dy, e = 1e-9;
-    if (!(col >= -e && col <= d.nx - 1 + e && row >= -e && row <= d.ny - 1 + e)) return { col: NaN, row: NaN };
-    return { col: Math.max(0, Math.min(d.nx - 1, col)), row: Math.max(0, Math.min(d.ny - 1, row)) };
+    if (!(col >= -e && col <= d.nx - 1 + e && row >= -e && row <= d.ny - 1 + e)) return false;
+    out.col = Math.max(0, Math.min(d.nx - 1, col));
+    out.row = Math.max(0, Math.min(d.ny - 1, row));
+    return true;
+  }
+
+  /** Where lat/lon falls in grid d: { col, row }, fractional; NaN for both
+      outside it. */
+  function index(d, lat, lon) {
+    var c = new Cell();
+    return locate(d, lat, lon, c) ? { col: c.col, row: c.row } : { col: NaN, row: NaN };
   }
 
   /** Latitude and longitude of point (col, row) of grid d. */
@@ -152,19 +200,28 @@ var WidgetGrids = (function () {
 
   /** Value of a field of grid d (values row by row, south row first) at
       lat/lon: bilinear; NaN outside the grid or next to a missing value. */
+  var scratch = new Cell();
   function sample(d, values, lat, lon) {
-    var c = cell(d, lat, lon);
-    return c ? valueAt(values, c) : NaN;
+    return cellInto(d, lat, lon, scratch) ? valueAt(values, scratch) : NaN;
   }
 
-  /** The cell of grid d lat/lon falls in, { k (its south-west point), nx,
-      fr, fc }, for valueAt(); null outside the grid. Found once, it serves
-      every field of the grid at that point. */
+  /** The cell of grid d lat/lon falls in, into c (a Cell): k (its
+      south-west point), nx, fr, fc, for valueAt(); false outside the grid.
+      Found once, it serves every field of the grid at that point. */
+  function cellInto(d, lat, lon, c) {
+    if (!locate(d, lat, lon, c)) return false;
+    var nx = d.nx, i0 = Math.min(d.ny - 2, Math.floor(c.row)), j0 = Math.min(nx - 2, Math.floor(c.col));
+    c.k = i0 * nx + j0;
+    c.nx = nx;
+    c.fr = c.row - i0;
+    c.fc = c.col - j0;
+    return true;
+  }
+
+  /** cellInto() as a new object, null outside the grid. */
   function cell(d, lat, lon) {
-    var p = index(d, lat, lon);
-    if (!(p.col >= 0)) return null;
-    var nx = d.nx, i0 = Math.min(d.ny - 2, Math.floor(p.row)), j0 = Math.min(nx - 2, Math.floor(p.col));
-    return { k: i0 * nx + j0, nx: nx, fr: p.row - i0, fc: p.col - j0 };
+    var c = new Cell();
+    return cellInto(d, lat, lon, c) ? c : null;
   }
 
   /** Bilinear value of a field in cell c; NaN next to a missing value. */
@@ -238,8 +295,9 @@ var WidgetGrids = (function () {
   }
 
   return {
-    R: R, thin: thin, thinValues: thinValues, rotated: rotated, lcc: lcc, laea: laea, forward: forward, inverse: inverse,
-    latlon: latlon, projected: projected, index: index, lonLatAt: lonLatAt, bounds: bounds, sample: sample, cell: cell, valueAt: valueAt,
+    R: R, thin: thin, thinValues: thinValues, rotated: rotated, lcc: lcc, laea: laea, forward: forward, forwardInto: forwardInto, inverse: inverse,
+    latlon: latlon, projected: projected, index: index, lonLatAt: lonLatAt, bounds: bounds, sample: sample,
+    Cell: Cell, cell: cell, cellInto: cellInto, valueAt: valueAt,
     MODELS: Object.keys(MODELS), of: of
   };
 })();

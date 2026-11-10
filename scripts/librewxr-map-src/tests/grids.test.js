@@ -127,3 +127,31 @@ test('cell and valueAt: one projection for several fields at the same point', ()
   assert.equal(G.valueAt(a, c), G.sample(d, a, 0.5, 0.5));
   assert.equal(G.cell(d, 5, 5), null);
 });
+
+test('index: every model finds the points along its edges, thinned too', () => {
+  for (const id of G.MODELS) {
+    for (const f of [1, 2]) {
+      const d = G.thin(G.of(id), f), last = [d.nx - 1, d.ny - 1];
+      const pts = [[0, 0], [last[0], 0], [0, last[1]], last, [last[0] >> 1, 0], [last[0] >> 1, last[1]], [0, last[1] >> 1], [last[0], last[1] >> 1]];
+      for (const [c, r] of pts) {
+        const ll = G.lonLatAt(d, c, r), p = G.index(d, ll.lat, ll.lon);
+        near(p.col, c, 1e-3, id + '/' + f + ' col');
+        near(p.row, r, 1e-3, id + '/' + f + ' row');
+      }
+    }
+  }
+});
+
+test('index: a point far from a projected grid is outside it, on every copy of the world', () => {
+  for (const id of ['ncep_hrrr_conus', 'metno_nordic_pp', 'ukmo_uk_deterministic_2km', 'meteoswiss_icon_ch1', 'cmc_gem_hrdps']) {
+    for (const [lat, lon] of [[-40, 150], [10, 60], [-80, -60], [46, 727]]) {
+      const ll = G.lonLatAt(G.of(id), 0, 0);
+      if (Math.abs(ll.lat - lat) < 20) continue;
+      assert.ok(Number.isNaN(G.index(G.of(id), lat, lon).col), id + ' ' + lat + ',' + lon);
+    }
+  }
+  // The same place a turn of the world away is the same point.
+  const d = G.of('meteoswiss_icon_ch1'), a = G.index(d, 46.5, 7.5), b = G.index(d, 46.5, 7.5 + 720);
+  near(a.col, b.col, 1e-6, 'col');
+  near(a.row, b.row, 1e-6, 'row');
+});

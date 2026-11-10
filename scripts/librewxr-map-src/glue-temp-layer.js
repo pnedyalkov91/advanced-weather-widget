@@ -32,11 +32,15 @@ WidgetTemp.TempLayer = (function () {
     return latOfMercY(Math.PI * (1 - 2 * row / (TILE * Math.pow(2, z))));
   }
 
-  /** A field's value at lat/lon: on a regional model's own grid (desc,
-      see WidgetGrids), or on a grid of lats and lons. */
-  function sampleField(grid, values, lat, lon) {
-    return grid.desc ? WidgetGrids.sample(grid.desc, values, lat, lon) : WidgetTemp.sampleScalar(grid, values, lat, lon);
+  /** The cell of a field's grid at lat/lon, into c: on a regional model's
+      own grid (desc, see WidgetGrids), or on a grid of lats and lons;
+      false outside it. Found once for the field's values, second hour,
+      heights and weights (one projection instead of four). */
+  var CELL = { x: 0, y: 0, col: 0, row: 0, k: 0, nx: 0, fr: 0, fc: 0 };
+  function fieldCell(grid, lat, lon, c) {
+    return grid.desc ? WidgetGrids.cellInto(grid.desc, lat, lon, c) : WidgetTemp.scalarCell(grid, lat, lon, c);
   }
+  var at = WidgetTemp.cellValue;
 
   /** The temperature and the height it is valid at, at lat/lon: from the
       first field that has it. A field between two times (the animation)
@@ -48,12 +52,16 @@ WidgetTemp.TempLayer = (function () {
       height when noZ. */
   function readFields(fields, lat, lon, out, noZ, from) {
     for (var i = from || 0; i < fields.length; i++) {
-      var f = fields[i], t = sampleField(f.grid, f.values, lat, lon);
-      if (f.valuesB && f.mix > 0) t += (sampleField(f.grid, f.valuesB, lat, lon) - t) * f.mix;
+      // The fields after this one (the recursion below) take the same
+      // cell object: this one's values are read before.
+      var f = fields[i];
+      if (!fieldCell(f.grid, lat, lon, CELL)) continue;
+      var t = at(f.values, CELL);
+      if (f.valuesB && f.mix > 0) t += (at(f.valuesB, CELL) - t) * f.mix;
       if (!isFinite(t)) continue;
-      var z = f.elev && !noZ ? sampleField(f.grid, f.elev, lat, lon) : NaN;
+      var z = f.elev && !noZ ? at(f.elev, CELL) : NaN;
       if (f.weights) {
-        var w = sampleField(f.grid, f.weights, lat, lon) * (f.fade == null ? 1 : f.fade);
+        var w = at(f.weights, CELL) * (f.fade == null ? 1 : f.fade);
         if (!(w > 0)) continue;
         if (w < 1) {
           readFields(fields, lat, lon, out, noZ, i + 1);
@@ -89,23 +97,43 @@ WidgetTemp.TempLayer = (function () {
     return out;
   }
 
+  /* For each column of a tile drawn at step 1, 2 or 4: its lattice column
+     and its share of the next one, worked out once. */
+  var COLUMNS = {};
+  function columnsOf(step) {
+    if (COLUMNS[step]) return COLUMNS[step];
+    var size = TILE / step, half = step >> 1, lj = new Int32Array(size), fc = new Float64Array(size);
+    for (var c = 0; c < size; c++) {
+      var col = c * step + half;
+      lj[c] = Math.floor(col / LATTICE);
+      fc[c] = (col - lj[c] * LATTICE) / LATTICE;
+    }
+    return (COLUMNS[step] = { lj: lj, fc: fc });
+  }
+  var ROW = new Float64Array(TILE / LATTICE + 1);   // a lattice row blended to one pixel row
+
   /** Rows r0 to r1 of a tile job into its pixels (RGBA): the fields
       blended between the lattice nodes, plus the relief offset of each
       pixel when there is elevation. A job of a lower resolution (step 2 or
-      4: 128 or 64 px a side) reads every step-th pixel of the full tile. */
+      4: 128 or 64 px a side) reads every step-th pixel of the full tile.
+      Each pixel row first blends the two lattice rows around it, then
+      each pixel the two nodes of that blend around it: the bilinear value,
+      two reads a pixel instead of four. */
   function drawRows(job, r0, r1) {
-    var px = job.px, lut = job.lut, lt = job.lattice, n = TILE / LATTICE + 1, off = job.offsets;
-    var step = job.step || 1, size = TILE / step, half = step >> 1;
+    var px = job.px, lut = job.lut, t = job.lattice.t, n = TILE / LATTICE + 1, off = job.offsets, shift = job.shift;
+    var step = job.step || 1, size = TILE / step, half = step >> 1, cols = columnsOf(step), LJ = cols.lj, FC = cols.fc;
+    var lutMin = WidgetTemp.LUT_MIN, lutStep = WidgetTemp.LUT_STEP, lutLast = WidgetTemp.LUT_SIZE - 1;
     for (var r = r0; r < r1; r++) {
-      var row = r * step + half, li = Math.floor(row / LATTICE), fr = (row - li * LATTICE) / LATTICE;
-      for (var c = 0; c < size; c++) {
-        var col = c * step + half, lj = Math.floor(col / LATTICE), fc = (col - lj * LATTICE) / LATTICE;
-        var k = li * n + lj, o = (r * size + c) * 4;
-        var t00 = lt.t[k], t01 = lt.t[k + 1], t10 = lt.t[k + n], t11 = lt.t[k + n + 1];
-        var t = (t00 * (1 - fc) + t01 * fc) * (1 - fr) + (t10 * (1 - fc) + t11 * fc) * fr;
-        if (!isFinite(t)) { px[o + 3] = 0; continue; }
-        if (off) t += off[row * TILE + col];
-        var i = WidgetTemp.lutIndex(t + job.shift) * 3;
+      var row = r * step + half, li = Math.floor(row / LATTICE), fr = (row - li * LATTICE) / LATTICE, top = li * n;
+      for (var j = 0; j < n; j++) ROW[j] = t[top + j] * (1 - fr) + t[top + n + j] * fr;
+      var o = r * size * 4, offRow = row * TILE + half;
+      for (var c = 0; c < size; c++, o += 4) {
+        var lj = LJ[c], a = ROW[lj], v = a + (ROW[lj + 1] - a) * FC[c];
+        if (!isFinite(v)) { px[o + 3] = 0; continue; }
+        if (off) v += off[offRow + c * step];
+        // WidgetTemp.lutIndex(v + shift), inline: the same sum, rounding and bounds.
+        var i = Math.round((v + shift - lutMin) / lutStep);
+        i = (i < 0 ? 0 : i > lutLast ? lutLast : i) * 3;
         px[o] = lut[i]; px[o + 1] = lut[i + 1]; px[o + 2] = lut[i + 2]; px[o + 3] = 255;
       }
     }

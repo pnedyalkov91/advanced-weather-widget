@@ -144,19 +144,38 @@ var WidgetTemp = (function () {
   /** Value at lat/lon of a grid of lats (north to south) and lons (west to
       east), values row by row: bilinear, on whichever copy of the world the
       longitude is. NaN outside the grid or next to a missing value. */
+  var scratch = { k: 0, nx: 0, fr: 0, fc: 0 };
   function sampleScalar(grid, values, lat, lon) {
+    return scalarCell(grid, lat, lon, scratch) ? cellValue(values, scratch) : NaN;
+  }
+
+  /** The cell of such a grid lat/lon falls in, into c: k (its north-west
+      point), nx (the row's length), fr and fc (the share of the next row
+      and column); false outside the grid. Found once, it serves every
+      field of the grid at that point (cellValue, or WidgetGrids.valueAt:
+      the same sum). */
+  function scalarCell(grid, lat, lon, c) {
     var lats = grid.lats, lons = grid.lons, rows = lats.length, cols = lons.length;
     var north = lats[0], south = lats[rows - 1], west = lons[0], east = lons[cols - 1];
     if (lon < west) lon += 360 * Math.ceil((west - lon) / 360);
     else if (lon > east) lon -= 360 * Math.ceil((lon - east) / 360);
-    if (lat > north || lat < south || lon < west || lon > east) return NaN;
+    if (lat > north || lat < south || lon < west || lon > east) return false;
     var r = (north - lat) / (north - south) * (rows - 1);
-    var c = (lon - west) / (east - west) * (cols - 1);
-    var i0 = Math.min(rows - 2, Math.floor(r)), j0 = Math.min(cols - 2, Math.floor(c));
-    var fr = r - i0, fc = c - j0, k = i0 * cols + j0;
+    var x = (lon - west) / (east - west) * (cols - 1);
+    var i0 = Math.min(rows - 2, Math.floor(r)), j0 = Math.min(cols - 2, Math.floor(x));
+    c.k = i0 * cols + j0;
+    c.nx = cols;
+    c.fr = r - i0;
+    c.fc = x - j0;
+    return true;
+  }
+
+  /** Bilinear value of a field in cell c; NaN next to a missing value. */
+  function cellValue(values, c) {
+    var k = c.k, nx = c.nx, fc = c.fc;
     var top = values[k] * (1 - fc) + values[k + 1] * fc;
-    var bottom = values[k + cols] * (1 - fc) + values[k + cols + 1] * fc;
-    return top * (1 - fr) + bottom * fr;
+    var bottom = values[k + nx] * (1 - fc) + values[k + nx + 1] * fc;
+    return top * (1 - c.fr) + bottom * c.fr;
   }
 
   /** How far each point of a grid is inside its data, from 0 on the
@@ -217,7 +236,8 @@ var WidgetTemp = (function () {
   }
 
   return {
-    LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar, edgeWeights: edgeWeights, edgeNoise: edgeNoise,
+    LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar, scalarCell: scalarCell, cellValue: cellValue,
+    edgeWeights: edgeWeights, edgeNoise: edgeNoise,
     DEFAULT_STOPS: DEFAULT_STOPS, LUT_MIN: LUT_MIN, LUT_STEP: LUT_STEP, LUT_SIZE: LUT_SIZE,
     parsePalette: parsePalette, paletteFromParam: paletteFromParam, formatPalette: formatPalette, colorAt: colorAt,
     bandCenterC: bandCenterC, lutIndex: lutIndex, buildLut: buildLut, legendTicks: legendTicks,
