@@ -473,18 +473,27 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
   // The stack of the weather layers, set by the widget: its ids top first
   // (the wind, a canvas over the map, is not in it). The night stays at
-  // the bottom, the coasts and borders on top, the isobars right over the
-  // highest of the fields (the other ids but the radar and the satellite),
-  // so the lines read over the colors. restack() puts every layer of the
-  // map at its place, with as few moves as it can; a layer added anywhere
-  // goes back to its place on the next 'styledata'.
+  // the bottom, the coasts and borders on top. restack() puts every layer
+  // of the map at its place, with as few moves as it can; a layer added
+  // anywhere goes back to its place on the next 'styledata'.
   var STACK_DEFAULT = ['radar', 'satellite', 'precipitation', 'clouds',
-    'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
+    'temperature', 'pressure', 'isobars', 'humidity', 'dewpoint', 'airquality'];
   var stackOrder = STACK_DEFAULT.slice(), restacking = false;
+  /** The ids of order known, once each; a missing one right after its
+      neighbour above it in the default (an order saved before it). */
   function normStackOrder(order) {
     var out = [];
-    (order || []).concat(STACK_DEFAULT).forEach(function (g) {
+    (order || []).forEach(function (g) {
       if (STACK_DEFAULT.indexOf(g) >= 0 && out.indexOf(g) < 0) out.push(g);
+    });
+    STACK_DEFAULT.forEach(function (g, i) {
+      if (out.indexOf(g) >= 0) return;
+      var at = 0;
+      for (var j = i - 1; j >= 0; j--) {
+        var k = out.indexOf(STACK_DEFAULT[j]);
+        if (k >= 0) { at = k + 1; break; }
+      }
+      out.splice(at, 0, g);
     });
     return out;
   }
@@ -511,14 +520,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   }
   function restack() {
     if (!map || restacking || swapInProgress) return;
-    var n = stackOrder.length, ids = layersOrder(), known = [], fieldTop = -1;
-    stackOrder.forEach(function (g, i) {
-      if (g !== 'radar' && g !== 'satellite') fieldTop = Math.max(fieldTop, n - 1 - i);
-    });
+    var n = stackOrder.length, ids = layersOrder(), known = [];
     ids.forEach(function (id, pos) {
       var g = stackGroup(id);
       if (!g) return;
-      var level = g[0] === 'night' ? -1 : g[0] === 'lines' ? n : g[0] === 'isobars' ? fieldTop + 0.5 : n - 1 - stackOrder.indexOf(g[0]);
+      var level = g[0] === 'night' ? -1 : g[0] === 'lines' ? n : n - 1 - stackOrder.indexOf(g[0]);
       known.push({ id: id, level: level, sub: g[1], pos: pos });
     });
     var want = known.slice().sort(function (a, b) { return a.level - b.level || a.sub - b.sub || a.pos - b.pos; });

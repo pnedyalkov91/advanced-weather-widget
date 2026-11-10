@@ -131,27 +131,28 @@ function stackMap() {
 }
 const weather = (map) => map.getLayersOrder().filter((id) => id.indexOf('lv-') === 0);
 
-test('the weather layers stack in the default order, bottom to top, the lines over all', () => {
+test('the weather layers stack in the default order, bottom to top, the isobars under the pressure, the lines over all', () => {
   const { adapter, map } = stackMap();
   adapter.restack();
   assert.equal(map.getLayersOrder()[0], 'base-water');
-  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl',
-    'lv-iso-gl', 'lv-iso-label', 'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-lines']);
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-iso-gl', 'lv-iso-label', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl',
+    'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-lines']);
 });
 
-test('an order from the widget: first on top; the radar frames keep their own order; the isobars over the highest field', () => {
+test('an order from the widget: first on top; the radar frames keep their own order; a missing layer after its neighbour of the default', () => {
   const { adapter, map } = stackMap();
   adapter.setLayerOrder(['temperature', 'clouds', 'radar', 'nonsense', 'isobars', 'clouds']);
-  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-precip-gl',
-    'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-clouds-gl', 'lv-temp-gl',
-    'lv-iso-gl', 'lv-iso-label', 'lv-lines']);
+  // temperature, pressure, clouds, radar, satellite, precipitation, isobars, ...
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-iso-gl', 'lv-iso-label', 'lv-precip-gl',
+    'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-clouds-gl', 'lv-pres-gl', 'lv-temp-gl',
+    'lv-lines']);
 });
 
-test('the isobars stay right over the highest field, under a radar put over the fields', () => {
+test('the isobars take their place in the stack: over the colors when put on top', () => {
   const { adapter, map } = stackMap();
-  adapter.setLayerOrder(['radar', 'airquality', 'satellite']);
-  assert.deepEqual(weather(map), ['lv-night', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl', 'lv-anim-lv-layer-sat-1',
-    'lv-aq-gl-pm10', 'lv-iso-gl', 'lv-iso-label', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-lines']);
+  adapter.setLayerOrder(['isobars', 'radar', 'satellite', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality']);
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl', 'lv-anim-lv-layer-sat-1',
+    'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-iso-gl', 'lv-iso-label', 'lv-lines']);
 });
 
 test('a stack already in order moves nothing, a layer added on top goes back to its place', () => {
@@ -162,7 +163,7 @@ test('a stack already in order moves nothing, a layer added on top goes back to 
   assert.equal(map.moves, 0);
   map.addLayer({ id: 'lv-humidity-gl' });
   map.fire('styledata');
-  assert.deepEqual(weather(map).slice(0, 4), ['lv-night', 'lv-aq-gl-pm10', 'lv-humidity-gl', 'lv-pres-gl']);
+  assert.deepEqual(weather(map).slice(0, 4), ['lv-night', 'lv-aq-gl-pm10', 'lv-humidity-gl', 'lv-iso-gl']);
 });
 
 test('the place marker has no shadow', () => {

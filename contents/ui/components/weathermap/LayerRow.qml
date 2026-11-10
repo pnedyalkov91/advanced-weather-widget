@@ -8,8 +8,9 @@ import org.kde.kirigami as Kirigami
 // (the default content) and the switch of its color legend. The whole line
 // is greyed while the layer is off. customGear: the wheel only says
 // gearClicked() (the radar opens its own menu). compact (the column
-// folded): the icon alone, its opacity a bar under it, set with the wheel
-// over it.
+// folded): the icon alone, its opacity a bar under it, set with Shift and
+// the wheel over it. A right click on the icon opens the options too
+// (folded, at the left of the icon).
 Item {
     id: row
     property string iconName           // in contents/icons/weathermap
@@ -36,6 +37,7 @@ Item {
     default property alias options: optionsColumn.data
     readonly property alias optionsPopup: popup
     readonly property alias gearItem: gear
+    readonly property alias iconItem: iconBox
     signal toggled(bool on)
     signal opacityPicked(int pct)
     signal legendToggled(bool on)
@@ -46,6 +48,15 @@ Item {
     readonly property color accent: Kirigami.Theme.highlightColor
     readonly property color offColor: Kirigami.Theme.disabledTextColor
     function tint(a) { return Qt.rgba(fg.r, fg.g, fg.b, a); }
+    // The options, from the wheel or a right click on the icon.
+    function openOptions() {
+        if (!hasOptions)
+            return;
+        if (customGear)
+            gearClicked();
+        else
+            popup.visible ? popup.close() : popup.open();
+    }
 
     implicitWidth: 169
     implicitHeight: compact ? 38 : 34
@@ -78,14 +89,20 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: {
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: function (mouse) {
+                if (mouse.button === Qt.RightButton) {
+                    clickWait.stop();
+                    row.openOptions();
+                    return;
+                }
                 if (row.soloable)
                     clickWait.restart();
                 else
                     row.toggled(!row.checked);
             }
             onDoubleClicked: function (mouse) {
-                if (!row.soloable)
+                if (!row.soloable || mouse.button !== Qt.LeftButton)
                     return;
                 clickWait.stop();
                 row.soloRequested((mouse.modifiers & Qt.ControlModifier) !== 0);
@@ -128,8 +145,11 @@ Item {
         }
         QQC2.ToolTip.text: row.compact && row.opacityValue >= 0
             ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (Shift + wheel)", row.opacityValue) : "")
+                + (row.hasOptions ? "<br>" + i18n("Options: right click") : "")
+            : row.compact
+            ? "<b>" + row.title + "</b>" + row._keyText + (row.hasOptions ? "<br>" + i18n("Options: right click") : "")
             : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
-        QQC2.ToolTip.visible: iconArea.containsMouse && !row._turning
+        QQC2.ToolTip.visible: iconArea.containsMouse && !row._turning && !popup.visible
         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
     }
 
@@ -218,10 +238,7 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             onClicked: {
-                if (row.customGear)
-                    row.gearClicked();
-                else
-                    popup.visible ? popup.close() : popup.open();
+                row.openOptions();
             }
         }
         QQC2.ToolTip.text: i18n("%1: options", row.title)
@@ -229,12 +246,13 @@ Item {
         QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
     }
 
-    // Under the line, its right edge on the wheel's.
+    // Under the line, its right edge on the wheel's; folded, at the left of
+    // the icon, its top on the icon's.
     QQC2.Popup {
         id: popup
         margins: 6                   // kept inside the window
-        x: gear.x + gear.width - width
-        y: gear.y + gear.height + 6
+        x: row.compact ? iconBox.x - width - 6 : gear.x + gear.width - width
+        y: row.compact ? iconBox.y : gear.y + gear.height + 6
         // As wide as its longest line (the translations differ), 230 at least.
         width: Math.max(230, Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding)
         padding: 12

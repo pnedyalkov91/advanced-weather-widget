@@ -314,7 +314,7 @@ Rectangle {
                             labels: ({
                                 wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"),
                                 precipitation: i18n("Precipitation"), clouds: i18n("Cloud cover"), temperature: i18n("Temperature"),
-                                pressure: i18n("Pressure"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
+                                pressure: i18n("Pressure"), isobars: i18n("Isobars"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
                             })
                             onOrderPicked: function (json) { panel.map.setLayerOrder(json); }
                             onLayerToggled: function (id, on) { panel.map.setLayerEnabled(id, on); }
@@ -400,7 +400,7 @@ Rectangle {
     // row hung again on the column, in turn, goes after those before it.
     function arrangeRows() {
         var rowOf = { radar: radarRow, satellite: satRow, wind: windRow, precipitation: precipRow, clouds: cloudRow, temperature: tempRow,
-            pressure: presRow, humidity: humRow, dewpoint: dewRow, airquality: aqRow };
+            pressure: presRow, isobars: isoRow, humidity: humRow, dewpoint: dewRow, airquality: aqRow };
         var rows = [layersCaption].concat(map.layerOrder.filter(function (id) { return !!rowOf[id]; })
             .map(function (id) { return rowOf[id]; }));
         rows.forEach(function (r) {
@@ -482,9 +482,10 @@ Rectangle {
             }
             RadarMenu {
                 id: radarMenu
-                parent: radarRow.gearItem
-                x: parent.width - width
-                y: parent.height + 6
+                // Folded, at the left of the icon (the wheel is hidden).
+                parent: panel.folded ? radarRow.iconItem : radarRow.gearItem
+                x: panel.folded ? -width - 6 : parent.width - width
+                y: panel.folded ? 0 : parent.height + 6
                 schemes: panel.map.radarSchemes
                 options: panel.map.radarOptions
                 onOptionPicked: function (key, value) { panel.map.setRadarOption(key, value); }
@@ -618,6 +619,19 @@ Rectangle {
                 hasLegend: true
                 legendOn: !panel.map.legendsHidden["pressure"]
                 onLegendToggled: function (on) { panel.map.setLegend("pressure", on); }
+            }
+            // The isobars: the lines of the pressure, a layer of their own.
+            LayerRow {
+                id: isoRow
+                width: panel.colW
+                compact: panel.folded
+                title: i18n("Isobars")
+                key: panel.map.layerKeys.isobars
+                iconName: "isobares-glyph"
+                checked: panel.map.layerOn("isobars")
+                visible: panel.map.layerEnabled("isobars")
+                hasOptions: false
+                onToggled: function (on) { panel.map.setLayer("isobars", on); }
             }
             LayerRow {
                 id: humRow

@@ -1228,26 +1228,6 @@ if (nightBtn) {
   renderNightBtn();
 }
 
-// === ISOBARS (the animation's layer, under the day and night button) ===
-// The widget shows it (setIsobarsButton) while the pressure is one of its
-// layers, lit while the isobars are on. A click is reported through the
-// title ("isobars:1:n", n counting the clicks so the same state twice is
-// still a change); the widget switches the layer and lights the button: it
-// alone says the state.
-var isoBtn = document.getElementById('lv-isobars'), isoClicks = 0;
-window.setIsobarsButton = function (shown, on) {
-  if (!isoBtn) return;
-  isoBtn.classList.toggle('lv-off', !shown);
-  isoBtn.classList.toggle('active', !!on);
-};
-if (isoBtn) {
-  isoBtn.title = tr('isobars', 'Isobars') + ' (I)';
-  isoBtn.addEventListener('click', function () {
-    var on = !isoBtn.classList.contains('active');
-    document.title = 'isobars:' + (on ? 1 : 0) + ':' + (++isoClicks);
-  });
-}
-
 // Glow of the globe's atmosphere, from the widget's slider (percent).
 window.setGlow = function (percent) { _widgetAdapter.setGlow(percent); };
 // Darkness of the deep night, from the widget's settings (percent of black).

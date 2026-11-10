@@ -405,12 +405,10 @@ Item {
         } catch (e) {}
         return o;
     }
-    // The layers taken out of the column in the settings (the radar always
-    // stays; the isobars, switched on the map, are never taken out).
+    // The layers taken out of the column (the radar always stays).
     readonly property var disabledLayers: {
         try {
-            var d = JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
-            return d.filter(function (id) { return id !== "isobars"; });
+            return JSON.parse(Plasmoid.configuration.weatherMapDisabledLayers || "[]") || [];
         } catch (e) {
             return [];
         }
@@ -444,13 +442,6 @@ Item {
             if (layerOn(id))
                 setLayer(id, false);
         });
-    }
-    // The isobars button on the map: always shown, lit while the isobars
-    // are on (the pressure out of the column takes nothing from it).
-    readonly property string isobarsButton: "true, " + layerOn("isobars")
-    onIsobarsButtonChanged: {
-        if (started)
-            js("if (window.setIsobarsButton) window.setIsobarsButton(" + isobarsButton + ");");
     }
     function layerOn(id) {
         if (id === "radar" || id === "satellite")
@@ -840,6 +831,13 @@ Item {
             setFolded(what === "fold");
             return;
         }
+        // "right-temp", "right-radar": what a right click on that icon does.
+        if (what.indexOf("right-") === 0) {
+            var rr = { radar: layerPanel.radarRow, wind: layerPanel.windRow, temp: layerPanel.tempRow, pressure: layerPanel.presRow }[what.substring(6)];
+            if (rr)
+                rr.openOptions();
+            return;
+        }
         if (what.indexOf("solo-") === 0) {
             soloSource(what.slice(5));
             return;
@@ -938,7 +936,6 @@ Item {
         code += "if (window.animSetLegendTop) window.animSetLegendTop(" + legendTop + ");";
         if (Plasmoid.configuration.weatherMapLightning === true)
             code += "window.animSetRadarOption('lightning', true);";
-        code += "if (window.setIsobarsButton) window.setIsobarsButton(" + isobarsButton + ");";
         code += "window.animSetRadar(" + !!layersSaved.radar + "); window.animSetSatellite(" + (!!layersSaved.satellite && layerEnabled("satellite")) + ");";
         js(code);
     }
@@ -1324,12 +1321,6 @@ Item {
                             var proj = title.substring(5) === "globe" ? "globe" : "flat";
                             if (proj !== Plasmoid.configuration.librewxrProjection)
                                 Plasmoid.configuration.librewxrProjection = proj;
-                        } else if (title.indexOf("isobars:") === 0) {
-                            // The isobars button on the map (isobars:1:n).
-                            var isoOn = title.substring(8, 9) === "1";
-                            radarRoot.setLayer("isobars", isoOn);
-                            // The button lights from here at once (the state read back follows).
-                            radarRoot.js("if (window.setIsobarsButton) window.setIsobarsButton(" + radarRoot.layerEnabled("pressure") + ", " + isoOn + ");");
                         } else if (title.indexOf("night:") === 0) {
                             // Switched with the day and night button: the page already shows it.
                             var night = title.substring(6) === "1";

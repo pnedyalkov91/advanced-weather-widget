@@ -90,11 +90,20 @@ test('tempAddStop: one more point 5 degrees of the unit above the last, same col
 });
 
 test('weatherStackOrder: the stack of the weather layers, top first, from the setting', () => {
-  const all = ['radar', 'satellite', 'wind', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
+  const all = ['radar', 'satellite', 'wind', 'precipitation', 'clouds', 'temperature', 'pressure', 'isobars', 'humidity', 'dewpoint', 'airquality'];
   assert.deepEqual(plain(U.weatherStackOrder('')), all);
   assert.deepEqual(plain(U.weatherStackOrder('not json')), all);
-  assert.deepEqual(plain(U.weatherStackOrder('["clouds","isobars","wind","radar","clouds"]')).slice(0, 4), ['clouds', 'wind', 'radar', 'satellite']);
+  assert.deepEqual(plain(U.weatherStackOrder('["clouds","nonsense","wind","radar","clouds"]')),
+    ['clouds', 'temperature', 'pressure', 'isobars', 'humidity', 'dewpoint', 'airquality', 'wind', 'precipitation', 'radar', 'satellite']);
   assert.equal(U.weatherStackOrder('["clouds"]').length, all.length);
+});
+
+test('weatherStackOrder: a layer missing from an order saved before it comes right after its neighbour of the default', () => {
+  const saved = ['satellite', 'wind', 'radar', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
+  assert.deepEqual(plain(U.weatherStackOrder(JSON.stringify(saved))),
+    ['satellite', 'wind', 'radar', 'precipitation', 'clouds', 'temperature', 'pressure', 'isobars', 'humidity', 'dewpoint', 'airquality']);
+  const moved = ['pressure', 'radar', 'satellite', 'wind', 'precipitation', 'clouds', 'temperature', 'humidity', 'dewpoint', 'airquality'];
+  assert.deepEqual(plain(U.weatherStackOrder(JSON.stringify(moved))).slice(0, 3), ['pressure', 'isobars', 'radar']);
 });
 
 test('weatherStackMove: a layer dragged from one place to another', () => {

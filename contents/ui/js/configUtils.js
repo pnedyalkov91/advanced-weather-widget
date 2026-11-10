@@ -282,16 +282,15 @@ function tempAddStop(stops, unit) {
  * The stack of the Weather Maps' layers, top first. The map page has the
  * same default (STACK_DEFAULT in glue-adapter-maplibre.js), without the
  * wind: its particles are drawn on a canvas over the map, so over every
- * layer whatever its place here, which orders the column only. The
- * isobars, switched on the map, are not in it either: the page draws
- * them over the highest field.
+ * layer whatever its place here, which orders the column only.
  */
 var WEATHER_STACK = ["radar", "satellite", "wind", "precipitation", "clouds",
-    "temperature", "pressure", "humidity", "dewpoint", "airquality"];
+    "temperature", "pressure", "isobars", "humidity", "dewpoint", "airquality"];
 
 /**
- * The stack chosen in the settings: weatherMapLayerOrder read, unknown ids
- * and repeats left out, the missing ones added in the default order.
+ * The stack chosen: weatherMapLayerOrder read, unknown ids and repeats
+ * left out, a missing one right after its neighbour above it in the
+ * default (an order saved before that layer came).
  * @param {string} json - weatherMapLayerOrder
  * @returns {Array} - every id of WEATHER_STACK, top first
  */
@@ -303,9 +302,22 @@ function weatherStackOrder(json) {
         list = [];
     }
     var out = [];
-    (Array.isArray(list) ? list : []).concat(WEATHER_STACK).forEach(function (id) {
+    (Array.isArray(list) ? list : []).forEach(function (id) {
         if (WEATHER_STACK.indexOf(id) >= 0 && out.indexOf(id) < 0)
             out.push(id);
+    });
+    WEATHER_STACK.forEach(function (id, i) {
+        if (out.indexOf(id) >= 0)
+            return;
+        var at = 0;
+        for (var j = i - 1; j >= 0; j--) {
+            var k = out.indexOf(WEATHER_STACK[j]);
+            if (k >= 0) {
+                at = k + 1;
+                break;
+            }
+        }
+        out.splice(at, 0, id);
     });
     return out;
 }
