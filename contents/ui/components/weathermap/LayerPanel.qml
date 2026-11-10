@@ -356,6 +356,12 @@ Rectangle {
             // Side by side open, one under the other folded: they glide there.
             move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
             HeadButton {
+                iconName: panel.map.fullScreen ? "fullscreen-exit" : "fullscreen-enter"
+                tip: panel.map.fullScreen ? i18n("Leave full screen (F11 or Esc)") : i18n("Full screen (F11)")
+                on: panel.map.fullScreen
+                onClicked: panel.map.setFullScreen(!panel.map.fullScreen)
+            }
+            HeadButton {
                 text: "?"
                 tip: i18n("How to read the weather maps")
                 on: panel.map.helpOpen
@@ -409,12 +415,6 @@ Rectangle {
             }
             // Set once: pictures per second at most, the resolution
             // while playing, coasts and borders, the dark map.
-            HeadButton {
-                themeIcon: panel.map.fullScreen ? "view-restore" : "view-fullscreen"
-                tip: panel.map.fullScreen ? i18n("Leave full screen (F11 or Esc)") : i18n("Full screen (F11)")
-                on: panel.map.fullScreen
-                onClicked: panel.map.setFullScreen(!panel.map.fullScreen)
-            }
             HeadButton {
                 id: settingsButton
                 iconName: "gear"
