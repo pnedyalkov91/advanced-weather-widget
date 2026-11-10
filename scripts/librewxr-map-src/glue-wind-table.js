@@ -57,7 +57,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     this.nudging = false;    // set by fixViewport around its repaint nudge
   }
 
-  TableWindLayer.prototype = {
+  TableWindLayer.prototype = WidgetWind.withParticles({
     addTo: function (map) {
       var self = this;
       this._map = map;
@@ -110,13 +110,6 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._canvas = this._ctx = this._map = null;
     },
 
-    settle: function () {
-      if (this._settleTimer) { clearTimeout(this._settleTimer); this._settleTimer = null; }
-      if (this._settled) return;
-      this._settled = true;
-      this._reset();
-    },
-
     /** Fade in or out (0..1): the canvas's opacity, the particles go on. */
     setFade: function (f) {
       this._fade = Math.max(0, Math.min(1, f));
@@ -137,8 +130,6 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       if (this._active) this._reset();
       else this._stop(true);
     },
-
-    isDrawing: function () { return !!this._running; },
 
     /** Manual mode: the file grid to draw far out, in place of the latest
         file. Its `at` (s) is the time drawn, also on the API grids closer in
@@ -187,16 +178,6 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     _time: function (grid) {
       return grid.at != null ? grid.at : this._at != null ? this._at : Date.now() / 1000;
     },
-
-    setRate: function (fps, maxFps) {
-      this.options.fps = Math.max(4, Math.min(30, fps || 10));
-      this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
-      this._fps = this.options.fps;
-    },
-
-    setLineWidth: function (w) { this.options.lineWidth = WindField.lineWidth(w); },
-    setTheme: function (theme) { this.options.theme = theme; },
-    setPalette: function (palette) { this.options.palette = palette || WindField.DEFAULT_PALETTE; },
 
     setDensity: function (density) {
       this.options.density = density > 0 ? density : 1;
@@ -478,36 +459,18 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._age[i] = this.options.maxAge;
     },
 
-    // One frame every 1000/fps ms: a timer, then a single rAF to draw.
-    _schedule: function () {
-      var self = this, loop = this._loop;
-      this._timer = setTimeout(function () {
-        self._timer = null;
-        if (!self._running || self._loop !== loop) return;
-        requestAnimationFrame(function () {
-          if (!self._running || self._loop !== loop) return;
-          self._frame();
-          self._schedule();
-        });
-      }, 1000 / this._fps);
-    },
-
     _frame: function () {
       var grid = this._grid();
       if (!grid || !this._table) return;
       var t0 = performance.now(), ctx = this._ctx, dpr = this._dpr, o = this.options, t = this._table, cols = t.cols;
-      ctx.globalCompositeOperation = 'destination-in';
-      ctx.fillStyle = 'rgba(0,0,0,' + o.fade + ')';
-      ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
-      ctx.globalCompositeOperation = 'source-over';
+      this._fadeTrails(ctx, o.fade);
       var map = this._map, glZoom = map.getZoom(), z = glZoom + 1;
       var pxPerDeg = 512 * Math.pow(2, glZoom) / 360 / Math.cos(map.getCenter().lat * DEG);
       var tw = WindField.timeWeights(grid.times, this._time(grid));
       // Relief weighting near the ground, from the API grid's elevations.
       var sigma = o.relief && z >= o.reliefMinZoom && grid.elev && o.level === '10m' ? o.sigma : 0;
       var dz = this._demZoom(), worldSize = 256 * Math.pow(2, dz);
-      var dt = 1 / this._fps, palette = o.palette, spd = this._spd, pxCount = 0;
-      var paths = palette.map(function () { return new Path2D(); });
+      var dt = 1 / this._fps, palette = o.palette, spd = this._spd, pxCount = 0, paths = this._paths();
       for (var i = 0; i < this._n; i++) {
         if (++this._age[i] > o.maxAge) { this._spawn(i, false); continue; }
         var x = this._px[i], y = this._py[i], k = this._cell(x, y);
@@ -538,34 +501,10 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         this._px[i] = nx;
         this._py[i] = ny;
       }
-      ctx.lineWidth = o.lineWidth * dpr;
-      ctx.lineCap = 'round';
-      for (var p = 0; p < paths.length; p++) {
-        ctx.strokeStyle = WindField.bandColor(palette, p, o.theme);
-        ctx.globalAlpha = WindField.BAND_ALPHA[p];
-        ctx.stroke(paths[p]);
-      }
-      ctx.globalAlpha = 1;
-      if (pxCount) {
-        var want = WindField.targetFps(WindField.cadenceSpeed(spd, pxCount, o.cadenceFraction), o.fps, o.maxFps, o.stepPx);
-        this._fps = this._fps * 0.8 + want * 0.2;
-      }
+      this._stroke(ctx, paths, dpr, pxCount);
       if (!this._warming) this._stat(performance.now() - t0);
-    },
-
-    _stat: function (jsMs) {
-      var now = Date.now();
-      if (!this._statT0) { this._statT0 = now; this._statFrames = 0; this._statMs = 0; }
-      this._statFrames++;
-      this._statMs += jsMs;
-      if (now - this._statT0 >= 10000) {
-        var secs = (now - this._statT0) / 1000;
-        console.log('[wind] ' + (this._statFrames / secs).toFixed(1) + ' fps, ' +
-          (this._statMs / this._statFrames).toFixed(2) + ' ms JS per frame, ' + this._n + ' particles');
-        this._statT0 = now; this._statFrames = 0; this._statMs = 0;
-      }
     }
-  };
+  });
 
   return TableWindLayer;
 };
