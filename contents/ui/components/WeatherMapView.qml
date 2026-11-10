@@ -771,12 +771,23 @@ Item {
         _soloing = true;
         pastH = p;
         futureH = f;
-        if (animState && animState.times.length) {
-            var now = animState.times[animState.now];
-            timeBar.timeLine.glideTo(now - pastH * 3600e3, now + futureH * 3600e3);
-        }
+        // Around the step nearest the clock, as the page counts it.
+        var S = stepH * 3600e3, now = Math.round(Date.now() / S) * S;
+        timeBar.timeLine.glideTo(now - pastH * 3600e3, now + futureH * 3600e3);
         js("window.animSetRange(" + pastH + ", " + futureH + ", " + stepH + ")");
         _soloing = false;
+    }
+    // The range sent again around the clock once now has left its frame
+    // (the map left open for hours): at most every 5 minutes, a source
+    // ending before now (the satellite alone) would ask for it all along.
+    property real _rolledMs: 0
+    function _rollRange() {
+        _rolledMs = Date.now();
+        console.log("[Advanced Weather Widget Weather Map] time line moved on to now");
+        if (rangeKind)
+            _rangeTo(rangeKind, solo ? false : forecastOn);
+        else
+            _goRange(pastH, futureH);
     }
     // A range picked by hand ends the solo, as it stands.
     function pickRange(p, f) {
@@ -1071,6 +1082,8 @@ Item {
             if (!st)
                 return;
             radarRoot.animState = st;
+            if (!st.playing && Date.now() - radarRoot._rolledMs > 300000 && ConfigUtils.timeLineStale(st.times, st.now, Date.now()))
+                radarRoot._rollRange();
             if (st.time !== null) {
                 radarRoot.shownTime = st.time;
                 radarRoot.shownNow = st.times[st.now];

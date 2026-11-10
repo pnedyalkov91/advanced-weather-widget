@@ -104,3 +104,22 @@ test('weatherStackMove: a layer dragged from one place to another', () => {
   assert.deepEqual(plain(U.weatherStackMove(o, 1, 9)), o);
   assert.deepEqual(o, ['a', 'b', 'c', 'd'], 'the list given is left as it is');
 });
+
+test('timeLineStale: now still on its frame, or moved to another one', () => {
+  const H = 3600e3, t0 = Date.parse('2026-11-09T18:00:00Z');
+  const times = [t0 - 3 * H, t0, t0 + 3 * H, t0 + 6 * H];
+  assert.equal(U.timeLineStale(times, 1, t0 + H), false);
+  assert.equal(U.timeLineStale(times, 1, t0 + 1.4 * H), false);
+  // Nearer the next frame: stale.
+  assert.equal(U.timeLineStale(times, 1, t0 + 1.6 * H), true);
+  // The next morning, past the range's end: stale.
+  assert.equal(U.timeLineStale(times, 1, t0 + 14 * H), true);
+  // Now on the last frame and just past it: kept.
+  assert.equal(U.timeLineStale(times, 3, t0 + 6.4 * H), false);
+  assert.equal(U.timeLineStale(times, 3, t0 + 7.6 * H), true);
+  // Nothing to judge.
+  assert.equal(U.timeLineStale([], 0, t0), false);
+  assert.equal(U.timeLineStale(null, 0, t0), false);
+  assert.equal(U.timeLineStale([t0], 0, t0 + 14 * H), true);
+  assert.equal(U.timeLineStale([t0], 0, t0 + 0.5 * H), false);
+});

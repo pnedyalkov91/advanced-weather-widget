@@ -318,3 +318,26 @@ function weatherStackMove(order, from, to) {
     out.splice(to, 0, out.splice(from, 1)[0]);
     return out;
 }
+
+/**
+ * Whether the Weather Map's time line no longer has now where the clock
+ * is: another of its frames is nearer nowMs, or nowMs is more than half a
+ * step past its last one (the map left open overnight).
+ * @param {Array} times - the frames' times (ms)
+ * @param {number} nowIndex - the frame that stands for now
+ * @param {number} nowMs - the clock
+ * @returns {boolean}
+ */
+function timeLineStale(times, nowIndex, nowMs) {
+    if (!times || !times.length || nowIndex < 0 || nowIndex >= times.length)
+        return false;
+    var nearest = 0;
+    for (var k = 1; k < times.length; k++) {
+        if (Math.abs(times[k] - nowMs) < Math.abs(times[nearest] - nowMs))
+            nearest = k;
+    }
+    if (nearest !== nowIndex)
+        return true;
+    var step = times.length < 2 ? 3 * 3600e3 : nowIndex > 0 ? times[nowIndex] - times[nowIndex - 1] : times[1] - times[0];
+    return Math.abs(nowMs - times[nowIndex]) > step / 2;
+}

@@ -1086,3 +1086,19 @@ test('spanTimes: from the start to the end of the sources, a picture each step b
   assert.equal(hm(ft)[18], '16:10');
   assert.equal(hm(ft)[ft.now], '15:50');
 });
+
+test('keptIndex: a new range keeps the time shown, but now moves on with now', () => {
+  const old = A.frameTimes(at('2026-11-09T19:00:00Z'), 24, 48, 3);
+  const fresh = A.frameTimes(at('2026-11-10T08:00:00Z'), 24, 48, 3);
+  // On now yesterday evening: now this morning.
+  assert.equal(A.keptIndex(old.times, old.now, old.now, fresh.times, fresh.now), fresh.now);
+  // On a time picked by hand, still in the new range: that time.
+  const picked = old.now + 4;
+  assert.equal(fresh.times[A.keptIndex(old.times, old.now, picked, fresh.times, fresh.now)], old.times[picked]);
+  // Between two frames, nearer now: now.
+  assert.equal(A.keptIndex(old.times, old.now, old.now + 0.3, fresh.times, fresh.now), fresh.now);
+  // A time gone out of the range, or none shown yet: now.
+  assert.equal(A.keptIndex(old.times, old.now, 0, fresh.times, fresh.now), fresh.now);
+  assert.equal(A.keptIndex(old.times, old.now, -1, fresh.times, fresh.now), fresh.now);
+  assert.equal(A.keptIndex(null, 0, -1, fresh.times, fresh.now), fresh.now);
+});

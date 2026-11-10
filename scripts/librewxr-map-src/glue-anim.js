@@ -48,6 +48,18 @@ var WidgetAnim = (function () {
     return { times: times, now: now };
   }
 
+  /** The frame to show in a new range (newTimes, newNow) from the one shown
+      in the old (index, -1 for none, between two frames while playing):
+      the same time when the new range has it, but now when it was now,
+      so that now follows the clock. */
+  function keptIndex(oldTimes, oldNow, index, newTimes, newNow) {
+    if (!oldTimes || index < 0) return newNow;
+    var i = Math.round(index);
+    if (i === oldNow) return newNow;
+    var k = newTimes.indexOf(oldTimes[i]);
+    return k >= 0 ? k : newNow;
+  }
+
   /** { times, now } every stepH hours on the files' own steps, from the
       one at or before startMs to the one at or after endMs: a range of
       the radar or satellite with the forecast layers on it; now: the one
@@ -1199,7 +1211,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
+    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack,
     decimate: decimate, FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

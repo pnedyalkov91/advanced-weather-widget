@@ -514,12 +514,12 @@ function animSetFines(ids) {
 /** New pictures for pastH hours before now and futureH after, one every
     stepH hours (WidgetAnim.STEP_H, the files' own; 1 for the radar and
     satellite alone, no layer then), those already read taken over; the
-    time shown stays. span { start, end } (ms): from the one to the other
+    time shown stays, now moves on with the clock. span { start, end } (ms): from the one to the other
     instead, the ends themselves (the range of the radar or satellite). */
 function animLoad(pastH, futureH, stepH, span) {
   // Layers fading out belong to the old range: they go at once.
   anim.switcher.flush();
-  var old = anim.group, shownMs = old && anim.player.index >= 0 ? old.times[Math.round(anim.player.index)] : null;
+  var old = anim.group;
   anim.nowMs = Date.now();
   anim.stepH = stepH || WidgetAnim.STEP_H;
   if (span) {
@@ -540,9 +540,9 @@ function animLoad(pastH, futureH, stepH, span) {
   // nearest 3-hour step: one step more each way covers them.
   anim.api.setHours(pastH + WidgetAnim.STEP_H, futureH + WidgetAnim.STEP_H);
   if (old) old.tracks.forEach(function (t) { animTrack(t.id, t.layer, t.frames); t.layer.reload(); });
-  var keep = shownMs === null ? -1 : ft.times.indexOf(shownMs);
+  var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now) : ft.now;
   anim.player.index = -1;
-  anim.player.show(keep >= 0 ? keep : ft.now);
+  anim.player.show(keep);
 }
 
 /** Switch layer id of the animation on or off. Off, it fades out and its
