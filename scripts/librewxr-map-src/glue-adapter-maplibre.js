@@ -476,8 +476,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // the bottom, the coasts and borders on top. restack() puts every layer
   // of the map at its place, with as few moves as it can; a layer added
   // anywhere goes back to its place on the next 'styledata'.
-  var STACK_DEFAULT = ['radar', 'satellite', 'precipitation', 'clouds',
-    'temperature', 'pressure', 'isobars', 'humidity', 'dewpoint', 'airquality'];
+  var STACK_DEFAULT = ['radar', 'satellite', 'isobars', 'precipitation', 'clouds',
+    'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality'];
   var stackOrder = STACK_DEFAULT.slice(), restacking = false;
   /** The ids of order known, once each; a missing one right after its
       neighbour above it in the default (an order saved before it). */

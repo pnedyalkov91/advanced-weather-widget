@@ -668,6 +668,8 @@ Item {
         try {
             o = JSON.parse(Plasmoid.configuration.weatherMapIsobars || "{}") || {};
         } catch (e) {}
+        if (o.color === "#1a1a24")      // the black of before
+            o.color = "#000000";
         return {
             width: isoWidthChoices.some(function (c) { return c[0] === o.width; }) ? o.width : 1,
             step: isoStepChoices.some(function (c) { return c[0] === o.step; }) ? o.step : 4,

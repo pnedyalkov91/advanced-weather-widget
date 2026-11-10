@@ -284,8 +284,8 @@ function tempAddStop(stops, unit) {
  * wind: its particles are drawn on a canvas over the map, so over every
  * layer whatever its place here, which orders the column only.
  */
-var WEATHER_STACK = ["radar", "satellite", "wind", "precipitation", "clouds",
-    "temperature", "pressure", "isobars", "humidity", "dewpoint", "airquality"];
+var WEATHER_STACK = ["radar", "satellite", "wind", "isobars", "precipitation", "clouds",
+    "temperature", "pressure", "humidity", "dewpoint", "airquality"];
 
 /**
  * The stack chosen: weatherMapLayerOrder read, unknown ids and repeats
