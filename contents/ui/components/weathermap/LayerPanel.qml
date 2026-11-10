@@ -154,6 +154,61 @@ Rectangle {
             }
         }
     }
+    // A color among a few: a dot for each, the one taken ringed. The value
+    // "" is the theme's color, drawn half white, half dark.
+    component ColorDots: ColumnLayout {
+        id: cd
+        property string title
+        property var choices: []        // [[value, name]]
+        property var current
+        signal picked(var value)
+        Layout.fillWidth: true
+        spacing: 2
+        QQC2.Label { text: cd.title; color: panel.dimText }
+        Row {
+            spacing: 6
+            Repeater {
+                model: cd.choices
+                Rectangle {
+                    id: dot
+                    required property var modelData
+                    readonly property bool taken: cd.current === modelData[0]
+                    width: 22
+                    height: 22
+                    radius: 11
+                    color: "transparent"
+                    border.width: 2
+                    border.color: taken ? panel.accent : "transparent"
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 16
+                        height: 16
+                        radius: 8
+                        border.width: 1
+                        border.color: panel.tint(0.35)
+                        color: dot.modelData[0] || "#ffffff"
+                        gradient: dot.modelData[0] ? null : autoFill
+                        Gradient {
+                            id: autoFill
+                            orientation: Gradient.Horizontal
+                            GradientStop { position: 0.5; color: "#ffffff" }
+                            GradientStop { position: 0.501; color: "#1a1a24" }
+                        }
+                    }
+                    MouseArea {
+                        id: dotArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: cd.picked(dot.modelData[0])
+                    }
+                    QQC2.ToolTip.visible: dotArea.containsMouse
+                    QQC2.ToolTip.text: dot.modelData[1]
+                    QQC2.ToolTip.delay: 400
+                }
+            }
+        }
+    }
     // The kinds of a layer shown, several at once: a switch for each, two
     // by two, "All" first. Each change is sent at once.
     component OptKinds: ColumnLayout {
@@ -652,10 +707,24 @@ Rectangle {
                     current: panel.map.isobars.step
                     onPicked: function (v) { panel.map.setIsobars("step", v); }
                 }
+                ColorDots {
+                    title: i18n("Color")
+                    choices: panel.map.isoColorChoices
+                    current: panel.map.isobars.color
+                    onPicked: function (v) { panel.map.setIsobars("color", v); }
+                }
                 SmallSwitch {
                     text: i18n("Values on the lines")
                     checked: panel.map.isobars.labels
                     onToggled: panel.map.setIsobars("labels", checked)
+                }
+                Segmented {
+                    title: i18n("Size")
+                    enabled: panel.map.isobars.labels
+                    opacity: enabled ? 1 : 0.5
+                    choices: panel.map.isoTextChoices
+                    current: panel.map.isobars.textSize
+                    onPicked: function (v) { panel.map.setIsobars("textSize", v); }
                 }
                 SmallSwitch {
                     text: i18n("Highs and lows")

@@ -271,7 +271,7 @@
     <!-- Weather Map: the stack of the layers on the map and in the column, JSON list of ids top first; empty for the default one -->
     <entry name="weatherMapLayerOrder" type="String"><default>[]</default></entry>
     <entry name="weatherMapPollutant"   type="String"><default>pm2_5</default></entry>
-    <!-- Weather Map: the isobars' settings, JSON {width: 0.6|1|2, step: 2|4|8 hPa, labels, marks}; empty for the defaults -->
+    <!-- Weather Map: the isobars' settings, JSON {width: 0.6|1|2, step: 2|4|8 hPa, labels, marks, textSize: 11|13|16 px, color: "#rrggbb" or "" for the theme's}; empty for the defaults -->
     <entry name="weatherMapIsobars"     type="String"><default>{}</default></entry>
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->

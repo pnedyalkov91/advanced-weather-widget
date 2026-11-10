@@ -660,6 +660,9 @@ Item {
     // the hPa between two lines, the values on them, the highs and lows.
     readonly property var isoWidthChoices: [[0.6, i18nc("isobar lines", "Thin")], [1, i18nc("isobar lines", "Normal")], [2, i18nc("isobar lines", "Thick")]]
     readonly property var isoStepChoices: [[2, "2"], [4, "4"], [8, "8"]]
+    readonly property var isoTextChoices: [[11, i18nc("text size", "Small")], [13, i18nc("text size", "Medium")], [16, i18nc("text size", "Large")]]
+    // "" follows the theme (white on dark, near black on light).
+    readonly property var isoColorChoices: [["", i18nc("color", "Automatic")], ["#ffffff", i18nc("color", "White")], ["#1a1a24", i18nc("color", "Black")], ["#4aa3ff", i18nc("color", "Blue")], ["#ffd23f", i18nc("color", "Yellow")], ["#ff6b6b", i18nc("color", "Red")], ["#7ee07e", i18nc("color", "Green")]]
     readonly property var isobars: {
         var o = {};
         try {
@@ -669,7 +672,9 @@ Item {
             width: isoWidthChoices.some(function (c) { return c[0] === o.width; }) ? o.width : 1,
             step: isoStepChoices.some(function (c) { return c[0] === o.step; }) ? o.step : 4,
             labels: o.labels !== false,
-            marks: o.marks !== false
+            marks: o.marks !== false,
+            textSize: isoTextChoices.some(function (c) { return c[0] === o.textSize; }) ? o.textSize : 11,
+            color: isoColorChoices.some(function (c) { return c[0] === o.color; }) ? o.color : ""
         };
     }
     function setIsobars(key, value) {

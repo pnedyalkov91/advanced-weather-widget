@@ -33,7 +33,20 @@ var WidgetPressure = (function () {
   // The isobars' own settings: their opacity (0..1), the width of the
   // lines (times the usual one), the values on the lines and the H/L marks.
   // The space between two lines is opts.step.
-  var iso = { opacity: 0.8, width: 1, labels: true, marks: true };
+  // Their color ('' follows the theme) and the size of the values in px.
+  var iso = { opacity: 0.8, width: 1, labels: true, marks: true, color: '', textSize: 11 };
+  /** The ink of the lines, [r, g, b] 0..1, and a halo under the values
+      that stands out from it. */
+  function isoInk() {
+    var m = /^#?([0-9a-f]{6})$/i.exec(iso.color || ''), rgb;
+    if (m) {
+      var n = parseInt(m[1], 16);
+      rgb = [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255];
+    } else rgb = currentTheme() === 'dark' ? [1, 1, 1] : [0.1, 0.1, 0.14];
+    var light = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2] > 0.5;
+    var css = 'rgb(' + rgb.map(function (c) { return Math.round(c * 255); }).join(',') + ')';
+    return { rgb: rgb, css: css, halo: light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)' };
+  }
   function isoLayer() { var t = anim && anim.group.track('isobars'); return t ? t.layer : null; }
   window.isoSetOpacity = function (percent) {
     iso.opacity = Math.max(0, Math.min(100, isFinite(+percent) ? +percent : 80)) / 100;
@@ -47,6 +60,8 @@ var WidgetPressure = (function () {
     if (isFinite(+o.width) && +o.width > 0) iso.width = Math.max(0.3, Math.min(3, +o.width));
     if ('labels' in o) iso.labels = !!o.labels;
     if ('marks' in o) iso.marks = !!o.marks;
+    if ('color' in o) iso.color = /^#[0-9a-f]{6}$/i.test(o.color || '') ? o.color : '';
+    if (isFinite(+o.textSize) && +o.textSize > 0) iso.textSize = Math.max(8, Math.min(24, +o.textSize));
     var stepChanged = false;
     if ([2, 4, 8].indexOf(+o.step) >= 0 && +o.step !== opts.step) { opts.step = +o.step; stepChanged = true; }
     var l = isoLayer();
@@ -671,13 +686,18 @@ var WidgetPressure = (function () {
     restyleIso: function () {
       var map = this.map;
       if (!map) return;
+      var ink = isoInk();
       if (map.getLayer('lv-iso')) {
         var w = iso.width;
         map.setPaintProperty('lv-iso', 'line-width', ['case', ['==', ['get', 'major'], 1], 1.3 * w, ['==', ['get', 'minor'], 1], 0.5 * w, 0.75 * w]);
+        map.setPaintProperty('lv-iso', 'line-color', ink.css);
         map.setPaintProperty('lv-iso', 'line-opacity', ['case', ['==', ['get', 'minor'], 1], Math.min(1, 0.6 * iso.opacity / 0.8), Math.min(1, iso.opacity / 0.8)]);
       }
       if (map.getLayer('lv-iso-label')) {
         map.setPaintProperty('lv-iso-label', 'text-opacity', Math.min(1, iso.opacity / 0.8));
+        map.setPaintProperty('lv-iso-label', 'text-color', ink.css);
+        map.setPaintProperty('lv-iso-label', 'text-halo-color', ink.halo);
+        map.setLayoutProperty('lv-iso-label', 'text-size', iso.textSize);
         map.setLayoutProperty('lv-iso-label', 'visibility', iso.labels && !(this.moving && opts.hideLabels) ? 'visible' : 'none');
       }
       (this._pool || new Map()).forEach(function (mk) { mk.marker.setOpacity(String(mk.op * Math.min(1, iso.opacity / 0.8)), '0'); });
@@ -1019,8 +1039,8 @@ var WidgetPressure = (function () {
       gl.uniform1f(u.u_lutMin, LUT_MIN);
       gl.uniform1f(u.u_lutSpan, LUT_N * LUT_STEP);
       if (u.u_width) gl.uniform1f(u.u_width, iso.width);
-      var inkA = mode === 'lines' ? iso.opacity : 0.8;
-      if (currentTheme() === 'dark') gl.uniform4f(u.u_ink, 1, 1, 1, inkA); else gl.uniform4f(u.u_ink, 0.1, 0.1, 0.14, inkA);
+      var ink = isoInk().rgb;
+      gl.uniform4f(u.u_ink, ink[0], ink[1], ink[2], mode === 'lines' ? iso.opacity : 0.8);
       layer.drawn = glShared.version;
       return true;
     };
