@@ -25,6 +25,7 @@
  */
 
 .import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
 
 /**
  * Magnus-formula dew-point approximation.
@@ -69,6 +70,41 @@ function _apiTimeTo24h(s) {
     return (h < 10 ? "0" + h : "" + h) + ":" + min;
 }
 
+/**
+ * The ONE forecast URL every WeatherAPI call uses: current conditions + daily list + native
+ * alerts (fetchCurrent) and the hours of every day (fetchHourly / fetchHourlyAll) all come out
+ * of the same answer. Keeping the URL identical lets the shared GET helper join / reuse it,
+ * so a refresh downloads it once instead of once per caller.
+ * `days` is one more than the configured forecast days (the closing 00:00 of the last day
+ * lives in the next one), capped at the 14 days the API serves; plans that allow fewer days
+ * (the free plan: 3) simply answer with fewer.
+ */
+function _forecastUrl(service, key) {
+    var days = Math.min(14, Math.max(3, service.forecastDays) + 1);
+    return "https://api.weatherapi.com/v1/forecast.json?key="
+        + encodeURIComponent(key)
+        + "&q=" + encodeURIComponent(service.latitude + "," + service.longitude)
+        + "&days=" + days + "&alerts=yes";
+}
+
+/**
+ * The place's UTC offset in minutes, worked out from the answer itself: location.localtime is the
+ * wall-clock time there and location.localtime_epoch the same instant in UTC seconds. (Qt's JS
+ * cannot resolve the IANA tz_id on its own, which is why the offset used to be fetched from Open-Meteo.)
+ * The wall time is cut to whole minutes, so the difference is rounded to a quarter hour - every
+ * real UTC offset is a multiple of that. NaN when the answer lacks the two fields.
+ */
+function _utcOffsetMins(loc) {
+    if (!loc || !loc.localtime || loc.localtime_epoch === undefined)
+        return NaN;
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})/.exec(String(loc.localtime));
+    if (!m)
+        return NaN;
+    var wallMs = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    var off = Math.round((wallMs - Number(loc.localtime_epoch) * 1000) / 60000 / 15) * 15;
+    return (off >= -720 && off <= 840) ? off : NaN;
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -78,14 +114,9 @@ function fetchCurrent(service, W, chain, idx) {
         service._tryProvider(chain, idx + 1);
         return;
     }
-    var days = Math.max(3, service.forecastDays);
-    var url = "https://api.weatherapi.com/v1/forecast.json?key="
-        + encodeURIComponent(key)
-        + "&q=" + encodeURIComponent(
-            service.latitude + "," + service.longitude)
-        + "&days=" + days + "&alerts=yes";
+    var url = _forecastUrl(service, key);
 
-    var req = Dbg.xhr("WeatherAPI", "fetchCurrent");
+    var req = Shared.xhr("WeatherAPI", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -133,6 +164,9 @@ function fetchCurrent(service, W, chain, idx) {
                 });
             }
         }
+        var utcOffMins = _utcOffsetMins(d.location);
+        var sunriseText = astro ? _apiTimeTo24h(astro.sunrise) : "--";
+        var sunsetText  = astro ? _apiTimeTo24h(astro.sunset)  : "--";
         r.weatherDataStaged = {
             temperatureC:    d.current.temp_c,
             apparentC:       d.current.feelslike_c,
@@ -149,19 +183,21 @@ function fetchCurrent(service, W, chain, idx) {
             snowDepthCm:     NaN,
             weatherCode:     d.current.condition ? W.weatherApiCodeToWmo(d.current.condition.code) : 2,
             isDay:           (d.current.is_day !== undefined) ? d.current.is_day : -1,
-            locationUtcOffsetMins: 0,
-            sunriseTimeText: astro ? _apiTimeTo24h(astro.sunrise) : "--",
-            sunsetTimeText:  astro ? _apiTimeTo24h(astro.sunset)  : "--",
+            locationUtcOffsetMins: isNaN(utcOffMins) ? 0 : utcOffMins,
+            sunriseTimeText: sunriseText,
+            sunsetTimeText:  sunsetText,
             dailyData:       nd
         };
         r.loading = false;
         r.updateText = service._formatUpdateText("weatherApi");
 
-        // WeatherAPI's astro sunrise/sunset ARE location-local, but the payload
-        // gives no numeric UTC offset (only an IANA tz_id Qt V4 can't resolve
-        // on its own). Without it sun/moon progress falls back to UTC.
-        // Same Open-Meteo backfill as BBC/met.no/stormGlass.
-        try { service._fetchSunTimesOpenMeteo(); } catch (e) {}
+        // WeatherAPI's astro sunrise/sunset are location-local and the UTC offset comes from
+        // location.localtime / localtime_epoch (see _utcOffsetMins), so nothing else is needed.
+        // Only when the answer lacks one of them does the Open-Meteo backfill still fill the gap.
+        var timeRe = /^\d{1,2}:\d{2}$/;
+        if (isNaN(utcOffMins) || !timeRe.test(sunriseText) || !timeRe.test(sunsetText)) {
+            try { service._fetchSunTimesOpenMeteo(); } catch (e) {}
+        }
 
         // Parse native alerts if available
         if (d.alerts && d.alerts.alert && d.alerts.alert.length > 0) {
@@ -287,13 +323,8 @@ function fetchHourly(service, W, dateStr) {
     // uses instead - wide enough to cover dateStr's following day even when
     // dateStr is the last configured forecast day - keeps this to one
     // request and lets both dates be picked out of the same response.
-    var days = Math.min(14, Math.max(3, service.forecastDays) + 1);
-    var url = "https://api.weatherapi.com/v1/forecast.json?key="
-        + encodeURIComponent(key)
-        + "&q=" + encodeURIComponent(
-            service.latitude + "," + service.longitude)
-        + "&days=" + days + "&aqi=no&alerts=no";
-    var req = Dbg.xhr("WeatherAPI", "fetchHourly");
+    var url = _forecastUrl(service, key);
+    var req = Shared.xhr("WeatherAPI", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -330,13 +361,8 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
     // uses instead - wide enough to cover dateStr's following day even when
     // dateStr is the last configured forecast day - keeps this to one
     // request and lets both dates be picked out of the same response.
-    var days = Math.min(14, Math.max(3, service.forecastDays) + 1);
-    var url = "https://api.weatherapi.com/v1/forecast.json?key="
-        + encodeURIComponent(key)
-        + "&q=" + encodeURIComponent(
-            service.latitude + "," + service.longitude)
-        + "&days=" + days + "&aqi=no&alerts=no";
-    var req = Dbg.xhr("WeatherAPI", "fetchHourlyAll");
+    var url = _forecastUrl(service, key);
+    var req = Shared.xhr("WeatherAPI", "fetchHourlyAll");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
