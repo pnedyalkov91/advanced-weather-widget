@@ -27,12 +27,14 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
 
 import "js/weather.js" as W
 import "js/configUtils.js" as ConfigUtils
 import "js/iconResolver.js" as IconResolver
 import "js/windCompass.js" as WindCompass
 import "components"
+import "js/debug.js" as Dbg
 
 ColumnLayout {
     id: simpleView
@@ -60,6 +62,149 @@ ColumnLayout {
     readonly property var    _svCondIcon:  weatherRoot ? resolveConditionIconFn(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
     readonly property int    forecastDays: Plasmoid.configuration.forecastDays || 5
     readonly property bool   showToday:    Plasmoid.configuration.forecastShowToday !== false
+
+    // ── Weather alerts (the icon next to the condition icon, its tooltip) ─────────
+    // weatherRoot.weatherAlerts as the Details tab reads it. The alerts that have not expired yet,
+    // sorted by onset; "now" is a property that a timer refreshes, so an alert that expires while
+    // the popup is open goes away (new Date() on its own is not a binding dependency).
+    property var _alertNow: new Date()
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        onTriggered: simpleView._alertNow = new Date()
+    }
+    readonly property var _alertList: {
+        var src = (weatherRoot && weatherRoot.weatherAlerts) ? weatherRoot.weatherAlerts : [];
+        var now = simpleView._alertNow;
+        var out = [];
+        for (var i = 0; i < src.length; ++i) {
+            var ex = src[i].expires ? new Date(src[i].expires) : null;
+            if (ex && !isNaN(ex.getTime()) && ex < now)
+                continue;
+            out.push(src[i]);
+        }
+        out.sort(function (a, b) {
+            var da = a.onset ? new Date(a.onset).getTime() : 0;
+            var db = b.onset ? new Date(b.onset).getTime() : 0;
+            return da - db;
+        });
+        return out;
+    }
+    function _alertColor(c) {
+        c = (c || "").toLowerCase();
+        if (c === "yellow")
+            return isDark ? "#ffc107" : "#9a7b00";
+        if (c === "orange")
+            return isDark ? "#ff8c00" : "#c04000";
+        if (c === "red")
+            return isDark ? "#ff4444" : "#cc0000";
+        return Kirigami.Theme.textColor;
+    }
+    function _alertDateTime(iso) {
+        if (!iso || !weatherRoot)
+            return "";
+        var d = new Date(iso);
+        if (isNaN(d.getTime()))
+            return "";
+        return weatherRoot.formatDateObj(d, true) + ", " + weatherRoot.formatTimeObj(d);
+    }
+    // Map an alert's source to a link to its provider
+    function _alertProviderLink(src) {
+        src = (src || "").trim();
+        if (src === "NWS")
+            return "<a href='https://www.weather.gov/'>NOAA NWS</a>";
+        if (src === "MET Norway")
+            return "<a href='https://www.met.no/'>MET Norway</a>";
+        if (src === "MeteoAlarm")
+            return "<a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a>";
+        if (src === "PirateWeather")
+            return "<a href='https://pirateweather.net/'>Pirate Weather</a>";
+        if (src === "VisualCrossing")
+            return "<a href='https://www.visualcrossing.com/'>Visual Crossing</a>";
+        if (src === "WeatherAPI")
+            return "<a href='https://www.weatherapi.com/'>WeatherAPI.com</a>";
+        if (src === "LibreWXR")
+            return "<a href='https://librewxr.net/'>LibreWXR</a>";
+        if (src === "FOSS Public Alert Server")
+            return "<a href='https://alerts.kde.org/'>FOSS Public Alert Server</a>";
+        if (src.length > 0)
+            return src;
+        return "<a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a>";
+    }
+    function _formatNwsDescription(desc) {
+        if (!desc)
+            return "";
+        var text = desc.replace(/\r?\n/g, "<br>");
+        text = text.replace(/\*\s+WHAT\s*\.{3}/gi, "<br><b>WHAT:</b> ");
+        text = text.replace(/\*\s+WHERE\s*\.{3}/gi, "<br><b>WHERE:</b> ");
+        text = text.replace(/\*\s+WHEN\s*\.{3}/gi, "<br><b>WHEN:</b> ");
+        text = text.replace(/\*\s+IMPACTS?\s*\.{3}/gi, "<br><b>IMPACTS:</b> ");
+        text = text.replace(/\*\s+ADDITIONAL\s+DETAILS\s*\.{3}/gi, "<br><b>ADDITIONAL DETAILS:</b> ");
+        text = text.replace(/\*\s+HAZARD\s*\.{3}/gi, "<br><b>HAZARD:</b> ");
+        text = text.replace(/\*\s+SOURCE\s*\.{3}/gi, "<br><b>SOURCE:</b> ");
+        text = text.replace(/\*\s+IMPACT\s*\.{3}/gi, "<br><b>IMPACT:</b> ");
+        text = text.replace(/\*\s+PRECAUTIONARY\/PREPAREDNESS\s+ACTIONS\s*\.{3}/gi, "<br><b>PRECAUTIONARY ACTIONS:</b> ");
+        text = text.replace(/(<br>\s*){3,}/g, "<br><br>");
+        text = text.replace(/^(<br>)+/, "");
+        return text;
+    }
+    // The town of the location and the area of the alert: the heading of an alert in the tooltip
+    function _alertTooltipTitle(a) {
+        var town = (Plasmoid.configuration.locationName || "").split(",")[0].trim();
+        var area = a ? (a.area || "") : "";
+        if (town && area)
+            return town + ", " + area;
+        return town || area;
+    }
+    // The fields of an alert (the same ones, in the same order, as the Details tab's tooltip)
+    function _alertTooltipSub(a) {
+        var lines = [];
+        if (a.headline)
+            lines.push("<b>" + i18n("Headline") + ":</b> " + a.headline);
+        if (a.description) {
+            if (a.source === "NWS")
+                lines.push("<b>" + i18n("Description") + ":</b><br>" + _formatNwsDescription(a.description));
+            else
+                lines.push("<b>" + i18n("Description") + ":</b><br>" + a.description);
+        }
+        if (a.effective)
+            lines.push("<b>" + i18n("Effective") + ":</b> " + _alertDateTime(a.effective));
+        if (a.expires)
+            lines.push("<b>" + i18n("Expires") + ":</b> " + _alertDateTime(a.expires));
+        if (a.instruction)
+            lines.push("<b>" + i18n("Instruction") + ":</b><br>" + a.instruction);
+        if (a.source || a.senderName)
+            lines.push("<b>" + i18n("Provider") + ":</b> " + _alertProviderLink(a.source));
+        if (a.web)
+            lines.push("<b>" + i18n("Website") + ":</b> <a href='" + a.web + "'>" + a.web + "</a>");
+        return lines.join("<br>");
+    }
+    // The whole tooltip as one rich text: each alert is its heading and its fields, a rule between
+    // alerts. One alert shows exactly what the Details tab's tooltip shows; with several, each
+    // also gets its name (in the color of its level). A few only: a long list would not fit.
+    readonly property string _alertTooltipHtml: {
+        var list = simpleView._alertList;
+        var shown = Math.min(list.length, 3);
+        var parts = [];
+        for (var i = 0; i < shown; ++i) {
+            var a = list[i];
+            var head = "";
+            if (list.length > 1) {
+                var name = a.displayName || a.headline || "";
+                if (name)
+                    head += "<b><font color='" + simpleView._alertColor(a.color) + "'>" + name + "</font></b><br>";
+            }
+            var title = simpleView._alertTooltipTitle(a);
+            if (title)
+                head += "<b>" + title + "</b><br>";
+            parts.push(head + simpleView._alertTooltipSub(a));
+        }
+        var html = parts.join("<hr>");
+        if (list.length > shown)
+            html += "<hr><i>" + i18np("and %1 more alert", "and %1 more alerts", list.length - shown) + "</i>";
+        return html;
+    }
 
     // ── SECTION 1: Hero ───────────────────────────────────────────────────────
     Item {
@@ -90,6 +235,7 @@ ColumnLayout {
 
         // CENTER - condition icon + condition text
         ColumnLayout {
+            id: condColumn
             anchors.centerIn: parent
             spacing: 4
 
@@ -205,6 +351,37 @@ ColumnLayout {
                     opacity: 0.7
                     font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                 }
+            }
+        }
+
+        // ── Weather alert: a warning icon beside the condition icon ──────────────
+        // Only there while there is an alert; it does not move the condition icon. The tooltip is
+        // built like the Details tab's (a fixed-width rich text label: the heading and the fields
+        // of each alert). Declared last, a child of the hero itself: on top of the other items.
+        PlasmaCore.ToolTipArea {
+            x: condColumn.x + condColumn.width / 2 + 50
+            y: condColumn.y
+            width: 32
+            height: 32
+            visible: simpleView._alertList.length > 0
+            active: true
+            mainItem: ColumnLayout {
+                width: 380
+                spacing: 6
+                Label {
+                    text: simpleView._alertTooltipHtml
+                    font: weatherRoot ? weatherRoot.wf(11, false) : Qt.font({})
+                    textFormat: Text.RichText
+                    wrapMode: Text.Wrap
+                    width: parent.width
+                    Layout.fillWidth: true
+                }
+            }
+            Kirigami.Icon {
+                anchors.centerIn: parent
+                width: 28
+                height: 28
+                source: "dialog-warning"
             }
         }
     }
@@ -376,11 +553,295 @@ ColumnLayout {
         }
     }
 
-    // ── SECTION 3: Forecast squares ───────────────────────────────────────────
+    // ── SECTION 3a: Forecast as a graph (Forecast layout = Graphs) ────────────
+    // The same chart the Forecast tab uses, in its "Compact" style (ForecastChartStack: the
+    // temperature graph with high / low lines, a weather icon for every day and the precipitation
+    // strip). Pointing at a day lists its wind, pressure, Kp, UV and visibility in a card; which
+    // ones is chosen with the "Show in forecast" switches of the settings.
+    readonly property bool _graphsLayout: Plasmoid.configuration.simpleForecastLayout === "graphs"
+
+    // Chart files, resolved from this file. Qt Graphs first; when that module is missing the
+    // Loader fails and HistoryChartKQC.qml (KQuickCharts) takes over, as in the Forecast tab.
+    readonly property string _chartGraphsUrl: String(Qt.resolvedUrl("components/HistoryChartGraphs.qml"))
+    readonly property string _chartKqcUrl: String(Qt.resolvedUrl("components/HistoryChartKQC.qml"))
+    property string _chartSource: _chartGraphsUrl
+
+    // Daily precipitation of an entry of weatherRoot.dailyData (mm), NaN when it has none.
+    // The first of these fields that holds a number is used.
+    function _dayPrecip(d) {
+        var keys = ["precipMm", "precipSumMm", "precipSum", "precip"];
+        for (var i = 0; i < keys.length; ++i) {
+            var v = d[keys[i]];
+            if (typeof v === "number" && isFinite(v))
+                return v;
+        }
+        return NaN;
+    }
+
+    // The details listed for the day under the pointer ("Show in forecast" switches of the settings;
+    // all on by default). Own settings, separate from the Advanced mode's.
+    readonly property bool _fcWind: Plasmoid.configuration.simpleForecastShowWind !== false
+    readonly property bool _fcPressure: Plasmoid.configuration.simpleForecastShowPressure !== false
+    readonly property bool _fcKp: Plasmoid.configuration.simpleForecastShowKpIndex !== false
+    readonly property bool _fcUv: Plasmoid.configuration.simpleForecastShowUvIndex !== false
+    readonly property bool _fcVis: Plasmoid.configuration.simpleForecastShowVisibility !== false
+
+    function _isNum(v) {
+        return typeof v === "number" && isFinite(v);
+    }
+
+    // The same days as the Standard layout shows (forecastDays, "Show Today"), as chart entries.
+    // They carry what the details need (wind, pressure, Kp, UV, visibility) like the Forecast tab's.
+    readonly property var _graphDays: {
+        if (!weatherRoot || !weatherRoot.dailyData)
+            return [];
+        var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
+        var out = [];
+        for (var i = simpleView.showToday ? 0 : 1; i < total; ++i) {
+            var d = weatherRoot.dailyData[i];
+            var kp = NaN, gScale = "";
+            if (simpleView._fcKp) {
+                var ke = weatherRoot.kpForecastForDate(d.dateStr || "");
+                if (ke && isFinite(ke.kp)) {
+                    kp = ke.kp;
+                    gScale = ke.gScale || "G0";
+                }
+            }
+            out.push({
+                dateStr: d.dateStr || "",
+                time: d.time,
+                code: d.code,
+                maxC: d.maxC,
+                minC: d.minC,
+                precipMm: simpleView._dayPrecip(d),
+                isToday: weatherRoot.isDailyRowToday(i),
+                windKmh: d.windKmh,
+                windDeg: d.windDir,
+                pressureHpa: d.pressureHpa,
+                kp: kp,
+                gScale: gScale,
+                uv: d.uvMax,
+                visibilityKm: d.visibilityKm
+            });
+        }
+        return out;
+    }
+
+    // The details card of the compact graph (the same rows, colors and texts as the Forecast tab's
+    // Compact graph style). A detail is listed when its switch is on and some day has a value.
+    // (The closures do not capture the data: they only read weatherRoot.)
+    readonly property var _detailMetrics: {
+        var items = simpleView._graphDays;
+        var wr = weatherRoot;
+        var out = [];
+        if (!wr || items.length < 2)
+            return out;
+        function has(key) {
+            for (var i = 0; i < items.length; ++i)
+                if (simpleView._isNum(items[i][key]))
+                    return true;
+            return false;
+        }
+        if (simpleView._fcWind && has("windKmh"))
+            out.push({
+                key: "windKmh",
+                label: i18n("Wind"),
+                color: "#66bb6a",
+                fmt: function (v) {
+                    return wr.windValue(v);
+                },
+                // the wind direction arrow after the value (a weather-icons glyph)
+                glyph: function (i, entry) {
+                    return entry && simpleView._isNum(entry.windDeg) ? W.windDirectionGlyph(entry.windDeg) : "";
+                }
+            });
+        if (simpleView._fcPressure && has("pressureHpa"))
+            out.push({
+                key: "pressureHpa",
+                label: i18n("Pressure"),
+                color: "#ab47bc",
+                fmt: function (v) {
+                    return wr.pressureValue(v);
+                }
+            });
+        if (simpleView._fcKp && has("kp"))
+            out.push({
+                key: "kp",
+                label: i18n("Kp index (G scale)"),
+                color: "#ffa726",
+                fmt: function (v) {
+                    return String(Math.round(v));
+                },
+                badge: function (i, key, v, e) {
+                    return "Kp " + v.toFixed(1) + " (" + ((e && e.gScale) || "G0") + ")";
+                }
+            });
+        if (simpleView._fcUv && has("uv"))
+            out.push({
+                key: "uv",
+                label: i18n("UV index"),
+                color: "#ffb300",
+                fmt: function (v) {
+                    return String(Math.round(v * 10) / 10);
+                }
+            });
+        if (simpleView._fcVis && has("visibilityKm"))
+            out.push({
+                key: "visibilityKm",
+                label: i18n("Visibility"),
+                color: "#90a4ae",
+                fmt: function (v) {
+                    return wr.visibilityValue(v);
+                }
+            });
+        return out;
+    }
+
+    Item {
+        id: graphForecast
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.minimumHeight: forecastGraphs.implicitHeight
+        implicitHeight: forecastGraphs.implicitHeight
+        visible: Plasmoid.configuration.simpleShowForecast !== false && simpleView._graphsLayout && simpleView._graphDays.length > 1
+
+        // What the chart asks its "view" for: value, date and day texts
+        QtObject {
+            id: graphAdapter
+            // (the same texts as the Forecast tab's daily graph)
+            function _isNum(v) {
+                return typeof v === "number" && isFinite(v);
+            }
+            function _temp(c) {
+                return _isNum(c) && weatherRoot ? weatherRoot.tempValue(c) : "--";
+            }
+            function _precip(mm) {
+                return _isNum(mm) && weatherRoot ? weatherRoot.precipSumText(mm) : "--";
+            }
+            /** The region's short date format without the year (day and month only) */
+            function _regionDayMonthPattern() {
+                var fmt = Qt.locale().dateFormat(Locale.ShortFormat);
+                var f = fmt.replace(/[\s.\/\-,]*y+[^dM]*$/, "")      // year at the end (with a trailing "г." and the like)
+                    .replace(/^\s*y+[\s.\/\-,]*/, "")              // year first
+                    .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
+                return f.trim() !== "" ? f : fmt;
+            }
+            /** The axis labels follow Appearance > Misc > Date format as it is set (a preset or a
+             *  custom pattern). Only the two "Region default" choices, which have no pattern of
+             *  their own, are shown as day and month. */
+            function _date(ds, entry) {
+                if (!weatherRoot || !ds)
+                    return "--";
+                var fmt = weatherRoot.dateFormatSetting;
+                if (fmt !== "locale-long" && fmt !== "locale-short" && fmt)
+                    return weatherRoot.formatIsoDate(ds, true);
+                var p = ds.substring(0, 10).split("-");
+                if (p.length !== 3)
+                    return "--";
+                return Qt.formatDate(new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)), _regionDayMonthPattern());
+            }
+            // the title shown above the pointer: "Today", else the day name and the date
+            function _day(ds, longName, entry) {
+                if (!weatherRoot || !ds)
+                    return "--";
+                var name = i18n("Today");
+                if (!entry || !entry.isToday) {
+                    var parts = ds.split("-");
+                    name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
+                }
+                return name + ", " + weatherRoot.formatIsoDate(ds, true);
+            }
+        }
+
+        ForecastChartStack {
+            id: forecastGraphs
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+            }
+            chartSource: simpleView._chartSource
+            active: graphForecast.visible
+            view: graphAdapter
+            days: simpleView._graphDays
+            metrics: []
+            showMain: true
+            mainIndex: 0
+            outerFlickable: null
+            // ONE compact graph (the Advanced mode's "Compact" graph style): temperature, icons and
+            // the precipitation strip; the other details are listed for the day under the pointer
+            combined: true
+            detailMetrics: simpleView._detailMetrics
+            glyphFont: simpleView.wiFontFamily
+
+            // The temperature graph: high and low lines (the colors of the Standard layout),
+            // a weather icon above every day, and the precipitation strip below.
+            configureMain: function (chart) {
+                chart.seriesDefs = Qt.binding(function () {
+                    return [
+                        {
+                            key: "maxC",
+                            color: "#ff6e40",
+                            label: i18n("High")
+                        },
+                        {
+                            key: "minC",
+                            color: "#42a5f5",
+                            label: i18n("Low")
+                        }
+                    ];
+                });
+                chart.precipLegend = i18n("Precipitation");
+                chart.showIcons = true;
+                chart.iconSize = Kirigami.Units.gridUnit * 2;
+                chart.iconAt = function (i) {
+                    // reads _graphDays, so the icons follow the data when it is refreshed
+                    var d = simpleView._graphDays[i];
+                    return d ? simpleView.resolveConditionIconFn(d.code, false, 48) : null;
+                };
+            }
+            // Qt Graphs missing or too old: use the KQuickCharts chart instead
+            onChartStatus: function (loader) {
+                if (loader.status !== Loader.Error || simpleView._chartSource !== simpleView._chartGraphsUrl)
+                    return;
+                // Switching the source from inside its own status change would be a binding
+                // loop (as in the Forecast tab), so do it a moment later.
+                Dbg.warn("Simple view", "Qt Graphs chart unavailable, using KDE Quick Charts");
+                Qt.callLater(function () {
+                    simpleView._chartSource = simpleView._chartKqcUrl;
+                });
+            }
+        }
+
+        // An info button in the bottom-right corner of the graph (it takes no room of its own,
+        // it sits over the corner): its tooltip says how to use the graph. Declared after the
+        // chart, so it is on top of it.
+        PlasmaCore.ToolTipArea {
+            anchors.right: forecastGraphs.right
+            anchors.bottom: forecastGraphs.bottom
+            anchors.rightMargin: Kirigami.Units.smallSpacing
+            anchors.bottomMargin: Kirigami.Units.smallSpacing
+            width: Kirigami.Units.iconSizes.small
+            height: Kirigami.Units.iconSizes.small
+            active: true
+            mainItem: Label {
+                width: Kirigami.Units.gridUnit * 18
+                wrapMode: Text.Wrap
+                text: i18n("Point at a day to see its details. Double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in.")
+            }
+            Kirigami.Icon {
+                anchors.fill: parent
+                source: "help-about"
+                opacity: 0.6
+            }
+        }
+    }
+
+    // ── SECTION 3b: Forecast squares (Forecast layout = Standard) ─────────────
     Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        visible: Plasmoid.configuration.simpleShowForecast !== false && weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0
+        visible: Plasmoid.configuration.simpleShowForecast !== false && !simpleView._graphsLayout && weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0
 
         RowLayout {
             anchors.fill: parent
@@ -420,7 +881,7 @@ ColumnLayout {
                             Layout.alignment: Qt.AlignHCenter
                             text: {
                                 if (!day) return "";
-                                if (dataIndex === 0) return i18n("Today");
+                                if (weatherRoot && weatherRoot.isDailyRowToday(dataIndex)) return i18n("Today");
                                 var ds = day.dateStr || "";
                                 if (ds) {
                                     var parts = ds.split("-");

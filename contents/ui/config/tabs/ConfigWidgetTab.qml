@@ -24,6 +24,7 @@ import QtQuick.Layouts
 import Qt.labs.platform as Platform
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasmoid
 
 ColumnLayout {
     id: widgetTab
@@ -48,6 +49,57 @@ ColumnLayout {
             Layout.preferredHeight: 1
             color: Kirigami.Theme.disabledTextColor
             opacity: 0.5
+        }
+    }
+
+    // How a "Graphs" layout arranges its graphs (the dropdown under the Daily / Hourly layout):
+    //   Separated - one graph for each detail that is switched on, with a shared pointer: pointing
+    //               at a day / hour shows its value in every graph at once
+    //   Compact   - ONE graph; the other details are shown for the day / hour under the pointer
+    // `modeProp` names the cfg_* property that holds the choice.
+    component GraphsModeBox: ColumnLayout {
+        id: gm
+        /** The KCM root that owns the cfg_* properties */
+        required property var cfgRoot
+        required property string modeProp
+        /** true: the hourly forecast (the hint says "hour" instead of "day") */
+        required property bool hourly
+        spacing: Kirigami.Units.smallSpacing
+
+        readonly property var _opts: [
+            {
+                text: i18n("Separated"),
+                value: "separate"
+            },
+            {
+                text: i18n("Compact"),
+                value: "compact"
+            }
+        ]
+        // anything unknown (an empty or an older value, e.g. "linked") counts as "separate"
+        readonly property string current: String(gm.cfgRoot[gm.modeProp] || "") === "compact" ? "compact" : "separate"
+
+        ComboBox {
+            textRole: "text"
+            model: gm._opts
+            currentIndex: {
+                for (var i = 0; i < gm._opts.length; i++)
+                    if (gm._opts[i].value === gm.current)
+                        return i;
+                return 0;
+            }
+            onActivated: gm.cfgRoot[gm.modeProp] = gm._opts[currentIndex].value
+        }
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            font: Kirigami.Theme.smallFont
+            text: {
+                if (gm.current === "compact")
+                    return gm.hourly ? i18n("One compact graph; point at an hour to see all the other details") : i18n("One compact graph; point at a day to see all the other details");
+                return gm.hourly ? i18n("A graph for each detail; point at an hour to see its value in all of them") : i18n("A graph for each detail; point at a day to see its value in all of them");
+            }
         }
     }
 
@@ -636,6 +688,40 @@ ColumnLayout {
         configRoot.cfg_widgetVisibleTabs = out.length === 0 ? "none" : out.join(";");
     }
 
+    // ── Tab order ─────────────────────────────────────────────────────────
+    // cfg_widgetTabOrder holds ALL tab ids in the order the tab bar shows them
+    // ("details;forecast;radar;history"). Which tabs are shown is still decided
+    // by cfg_widgetVisibleTabs; hidden tabs just keep their place in the order.
+    // Unknown ids are dropped and missing ones appended, so a damaged value is
+    // repaired the first time the list is dragged (FullView.qml reads it the same way).
+    function tabOrderList() {
+        var raw = String(configRoot.cfg_widgetTabOrder || "").split(";");
+        var out = [];
+        for (var i = 0; i < raw.length; ++i) {
+            var k = raw[i].trim();
+            if (tabIds.indexOf(k) >= 0 && out.indexOf(k) < 0)
+                out.push(k);
+        }
+        for (var j = 0; j < tabIds.length; ++j)
+            if (out.indexOf(tabIds[j]) < 0)
+                out.push(tabIds[j]);
+        return out;
+    }
+    function tabLabel(id) {
+        switch (id) {
+        case "details":
+            return i18n("Details");
+        case "forecast":
+            return i18n("Forecast");
+        case "radar":
+            // LibreWXR's map plays the weather's layers: the Weather Map.
+            return (Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr" ? i18n("Weather Maps") : i18n("Radar");
+        case "history":
+            return i18n("History");
+        }
+        return id;
+    }
+
     // Refresh both icon theme combos (General > Weather icon theme, Details >
     // Icon theme) after the icon theme scope dialog (configAppearance.qml)
     // applied a theme from another tab, or was cancelled.
@@ -866,6 +952,7 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Tabs & Header behavior
             // ═══════════════════════════════════════════════════════════════
+
             SectionHeader {
                 title: i18n("Tabs & Header Behavior")
                 Layout.columnSpan: _form1.columns
@@ -880,6 +967,33 @@ ColumnLayout {
             }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
+            }
+
+            Label {
+                text: i18n("Prepare widget in advance:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            ColumnLayout {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.smallSpacing
+                Switch {
+                    text: widgetTab.configRoot.cfg_popupKeepLoaded ? i18n("Enabled") : i18n("Disabled")
+                    checked: widgetTab.configRoot.cfg_popupKeepLoaded
+                    onToggled: widgetTab.configRoot.cfg_popupKeepLoaded = checked
+                }
+                // Shown only while the switch above is on.
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    visible: widgetTab.configRoot.cfg_popupKeepLoaded
+                    type: Kirigami.MessageType.Information
+                    showCloseButton: true
+                    text: i18n("The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup. The Radar tab has its own setting (Radar).")
+                }
             }
 
             Label {
@@ -962,6 +1076,162 @@ ColumnLayout {
                     onToggled: widgetTab.setTabVisible("history", checked)
                 }
             }
+            Label {
+                text: i18n("Tabs position:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            RowLayout {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                spacing: Kirigami.Units.largeSpacing
+                ComboBox {
+                    id: tabsPositionCombo
+                    Layout.preferredWidth: 200
+                    textRole: "text"
+                    model: [
+                        {
+                            text: i18n("Top"),
+                            value: "top"
+                        },
+                        {
+                            text: i18n("Bottom"),
+                            value: "bottom"
+                        }
+                    ]
+                    currentIndex: widgetTab.configRoot.cfg_widgetTabsPosition === "bottom" ? 1 : 0
+                    onActivated: widgetTab.configRoot.cfg_widgetTabsPosition = model[currentIndex].value
+                }
+            }
+
+            Label {
+                text: i18n("Tabs order:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form1.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            // Drag-and-drop list of the tabs. Same approach as GraphOrderList above: a working
+            // ListModel is moved live while dragging, and the order is written back to cfg_
+            // once the item is dropped.
+            ColumnLayout {
+                id: tabOrderBox
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
+                Layout.fillWidth: true
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 20
+                spacing: 0
+
+                // True while WE write the order, so the model is not rebuilt under the user's hands.
+                property bool _applyingOrder: false
+                // The saved order; changes from outside (config loaded, reset...) rebuild the list.
+                readonly property string _saved: widgetTab.configRoot.cfg_widgetTabOrder
+
+                ListModel {
+                    id: tabOrderModel
+                }
+
+                function _rebuildModel() {
+                    tabOrderModel.clear();
+                    var order = widgetTab.tabOrderList();
+                    for (var i = 0; i < order.length; ++i)
+                        tabOrderModel.append({
+                            tabId: order[i],
+                            tabText: widgetTab.tabLabel(order[i])
+                        });
+                }
+                // Writes the order shown in the list back to the config.
+                function _applyOrder() {
+                    var ids = [];
+                    for (var i = 0; i < tabOrderModel.count; ++i)
+                        ids.push(tabOrderModel.get(i).tabId);
+                    tabOrderBox._applyingOrder = true;
+                    widgetTab.configRoot.cfg_widgetTabOrder = ids.join(";");
+                    tabOrderBox._applyingOrder = false;
+                }
+                on_SavedChanged: {
+                    if (!tabOrderBox._applyingOrder)
+                        tabOrderBox._rebuildModel();
+                }
+                Component.onCompleted: tabOrderBox._rebuildModel()
+
+                Label {
+                    text: i18n("Drag to change the order of the tabs")
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    font: Kirigami.Theme.smallFont
+                    opacity: 0.7
+                }
+
+                ListView {
+                    id: tabOrderList
+                    Layout.fillWidth: true
+                    Layout.topMargin: Kirigami.Units.smallSpacing
+                    // the page around it scrolls, so this list just shows all of its rows
+                    Layout.preferredHeight: contentHeight
+                    interactive: false
+                    spacing: 0
+                    model: tabOrderModel
+                    displaced: Transition {
+                        YAnimator {
+                            duration: Kirigami.Units.longDuration
+                        }
+                    }
+                    delegate: Item {
+                        id: tabOrderDelegateRoot
+                        width: tabOrderList.width
+                        implicitHeight: tabOrderDelegateCol.implicitHeight
+                        ColumnLayout {
+                            id: tabOrderDelegateCol
+                            spacing: 0
+                            width: parent.width
+                            ItemDelegate {
+                                id: tabOrderRowDelegate
+                                Layout.fillWidth: true
+                                hoverEnabled: true
+                                down: false
+                                contentItem: RowLayout {
+                                    spacing: Kirigami.Units.smallSpacing
+                                    Kirigami.ListItemDragHandle {
+                                        listItem: tabOrderRowDelegate
+                                        listView: tabOrderList
+                                        onMoveRequested: function (oldIndex, newIndex) {
+                                            if (newIndex !== oldIndex)
+                                                tabOrderModel.move(oldIndex, newIndex, 1);
+                                        }
+                                        onDropped: tabOrderBox._applyOrder()
+                                    }
+                                    Label {
+                                        text: (model.index + 1) + "."
+                                        opacity: 0.6
+                                        Layout.preferredWidth: Kirigami.Units.gridUnit * 1.2
+                                    }
+                                    Label {
+                                        text: model.tabText
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                        // a tab that is switched off keeps its place in the order
+                                        opacity: widgetTab.isTabVisible(model.tabId) ? 1.0 : 0.5
+                                    }
+                                    Label {
+                                        visible: !widgetTab.isTabVisible(model.tabId)
+                                        text: i18n("Hidden")
+                                        font: Kirigami.Theme.smallFont
+                                        opacity: 0.6
+                                    }
+                                }
+                            }
+                            Kirigami.Separator {
+                                Layout.fillWidth: true
+                                opacity: 0.4
+                            }
+                        }
+                    }
+                }
+            }
+
             Label {
                 text: i18n("Sunrise / Sunset:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
@@ -1653,6 +1923,78 @@ ColumnLayout {
                     onToggled: widgetTab.configRoot.cfg_forecastShowToday = checked
                 }
             }
+            // Simple mode only: how the forecast of the Simple widget is drawn. (The Advanced mode
+            // has its own "Daily layout" under Daily Forecast Settings.) Own setting, so the two
+            // modes do not change each other's layout.
+            Label {
+                text: i18n("Forecast layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            ComboBox {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
+                textRole: "text"
+                readonly property var _opts: [
+                    {
+                        text: i18n("Standard"),
+                        value: "rows"
+                    },
+                    {
+                        text: i18n("Graphs"),
+                        value: "graphs"
+                    }
+                ]
+                model: _opts
+                currentIndex: widgetTab.configRoot.cfg_simpleForecastLayout === "graphs" ? 1 : 0
+                onActivated: widgetTab.configRoot.cfg_simpleForecastLayout = _opts[currentIndex].value
+            }
+            // Simple mode, "Graphs" layout: what the graph shows for the day under the pointer (the
+            // Advanced mode's "Compact" graph style). The same switches as "Show in daily forecast",
+            // without the drag-and-drop order; all on by default. Own settings, so the two modes do
+            // not change each other's.
+            Label {
+                text: i18n("Show in forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple" && widgetTab.configRoot.cfg_simpleForecastLayout === "graphs"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            StatSwitches {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple" && widgetTab.configRoot.cfg_simpleForecastLayout === "graphs"
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                defs: [
+                    {
+                        key: "wind",
+                        label: i18n("Wind"),
+                        cfg: "cfg_simpleForecastShowWind"
+                    },
+                    {
+                        key: "pressure",
+                        label: i18n("Pressure"),
+                        cfg: "cfg_simpleForecastShowPressure"
+                    },
+                    {
+                        key: "kp",
+                        label: i18n("Kp index/G"),
+                        cfg: "cfg_simpleForecastShowKpIndex"
+                    },
+                    {
+                        key: "uv",
+                        label: i18n("UV index"),
+                        cfg: "cfg_simpleForecastShowUvIndex"
+                    },
+                    {
+                        key: "vis",
+                        label: i18n("Visibility"),
+                        cfg: "cfg_simpleForecastShowVisibility"
+                    }
+                ]
+            }
             Label {
                 text: i18n("Auto-open hourly forecast:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
@@ -1723,24 +2065,29 @@ ColumnLayout {
             // ═══════════════════════════════════════════════════════════════
             // SECTION: Daily Forecast Settings
             // ═══════════════════════════════════════════════════════════════
+            // The whole section is for the Advanced mode: in Simple mode the forecast layout is
+            // chosen under General ("Forecast layout"), and the graph details / order do not apply.
             SectionHeader {
                 title: i18n("Daily Forecast Settings")
                 Layout.columnSpan: _form3.columns
                 Layout.topMargin: Kirigami.Units.largeSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
             Item {
                 // empty label cell: keeps the control in the second column
-                visible: _form3.columns === 2
+                visible: _form3.columns === 2 && (widgetTab.configRoot.cfg_widgetLayoutMode !== "simple")
                 implicitWidth: 0
                 implicitHeight: 0
             }
             Item {
                 Layout.preferredHeight: Kirigami.Units.smallSpacing
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
             }
 
             Label {
                 text: i18n("Daily layout:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
                 Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -1759,6 +2106,7 @@ ColumnLayout {
                     }
                 ]
                 model: _opts
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 currentIndex: {
                     var v = widgetTab.configRoot.cfg_forecastLayout;
                     for (var i = 0; i < _opts.length; i++)
@@ -1768,8 +2116,25 @@ ColumnLayout {
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastLayout = _opts[currentIndex].value
             }
+            // how the graphs are arranged (only with the "Graphs" layout)
+            Label {
+                text: i18n("Graphs style:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastLayout === "graphs"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            GraphsModeBox {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastLayout === "graphs"
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                modeProp: "cfg_forecastGraphsMode"
+                hourly: false
+            }
             Label {
                 text: i18n("Show in daily forecast:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 wrapMode: Text.Wrap
                 Layout.maximumWidth: Kirigami.Units.gridUnit * 14
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -1777,6 +2142,9 @@ ColumnLayout {
             }
             StatSwitches {
                 id: dailyStats
+                // Advanced mode only. GraphOrderList hides itself with its StatSwitches, so the
+                // "Daily graph order" title and list disappear in Simple mode too.
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple"
                 // in the second column, next to the title (the switches wrap only when the page is too narrow)
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
@@ -1912,6 +2280,22 @@ ColumnLayout {
                     return 0;
                 }
                 onActivated: widgetTab.configRoot.cfg_forecastHourlyLayout = _opts[currentIndex].value
+            }
+            // how the graphs are arranged (only with the "Graphs" layout)
+            Label {
+                text: i18n("Graphs style:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                Layout.topMargin: _form3.columns === 1 ? Kirigami.Units.smallSpacing * 2 : Kirigami.Units.smallSpacing
+            }
+            GraphsModeBox {
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_forecastHourlyLayout === "graphs"
+                Layout.fillWidth: true
+                cfgRoot: widgetTab.configRoot
+                modeProp: "cfg_forecastHourlyGraphsMode"
+                hourly: true
             }
             Label {
                 text: i18n("Sunrise/sunset markers:")
@@ -2109,7 +2493,8 @@ ColumnLayout {
             }
             RowLayout {
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode === "simple"
-                enabled: widgetTab.configRoot.cfg_simpleShowForecast
+                // the compass belongs to the Standard layout (the Graphs layout has no compasses)
+                enabled: widgetTab.configRoot.cfg_simpleShowForecast && widgetTab.configRoot.cfg_simpleForecastLayout !== "graphs"
                 Switch {
                     checked: widgetTab.configRoot.cfg_simpleShowForecastCompass
                     onToggled: widgetTab.configRoot.cfg_simpleShowForecastCompass = checked

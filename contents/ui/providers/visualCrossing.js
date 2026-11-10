@@ -25,6 +25,8 @@
  * Docs: https://www.visualcrossing.com/resources/documentation/weather-api/
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Visual Crossing icon string to a WMO weather code.
  * VC uses an extended Dark Sky-compatible icon set (icons2).
@@ -92,6 +94,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._vcKey();
     if (!key) {
+        Dbg.log("Visual Crossing", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -103,7 +106,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&include=current,days,alerts"
         + "&iconSet=icons2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Visual Crossing", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -222,11 +225,58 @@ function _parseAlerts(r, alerts) {
 }
 
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    function buildEntry(h) {
+        return {
+            hour: h.datetime ? h.datetime.substring(0, 5) : "--",
+            tempC: h.temp,
+            code: _iconToWmo(h.icon),
+            windKmh: (h.windspeed !== undefined) ? h.windspeed : NaN,
+            windDeg: (h.winddir !== undefined) ? h.winddir : NaN,
+            humidity: (h.humidity !== undefined) ? Math.round(h.humidity) : NaN,
+            precipProb: (h.precipprob !== undefined) ? Math.round(h.precipprob) : NaN,
+            precipMm: (h.precip !== undefined) ? h.precip : NaN
+        };
+    }
+    var nextDateStr = _nextDateStr(dateStr);
+    var arr = [];
+    if (d.days) {
+        var today = d.days.filter(function (day) { return day.datetime === dateStr; })[0];
+        if (today && today.hours)
+            today.hours.forEach(function (h) { arr.push(buildEntry(h)); });
+
+        var tomorrow = d.days.filter(function (day) { return day.datetime === nextDateStr; })[0];
+        if (tomorrow && tomorrow.hours && tomorrow.hours.length > 0) {
+            var closing = buildEntry(tomorrow.hours[0]);
+            closing.isNextDay = true;
+            arr.push(closing);
+        }
+    }
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._vcKey();
     if (!key) {
+        Dbg.log("Visual Crossing", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -243,7 +293,7 @@ function fetchHourly(service, W, dateStr) {
         + "&include=hours"
         + "&iconSet=icons2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Visual Crossing", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -260,33 +310,54 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
-        function buildEntry(h) {
-            return {
-                hour: h.datetime ? h.datetime.substring(0, 5) : "--",
-                tempC: h.temp,
-                code: _iconToWmo(h.icon),
-                windKmh: (h.windspeed !== undefined) ? h.windspeed : NaN,
-                windDeg: (h.winddir !== undefined) ? h.winddir : NaN,
-                humidity: (h.humidity !== undefined) ? Math.round(h.humidity) : NaN,
-                precipProb: (h.precipprob !== undefined) ? Math.round(h.precipprob) : NaN,
-                precipMm: (h.precip !== undefined) ? h.precip : NaN
-            };
+
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
+
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._vcKey();
+    if (!key) {
+        Dbg.log("Visual Crossing", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
+
+    // Request dateStr through the following day (not dateStr alone), so the
+    // one response also carries the next day's 00:00 hour needed to close
+    // the forecast's loop at midnight.
+    var nextDateStr = _nextDateStr(dateStr);
+    var url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
+        + service.latitude + "," + service.longitude
+        + "/" + firstDate + "/" + _nextDateStr(lastDate)
+        + "?key=" + encodeURIComponent(key)
+        + "&unitGroup=metric"
+        + "&include=hours"
+        + "&iconSet=icons2";
+
+    var req = Dbg.xhr("Visual Crossing", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
+        }
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
         }
 
-        var arr = [];
-        if (d.days) {
-            var today = d.days.filter(function (day) { return day.datetime === dateStr; })[0];
-            if (today && today.hours)
-                today.hours.forEach(function (h) { arr.push(buildEntry(h)); });
 
-            var tomorrow = d.days.filter(function (day) { return day.datetime === nextDateStr; })[0];
-            if (tomorrow && tomorrow.hours && tomorrow.hours.length > 0) {
-                var closing = buildEntry(tomorrow.hours[0]);
-                closing.isNextDay = true;
-                arr.push(closing);
-            }
-        }
-        r.hourlyData = arr;
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

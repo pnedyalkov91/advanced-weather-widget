@@ -24,10 +24,17 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.plasma.components as PlasmaComponents
 import "tabs"
+import "../js/debug.js" as Dbg
 
 KCM.AbstractKCM {
     id: root
     Kirigami.ColumnView.fillWidth: true
+
+    // Debug mode (Settings -> Misc -> Debug). This dialog runs in its own QML
+    // engine, so js/debug.js has to be told separately from the applet itself.
+    QtObject {
+        Component.onCompleted: Dbg.setEnabled(Plasmoid.configuration.debugMode === true, "settings dialog")
+    }
 
     // ── Config properties ─────────────────────────────────────────────────
     property string cfg_weatherProvider: "adaptive"
@@ -62,6 +69,8 @@ KCM.AbstractKCM {
     property bool cfg_radarKeepLoaded: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
+    property bool cfg_alertsLanguageNative: true
+    property string cfg_alertsLanguageByLocation: "{}"
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
@@ -159,7 +168,7 @@ KCM.AbstractKCM {
                 root.radarGpuTestState = 0;
                 root.radarGpuTestMessage = "";
             }
-            console.log("[Advanced Weather Widget Config] radar GPU workaround status:", root.radarGpuTestMessage || "(off, nothing lingering)");
+            Dbg.log("Config/General", "radar GPU workaround status:", root.radarGpuTestMessage || "(off, nothing lingering)");
             return;
         }
 
@@ -173,7 +182,7 @@ KCM.AbstractKCM {
             root.radarGpuTestState = 4;
             root.radarGpuTestMessage = i18n("The workaround script wasn't found on disk. Try toggling the option off and on again.");
         }
-        console.log("[Advanced Weather Widget Config] radar GPU workaround status:", root.radarGpuTestMessage);
+        Dbg.log("Config/General", "radar GPU workaround status:", root.radarGpuTestMessage);
     }
 
     Plasma5Support.DataSource {
@@ -190,22 +199,22 @@ KCM.AbstractKCM {
             var out = (data["stdout"] || "").toString().trim();
             if (sourceName.indexOf("if grep -qs") === 0) {
                 root._radarGpuScriptPresent = out.indexOf("SCRIPT:PRESENT") !== -1;
-                console.log("[Advanced Weather Widget Config] radar GPU workaround script on disk:", root._radarGpuScriptPresent ? "present, contains the expected export line" : "missing, or doesn't match the expected export line", "(" + root._radarGpuScriptPath + ")");
+                Dbg.log("Config/General", "radar GPU workaround script on disk:", root._radarGpuScriptPresent ? "present, contains the expected export line" : "missing, or doesn't match the expected export line", "(" + root._radarGpuScriptPath + ")");
                 root._evaluateGpuStatus();
             } else if (sourceName.indexOf("if [ \"$QTWEBENGINE_CHROMIUM_FLAGS\"") === 0) {
                 root._radarGpuLiveActive = out.indexOf("LIVE:ACTIVE") !== -1;
-                console.log("[Advanced Weather Widget Config] QTWEBENGINE_CHROMIUM_FLAGS in this session:", root._radarGpuLiveActive ? "\"--disable-gpu-compositing\" - workaround is active" : "not set to the workaround value - not active in this session yet");
+                Dbg.log("Config/General", "QTWEBENGINE_CHROMIUM_FLAGS in this session:", root._radarGpuLiveActive ? "\"--disable-gpu-compositing\" - workaround is active" : "not set to the workaround value - not active in this session yet");
                 root._evaluateGpuStatus();
             } else if (sourceName.indexOf("if [ -d /run/systemd/system ]") === 0) {
                 root.radarGpuSystemdState = out.indexOf("SYSTEMD:YES") !== -1 ? 1 : 2;
-                console.log("[Advanced Weather Widget Config] systemd-managed session:", root.radarGpuSystemdState === 1 ? "yes" : "no (or systemctl unavailable)");
+                Dbg.log("Config/General", "systemd-managed session:", root.radarGpuSystemdState === 1 ? "yes" : "no (or systemctl unavailable)");
                 // Refresh in case a status was already showing the
                 // generic/unknown wording while this was still in flight.
                 root._evaluateGpuStatus();
             } else if (data["exit code"] !== 0) {
-                console.warn("[Advanced Weather Widget Config] radar GPU workaround command failed:", sourceName, "stderr=", data["stderr"]);
+                Dbg.warn("Config/General", "radar GPU workaround command failed:", sourceName, "stderr=", data["stderr"]);
             } else {
-                console.log("[Advanced Weather Widget Config] radar GPU workaround command OK:", sourceName);
+                Dbg.log("Config/General", "radar GPU workaround command OK:", sourceName);
             }
             disconnectSource(sourceName);
         }
@@ -242,7 +251,7 @@ KCM.AbstractKCM {
             root.radarGpuTestMessage = i18n("Checking…");
             root._radarGpuScriptPresent = undefined;
             root._radarGpuLiveActive = undefined;
-            console.log("[Advanced Weather Widget Config] checking radar GPU workaround status: script path =", root._radarGpuScriptPath, ", expected export = QTWEBENGINE_CHROMIUM_FLAGS=\"--disable-gpu-compositing\"");
+            Dbg.log("Config/General", "checking radar GPU workaround status: script path =", root._radarGpuScriptPath, ", expected export = QTWEBENGINE_CHROMIUM_FLAGS=\"--disable-gpu-compositing\"");
             connectSource("if grep -qs 'QTWEBENGINE_CHROMIUM_FLAGS=\"--disable-gpu-compositing\"' " + root._radarGpuScriptPath + "; then echo SCRIPT:PRESENT; else echo SCRIPT:MISSING; fi");
             connectSource("if [ \"$QTWEBENGINE_CHROMIUM_FLAGS\" = \"--disable-gpu-compositing\" ]; then echo LIVE:ACTIVE; else echo LIVE:INACTIVE; fi");
         }
@@ -293,7 +302,7 @@ KCM.AbstractKCM {
         locationCheckState = 1;
         locationCheckMessage = i18n("Checking location availability…");
 
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Config/General", "verifyProviderLocation");
         var url;
         if (provider === "openWeather") {
             var owKey = (cfg_owApiKey || "").trim();
@@ -469,7 +478,7 @@ KCM.AbstractKCM {
         apiTestState = 1;
         apiTestMessage = i18n("Testing connection…");
 
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Config/General", "testApiKey");
         var url;
         var useAuthHeader = false;
         if (root.isOpenWeather) {

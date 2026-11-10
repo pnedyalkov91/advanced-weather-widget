@@ -30,6 +30,8 @@
  * .pragma library - no Qt globals, pure JS.
  */
 .pragma library
+.import "weather.js" as W
+.import "debug.js" as Dbg
 
 // ── KDE system icon names ───────────────────────────────────────────────────
 // These are standard Breeze/Plasma icon names that exist in most KDE themes.
@@ -148,7 +150,7 @@ var _wiGlyphs = {
  */
 function resolve(itemId, iconSize, iconsBaseDir, svgTheme) {
     var isKde = (svgTheme === "kde");
-    var theme = isKde ? "flat-color" : (svgTheme || "symbolic");
+    var theme = _themeDir(isKde ? "flat-color" : (svgTheme || "symbolic"));
     var isMask = isKde ? false : (theme === "symbolic" || theme === "symbolic-light");
     var kdeIcon = _kdeIcons[itemId] || "";
     var svgStem = _svgStems[itemId] || "";
@@ -188,7 +190,7 @@ function resolve(itemId, iconSize, iconsBaseDir, svgTheme) {
 function resolveCondition(weatherCode, isNight, iconSize, iconsBaseDir, svgTheme) {
     var isKde = (svgTheme === "kde" || svgTheme === "kde-symbolic");
     var isMaskOverride = (svgTheme === "kde-symbolic");
-    var theme = isKde ? (isMaskOverride ? "symbolic" : "flat-color") : (svgTheme || "symbolic");
+    var theme = _themeDir(isKde ? (isMaskOverride ? "symbolic" : "flat-color") : (svgTheme || "symbolic"));
     var isMask = isKde ? isMaskOverride : (theme === "symbolic" || theme === "symbolic-light");
     var kdeIcon = _conditionKdeIcon(weatherCode, isNight);
     if (isMaskOverride && kdeIcon.length > 0) kdeIcon += "-symbolic";
@@ -224,7 +226,7 @@ function resolveCondition(weatherCode, isNight, iconSize, iconsBaseDir, svgTheme
  */
 function resolveMoonPhase(moonPhaseSvgStem, iconSize, iconsBaseDir, svgTheme) {
     var isKde = (svgTheme === "kde");
-    var theme = isKde ? "flat-color" : (svgTheme || "symbolic");
+    var theme = _themeDir(isKde ? "flat-color" : (svgTheme || "symbolic"));
     var isMask = isKde ? false : (theme === "symbolic" || theme === "symbolic-light");
     var svgSource = "";
     if (moonPhaseSvgStem && iconsBaseDir) {
@@ -309,15 +311,59 @@ function svgStem(itemId) {
 
 /**
  * Builds a full SVG URL for a given stem.
+ *
+ * Returns "" (never a relative string) when the stem is missing or
+ * iconsBaseDir is not a file reference.  A relative "symbolic/32/wi-x.svg" is
+ * not a file to any consumer - Kirigami.Icon treats it as a theme icon name
+ * and Qt then walks every theme directory for it (and for each dash-stripped
+ * variant).  The base directory has to be resolved in QML
+ * (Qt.resolvedUrl("../icons/")); this pragma-library module only validates it.
+ * An empty result means "draw nothing yet" - callers already treat "" that way.
  */
 function svgUrl(stem, iconSize, iconsBaseDir, svgTheme) {
-    var theme = svgTheme || "symbolic";
-    return iconsBaseDir + theme + "/" + iconSize + "/wi-" + stem + ".svg";
+    var base = String(iconsBaseDir === undefined || iconsBaseDir === null ? "" : iconsBaseDir);
+    if (!stem || base.length === 0 || (base.indexOf("://") < 0 && base.charAt(0) !== "/")) {
+        Dbg.warn("Icons", "svgUrl: no usable icons base dir for stem '" + stem + "' (got '" + base + "') - binding evaluated before the base dir was resolved?");
+        return "";
+    }
+    var theme = _themeDir(svgTheme || "symbolic");
+    return base + theme + "/" + iconSize + "/wi-" + stem + ".svg";
+}
+
+// ── KDE theme names known to be missing ──────────────────────────────────────
+// Qt's icon loader does not cache negative lookups, so every WeatherIcon that
+// asks the current theme for a name it lacks (Breeze has no "raindrop",
+// "flood", "weather-sunrise", ...) pays the full theme-chain walk again.
+// WeatherIcon records a name here the first time the theme reports it missing
+// (and only when it has a bundled fallback to draw instead); later icons for
+// the same name skip straight to the bundled artwork.  Module state lives for
+// the life of the QML engine - a theme switched at runtime keeps drawing the
+// bundled fallback for these names until plasmashell restarts, which is a
+// complete, consistent set, so that is a benign degrade.
+var _kdeMissing = {};
+
+function markKdeIconMissing(name) {
+    if (name)
+        _kdeMissing[name] = true;
+}
+
+function isKdeIconMissing(name) {
+    return _kdeMissing[name] === true;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Internal helpers
 // ══════════════════════════════════════════════════════════════════════════════
+
+// "symbolic-light" (the panel's light symbolic variant) has no folder of its
+// own: the symbolic artwork is a single black shape (fill="currentColor") that
+// is tinted at draw time with the theme's text colour, so it is already dark on
+// light themes and light on dark ones.  The variant only has to pick the same
+// files, and still counts as a mask (the isMask checks compare the original
+// theme name / the "symbolic" folder, both true here).
+function _themeDir(theme) {
+    return theme === "symbolic-light" ? "symbolic" : theme;
+}
 
 // True when `code` isn't a usable WMO weather code - missing (null/undefined),
 // still loading (NaN), or the widget's own "genuinely unavailable" sentinel
@@ -333,35 +379,12 @@ function _isUnknownCode(code) {
         (typeof code === "number" && isNaN(code)) || code < 0;
 }
 
+// Single source of truth for the WMO -> KDE icon mapping is weather.js
+// (W.weatherCodeToIcon), the same function the panel and tray use. This
+// function only adds the null/NaN guard that weather.js does not have.
 function _conditionKdeIcon(code, night) {
-    var n = night ? true : false;
-    var d = n ? "night" : "day";
-
     if (_isUnknownCode(code)) return "weather-none-available";
-    if (code === 0)  return n ? "weather-clear-night" : "weather-clear";
-    if (code === 1)  return n ? "weather-few-clouds-night" : "weather-few-clouds";
-    if (code === 2)  return "weather-clouds-" + d;
-    if (code === 3)  return "weather-many-clouds";
-    if (code === 45 || code === 48) return "weather-fog";
-    if (code === 51 || code === 53 || code === 55) return "weather-showers-scattered-" + d;
-    if (code === 56) return "weather-freezing-scattered-rain-" + d;
-    if (code === 57) return "weather-freezing-rain-" + d;
-    if (code === 61) return "weather-showers-scattered-" + d;
-    if (code === 63 || code === 65) return "weather-showers-" + d;
-    if (code === 66) return "weather-freezing-scattered-rain-" + d;
-    if (code === 67) return "weather-freezing-rain-" + d;
-    if (code === 71) return "weather-snow-scattered-" + d;
-    if (code === 73 || code === 75) return "weather-snow-" + d;
-    if (code === 77) return "weather-snow-scattered-" + d;
-    if (code === 80) return "weather-showers-scattered-" + d;
-    if (code === 81 || code === 82) return "weather-showers-" + d;
-    if (code === 85) return "weather-snow-scattered-" + d;
-    if (code === 86) return "weather-snow-" + d;
-    if (code === 95) return "weather-storm-" + d;
-    if (code === 96) return "weather-showers-scattered-storm-" + d;
-    if (code === 99) return "weather-snow-scattered-storm-" + d;
-
-    return "weather-few-clouds-night";
+    return W.weatherCodeToIcon(code, night ? true : false, false);
 }
 
 function _conditionSvgStem(code, night) {

@@ -26,6 +26,8 @@
  * Non-pragma JS - accesses config via service properties.
  */
 
+.import "../js/debug.js" as Dbg
+
 // ISO 3166-1 alpha-2 → MeteoAlarm feed slug
 var _isoToSlug = {
     "AD": "andorra",
@@ -79,7 +81,7 @@ function fetchAlerts(service) {
 
     // US locations: use NWS alerts API
     if (isoCode === "US") {
-        console.log("[Alerts] countryCode=US → fetching NWS alerts");
+        Dbg.log("Alerts", "countryCode=US → fetching NWS alerts");
         _fetchNws(service);
         return;
     }
@@ -87,7 +89,7 @@ function fetchAlerts(service) {
     // If countryCode is not set, try a quick bounding-box check for the US
     // (CONUS + Alaska + Hawaii) to avoid the Nominatim round-trip.
     if (isoCode.length === 0 && _looksLikeUS(service.latitude, service.longitude)) {
-        console.log("[Alerts] no countryCode but coordinates look like US → fetching NWS alerts");
+        Dbg.log("Alerts", "no countryCode but coordinates look like US → fetching NWS alerts");
         _fetchNws(service);
         return;
     }
@@ -95,17 +97,17 @@ function fetchAlerts(service) {
     var slug = _isoToSlug[isoCode];
 
     if (slug) {
-        console.log("[Alerts] countryCode=" + isoCode + " → fetching MeteoAlarm (" + slug + ")");
+        Dbg.log("Alerts", "countryCode=" + isoCode + " → fetching MeteoAlarm (" + slug + ")");
         _fetchMeteoAlarm(service, slug, function (ok) {
             if (!ok) {
                 _fetchMetNo(service);
             }
         });
     } else if (isoCode.length > 0) {
-        console.log("[Alerts] countryCode=" + isoCode + " → not supported by MeteoAlarm or NWS");
+        Dbg.log("Alerts", "countryCode=" + isoCode + " → not supported by MeteoAlarm or NWS");
     } else {
         // Country code not set - try reverse-geocoding to determine it
-        console.log("[Alerts] no countryCode → reverse-geocoding via Nominatim");
+        Dbg.log("Alerts", "no countryCode → reverse-geocoding via Nominatim");
         _resolveCountryThenFetch(service);
     }
 }
@@ -138,7 +140,7 @@ function _resolveCountryThenFetch(service) {
     // Use zoom=10 so we also get county/state - avoids a second Nominatim
     // call (and possible rate-limit) inside _fetchMeteoAlarm.
     // Use accept-language=en for Latin-script admin names.
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts", "_resolveCountryThenFetch");
     req.open("GET",
         "https://nominatim.openstreetmap.org/reverse?lat="
         + encodeURIComponent(lat)
@@ -172,18 +174,18 @@ function _resolveCountryThenFetch(service) {
         }
         var slug = _isoToSlug[isoCode];
         if (isoCode === "US") {
-            console.log("[Alerts] Nominatim resolved US → fetching NWS alerts");
+            Dbg.log("Alerts", "Nominatim resolved US → fetching NWS alerts");
             _fetchNws(service);
         } else if (slug) {
-            console.log("[Alerts] Nominatim resolved " + isoCode + " → fetching MeteoAlarm (" + slug + ")");
+            Dbg.log("Alerts", "Nominatim resolved " + isoCode + " → fetching MeteoAlarm (" + slug + ")");
             _fetchMeteoAlarm(service, slug, function (ok) {
                 if (!ok)
                     _fetchMetNo(service);
             }, adminTerms);
         } else if (isoCode.length > 0) {
-            console.log("[Alerts] Nominatim resolved " + isoCode + " → not supported");
+            Dbg.log("Alerts", "Nominatim resolved " + isoCode + " → not supported");
         } else {
-            console.warn("[Alerts] Nominatim reverse-geocode failed or returned no country");
+            Dbg.warn("Alerts", "Nominatim reverse-geocode failed or returned no country");
         }
     };
     req.send();
@@ -211,7 +213,8 @@ function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
         try {
             var alerts = _parseMeteoAlarmAlerts(
                 state.feedData, service.locationName, state.localTerms,
-                service.latitude, service.longitude);
+                service.latitude, service.longitude,
+                service.alertsLanguageForLocation());
             r.weatherAlerts = alerts;
             callback(true);
         } catch (e) {
@@ -220,7 +223,7 @@ function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
     }
 
     // 1) Fetch MeteoAlarm feed
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts", "_fetchMeteoAlarm");
     req.open("GET", feedUrl);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -254,7 +257,7 @@ function _fetchMeteoAlarm(service, slug, callback, prefetchedTerms) {
 
 function _getLocalAdminTerms(service, gen, lat, lon, callback) {
     if (!lat || !lon) { callback([]); return; }
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts", "_getLocalAdminTerms");
     // Use accept-language=en so we always get Latin-script names.
     // This is essential for countries like Greece (Cyrillic/Greek script)
     // where Nominatim defaults would return non-Latin names that can't
@@ -290,7 +293,7 @@ function _getLocalAdminTerms(service, gen, lat, lon, callback) {
     req.send();
 }
 
-function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
+function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon, preferredLang) {
     var now = new Date();
     var alerts = [];
     var userLat = parseFloat(lat);
@@ -324,7 +327,7 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
             return;
         var infos = entry.alert.info;
         // Pick local-language info block for display text
-        var localInfo = _pickLocalInfo(infos);
+        var localInfo = _pickLocalInfo(infos, preferredLang);
         if (!localInfo)
             return;
 
@@ -464,8 +467,18 @@ function _parseMeteoAlarmAlerts(data, locationName, localTerms, lat, lon) {
 /**
  * Pick the local-language info block (non-English) from the CAP alert.
  * Falls back to the first info block if no local language is found.
+ * When preferredLang (primary subtag, e.g. "fr") is given and an info block
+ * has that language ("fr" matches "fr-BE"), that block wins.
  */
-function _pickLocalInfo(infos) {
+function _pickLocalInfo(infos, preferredLang) {
+    var pref = (preferredLang || "").toLowerCase();
+    if (pref.length > 0) {
+        for (var p = 0; p < infos.length; ++p) {
+            var l = (infos[p].language || "").toLowerCase();
+            if (l === pref || l.indexOf(pref + "-") === 0 || l.indexOf(pref + "_") === 0)
+                return infos[p];
+        }
+    }
     var local = null;
     var english = null;
     for (var i = 0; i < infos.length; ++i) {
@@ -621,7 +634,7 @@ function _fetchMetNo(service) {
         + "?lat=" + service.latitude
         + "&lon=" + service.longitude
         + "&lang=en";
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts", "_fetchMetNo");
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");
@@ -720,7 +733,7 @@ function _fetchNws(service) {
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
     if (isNaN(lat) || isNaN(lon)) {
-        console.warn("[Alerts/NWS] invalid coordinates:", service.latitude, service.longitude);
+        Dbg.warn("Alerts/NWS", "invalid coordinates:", service.latitude, service.longitude);
         return;
     }
 
@@ -733,9 +746,9 @@ function _fetchNws(service) {
         + latStr + "," + lonStr
         + "&status=actual&message_type=alert,update";
 
-    console.log("[Alerts/NWS] fetching:", url);
+    Dbg.log("Alerts/NWS", "fetching:", url);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts", "_fetchNws");
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
@@ -745,18 +758,18 @@ function _fetchNws(service) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            console.warn("[Alerts/NWS] HTTP", req.status, "for", url);
+            Dbg.warn("Alerts/NWS", "HTTP", req.status, "for", url);
             return;
         }
         try {
             var data = JSON.parse(req.responseText);
             var alerts = _parseNwsAlerts(data);
-            console.log("[Alerts/NWS] parsed", alerts.length, "active alerts");
+            Dbg.log("Alerts/NWS", "parsed", alerts.length, "active alerts");
             if (alerts.length > 0) {
                 r.weatherAlerts = alerts;
             }
         } catch (e) {
-            console.warn("[Alerts/NWS] parse error:", e);
+            Dbg.warn("Alerts/NWS", "parse error:", e);
         }
     };
     req.send();

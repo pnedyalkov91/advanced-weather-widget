@@ -24,6 +24,8 @@
  * Docs: https://www.weatherbit.io/api
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Weatherbit weather code to a WMO weather code.
  */
@@ -75,6 +77,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._wbKey();
     if (!key) {
+        Dbg.log("Weatherbit", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -85,7 +88,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&key=" + encodeURIComponent(key)
         + "&units=M";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Weatherbit", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -151,7 +154,7 @@ function _fetchDailyForecast(service, W, gen) {
         + "&units=M"
         + "&days=" + Math.min(service.forecastDays, 16);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Weatherbit", "_fetchDailyForecast");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -204,11 +207,70 @@ function _fetchDailyForecast(service, W, gen) {
 }
 
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    if (d.data) {
+        d.data.forEach(function (h) {
+            // timestamp_local is "yyyy-MM-ddTHH:mm:ss"
+            var dtStr = h.timestamp_local || h.datetime || "";
+            var datePart = dtStr.substring(0, 10);
+            var isTarget = datePart === dateStr;
+            var isClosing = !nextEntry && datePart === nextDateStr;
+            if (!isTarget && !isClosing) return;
+
+            var dt = new Date(dtStr);
+            var wCode = (h.weather && h.weather.code !== undefined) ? h.weather.code : undefined;
+
+            var entry = {
+                hour: Qt.formatTime(dt, "HH:mm"),
+                tempC: h.temp,
+                code: _codeToWmo(wCode),
+                windKmh: (h.wind_spd !== undefined) ? h.wind_spd * 3.6 : NaN,
+                windDeg: (h.wind_dir !== undefined) ? h.wind_dir : NaN,
+                humidity: (h.rh !== undefined) ? Math.round(h.rh) : NaN,
+                precipProb: (h.pop !== undefined) ? Math.round(h.pop) : NaN,
+                precipMm: (h.precip !== undefined) ? h.precip : NaN
+            };
+            if (isTarget) {
+                arr.push(entry);
+            } else {
+                // d.data is chronological, so the first match for the
+                // next date is its earliest hour - append it to close
+                // the loop at midnight. Only present when the fixed
+                // 48h window above happens to reach that far.
+                entry.isNextDay = true;
+                nextEntry = entry;
+            }
+        });
+    }
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._wbKey();
     if (!key) {
+        Dbg.log("Weatherbit", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -220,7 +282,7 @@ function fetchHourly(service, W, dateStr) {
         + "&units=M"
         + "&hours=48";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Weatherbit", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -237,45 +299,47 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        if (d.data) {
-            d.data.forEach(function (h) {
-                // timestamp_local is "yyyy-MM-ddTHH:mm:ss"
-                var dtStr = h.timestamp_local || h.datetime || "";
-                var datePart = dtStr.substring(0, 10);
-                var isTarget = datePart === dateStr;
-                var isClosing = !nextEntry && datePart === nextDateStr;
-                if (!isTarget && !isClosing) return;
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
 
-                var dt = new Date(dtStr);
-                var wCode = (h.weather && h.weather.code !== undefined) ? h.weather.code : undefined;
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._wbKey();
+    if (!key) {
+        Dbg.log("Weatherbit", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
 
-                var entry = {
-                    hour: Qt.formatTime(dt, "HH:mm"),
-                    tempC: h.temp,
-                    code: _codeToWmo(wCode),
-                    windKmh: (h.wind_spd !== undefined) ? h.wind_spd * 3.6 : NaN,
-                    windDeg: (h.wind_dir !== undefined) ? h.wind_dir : NaN,
-                    humidity: (h.rh !== undefined) ? Math.round(h.rh) : NaN,
-                    precipProb: (h.pop !== undefined) ? Math.round(h.pop) : NaN,
-                    precipMm: (h.precip !== undefined) ? h.precip : NaN
-                };
-                if (isTarget) {
-                    arr.push(entry);
-                } else {
-                    // d.data is chronological, so the first match for the
-                    // next date is its earliest hour - append it to close
-                    // the loop at midnight. Only present when the fixed
-                    // 48h window above happens to reach that far.
-                    entry.isNextDay = true;
-                    nextEntry = entry;
-                }
-            });
+    var url = "https://api.weatherbit.io/v2.0/forecast/hourly"
+        + "?lat=" + service.latitude
+        + "&lon=" + service.longitude
+        + "&key=" + encodeURIComponent(key)
+        + "&units=M"
+        + "&hours=48";
+
+    var req = Dbg.xhr("Weatherbit", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
         }
-        if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

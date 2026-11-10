@@ -44,6 +44,7 @@ import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
 import "js/tempColors.js" as TempColorsJS
 import "components"
+import "js/debug.js" as Dbg
 
 Item {
     id: forecastRoot
@@ -65,6 +66,8 @@ Item {
     // ── Auto-open: expand the first available day's hourly forecast ────────
     readonly property bool autoOpen: Plasmoid.configuration.forecastAutoOpen !== false
     property bool _autoOpenDone: false
+    // Which day/location/provider the open first day's hours were fetched for (see _doAutoOpen)
+    property string _autoOpenKey: ""
 
     // ── Expand-all: show hourly for every day simultaneously ───────────────
     readonly property bool expandAll: Plasmoid.configuration.forecastExpandAll === true
@@ -96,7 +99,12 @@ Item {
             _perDayHourlyData = {};
     }
 
-    function _startExpandAll() {
+    // reload=true: new weather data has just arrived, so every day is asked from the provider again;
+    // otherwise days whose hours were fetched in full a moment ago are reused.
+    property bool _expandAllReload: false
+    function _startExpandAll(reload) {
+        _expandAllReload = reload === true;
+        Dbg.log("Forecast", "expand-all started (" + (reload === true ? "new weather data → every day is asked again" : "cached hours are reused when fresh") + "), popup visible=" + forecastRoot.visible + ", forecast days in data=" + (weatherRoot ? weatherRoot.dailyData.length : 0));
         if (!weatherRoot || weatherRoot.dailyData.length === 0)
             return;
         _expandAllFetchGeneration++;
@@ -137,7 +145,7 @@ Item {
                         forecastRoot._expandAllActiveFetches = Math.max(0, forecastRoot._expandAllActiveFetches - 1);
                         if (forecastRoot._expandAllQueue.length > 0)
                             expandAllFetchPump.restart();
-                    });
+                    }, !forecastRoot._expandAllReload);
                 })(dateStr, generation);
         }
     }
@@ -186,24 +194,34 @@ Item {
             _doAutoOpen();
     }
 
-    function _doAutoOpen() {
+    function _doAutoOpen(reload) {
         if (_autoOpenDone)
             return;
         if (!weatherRoot || weatherRoot.dailyData.length === 0)
             return;
         _autoOpenDone = true;
         if (expandAll) {
+            Dbg.log("Forecast", "Forecast tab shown → expand-all is on, loading every day");
             _startExpandAll();
             return;
         }
         if (!autoOpen)
             return;
+        Dbg.log("Forecast", "Forecast tab shown → opening the first day automatically" + (reload === true ? " (new weather data)" : ""));
         var firstDataIndex = forecastRoot.showToday ? 0 : 1;
         if (firstDataIndex >= weatherRoot.dailyData.length)
             return;
+        var firstDate = weatherRoot.dailyData[firstDataIndex].dateStr || "";
+        var openKey = firstDate + "|" + Plasmoid.configuration.latitude + "," + Plasmoid.configuration.longitude + "|" + (Plasmoid.configuration.weatherProvider || "");
+        // Coming back to the Forecast tab (or reopening the popup) with the first day still open for the
+        // same day, place and provider: keep its hours on screen while they reload, instead of emptying
+        // the panel and showing "Loading hourly data..." every time.
+        var keepHours = forecastRoot.expandedIndex === 0 && weatherRoot.hourlyData && weatherRoot.hourlyData.length > 0 && forecastRoot._autoOpenKey === openKey;
         forecastRoot.expandedIndex = 0;
-        weatherRoot.hourlyData = [];
-        weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[firstDataIndex].dateStr || "");
+        if (!keepHours)
+            weatherRoot.hourlyData = [];
+        forecastRoot._autoOpenKey = openKey;
+        weatherRoot.fetchHourlyForDate(firstDate, reload === true);
     }
 
     onVisibleChanged: {
@@ -227,7 +245,7 @@ Item {
                 // independent of autoOpen and _autoOpenDone.
                 forecastRoot._perDayHourlyData = {};
                 forecastRoot._loadingDays = {};
-                forecastRoot._startExpandAll();
+                forecastRoot._startExpandAll(true);
             } else if (forecastRoot.expandedIndex >= 0) {
                 // A day is already expanded (auto-opened or clicked) - re-fetch
                 // its hourly data so the panel doesn't keep showing the forecast
@@ -235,11 +253,11 @@ Item {
                 // fetch is in flight to avoid a collapse/flash.
                 var dataIndex = forecastRoot.showToday ? forecastRoot.expandedIndex : forecastRoot.expandedIndex + 1;
                 if (dataIndex < weatherRoot.dailyData.length)
-                    weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "");
+                    weatherRoot.fetchHourlyForDate(weatherRoot.dailyData[dataIndex].dateStr || "", true);
                 else
                     forecastRoot.expandedIndex = -1;
             } else {
-                forecastRoot._doAutoOpen();
+                forecastRoot._doAutoOpen(true);
             }
         }
     }
@@ -252,6 +270,8 @@ Item {
         id: wiFont
         source: Qt.resolvedUrl("../fonts/weathericons-regular-webfont.ttf")
     }
+    // its family, for the wind arrows of the graphs ("" until the font is loaded)
+    readonly property string _wiFontFamily: wiFont.status === FontLoader.Ready ? wiFont.font.family : ""
 
     // Resolved at load time so the path is correct in all rendering contexts
     readonly property url iconsBaseDir: Qt.resolvedUrl("../icons/")
@@ -270,11 +290,24 @@ Item {
     }
     readonly property bool showSunEvents: Plasmoid.configuration.forecastShowSunEvents !== false
     readonly property bool showToday: Plasmoid.configuration.forecastShowToday !== false
+
+    /** True when daily row `di` is really today's date (see weatherRoot.isDailyRowToday). */
+    function _rowIsToday(di) {
+        return !!weatherRoot && weatherRoot.isDailyRowToday(di);
+    }
     readonly property bool showWind: Plasmoid.configuration.forecastShowWind !== false
     readonly property string hourlyLayout: Plasmoid.configuration.forecastHourlyLayout || "cards"
     // "graphs" = the days as one graph (Daily layout); anything else = the standard rows
     readonly property bool dailyGraphs: Plasmoid.configuration.forecastLayout === "graphs"
     readonly property bool hourlyGraphs: hourlyLayout === "graphs"
+    // How the "Graphs" layouts arrange their graphs (the "Graphs style" settings):
+    //   "separate" (default) one graph for each detail that is switched on; the pointer is shared:
+    //                        pointing at a day / hour in one graph shows its value in all of them
+    //   "compact"            ONE graph (temperature, icons, precipitation); the other details are
+    //                        shown for the day / hour under the pointer
+    // (anything else, e.g. an empty value or an older "linked", counts as "separate")
+    readonly property bool dailyCombined: Plasmoid.configuration.forecastGraphsMode === "compact"
+    readonly property bool hourlyCombined: Plasmoid.configuration.forecastHourlyGraphsMode === "compact"
     onDailyGraphsChanged: hourlyCollapsed = false
     readonly property bool _forecastDualTemp: Plasmoid.configuration.dualTempEnabled === true && Plasmoid.configuration.dualTempInWidget !== false
     readonly property bool _forecastShowTempUnit: Plasmoid.configuration.showTempUnit === true
@@ -324,8 +357,9 @@ Item {
     property var _hourlyGuessByCount: ({})
     // Size of the weather icons above the graphs
     readonly property real _graphIconSize: 24
-    // Sunrise / sunset marks in the hourly graphs. Off for now (the code stays: set to true to bring them back).
-    readonly property bool _graphSunMarks: false
+    // Sunrise / sunset marks (time + icon) in the hourly graphs: a line through the graphs, the time and
+    // the icon inside the first graph. Follows the "sunrise / sunset" switch of the forecast settings.
+    readonly property bool _graphSunMarks: true
     readonly property int _hourlyCardWidth: {
         var w = 100;
         if (_hourlyShowKpIndex)
@@ -442,14 +476,14 @@ Item {
         if (_chartSwitching)
             return;
         if (_graphsOk) {
-            console.warn("Forecast: Qt Graphs chart unavailable, using KDE Quick Charts");
+            Dbg.warn("Forecast", "Qt Graphs chart unavailable, using KDE Quick Charts");
             _chartSwitching = true;
             Qt.callLater(function () {
                 forecastRoot._graphsOk = false;
                 forecastRoot._chartSwitching = false;
             });
         } else if (_kqcOk) {
-            console.warn("Forecast: KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
+            Dbg.warn("Forecast", "KDE Quick Charts (org.kde.quickcharts) unavailable, no chart");
             _chartSwitching = true;
             Qt.callLater(function () {
                 forecastRoot._kqcOk = false;
@@ -528,6 +562,7 @@ Item {
                 code: d.code,
                 // the metric graphs
                 windKmh: d.windKmh,
+                windDeg: d.windDir,
                 pressureHpa: d.pressureHpa,
                 kp: kp,
                 gScale: gScale,
@@ -631,6 +666,11 @@ Item {
                 style: "line",
                 fmt: function (v) {
                     return wr.windValue(v);
+                },
+                // the wind direction arrow (a weather-icons glyph) instead of the dots, and after the
+                // value in the hover box; it takes the color of the graph
+                glyph: function (i, entry) {
+                    return entry && _isNum(entry.windDeg) ? W.windDirectionGlyph(entry.windDeg) : "";
                 },
                 scaleMin: 0,
                 minSpan: 10
@@ -742,6 +782,10 @@ Item {
     // The temperature graph can be switched off in the settings; it stays when there is no other
     // graph, so the Graphs layout is never empty
     readonly property bool _dailyShowMain: Plasmoid.configuration.forecastShowTemp !== false || _dailyMetrics.length === 0
+    // what the combined graph lists on hover: the details, except the amount of precipitation that its strip shows
+    readonly property var _dailyDetailMetrics: _dailyMetrics.filter(function (m) {
+        return m.key !== "precipSum";
+    })
     readonly property bool _dailyOwnPrecip: {
         for (var i = 0; i < _dailyMetrics.length; ++i)
             if (_dailyMetrics[i].key === "precipSum")
@@ -774,7 +818,7 @@ Item {
             return result;
         var rise = _toMins(sunriseText), set_ = _toMins(sunsetText);
         var nowMins = -1;
-        if (dataIndex === 0) {
+        if (forecastRoot._rowIsToday(dataIndex)) {
             var now = new Date();
             nowMins = now.getHours() * 60 + now.getMinutes() - 60;
         }
@@ -817,9 +861,8 @@ Item {
                 var mm1 = m % 1440;
                 night = mm1 < rise || mm1 >= set_;
             }
-            var title = label + " · " + weatherRoot.weatherCodeToText(h.code || 0);
-            if (_isNum(h.windKmh))
-                title += " · " + weatherRoot.windValue(h.windKmh);
+            // the hover title of the graphs: just the time (the icons show the weather, the graphs the wind)
+            var title = label;
             items.push({
                 dateStr: key,
                 tempC: h.tempC,
@@ -828,6 +871,7 @@ Item {
                 precipMm: NaN,
                 // the metric graphs
                 windKmh: h.windKmh,
+                windDeg: h.windDeg,
                 pressureHpa: h.pressureHpa,
                 kp: kpv,
                 gScale: kpg,
@@ -948,14 +992,12 @@ Item {
                     if (!weatherRoot || !ds)
                         return "--";
                     var name = i18n("Today");
-                    if (!entry || entry.dataIndex !== 0) {
+                    if (!entry || !forecastRoot._rowIsToday(entry.dataIndex)) {
                         var parts = ds.split("-");
                         name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                     }
-                    var t = name + ", " + weatherRoot.formatIsoDate(ds, true);
-                    if (entry && entry.code !== undefined)
-                        t += " · " + weatherRoot.weatherCodeToText(entry.code);
-                    return t;
+                    // (the weather condition is not part of it: the icons show it)
+                    return name + ", " + weatherRoot.formatIsoDate(ds, true);
                 }
             }
 
@@ -1022,10 +1064,13 @@ Item {
                     Layout.fillWidth: true
                     active: forecastRoot.dailyGraphs
                     chartSource: forecastRoot._chartSource
+                    glyphFont: forecastRoot._wiFontFamily
                     view: dailyAdapter
                     days: forecastRoot._dailyChartDays
                     metrics: forecastRoot._dailyMetrics
                     showMain: forecastRoot._dailyShowMain
+                    combined: forecastRoot.dailyCombined
+                    detailMetrics: forecastRoot._dailyDetailMetrics
                     mainIndex: forecastRoot._mainIndexFor(forecastRoot._dailyMetrics, false)
                     outerFlickable: forecastRoot._outerFlickable
                     outerScroll: forecastRoot._scrollParentVertically
@@ -1060,7 +1105,8 @@ Item {
                             return d ? forecastRoot.resolveConditionIcon(d.code, false, forecastRoot.iconSz) : null;
                         };
                         item.showPrecip = Qt.binding(function () {
-                            return !forecastRoot._dailyOwnPrecip;
+                            // the combined graph has no graph of its own for the amount: the strip stays
+                            return !forecastRoot._dailyOwnPrecip || forecastRoot.dailyCombined;
                         });
                     }
                 }
@@ -1233,7 +1279,7 @@ Item {
                                 elide: Text.ElideRight
                                 text: {
                                     var di = dataIndex;
-                                    if (di === 0)
+                                    if (forecastRoot._rowIsToday(di))
                                         return i18n("Today");
                                     var ds = weatherRoot.dailyData[di].dateStr;
                                     if (!ds)
@@ -1600,7 +1646,7 @@ Item {
                                     return "";
                                 var ds = weatherRoot.dailyData[dataIndex].dateStr || "";
                                 var name = i18n("Today");
-                                if (dataIndex !== 0) {
+                                if (!forecastRoot._rowIsToday(dataIndex)) {
                                     var parts = ds.split("-");
                                     name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                                 }
@@ -1671,11 +1717,14 @@ Item {
                         Item {
                             id: graphsRoot
                             // the panel is as tall as the chart plus its margins
-                            implicitHeight: hourlyStack.mainItem ? hourlyStack.implicitHeight + 16 : 0
+                            implicitHeight: hourlyStack.mainItem ? hourlyStack.implicitHeight + 16 + _barH : 0
                             // all graphs are loaded: only then the panel takes the chart's own height
                             // (it keeps the height of the last chart until then, so nothing jumps)
                             readonly property bool ready: hourlyStack.ready
-                            readonly property real fullHeight: hourlyStack.implicitHeight + 16
+                            readonly property real fullHeight: hourlyStack.implicitHeight + 16 + _barH
+                            // the zoom bar above the graphs (as the daily graphs have): only with enough hours to zoom into
+                            readonly property bool _hasBar: _data.items.length > 3
+                            readonly property real _barH: _hasBar ? hourlyBar.implicitHeight + 2 : 0
                             // what a chart with this many graphs measured last time
                             readonly property string _heightKey: _metrics.length + (_showMain ? "" : "x")
                             readonly property real expectedHeight: forecastRoot._hourlyGuessByCount[_heightKey] || 0
@@ -1698,6 +1747,10 @@ Item {
                             // switched off; it stays when there is no other graph
                             readonly property bool _showMain: Plasmoid.configuration.forecastHourlyShowTemp !== false || _metrics.length === 0
                             readonly property int _mainIndex: forecastRoot._mainIndexFor(_metrics, true)
+                            // what the combined graph lists on hover (the amount is left out when the strip shows it)
+                            readonly property var _detailMetrics: _metrics.filter(function (m) {
+                                return m.key !== "precipSum" || graphsRoot._data.percent || !forecastRoot._hourlyShowPrecipProb;
+                            })
                             readonly property bool _ownPrecip: {
                                 for (var i = 0; i < _metrics.length; ++i)
                                     if (_metrics[i].key === "precipSum")
@@ -1724,18 +1777,76 @@ Item {
                                 }
                             }
 
+                            // Zoom in / out / restore (the same buttons as above the daily graphs)
+                            RowLayout {
+                                id: hourlyBar
+                                x: 10
+                                y: 6
+                                width: parent.width - 20
+                                visible: graphsRoot._hasBar && hourlyStack._on
+                                spacing: 2
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                    color: forecastRoot.themeTextColor
+                                    opacity: 0.7
+                                    font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
+                                    text: {
+                                        var c = hourlyStack.mainItem;
+                                        var it = graphsRoot._data.items;
+                                        if (c && c.zoomed === true && it.length > 0) {
+                                            var a = it[Math.min(c.visibleFirst, it.length - 1)];
+                                            var b = it[Math.min(c.visibleLast, it.length - 1)];
+                                            return a && b ? a.hourText + " – " + b.hourText : "";
+                                        }
+                                        return i18n("Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in");
+                                    }
+                                }
+                                ToolButton {
+                                    icon.name: "zoom-out"
+                                    display: AbstractButton.IconOnly
+                                    enabled: !!hourlyStack.mainItem && hourlyStack.mainItem.zoomed === true
+                                    onClicked: hourlyStack.mainItem.zoomOut()
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: i18n("Zoom out")
+                                    Accessible.name: i18n("Zoom out")
+                                }
+                                ToolButton {
+                                    icon.name: "zoom-in"
+                                    display: AbstractButton.IconOnly
+                                    enabled: !!hourlyStack.mainItem && hourlyStack.mainItem.canZoomIn === true
+                                    onClicked: hourlyStack.mainItem.zoomIn()
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: i18n("Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)")
+                                    Accessible.name: i18n("Zoom in")
+                                }
+                                ToolButton {
+                                    icon.name: "zoom-original"
+                                    display: AbstractButton.IconOnly
+                                    enabled: !!hourlyStack.mainItem && hourlyStack.mainItem.zoomed === true
+                                    onClicked: hourlyStack.mainItem.resetZoom()
+                                    ToolTip.visible: hovered
+                                    ToolTip.text: i18n("Restore")
+                                    Accessible.name: i18n("Restore")
+                                }
+                            }
+
                             ForecastChartStack {
                                 id: hourlyStack
                                 x: 10
-                                y: 8
+                                y: 8 + graphsRoot._barH
                                 width: parent.width - 20
                                 active: true
                                 opacity: ready ? 1 : 0
                                 chartSource: forecastRoot._chartSource
+                                glyphFont: forecastRoot._wiFontFamily
                                 view: hourlyAdapter
                                 days: graphsRoot._data.items
                                 metrics: graphsRoot._metrics
                                 showMain: graphsRoot._showMain
+                                combined: forecastRoot.hourlyCombined
+                                detailMetrics: graphsRoot._detailMetrics
                                 mainIndex: graphsRoot._mainIndex
                                 outerFlickable: forecastRoot._outerFlickable
                                 outerScroll: forecastRoot._scrollParentVertically
@@ -1778,7 +1889,7 @@ Item {
                                     // precipitation has a graph of its own: the strip stays only when it
                                     // shows the chance of precipitation instead
                                     item.showPrecip = Qt.binding(function () {
-                                        return forecastRoot._hourlyShowPrecipProb && (graphsRoot._data.percent || !graphsRoot._ownPrecip);
+                                        return forecastRoot._hourlyShowPrecipProb && (graphsRoot._data.percent || !graphsRoot._ownPrecip || forecastRoot.hourlyCombined);
                                     });
                                     // the color of the bars, chosen in the settings
                                     item.precipColor = Qt.binding(function () {
@@ -1840,6 +1951,69 @@ Item {
                                     easing.type: Easing.OutCubic
                                 }
 
+                                // With "show past weather info" on, today's strip starts at midnight:
+                                // open it on the current hour instead (same as the cards layout).
+                                // Without it the past hours are not in the strip and nothing is needed.
+                                Timer {
+                                    id: stripScrollTimer
+                                    interval: 100
+                                    running: true
+                                    property int _tries: 0
+                                    onTriggered: {
+                                        if (!forecastRoot.showPastHoursGreyed || !forecastRoot._rowIsToday(dataIndex))
+                                            return;
+                                        var items = stripScrollView._hourlyWithSun;
+                                        if (!items || !items.length)
+                                            return;
+                                        // The strip is not laid out yet (built in advance, or just shown): wait
+                                        if (stripScrollView.width <= 0 || stripScrollView.contentWidth <= 0) {
+                                            if (_tries < 20) {
+                                                _tries++;
+                                                restart();
+                                            }
+                                            return;
+                                        }
+                                        _tries = 0;
+                                        var now = new Date();
+                                        var nowM = now.getHours() * 60 + now.getMinutes();
+                                        var target = -1;
+                                        var minDiff = 86400;
+                                        for (var i = 0; i < items.length; i++) {
+                                            var it = items[i];
+                                            if (it.isSunrise === true || it.isSunset === true || it.isNextDay === true || !it.hour)
+                                                continue;
+                                            var p = String(it.hour).split(":");
+                                            if (p.length < 2)
+                                                continue;
+                                            var diff = Math.abs(parseInt(p[0], 10) * 60 + parseInt(p[1], 10) - nowM);
+                                            if (diff < minDiff) {
+                                                minDiff = diff;
+                                                target = i;
+                                            }
+                                        }
+                                        if (target < 0)
+                                            return;
+                                        var maxX = Math.max(0, stripScrollView.contentWidth - stripScrollView.width);
+                                        stripScrollView.contentX = Math.min(maxX, target * (stripScrollView.colW + stripScrollView.colSpacing));
+                                    }
+                                }
+                                Connections {
+                                    target: weatherRoot
+                                    function onHourlyDataChanged() {
+                                        stripScrollTimer._tries = 0;
+                                        stripScrollTimer.restart();
+                                    }
+                                }
+                                Connections {
+                                    target: forecastRoot
+                                    function onVisibleChanged() {
+                                        if (forecastRoot.visible) {
+                                            stripScrollTimer._tries = 0;
+                                            stripScrollTimer.restart();
+                                        }
+                                    }
+                                }
+
                                 // Build combined model same as cards (with sun events)
                                 property var _hourlyWithSun: {
                                     if (!_dayHourlyData || !_dayHourlyData.length)
@@ -1858,7 +2032,7 @@ Item {
                                     // fetchers) reads as minutes=0 same as a just-past midnight hour, so it's exempted here -
                                     // otherwise it would always look "in the past" and get filtered/greyed out of "today".
                                     var nowMins = -1;
-                                    if (index === 0) {
+                                    if (forecastRoot._rowIsToday(dataIndex)) {
                                         var _now = new Date();
                                         nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                     }
@@ -2686,6 +2860,13 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 8
                                 clip: true
+                                // Today's row stays invisible until it is scrolled to the current hour
+                                opacity: (forecastRoot._rowIsToday(dataIndex) && !scrollTimer._placed) ? 0 : 1
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 120
+                                    }
+                                }
                                 // ScrollView itself does not have flickableDirection.
                                 // This property needs to be set on the internal flickableItem.
                                 Component.onCompleted: {
@@ -2705,22 +2886,49 @@ Item {
                                     easing.type: Easing.OutCubic
                                 }
 
-                                // Auto-scroll to current hour for "Today" (index === 0)
+                                // Auto-scroll to the current hour for today's row.
+                                // The position is computed on the cards that are really displayed
+                                // (hourlyRow._hourlyWithSun): past hours are dropped or greyed and the
+                                // sunrise/sunset cards are inserted, so an index into the raw hourly
+                                // list does not match what is on screen. Until the row is placed it
+                                // stays invisible (see the opacity above), so it never visibly jumps.
                                 Timer {
                                     id: scrollTimer
-                                    interval: 150
+                                    interval: 30
+                                    running: true
+                                    property int _tries: 0
+                                    property bool _placed: false
+                                    // The layout (width, bar) or the data is not ready yet: try again shortly,
+                                    // but never keep the row hidden for long.
+                                    function _retry() {
+                                        if (_tries >= 8)
+                                            _placed = true;
+                                        if (_tries < 20) {
+                                            _tries++;
+                                            restart();
+                                        } else {
+                                            _tries = 0;
+                                        }
+                                    }
                                     onTriggered: {
-                                        if (index !== 0 || !_dayHourlyData.length)
+                                        if (!forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._placed = true;
                                             return;
+                                        }
+                                        var items = hourlyRow._hourlyWithSun;
+                                        if (!_dayHourlyData.length || !items || !items.length) {
+                                            scrollTimer._retry();
+                                            return;
+                                        }
                                         var now = new Date();
                                         var currentTotalMins = now.getHours() * 60 + now.getMinutes();
-                                        var closestIdx = 0;
+                                        var closestIdx = -1;
                                         var minDiff = 86400;
-                                        for (var i = 0; i < _dayHourlyData.length; i++) {
-                                            var h = _dayHourlyData[i].hour;
-                                            if (!h)
+                                        for (var i = 0; i < items.length; i++) {
+                                            var it = items[i];
+                                            if (it.isSunrise === true || it.isSunset === true || it.isNextDay === true || !it.hour)
                                                 continue;
-                                            var parts = h.split(":");
+                                            var parts = String(it.hour).split(":");
                                             if (parts.length < 2)
                                                 continue;
                                             var hm = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
@@ -2730,67 +2938,65 @@ Item {
                                                 closestIdx = i;
                                             }
                                         }
-                                        if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
-                                            function toMins(t) {
-                                                if (!t || t === "--")
-                                                    return -1;
-                                                var p = t.split(":");
-                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
-                                            }
-                                            var rise = toMins(_daySunriseText);
-                                            var set_ = toMins(_daySunsetText);
-                                            var targetMins = closestIdx < _dayHourlyData.length ? toMins(_dayHourlyData[closestIdx].hour) : -1;
-                                            if (rise >= 0 && targetMins >= 0 && rise < targetMins)
-                                                closestIdx++;
-                                            if (set_ >= 0 && targetMins >= 0 && set_ < targetMins)
-                                                closestIdx++;
-                                        }
+                                        if (closestIdx < 0)
+                                            closestIdx = 0;
                                         var hourlyWidth = hourlyRow._stretchedCardWidth;
                                         var sunWidth = hourlyRow._sunCardWidth;
-                                        var spacing = 6;
+                                        var spacing = hourlyRow.spacing;
                                         var scrollPos = 0;
-                                        if (forecastRoot.showSunEvents && _daySunriseText && _daySunsetText) {
-                                            function toMins2(t) {
-                                                if (!t || t === "--")
-                                                    return -1;
-                                                var p = t.split(":");
-                                                return p.length < 2 ? -1 : parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
-                                            }
-                                            var rise2 = toMins2(_daySunriseText);
-                                            var set2 = toMins2(_daySunsetText);
-                                            for (var j = 0; j < closestIdx; j++) {
-                                                var hm2 = toMins2(_dayHourlyData[j].hour);
-                                                if (rise2 >= 0 && hm2 > rise2) {
-                                                    scrollPos += sunWidth + spacing;
-                                                    rise2 = -1;
-                                                }
-                                                if (set2 >= 0 && hm2 > set2) {
-                                                    scrollPos += sunWidth + spacing;
-                                                    set2 = -1;
-                                                }
-                                                scrollPos += hourlyWidth + spacing;
-                                            }
-                                        } else {
-                                            scrollPos = closestIdx * (hourlyWidth + spacing);
-                                        }
+                                        for (var j = 0; j < closestIdx; j++)
+                                            scrollPos += ((items[j].isSunrise === true || items[j].isSunset === true) ? sunWidth : hourlyWidth) + spacing;
                                         var bar = hourlyScrollView.ScrollBar.horizontal;
-                                        if (!bar)
-                                            return;
-                                        var contentW = hourlyRow.implicitWidth || hourlyRow.width || (_dayHourlyData.length * (hourlyWidth + spacing));
+                                        var contentW = hourlyRow.implicitWidth || hourlyRow.width;
                                         var viewW = hourlyScrollView.width;
+                                        if (!bar || contentW <= 0 || viewW <= 0) {
+                                            scrollTimer._retry();
+                                            return;
+                                        }
+                                        scrollTimer._tries = 0;
+                                        scrollTimer._placed = true;
                                         if (contentW > viewW) {
                                             var maxPos = Math.max(0, contentW - viewW);
-                                            var targetPos = Math.min(scrollPos, maxPos);
-                                            bar.position = targetPos / contentW;
+                                            bar.position = Math.min(scrollPos, maxPos) / contentW;
                                         }
                                     }
                                 }
                                 Connections {
                                     target: weatherRoot
                                     function onHourlyDataChanged() {
-                                        if (index !== 0 || !_dayHourlyData.length)
+                                        if (!forecastRoot._rowIsToday(dataIndex) || !_dayHourlyData.length)
                                             return;
-                                        scrollTimer.start();
+                                        scrollTimer._tries = 0;
+                                        scrollTimer.restart();
+                                    }
+                                }
+                                // Place the row again once the layout settles, the popup is resized,
+                                // or the Forecast tab becomes visible again.
+                                Connections {
+                                    target: hourlyRow
+                                    function onImplicitWidthChanged() {
+                                        if (forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._tries = 0;
+                                            scrollTimer.restart();
+                                        }
+                                    }
+                                }
+                                Connections {
+                                    target: hourlyScrollView
+                                    function onWidthChanged() {
+                                        if (forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._tries = 0;
+                                            scrollTimer.restart();
+                                        }
+                                    }
+                                }
+                                Connections {
+                                    target: forecastRoot
+                                    function onVisibleChanged() {
+                                        if (forecastRoot.visible && forecastRoot._rowIsToday(dataIndex)) {
+                                            scrollTimer._tries = 0;
+                                            scrollTimer.restart();
+                                        }
                                     }
                                 }
 
@@ -2819,7 +3025,7 @@ Item {
                                         // midnight hour, so it's exempted here - otherwise it would always
                                         // look "in the past" and get filtered/greyed out of "today".
                                         var nowMins = -1;
-                                        if (index === 0) {
+                                        if (forecastRoot._rowIsToday(dataIndex)) {
                                             var _now = new Date();
                                             nowMins = _now.getHours() * 60 + _now.getMinutes() - 60;
                                         }

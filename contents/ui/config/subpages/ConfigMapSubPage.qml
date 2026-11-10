@@ -23,6 +23,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import "../../js/debug.js" as Dbg
 
 ColumnLayout {
     id: mapSubPageRoot
@@ -163,16 +164,16 @@ ColumnLayout {
             if (preset.countryCode && preset.countryCode.length > 0)
                 selectedCountryCode = preset.countryCode;
         } else {
-            var revReq = new XMLHttpRequest();
+            var revReq = Dbg.xhr("Config/Map", "_lookupLocation");
             var revUrl = "https://photon.komoot.io/reverse?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&radius=20&limit=1&lang=default";
-            console.warn("[LocationSearch] Map Photon reverse GET " + revUrl);
+            Dbg.log("Location search", "Map Photon reverse GET " + revUrl);
             revReq.open("GET", revUrl);
             revReq.onreadystatechange = function () {
                 if (revReq.readyState !== XMLHttpRequest.DONE)
                     return;
                 if (reqId !== _reqId)
                     return;
-                console.warn("[LocationSearch] Map Photon reverse HTTP " + revReq.status + " " + revReq.statusText);
+                Dbg.warn("Location search", "Map Photon reverse HTTP " + revReq.status + " " + revReq.statusText);
                 if (revReq.status === 200) {
                     try {
                         var feats = JSON.parse(revReq.responseText).features || [];
@@ -182,13 +183,13 @@ ColumnLayout {
                             var cc = (pr.countrycode || "").toUpperCase();
                             if (cc.length > 0)
                                 selectedCountryCode = cc;
-                            console.warn("[LocationSearch] Map Photon reverse name: " + selectedName);
+                            Dbg.log("Location search", "Map Photon reverse name: " + selectedName);
                         }
                     } catch (e) {
-                        console.warn("[MapSubPage] Photon reverse parse error:", e);
+                        Dbg.warn("Config/Map", "Photon reverse parse error:", e);
                     }
                 } else {
-                    console.warn("[LocationSearch] Map Photon reverse body: " + String(revReq.responseText).substring(0, 300));
+                    Dbg.log("Location search", "Map Photon reverse body: " + String(revReq.responseText).substring(0, 300));
                 }
                 _checkDone();
             };
@@ -196,7 +197,7 @@ ColumnLayout {
         }
 
         // 2) Elevation + timezone via Open-Meteo
-        var metaReq = new XMLHttpRequest();
+        var metaReq = Dbg.xhr("Config/Map", "_lookupLocation");
         metaReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m,weather_code&timezone=auto");
         metaReq.onreadystatechange = function () {
             if (metaReq.readyState !== XMLHttpRequest.DONE)
@@ -250,8 +251,8 @@ ColumnLayout {
         _mapSearchResults = [];
         var reqId = ++_mapSearchReqId;
         var url = "https://photon.komoot.io/api?q=" + encodeURIComponent(q) + "&limit=8&lang=default";
-        console.warn("[LocationSearch] Map Photon GET " + url);
-        var req = new XMLHttpRequest();
+        Dbg.log("Location search", "Map Photon GET " + url);
+        var req = Dbg.xhr("Config/Map", "_performMapSearch");
         req.open("GET", url);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
@@ -259,9 +260,9 @@ ColumnLayout {
             if (reqId !== _mapSearchReqId)
                 return;
             _mapSearchBusy = false;
-            console.warn("[LocationSearch] Map Photon HTTP " + req.status + " " + req.statusText);
+            Dbg.warn("Location search", "Map Photon HTTP " + req.status + " " + req.statusText);
             if (req.status !== 200) {
-                console.warn("[LocationSearch] Map Photon body: " + String(req.responseText).substring(0, 300));
+                Dbg.log("Location search", "Map Photon body: " + String(req.responseText).substring(0, 300));
                 return;
             }
             try {
@@ -283,10 +284,10 @@ ColumnLayout {
                         countryCode: (pr.countrycode || "").toUpperCase()
                     });
                 });
-                console.warn("[LocationSearch] Map Photon returned " + feats.length + " item(s), listed " + items.length);
+                Dbg.log("Location search", "Map Photon returned " + feats.length + " item(s), listed " + items.length);
                 _mapSearchResults = items;
             } catch (e) {
-                console.warn("[MapSubPage] Photon search parse error:", e);
+                Dbg.warn("Config/Map", "Photon search parse error:", e);
                 _mapSearchResults = [];
             }
         };

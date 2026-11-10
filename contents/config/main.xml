@@ -174,10 +174,20 @@
     <entry name="widgetMinHeightMode" type="String"><default>auto</default></entry>
     <entry name="widgetMinHeight"     type="Int"><default>750</default><min>200</min><max>2000</max></entry>
     <entry name="widgetDefaultTab" type="String"><default>details</default></entry>
+
     <!-- Visible popup tabs: semicolon-separated list of details;forecast;radar;history
          ("none" = all hidden). The legacy values "both" (= all tabs) and a single
          tab id ("details", "forecast", ...) are still understood. -->
     <entry name="widgetVisibleTabs" type="String"><default>details;forecast;radar;history</default></entry>
+
+    <!-- Widget tabs layout -->
+    <entry name="widgetTabsPosition" type="String">
+      <default>top</default>
+     </entry>
+      <entry name="widgetTabOrder" type="String">
+      <default>details;forecast;radar;history</default>
+     </entry>
+
     <!-- History tab (Open-Meteo archive): last chosen period. historyPeriod is one of
          yesterday|last7|last30|last90|thisMonth|lastMonth|thisYear|single|custom;
          the two dates (YYYY-MM-DD) are only used by "single" and "custom". -->
@@ -191,6 +201,7 @@
     <entry name="radarProvider"         type="String"><default>librewxr</default></entry>
     <entry name="radarLayer"            type="String"><default>librewxr</default></entry>
     <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
+
     <!-- Base map tiles under both radar maps. "auto" lets each map decide:
          LibreWXR follows its own light/dark theme, RainViewer uses standard
          OpenStreetMap. Any other value is an id from providers/mapProviders.js
@@ -282,6 +293,16 @@
          opens at once. Off by default: it starts QtWebEngine with Plasma and
          keeps its memory for the whole session. -->
     <entry name="radarKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
+         the background after startup and keep them loaded, so the popup opens
+         instantly. Off by default (uses extra memory for the whole session). -->
+    <entry name="popupKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- Internal caches (JSON): last weather, hourly rows and today's past
+         hours. Restored at startup so the widget shows data before the first
+         network answer. Written by main.qml; not user settings. -->
+    <entry name="weatherCache"          type="String"><default></default></entry>
+    <entry name="hourlyCache"           type="String"><default></default></entry>
+    <entry name="pastHoursCache"        type="String"><default></default></entry>
 
     <!-- ── Widget - details view ──────────────────────────────────────── -->
     <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>
@@ -358,6 +379,18 @@
     <entry name="simpleShowSunriseSunset" type="Bool"><default>true</default></entry>
     <entry name="simpleShowForecastCompass" type="Bool"><default>true</default></entry>
     <entry name="simpleShowStatsChips"   type="Bool"><default>true</default></entry>
+    <!-- How the Simple widget draws its forecast: "rows" = Standard (a square for each day),
+         "graphs" = the temperature graph with weather icons and the precipitation strip.
+         Separate from forecastLayout, which belongs to the Advanced mode. -->
+    <entry name="simpleForecastLayout"   type="String"><default>rows</default></entry>
+    <!-- Simple mode, forecast layout "Graphs": the details shown for the day under the pointer
+         (the Advanced mode's "Compact" graph style). Own switches, all on by default, so they
+         do not change the Advanced mode's forecastShow* settings. -->
+    <entry name="simpleForecastShowWind"       type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowPressure"   type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowKpIndex"    type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowUvIndex"    type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowVisibility" type="Bool"><default>true</default></entry>
 
     <!-- ── Widget - forecast ──────────────────────────────────────────── -->
     <entry name="forecastLayout"      type="String"><default>rows</default></entry>
@@ -389,6 +422,14 @@
          A graph that is not listed keeps its built-in color. -->
     <entry name="forecastGraphColors"       type="String"><default></default></entry>
     <entry name="forecastHourlyGraphColors" type="String"><default></default></entry>
+    <!-- How the "Graphs" layouts arrange their graphs:
+           separate = one graph for each detail that is switched on; the pointer is shared: pointing
+                      at a day / hour shows its value in every graph at once
+           compact  = ONE graph (temperature, weather icons, precipitation); hovering a day / hour
+                      shows all the other details in a card
+         (any other value, e.g. an older "linked", counts as "separate") -->
+    <entry name="forecastGraphsMode"       type="String"><default>separate</default></entry>
+    <entry name="forecastHourlyGraphsMode" type="String"><default>separate</default></entry>
 
     <!-- ── Widget - hourly forecast extra stats ──────────────────────── -->
     <entry name="forecastHourlyShowTemp"       type="Bool"><default>true</default></entry>
@@ -438,6 +479,14 @@
     <!-- Base URL of the FOSS Public Alert Server (self-hostable; default is
          KDE's public instance). -->
     <entry name="fossAlertUrl"   type="String"><default>https://alerts.kde.org</default></entry>
+    <!-- Alert language. true = use the alert's native/official language (the
+         non-English CAP <info> block, the long-standing behaviour). false = use
+         the per-location choice stored in alertsLanguageByLocation. -->
+    <entry name="alertsLanguageNative"     type="Bool"><default>true</default></entry>
+    <!-- JSON map "lat,lon" (4 decimals) -> language code ("de", "fr", ...).
+         A location without an entry uses its native language. Only read while
+         alertsLanguageNative is false. -->
+    <entry name="alertsLanguageByLocation" type="String"><default>{}</default></entry>
 
     <!-- ── Notifications ─────────────────────────────────────────────── -->
     <entry name="alertNotificationsEnabled" type="Bool"><default>true</default></entry>
@@ -504,6 +553,14 @@
     <entry name="scrollboxLines"         type="Int"><default>2</default><min>1</min><max>6</max></entry>
     <entry name="scrollboxItems"         type="String"><default>Humidity;Wind;Pressure;Dew Point;Visibility</default></entry>
     <entry name="panelWidth"             type="Int"><default>0</default></entry>
+
+     
+        <entry name="debugMode" type="Bool">
+            <label>Verbose debug logging</label>
+            <default>false</default>
+        </entry>
+ 
+
 
   </group>
 </kcfg>

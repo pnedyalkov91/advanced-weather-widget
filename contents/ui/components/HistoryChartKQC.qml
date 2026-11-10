@@ -118,6 +118,10 @@ ColumnLayout {
     property real minPlotX: 0
     /** false: no scroll bar under the chart (a chart that follows another one's zoom) */
     property bool showScrollBar: true
+    /** function(index, entry) -> a glyph of `glyphFont` drawn instead of the dot of that entry (and
+     *  after the value in its hover badge), in the colour of the series; "" or null: the plain dot */
+    property var glyphAt: null
+    property string glyphFont: ""
     /** Width of the left gutter the axis labels need (what `minPlotX` is compared with). */
     readonly property real naturalPlotX: area.naturalX
     /** An entry was clicked (only when `selectable`). */
@@ -133,6 +137,35 @@ ColumnLayout {
     /** Color of the precipitation bars (and their legend / badge / total). Writable: the Forecast tab
      *  binds it to the color chosen in the settings; the History tab keeps the default. */
     property color precipColor: "#26c6da"
+
+    /** The Forecast tab's "combine graphs into one" option: the details of the entry under the
+     *  pointer ("wind", "pressure", ...) are listed in a card inside this graph instead of having
+     *  graphs of their own. [{ key, label, color, fmt(v), badge(i, key, v, entry) }]; empty = no card. */
+    property var detailMetrics: []
+    /** The rows of the card for the entry under the pointer: [{ label, color, text }] */
+    readonly property var detailRows: {
+        var out = [];
+        if (hoverIndex < 0 || hoverIndex >= days.length)
+            return out;
+        var e = days[hoverIndex];
+        for (var k = 0; k < detailMetrics.length; ++k) {
+            var m = detailMetrics[k];
+            var v = e[m.key];
+            if (typeof v !== "number" || !isFinite(v))
+                continue;
+            out.push({
+                label: m.label,
+                color: m.color,
+                glyph: m.glyph ? (m.glyph(hoverIndex, e) || "") : "",
+                text: m.badge ? m.badge(hoverIndex, m.key, v, e) : (m.fmt ? m.fmt(v) : String(v))
+            });
+        }
+        return out;
+    }
+    /** Height of the card when every detail has a value (the most it can need) */
+    readonly property real detailCardH: detailMetrics.length > 0 ? detailMetrics.length * (Math.ceil(tmH.height) + 4) + 12 : 0
+    /** Least plot height that leaves room for the card (the card sits beside the plot and the strip) */
+    readonly property real detailMinPlotH: detailCardH - 2 * marginV - (showPrecip ? Kirigami.Units.largeSpacing + precipPlotH : 0)
 
     // ── Zoom ──────────────────────────────────────────────────────────────
     // 1 = whole period fits; the plot is `zoom` times as wide as the chart.
@@ -240,8 +273,59 @@ ColumnLayout {
     property real tempPlotH: Kirigami.Units.gridUnit * 6
     readonly property real precipPlotH: Kirigami.Units.gridUnit * 2.5
     readonly property real badgeH: Kirigami.Units.gridUnit + 4
+    /** Size of the wind arrow beside a value (hover box, card) */
+    readonly property real glyphTextPx: Math.round(Kirigami.Units.gridUnit * 1.15)
+    /** What the disc behind a wind arrow on the line is painted with: the panel's own colour */
+    readonly property color glyphBackdrop: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(Kirigami.Theme.textColor, 0.04))
 
     spacing: Kirigami.Units.smallSpacing
+
+    /** A font glyph (the wind arrow) whose INK is centred in the box: the box is `boxH` high (default: the
+     *  ink's own height) and the ink sits at `centerY` from its top (default: the middle). Icon fonts leave
+     *  uneven room above and below their glyphs, so centring the Text item itself puts them off the line of
+     *  the text they stand next to. */
+    component GlyphInk: Item {
+        id: gi
+        property string glyph: ""
+        property string family: ""
+        property real pixelSize: 14
+        property color color: "black"
+        property bool outlined: false
+        property color outlineColor: "transparent"
+        /** a disc of this colour behind the glyph (as wide as its ink): whatever runs under the circle of
+         *  the wind arrow - the line of the graph, the grid - is hidden inside it */
+        property color backdrop: "transparent"
+        property real boxH: Math.ceil(inkMetrics.tightBoundingRect.height)
+        property real centerY: NaN
+        width: Math.ceil(inkMetrics.tightBoundingRect.width)
+        height: boxH
+        TextMetrics {
+            id: inkMetrics
+            font.family: gi.family
+            font.pixelSize: gi.pixelSize
+            text: gi.glyph
+        }
+        Rectangle {
+            visible: gi.backdrop.a > 0 && gi.glyph !== ""
+            width: Math.max(gi.width, inkMetrics.tightBoundingRect.height) - 1
+            height: width
+            radius: width / 2
+            color: gi.backdrop
+            x: gi.width / 2 - width / 2
+            y: (isFinite(gi.centerY) ? gi.centerY : gi.height / 2) - height / 2
+        }
+        Text {
+            id: inkText
+            text: gi.glyph
+            font.family: gi.family
+            font.pixelSize: gi.pixelSize
+            color: gi.color
+            style: gi.outlined ? Text.Outline : Text.Normal
+            styleColor: gi.outlineColor
+            x: gi.width / 2 - (inkMetrics.tightBoundingRect.x + inkMetrics.tightBoundingRect.width / 2)
+            y: (isFinite(gi.centerY) ? gi.centerY : gi.height / 2) - (inkText.baselineOffset + inkMetrics.tightBoundingRect.y + inkMetrics.tightBoundingRect.height / 2)
+        }
+    }
 
     // ── Temperature scale: "nice" bounds so grid lines carry round labels ─
     readonly property var tempScale: _computeScale(days, seriesDefs, scaleMin, scaleMax, scaleStep, scaleMinSpan)
@@ -436,6 +520,18 @@ ColumnLayout {
             font: Kirigami.Theme.smallFont
             text: "Wg"
         }
+        // Where the middle of a number sits in a line of small text (from the top of the line): the
+        // wind arrow beside a value is centred on it
+        TextMetrics {
+            id: tmDigit
+            font: Kirigami.Theme.smallFont
+            text: "0"
+        }
+        FontMetrics {
+            id: fmSmall
+            font: Kirigami.Theme.smallFont
+        }
+        readonly property real digitCenterY: fmSmall.ascent + tmDigit.tightBoundingRect.y + tmDigit.tightBoundingRect.height / 2
         TextMetrics {
             id: tmLo
             font: Kirigami.Theme.smallFont
@@ -486,12 +582,7 @@ ColumnLayout {
         readonly property real precipTop: root.showPrecip ? gvY + gvH + Kirigami.Units.largeSpacing : py + ph
         readonly property real precipBottom: root.showPrecip ? precipTop + root.precipPlotH : py + ph
         readonly property real plotBase: root.showPrecip ? precipBottom + Kirigami.Units.smallSpacing : gvY + gvH + Kirigami.Units.smallSpacing
-        // Row under the plot for the sunrise / sunset times (only when a mark has a label)
-        readonly property bool hasMarkLabels: root.markers.some(function (mk) {
-            return mk.label !== "" || !!mk.iconInfo;
-        })
-        readonly property real markH: hasMarkLabels ? Math.max(Kirigami.Units.gridUnit, Math.ceil(tmH.height)) + Kirigami.Units.smallSpacing : 0
-        readonly property real plotBottom: plotBase + markH
+        readonly property real plotBottom: plotBase
 
         // Room for the scroll bar. Always reserved: the view sits in a ListView
         // header, and a header that changes height makes the list jump.
@@ -507,11 +598,12 @@ ColumnLayout {
         // What an entry draws above its line: its label or its icon, whichever is wider
         readonly property real cellW: Math.max(tmDate.width, root.labelMinWidth, root.showIcons ? root.iconSize : 0)
         // Forecast tab (icons): every entry owns a column of the same width and sits in the middle
-        // of it. The first and the last entry are half a column (at least half a label) in from
-        // the ends, so their labels and icons are centred on their grid lines like all the others,
-        // and the band of a hovered / selected entry is whole at the ends too.
+        // of it. The first and the last entry are only half a label (or icon) in
+        // from the ends - whatever the number of entries - so their labels and icons are centred
+        // on their grid lines like all the others, and with few days / hours the graph does not
+        // leave wide empty margins at its ends (the band of a selected entry is cut at the ends).
         readonly property bool tableCells: root.showIcons || root.labelMinWidth > 0
-        readonly property real pad: root.dayCount > 1 ? (tableCells ? Math.max(contentW / root.dayCount / 2, Math.min(cellW / 2, contentW / 4)) : Math.max(8, Kirigami.Units.smallSpacing * 2)) : vw / 2
+        readonly property real pad: root.dayCount > 1 ? (tableCells ? Math.min(cellW / 2, contentW / 4) : Math.max(8, Kirigami.Units.smallSpacing * 2)) : vw / 2
         readonly property real step: root.dayCount > 1 ? Math.max(0.001, (contentW - 2 * pad) / (root.dayCount - 1)) : 1
 
         // The days KQuickCharts is given: the ones in view plus a few either
@@ -749,55 +841,85 @@ ColumnLayout {
                 // ── selected entry (Forecast tab: the day whose hours are shown) ──
                 Rectangle {
                     visible: root.selectedIndex >= 0 && root.selectedIndex < root.dayCount
-                    x: area.xOf(root.selectedIndex) - area.step / 2
+                    // (cut at the ends of the plot: the first and the last entry sit close to them)
+                    x: Math.max(0, area.xOf(root.selectedIndex) - area.step / 2)
                     y: area.gvY
-                    width: area.step
+                    width: Math.max(0, Math.min(area.vw, area.xOf(root.selectedIndex) + area.step / 2) - x)
                     height: area.precipBottom - area.gvY
                     color: Kirigami.Theme.highlightColor
                     opacity: 0.14
                 }
 
                 // ── marks such as sunrise / sunset (Forecast tab, hourly) ──
+                // A line through the plot; its time (and icon) sits inside the plot, at the end of the
+                // temperature band away from the line, so that it covers as little of it as possible.
                 Repeater {
                     model: root.markers
                     delegate: Item {
                         id: mark
                         required property var modelData
                         readonly property real mx: area.xOf(modelData.pos)
+                        readonly property bool hasLabel: mark.modelData.label !== "" || !!mark.modelData.iconInfo
+                        // the first series, at the mark (between two entries)
+                        readonly property real lineV: {
+                            var d = root.days;
+                            if (d.length === 0 || root.seriesDefs.length === 0)
+                                return NaN;
+                            var k = root.seriesDefs[0].key;
+                            var i0 = Math.max(0, Math.min(d.length - 1, Math.floor(modelData.pos)));
+                            var i1 = Math.min(d.length - 1, i0 + 1);
+                            var a = d[i0][k], b = d[i1][k];
+                            if (typeof a !== "number" || !isFinite(a))
+                                return NaN;
+                            if (typeof b !== "number" || !isFinite(b))
+                                return a;
+                            return a + (b - a) * (modelData.pos - i0);
+                        }
+                        readonly property bool lineHigh: isFinite(lineV) && root.tempScale.hi > root.tempScale.lo && (lineV - root.tempScale.lo) / (root.tempScale.hi - root.tempScale.lo) > 0.5
                         visible: mx >= 0 && mx <= area.vw
                         Rectangle {
                             x: Math.round(mark.mx - 0.5)
                             y: area.py
                             width: 1
-                            // a marked line runs down to its label under the plot
-                            height: (mark.modelData.label !== "" || !!mark.modelData.iconInfo ? area.plotBase : area.precipBottom) - area.py
+                            height: area.precipBottom - area.py
                             color: Kirigami.Theme.textColor
                             opacity: 0.3
                         }
-                        // the time (and icon) sits below the graph, centred on its line
-                        Row {
-                            spacing: 2
+                        Rectangle {
+                            visible: mark.hasLabel
+                            z: 3
+                            width: markRow.implicitWidth + 6
+                            height: markRow.implicitHeight + 2
+                            radius: 3
+                            color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.8)
                             x: Math.max(0, Math.min(area.vw - width, mark.mx - width / 2))
-                            y: area.plotBase
-                            Loader {
-                                active: !!mark.modelData.iconInfo
-                                visible: active
-                                source: "WeatherIcon.qml"
-                                onLoaded: {
-                                    item.iconInfo = Qt.binding(function () {
-                                        return mark.modelData.iconInfo;
-                                    });
-                                    item.iconSize = Kirigami.Units.gridUnit;
-                                    item.iconColor = Qt.binding(function () {
-                                        return Kirigami.Theme.textColor;
-                                    });
+                            y: mark.lineHigh ? area.py + area.ph - height - 2 : area.py + 2
+                            Row {
+                                id: markRow
+                                anchors.centerIn: parent
+                                spacing: 2
+                                Loader {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    active: !!mark.modelData.iconInfo
+                                    visible: active
+                                    source: "WeatherIcon.qml"
+                                    onLoaded: {
+                                        item.iconInfo = Qt.binding(function () {
+                                            return mark.modelData.iconInfo;
+                                        });
+                                        item.iconSize = Kirigami.Units.gridUnit;
+                                        item.iconColor = Qt.binding(function () {
+                                            return Kirigami.Theme.textColor;
+                                        });
+                                    }
                                 }
-                            }
-                            Label {
-                                text: mark.modelData.label
-                                font: Kirigami.Theme.smallFont
-                                color: Kirigami.Theme.textColor
-                                opacity: 0.8
+                                Label {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: mark.modelData.label
+                                    font: Kirigami.Theme.smallFont
+                                    color: Kirigami.Theme.textColor
+                                    opacity: 0.9
+                                }
                             }
                         }
                     }
@@ -877,7 +999,7 @@ ColumnLayout {
                 // would be rebuilt whenever the chart is resized; left out
                 // when the days are too close together.
                 Repeater {
-                    model: pinned.showDots && root.dayCount > 1 && root.style === "line" ? root.seriesDefs : []
+                    model: (pinned.showDots || !!root.glyphAt) && root.dayCount > 1 && root.style === "line" ? root.seriesDefs : []
                     delegate: Item {
                         id: dotSet
                         required property var modelData
@@ -889,15 +1011,25 @@ ColumnLayout {
                                 required property int index
                                 readonly property int day: area.winFirst + index
                                 readonly property int rel: day - dotSet.sd.start
-                                visible: rel >= 0 && rel < dotSet.sd.count && dotSet.sd.real[rel] === true
+                                readonly property string glyph: root.glyphAt && day >= 0 && day < root.days.length ? (root.glyphAt(day, root.days[day]) || "") : ""
+                                visible: rel >= 0 && rel < dotSet.sd.count && dotSet.sd.real[rel] === true && (glyph !== "" ? day % pinned.glyphStride === 0 : pinned.showDots)
                                 width: pinned.dotSize
                                 height: width
                                 radius: width / 2
                                 x: area.xOf(day) - width / 2
                                 y: visible ? area.yOf(dotSet.sd.values[rel]) - height / 2 : 0
-                                color: dotSet.modelData.color
-                                border.width: 1
+                                color: glyph !== "" ? "transparent" : dotSet.modelData.color
+                                border.width: glyph !== "" ? 0 : 1
                                 border.color: Kirigami.Theme.backgroundColor
+                                GlyphInk {
+                                    anchors.centerIn: parent
+                                    visible: parent.glyph !== ""
+                                    glyph: parent.glyph
+                                    family: root.glyphFont
+                                    pixelSize: pinned.glyphSize
+                                    color: dotSet.modelData.color
+                                    backdrop: root.glyphBackdrop
+                                }
                             }
                         }
                     }
@@ -937,6 +1069,10 @@ ColumnLayout {
                 // ── dot size ───────────────────────────────────────────
                 readonly property real dotSize: Kirigami.Units.gridUnit * 0.4
                 readonly property bool showDots: area.step >= dotSize * 2.4
+                // a glyph (the wind arrow) is wider than a dot: when the entries are close together only
+                // every few of them get one
+                readonly property real glyphSize: Kirigami.Units.gridUnit * 1.5
+                readonly property int glyphStride: Math.max(1, Math.ceil(glyphSize * 1.15 / Math.max(1, area.step)))
 
                 // ── "bars" style: the first series as bars from the bottom of the plot ──
                 Repeater {
@@ -1028,15 +1164,25 @@ ColumnLayout {
                     delegate: Rectangle {
                         required property var modelData
                         readonly property real v: pinned.hoverDay && typeof pinned.hoverDay[modelData.key] === "number" ? pinned.hoverDay[modelData.key] : NaN
+                        readonly property string glyph: pinned.hovering && root.glyphAt ? (root.glyphAt(root.hoverIndex, pinned.hoverDay) || "") : ""
                         visible: pinned.hovering && isFinite(v)
                         width: Kirigami.Units.gridUnit * 0.6
                         height: width
                         radius: width / 2
                         x: pinned.cursorX - width / 2
                         y: isFinite(v) ? area.yOf(v) - height / 2 : 0
-                        color: modelData.color
-                        border.width: 2
+                        color: glyph !== "" ? "transparent" : modelData.color
+                        border.width: glyph !== "" ? 0 : 2
                         border.color: Kirigami.Theme.backgroundColor
+                        GlyphInk {
+                            anchors.centerIn: parent
+                            visible: parent.glyph !== ""
+                            glyph: parent.glyph
+                            family: root.glyphFont
+                            pixelSize: pinned.glyphSize * 1.2
+                            color: parent.modelData.color
+                            backdrop: root.glyphBackdrop
+                        }
                     }
                 }
 
@@ -1108,6 +1254,7 @@ ColumnLayout {
                         return {
                             color: sd.color,
                             text: pinned.hoverDay ? root._badgeText(root.hoverIndex, sd.key, v) : "",
+                            glyph: pinned.hoverDay && root.glyphAt ? (root.glyphAt(root.hoverIndex, pinned.hoverDay) || "") : "",
                             ok: typeof v === "number" && isFinite(v)
                         };
                     })
@@ -1116,7 +1263,7 @@ ColumnLayout {
                         required property var modelData
                         required property int index
                         visible: pinned.hovering && modelData.ok
-                        width: badgeText.implicitWidth + 8
+                        width: badgeRow.implicitWidth + 8
                         height: root.badgeH
                         radius: 4
                         color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(modelData.color, 0.18))
@@ -1124,12 +1271,26 @@ ColumnLayout {
                         border.color: Qt.alpha(modelData.color, 0.6)
                         x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing : pinned.cursorX - Kirigami.Units.largeSpacing - width
                         y: pinned.badgeYs[index]
-                        Label {
-                            id: badgeText
+                        // the value, and (the wind graph) the direction arrow after it
+                        Row {
+                            id: badgeRow
                             anchors.centerIn: parent
-                            text: badge.modelData.text
-                            font: Kirigami.Theme.smallFont
-                            color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
+                            spacing: 3
+                            Label {
+                                id: badgeText
+                                text: badge.modelData.text
+                                font: Kirigami.Theme.smallFont
+                                color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
+                            }
+                            GlyphInk {
+                                visible: badge.modelData.glyph !== ""
+                                glyph: badge.modelData.glyph
+                                family: root.glyphFont
+                                pixelSize: root.glyphTextPx
+                                color: badgeText.color
+                                boxH: badgeText.height
+                                centerY: area.digitCenterY
+                            }
                         }
                     }
                 }
@@ -1156,6 +1317,61 @@ ColumnLayout {
                         text: pinned.hoverDay ? root._fmtPrecip(pinned.hoverDay.precipMm) : ""
                         font: Kirigami.Theme.smallFont
                         color: root.precipColor
+                    }
+                }
+
+                // The details of the hovered entry (the "combine graphs into one" option), in the
+                // corner away from the cursor so that the badges next to it stay readable
+                Rectangle {
+                    id: detailCard
+                    visible: pinned.hovering && root.detailRows.length > 0
+                    width: detailCol.implicitWidth + 16
+                    height: detailCol.implicitHeight + 12
+                    radius: 4
+                    color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(Kirigami.Theme.textColor, 0.06))
+                    border.width: 1
+                    border.color: Qt.alpha(Kirigami.Theme.textColor, 0.3)
+                    x: pinned.badgesRight ? area.vw - width - 4 : 4
+                    y: Math.max(area.gvY, area.gvY + (area.precipBottom - area.gvY - height) / 2)
+                    z: 5
+                    Column {
+                        id: detailCol
+                        anchors.centerIn: parent
+                        spacing: 4
+                        Repeater {
+                            model: root.detailRows
+                            delegate: Row {
+                                required property var modelData
+                                spacing: Kirigami.Units.smallSpacing
+                                Rectangle {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Kirigami.Units.gridUnit * 0.5
+                                    height: width
+                                    radius: width / 2
+                                    color: modelData.color
+                                }
+                                Label {
+                                    text: modelData.label + ":"
+                                    font: Kirigami.Theme.smallFont
+                                    color: Kirigami.Theme.textColor
+                                    opacity: 0.75
+                                }
+                                Label {
+                                    text: modelData.text
+                                    font: Kirigami.Theme.smallFont
+                                    color: modelData.color
+                                }
+                                GlyphInk {
+                                    visible: modelData.glyph !== ""
+                                    glyph: modelData.glyph
+                                    family: root.glyphFont
+                                    pixelSize: root.glyphTextPx
+                                    color: modelData.color
+                                    boxH: Math.ceil(tmH.height)
+                                    centerY: area.digitCenterY
+                                }
+                            }
+                        }
                     }
                 }
 

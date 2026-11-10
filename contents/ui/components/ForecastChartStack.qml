@@ -5,11 +5,14 @@
  *
  * All the graphs are the same chart as the History tab uses (HistoryChartGraphs.qml,
  * or HistoryChartKQC.qml as the fallback; `chartSource` says which). They line up
- * (same left gutter, same days) and zoom and scroll together: zooming or dragging
- * one of them moves all of them.
+ * (same left gutter, same days) and zoom and scroll together: zooming, dragging or moving
+ * the scroll bar of one of them moves all of them.
  *
  * The temperature graph is a block like the others: it sits at `mainIndex` among the
  * metric graphs (0 = on top) and is left out when `showMain` is false.
+ *
+ * The pointer is shared: pointing at a day / hour in one graph shows the cursor and the values
+ * of that day / hour in all the graphs at once.
  *
  * Input
  *   chartSource   the chart file to load ("" = none)
@@ -17,14 +20,21 @@
  *   view          adapter for the chart (_temp, _precip, _date, _day; see HistoryChart*.qml)
  *   days          the entries (one per day / hour)
  *   metrics       [{ key, label, color, style ("line" | "bars"), fmt(v), badge(i, key, v, entry),
- *                    barColorAt(i, entry), scaleMin, scaleMax, scaleStep, minSpan }]
+ *                    glyph(i, entry), barColorAt(i, entry), scaleMin, scaleMax, scaleStep, minSpan }]
  *                 The graphs are only rebuilt when the list of keys changes (selecting another
  *                 day or refreshing the data keeps them), so the closures must not capture the data.
  *   showMain      false: no temperature graph (its icons and precipitation strip go with it)
- *   mainIndex     how many metric graphs come before the temperature graph (0 = on top)
+ *   combined      true: ONE graph - only the temperature graph is built (whatever `showMain` says);
+ *                 the details of `detailMetrics` are shown for the day / hour under the pointer,
+ *                 in a card inside that graph, instead of in graphs of their own
+ *   detailMetrics the metrics for that card (same form as `metrics`); only used when `combined`
+ *   mainIndex    how many metric graphs come before the temperature graph (0 = on top)
  *   configureMain function(chart): sets up the temperature graph (series, icons, ...)
  *   markers / shadeBefore / labelSampleText / minZoomDays / selectable / selectedIndex
- *                 passed on to every graph
+ *                 passed on to every graph (the sunrise / sunset times and icons are drawn in the
+ *                 first graph only, the lines through all of them)
+ *   glyphFont     font family of the glyphs a metric draws instead of dots (`metric.glyph(i, entry)`:
+ *                 the wind arrow); also used for them in the combined graph's card
  *   outerFlickable  the page's Flickable, the wheel falls through to it
  *   outerScroll   function(wheelEvent): scrolls the page (used when a graph is not zoomed)
  * Output
@@ -49,6 +59,8 @@ ColumnLayout {
     property var days: []
     property var metrics: []
     property bool showMain: true
+    property bool combined: false
+    property var detailMetrics: []
     property int mainIndex: 0
     property var configureMain: null
     property var markers: []
@@ -59,6 +71,8 @@ ColumnLayout {
     property int selectedIndex: -1
     property var outerFlickable: null
     property var outerScroll: null
+    /** Font family of the glyphs the metrics draw (see `glyph` of a metric) */
+    property string glyphFont: ""
     /** Plot height of a metric graph */
     property real metricPlotH: Kirigami.Units.gridUnit * 3.5
 
@@ -73,11 +87,11 @@ ColumnLayout {
     property var _blockModel: []
     property string _blockSig: ""
     function _syncBlocks() {
-        var list = metrics || [];
+        var list = combined ? [] : (metrics || []);
         var at = Math.max(0, Math.min(list.length, mainIndex));
         var blocks = [];
         for (var i = 0; i <= list.length; ++i) {
-            if (showMain && i === at)
+            if ((showMain || combined) && i === at)
                 blocks.push({
                     key: "__main",
                     isMain: true
@@ -87,9 +101,10 @@ ColumnLayout {
         }
         var sig = blocks.map(function (b) {
             return b.key;
-        }).join("|");
+        }).join("|") + (combined ? "|combined" : "");
         if (sig !== _blockSig) {
             _blockSig = sig;
+            _hoverOwner = null;     // the graphs are about to be recreated
             _blockModel = blocks;
         }
     }
@@ -128,6 +143,7 @@ ColumnLayout {
     }
     onMetricsChanged: _refresh()
     onShowMainChanged: _refresh()
+    onCombinedChanged: _refresh()
     onMainIndexChanged: _refresh()
     Component.onCompleted: _syncBlocks()
 
@@ -167,11 +183,50 @@ ColumnLayout {
     signal chartStatus(var loader)
     signal daySelected(int index)
 
-    spacing: Kirigami.Units.largeSpacing
+    // (the graphs sit close together: they read as one block with a common cursor)
+    spacing: Kirigami.Units.smallSpacing
 
     // ── the graphs line up and move together ───────────────────────────────
     property real gutter: 0
     property bool _syncing: false
+
+    // ── the shared pointer ─────────────────────────────────────────────────
+    // Each graph shows its cursor and value badges for its own `hoverIndex`, which it sets from its
+    // own pointer. The graph the pointer is in (the owner) passes its index on to the others, so
+    // they all show the same day / hour. Nothing else about them changes. (With `combined` there is
+    // just one graph, and nothing to pass on.)
+    /** the graph the pointer is in (null: none) */
+    property var _hoverOwner: null
+    property bool _hoverSyncing: false
+
+    /** every graph except `src` shows entry `idx` (-1: none) */
+    function _hoverBroadcast(src, idx) {
+        _hoverSyncing = true;
+        var its = _items();
+        for (var i = 0; i < its.length; ++i)
+            if (its[i] !== src && its[i].hoverIndex !== idx)
+                its[i].hoverIndex = idx;
+        _hoverSyncing = false;
+    }
+    /** `src` changed its `hoverIndex` (the pointer moved in it, left it, or the graph reset it) */
+    function _hoverChanged(src) {
+        if (_hoverSyncing || !src)
+            return;
+        var idx = src.hoverIndex;
+        if (idx >= 0) {
+            _hoverOwner = src;
+            _hoverBroadcast(src, idx);
+        } else if (!_hoverOwner || _hoverOwner === src) {
+            _hoverOwner = null;
+            _hoverBroadcast(src, -1);
+        } else {
+            // `src` only mirrored the owner, and was told "the pointer left" late (the pointer has
+            // already moved on to the owner): it keeps mirroring
+            _hoverSyncing = true;
+            src.hoverIndex = _hoverOwner.hoverIndex;
+            _hoverSyncing = false;
+        }
+    }
 
     function _items() {
         var out = [];
@@ -264,8 +319,14 @@ ColumnLayout {
         it.minPlotX = Qt.binding(function () {
             return stack.gutter;
         });
+        it.glyphFont = Qt.binding(function () {
+            return stack.glyphFont;
+        });
         it.daySelected.connect(function (i) {
             stack.daySelected(i);
+        });
+        it.hoverIndexChanged.connect(function () {
+            stack._hoverChanged(it);
         });
         it.zoomChanged.connect(function () {
             stack._follow(it);
@@ -298,12 +359,23 @@ ColumnLayout {
                     // the temperature graph
                     if (stack.configureMain)
                         stack.configureMain(item);
+                    if (stack.combined) {
+                        // the other details are shown in a card beside the pointer
+                        item.detailMetrics = Qt.binding(function () {
+                            return stack.detailMetrics;
+                        });
+                        // room for the card (never smaller than the usual plot)
+                        item.tempPlotH = Qt.binding(function () {
+                            return Math.max(Kirigami.Units.gridUnit * 6, item.detailMinPlotH);
+                        });
+                    }
                     return;
                 }
-                // the sunrise / sunset lines, without their labels (the temperature graph has them)
+                // the sunrise / sunset lines, without their labels (the first graph has them)
                 item.markers = Qt.binding(function () {
+                    var lead = stack.mainItem === item;
                     return stack.markers.map(function (mk) {
-                        return {
+                        return lead ? mk : {
                             pos: mk.pos,
                             label: "",
                             iconInfo: null
@@ -315,10 +387,7 @@ ColumnLayout {
                     return stack._mainChart ? (stack._mainChart.showIcons ? stack._mainChart.iconSize : 0) : 0;
                 });
                 item.showPrecip = false;
-                // the scroll bar belongs to the graph that tells the zoom state
-                item.showScrollBar = Qt.binding(function () {
-                    return stack.mainItem === item;
-                });
+                // (every graph has its own scroll bar: moving one moves them all, see _follow)
                 item.tempPlotH = Qt.binding(function () {
                     return stack.metricPlotH;
                 });
@@ -333,6 +402,7 @@ ColumnLayout {
                 item.valueFormat = m.fmt || null;
                 item.badgeFormat = m.badge || null;
                 item.barColorAt = m.barColorAt || null;
+                item.glyphAt = m.glyph || null;
                 item.scaleMin = m.scaleMin !== undefined ? m.scaleMin : NaN;
                 item.scaleMax = m.scaleMax !== undefined ? m.scaleMax : NaN;
                 item.scaleStep = m.scaleStep !== undefined ? m.scaleStep : NaN;

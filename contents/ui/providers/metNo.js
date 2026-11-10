@@ -24,6 +24,9 @@
  * W (weather.js) is passed as a parameter by the caller.
  */
 
+.import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+
 /**
  * Magnus-formula dew-point approximation.
  * T in °C, rh in % → dew point in °C (rounded to 1 decimal).
@@ -54,7 +57,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&lon=" + encodeURIComponent(service.longitude)
         + ((!isNaN(alt) && alt !== 0) ? "&altitude=" + Math.round(alt) : "");
 
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("met.no", "fetchCurrent", { revalidate: true });
     req.open("GET", url);
     // met.no Terms of Service: User-Agent identifying the app is MANDATORY.
     req.setRequestHeader("User-Agent",
@@ -169,6 +172,73 @@ function fetchCurrent(service, W, chain, idx) {
     req.send();
 }
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    if (d.properties && d.properties.timeseries)
+        d.properties.timeseries.forEach(function (ts) {
+            var dd = new Date(ts.time);
+            var dkey = Qt.formatDate(dd, "yyyy-MM-dd");
+            var isTarget = dkey === dateStr;
+            var isClosing = !nextEntry && dkey === nextDateStr;
+            if (!isTarget && !isClosing) return;
+
+            var det = (ts.data && ts.data.instant)
+                ? ts.data.instant.details : null;
+            if (!det)
+                return;
+            var sym = (ts.data && ts.data.next_1_hours
+                && ts.data.next_1_hours.summary)
+                ? ts.data.next_1_hours.summary.symbol_code : "";
+            var entry = {
+                hour: Qt.formatTime(dd, "HH:mm"),
+                tempC: det.air_temperature,
+                code: W.metNoSymbolToWmo(sym),
+                windKmh: det.wind_speed !== undefined
+                    ? det.wind_speed * 3.6 : NaN,
+                windDeg: det.wind_from_direction !== undefined
+                    ? det.wind_from_direction : NaN,
+                humidity: det.relative_humidity,
+                precipProb: (ts.data && ts.data.next_1_hours
+                    && ts.data.next_1_hours.details
+                    && ts.data.next_1_hours.details.probability_of_precipitation !== undefined)
+                    ? ts.data.next_1_hours.details.probability_of_precipitation : NaN,
+                precipMm: (ts.data && ts.data.next_1_hours
+                    && ts.data.next_1_hours.details
+                    && ts.data.next_1_hours.details.precipitation_amount !== undefined)
+                    ? ts.data.next_1_hours.details.precipitation_amount : NaN
+            };
+            if (isTarget) {
+                arr.push(entry);
+            } else {
+                // met.no's timeseries is chronological, so the first
+                // entry matched for the next date is its earliest
+                // (00:00) hour - append it to close the loop at midnight.
+                entry.isNextDay = true;
+                nextEntry = entry;
+            }
+        });
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -177,7 +247,7 @@ function fetchHourly(service, W, dateStr) {
         + encodeURIComponent(service.latitude)
         + "&lon=" + encodeURIComponent(service.longitude)
         + ((!isNaN(alt) && alt !== 0) ? "&altitude=" + Math.round(alt) : "");
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("met.no", "fetchHourly", { revalidate: true });
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");
@@ -190,54 +260,40 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
         var d = JSON.parse(req.responseText);
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        if (d.properties && d.properties.timeseries)
-            d.properties.timeseries.forEach(function (ts) {
-                var dd = new Date(ts.time);
-                var dkey = Qt.formatDate(dd, "yyyy-MM-dd");
-                var isTarget = dkey === dateStr;
-                var isClosing = !nextEntry && dkey === nextDateStr;
-                if (!isTarget && !isClosing) return;
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
 
-                var det = (ts.data && ts.data.instant)
-                    ? ts.data.instant.details : null;
-                if (!det)
-                    return;
-                var sym = (ts.data && ts.data.next_1_hours
-                    && ts.data.next_1_hours.summary)
-                    ? ts.data.next_1_hours.summary.symbol_code : "";
-                var entry = {
-                    hour: Qt.formatTime(dd, "HH:mm"),
-                    tempC: det.air_temperature,
-                    code: W.metNoSymbolToWmo(sym),
-                    windKmh: det.wind_speed !== undefined
-                        ? det.wind_speed * 3.6 : NaN,
-                    windDeg: det.wind_from_direction !== undefined
-                        ? det.wind_from_direction : NaN,
-                    humidity: det.relative_humidity,
-                    precipProb: (ts.data && ts.data.next_1_hours
-                        && ts.data.next_1_hours.details
-                        && ts.data.next_1_hours.details.probability_of_precipitation !== undefined)
-                        ? ts.data.next_1_hours.details.probability_of_precipitation : NaN,
-                    precipMm: (ts.data && ts.data.next_1_hours
-                        && ts.data.next_1_hours.details
-                        && ts.data.next_1_hours.details.precipitation_amount !== undefined)
-                        ? ts.data.next_1_hours.details.precipitation_amount : NaN
-                };
-                if (isTarget) {
-                    arr.push(entry);
-                } else {
-                    // met.no's timeseries is chronological, so the first
-                    // entry matched for the next date is its earliest
-                    // (00:00) hour - append it to close the loop at midnight.
-                    entry.isNextDay = true;
-                    nextEntry = entry;
-                }
-            });
-        if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var alt = service.altitude;
+    var url = "https://api.met.no/weatherapi/locationforecast/2.0/complete?lat="
+        + encodeURIComponent(service.latitude)
+        + "&lon=" + encodeURIComponent(service.longitude)
+        + ((!isNaN(alt) && alt !== 0) ? "&altitude=" + Math.round(alt) : "");
+    var req = Shared.xhr("met.no", "fetchHourlyAll", { revalidate: true });
+    req.open("GET", url);
+    req.setRequestHeader("User-Agent",
+        "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
+        }
+        var d;
+        try {
+            d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

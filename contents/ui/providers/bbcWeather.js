@@ -34,6 +34,9 @@
  *   Forecast: https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/<id>
  */
 
+.import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+
 var _LOCATOR_KEY = "AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv";
 
 /**
@@ -89,11 +92,17 @@ function _dailyDerived(fcs, dateStr) {
  * keyed by rounded coordinates so we don't re-resolve on every refresh.
  */
 function _resolveLocationId(service, gen, cb) {
+    // gen === null: the caller is not tied to one refresh cycle (the hourly forecast, which can be asked for
+    // before the first refresh has even started) - the answer is then always handed on. A refresh passes its
+    // generation, and its answer is dropped when a newer refresh has started meanwhile.
     var lat = service.latitude;
     var lon = service.longitude;
     var key = Number(lat).toFixed(3) + "," + Number(lon).toFixed(3);
-    if (service._bbcLocKey === key && service._bbcLocId)
+    if (service._bbcLocKey === key && service._bbcLocId) {
+        Dbg.log("BBC Weather", "location id " + service._bbcLocId + " taken from the cache for " + key + " (no locator request needed)");
         return cb(service._bbcLocId);
+    }
+    Dbg.log("BBC Weather", "no cached location id for " + key + " → asking the BBC locator service for the nearest place");
 
     var url = "https://locator-service.api.bbci.co.uk/locations?"
         + "api_key=" + _LOCATOR_KEY
@@ -102,11 +111,11 @@ function _resolveLocationId(service, gen, cb) {
         + "&latitude=" + encodeURIComponent(lat)
         + "&longitude=" + encodeURIComponent(lon)
         + "&format=json";
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("BBC Weather", "_resolveLocationId");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
-        if (service._refreshGen !== gen) return;
+        if (gen !== null && service._refreshGen !== gen) return;
         if (req.status !== 200) return cb(null);
         try {
             var d = JSON.parse(req.responseText);
@@ -114,6 +123,7 @@ function _resolveLocationId(service, gen, cb) {
                 ? d.response.results.results : null;
             if (!results || results.length === 0) return cb(null);
             var id = results[0].id;
+            Dbg.log("BBC Weather", "locator resolved id " + id + " (\"" + (results[0].name || "?") + "\"" + (results[0].country ? ", " + results[0].country : "") + ") out of " + results.length + " candidate(s)");
             service._bbcLocKey = key;
             service._bbcLocId = id;
             cb(id);
@@ -149,7 +159,7 @@ function fetchCurrent(service, W, chain, idx) {
 
 function _fetchCurrentForId(service, W, chain, idx, gen, id) {
     var r = service.weatherRoot;
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("BBC Weather", "_fetchCurrentForId");
     req.open("GET", _forecastUrl(id));
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -302,14 +312,41 @@ function fetchHourly(service, W, dateStr) {
     _resolveLocationId(service, gen, function (id) {
         if (service._refreshGen !== gen) return;
         if (!id) { r.hourlyData = []; return; }
-        var req = new XMLHttpRequest();
+        var req = Shared.xhr("BBC Weather", "fetchHourly");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;
             if (service._refreshGen !== gen) return;
             if (req.status !== 200) { r.hourlyData = []; return; }
-            try { r.hourlyData = _parseHourly(JSON.parse(req.responseText), W, dateStr); }
+            try { r.setHourlyResult(dateStr, _parseHourly(JSON.parse(req.responseText), W, dateStr)); }
             catch (e) { r.hourlyData = []; }
+        };
+        req.send();
+    });
+}
+
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure.
+ *  BBC's aggregated forecast holds all its days, so the days are cut out of that single answer. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    _resolveLocationId(service, null, function (id) {
+        if (!id) { callback({}); return; }
+        var req = Shared.xhr("BBC Weather", "fetchHourlyAll");
+        req.open("GET", _forecastUrl(id));
+        req.onreadystatechange = function () {
+            if (req.readyState !== XMLHttpRequest.DONE) return;
+            if (req.status !== 200) { callback({}); return; }
+            var map = {};
+            try {
+                var d = JSON.parse(req.responseText);
+                var ds = firstDate;
+                for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+                    var a = _parseHourly(d, W, ds);
+                    if (a && a.length)
+                        map[ds] = a;
+                    ds = _nextDateStr(ds);
+                }
+            } catch (e) { map = {}; }
+            callback(map);
         };
         req.send();
     });
@@ -322,10 +359,10 @@ function fetchHourly(service, W, dateStr) {
  */
 function fetchHourlyDirect(service, W, dateStr, cb) {
     var gen = service._refreshGen;
-    _resolveLocationId(service, gen, function (id) {
+    _resolveLocationId(service, null, function (id) {
         if (service._refreshGen !== gen) { cb([]); return; }
         if (!id) { cb([]); return; }
-        var req = new XMLHttpRequest();
+        var req = Shared.xhr("BBC Weather", "fetchHourlyDirect");
         req.open("GET", _forecastUrl(id));
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE) return;

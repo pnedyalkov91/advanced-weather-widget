@@ -24,6 +24,9 @@
  * W (weather.js) is passed as a parameter by the caller.
  */
 
+.import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+
 /**
  * Magnus-formula dew-point approximation.
  * T in °C, rh in % → dew point in °C (rounded to 1 decimal).
@@ -51,6 +54,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._owKey();
     if (!key) {
+        Dbg.log("OpenWeather", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -59,7 +63,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&lon=" + service.longitude
         + "&units=metric&appid=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("OpenWeather", "fetchCurrent");
     req.open("GET", baseUrl + "weather?" + latlon);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -96,7 +100,7 @@ function fetchCurrent(service, W, chain, idx) {
         };
 
         // Fetch forecast separately
-        var fcReq = new XMLHttpRequest();
+        var fcReq = Shared.xhr("OpenWeather", "fetchCurrent (forecast list)");
         fcReq.open("GET", baseUrl + "forecast?" + latlon);
         fcReq.onreadystatechange = function () {
             if (fcReq.readyState !== XMLHttpRequest.DONE)
@@ -106,11 +110,15 @@ function fetchCurrent(service, W, chain, idx) {
             if (fcReq.status === 200) {
                 var fc = JSON.parse(fcReq.responseText);
                 var days = {};
+                var todayKey = Qt.formatDate(new Date(), "yyyy-MM-dd");
+                var todayArr = [];
                 if (fc.list)
                     fc.list.forEach(function (e) {
                         var dt = new Date(e.dt * 1000);
                         var dk = Qt.formatDate(dt, "yyyy-MM-dd");
                         var hr = dt.getHours();
+                        if (dk === todayKey)
+                            todayArr.push(_hourEntry(W, e, dt));
                         if (!days[dk])
                             days[dk] = { maxC: -Infinity, minC: Infinity, bestHr: -1, bestEntry: null, precipMm: 0, snowMm: 0 };
                         var day = days[dk];
@@ -129,6 +137,39 @@ function fetchCurrent(service, W, chain, idx) {
                             day.bestEntry = e;
                         }
                     });
+                // /forecast only lists the slots still to come: remember today's so far, and once the
+                // last slot of the day has passed (after 21:00) rebuild today's row from them,
+                // otherwise the first forecast row would be tomorrow's.
+                if (todayArr.length > 0 && typeof r.rememberTodayHours === "function")
+                    r.rememberTodayHours(todayKey, todayArr);
+                if (!days[todayKey] && typeof r.pastHoursFor === "function") {
+                    var pastToday = r.pastHoursFor(todayKey);
+                    if (pastToday.length > 0) {
+                        var pMax = -Infinity, pMin = Infinity, pRain = 0, pBest = null;
+                        pastToday.forEach(function (h) {
+                            if (h.tempC > pMax) pMax = h.tempC;
+                            if (h.tempC < pMin) pMin = h.tempC;
+                            if (h.precipMm === h.precipMm) pRain += h.precipMm * 3;
+                            var hm = parseInt(String(h.hour).split(":")[0], 10);
+                            if (pBest === null || Math.abs(hm - 12) < Math.abs(pBest.hm - 12))
+                                pBest = { hm: hm, code: h.code };
+                        });
+                        if (isFinite(pMax) && isFinite(pMin) && pBest) {
+                            nd.push({
+                                day: Qt.formatDate(new Date(), "ddd"),
+                                dateStr: todayKey,
+                                maxC: pMax,
+                                minC: pMin,
+                                code: pBest.code,
+                                precipMm: pRain,
+                                snowCm: NaN,
+                                precipProb: NaN,
+                                windKmh: NaN,
+                                windDir: NaN
+                            });
+                        }
+                    }
+                }
                 Object.keys(days).sort().forEach(function (k) {
                     if (nd.length >= service.forecastDays)
                         return;
@@ -173,11 +214,82 @@ function fetchCurrent(service, W, chain, idx) {
     req.send();
 }
 
+/** One 3-hour slot of /forecast as an hourly row (shared by the hourly view and the daily builder). */
+function _hourEntry(W, e, d) {
+    return {
+        hour: Qt.formatTime(d, "HH:mm"),
+        tempC: e.main.temp,
+        code: W.openWeatherCodeToWmo(e.weather[0].id),
+        windKmh: e.wind ? e.wind.speed * 3.6 : NaN,
+        windDeg: e.wind ? e.wind.deg : NaN,
+        humidity: e.main.humidity,
+        precipProb: (e.pop !== undefined && e.pop !== null)
+            ? Math.round(e.pop * 100) : NaN,
+        precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
+            : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
+            : NaN
+    };
+}
+
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(fc, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    function buildEntry(e, d) {
+        return {
+            hour: Qt.formatTime(d, "HH:mm"),
+            tempC: e.main.temp,
+            code: W.openWeatherCodeToWmo(e.weather[0].id),
+            windKmh: e.wind ? e.wind.speed * 3.6 : NaN,
+            windDeg: e.wind ? e.wind.deg : NaN,
+            humidity: e.main.humidity,
+            precipProb: (e.pop !== undefined && e.pop !== null)
+                ? Math.round(e.pop * 100) : NaN,
+            precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
+                : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
+                : NaN
+        };
+    }
+    if (fc.list)
+        fc.list.forEach(function (e) {
+            var d = new Date(e.dt * 1000);
+            var dkey = Qt.formatDate(d, "yyyy-MM-dd");
+            if (dkey === dateStr) {
+                arr.push(buildEntry(e, d));
+            } else if (!nextEntry && dkey === nextDateStr) {
+                // The list is chronological, so the first match for the
+                // next date is its earliest step - append it to close
+                // the hourly forecast's loop at (near) midnight.
+                nextEntry = buildEntry(e, d);
+                nextEntry.isNextDay = true;
+            }
+        });
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(fc, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(fc, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._owKey();
     if (!key) {
+        Dbg.log("OpenWeather", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -185,7 +297,7 @@ function fetchHourly(service, W, dateStr) {
         + service.latitude
         + "&lon=" + service.longitude
         + "&units=metric&appid=" + encodeURIComponent(key);
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("OpenWeather", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -196,40 +308,43 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
         var fc = JSON.parse(req.responseText);
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        function buildEntry(e, d) {
-            return {
-                hour: Qt.formatTime(d, "HH:mm"),
-                tempC: e.main.temp,
-                code: W.openWeatherCodeToWmo(e.weather[0].id),
-                windKmh: e.wind ? e.wind.speed * 3.6 : NaN,
-                windDeg: e.wind ? e.wind.deg : NaN,
-                humidity: e.main.humidity,
-                precipProb: (e.pop !== undefined && e.pop !== null)
-                    ? Math.round(e.pop * 100) : NaN,
-                precipMm: (e.rain && e.rain["1h"] !== undefined) ? e.rain["1h"]
-                    : (e.rain && e.rain["3h"] !== undefined) ? (e.rain["3h"] / 3)
-                    : NaN
-            };
+        r.setHourlyResult(dateStr, _hourlyDay(fc, W, dateStr));
+    };
+    req.send();
+}
+
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._owKey();
+    if (!key) {
+        Dbg.log("OpenWeather", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
+    var url = "https://api.openweathermap.org/data/2.5/forecast?lat="
+        + service.latitude
+        + "&lon=" + service.longitude
+        + "&units=metric&appid=" + encodeURIComponent(key);
+    var req = Shared.xhr("OpenWeather", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
         }
-        if (fc.list)
-            fc.list.forEach(function (e) {
-                var d = new Date(e.dt * 1000);
-                var dkey = Qt.formatDate(d, "yyyy-MM-dd");
-                if (dkey === dateStr) {
-                    arr.push(buildEntry(e, d));
-                } else if (!nextEntry && dkey === nextDateStr) {
-                    // The list is chronological, so the first match for the
-                    // next date is its earliest step - append it to close
-                    // the hourly forecast's loop at (near) midnight.
-                    nextEntry = buildEntry(e, d);
-                    nextEntry.isNextDay = true;
-                }
-            });
-        if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        var fc;
+        try {
+            fc = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+        callback(_hourlyDays(fc, W, firstDate, lastDate));
     };
     req.send();
 }

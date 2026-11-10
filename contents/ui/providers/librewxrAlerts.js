@@ -33,6 +33,8 @@
  * Non-pragma JS - accesses config via service properties.
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Main entry point - called from WeatherService._fetchAlertsIfNeeded()
  * when the alerts provider is set to "librewxr".
@@ -43,16 +45,16 @@ function fetchAlerts(service) {
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
     if (isNaN(lat) || isNaN(lon)) {
-        console.warn("[Alerts/LibreWXR] invalid coordinates:", service.latitude, service.longitude);
+        Dbg.warn("Alerts/LibreWXR", "invalid coordinates:", service.latitude, service.longitude);
         return;
     }
 
     var url = service.librewxrBaseUrl + "/v2/alerts?lat="
         + lat.toFixed(4) + "&lon=" + lon.toFixed(4);
 
-    console.log("[Alerts/LibreWXR] fetching:", url);
+    Dbg.log("Alerts/LibreWXR", "fetching:", url);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts/LibreWXR", "fetchAlerts");
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
@@ -61,19 +63,19 @@ function fetchAlerts(service) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            console.warn("[Alerts/LibreWXR] HTTP", req.status, "for", url);
+            Dbg.warn("Alerts/LibreWXR", "HTTP", req.status, "for", url);
             return;
         }
         try {
             var data = JSON.parse(req.responseText);
             var alerts = _parseLibreWxrAlerts(data);
-            console.log("[Alerts/LibreWXR] parsed", alerts.length, "active alerts");
+            Dbg.log("Alerts/LibreWXR", "parsed", alerts.length, "active alerts");
             // Assign even when empty - the server already filtered by point,
             // so an empty result genuinely means "no active alerts here" and
             // must clear any previously shown alert.
             r.weatherAlerts = alerts;
         } catch (e) {
-            console.warn("[Alerts/LibreWXR] parse error:", e);
+            Dbg.warn("Alerts/LibreWXR", "parse error:", e);
         }
     };
     req.send();

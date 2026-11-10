@@ -23,7 +23,7 @@ cp -r "$here/contents" "$stage/"
 [ -f "$here/README.md" ] && cp "$here/README.md" "$stage/" || true
 
 # --upgrade if already installed, --install otherwise - so the first run also works.
-if kpackagetool6 --type Plasma/Applet --list 2>/dev/null | grep -q "org.kde.plasma.advanced-weather-widget"; then
+if kpackagetool6 --type Plasma/Applet --list 2>/dev/null | grep -q "org.kde.plasma.advanced-weather-widget-dev"; then
     kpackagetool6 --type Plasma/Applet --upgrade "$stage"
 else
     kpackagetool6 --type Plasma/Applet --install "$stage"

@@ -44,6 +44,8 @@
  * Non-pragma JS - accesses config via service properties.
  */
 
+.import "../js/debug.js" as Dbg
+
 // Small bounding box (± ~0.05° ≈ 5.5 km) around the point so the area query
 // reliably catches alerts whose polygons contain the location without pulling
 // in a whole country's worth of unrelated warnings.
@@ -59,7 +61,7 @@ function fetchAlerts(service) {
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
     if (isNaN(lat) || isNaN(lon)) {
-        console.warn("[Alerts/FOSS] invalid coordinates:", service.latitude, service.longitude);
+        Dbg.warn("Alerts/FOSS", "invalid coordinates:", service.latitude, service.longitude);
         return;
     }
 
@@ -72,9 +74,9 @@ function fetchAlerts(service) {
     var areaUrl = base + "/alert/area?min_lat=" + minLat + "&max_lat=" + maxLat
         + "&min_lon=" + minLon + "&max_lon=" + maxLon;
 
-    console.log("[Alerts/FOSS] fetching area:", areaUrl);
+    Dbg.log("Alerts/FOSS", "fetching area:", areaUrl);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Alerts/FOSS", "fetchAlerts");
     req.open("GET", areaUrl);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
@@ -84,24 +86,24 @@ function fetchAlerts(service) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
-            console.warn("[Alerts/FOSS] HTTP", req.status, "for", areaUrl);
+            Dbg.warn("Alerts/FOSS", "HTTP", req.status, "for", areaUrl);
             return;
         }
         var ids;
         try {
             ids = JSON.parse(req.responseText);
         } catch (e) {
-            console.warn("[Alerts/FOSS] area parse error:", e);
+            Dbg.warn("Alerts/FOSS", "area parse error:", e);
             return;
         }
         if (!Array.isArray(ids)) {
-            console.warn("[Alerts/FOSS] area response is not an array");
+            Dbg.warn("Alerts/FOSS", "area response is not an array");
             return;
         }
         if (ids.length === 0) {
             // No alerts intersect the bbox → genuinely nothing here.
             // Clear any previously shown alert (server already filtered).
-            console.log("[Alerts/FOSS] no alerts in area");
+            Dbg.log("Alerts/FOSS", "no alerts in area");
             r.weatherAlerts = [];
             return;
         }
@@ -119,6 +121,8 @@ function _fetchAlertsByIds(service, gen, base, ids) {
     var r = service.weatherRoot;
     var lat = parseFloat(service.latitude);
     var lon = parseFloat(service.longitude);
+    // "" = native (default behaviour); otherwise a primary language subtag.
+    var preferredLang = service.alertsLanguageForLocation();
 
     // Cap the number of individual fetches to avoid hammering the server for
     // a location that happens to sit in a very busy bbox.
@@ -144,14 +148,14 @@ function _fetchAlertsByIds(service, gen, base, ids) {
                 unique.push(a);
             }
         });
-        console.log("[Alerts/FOSS] parsed", unique.length, "active alert(s)");
+        Dbg.log("Alerts/FOSS", "parsed", unique.length, "active alert(s)");
         r.weatherAlerts = unique;
     }
 
     ids.forEach(function (id) {
         if (typeof id !== "string" || id.length === 0) { _settle(); return; }
         var url = base + "/alert/" + encodeURIComponent(id);
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Alerts/FOSS", "_settle");
         req.open("GET", url);
         req.setRequestHeader("User-Agent",
             "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");
@@ -163,14 +167,14 @@ function _fetchAlertsByIds(service, gen, base, ids) {
                 try {
                     var doc = req.responseXML;
                     var parsed = doc
-                        ? _parseCapDocument(doc, lat, lon)
+                        ? _parseCapDocument(doc, lat, lon, preferredLang)
                         : _parseCapText(req.responseText, lat, lon);
                     parsed.forEach(function (a) { collected.push(a); });
                 } catch (e) {
-                    console.warn("[Alerts/FOSS] alert parse error for", id, ":", e);
+                    Dbg.warn("Alerts/FOSS", "alert parse error for", id, ":", e);
                 }
             } else {
-                console.warn("[Alerts/FOSS] HTTP", req.status, "for", url);
+                Dbg.warn("Alerts/FOSS", "HTTP", req.status, "for", url);
             }
             _settle();
         };
@@ -184,8 +188,12 @@ function _fetchAlertsByIds(service, gen, base, ids) {
  * Parse a CAP <alert> DOM document into zero or more alert objects.
  * Returns [] when the alert is expired, test/exercise, or does not contain
  * the user's coordinates.
+ *
+ * preferredLang (optional): primary language subtag ("de", "fr", ...). The
+ * <info> block in that language is used for the display text when the alert
+ * has one; otherwise the usual native-first choice applies.
  */
-function _parseCapDocument(doc, userLat, userLon) {
+function _parseCapDocument(doc, userLat, userLon, preferredLang) {
     var now = new Date();
     var root = doc && doc.documentElement ? doc.documentElement : null;
     if (!root) return [];
@@ -200,7 +208,7 @@ function _parseCapDocument(doc, userLat, userLon) {
     // Merge geometry + parameters across all <info> blocks (language variants
     // of the same alert may each carry different area / parameter data), and
     // pick a local-language block for display text.
-    var localInfo = _pickLocalInfoNode(infos);
+    var localInfo = _pickLocalInfoNode(infos, preferredLang);
     if (!localInfo) return [];
 
     var color = "", levelName = "", levelNum = 0;
@@ -516,8 +524,18 @@ function _localName(node) {
 /**
  * Pick a local-language <info> node for display, preferring a non-English
  * language, then English, then the first block - mirrors alerts.js.
+ * When preferredLang is given and an <info> block carries that language
+ * (primary subtag match, so "de" matches "de-CH"), that block wins.
  */
-function _pickLocalInfoNode(infos) {
+function _pickLocalInfoNode(infos, preferredLang) {
+    var pref = (preferredLang || "").toLowerCase();
+    if (pref.length > 0) {
+        for (var p = 0; p < infos.length; p++) {
+            var l = _capText(infos[p], "language").toLowerCase();
+            if (l === pref || l.indexOf(pref + "-") === 0 || l.indexOf(pref + "_") === 0)
+                return infos[p];
+        }
+    }
     var local = null, english = null;
     for (var i = 0; i < infos.length; i++) {
         var lang = _capText(infos[i], "language").toLowerCase();

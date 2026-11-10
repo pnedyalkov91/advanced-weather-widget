@@ -27,6 +27,9 @@
  * Docs: https://docs.pirateweather.net/en/latest/API/
  */
 
+.import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+
 /**
  * Maps a Pirate Weather / Dark Sky icon string to a WMO weather code.
  */
@@ -105,22 +108,37 @@ function _nextDateStr(dateStr) {
     return Qt.formatDate(d, "yyyy-MM-dd");
 }
 
+/**
+ * The ONE forecast URL used by fetchCurrent (current + daily + alerts) and by fetchHourly /
+ * fetchHourlyAll (the hours of every day): a single answer carries all of it, so a refresh asks
+ * Pirate Weather once instead of once per caller - which matters because every request counts
+ * against the monthly quota (x-forecast-api-calls goes up by one each time).
+ *  - units=ca: Celsius, km/h, hPa, km (as before)
+ *  - extend=hourly: 168 hours instead of 48; the docs say it only affects the hourly block
+ *  - version=2: only adds fields (the ones read here are unchanged)
+ * Air quality stays a separate request on purpose: Pirate Weather ties the AQI scale to `units`
+ * (see fetchAirQuality), so it needs units=si.
+ */
+function _forecastUrl(service, key) {
+    return "https://api.pirateweather.net/forecast/"
+        + encodeURIComponent(key) + "/"
+        + service.latitude + "," + service.longitude
+        + "?units=ca&exclude=minutely&version=2&extend=hourly";
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._pwKey();
     if (!key) {
+        Dbg.log("Pirate Weather", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
 
-    // Use ca units: Celsius temps, km/h wind, hPa pressure, km visibility
-    var url = "https://api.pirateweather.net/forecast/"
-        + encodeURIComponent(key) + "/"
-        + service.latitude + "," + service.longitude
-        + "?units=ca&exclude=minutely&version=2";
+    var url = _forecastUrl(service, key);
 
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("Pirate Weather", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -251,22 +269,73 @@ function _parseAlerts(r, alerts) {
 }
 
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    if (d.hourly && d.hourly.data) {
+        d.hourly.data.forEach(function (h) {
+            var dt = new Date(h.time * 1000);
+            var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
+            var isTarget = hDateStr === dateStr;
+            var isClosing = !nextEntry && hDateStr === nextDateStr;
+            if (!isTarget && !isClosing) return;
+
+            var entry = {
+                hour: Qt.formatTime(dt, "HH:mm"),
+                tempC: h.temperature,
+                code: _iconToWmo(h.icon),
+                windKmh: (h.windSpeed !== undefined) ? h.windSpeed : NaN,
+                windDeg: (h.windBearing !== undefined) ? h.windBearing : NaN,
+                humidity: (h.humidity !== undefined) ? Math.round(h.humidity * 100) : NaN,
+                precipProb: (h.precipProbability !== undefined) ? Math.round(h.precipProbability * 100) : NaN,
+                precipMm: (h.precipIntensity !== undefined) ? h.precipIntensity : NaN
+            };
+            if (isTarget) {
+                arr.push(entry);
+            } else {
+                // Data is chronological, so the first match for the next
+                // date is its earliest (00:00) hour - append it to close
+                // the hourly forecast's loop at midnight.
+                entry.isNextDay = true;
+                nextEntry = entry;
+            }
+        });
+    }
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._pwKey();
     if (!key) {
+        Dbg.log("Pirate Weather", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
 
-    // Pirate Weather returns 48h of hourly data by default, 168h with extend=hourly
-    var url = "https://api.pirateweather.net/forecast/"
-        + encodeURIComponent(key) + "/"
-        + service.latitude + "," + service.longitude
-        + "?units=ca&exclude=minutely,daily,alerts&extend=hourly";
+    // (168 hours of hourly data come with the same answer as the current weather)
+    var url = _forecastUrl(service, key);
 
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("Pirate Weather", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -283,40 +352,43 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        if (d.hourly && d.hourly.data) {
-            d.hourly.data.forEach(function (h) {
-                var dt = new Date(h.time * 1000);
-                var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
-                var isTarget = hDateStr === dateStr;
-                var isClosing = !nextEntry && hDateStr === nextDateStr;
-                if (!isTarget && !isClosing) return;
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
 
-                var entry = {
-                    hour: Qt.formatTime(dt, "HH:mm"),
-                    tempC: h.temperature,
-                    code: _iconToWmo(h.icon),
-                    windKmh: (h.windSpeed !== undefined) ? h.windSpeed : NaN,
-                    windDeg: (h.windBearing !== undefined) ? h.windBearing : NaN,
-                    humidity: (h.humidity !== undefined) ? Math.round(h.humidity * 100) : NaN,
-                    precipProb: (h.precipProbability !== undefined) ? Math.round(h.precipProbability * 100) : NaN,
-                    precipMm: (h.precipIntensity !== undefined) ? h.precipIntensity : NaN
-                };
-                if (isTarget) {
-                    arr.push(entry);
-                } else {
-                    // Data is chronological, so the first match for the next
-                    // date is its earliest (00:00) hour - append it to close
-                    // the hourly forecast's loop at midnight.
-                    entry.isNextDay = true;
-                    nextEntry = entry;
-                }
-            });
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._pwKey();
+    if (!key) {
+        Dbg.log("Pirate Weather", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
+
+    // (168 hours of hourly data come with the same answer as the current weather)
+    var url = _forecastUrl(service, key);
+
+    var req = Shared.xhr("Pirate Weather", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
         }
-        if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }
@@ -382,7 +454,7 @@ function fetchAirQuality(service, W) {
         + "?units=si&exclude=minutely,hourly,daily,alerts,summary"
         + "&include=airqualitydetails&version=2";
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Pirate Weather", "fetchAirQuality");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

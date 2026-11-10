@@ -26,10 +26,16 @@
  * Docs: https://docs.stormglass.io/
  */
 
+.import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+
 /**
  * Derives a WMO weather code from cloud cover, precipitation, and temp.
  * StormGlass does not provide a native weather condition code.
  */
+var _PARAMS = "airTemperature,humidity,pressure,windSpeed,windDirection,"
+    + "visibility,precipitation,snowDepth,cloudCover,dewPointTemperature";
+
 function _deriveWmoCode(cloudCover, precipitation, temp) {
     var cc = (cloudCover !== undefined && cloudCover !== null && !isNaN(cloudCover)) ? cloudCover : 0;
     var pr = (precipitation !== undefined && precipitation !== null && !isNaN(precipitation)) ? precipitation : 0;
@@ -79,19 +85,19 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._sgKey();
     if (!key) {
+        Dbg.log("StormGlass", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
 
-    var params = "airTemperature,humidity,pressure,windSpeed,windDirection,"
-        + "visibility,precipitation,snowDepth,cloudCover,dewPointTemperature";
+    var params = _PARAMS;
 
     var url = "https://api.stormglass.io/v2/weather/point"
         + "?lat=" + service.latitude
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("StormGlass", "fetchCurrent");
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {
@@ -186,6 +192,12 @@ function fetchCurrent(service, W, chain, idx) {
 
         var nd = [];
         var dateKeys = Object.keys(dayMap).sort();
+        // StormGlass's data starts at midnight UTC, so shortly after local midnight the first
+        // group can still be yesterday's (the keys above are local dates): skip past days.
+        var _sgToday = Qt.formatDate(new Date(), "yyyy-MM-dd");
+        var _sgUpcoming = dateKeys.filter(function (x) { return x >= _sgToday; });
+        if (_sgUpcoming.length > 0)
+            dateKeys = _sgUpcoming;
         var maxD = Math.min(service.forecastDays, dateKeys.length);
         for (var k = 0; k < maxD; k++) {
             var de = dayMap[dateKeys[k]];
@@ -224,23 +236,84 @@ function fetchCurrent(service, W, chain, idx) {
 }
 
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    if (d.hours) {
+        d.hours.forEach(function (h) {
+            var dt = new Date(h.time);
+            var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
+            var isTarget = hDateStr === dateStr;
+            var isClosing = !nextEntry && hDateStr === nextDateStr;
+            if (!isTarget && !isClosing) return;
+
+            var t = _val(h.airTemperature);
+            var cc = _val(h.cloudCover);
+            var pr = _val(h.precipitation);
+            var ws = _val(h.windSpeed);
+
+            var entry = {
+                hour: Qt.formatTime(dt, "HH:mm"),
+                tempC: t,
+                code: _deriveWmoCode(cc, pr, t),
+                windKmh: !isNaN(ws) ? ws * 3.6 : NaN,
+                windDeg: _val(h.windDirection),
+                humidity: (function() { var v = _val(h.humidity); return !isNaN(v) ? Math.round(v) : NaN; })(),
+                precipProb: NaN, // not available from StormGlass
+                precipMm: pr
+            };
+            if (isTarget) {
+                arr.push(entry);
+            } else {
+                // d.hours is chronological, so the first match for the
+                // next date is its earliest hour - append it to close
+                // the hourly forecast's loop at midnight.
+                entry.isNextDay = true;
+                nextEntry = entry;
+            }
+        });
+    }
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._sgKey();
     if (!key) {
+        Dbg.log("StormGlass", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
 
-    var params = "airTemperature,humidity,windSpeed,windDirection,precipitation,cloudCover";
+    // the same parameters as fetchCurrent (a superset of what the hours need) so both can share ONE request:
+    // StormGlass counts requests, not parameters, and the free plan allows only 10 a day
+    var params = _PARAMS;
 
     var url = "https://api.stormglass.io/v2/weather/point"
         + "?lat=" + service.latitude
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = new XMLHttpRequest();
+    var req = Shared.xhr("StormGlass", "fetchHourly");
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {
@@ -258,45 +331,50 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        if (d.hours) {
-            d.hours.forEach(function (h) {
-                var dt = new Date(h.time);
-                var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
-                var isTarget = hDateStr === dateStr;
-                var isClosing = !nextEntry && hDateStr === nextDateStr;
-                if (!isTarget && !isClosing) return;
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
 
-                var t = _val(h.airTemperature);
-                var cc = _val(h.cloudCover);
-                var pr = _val(h.precipitation);
-                var ws = _val(h.windSpeed);
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._sgKey();
+    if (!key) {
+        Dbg.log("StormGlass", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
 
-                var entry = {
-                    hour: Qt.formatTime(dt, "HH:mm"),
-                    tempC: t,
-                    code: _deriveWmoCode(cc, pr, t),
-                    windKmh: !isNaN(ws) ? ws * 3.6 : NaN,
-                    windDeg: _val(h.windDirection),
-                    humidity: (function() { var v = _val(h.humidity); return !isNaN(v) ? Math.round(v) : NaN; })(),
-                    precipProb: NaN, // not available from StormGlass
-                    precipMm: pr
-                };
-                if (isTarget) {
-                    arr.push(entry);
-                } else {
-                    // d.hours is chronological, so the first match for the
-                    // next date is its earliest hour - append it to close
-                    // the hourly forecast's loop at midnight.
-                    entry.isNextDay = true;
-                    nextEntry = entry;
-                }
-            });
+    // the same parameters as fetchCurrent (a superset of what the hours need) so both can share ONE request:
+    // StormGlass counts requests, not parameters, and the free plan allows only 10 a day
+    var params = _PARAMS;
+
+    var url = "https://api.stormglass.io/v2/weather/point"
+        + "?lat=" + service.latitude
+        + "&lng=" + service.longitude
+        + "&params=" + params;
+
+    var req = Shared.xhr("StormGlass", "fetchHourlyAll");
+    req.open("GET", url);
+    req.setRequestHeader("Authorization", key);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
         }
-        if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

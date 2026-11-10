@@ -63,6 +63,8 @@ import QtQuick.Effects
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 
+import "../js/iconResolver.js" as IconResolver
+
 Item {
     id: weatherIcon
 
@@ -171,14 +173,33 @@ Item {
 
     visible: iconSource.length > 0
 
+    // The bundled artwork URL this icon should draw: the icon itself for
+    // type "svg", or the fallback behind a KDE theme name.
+    readonly property string _bundledSrc: iconType === "svg" ? iconSource : svgFallback
+
+    // True for a real file reference (file:///..., qrc:/..., or an absolute
+    // path). Anything else - a bare "wi-humidity"-style name - must never be
+    // drawn as bundled artwork: handing it to the icon machinery is what makes
+    // Qt walk the whole theme chain for a file that cannot be in any theme.
+    readonly property bool _bundledIsFile: _bundledSrc.indexOf("://") > 0 || _bundledSrc.indexOf("qrc:/") === 0 || _bundledSrc.charAt(0) === "/"
+
     // ── Single loaded branch ──────────────────────────────────────────────
-    // Exactly one element is instantiated per icon (wi-font Text, or one
-    // Kirigami.Icon).  Every Kirigami.Icon carries a PlasmaTheme object that
-    // re-syncs on each window expose, and pays icon-theme lookups on polish -
-    // with hundreds of icons in the forecast/details delegates, keeping five
-    // dormant Icon siblings per WeatherIcon froze the GUI thread on popup
-    // open.  The bundled-SVG fallback is only created when the KDE theme
-    // lookup actually misses.
+    // Exactly one element is instantiated per icon (wi-font Text, one Image
+    // for bundled artwork, or one Kirigami.Icon for a KDE theme name).  Every
+    // Kirigami.Icon carries a PlasmaTheme object that re-syncs on each window
+    // expose, and pays icon-theme lookups on polish - with hundreds of icons
+    // in the forecast/details delegates, keeping five dormant Icon siblings
+    // per WeatherIcon froze the GUI thread on popup open.
+    //
+    // Bundled artwork is drawn with a plain Image, NOT Kirigami.Icon: it ships
+    // in the package as ordinary files, so it has no business in the icon
+    // theme's lookup path, and Qt's loader neither caches theme misses nor
+    // stops at the first one (it also retries every dash-stripped name,
+    // wi-time-3 -> wi-time -> wi, in every theme directory).  An Image reads
+    // the file once and the decoded pixmap is shared per URL+size across all
+    // delegates.  The bundled fallback behind a KDE name is only created when
+    // that name actually misses - and once a name has missed, later icons skip
+    // the doomed theme lookup altogether.
     Loader {
         id: iconLoader
         width: weatherIcon._contentSize
@@ -187,8 +208,15 @@ Item {
         sourceComponent: {
             if (weatherIcon.iconType === "wi")
                 return weatherIcon.wiFontReady ? wiComp : null;
-            if ((weatherIcon.iconType === "kde" || weatherIcon.iconType === "svg") && weatherIcon.iconSource.length > 0)
+            if (weatherIcon.iconSource.length === 0)
+                return null;
+            if (weatherIcon.iconType === "svg")
+                return weatherIcon._bundledIsFile ? svgComp : iconComp;
+            if (weatherIcon.iconType === "kde") {
+                if (weatherIcon.svgFallback.length > 0 && weatherIcon._bundledIsFile && IconResolver.isKdeIconMissing(weatherIcon.iconSource))
+                    return svgComp;
                 return iconComp;
+            }
             return null;
         }
     }
@@ -237,7 +265,40 @@ Item {
         }
     }
 
-    // ── KDE system icon or SVG file icon ──────────────────────────────────
+    // ── Bundled SVG artwork (a plain file - never the icon theme) ─────────
+    // Symbolic artwork is black (fill="currentColor", which Qt renders as the
+    // default colour) and is tinted to iconColor on the GPU.  MultiEffect's
+    // colorization multiplies the tint by the pixel's luminance, so a black
+    // source needs brightness 1.0 first (premultiplied: rgb += a, which keeps
+    // the alpha shape and turns the glyph white) for the tint to come out as
+    // the plain iconColor.  Coloured themes (flat-color, 3d-oxygen, meteocons)
+    // skip the layer entirely and draw as-is.
+    //
+    // Rasterised at 2x the logical size so it stays crisp on HiDPI; the pixmap
+    // cache keys on URL + size, so every delegate showing the same icon at the
+    // same size shares one decoded texture.
+    Component {
+        id: svgComp
+        Image {
+            source: weatherIcon._bundledSrc
+            sourceSize: Qt.size(Math.max(1, Math.round(weatherIcon._contentSize * 2)), Math.max(1, Math.round(weatherIcon._contentSize * 2)))
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            mipmap: true
+            cache: true
+            asynchronous: false
+            layer.enabled: weatherIcon.isMask && status === Image.Ready
+            layer.effect: MultiEffect {
+                brightness: 1.0
+                colorization: 1.0
+                colorizationColor: weatherIcon.iconColor
+            }
+        }
+    }
+
+    // ── KDE system icon (theme name) ──────────────────────────────────────
+    // Only reached for type "kde" (or an "svg" source that is not a file
+    // reference, which keeps the old behaviour for such oddities).
     Component {
         id: iconComp
         Kirigami.Icon {
@@ -247,6 +308,16 @@ Item {
             color: weatherIcon.isMask ? weatherIcon.iconColor : "transparent"
             fallback: weatherIcon.iconType === "kde" ? (weatherIcon.svgFallback.length > 0 ? "" : (weatherIcon.isMask ? "dialog-question-symbolic" : "dialog-question")) : "unknown"
 
+            // Remember a KDE name the theme does not have, so the next icon
+            // asking for it goes straight to the bundled artwork instead of
+            // repeating a lookup Qt will not cache.  Same Error-not-!valid
+            // gate as the fallback Loader below.  Only recorded when there is
+            // a bundled fallback to take over.
+            onStatusChanged: {
+                if (status === Kirigami.Icon.Error && weatherIcon.iconType === "kde" && weatherIcon.svgFallback.length > 0)
+                    IconResolver.markKdeIconMissing(weatherIcon.iconSource);
+            }
+
             // Bundled SVG fallback - only exists when the KDE icon is missing.
             // Gate on status === Error, not !valid: a failed theme lookup still
             // reports valid=true (placeholder machinery), and Error is only set
@@ -254,12 +325,8 @@ Item {
             // while the primary icon is still loading.
             Loader {
                 anchors.fill: parent
-                active: weatherIcon.iconType === "kde" && weatherIcon.svgFallback.length > 0 && primaryIcon.status === Kirigami.Icon.Error
-                sourceComponent: Kirigami.Icon {
-                    source: weatherIcon.svgFallback
-                    isMask: weatherIcon.isMask
-                    color: weatherIcon.isMask ? weatherIcon.iconColor : "transparent"
-                }
+                active: weatherIcon.iconType === "kde" && weatherIcon.svgFallback.length > 0 && weatherIcon._bundledIsFile && primaryIcon.status === Kirigami.Icon.Error
+                sourceComponent: svgComp
             }
         }
     }

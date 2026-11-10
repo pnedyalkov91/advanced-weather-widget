@@ -24,6 +24,8 @@
  * Docs: https://docs.tomorrow.io/reference/welcome
  */
 
+.import "../js/debug.js" as Dbg
+
 /**
  * Maps a Tomorrow.io weather code to a WMO weather code.
  */
@@ -71,6 +73,7 @@ function fetchCurrent(service, W, chain, idx) {
     var r = service.weatherRoot;
     var key = service._tioKey();
     if (!key) {
+        Dbg.log("Tomorrow.io", "no API key set in Settings → provider skipped, trying the next one");
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -81,7 +84,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&units=metric"
         + "&apikey=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Tomorrow.io", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -146,7 +149,7 @@ function _fetchForecast(service, W, gen) {
         + "&units=metric"
         + "&apikey=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Tomorrow.io", "_fetchForecast");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -219,11 +222,67 @@ function _fetchForecast(service, W, gen) {
 }
 
 
+/** The hours of dateStr (plus the closing 00:00 of the next day) out of one parsed answer. */
+function _hourlyDay(d, W, dateStr) {
+    var arr = [];
+    var nextDateStr = _nextDateStr(dateStr);
+    var nextEntry = null;
+    var hourlyTimeline = d.timelines && d.timelines.hourly;
+    if (hourlyTimeline) {
+        hourlyTimeline.forEach(function (h) {
+            var dt = new Date(h.time);
+            var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
+            var isTarget = hDateStr === dateStr;
+            var isClosing = !nextEntry && hDateStr === nextDateStr;
+            if (!isTarget && !isClosing) return;
+
+            var v = h.values;
+            var entry = {
+                hour: Qt.formatTime(dt, "HH:mm"),
+                tempC: v.temperature,
+                code: _codeToWmo(v.weatherCode),
+                windKmh: (v.windSpeed !== undefined) ? v.windSpeed * 3.6 : NaN,
+                windDeg: (v.windDirection !== undefined) ? v.windDirection : NaN,
+                humidity: (v.humidity !== undefined) ? Math.round(v.humidity) : NaN,
+                precipProb: (v.precipitationProbability !== undefined) ? Math.round(v.precipitationProbability) : NaN,
+                precipMm: (v.precipitationIntensity !== undefined) ? v.precipitationIntensity : NaN
+            };
+            if (isTarget) {
+                arr.push(entry);
+            } else {
+                // hourlyTimeline is chronological, so the first match
+                // for the next date is its earliest (00:00) hour -
+                // append it to close the loop at midnight.
+                entry.isNextDay = true;
+                nextEntry = entry;
+            }
+        });
+    }
+    if (nextEntry) arr.push(nextEntry);
+    
+    return arr;
+}
+
+/** Hours of every day firstDate..lastDate out of ONE already-parsed answer: { "yyyy-MM-dd": [hours] }
+ *  (days the answer does not cover are left out). Same per-day result fetchHourly gives. */
+function _hourlyDays(d, W, firstDate, lastDate) {
+    var map = {};
+    var ds = firstDate;
+    for (var guard = 0; guard < 40 && ds <= lastDate; ++guard) {
+        var a = _hourlyDay(d, W, ds);
+        if (a && a.length)
+            map[ds] = a;
+        ds = _nextDateStr(ds);
+    }
+    return map;
+}
+
 function fetchHourly(service, W, dateStr) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._tioKey();
     if (!key) {
+        Dbg.log("Tomorrow.io", "no API key set in Settings → no hourly forecast");
         r.hourlyData = [];
         return;
     }
@@ -234,7 +293,7 @@ function fetchHourly(service, W, dateStr) {
         + "&units=metric"
         + "&apikey=" + encodeURIComponent(key);
 
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Tomorrow.io", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -251,42 +310,46 @@ function fetchHourly(service, W, dateStr) {
             return;
         }
 
-        var arr = [];
-        var nextDateStr = _nextDateStr(dateStr);
-        var nextEntry = null;
-        var hourlyTimeline = d.timelines && d.timelines.hourly;
-        if (hourlyTimeline) {
-            hourlyTimeline.forEach(function (h) {
-                var dt = new Date(h.time);
-                var hDateStr = Qt.formatDate(dt, "yyyy-MM-dd");
-                var isTarget = hDateStr === dateStr;
-                var isClosing = !nextEntry && hDateStr === nextDateStr;
-                if (!isTarget && !isClosing) return;
+        r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
+    };
+    req.send();
+}
 
-                var v = h.values;
-                var entry = {
-                    hour: Qt.formatTime(dt, "HH:mm"),
-                    tempC: v.temperature,
-                    code: _codeToWmo(v.weatherCode),
-                    windKmh: (v.windSpeed !== undefined) ? v.windSpeed * 3.6 : NaN,
-                    windDeg: (v.windDirection !== undefined) ? v.windDirection : NaN,
-                    humidity: (v.humidity !== undefined) ? Math.round(v.humidity) : NaN,
-                    precipProb: (v.precipitationProbability !== undefined) ? Math.round(v.precipitationProbability) : NaN,
-                    precipMm: (v.precipitationIntensity !== undefined) ? v.precipitationIntensity : NaN
-                };
-                if (isTarget) {
-                    arr.push(entry);
-                } else {
-                    // hourlyTimeline is chronological, so the first match
-                    // for the next date is its earliest (00:00) hour -
-                    // append it to close the loop at midnight.
-                    entry.isNextDay = true;
-                    nextEntry = entry;
-                }
-            });
+/** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
+function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
+    var dateStr = firstDate;
+    var gen = service._refreshGen;
+    var r = service.weatherRoot;
+    var key = service._tioKey();
+    if (!key) {
+        Dbg.log("Tomorrow.io", "no API key set in Settings → no hourly forecast");
+        callback({});
+        return;
+    }
+
+    var url = "https://api.tomorrow.io/v4/weather/forecast"
+        + "?location=" + service.latitude + "," + service.longitude
+        + "&timesteps=1h"
+        + "&units=metric"
+        + "&apikey=" + encodeURIComponent(key);
+
+    var req = Dbg.xhr("Tomorrow.io", "fetchHourlyAll");
+    req.open("GET", url);
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            callback({});
+            return;
         }
-        if (nextEntry) arr.push(nextEntry);
-        r.hourlyData = arr;
+        try {
+            var d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback({});
+            return;
+        }
+
+        callback(_hourlyDays(d, W, firstDate, lastDate));
     };
     req.send();
 }

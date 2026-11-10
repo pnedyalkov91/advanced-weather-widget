@@ -399,7 +399,9 @@ PlasmaCore.ToolTipArea {
     }
 
     readonly property string iconTheme: Plasmoid.configuration.panelIconTheme || "wi-font"
-    readonly property string _cvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
+    // The last synchronisation failed: values are shown as "--" and the icon as "no data"
+    readonly property bool _lost: weatherRoot ? weatherRoot.syncLost === true : false
+    readonly property string _cvTemp: (weatherRoot && !_lost) ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
 
     // ── Datetime tick (updates every second to keep the datetime item live) ──
     property int _dateTimeTick: 0
@@ -423,7 +425,7 @@ PlasmaCore.ToolTipArea {
         // chip showing e.g. the condition icon or moon phase only updates on the
         // next weatherData refresh, not at the actual sunrise/sunset/moonrise/
         // moonset moment (moon phase: not even then - see main.qml).
-        var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "") + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "") + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize + compactRoot._dateTimeTick + weatherRoot._nowTick;
+        var _deps = (weatherRoot.weatherData || "") + weatherRoot.panelScrollIndex + (weatherRoot.sunriseTimeText || "") + (weatherRoot.sunsetTimeText || "") + (weatherRoot.moonriseTimeText || "") + (weatherRoot.moonsetTimeText || "") + Plasmoid.configuration.panelItemOrder + Plasmoid.configuration.panelItemIcons + Plasmoid.configuration.panelInfoMode + Plasmoid.configuration.panelSeparator + Plasmoid.configuration.panelSunTimesMode + Plasmoid.configuration.panelMoonPhaseMode + compactRoot.iconTheme + Plasmoid.configuration.panelIconSize + compactRoot._dateTimeTick + weatherRoot._nowTick + (weatherRoot.syncLost ? 1 : 0);
         return _buildItems();
     }
 
@@ -660,7 +662,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.iconSz
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 // Colorful / custom
@@ -669,7 +671,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.iconSz
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle !== "symbolic"
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getMultilineModeIconSource() : "weather-none-available"
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? compactRoot.weatherRoot.getMultilineModeIconSource() : "weather-none-available"
                     smooth: true
                 }
             }
@@ -750,7 +752,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 Kirigami.Icon {
@@ -758,7 +760,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.mlIconStyle !== "symbolic"
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getMultilineModeIconSource() : "weather-none-available"
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? compactRoot.weatherRoot.getMultilineModeIconSource() : "weather-none-available"
                     smooth: true
                 }
             }
@@ -999,7 +1001,7 @@ PlasmaCore.ToolTipArea {
                     height: compactRoot.simpleSymbolicIconSz
                     anchors.centerIn: parent
                     visible: compactRoot.simpleIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 // Colorful / custom icon: explicit size + centerIn, same as symbolic.
@@ -1010,7 +1012,7 @@ PlasmaCore.ToolTipArea {
                     height: parent._cellSz
                     anchors.centerIn: parent
                     visible: compactRoot.simpleIconStyle === "colorful" || compactRoot.simpleIconStyle === "custom" || compactRoot.simpleIconIsBundled
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? compactRoot.weatherRoot.getSimpleModeIconSource() : (compactRoot._lost ? "weather-none-available" : "")
                     // The bundled symbolic SVGs are drawn with fill="currentColor" and
                     // stay invisible unless Kirigami tints them; the other bundled
                     // themes carry their own colours.
@@ -1103,7 +1105,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.simpleIconStyle === "symbolic"
-                    source: compactRoot.weatherRoot ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? W.weatherCodeToIcon(compactRoot.weatherRoot.weatherCode, compactRoot.weatherRoot.isNightTime(), true) : "weather-none-available-symbolic"
                     smooth: true
                 }
                 // Colorful / custom icon
@@ -1112,7 +1114,7 @@ PlasmaCore.ToolTipArea {
                     height: parent.height
                     anchors.centerIn: parent
                     visible: compactRoot.simpleIconStyle === "colorful" || compactRoot.simpleIconStyle === "custom" || compactRoot.simpleIconIsBundled
-                    source: compactRoot.weatherRoot ? compactRoot.weatherRoot.getSimpleModeIconSource() : ""
+                    source: (compactRoot.weatherRoot && !compactRoot._lost) ? compactRoot.weatherRoot.getSimpleModeIconSource() : (compactRoot._lost ? "weather-none-available" : "")
                     // The bundled symbolic SVGs are drawn with fill="currentColor" and
                     // stay invisible unless Kirigami tints them; the other bundled
                     // themes carry their own colours.
@@ -1215,6 +1217,8 @@ PlasmaCore.ToolTipArea {
         });
         var theme = Plasmoid.configuration.panelIconTheme || "wi-font";
         var result = [];
+        var lost = r.syncLost === true;
+        var lostTokens = ["condition", "temperature", "feelslike", "humidity", "pressure", "wind", "dewpoint", "visibility", "preciprate", "precipsum", "uvindex", "airquality", "pollen", "snowcover"];
 
         function pushSep() {
             result.push({
@@ -1427,6 +1431,17 @@ PlasmaCore.ToolTipArea {
             var txt = r.panelItemTextOnly(tok);
             if (!txt || txt.length === 0)
                 return;
+            if (lost && lostTokens.indexOf(tok) !== -1) {
+                // weather values are not current any more: "--" instead of the last numbers
+                txt = "--";
+                if (tok === "condition")
+                    iconInfo = {
+                        type: "kde",
+                        source: "weather-none-available",
+                        svgFallback: "",
+                        isMask: false
+                    };
+            }
             if (result.length > 0)
                 pushSep();
             pushInfoItem(iconInfo, show, txt);
