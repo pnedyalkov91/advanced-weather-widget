@@ -181,7 +181,7 @@ Item {
         // A manual choice overrides following the Plasma theme until the
         // Plasma theme itself changes (see onIsDarkChanged).
         Plasmoid.configuration.librewxrTheme = on ? "dark" : "light";
-        js("window.setTheme(" + JSON.stringify(on ? "dark" : "light") + ");");
+        call("setTheme", on ? "dark" : "light");
     }
 
     // 12/24-hour clock follows Settings → Misc → Date and Time.
@@ -241,13 +241,13 @@ Item {
         ignoreUnknownSignals: true
         // Settings → Misc → Date and Time changed: relabel the map in place.
         function onDateTimeSpecChanged() {
-            webView.runJavaScript("if (window.setDateTimeFormat) window.setDateTimeFormat(" + JSON.stringify(radarRoot.weatherRoot.dateTimeSpec) + ");");
+            radarRoot.call("setDateTimeFormat", radarRoot.weatherRoot.dateTimeSpec);
         }
         function onExpandedChanged() {
             // The page cannot always tell a collapsed popup from a visible one,
             // so pause and resume the wind particles from here; the
             // animation stops with the popup.
-            webView.runJavaScript("if (window.setWindActive) window.setWindActive(" + (radarRoot.weatherRoot.expanded ? "true" : "false") + ");");
+            radarRoot.call("setWindActive", !!radarRoot.weatherRoot.expanded);
             if (!radarRoot.weatherRoot.expanded)
                 radarRoot._pause();
             if (radarRoot.weatherRoot.expanded && radarRoot.visible)
@@ -301,12 +301,20 @@ Item {
     function js(code) {
         webView.runJavaScript(code);
     }
+    /** Calls window[fn](args...) in the page when it has it, the arguments
+        as JSON. */
+    function call(fn) {
+        var args = [];
+        for (var i = 1; i < arguments.length; i++)
+            args.push(JSON.stringify(arguments[i]));
+        js("if (window." + fn + ") window." + fn + "(" + args.join(", ") + ")");
+    }
 
     property var animState: null      // window.animState()
     property bool started: false      // window.animStart() took
     property bool startFailed: false  // the page cannot animate here (no WebGL)
     property bool ctrlDown: false     // Ctrl held: readout under the pointer, cross cursor
-    onCtrlDownChanged: if (ctrlDown && !mapHover.hovered) js("if (window.setReadout) window.setReadout(false)")
+    onCtrlDownChanged: if (ctrlDown && !mapHover.hovered) call("setReadout", false)
     readonly property int count: animState ? animState.times.length : 0
     readonly property int readyCount: animState ? animState.ready.filter(function (r) { return r; }).length : 0
 
@@ -339,11 +347,12 @@ Item {
         });
     }
     function showIndex(i) {
-        js("window.animPlay(false); window.animShow(" + i + ")");
+        call("animPlay", false);
+        call("animShow", i);
     }
     function _pause() {
         if (started)
-            js("if (window.animPlay) window.animPlay(false)");
+            call("animPlay", false);
     }
 
     // Pictures per second at most, resolution while playing.
@@ -351,15 +360,15 @@ Item {
     readonly property int resolution: [1, 2, 4].indexOf(Plasmoid.configuration.weatherMapResolution) >= 0 ? Plasmoid.configuration.weatherMapResolution : 1
     function setMaxFps(v) {
         Plasmoid.configuration.weatherMapFps = v;
-        js("window.animSetMaxFps(" + v + ")");
+        call("animSetMaxFps", v);
     }
     function setResolution(v) {
         Plasmoid.configuration.weatherMapResolution = v;
-        js("window.animSetResolution(" + v + ")");
+        call("animSetResolution", v);
     }
     function setMapLines(on) {
         Plasmoid.configuration.librewxrMapLines = on;
-        js("if (window.setMapLines) window.setMapLines(" + on + ")");
+        call("setMapLines", on);
     }
 
     // The palettes of the wind and the temperature, those of the Radar
@@ -392,7 +401,7 @@ Item {
     readonly property string windLevel: Plasmoid.configuration.librewxrWindLevel === "700hPa" ? "700hPa" : "10m"
     function setWindLevel(v) {
         Plasmoid.configuration.librewxrWindLevel = v;
-        js("if (window.animSetWindLevel) window.animSetWindLevel('" + v + "')");
+        call("animSetWindLevel", v);
     }
 
     // The layers switched on, kept in weatherMapLayers.
@@ -433,7 +442,7 @@ Item {
     // is) and the column lists them so.
     readonly property var layerOrder: ConfigUtils.weatherStackOrder(Plasmoid.configuration.weatherMapLayerOrder)
     function setLayerOrder(json) { Plasmoid.configuration.weatherMapLayerOrder = json; }
-    onLayerOrderChanged: if (started) js("if (window.setLayerOrder) window.setLayerOrder(" + JSON.stringify(layerOrder) + ")")
+    onLayerOrderChanged: if (started) call("setLayerOrder", layerOrder)
     // A layer taken out while on goes off.
     onDisabledLayersChanged: {
         if (!started)
@@ -479,11 +488,11 @@ Item {
                 && !animLayerIds.some(function (x) { return x !== id && layerOn(x); });
         }
         if (id === "radar")
-            js("window.animSetRadar(" + on + ")");
+            call("animSetRadar", on);
         else if (id === "satellite")
-            js("window.animSetSatellite(" + on + ")");
+            call("animSetSatellite", on);
         else
-            js("window.animSetLayer('" + id + "', " + on + ")");
+            call("animSetLayer", id, on);
         if (fine)
             _rangeTo(rangeKind, false);
     }
@@ -561,7 +570,7 @@ Item {
         pastH = Math.max(0, (now - shown[0]) / 3600e3);
         futureH = Math.max(0, (shown[1] - now) / 3600e3);
         timeBar.timeLine.glideTo(shown[0], shown[1]);
-        js("window.animSetSpan(" + span[0] + ", " + span[1] + ", " + stepH + ")");
+        call("animSetSpan", span[0], span[1], stepH);
     }
     onAnimStateChanged: {
         if (!_kindPending || !animState || !animState.radar || animState.radar.start === null)
@@ -650,11 +659,11 @@ Item {
     readonly property string pollutant: aqChoices.some(function (c) { return c[0] === Plasmoid.configuration.weatherMapPollutant; }) ? Plasmoid.configuration.weatherMapPollutant : "pm2_5"
     function setPrecipKinds(values) {
         Plasmoid.configuration.weatherMapPrecipKinds = JSON.stringify(values);
-        js("window.precipSetKinds(" + JSON.stringify(values) + ")");
+        call("precipSetKinds", values);
     }
     function setCloudLevels(values) {
         Plasmoid.configuration.weatherMapCloudLevels = JSON.stringify(values);
-        js("window.cloudSetLevels(" + JSON.stringify(values) + ")");
+        call("cloudSetLevels", values);
     }
     // The isobars' settings: the width of the lines (times the usual one),
     // the hPa between two lines, the values on them, the highs and lows.
@@ -685,18 +694,18 @@ Item {
         Plasmoid.configuration.weatherMapIsobars = JSON.stringify(o);
         var one = {};
         one[key] = value;
-        js("if (window.isoSetOptions) window.isoSetOptions(" + JSON.stringify(one) + ")");
+        call("isoSetOptions", one);
     }
     function setPollutant(v) {
         Plasmoid.configuration.weatherMapPollutant = v;
-        js("window.aqSetPollutant('" + v + "')");
+        call("aqSetPollutant", v);
     }
     // What the layers show, told to the page before it starts: the
     // pictures of the right pollutant are the first read.
     function _layerChoices() {
         return "if (window.precipSetKinds) window.precipSetKinds(" + JSON.stringify(precipKinds) + ");"
             + "if (window.cloudSetLevels) window.cloudSetLevels(" + JSON.stringify(cloudLevels) + ");"
-            + "if (window.aqSetPollutant) window.aqSetPollutant('" + pollutant + "');"
+            + "if (window.aqSetPollutant) window.aqSetPollutant(" + JSON.stringify(pollutant) + ");"
             + "if (window.isoSetOptions) window.isoSetOptions(" + JSON.stringify(isobars) + ");";
     }
 
@@ -721,7 +730,7 @@ Item {
         } catch (e) {}
         o[id] = pct;
         Plasmoid.configuration.weatherMapOpacities = JSON.stringify(o);
-        js("window.animSetOpacity('" + id + "', " + pct + ")");
+        call("animSetOpacity", id, pct);
     }
 
     // The layer column folded to the width of an icon, or open. Open, the
@@ -731,7 +740,7 @@ Item {
     readonly property real panelOver: layerPanel.openWidth - layerPanel.foldedWidth
     function setFolded(on) {
         Plasmoid.configuration.weatherMapPanelFolded = on;
-        js("if (window.animSetRightInset) window.animSetRightInset(" + (on ? 0 : panelOver) + ")");
+        call("animSetRightInset", on ? 0 : panelOver);
     }
 
     // The color legends hidden, by layer id.
@@ -749,7 +758,7 @@ Item {
         else
             h[id] = true;
         Plasmoid.configuration.weatherMapLegendsHidden = JSON.stringify(h);
-        js("if (window.animSetLegend) window.animSetLegend('" + id + "', " + on + ")");
+        call("animSetLegend", id, on);
     }
 
     // The radar's options and color schemes, read from the page when its menu opens.
@@ -778,7 +787,7 @@ Item {
         var o = Object.assign({}, radarOptions);
         o[key] = value;
         radarOptions = o;
-        js("window.animSetRadarOption('" + key + "', " + JSON.stringify(value) + ")");
+        call("animSetRadarOption", key, value);
     }
 
     // Hours before and after now. The range picked is kept; a solo's range is not.
@@ -797,7 +806,7 @@ Item {
         // Around the step nearest the clock, as the page counts it.
         var S = stepH * 3600e3, now = Math.round(Date.now() / S) * S;
         timeBar.timeLine.glideTo(now - pastH * 3600e3, now + futureH * 3600e3);
-        js("window.animSetRange(" + pastH + ", " + futureH + ", " + stepH + ")");
+        call("animSetRange", pastH, futureH, stepH);
         _soloing = false;
     }
     // The range sent again around the clock once now has left its frame
@@ -836,12 +845,12 @@ Item {
     readonly property int speed: Math.max(1, Math.min(3, Plasmoid.configuration.weatherMapSpeed || 1))
     function setSpeed(s) {
         Plasmoid.configuration.weatherMapSpeed = s;
-        js("window.animSetStep(" + Math.round(1500 / s) + ")");
+        call("animSetStep", Math.round(1500 / s));
     }
     readonly property bool loop: Plasmoid.configuration.weatherMapLoop !== false
     function setLoop(on) {
         Plasmoid.configuration.weatherMapLoop = on;
-        js("if (window.animSetLoop) window.animSetLoop(" + on + ")");
+        call("animSetLoop", on);
     }
 
     // The help panel.
@@ -952,7 +961,7 @@ Item {
     // The legends at the top left go under the date when the map is too
     // narrow for both side by side (zoom buttons, legends 320 px, the date).
     readonly property real legendTop: mapArea.width - layerPanel.width - dateBox.width < 52 + 320 + 12 ? dateBox.height + 8 : 0
-    onLegendTopChanged: if (started) js("if (window.animSetLegendTop) window.animSetLegendTop(" + legendTop + ")")
+    onLegendTopChanged: if (started) call("animSetLegendTop", legendTop)
 
     // Everything the page needs once the animation has started.
     function _afterStart() {
@@ -1058,7 +1067,7 @@ Item {
         id: homeTimer
         interval: 150
         onTriggered: {
-            radarRoot.js("if (window.setHome) window.setHome(" + radarRoot.lat + ", " + radarRoot.lon + ")");
+            radarRoot.call("setHome", radarRoot.lat, radarRoot.lon);
             // The page holds this place now: a later load request with
             // the same parameters is not needed.
             radarRoot._lastPageUrl = radarRoot._pageUrl();
@@ -1142,11 +1151,11 @@ Item {
         if (k === "play")
             toggle();
         else if (k.indexOf("step:") === 0)
-            js("window.animStepButton(" + (+k.slice(5)) + ")");
+            call("animStepButton", +k.slice(5));
         else if (k.indexOf("file:") === 0)
-            js("window.animStepFile(" + (+k.slice(5)) + ")");
+            call("animStepFile", +k.slice(5));
         else if (k.indexOf("end:") === 0)
-            js("window.animToEnd(" + (+k.slice(4)) + ")");
+            call("animToEnd", +k.slice(4));
         else if (k.indexOf("layer:") === 0)
             keyLayer(k.slice(6));
         else if (k === "loop")
@@ -1176,19 +1185,19 @@ Item {
     }
     // Ctrl and + or -: the map's zoom, as its buttons.
     function zoomBy(d) {
-        js("if (window.animZoom) window.animZoom(" + d + ")");
+        call("animZoom", d);
     }
     function keyNow() {
         if (count > 0 && animState)
             showIndex(animState.now);
     }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
-    Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepButton(-1)") }
-    Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepButton(1)") }
-    Shortcut { sequences: [StandardKey.MoveToPreviousPage, "Ctrl+Left"]; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepFile(-1)") }
-    Shortcut { sequences: [StandardKey.MoveToNextPage, "Ctrl+Right"]; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animStepFile(1)") }
-    Shortcut { sequence: "Home"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(-1)") }
-    Shortcut { sequence: "End"; enabled: radarRoot.keysOn; onActivated: radarRoot.js("window.animToEnd(1)") }
+    Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepButton", -1) }
+    Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepButton", 1) }
+    Shortcut { sequences: [StandardKey.MoveToPreviousPage, "Ctrl+Left"]; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepFile", -1) }
+    Shortcut { sequences: [StandardKey.MoveToNextPage, "Ctrl+Right"]; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepFile", 1) }
+    Shortcut { sequence: "Home"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animToEnd", -1) }
+    Shortcut { sequence: "End"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animToEnd", 1) }
     Shortcut { sequence: "Escape"; enabled: helpPanel.opened; onActivated: helpPanel.close() }
     Instantiator {
         model: Object.keys(radarRoot.layerKeys)
@@ -1219,13 +1228,13 @@ Item {
             if (event.key === Qt.Key_Control && !event.isAutoRepeat) {
                 radarRoot.ctrlDown = true;
                 if (mapHover.hovered)
-                    radarRoot.js("if (window.setReadout) window.setReadout(true)");
+                    radarRoot.call("setReadout", true);
             }
         }
         Keys.onReleased: function (event) {
             if (event.key === Qt.Key_Control && !event.isAutoRepeat) {
                 radarRoot.ctrlDown = false;
-                radarRoot.js("if (window.setReadout) window.setReadout(false)");
+                radarRoot.call("setReadout", false);
             }
         }
 
@@ -1304,7 +1313,7 @@ Item {
                             // the component is rebuilt every time the popup reopens. Those
                             // setTheme calls land on a page that does not exist yet and are
                             // lost; re-assert it here. No-op when they already match.
-                            webView.runJavaScript("window.setTheme(" + JSON.stringify(radarRoot.mapTheme) + ");");
+                            radarRoot.call("setTheme", radarRoot.mapTheme);
                             startTimer.tries = 0;
                             startTimer.restart();
                         }
@@ -1318,7 +1327,7 @@ Item {
                         interval: 300
                         repeat: false
                         onTriggered: {
-                            webView.runJavaScript("if (window.fixViewport) window.fixViewport();");
+                            radarRoot.call("fixViewport");
                             repaintNudgeTimer.restart();
                             viewportFixLateTimer.restart();
                         }
@@ -1330,7 +1339,7 @@ Item {
                         interval: 1500
                         repeat: false
                         onTriggered: {
-                            webView.runJavaScript("if (window.fixViewport) window.fixViewport();");
+                            radarRoot.call("fixViewport");
                             repaintNudgeTimer.restart();
                         }
                     }
@@ -1389,46 +1398,46 @@ Item {
                         }
                         function onMapThemeChanged() {
                             console.log("[Advanced Weather Widget Weather Map] Plasma theme changed; mapTheme=", radarRoot.mapTheme);
-                            webView.runJavaScript("window.setTheme(" + JSON.stringify(radarRoot.mapTheme) + ");");
+                            radarRoot.call("setTheme", radarRoot.mapTheme);
                         }
                         function onWindRateChanged() {
-                            webView.runJavaScript("if (window.setWindRate) window.setWindRate(" + radarRoot.windRate[0] + "," + radarRoot.windRate[1] + ");");
+                            radarRoot.call("setWindRate", radarRoot.windRate[0], radarRoot.windRate[1]);
                         }
                         function onWindLineWidthChanged() {
-                            webView.runJavaScript("if (window.setWindWidth) window.setWindWidth(" + radarRoot.windLineWidth + ");");
+                            radarRoot.call("setWindWidth", radarRoot.windLineWidth);
                         }
                         function onWindDensityChanged() {
-                            webView.runJavaScript("if (window.setWindDensity) window.setWindDensity(" + radarRoot.windDensity + ");");
+                            radarRoot.call("setWindDensity", radarRoot.windDensity);
                         }
                         function onWindPaletteChanged() {
-                            webView.runJavaScript("if (window.setWindPalette) window.setWindPalette(" + JSON.stringify(radarRoot.windPalette) + ");");
+                            radarRoot.call("setWindPalette", radarRoot.windPalette);
                         }
                         function onTempPaletteChanged() {
-                            webView.runJavaScript("if (window.setTempPalette) window.setTempPalette(" + JSON.stringify(radarRoot.tempPalette) + ");");
+                            radarRoot.call("setTempPalette", radarRoot.tempPalette);
                         }
                         function onTempOpacityChanged() {
-                            webView.runJavaScript("if (window.setTempOpacity) window.setTempOpacity(" + radarRoot.tempOpacity + ");");
+                            radarRoot.call("setTempOpacity", radarRoot.tempOpacity);
                         }
                         function onTempStepChanged() {
-                            webView.runJavaScript("if (window.setTempStep) window.setTempStep(" + radarRoot.tempStep + ");");
+                            radarRoot.call("setTempStep", radarRoot.tempStep);
                         }
                         function onTempUnitChanged() {
-                            webView.runJavaScript("if (window.setTempUnit) window.setTempUnit(" + JSON.stringify(radarRoot.tempUnit) + ");");
+                            radarRoot.call("setTempUnit", radarRoot.tempUnit);
                         }
                         function onWindUnitChanged() {
-                            webView.runJavaScript("if (window.setWindUnit) window.setWindUnit(" + JSON.stringify(radarRoot.windUnit) + ", " + JSON.stringify(radarRoot.windUnitLabel) + ");");
+                            radarRoot.call("setWindUnit", radarRoot.windUnit, radarRoot.windUnitLabel);
                         }
                         function onProjectionChanged() {
-                            webView.runJavaScript("if (window.setProjection) window.setProjection(" + JSON.stringify(radarRoot.projection) + ");");
+                            radarRoot.call("setProjection", radarRoot.projection);
                         }
                         function onDayNightChanged() {
-                            webView.runJavaScript("if (window.setDayNight) window.setDayNight(" + radarRoot.dayNight + ");");
+                            radarRoot.call("setDayNight", radarRoot.dayNight);
                         }
                         function onGlowChanged() {
-                            webView.runJavaScript("if (window.setGlow) window.setGlow(" + radarRoot.glow + ");");
+                            radarRoot.call("setGlow", radarRoot.glow);
                         }
                         function onNightDepthChanged() {
-                            webView.runJavaScript("if (window.setNightDepth) window.setNightDepth(" + radarRoot.nightDepth + ");");
+                            radarRoot.call("setNightDepth", radarRoot.nightDepth);
                         }
                         function onMapBackgroundChanged() {
                             if (radarRoot._backgroundFromMap) {
@@ -1438,7 +1447,7 @@ Item {
                                 return;
                             }
                             console.log("[Advanced Weather Widget Weather Map] map background changed; background=", radarRoot.mapBackground);
-                            webView.runJavaScript("window.setBackground(" + JSON.stringify(radarRoot.mapBackground) + ");");
+                            radarRoot.call("setBackground", radarRoot.mapBackground);
                         }
                     }
                 }
@@ -1516,12 +1525,12 @@ Item {
                     anchors.rightMargin: layerPanel.width - layerPanel.foldedWidth
                     HoverHandler {
                         id: mapHover
-                        onHoveredChanged: if (radarRoot.ctrlDown) radarRoot.js("if (window.setReadout) window.setReadout(" + hovered + ")")
+                        onHoveredChanged: if (radarRoot.ctrlDown) radarRoot.call("setReadout", hovered)
                     }
                     HoverHandler {
                         enabled: radarRoot.ctrlDown
                         cursorShape: Qt.CrossCursor
-                        onPointChanged: if (enabled) radarRoot.js("if (window.readoutAt) window.readoutAt(" + point.position.x + ", " + point.position.y + ")")
+                        onPointChanged: if (enabled) radarRoot.call("readoutAt", point.position.x, point.position.y)
                     }
                 }
 
