@@ -33,6 +33,7 @@ import QtWebEngine
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import "../js/configUtils.js" as ConfigUtils
+import "../js/debug.js" as Dbg
 import "weathermap"
 
 Item {
@@ -163,11 +164,11 @@ Item {
 
     onIsDarkChanged: {
         if (!radarRoot._themeGuardArmed) {
-            console.log("[Advanced Weather Widget Weather Map] ignoring theme read during startup settle");
+            Dbg.log("Weather Map", "ignoring theme read during startup settle");
             return;
         }
         if ((Plasmoid.configuration.librewxrTheme || "auto") !== "auto") {
-            console.log("[Advanced Weather Widget Weather Map] Plasma theme changed; clearing manual dark-map override");
+            Dbg.log("Weather Map", "Plasma theme changed; clearing manual dark-map override");
             Plasmoid.configuration.librewxrTheme = "auto";
         }
     }
@@ -206,7 +207,7 @@ Item {
         interval: 150
         repeat: false
         onTriggered: {
-            console.log("[Advanced Weather Widget Weather Map] repaint nudge");
+            Dbg.log("Weather Map", "repaint nudge");
             radarRoot._repaintNudge = 1;
             repaintRestoreTimer.restart();
         }
@@ -265,7 +266,7 @@ Item {
     }
 
     Component.onCompleted: {
-        console.log("[Advanced Weather Widget Weather Map] component completed; lat=", lat, "lon=", lon, "zoom=", initialZoom, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
+        Dbg.log("Weather Map", "component completed; lat=", lat, "lon=", lon, "zoom=", initialZoom, "theme=", mapTheme, "server=", serverUrl, "qt=", Qt.version, "platform=", Qt.platform.os);
         _applyMapProfile();
         themeGuardTimer.restart();
     }
@@ -290,7 +291,7 @@ Item {
             return;
         webView.profile = p;
         _mapProfileSet = true;
-        console.log("[Advanced Weather Widget Weather Map] map profile:", p.storageName);
+        Dbg.log("Weather Map", "map profile:", p.storageName);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -796,7 +797,7 @@ Item {
     property real _rolledMs: 0
     function _rollRange() {
         _rolledMs = Date.now();
-        console.log("[Advanced Weather Widget Weather Map] time line moved on to now");
+        Dbg.log("Weather Map", "time line moved on to now");
         if (rangeKind)
             _rangeTo(rangeKind, solo ? false : forecastOn);
         else
@@ -1038,11 +1039,11 @@ Item {
         // the timer's window: when the page already holds this exact url,
         // loading it a second time only made the map show up twice in a row.
         if (reason === "coalesced" && url === radarRoot._lastPageUrl) {
-            console.log("[Advanced Weather Widget Weather Map] coalesced load skipped: page already at this url");
+            Dbg.log("Weather Map", "coalesced load skipped: page already at this url");
             return;
         }
         radarRoot._lastPageUrl = url;
-        console.log("[Advanced Weather Widget Weather Map] loading page (" + reason + "); lat=", radarRoot.lat, "lon=", radarRoot.lon, "theme=", radarRoot.mapTheme);
+        Dbg.log("Weather Map", "loading page (" + reason + "); lat=", radarRoot.lat, "lon=", radarRoot.lon, "theme=", radarRoot.mapTheme);
         // Assigning an unchanged url is not guaranteed to navigate - force a
         // real reload in that case (e.g. the header Refresh button).
         if (webView.url.toString() === url)
@@ -1093,7 +1094,7 @@ Item {
             if (++tries > 30) {
                 stop();
                 radarRoot.startFailed = true;
-                console.warn("[Advanced Weather Widget Weather Map] the animation did not start");
+                Dbg.warn("Weather Map", "the animation did not start");
                 return;
             }
             var layers = {};
@@ -1342,7 +1343,7 @@ Item {
                     }
 
                     onLoadingChanged: function (loadRequest) {
-                        console.log("[Advanced Weather Widget Weather Map] loading changed:", "status=", loadRequest.status, "url=", loadRequest.url, "errorCode=", loadRequest.errorCode, "error=", loadRequest.errorString);
+                        Dbg.log("Weather Map", "loading changed:", "status=", loadRequest.status, "url=", Dbg.shortUrl(loadRequest.url), "errorCode=", loadRequest.errorCode, "error=", loadRequest.errorString);
                         if (loadRequest.status === WebEngineView.LoadStartedStatus) {
                             // A new page: the animation starts again on it.
                             startTimer.stop();
@@ -1397,7 +1398,7 @@ Item {
                     }
 
                     onRenderProcessTerminated: function (terminationStatus, exitCode) {
-                        console.warn("[Advanced Weather Widget Weather Map] render process terminated:", "status=", terminationStatus, "exitCode=", exitCode);
+                        Dbg.warn("Weather Map", "render process terminated:", "status=", terminationStatus, "exitCode=", exitCode);
                     }
 
                     onTitleChanged: {
@@ -1449,7 +1450,7 @@ Item {
                             pageLoadTimer.restart();
                         }
                         function onMapThemeChanged() {
-                            console.log("[Advanced Weather Widget Weather Map] Plasma theme changed; mapTheme=", radarRoot.mapTheme);
+                            Dbg.log("Weather Map", "Plasma theme changed; mapTheme=", radarRoot.mapTheme);
                             radarRoot.call("setTheme", radarRoot.mapTheme);
                         }
                         function onWindRateChanged() {
@@ -1498,7 +1499,7 @@ Item {
                                 radarRoot._backgroundFromMap = false;
                                 return;
                             }
-                            console.log("[Advanced Weather Widget Weather Map] map background changed; background=", radarRoot.mapBackground);
+                            Dbg.log("Weather Map", "map background changed; background=", radarRoot.mapBackground);
                             radarRoot.call("setBackground", radarRoot.mapBackground);
                         }
                     }
