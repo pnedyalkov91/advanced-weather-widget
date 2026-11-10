@@ -28,6 +28,7 @@
  */
 
 .import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
 
 /**
  * Maps a Pirate Weather / Dark Sky icon string to a WMO weather code.
@@ -107,6 +108,24 @@ function _nextDateStr(dateStr) {
     return Qt.formatDate(d, "yyyy-MM-dd");
 }
 
+/**
+ * The ONE forecast URL used by fetchCurrent (current + daily + alerts) and by fetchHourly /
+ * fetchHourlyAll (the hours of every day): a single answer carries all of it, so a refresh asks
+ * Pirate Weather once instead of once per caller - which matters because every request counts
+ * against the monthly quota (x-forecast-api-calls goes up by one each time).
+ *  - units=ca: Celsius, km/h, hPa, km (as before)
+ *  - extend=hourly: 168 hours instead of 48; the docs say it only affects the hourly block
+ *  - version=2: only adds fields (the ones read here are unchanged)
+ * Air quality stays a separate request on purpose: Pirate Weather ties the AQI scale to `units`
+ * (see fetchAirQuality), so it needs units=si.
+ */
+function _forecastUrl(service, key) {
+    return "https://api.pirateweather.net/forecast/"
+        + encodeURIComponent(key) + "/"
+        + service.latitude + "," + service.longitude
+        + "?units=ca&exclude=minutely&version=2&extend=hourly";
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
@@ -117,13 +136,9 @@ function fetchCurrent(service, W, chain, idx) {
         return;
     }
 
-    // Use ca units: Celsius temps, km/h wind, hPa pressure, km visibility
-    var url = "https://api.pirateweather.net/forecast/"
-        + encodeURIComponent(key) + "/"
-        + service.latitude + "," + service.longitude
-        + "?units=ca&exclude=minutely&version=2";
+    var url = _forecastUrl(service, key);
 
-    var req = Dbg.xhr("Pirate Weather", "fetchCurrent");
+    var req = Shared.xhr("Pirate Weather", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -317,13 +332,10 @@ function fetchHourly(service, W, dateStr) {
         return;
     }
 
-    // Pirate Weather returns 48h of hourly data by default, 168h with extend=hourly
-    var url = "https://api.pirateweather.net/forecast/"
-        + encodeURIComponent(key) + "/"
-        + service.latitude + "," + service.longitude
-        + "?units=ca&exclude=minutely,daily,alerts&extend=hourly";
+    // (168 hours of hourly data come with the same answer as the current weather)
+    var url = _forecastUrl(service, key);
 
-    var req = Dbg.xhr("Pirate Weather", "fetchHourly");
+    var req = Shared.xhr("Pirate Weather", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -357,13 +369,10 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         return;
     }
 
-    // Pirate Weather returns 48h of hourly data by default, 168h with extend=hourly
-    var url = "https://api.pirateweather.net/forecast/"
-        + encodeURIComponent(key) + "/"
-        + service.latitude + "," + service.longitude
-        + "?units=ca&exclude=minutely,daily,alerts&extend=hourly";
+    // (168 hours of hourly data come with the same answer as the current weather)
+    var url = _forecastUrl(service, key);
 
-    var req = Dbg.xhr("Pirate Weather", "fetchHourlyAll");
+    var req = Shared.xhr("Pirate Weather", "fetchHourlyAll");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
