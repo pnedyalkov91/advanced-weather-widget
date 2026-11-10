@@ -105,7 +105,10 @@ QQC2.Popup {
     ]
     function isOn(s) { return s.ids.some(function (id) { return !!panel.layers[id]; }); }
     function inColumn(s) { return s.ids.some(function (id) { return panel.shownIds.indexOf(id) >= 0; }); }
-    readonly property var kept: layerSections.filter(inColumn)
+    // In the order of the column (shownIds).
+    readonly property var kept: layerSections.filter(inColumn).sort(function (a, b) {
+        return panel.shownIds.indexOf(a.ids[0]) - panel.shownIds.indexOf(b.ids[0]);
+    })
     readonly property var orderedLayers: kept.filter(isOn).concat(kept.filter(function (s) { return !isOn(s); }))
 
     // The rest of the tab. A line: label (bold) and text, an icon of the
@@ -159,8 +162,9 @@ QQC2.Popup {
                  { label: "+ / −", text: i18n("the next or previous speed.") },
                  { label: i18n("Ctrl + / Ctrl −"), text: i18n("zoom in or out.") },
                  { label: "L", text: i18n("the loop on or off.") },
-                 { label: Object.keys(panel.keys).map(function (id) { return panel.keys[id]; }).join(", "),
-                   text: i18n("switch radar, satellite, wind, temperature, precipitation, clouds, pressure, isobars, humidity, dew point, air quality on or off.") },
+                 { label: ["radar", "satellite", "wind", "isobars", "precipitation", "clouds", "temperature", "pressure", "humidity", "dewpoint", "airquality"]
+                       .filter(function (id) { return !!panel.keys[id]; }).map(function (id) { return panel.keys[id]; }).join(", "),
+                   text: i18n("switch radar, satellite, wind, isobars, precipitation, clouds, temperature, pressure, humidity, dew point, air quality on or off.") },
                  { label: i18n("Ctrl held over the map"), text: i18n("the wind and the temperature under the pointer.") },
                  { label: i18n("Esc"), text: i18n("closes this panel.") }],
           note: i18n("The same keys in every language. They work while the Weather Map tab is shown.") }

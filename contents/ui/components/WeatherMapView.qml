@@ -1571,7 +1571,7 @@ Item {
             radarRoot.layerIds.forEach(function (id) { o[id] = radarRoot.layerOn(id); });
             return o;
         }
-        shownIds: radarRoot.layerIds.filter(function (id) { return radarRoot.layerEnabled(id); })
+        shownIds: radarRoot.layerOrder.filter(function (id) { return radarRoot.layerEnabled(id); })
     }
 
     function reload() {

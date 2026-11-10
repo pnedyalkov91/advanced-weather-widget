@@ -35,17 +35,15 @@ var WidgetPressure = (function () {
   // The space between two lines is opts.step.
   // Their color ('' follows the theme) and the size of the values in px.
   var iso = { opacity: 0.8, width: 1, labels: true, marks: true, color: '', textSize: 11 };
-  /** The ink of the lines, [r, g, b] 0..1, and a halo under the values
-      that stands out from it. */
+  /** The ink of the lines and their values: [r, g, b] 0..1 and as CSS. */
   function isoInk() {
     var m = /^#?([0-9a-f]{6})$/i.exec(iso.color || ''), rgb;
     if (m) {
       var n = parseInt(m[1], 16);
       rgb = [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255];
     } else rgb = currentTheme() === 'dark' ? [1, 1, 1] : [0.1, 0.1, 0.14];
-    var light = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2] > 0.5;
     var css = 'rgb(' + rgb.map(function (c) { return Math.round(c * 255); }).join(',') + ')';
-    return { rgb: rgb, css: css, halo: light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)' };
+    return { rgb: rgb, css: css };
   }
   function isoLayer() { var t = anim && anim.group.track('isobars'); return t ? t.layer : null; }
   window.isoSetOpacity = function (percent) {
@@ -586,7 +584,7 @@ var WidgetPressure = (function () {
   IsobarLayer.prototype = {
     addTo: function (map) {
       var self = this, dark = currentTheme() === 'dark';
-      var ink = dark ? 'rgba(255,255,255,0.8)' : 'rgba(25,25,35,0.8)', halo = dark ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)';
+      var ink = dark ? 'rgba(255,255,255,0.8)' : 'rgba(25,25,35,0.8)';
       this.map = map;
       var empty = { type: 'FeatureCollection', features: [] };
       map.addSource('lv-iso-src', { type: 'geojson', data: empty, tolerance: 0.5, buffer: 64 });
@@ -598,7 +596,7 @@ var WidgetPressure = (function () {
       map.addLayer({ id: 'lv-iso-label', type: 'symbol', source: 'lv-iso-src',
         layout: { 'symbol-placement': 'line', 'symbol-spacing': 350, 'text-field': ['to-string', ['get', 'p']],
           'text-font': ['Noto Sans Regular'], 'text-size': 11, 'text-keep-upright': true },
-        paint: { 'text-color': ink, 'text-halo-color': halo, 'text-halo-width': 1.4 } }, before);
+        paint: { 'text-color': ink } }, before);
       this._onData = function (e) {
         if (e.sourceId === 'lv-iso-src' && e.isSourceLoaded && self._sentAt && self.loaded !== self.version) {
           self.loaded = self.version;
@@ -696,7 +694,6 @@ var WidgetPressure = (function () {
       if (map.getLayer('lv-iso-label')) {
         map.setPaintProperty('lv-iso-label', 'text-opacity', Math.min(1, iso.opacity / 0.8));
         map.setPaintProperty('lv-iso-label', 'text-color', ink.css);
-        map.setPaintProperty('lv-iso-label', 'text-halo-color', ink.halo);
         map.setLayoutProperty('lv-iso-label', 'text-size', iso.textSize);
         map.setLayoutProperty('lv-iso-label', 'visibility', iso.labels && !(this.moving && opts.hideLabels) ? 'visible' : 'none');
       }
