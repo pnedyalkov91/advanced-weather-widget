@@ -108,7 +108,10 @@ function xhr(component, label, opts) {
             if (e && e.done) {
                 Dbg.log(component, label + ": an identical request was answered " + (Date.now() - e.t)
                         + " ms ago → reusing that answer, request skipped");
-                Qt.callLater(function () { _finish(e.status, e.text); });
+                Dbg.hold();
+                Qt.callLater(function () {
+                    try { _finish(e.status, e.text); } finally { Dbg.release(); }
+                });
                 return;
             }
             if (e) {
@@ -120,7 +123,10 @@ function xhr(component, label, opts) {
             if (v && v.expiresMs > Date.now()) {
                 Dbg.log(component, label + ": the server says this answer is valid until " + _clock(v.expiresMs)
                         + " (Expires header) → reusing it, request skipped");
-                Qt.callLater(function () { _finish(200, v.text); });
+                Dbg.hold();
+                Qt.callLater(function () {
+                    try { _finish(200, v.text); } finally { Dbg.release(); }
+                });
                 return;
             }
             e = { t: Date.now(), done: false, status: 0, text: "", waiters: [_finish] };

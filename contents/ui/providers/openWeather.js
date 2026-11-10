@@ -25,6 +25,7 @@
  */
 
 .import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
 
 /**
  * Magnus-formula dew-point approximation.
@@ -99,7 +100,7 @@ function fetchCurrent(service, W, chain, idx) {
         };
 
         // Fetch forecast separately
-        var fcReq = Dbg.xhr("OpenWeather", "fetchCurrent");
+        var fcReq = Shared.xhr("OpenWeather", "fetchCurrent (forecast list)");
         fcReq.open("GET", baseUrl + "forecast?" + latlon);
         fcReq.onreadystatechange = function () {
             if (fcReq.readyState !== XMLHttpRequest.DONE)
@@ -296,7 +297,7 @@ function fetchHourly(service, W, dateStr) {
         + service.latitude
         + "&lon=" + service.longitude
         + "&units=metric&appid=" + encodeURIComponent(key);
-    var req = Dbg.xhr("OpenWeather", "fetchHourly");
+    var req = Shared.xhr("OpenWeather", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
@@ -327,7 +328,7 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         + service.latitude
         + "&lon=" + service.longitude
         + "&units=metric&appid=" + encodeURIComponent(key);
-    var req = Dbg.xhr("OpenWeather", "fetchHourlyAll");
+    var req = Shared.xhr("OpenWeather", "fetchHourlyAll");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)

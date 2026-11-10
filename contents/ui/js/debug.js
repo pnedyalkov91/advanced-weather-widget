@@ -570,6 +570,21 @@ function _finish(x, rec) {
     _queueSettleCheck();
 }
 
+var _holds = 0;                 // answers that are handed over from memory on the next turn (see hold())
+
+/** An answer that needs no request (shared GET helper) is delivered on the next turn: until then the
+ *  refresh cycle must not count as settled, because the code that receives it may start further requests. */
+function hold() {
+    if (_enabled)
+        _holds++;
+}
+function release() {
+    if (_holds > 0) {
+        _holds--;
+        _queueSettleCheck();
+    }
+}
+
 function _pendingCount() {
     var n = 0;
     for (var k in _pending)
@@ -621,6 +636,20 @@ function cycleBegin(component, reason, info) {
         reason: reason || ""
     };
     log(component, "━━ Refresh cycle #" + _cycle.id + " started" + (reason ? " (" + reason + ")" : "") + (info ? " - " + info : ""));
+    // Requests sent a moment before the cycle began (the hourly forecast asked for by the notification check or at
+    // startup) are answered during it and belong to its totals - otherwise the requests/KB figures come out too low.
+    var adopted = 0;
+    var now0 = Date.now();
+    for (var id in _pending) {
+        var pr = _pending[id];
+        if (!pr.done && pr.cycle !== _cycle && now0 - pr.t0 < 3000) {
+            pr.cycle = _cycle;
+            _cycle.requests++;
+            adopted++;
+        }
+    }
+    if (adopted > 0)
+        log(component, "   " + adopted + " request(s) sent just before this cycle are counted in it");
 }
 
 function _queueSettleCheck() {
@@ -641,7 +670,7 @@ function _settleCheck() {
     _settleQueued = false;
     if (!_enabled || !_cycle || _cycle.reported)
         return;
-    if (_pendingCount() > 0 || _cycle.requests === 0)
+    if (_pendingCount() > 0 || _holds > 0 || _cycle.requests === 0)
         return;
     var c = _cycle;
     c.reported = true;
