@@ -1137,6 +1137,7 @@ window.animKeyFor = function (e) {
   var t = e.target, tag = t && t.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return null;
   if (e.altKey || e.metaKey) return null;
+  if (e.key === 'F11') return 'fullscreen';
   // 0 and + need Shift on some layouts (AZERTY). Ctrl and + or -: zoom.
   if (e.ctrlKey && (e.key === '+' || e.key === '=' || e.key === '-')) return 'zoom:' + (e.key === '-' ? -1 : 1);
   if (!e.ctrlKey && e.key === '0') return 'now';

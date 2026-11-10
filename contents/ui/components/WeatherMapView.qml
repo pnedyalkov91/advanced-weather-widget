@@ -226,7 +226,7 @@ Item {
     }
 
     // Whether the map can be seen: a closed popup does not hide its items.
-    readonly property bool shown: visible && (!weatherRoot || weatherRoot.expanded !== false)
+    readonly property bool shown: visible && (fullScreen || !weatherRoot || weatherRoot.expanded !== false)
     // The help panel does not outlive the tab: it closes with the popup or on
     // another tab, so the next opening starts on the map.
     onShownChanged: if (!shown) helpPanel.close()
@@ -239,6 +239,10 @@ Item {
             radarRoot.call("setDateTimeFormat", radarRoot.weatherRoot.dateTimeSpec);
         }
         function onExpandedChanged() {
+            // Full screen takes the focus, and the popup closes on it: the
+            // map lives on in its own window.
+            if (radarRoot.fullScreen)
+                return;
             // The page cannot always tell a collapsed popup from a visible one,
             // so pause and resume the wind particles from here; the
             // animation stops with the popup.
@@ -1157,6 +1161,8 @@ Item {
             stepSpeed(+k.slice(6));
         else if (k.indexOf("zoom:") === 0)
             zoomBy(+k.slice(5));
+        else if (k === "fullscreen")
+            setFullScreen(!fullScreen);
     }
     // One letter per layer, the same in every language: it switches the
     // layer on or off as a click on its icon does. Shown in the icons' tips.
@@ -1186,6 +1192,44 @@ Item {
         if (count > 0)
             showIndex(nowIndex);
     }
+    // ── Full screen ──────────────────────────────────────────────────────
+    // The whole tab (map, column, time bar, help, keys) moves into a window
+    // of its own, on the widget's screen, and back: the page stays loaded.
+    property bool fullScreen: false
+    function setFullScreen(on) {
+        if (on === fullScreen)
+            return;
+        if (on) {
+            var w = radarRoot.Window.window;
+            if (w && w.screen)
+                fsWindow.screen = w.screen;
+            fullScreen = true;
+            fsWindow.showFullScreen();
+            fsWindow.requestActivate();
+        } else {
+            fullScreen = false;
+            fsWindow.hide();
+            // The popup closed when the window took the focus: open it again.
+            if (weatherRoot && weatherRoot.expanded === false)
+                weatherRoot.expanded = true;
+        }
+        keyCatcher.forceActiveFocus();
+        repaintNudgeTimer.restart();
+    }
+    Window {
+        id: fsWindow
+        title: i18n("Weather Map")
+        color: radarRoot.isDark ? "#0f1117" : "#f0f2f5"
+        onClosing: radarRoot.setFullScreen(false)
+    }
+
+    Item {
+    id: tabContent
+    parent: radarRoot.fullScreen ? fsWindow.contentItem : radarRoot
+    anchors.fill: parent
+
+    Shortcut { sequence: "F11"; enabled: radarRoot.started && radarRoot.visible; onActivated: radarRoot.setFullScreen(!radarRoot.fullScreen) }
+    Shortcut { sequence: "Escape"; enabled: radarRoot.fullScreen && !helpPanel.opened; onActivated: radarRoot.setFullScreen(false) }
     Shortcut { sequence: "Space"; enabled: radarRoot.keysOn; onActivated: radarRoot.toggle() }
     Shortcut { sequence: "Left"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepButton", -1) }
     Shortcut { sequence: "Right"; enabled: radarRoot.keysOn; onActivated: radarRoot.call("animStepButton", 1) }
@@ -1276,6 +1320,8 @@ Item {
                         if (message === "[keys] escape") {
                             if (helpPanel.opened)
                                 helpPanel.close();
+                            else if (radarRoot.fullScreen)
+                                radarRoot.setFullScreen(false);
                         } else if (message.indexOf("[keys] ") === 0) {
                             // The shortcuts above, while the page has the keyboard.
                             radarRoot.pageKey(message.slice(7));
@@ -1570,7 +1616,7 @@ Item {
 
     HelpPanel {
         id: helpPanel
-        parent: radarRoot
+        parent: tabContent
         keys: radarRoot.layerKeys
         layers: {
             var o = {};
@@ -1578,6 +1624,7 @@ Item {
             return o;
         }
         shownIds: radarRoot.layerOrder.filter(function (id) { return radarRoot.layerEnabled(id); })
+    }
     }
 
     function reload() {

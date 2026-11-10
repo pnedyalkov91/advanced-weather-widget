@@ -348,7 +348,7 @@ Rectangle {
         // other, folded): the row glides to the left as the second glides
         // under the first, in step with the time's below.
         Flow {
-            readonly property real rowW: 3 * 34 + 2 * spacing
+            readonly property real rowW: 4 * 34 + 3 * spacing
             x: panel.folded ? 0 : panel.colW - rowW
             width: panel.folded ? panel.colW : rowW
             Behavior on x { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
@@ -409,6 +409,12 @@ Rectangle {
             }
             // Set once: pictures per second at most, the resolution
             // while playing, coasts and borders, the dark map.
+            HeadButton {
+                themeIcon: panel.map.fullScreen ? "view-restore" : "view-fullscreen"
+                tip: panel.map.fullScreen ? i18n("Leave full screen (F11 or Esc)") : i18n("Full screen (F11)")
+                on: panel.map.fullScreen
+                onClicked: panel.map.setFullScreen(!panel.map.fullScreen)
+            }
             HeadButton {
                 id: settingsButton
                 iconName: "gear"

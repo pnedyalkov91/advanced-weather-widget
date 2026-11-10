@@ -166,7 +166,8 @@ QQC2.Popup {
                        .filter(function (id) { return !!panel.keys[id]; }).map(function (id) { return panel.keys[id]; }).join(", "),
                    text: i18n("switch radar, satellite, wind, isobars, precipitation, clouds, temperature, pressure, humidity, dew point, air quality on or off.") },
                  { label: i18n("Ctrl held over the map"), text: i18n("the wind and the temperature under the pointer.") },
-                 { label: i18n("Esc"), text: i18n("closes this panel.") }],
+                 { label: "F11", text: i18n("full screen on or off.") },
+                 { label: i18n("Esc"), text: i18n("closes this panel, then leaves full screen.") }],
           note: i18n("The same keys in every language. They work while the Weather Map tab is shown.") }
     ]
 
