@@ -656,6 +656,30 @@ Item {
         Plasmoid.configuration.weatherMapCloudLevels = JSON.stringify(values);
         js("window.cloudSetLevels(" + JSON.stringify(values) + ")");
     }
+    // The isobars' settings: the width of the lines (times the usual one),
+    // the hPa between two lines, the values on them, the highs and lows.
+    readonly property var isoWidthChoices: [[0.6, i18nc("isobar lines", "Thin")], [1, i18nc("isobar lines", "Normal")], [2, i18nc("isobar lines", "Thick")]]
+    readonly property var isoStepChoices: [[2, "2"], [4, "4"], [8, "8"]]
+    readonly property var isobars: {
+        var o = {};
+        try {
+            o = JSON.parse(Plasmoid.configuration.weatherMapIsobars || "{}") || {};
+        } catch (e) {}
+        return {
+            width: isoWidthChoices.some(function (c) { return c[0] === o.width; }) ? o.width : 1,
+            step: isoStepChoices.some(function (c) { return c[0] === o.step; }) ? o.step : 4,
+            labels: o.labels !== false,
+            marks: o.marks !== false
+        };
+    }
+    function setIsobars(key, value) {
+        var o = Object.assign({}, isobars);
+        o[key] = value;
+        Plasmoid.configuration.weatherMapIsobars = JSON.stringify(o);
+        var one = {};
+        one[key] = value;
+        js("if (window.isoSetOptions) window.isoSetOptions(" + JSON.stringify(one) + ")");
+    }
     function setPollutant(v) {
         Plasmoid.configuration.weatherMapPollutant = v;
         js("window.aqSetPollutant('" + v + "')");
@@ -665,12 +689,13 @@ Item {
     function _layerChoices() {
         return "if (window.precipSetKinds) window.precipSetKinds(" + JSON.stringify(precipKinds) + ");"
             + "if (window.cloudSetLevels) window.cloudSetLevels(" + JSON.stringify(cloudLevels) + ");"
-            + "if (window.aqSetPollutant) window.aqSetPollutant('" + pollutant + "');";
+            + "if (window.aqSetPollutant) window.aqSetPollutant('" + pollutant + "');"
+            + "if (window.isoSetOptions) window.isoSetOptions(" + JSON.stringify(isobars) + ");";
     }
 
     // The opacity of each layer, in percent: the temperature's is the
     // Radar settings' one, the others are kept in weatherMapOpacities.
-    readonly property var opacityDefaults: ({ radar: 80, satellite: 60, wind: 100, precipitation: 80, clouds: 70, pressure: 60, humidity: 60, dewpoint: 60, airquality: 60 })
+    readonly property var opacityDefaults: ({ radar: 80, satellite: 60, wind: 100, precipitation: 80, clouds: 70, pressure: 60, isobars: 80, humidity: 60, dewpoint: 60, airquality: 60 })
     readonly property var opacities: {
         var kept = {};
         try {
@@ -833,9 +858,11 @@ Item {
         }
         // "right-temp", "right-radar": what a right click on that icon does.
         if (what.indexOf("right-") === 0) {
-            var rr = { radar: layerPanel.radarRow, wind: layerPanel.windRow, temp: layerPanel.tempRow, pressure: layerPanel.presRow }[what.substring(6)];
-            if (rr)
+            var rr = { radar: layerPanel.radarRow, wind: layerPanel.windRow, temp: layerPanel.tempRow, pressure: layerPanel.presRow, isobars: layerPanel.isoRow }[what.substring(6)];
+            if (rr) {
+                layerPanel.showRow(rr);
                 rr.openOptions();
+            }
             return;
         }
         if (what.indexOf("solo-") === 0) {

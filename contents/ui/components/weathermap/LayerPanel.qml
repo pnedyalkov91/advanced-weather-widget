@@ -24,6 +24,7 @@ Rectangle {
     readonly property alias precipRow: precipRow
     readonly property alias cloudRow: cloudRow
     readonly property alias presRow: presRow
+    readonly property alias isoRow: isoRow
     readonly property alias aqRow: aqRow
     readonly property alias radarMenu: radarMenu
     readonly property alias settingsMenu: settingsMenu
@@ -419,6 +420,12 @@ Rectangle {
         function onLayerOrderChanged() { panel.arrangeRows(); }
     }
 
+    // The column scrolled to show this row (the test hooks).
+    function showRow(row) {
+        var y = row.mapToItem(layerScroll.contentItem, 0, 0).y;
+        layerScroll.contentY = Math.max(0, Math.min(layerScroll.contentHeight - layerScroll.height, y - 8));
+    }
+
     // The whole column scrolls when the popup is too short for it.
     Flickable {
         id: layerScroll
@@ -630,8 +637,31 @@ Rectangle {
                 iconName: "isobares-glyph"
                 checked: panel.map.layerOn("isobars")
                 visible: panel.map.layerEnabled("isobars")
-                hasOptions: false
+                opacityValue: panel.map.opacities.isobars
                 onToggled: function (on) { panel.map.setLayer("isobars", on); }
+                onOpacityPicked: function (p) { panel.map.setOpacity("isobars", p); }
+                Segmented {
+                    title: i18n("Lines")
+                    choices: panel.map.isoWidthChoices
+                    current: panel.map.isobars.width
+                    onPicked: function (v) { panel.map.setIsobars("width", v); }
+                }
+                Segmented {
+                    title: i18n("Every (hPa)")
+                    choices: panel.map.isoStepChoices
+                    current: panel.map.isobars.step
+                    onPicked: function (v) { panel.map.setIsobars("step", v); }
+                }
+                SmallSwitch {
+                    text: i18n("Values on the lines")
+                    checked: panel.map.isobars.labels
+                    onToggled: panel.map.setIsobars("labels", checked)
+                }
+                SmallSwitch {
+                    text: i18n("Highs and lows")
+                    checked: panel.map.isobars.marks
+                    onToggled: panel.map.setIsobars("marks", checked)
+                }
             }
             LayerRow {
                 id: humRow

@@ -30,6 +30,29 @@ var WidgetPressure = (function () {
     if (presLegend) presLegend.querySelector('canvas').style.opacity = String(opts.opacity);
     return opts.opacity;
   };
+  // The isobars' own settings: their opacity (0..1), the width of the
+  // lines (times the usual one), the values on the lines and the H/L marks.
+  // The space between two lines is opts.step.
+  var iso = { opacity: 0.8, width: 1, labels: true, marks: true };
+  function isoLayer() { var t = anim && anim.group.track('isobars'); return t ? t.layer : null; }
+  window.isoSetOpacity = function (percent) {
+    iso.opacity = Math.max(0, Math.min(100, isFinite(+percent) ? +percent : 80)) / 100;
+    var l = isoLayer();
+    if (l) l.restyleIso();
+    return iso.opacity;
+  };
+  /** o: { width, step (hPa), labels, marks }, any of them. */
+  window.isoSetOptions = function (o) {
+    o = o || {};
+    if (isFinite(+o.width) && +o.width > 0) iso.width = Math.max(0.3, Math.min(3, +o.width));
+    if ('labels' in o) iso.labels = !!o.labels;
+    if ('marks' in o) iso.marks = !!o.marks;
+    var stepChanged = false;
+    if ([2, 4, 8].indexOf(+o.step) >= 0 && +o.step !== opts.step) { opts.step = +o.step; stepChanged = true; }
+    var l = isoLayer();
+    if (l) { l.restyleIso(); if (stepChanged || 'marks' in o) l.redraw(); }
+    return Object.assign({ step: opts.step }, iso);
+  };
   // The map, for the bench (views and screenshots).
   window.presMap = function () { return _widgetAdapter.getMap(); };
   window.presOptions = function (o) {
@@ -568,6 +591,7 @@ var WidgetPressure = (function () {
         }
       };
       map.on('sourcedata', this._onData);
+      this.restyleIso();
       this._onMoveEnd = function () { if (opts.clip && !self.moving) self.redraw(); };
       map.on('moveend', this._onMoveEnd);
       // Its place in the stack: the adapter's restack().
@@ -616,6 +640,7 @@ var WidgetPressure = (function () {
         marker from birth to end. Handed out by place in the list, a marker
         jumped to another centre whenever one started to fade. */
     _marks: function (marks) {
+      if (!iso.marks) marks = [];
       var pool = this._pool || (this._pool = new Map()), dark = currentTheme() === 'dark', seen = new Set();
       for (var k = 0; k < marks.length; k++) {
         var m = marks[k], mk = pool.get(m.id);
@@ -634,18 +659,35 @@ var WidgetPressure = (function () {
         var p = Math.round(m.p);
         if (mk.p !== p) { mk.el.lastChild.textContent = p; mk.p = p; }
         // Hidden where the globe covers it (MapLibre leaves it at 0.2).
-        mk.marker.setOpacity(String(m.op), '0');
+        mk.op = m.op;
+        mk.marker.setOpacity(String(m.op * Math.min(1, iso.opacity / 0.8)), '0');
         mk.marker.setLngLat([m.lon, m.lat]);
       }
       pool.forEach(function (mk, id) {
         if (!seen.has(id)) { mk.marker.remove(); pool.delete(id); }
       });
     },
+    /** The isobars' settings (iso) on the layers MapLibre draws. */
+    restyleIso: function () {
+      var map = this.map;
+      if (!map) return;
+      if (map.getLayer('lv-iso')) {
+        var w = iso.width;
+        map.setPaintProperty('lv-iso', 'line-width', ['case', ['==', ['get', 'major'], 1], 1.3 * w, ['==', ['get', 'minor'], 1], 0.5 * w, 0.75 * w]);
+        map.setPaintProperty('lv-iso', 'line-opacity', ['case', ['==', ['get', 'minor'], 1], Math.min(1, 0.6 * iso.opacity / 0.8), Math.min(1, iso.opacity / 0.8)]);
+      }
+      if (map.getLayer('lv-iso-label')) {
+        map.setPaintProperty('lv-iso-label', 'text-opacity', Math.min(1, iso.opacity / 0.8));
+        map.setLayoutProperty('lv-iso-label', 'visibility', iso.labels && !(this.moving && opts.hideLabels) ? 'visible' : 'none');
+      }
+      (this._pool || new Map()).forEach(function (mk) { mk.marker.setOpacity(String(mk.op * Math.min(1, iso.opacity / 0.8)), '0'); });
+      map.triggerRepaint();
+    },
     /** While it plays: rougher lines, no labels on them; all back on pause. */
     setMoving: function (on) {
       this.moving = !!on;
       if (!this.map) return;
-      if (opts.hideLabels) this.map.setLayoutProperty('lv-iso-label', 'visibility', on ? 'none' : 'visible');
+      this.restyleIso();
       if (!on) this.redraw();
     }
   };
@@ -676,7 +718,7 @@ var WidgetPressure = (function () {
 
   var PRES_FS = FS_HEAD + [
     'uniform sampler2D u_a, u_b, u_lut;',
-    'uniform float u_mix, u_fill, u_lines, u_opacity, u_step, u_dpr, u_lutMin, u_lutSpan;',
+    'uniform float u_mix, u_fill, u_lines, u_opacity, u_step, u_dpr, u_lutMin, u_lutSpan, u_width;',
     'uniform vec4 u_ink;',
     'void main() {',
     '  float lat; vec2 uv = gridUv(lat);',
@@ -693,7 +735,7 @@ var WidgetPressure = (function () {
     '    float dist = abs(fract(d + 0.5) - 0.5) / max(w, 1e-5);',
     '    float level = floor(d + 0.5) * u_step, m20 = mod(level, 20.0), m4 = mod(level, 4.0);',
     '    bool major = m20 < 0.5 || m20 > 19.5, minor = m4 > 0.5 && m4 < 3.5;',
-    '    float width = (major ? 1.3 : (minor ? 0.5 : 0.75)) * u_dpr;',
+    '    float width = (major ? 1.3 : (minor ? 0.5 : 0.75)) * u_dpr * u_width;',
     '    float a = clamp(width * 0.5 + 0.5 - dist, 0.0, 1.0) * (minor ? 0.6 : 1.0) * u_ink.a;',
     '    col = vec4(u_ink.rgb * a, a) + col * (1.0 - a);',
     '  }',
@@ -976,7 +1018,9 @@ var WidgetPressure = (function () {
       gl.uniform1f(u.u_dpr, window.devicePixelRatio || 1);
       gl.uniform1f(u.u_lutMin, LUT_MIN);
       gl.uniform1f(u.u_lutSpan, LUT_N * LUT_STEP);
-      if (currentTheme() === 'dark') gl.uniform4f(u.u_ink, 1, 1, 1, 0.8); else gl.uniform4f(u.u_ink, 0.1, 0.1, 0.14, 0.8);
+      if (u.u_width) gl.uniform1f(u.u_width, iso.width);
+      var inkA = mode === 'lines' ? iso.opacity : 0.8;
+      if (currentTheme() === 'dark') gl.uniform4f(u.u_ink, 1, 1, 1, inkA); else gl.uniform4f(u.u_ink, 0.1, 0.1, 0.14, inkA);
       layer.drawn = glShared.version;
       return true;
     };

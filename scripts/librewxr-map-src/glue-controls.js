@@ -974,7 +974,7 @@ var ANIM_OPACITY = {
   },
   radar: function (p) { if (animOverlays) animOverlays.radar.setOpacity(p / 100); },
   satellite: function (p) { if (animOverlays) animOverlays.satellite.setOpacity(p / 100); },
-  pressure: 'presSetOpacity', airquality: 'aqSetOpacity', precipitation: 'precipSetOpacity',
+  pressure: 'presSetOpacity', isobars: 'isoSetOpacity', airquality: 'aqSetOpacity', precipitation: 'precipSetOpacity',
   clouds: 'cloudSetOpacity', humidity: 'humiditySetOpacity', dewpoint: 'dewpointSetOpacity'
 };
 
