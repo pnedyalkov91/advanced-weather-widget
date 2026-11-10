@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-10 11:55+0100\n"
+"POT-Creation-Date: 2026-11-10 12:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6180,7 +6180,7 @@ msgid "the storms tracked."
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:90
-msgid "the theme's (white on a dark map, black on a light one) or a color of your choice. A dark line on a dark map gets a light edge, and the other way round."
+msgid "the theme's (white on a dark map, black on a light one) or a color of your choice."
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:59

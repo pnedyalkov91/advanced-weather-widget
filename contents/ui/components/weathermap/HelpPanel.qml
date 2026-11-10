@@ -87,7 +87,7 @@ QQC2.Popup {
         { ids: ["isobars"], icon: "isobares-glyph", title: i18n("Isobars"), range: sixDays,
           options: [[i18n("Lines"), i18n("thin, normal or thick.")],
                     [i18n("Every (hPa)"), i18n("the pressure between two lines: 2, 4 or 8 hPa. Zoomed in close, a line comes between two.")],
-                    [i18n("Color"), i18n("the theme's (white on a dark map, black on a light one) or a color of your choice. A dark line on a dark map gets a light edge, and the other way round.")],
+                    [i18n("Color"), i18n("the theme's (white on a dark map, black on a light one) or a color of your choice.")],
                     [i18n("Values on the lines"), i18n("the pressure written on the lines, in three sizes.")],
                     [i18n("Highs and lows"), i18n("H and L at the centers, followed from one picture to the next.")]],
           note: i18n("The isobars join the points of equal pressure. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer they are, the stronger the wind.") },

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-10 11:55+0100\n"
+"POT-Creation-Date: 2026-11-10 12:02+0100\n"
 "PO-Revision-Date: 2026-08-04 09:53+0200\n"
 "Last-Translator: rcspam\n"
 "Language-Team: French\n"
@@ -6204,8 +6204,8 @@ msgid "the storms tracked."
 msgstr "les orages repérés."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:90
-msgid "the theme's (white on a dark map, black on a light one) or a color of your choice. A dark line on a dark map gets a light edge, and the other way round."
-msgstr "celle du thème (blanc sur une carte sombre, noir sur une claire) ou une couleur au choix. Une ligne foncée sur une carte sombre reçoit un liseré clair, et inversement."
+msgid "the theme's (white on a dark map, black on a light one) or a color of your choice."
+msgstr "celle du thème (blanc sur une carte sombre, noir sur une claire) ou une couleur au choix."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:59
 msgid "the warnings in force."
@@ -6279,6 +6279,9 @@ msgstr "µg/m³"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:556
 msgid "×%1"
 msgstr "×%1"
+
+#~ msgid "the theme's (white on a dark map, black on a light one) or a color of your choice. A dark line on a dark map gets a light edge, and the other way round."
+#~ msgstr "celle du thème (blanc sur une carte sombre, noir sur une claire) ou une couleur au choix. Une ligne foncée sur une carte sombre reçoit un liseré clair, et inversement."
 
 #~ msgid "Air pressure brought to sea level, in hPa. Blue and purple: lows (clouds, rain, wind). Orange and red: highs (settled weather, fog in winter). The isobars join the points of equal pressure, every 4 hPa. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer they are, the stronger the wind."
 #~ msgstr "La pression ramenée au niveau de la mer, en hPa. Bleu et violet : dépressions (nuages, pluie, vent). Orange et rouge : anticyclones (temps calme, brouillard l'hiver). Les isobares relient les points de même pression, tous les 4 hPa. Le vent souffle presque le long d'elles, en sens inverse des aiguilles d'une montre autour d'une dépression dans l'hémisphère nord. Plus elles sont serrées, plus le vent est fort."
