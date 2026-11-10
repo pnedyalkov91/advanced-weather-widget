@@ -392,7 +392,7 @@ window.animSetLoop = function (on) {
     (the same layer's Frames of another range, or kept while it was off)
     taken over; onShow once its first picture is drawn. */
 function animTrack(id, layer, reuse, onShow) {
-  var frames = new WidgetAnim.Frames(_windOpen, {
+  var frames = WidgetAnim.makeFrames(_windOpen, {
     field: animField(id), now: function () { return anim.nowMs; },
     pastH: anim.pastH, futureH: anim.futureH, times: anim.group.times, nowIndex: anim.group.nowIndex,
     reuse: reuse, parallel: 6, gate: animGate,
@@ -452,7 +452,7 @@ function animFineField(id) {
 function animMakeFine(id, model, frames, reuse) {
   var temp = id === 'temperature';
   if (temp) fineSurface(model);
-  var fine = new WidgetAnim.Frames(_windOpen, {
+  var fine = WidgetAnim.makeFrames(_windOpen, {
     field: animFineField(id), fileModel: model, now: function () { return anim.nowMs; },
     pastH: anim.pastH, futureH: anim.futureH, times: anim.group.times, nowIndex: anim.group.nowIndex,
     reuse: reuse, parallel: 6, gate: animGate,
@@ -763,20 +763,12 @@ window.animState = function () {
 };
 
 // === LEGENDS AND THE WIDGET'S LAYER COLUMN ===
-// The color legends of the layers, each made by its own layer, go into one
+// The color legends of the layers (class lv-legend, their layer in
+// data-layer), each made by its own layer in the map's box, go into one
 // column at the top left while the animation runs (overrides.css). Hidden
-// legends stay hidden when their layer makes them again. A legend tells
-// its layer by data-layer, or by its id or class for the older ones.
+// legends stay hidden when their layer makes them again.
 var legendHidden = {};
 var legendStack = null;
-var LEGEND_SEL = '#lv-temp-legend, #lv-pres-legend, .lv-aq-legend, .lv-precip-legend, [data-legend]';
-function legendLayer(el) {
-  if (el.dataset.layer) return el.dataset.layer;
-  if (el.id === 'lv-temp-legend') return 'temperature';
-  if (el.id === 'lv-pres-legend') return 'pressure';
-  if (el.classList.contains('lv-precip-legend')) return 'precipitation';
-  return '';
-}
 function legendGather() {
   var host = document.getElementById('lv-map');
   if (!host || !document.body.classList.contains('lv-anim')) return;
@@ -785,9 +777,9 @@ function legendGather() {
     legendStack.id = 'lv-legend-stack';
     host.appendChild(legendStack);
   }
-  host.querySelectorAll(LEGEND_SEL).forEach(function (el) {
+  host.querySelectorAll('.lv-legend').forEach(function (el) {
     if (el.parentNode !== legendStack) legendStack.appendChild(el);
-    var off = !!legendHidden[legendLayer(el)];
+    var off = !!legendHidden[el.dataset.layer || ''];
     if (el.classList.contains('lv-legend-off') !== off) el.classList.toggle('lv-legend-off', off);
   });
 }
@@ -796,7 +788,11 @@ window.animSetLegend = function (id, on) {
   legendHidden[id] = !on;
   legendGather();
 };
-if (typeof MutationObserver !== 'undefined') new MutationObserver(legendGather).observe(document.body, { childList: true, subtree: true });
+// A layer puts its legend in the map's box: only its children are watched
+// (the whole page changed on every frame of the readout and the markers).
+if (typeof MutationObserver !== 'undefined' && document.getElementById('lv-map')) {
+  new MutationObserver(legendGather).observe(document.getElementById('lv-map'), { childList: true });
+}
 
 /** How much of the map's right the widget's layer column covers (px): the
     map's own buttons there slide left by as much. */
@@ -1044,24 +1040,18 @@ function readoutPoint() {
 function readoutRow(icon, color, text) {
   return '<div class="lv-readout-row"><span class="lv-readout-icon" style="color:' + color + '">' + icon + '</span><span>' + text + '</span></div>';
 }
+/** The lines the other layers add to the readout (addReadout), in turn. */
+var readoutLines = [];
 /** Adds a line to the readout for layer track() when it shows a picture:
     line(track, latLng) gives its html, '' for none. */
-function addReadout(track, line) {
-  var plain = readoutHtml;
-  readoutHtml = function () {
-    var html = plain(), t = track();
-    if (!t || !t.layer.grid) return html;
-    var ll = readoutPoint();
-    return ll ? html + (line(t, ll) || '') : html;
-  };
-}
+function addReadout(track, line) { readoutLines.push({ track: track, line: line }); }
 
 /** The lines of the box at the pointer, '' where nothing is drawn. */
 function readoutHtml() {
+  var ll = readoutPoint();
+  if (!ll) return '';
   var layers = readoutLayers();
   var hasWind = !!(layers.wind && layers.wind.valueAt), hasTemp = !!(layers.temp && layers.temp.valueAt);
-  var ll = hasWind || hasTemp ? readoutPoint() : null;
-  if (!ll) return '';
   var lines = [];
   var w = hasWind ? layers.wind.valueAt(ll.lat, ll.lng) : null;
   if (w) {
@@ -1079,7 +1069,12 @@ function readoutHtml() {
     lines.push('<span class="lv-readout-icon"' + tc + '>' + READOUT_THERMO + '</span>' +
       '<span>' + localNumber(tempUnit === 'F' ? t * 9 / 5 + 32 : t, 1) + ' \u00b0' + tempUnit + '</span>');
   }
-  return lines.map(function (l) { return '<div class="lv-readout-row">' + l + '</div>'; }).join('');
+  var html = lines.map(function (l) { return '<div class="lv-readout-row">' + l + '</div>'; }).join('');
+  readoutLines.forEach(function (r) {
+    var t = r.track();
+    if (t && t.layer.grid) html += r.line(t, ll) || '';
+  });
+  return html;
 }
 
 function readoutDraw() {

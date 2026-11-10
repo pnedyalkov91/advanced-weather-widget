@@ -724,21 +724,23 @@ var WidgetWind = (function () {
     // temperature layer asks for tiles at every zoom.
     this.maxKept = opts.maxKept || Infinity;
     this.tiles = {};     // 'z/x/y' -> Float32Array(65536)
+    this.count = 0;      // tiles held
     this.pending = {};   // 'z/x/y' -> Promise
-    this.used = [];      // keys, least recently asked for first
+    this.used = new Map();   // keys, least recently asked for first
   }
 
   DemTiles.prototype._touch = function (key) {
-    var i = this.used.indexOf(key);
-    if (i >= 0) this.used.splice(i, 1);
-    this.used.push(key);
+    this.used.delete(key);
+    this.used.set(key, true);
   };
 
   DemTiles.prototype._evict = function () {
-    var count = Object.keys(this.tiles).length;
-    while (count > this.maxKept && this.used.length) {
-      var key = this.used.shift();
-      if (this.tiles[key]) { delete this.tiles[key]; count--; }
+    var keys = this.used.keys();
+    while (this.count > this.maxKept) {
+      var next = keys.next();
+      if (next.done) break;
+      this.used.delete(next.value);
+      if (this.tiles[next.value]) { delete this.tiles[next.value]; this.count--; }
     }
   };
 
@@ -775,6 +777,7 @@ var WidgetWind = (function () {
       var parts = key.split('/');
       var url = this.template.replace('{z}', parts[0]).replace('{x}', parts[1]).replace('{y}', parts[2]);
       this.pending[key] = this.loadTile(url).then(function (data) {
+        if (!self.tiles[key]) self.count++;
         self.tiles[key] = data;
         delete self.pending[key];
         self._evict();

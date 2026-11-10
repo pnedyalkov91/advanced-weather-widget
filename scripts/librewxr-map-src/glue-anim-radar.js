@@ -10,6 +10,8 @@
 // ==========================================================================
 var WidgetAnimRadar = (function () {
   'use strict';
+  // The linear fade of the other layers (glue-anim.js): a global in the page, required under Node.
+  var Fade = (typeof WidgetAnim !== 'undefined' ? WidgetAnim : require('./glue-anim.js')).Fade;
 
   var MIN = 60e3;
   var RADAR_GAP = 10 * MIN;     // radar images every 10 min
@@ -122,12 +124,11 @@ var WidgetAnimRadar = (function () {
     this.time = null;           // the last time asked for (ms)
     this.stale = null;          // the image shown before new tile options, kept until its new one is in
     this.fadeMs = opts.fadeMs || 0;
-    this.now = opts.now || function () { return typeof performance !== 'undefined' ? performance.now() : Date.now(); };
-    this.raf = opts.raf || (typeof requestAnimationFrame === 'function' ? function (f) { requestAnimationFrame(f); } : function (f) { setTimeout(f, 16); });
     this.level = 1;             // the fade, 0..1, times the opacity
     this._fadeIn = false;       // the next image put fades in (just switched on)
     this._leaving = false;      // fading out, its layers go at the end
-    this._fadeToken = 0;
+    var self = this;
+    this._fade = new Fade(function (v) { self._setLevel(v); }, { ms: this.fadeMs, now: opts.now, raf: opts.raf, from: 1 });
   }
 
   /** The opacity of the image shown, the fade counted. */
@@ -140,21 +141,12 @@ var WidgetAnimRadar = (function () {
   };
 
   /** The fade from where it is to target in fadeMs (linear), then done(). */
-  Overlay.prototype._fadeTo = function (target, done) {
-    var self = this, token = ++this._fadeToken, from = this.level, start = this.now();
-    if (this.fadeMs <= 0 || from === target) {
-      this._setLevel(target);
-      if (done) done();
-      return;
-    }
-    function frame() {
-      if (token !== self._fadeToken) return;
-      var p = Math.min(1, (self.now() - start) / self.fadeMs);
-      self._setLevel(from + (target - from) * p);
-      if (p < 1) self.raf(frame);
-      else if (done) done();
-    }
-    this.raf(frame);
+  Overlay.prototype._fadeTo = function (target, done) { this._fade.to(target, done); };
+
+  /** The fade at v at once, nothing drawn yet. */
+  Overlay.prototype._jump = function (v) {
+    this._fade.value = v;
+    this.level = v;
   };
 
   /** The time of the last image (ms), null without images. */
@@ -203,7 +195,7 @@ var WidgetAnimRadar = (function () {
     if (e && this._fadeIn) {
       // The first image since switched on: from nothing.
       this._fadeIn = false;
-      this.level = 0;
+      this._jump(0);
       this._fadeTo(1);
     }
     if (e) {
@@ -270,7 +262,7 @@ var WidgetAnimRadar = (function () {
         if (self.on) return;
         Object.keys(self.layers).forEach(function (p) { self._drop(p); });
         self._dropStale();
-        self.level = 1;
+        self._jump(1);
       };
       if (this.fadeMs > 0 && (this.shown || this.stale)) {
         this._leaving = true;

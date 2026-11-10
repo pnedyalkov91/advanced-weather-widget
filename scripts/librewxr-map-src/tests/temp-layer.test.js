@@ -24,7 +24,7 @@ async function settle() { for (let i = 0; i < 10; i++) { await tick(); flushRaf(
 
 function element(tag) {
   const el = {
-    tag, style: {}, children: [], innerHTML: '', className: '', id: '', width: 0, height: 0, removed: false, image: null,
+    tag, style: {}, dataset: {}, children: [], innerHTML: '', className: '', id: '', width: 0, height: 0, removed: false, image: null,
     appendChild(c) { this.children.push(c); return c; },
     remove() { this.removed = true; },
     getContext() {

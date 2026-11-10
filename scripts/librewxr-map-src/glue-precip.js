@@ -120,8 +120,9 @@ var WidgetPrecip = (function () {
   }
 
   var FIELD = {
-    id: 'precipitation', precip: true, store: FILE_STORE,
+    id: 'precipitation', store: FILE_STORE,
     vars: ['precipitation', 'precipitation_type', 'snowfall_water_equivalent'],
+    frames: function (loader, o) { return new PrecipFrames(loader, o); },
     unpack: function (parts) { return { rate: parts[0], kind: parts[1] }; },
     grid: function (m, a, b, mix, tA, tB, at) {
       if (!b) return { lats: m.lats, lons: m.lons, res: m.res, times: [tA / 1000], values: a.rate, kind: a.kind };
@@ -133,23 +134,20 @@ var WidgetPrecip = (function () {
   // --- the pictures: the files read (from the store first), each picture
   // made once the files of its window are in; a file is let go once the
   // pictures that need it are made ---
-  var Base = WidgetAnim.Frames.prototype.constructor, Before = WidgetAnim.Frames;
+  var Frames = WidgetAnim.Frames;
 
   function PrecipFrames(loader, o) {
     var c = {};
     for (var k in o) c[k] = o[k];
     c.pruneH = 0;
-    Base.call(this, loader, c);
+    Frames.call(this, loader, c);
     this.model = MODEL_KEY;
     this.keepH = o.pruneH || 192;
   }
-  PrecipFrames.prototype = Object.create(Base.prototype);
+  PrecipFrames.prototype = Object.create(Frames.prototype);
   PrecipFrames.prototype.load = function () {
-    var self = this, loader = this.loader;
-    return loader.fetch(loader.base + loader.model + '/latest.json', { cache: 'no-store' }).then(function (r) {
-      if (!r.ok) throw new Error('latest.json ' + r.status);
-      return r.json();
-    }).then(function (latest) {
+    var self = this;
+    return this._latest().then(function (latest) {
       var refMs = Date.parse(latest.reference_time);
       if (self.store) prune(self.store, self.now() - (self.keepH + 6) * HOUR);
       self.between = self.times.map(function () { return false; });
@@ -185,33 +183,18 @@ var WidgetPrecip = (function () {
         files[f.run + '|' + f.t] = { meta: meta, parts: parts };
         make();
       }
-      function next() {
-        if (self.stopped || !queue.length) return Promise.resolve();
-        var f = queue.shift(), t = f.t, run = f.run;
-        var url = WidgetAnim.frameUrl(t, run, loader.model, loader.base);
-        var key = self.store ? WidgetAnim.frameKey(self.model, FILE_STORE, run, t) : null;
-        var kept = key ? Promise.resolve().then(function () { return self.store.get(key); }).catch(function () { return null; }) : Promise.resolve(null);
-        return kept.then(function (k) {
-          if (self.stopped) return;
-          if (k && k.parts && k.meta) { self.fromStore++; got(f, k.meta, k.parts); return; }
-          var t0 = Date.now();
-          var read = function () { return loader._readVars({ url: url, validMs: t }, FIELD.vars); };
-          return (self.gate ? self.gate.run(read, self.weight) : read()).then(function (e) {
-            if (self.stopped) return;
-            var fr = readFile(e, t);
-            console.log('[precip] ' + url.split('/').slice(-3).join('/') + ' in ' + (Date.now() - t0) + ' ms');
-            got(f, fr.meta, fr.parts);
-            if (key) Promise.resolve().then(function () { return self.store.put(key, { meta: fr.meta, parts: fr.parts }); }).catch(function () {});
-          }, function (err) {
-            console.warn('[precip] ' + url + ': ' + err);
-            files[run + '|' + t] = null;
-            make();
-          });
-        }).then(next);
-      }
-      var workers = [];
-      for (var w = 0; w < self.parallel; w++) workers.push(next());
-      return Promise.all(workers);
+      return self._drain(queue, function (f) {
+        var url = WidgetAnim.frameUrl(f.t, f.run, self.fileModel, self.loader.base);
+        return self._fetch(url, f.t, WidgetAnim.frameKey(self.model, FILE_STORE, f.run, f.t), FIELD.vars, function (e) {
+          return readFile(e, f.t);
+        }).then(function (fr) {
+          if (fr) got(f, fr.meta, fr.parts);
+        }, function (err) {
+          console.warn('[precip] ' + url + ': ' + err);
+          files[f.run + '|' + f.t] = null;
+          make();
+        });
+      });
     });
   };
   /** Drop the files of this layer older than oldestMs, and those kept
@@ -225,11 +208,6 @@ var WidgetPrecip = (function () {
       if (drop.length) return store.del(drop);
     }).catch(function () {});
   }
-  WidgetAnim.Frames = function (loader, o) {
-    return o && o.field && o.field.precip ? new PrecipFrames(loader, o) : new Before(loader, o);
-  };
-  WidgetAnim.Frames.prototype = Base.prototype;
-
   // --- colors: a row of 256 per kind (row 0, none, see-through); nothing
   // under minRate, faded in up to fullRate ---
   function colorAt(v, stops) { return F.colorAt(stops, v, Math.log); }
@@ -243,9 +221,10 @@ var WidgetPrecip = (function () {
     });
     return out;
   }
-  /** 1 for the kinds shown, by row. */
+  /** 1 for the kinds shown, by row; made again when they change. */
+  var mask = null;
   function showMask() {
-    return new Float32Array(KINDS.map(function (kd) { return isShown(kd) ? 1 : 0; }));
+    return mask || (mask = new Float32Array(KINDS.map(function (kd) { return isShown(kd) ? 1 : 0; })));
   }
 
   // --- the GL layer ---
@@ -359,6 +338,7 @@ var WidgetPrecip = (function () {
       shown = {};
       KINDS.forEach(function (kd) { if (kd && ids.indexOf(kd.id) >= 0) shown[kd.id] = true; });
     }
+    mask = null;
     var t = track();
     if (t) { t.layer.redraw(); t.layer.showLegend(); }
     return KINDS.filter(isShown).map(function (kd) { return kd.id; });

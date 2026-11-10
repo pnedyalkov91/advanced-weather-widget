@@ -344,3 +344,16 @@ test('WindSource for the animation: the hours asked for, no world grid', async (
   assert.equal(src.entries.length, 0);              // other hours: they no longer cover the range
   assert.match(src.url(WindField.gridSpec({ west: 6, south: 45, east: 7, north: 46 })), /past_hours=51&/);
 });
+
+test('DemTiles: past maxKept, the tile asked for least recently goes first', async () => {
+  const { DemTiles } = require('../glue-wind.js');
+  const dem = new DemTiles({ maxKept: 2, loadTile: (url) => Promise.resolve(url) });
+  await dem.ensureTile(9, 1, 1);
+  await dem.ensureTile(9, 2, 2);
+  await dem.ensureTile(9, 1, 1);           // asked again: now the most recent
+  await dem.ensureTile(9, 3, 3);
+  assert.ok(dem.tileData(9, 1, 1), '9/1/1 kept');
+  assert.equal(dem.tileData(9, 2, 2), null);
+  assert.ok(dem.tileData(9, 3, 3), '9/3/3 kept');
+  assert.equal(dem.count, 2);
+});

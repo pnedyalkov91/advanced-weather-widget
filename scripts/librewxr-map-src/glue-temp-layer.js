@@ -213,6 +213,8 @@ WidgetTemp.TempLayer = (function () {
       this._lut = WidgetTemp.buildLut(this.options.stops, this.options.step, this.options.unit);
       this._legend = document.createElement('div');
       this._legend.id = 'lv-temp-legend';
+      this._legend.className = 'lv-legend lv-legend-bar';
+      this._legend.dataset.layer = 'temperature';
       (document.getElementById('lv-map') || map.getContainer()).appendChild(this._legend);
       this._renderLegend();
       this._legend.style.opacity = String(this._fade);

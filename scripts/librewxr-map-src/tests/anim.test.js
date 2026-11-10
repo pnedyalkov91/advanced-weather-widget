@@ -421,12 +421,6 @@ test('FIELDS.wind: u and v by half m/s on one byte, ends held, NaN kept', () => 
   assert.deepEqual(Array.from(back.slice(3)), [63.5, -63.5]);
 });
 
-test('decimate: one point in f each way, both ends kept', () => {
-  // 3 rows x 5 columns -> 2 x 3
-  const d = A.decimate(Float32Array.from([0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 23, 24]), 3, 5, 2);
-  assert.deepEqual(Array.from(d), [0, 2, 4, 20, 22, 24]);
-});
-
 function windLoader(read) {
   return {
     base: 'b/', model: 'm',
@@ -1101,4 +1095,21 @@ test('keptIndex: a new range keeps the time shown, but now moves on with now', (
   assert.equal(A.keptIndex(old.times, old.now, 0, fresh.times, fresh.now), fresh.now);
   assert.equal(A.keptIndex(old.times, old.now, -1, fresh.times, fresh.now), fresh.now);
   assert.equal(A.keptIndex(null, 0, -1, fresh.times, fresh.now), fresh.now);
+});
+
+test('makeFrames: a field with Frames of its own gets them, the others plain Frames', () => {
+  const loader = { base: 'b/', model: 'ecmwf_ifs025' }, made = [];
+  const own = { id: 'x', store: 'x', vars: ['v'], frames: (l, o) => { made.push([l, o]); return 'own'; } };
+  const opts = { field: own, now: () => 0 };
+  assert.equal(A.makeFrames(loader, opts), 'own');
+  assert.deepEqual(made, [[loader, opts]]);
+  assert.ok(A.makeFrames(loader, { now: () => 0 }) instanceof A.Frames);
+});
+
+test('Frames: a field caps the reads at once (the clouds read four variables a file)', () => {
+  const loader = { base: 'b/', model: 'ecmwf_ifs025' };
+  const capped = { id: 'x', store: 'x', vars: ['a', 'b', 'c', 'd'], parallel: 2 };
+  assert.equal(new A.Frames(loader, { field: capped, parallel: 6, now: () => 0 }).parallel, 2);
+  assert.equal(new A.Frames(loader, { field: capped, parallel: 1, now: () => 0 }).parallel, 1);
+  assert.equal(new A.Frames(loader, { parallel: 6, now: () => 0 }).parallel, 6);
 });

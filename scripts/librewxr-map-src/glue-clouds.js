@@ -57,25 +57,14 @@ var WidgetClouds = (function () {
 
   var FIELD = {
     id: 'clouds', store: 'clouds-0.5', vars: LEVELS.map(function (l) { return l.v; }),
+    // Four variables a file: six reads at once run the file reader out of
+    // memory (OOM), two do not.
+    parallel: 2,
     read: readFile,
     unpack: function (parts) { return parts[0]; },
     grid: WidgetAnim.latLonGrid
   };
   WidgetAnim.FIELDS.clouds = FIELD;
-
-  // Four variables a file: six reads at once run the file reader out of
-  // memory (OOM), two do not.
-  var Before = WidgetAnim.Frames, CLOUD_PARALLEL = 2;
-  WidgetAnim.Frames = function (loader, o) {
-    if (o && o.field === FIELD) {
-      var c = {};
-      for (var k in o) c[k] = o[k];
-      c.parallel = Math.min(c.parallel || CLOUD_PARALLEL, CLOUD_PARALLEL);
-      o = c;
-    }
-    return new Before(loader, o);
-  };
-  WidgetAnim.Frames.prototype = Before.prototype;
 
   // --- the GL layer: the levels drawn, in white, each over the others ---
   var FS = WidgetTemp.TempLayerGL.FS_HEAD + [
@@ -94,16 +83,23 @@ var WidgetClouds = (function () {
     '}'
   ].join('\n');
 
+  /** The color and the channels drawn, as the shader takes them; made
+      again when the levels or the options change. */
+  var look = null;
+  function lookOf() {
+    if (look) return look;
+    var c = F.hex(opts.color), pick = [0, 0, 0, 0];
+    drawn().forEach(function (l) { pick[l.ch] = 1; });
+    return (look = { col: [c[0] / 255, c[1] / 255, c[2] / 255], pick: pick });
+  }
   function draw(gl, u, layer) {
     var o = layer.owner, sh = o.shown, g = sh.grid;
     if (!g) return false;
-    var rows = g.lats.length, cols = g.lons.length, c = F.hex(opts.color);
+    var rows = g.lats.length, cols = g.lons.length, lk = lookOf();
     layer.texture(gl, 0, sh.a, cols, rows, 'rgba'); gl.uniform1i(u.u_a, 0);
     layer.texture(gl, 1, sh.b, cols, rows, 'rgba'); gl.uniform1i(u.u_b, 1);
-    var pick = [0, 0, 0, 0];
-    drawn().forEach(function (l) { pick[l.ch] = 1; });
-    gl.uniform4f(u.u_pick, pick[0], pick[1], pick[2], pick[3]);
-    gl.uniform3f(u.u_col, c[0] / 255, c[1] / 255, c[2] / 255);
+    gl.uniform4fv(u.u_pick, lk.pick);
+    gl.uniform3fv(u.u_col, lk.col);
     gl.uniform2f(u.u_size, cols, rows);
     gl.uniform1f(u.u_mix, sh.mix);
     gl.uniform1f(u.u_min, opts.minCover);
@@ -129,6 +125,7 @@ var WidgetClouds = (function () {
     ids = [].concat(ids);
     shown = {};
     PARTS.forEach(function (l) { if (ids.indexOf('all') >= 0 || ids.indexOf(l.id) >= 0) shown[l.id] = true; });
+    look = null;
     var t = track();
     if (t) t.layer.redraw();
     return PARTS.filter(function (l) { return shown[l.id]; }).map(function (l) { return l.id; });
@@ -137,6 +134,7 @@ var WidgetClouds = (function () {
   window.cloudFrames = function () { var t = track(); return t && t.frames; };   // for the test scripts
   window.cloudOptions = function (o) {
     for (var k in o) opts[k] = o[k];
+    look = null;
     var t = track();
     if (t) t.layer.redraw();
     return opts;

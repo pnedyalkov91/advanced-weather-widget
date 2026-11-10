@@ -593,8 +593,7 @@ var WidgetPressure = (function () {
   function legend() {
     var ticks = [], span = LEGEND_HI - LEGEND_LO, W = 240;
     for (var p = 960; p <= 1040; p += 20) ticks.push([(p - LEGEND_LO) / span * 100, String(p)]);
-    var el = F.legendBox('', 'pressure', ticks, 'hPa');
-    el.id = 'lv-pres-legend';
+    var el = F.legendBox('lv-legend-bar', 'pressure', ticks, 'hPa');
     var bar = F.legendBar(W, 10, function (x) { return colorOf(LEGEND_LO + (x + 0.5) / W * span); });
     bar.className = 'lv-temp-bar';
     bar.style.opacity = String(opts.opacity);

@@ -158,17 +158,6 @@ var WidgetAnim = (function () {
   function pack(values) { return packFrom(values, PACK_MIN); }
   function unpack(packed) { return unpackFrom(packed, PACK_MIN); }
 
-  /** One point in f each way of a rows x cols field; (rows - 1) and
-      (cols - 1) are multiples of f, so both ends stay. Unused since the wind
-      keeps every point, kept for a lighter layer to come. */
-  function decimate(d, rows, cols, f) {
-    var r2 = Math.floor((rows - 1) / f) + 1, c2 = Math.floor((cols - 1) / f) + 1, out = new Float32Array(r2 * c2);
-    for (var r = 0; r < r2; r++) {
-      for (var c = 0; c < c2; c++) out[r * c2 + c] = d[r * f * cols + c * f];
-    }
-    return out;
-  }
-
   /* What each layer reads from a file and how it keeps it. store: its name
      in the store's keys, changed whenever the way it is kept changes, so
      pictures kept the old way are never read back. read(e, t): the
@@ -307,36 +296,8 @@ var WidgetAnim = (function () {
       missing or refused (a private profile): every call then gives null and
       the pictures come from the files each time. */
   function frameStore(dbName) {
-    var opening = null;
-    function open() {
-      if (!opening) {
-        opening = new Promise(function (resolve, reject) {
-          var r = indexedDB.open(dbName || 'awwAnim', 1);
-          r.onupgradeneeded = function () { r.result.createObjectStore('frames'); };
-          r.onsuccess = function () { resolve(r.result); };
-          r.onerror = function () { reject(r.error); };
-        });
-      }
-      return opening;
-    }
-    function run(mode, op) {
-      return Promise.resolve().then(open).then(function (db) {
-        return new Promise(function (resolve, reject) {
-          var tx = db.transaction('frames', mode), req = op(tx.objectStore('frames'));
-          tx.oncomplete = function () { resolve(req && req.result !== undefined ? req.result : null); };
-          tx.onerror = function () { reject(tx.error); };
-          tx.onabort = function () { reject(tx.error); };
-        });
-      }).catch(function () { return null; });
-    }
-    return {
-      get: function (key) { return run('readonly', function (s) { return s.get(key); }); },
-      put: function (key, value) { return run('readwrite', function (s) { return s.put(value, key); }); },
-      keys: function () { return run('readonly', function (s) { return s.getAllKeys(); }).then(function (k) { return k || []; }); },
-      del: function (keys) {
-        return run('readwrite', function (s) { keys.forEach(function (k) { s.delete(k); }); return null; });
-      }
-    };
+    var O = typeof WidgetOpenData !== 'undefined' ? WidgetOpenData : require('./glue-wind-open.js');
+    return O.idbStore(dbName || 'awwAnim', 'frames');
   }
 
   /** Drop from the store the pictures of model older than maxPastH (the
@@ -407,7 +368,9 @@ var WidgetAnim = (function () {
     this.now = opts.now || function () { return Date.now(); };
     this.pastH = opts.pastH == null ? 24 : opts.pastH;
     this.futureH = opts.futureH == null ? 48 : opts.futureH;
-    this.parallel = opts.parallel || 4;
+    // Reads at once, at most the field's own limit (the clouds read four
+    // variables a file: more at once runs the reader out of memory).
+    this.parallel = Math.min(opts.parallel || 4, this.field.parallel || Infinity);
     this.gate = opts.gate || null;
     this.store = opts.store || null;
     // The model the files come from (loader's by default), and the one
@@ -454,48 +417,103 @@ var WidgetAnim = (function () {
 
   /** Read every picture; resolves once all are in or failed. */
   Frames.prototype.load = function () {
-    var self = this, loader = this.loader, sched = this.schedule;
+    var self = this;
+    return this._latest().then(function (latest) {
+      var plan = self._plan(latest);
+      self.between = self.times.map(function (t) { return plan.between(t); });
+      var queue = loadOrder(self.times.length, self.nowIndex).filter(function (i) { return !self.packed[i] && !self.between[i]; });
+      return self._drain(queue, function (i) { return self._read(i, plan.runOf(self.times[i])); });
+    }).then(function () { self.done = true; });
+  };
+
+  /** Where each hour comes from, by latest.json: runOf(t) the run it is
+      read from (null: none, it fails at once), between(t) whether it has
+      no file (made halfway between its neighbors). The store is sorted
+      out meanwhile (pruneH). Subclasses with runs of their own (air
+      quality) give their own. */
+  Frames.prototype._plan = function (latest) {
+    var sched = this.schedule, refMs = new Date(latest.reference_time).getTime();
+    if (this.store && this.pruneH) pruneStore(this.store, this.model, refMs, this.now(), this.pruneH);
+    return {
+      runOf: function (t) { return sched.runFor(t, refMs); },
+      between: function (t) { return !sched.hasFile(t, sched.runFor(t, refMs)); }
+    };
+  };
+
+  /** latest.json of the model the files come from. */
+  Frames.prototype._latest = function () {
+    var loader = this.loader;
     return loader.fetch(loader.base + this.fileModel + '/latest.json', { cache: 'no-store' }).then(function (r) {
       if (!r.ok) throw new Error('latest.json ' + r.status);
       return r.json();
-    }).then(function (latest) {
-      var refMs = new Date(latest.reference_time).getTime();
-      if (self.store && self.pruneH) pruneStore(self.store, self.model, refMs, self.now(), self.pruneH);
-      self.between = self.times.map(function (t) { return !sched.hasFile(t, sched.runFor(t, refMs)); });
-      var queue = loadOrder(self.times.length, self.nowIndex).filter(function (i) { return !self.packed[i] && !self.between[i]; });
-      function next() {
-        if (self.stopped || !queue.length) return Promise.resolve();
-        var i = queue.shift(), t = self.times[i], run = sched.runFor(t, refMs);
-        var url = frameUrl(t, run, self.fileModel, loader.base);
-        var key = self.store ? frameKey(self.model, self.field.store, run, t) : null;
-        var kept = key ? Promise.resolve().then(function () { return self.store.get(key); }).catch(function () { return null; }) : Promise.resolve(null);
-        return kept.then(function (k) {
-          if (self.stopped) return;
-          if (k && k.parts && k.meta && (!self.field.accepts || self.field.accepts(k.meta, self.fileModel))) {
-            self.fromStore++;
-            self._in(i, k.meta, k.parts);
-            return;
-          }
-          var t0 = Date.now();
-          var read = function () { return loader._readVars({ url: url, validMs: t }, self.names); };
-          return (self.gate ? self.gate.run(read, self.weight) : read()).then(function (e) {
-            if (self.stopped) return;
-            var fr = self.field.read(e, t, self.fileModel);
-            console.log('[anim] ' + url.split('/').slice(-3).join('/') + ' ' + self.field.id + ' in ' + (Date.now() - t0) + ' ms');
-            self._in(i, fr.meta, fr.parts);
-            if (key) Promise.resolve().then(function () { return self.store.put(key, { meta: fr.meta, parts: fr.parts }); }).catch(function () {});
-          }, function (err) {
-            self.failed[i] = true;
-            console.warn('[anim] ' + url + ': ' + err);
-            self.onFrame(i);
-          });
-        }).then(next);
-      }
-      var workers = [];
-      for (var k = 0; k < self.parallel; k++) workers.push(next());
-      return Promise.all(workers).then(function () { self.done = true; });
     });
   };
+
+  /** job(item) for each item of queue, `parallel` at a time, until the
+      queue is empty or the reading stops. */
+  Frames.prototype._drain = function (queue, job) {
+    var self = this, workers = [];
+    function next() {
+      if (self.stopped || !queue.length) return Promise.resolve();
+      return Promise.resolve(job(queue.shift())).then(next);
+    }
+    for (var k = 0; k < this.parallel; k++) workers.push(next());
+    return Promise.all(workers);
+  };
+
+  /** What file url (valid at validMs) gives, as make(read) -> { meta,
+      parts } of the variables vars: from the store under key when it is
+      kept there (and accepts(meta) takes it), else read through the gate
+      and kept. null once the reading stopped; rejects when the read
+      fails. */
+  Frames.prototype._fetch = function (url, validMs, key, vars, make, accepts) {
+    var self = this, loader = this.loader, store = this.store;
+    var kept = store ? Promise.resolve().then(function () { return store.get(key); }).catch(function () { return null; }) : Promise.resolve(null);
+    return kept.then(function (k) {
+      if (self.stopped) return null;
+      if (k && k.parts && k.meta && (!accepts || accepts(k.meta))) {
+        self.fromStore++;
+        return k;
+      }
+      var t0 = Date.now(), read = function () { return loader._readVars({ url: url, validMs: validMs }, vars); };
+      return (self.gate ? self.gate.run(read, self.weight) : read()).then(function (e) {
+        if (self.stopped) return null;
+        var fr = make(e);
+        console.log('[anim] ' + url.split('/').slice(-3).join('/') + ' ' + self.field.store + ' in ' + (Date.now() - t0) + ' ms');
+        if (store) Promise.resolve().then(function () { return store.put(key, { meta: fr.meta, parts: fr.parts }); }).catch(function () {});
+        return fr;
+      });
+    });
+  };
+
+  /** Picture i, from run `run` (null: none, it fails at once). */
+  Frames.prototype._read = function (i, run) {
+    var self = this, t = this.times[i], field = this.field, model = this.fileModel;
+    if (run === null) {
+      this.failed[i] = true;
+      this.onFrame(i);
+      return null;
+    }
+    var url = frameUrl(t, run, model, this.loader.base);
+    return this._fetch(url, t, frameKey(this.model, field.store, run, t), this.names,
+      function (e) { return field.read(e, t, model); },
+      field.accepts ? function (meta) { return field.accepts(meta, model); } : null
+    ).then(function (fr) {
+      if (fr) self._in(i, fr.meta, fr.parts);
+    }, function (err) {
+      self.failed[i] = true;
+      console.warn('[anim] ' + url + ': ' + err);
+      self.onFrame(i);
+    });
+  };
+
+  /** The Frames of opts.field: its own kind when the field has one
+      (field.frames(loader, opts): air quality, precipitation), plain
+      Frames otherwise. */
+  function makeFrames(loader, opts) {
+    var f = opts && opts.field;
+    return f && f.frames ? f.frames(loader, opts) : new Frames(loader, opts);
+  }
 
   /** Picture i is in, from the file or the store. */
   Frames.prototype._in = function (i, meta, parts) {
@@ -1215,7 +1233,7 @@ var WidgetAnim = (function () {
 
   return {
     STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack, latLonGrid: latLonGrid,
-    decimate: decimate, FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
+    FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, makeFrames: makeFrames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };
 })();

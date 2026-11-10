@@ -191,6 +191,7 @@ WidgetTemp.TempLayerGL = (function () {
     this.timings = null;
   }
   function note(list, ms) { list.push(ms); if (list.length > 40) list.shift(); }
+  var FLAT_SHIFTS = [-1, 0, 1], GLOBE_SHIFTS = [0];
   GLLayer.prototype = {
     onAdd: function (map, gl) {
       this.map = map;
@@ -340,7 +341,7 @@ WidgetTemp.TempLayerGL = (function () {
       gl.disable(gl.CULL_FACE);
       gl.bindVertexArray(pr.vao);
       // Flat, the copies of the world on either side; on the globe one is all.
-      var shifts = sd.variantName === 'globe' ? [0] : [-1, 0, 1];
+      var shifts = sd.variantName === 'globe' ? GLOBE_SHIFTS : FLAT_SHIFTS;
       for (var k = 0; k < shifts.length; k++) {
         gl.uniform1f(u.u_shift, shifts[k]);
         gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_INT, 0);
@@ -400,13 +401,21 @@ WidgetTemp.TempLayerGL = (function () {
     });
   }
 
+  // fineParams() of each grid drawn, worked out once.
+  var paramsOf = new WeakMap();
+  function paramsKept(d) {
+    var q = paramsOf.get(d);
+    if (!q) paramsOf.set(d, (q = fineParams(d)));
+    return q;
+  }
+
   function tempDraw(gl, u, layer) {
     var o = layer.owner, fields = o._gpuOn && o._shown && o._shown.fields;
     if (!fields) return false;
-    var f = fields[fields.length - 1], fines = fields.slice(0, -1);
-    gl.uniform1f(u.u_fCount, fines.length);
-    fines.forEach(function (fine, k) {
-      var fd = fine.grid.desc, fc = fd.nx, fr = fd.ny, q = fineParams(fd), unit = 5 + 3 * k;
+    var f = fields[fields.length - 1], fines = fields.length - 1;
+    gl.uniform1f(u.u_fCount, fines);
+    for (var k = 0; k < fines; k++) {
+      var fine = fields[k], fd = fine.grid.desc, fc = fd.nx, fr = fd.ny, q = paramsKept(fd), unit = 5 + 3 * k;
       layer.texture(gl, unit, clean(fine.values), fc, fr); gl.uniform1i(u['u_fa' + k], unit);
       layer.texture(gl, unit + 1, clean(fine.valuesB || fine.values), fc, fr); gl.uniform1i(u['u_fb' + k], unit + 1);
       layer.texture(gl, unit + 2, packWZ(fine.weights, fine.elev), fc, fr, 'rg'); gl.uniform1i(u['u_fwz' + k], unit + 2);
@@ -417,7 +426,7 @@ WidgetTemp.TempLayerGL = (function () {
       gl.uniform1f(u['u_fHasHs' + k], fine.elev ? 1 : 0);
       gl.uniform1f(u['u_fMix' + k], fine.valuesB ? fine.mix || 0 : 0);
       gl.uniform1f(u['u_fFade' + k], fine.fade == null ? 1 : fine.fade);
-    });
+    }
     var cols = f.grid.lons.length, rows = f.grid.lats.length;
     layer.texture(gl, 0, f.values, cols, rows); gl.uniform1i(u.u_a, 0);
     layer.texture(gl, 1, f.valuesB || f.values, cols, rows); gl.uniform1i(u.u_b, 1);

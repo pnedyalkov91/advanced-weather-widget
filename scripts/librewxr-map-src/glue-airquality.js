@@ -59,84 +59,50 @@ var WidgetAirQuality = (function () {
 
   // --- the field of a pollutant: one variable of the file, its own store
   // key; the Frames made while it is chosen keep it ---
+  // --- the pictures: CAMS has its own runs, and its files are elsewhere ---
+  var cams = new WidgetOpenData.Loader({
+    model: 'cams_global', base: _windOpen.base, importReader: _windOpen.importReader, fetchFn: _windOpen.fetch
+  });
+  var Frames = WidgetAnim.Frames;
+
+  /** Frames of a CAMS layer, from its own files whatever the loader given:
+      each hour from the run of 00 or 12 UTC at or before it (never newer
+      than the latest published, nor than the hours latest.json lists for a
+      run still coming in); none past its 5 days. The store is not pruned:
+      pruneStore knows the ECMWF runs only. */
+  function AqFrames(opts) {
+    var o = {};
+    for (var k in opts) o[k] = opts[k];
+    o.pruneH = 0;
+    Frames.call(this, cams, o);
+  }
+  AqFrames.prototype = Object.create(Frames.prototype);
+  AqFrames.prototype._plan = function (latest) {
+    var refMs = Date.parse(latest.reference_time), listed = {};
+    (latest.valid_times || []).forEach(function (s) { listed[Date.parse(s)] = true; });
+    return {
+      runOf: function (t) {
+        var run = Math.min(Math.floor(t / (RUN_H * HOUR)) * RUN_H * HOUR, refMs);
+        if (run === refMs && !listed[t]) run -= RUN_H * HOUR;
+        return t - run > RANGE_H * HOUR ? null : run;
+      },
+      between: function () { return false; }
+    };
+  };
+
   var fields = {};
   function fieldOf(p) {
     if (fields[p]) return fields[p];
     var s = POLL[p];
-    return (fields[p] = F.byteField({ id: 'airquality', cams: true, pollutant: p, store: 'aq-' + p, vars: [p] }, function (e, t) {
+    return (fields[p] = F.byteField({
+      id: 'airquality', pollutant: p, store: 'aq-' + p, vars: [p],
+      frames: function (loader, o) { return new AqFrames(o); }
+    }, function (e, t) {
       return WidgetOpenData.toScalarGrid(e.data[0], e.ny, e.nx, t);
     }, function (v) { return byteOf(v, s); }));
   }
   WidgetAnim.FIELDS.airquality = fieldOf(current);
   ANIM_KEYS.airquality = function () { return 'airquality:' + current; };
-
-  // --- the pictures: CAMS has its own runs, and its files are elsewhere ---
-  var cams = new WidgetOpenData.Loader({
-    model: 'cams_global', base: _windOpen.base, importReader: _windOpen.importReader, fetchFn: _windOpen.fetch
-  });
-  var PlainFrames = WidgetAnim.Frames;
-
-  /** Frames of a CAMS layer: each hour from the run of 00 or 12 UTC at or
-      before it (never newer than the latest published, nor than the hours
-      latest.json lists for a run still coming in); none past its 5 days.
-      The store is not pruned: pruneStore knows the ECMWF runs only. */
-  function AqFrames(opts) {
-    var o = {};
-    for (var k in opts) o[k] = opts[k];
-    o.pruneH = 0;
-    PlainFrames.call(this, cams, o);
-    this.model = 'cams_global';
-  }
-  AqFrames.prototype = Object.create(PlainFrames.prototype);
-  AqFrames.prototype.load = function () {
-    var self = this, loader = this.loader;
-    return loader.fetch(loader.base + loader.model + '/latest.json', { cache: 'no-store' }).then(function (r) {
-      if (!r.ok) throw new Error('latest.json ' + r.status);
-      return r.json();
-    }).then(function (latest) {
-      var refMs = Date.parse(latest.reference_time), listed = {};
-      (latest.valid_times || []).forEach(function (s) { listed[Date.parse(s)] = true; });
-      function runOf(t) {
-        var run = Math.min(Math.floor(t / (RUN_H * HOUR)) * RUN_H * HOUR, refMs);
-        if (run === refMs && !listed[t]) run -= RUN_H * HOUR;
-        return run;
-      }
-      self.between = self.times.map(function () { return false; });
-      var queue = WidgetAnim.loadOrder(self.times.length, self.nowIndex).filter(function (i) { return !self.packed[i]; });
-      function next() {
-        if (self.stopped || !queue.length) return Promise.resolve();
-        var i = queue.shift(), t = self.times[i], run = runOf(t);
-        if (t - run > RANGE_H * HOUR) { self.failed[i] = true; self.onFrame(i); return next(); }
-        var url = WidgetAnim.frameUrl(t, run, loader.model, loader.base);
-        var key = self.store ? WidgetAnim.frameKey(self.model, self.field.store, run, t) : null;
-        var kept = key ? Promise.resolve().then(function () { return self.store.get(key); }).catch(function () { return null; }) : Promise.resolve(null);
-        return kept.then(function (k) {
-          if (self.stopped) return;
-          if (k && k.parts && k.meta) { self.fromStore++; self._in(i, k.meta, k.parts); return; }
-          var t0 = Date.now(), field = self.field;
-          var read = function () { return loader._readVars({ url: url, validMs: t }, field.vars); };
-          return (self.gate ? self.gate.run(read, self.weight) : read()).then(function (e) {
-            if (self.stopped) return;
-            var fr = field.read(e, t);
-            console.log('[aq] ' + url.split('/').slice(-3).join('/') + ' ' + field.vars[0] + ' in ' + (Date.now() - t0) + ' ms');
-            self._in(i, fr.meta, fr.parts);
-            if (key) Promise.resolve().then(function () { return self.store.put(key, { meta: fr.meta, parts: fr.parts }); }).catch(function () {});
-          }, function (err) {
-            self.failed[i] = true;
-            console.warn('[aq] ' + url + ': ' + err);
-            self.onFrame(i);
-          });
-        }).then(next);
-      }
-      var workers = [];
-      for (var w = 0; w < self.parallel; w++) workers.push(next());
-      return Promise.all(workers);
-    });
-  };
-  WidgetAnim.Frames = function (loader, o) {
-    return o && o.field && o.field.cams ? new AqFrames(o) : new PlainFrames(loader, o);
-  };
-  WidgetAnim.Frames.prototype = PlainFrames.prototype;
 
   // --- the GL layer: one per pollutant, two show at once while one fades
   // into the other ---

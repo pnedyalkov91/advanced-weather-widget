@@ -88,11 +88,12 @@ var WidgetFields = (function () {
 
   // --- legends: a box at the top of the map (the page's legend column) ---
 
-  /** A legend of class cls for layer id: ticks [[percent, text]] over the
+  /** A legend of layer id ('lv-legend', and the class cls of its look:
+      lv-legend-bar, lv-precip-legend): ticks [[percent, text]] over the
       bars added after, the unit at the end. */
   function legendBox(cls, id, ticks, unit) {
     var el = document.createElement('div');
-    el.className = cls;
+    el.className = 'lv-legend ' + cls;
     el.dataset.layer = id;
     el.innerHTML = '<div class="lv-temp-ticks">' + ticks.map(function (t) {
       return '<span style="left:' + t[0].toFixed(2) + '%">' + t[1] + '</span>';
@@ -115,7 +116,7 @@ var WidgetFields = (function () {
       table, bytes lo..hi along the bar, ticks [[byte, text]]; alpha keeps
       the table's alpha in the bar. */
   function lutLegend(id, lut, lo, hi, ticks, unit, alpha) {
-    var W = 240, el = legendBox('lv-aq-legend', id, ticks.map(function (t) {
+    var W = 240, el = legendBox('lv-legend-bar', id, ticks.map(function (t) {
       return [(t[0] - lo) / (hi - lo) * 100, t[1]];
     }), unit);
     var bar = legendBar(W, 10, function (x) {

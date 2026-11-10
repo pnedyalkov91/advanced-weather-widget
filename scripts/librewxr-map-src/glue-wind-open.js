@@ -7,9 +7,9 @@
 // network backend and the grid layout, and is loadable under Node for tests.
 // ==========================================================================
 var WidgetOpenData = (function () {
+  'use strict';
   // The regional grids (glue-grids.js): a global in the page, required under Node.
   var Grids = typeof WidgetGrids !== 'undefined' ? WidgetGrids : require('./glue-grids.js');
-  'use strict';
 
   var BASE = 'https://openmeteo.s3.amazonaws.com/data_spatial/';
   var MERGE_GAP = 65536;   // bytes between two reads that still share one request
@@ -210,16 +210,18 @@ var WidgetOpenData = (function () {
     return Math.abs(nowMs - entry.validMs) <= (maxHours || KEEP_HOURS) * 3600e3;
   }
 
-  /** The browser's IndexedDB as a small key/value store. Storage can be
-      missing or refused (a private profile): every call then gives null and
-      the wind is read from the file each time. */
-  function idbStore(dbName) {
-    var opening = null;
+  /** The browser's IndexedDB as a small key/value store (object store
+      storeName of database dbName): get, put, keys, del. Storage can be
+      missing or refused (a private profile): every call then gives null
+      and the data are read from the files each time. The kept wind uses
+      it, and the animation's pictures (WidgetAnim.frameStore). */
+  function idbStore(dbName, storeName) {
+    var opening = null, name = storeName || 'wind';
     function open() {
       if (!opening) {
         opening = new Promise(function (resolve, reject) {
           var r = indexedDB.open(dbName || 'awwOpenData', 1);
-          r.onupgradeneeded = function () { r.result.createObjectStore('wind'); };
+          r.onupgradeneeded = function () { r.result.createObjectStore(name); };
           r.onsuccess = function () { resolve(r.result); };
           r.onerror = function () { reject(r.error); };
         });
@@ -229,15 +231,20 @@ var WidgetOpenData = (function () {
     function run(mode, op) {
       return Promise.resolve().then(open).then(function (db) {
         return new Promise(function (resolve, reject) {
-          var tx = db.transaction('wind', mode), req = op(tx.objectStore('wind'));
-          tx.oncomplete = function () { resolve(req.result === undefined ? null : req.result); };
+          var tx = db.transaction(name, mode), req = op(tx.objectStore(name));
+          tx.oncomplete = function () { resolve(req && req.result !== undefined ? req.result : null); };
           tx.onerror = function () { reject(tx.error); };
+          tx.onabort = function () { reject(tx.error); };
         });
       }).catch(function () { return null; });
     }
     return {
       get: function (key) { return run('readonly', function (s) { return s.get(key); }); },
-      put: function (key, value) { return run('readwrite', function (s) { return s.put(value, key); }); }
+      put: function (key, value) { return run('readwrite', function (s) { return s.put(value, key); }); },
+      keys: function () { return run('readonly', function (s) { return s.getAllKeys(); }).then(function (k) { return k || []; }); },
+      del: function (keys) {
+        return run('readwrite', function (s) { keys.forEach(function (k) { s.delete(k); }); return null; });
+      }
     };
   }
 
