@@ -23,4 +23,5 @@ Kirigami.Icon {
     isMask: _mask
     color: _mask ? tint : "transparent"
     roundToIconSize: false
+    scale: themed ? themed.scale : 1
 }

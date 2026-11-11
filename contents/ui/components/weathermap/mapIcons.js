@@ -77,6 +77,17 @@ var _kde = {
     alerts:        ["dialog-warning", "dialog-warning"]
 };
 
+// The map's own drawing kept in some bundled themes: true drawn white
+// (tinted with the text), false in its colors.
+var _ownIn = {
+    radar: { "symbolic": true, "flat-color": false }
+};
+
+// Stems drawn edge to edge in their frame, shrunk to sit with the others.
+var _scale = {
+    "dew-point": 0.7
+};
+
 var THEMES = ["weathermap", "symbolic", "flat-color", "3d-oxygen", "meteocons", "kde"];
 
 // Folder size for a drawn size: the smallest one at least as big.
@@ -90,7 +101,7 @@ function _sizeDir(px) {
 
 /**
  * Icon of a map layer or radar option.
- * Returns { source, fallback, mask }: source is a URL or, for "kde", an icon
+ * Returns { source, fallback, mask, scale }: source is a URL or, for "kde", an icon
  * name (fallback is then a Breeze name to show if the theme lacks it).
  * Unknown key: source "".
  *
@@ -102,13 +113,16 @@ function _sizeDir(px) {
 function resolve(key, theme, px, iconsBase) {
     var own = _own[key];
     if (!own)
-        return { source: "", fallback: "", mask: false };
+        return { source: "", fallback: "", mask: false, scale: 1 };
     if (theme === "kde") {
         var k = _kde[key];
-        return { source: k[0], fallback: k[1], mask: false };
+        return { source: k[0], fallback: k[1], mask: false, scale: 1 };
     }
     if (THEMES.indexOf(theme) <= 0)
-        return { source: iconsBase + own.file, fallback: "", mask: own.mask };
+        return { source: iconsBase + own.file, fallback: "", mask: own.mask, scale: 1 };
+    var kept = _ownIn[key];
+    if (kept && kept[theme] !== undefined)
+        return { source: iconsBase + own.file, fallback: "", mask: kept[theme], scale: 1 };
     var missing = _missing[theme] || {};
     var stems = _stems[key];
     var stem = stems[stems.length - 1];
@@ -121,6 +135,7 @@ function resolve(key, theme, px, iconsBase) {
     return {
         source: iconsBase + theme + "/" + _sizeDir(px) + "/wi-" + stem + ".svg",
         fallback: "",
-        mask: theme === "symbolic"
+        mask: theme === "symbolic",
+        scale: _scale[stem] || 1
     };
 }
