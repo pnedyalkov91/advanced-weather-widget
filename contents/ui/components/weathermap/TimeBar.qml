@@ -17,7 +17,7 @@ Rectangle {
 
     implicitHeight: 84
     // See-through as the widget's frame: the page blurs the map under it.
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.4)
+    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, bar.map.panelOpacity / 100)
     Rectangle { width: parent.width; height: 1; color: bar.tint(0.10) }
     // The bar lies over the map: what nothing of the bar takes stops here.
     MouseArea {

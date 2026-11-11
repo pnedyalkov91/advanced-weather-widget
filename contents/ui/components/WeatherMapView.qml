@@ -387,6 +387,22 @@ Item {
     // Pictures per second at most, resolution while playing.
     readonly property int maxFps: [4, 8, 15].indexOf(Plasmoid.configuration.weatherMapFps) >= 0 ? Plasmoid.configuration.weatherMapFps : 8
     readonly property int resolution: [1, 2, 4].indexOf(Plasmoid.configuration.weatherMapResolution) >= 0 ? Plasmoid.configuration.weatherMapResolution : 1
+    // The layer column and the time bar over the map: how opaque their tint
+    // (%), how blurred the map under them (px). Shown while a slider moves,
+    // saved once it is let go.
+    property int panelOpacity: Plasmoid.configuration.weatherMapPanelOpacity
+    property int panelBlur: Plasmoid.configuration.weatherMapPanelBlur
+    function setPanelOpacity(v, save) {
+        panelOpacity = v;
+        if (save)
+            Plasmoid.configuration.weatherMapPanelOpacity = v;
+    }
+    function setPanelBlur(v, save) {
+        panelBlur = v;
+        if (save)
+            Plasmoid.configuration.weatherMapPanelBlur = v;
+    }
+    onPanelBlurChanged: if (started) call("animSetPanelBlur", panelBlur)
     function setMaxFps(v) {
         Plasmoid.configuration.weatherMapFps = v;
         call("animSetMaxFps", v);
@@ -963,7 +979,7 @@ Item {
             code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
             code.push(jsCall("animSetLegend", l, false));
-        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetLegendTop", legendTop), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
+        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));

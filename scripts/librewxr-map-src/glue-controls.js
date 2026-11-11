@@ -810,6 +810,11 @@ window.animSetRightInset = function (px) {
 window.animSetBottomInset = function (px) {
   document.documentElement.style.setProperty('--aww-bottom', Math.max(0, +px || 0) + 'px');
 };
+/** The blur (px) of the map under the widget's layer column and time bar; 0 for none. */
+window.animSetPanelBlur = function (px) {
+  px = Math.max(0, Math.min(40, +px || 0));
+  document.documentElement.style.setProperty('--aww-backdrop', px > 0 ? 'blur(' + px + 'px) saturate(1.3)' : 'none');
+};
 /** How far everything over the map stands from its sides and from its
     top (px), on top of its own margins, and how large it is drawn (1 as
     made): more of both in full screen. */

@@ -41,7 +41,7 @@ Rectangle {
     Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     clip: true
     // See-through as the widget's frame: the page blurs the map under it.
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.4)
+    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, panel.map.panelOpacity / 100)
     Rectangle { width: 1; height: parent.height; color: panel.tint(0.10) }
     // The column lies over the map: a click, a drag, a wheel or the hand
     // that nothing of the column takes (the scrolling, the clocks, an
@@ -154,6 +154,34 @@ Rectangle {
                     }
                 }
             }
+        }
+    }
+    // A setting with a range: its name and value, then a slider. moved(v,
+    // done): done once the slider is let go.
+    component SliderSetting: ColumnLayout {
+        id: ss
+        property string title
+        property string valueText
+        property real from: 0
+        property real to: 100
+        property real stepSize: 1
+        property real value
+        signal moved(real v, bool done)
+        Layout.fillWidth: true
+        spacing: 0
+        RowLayout {
+            Layout.fillWidth: true
+            PlasmaComponents.Label { text: ss.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+            PlasmaComponents.Label { text: ss.valueText; color: panel.dimText }
+        }
+        PlasmaComponents.Slider {
+            Layout.fillWidth: true
+            from: ss.from
+            to: ss.to
+            stepSize: ss.stepSize
+            value: ss.value
+            onMoved: ss.moved(value, false)
+            onPressedChanged: if (!pressed) ss.moved(value, true)
         }
     }
     // A color among a few: a dot for each, the one taken ringed. The value
@@ -424,7 +452,7 @@ Rectangle {
             HeadButton {
                 id: settingsButton
                 iconName: "gear"
-                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map")
+                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, see-through panels")
                 on: settingsMenu.visible
                 onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
                 PlasmaComponents.Popup {
@@ -451,6 +479,19 @@ Rectangle {
                             choices: [[1, i18n("Full")], [2, i18n("Half")], [4, i18n("Quarter")]]
                             current: panel.map.resolution
                             onPicked: function (v) { panel.map.setResolution(v); }
+                        }
+                        SliderSetting {
+                            title: i18n("Panel opacity")
+                            valueText: i18n("%1 %", Math.round(value))
+                            value: panel.map.panelOpacity
+                            onMoved: function (v, done) { panel.map.setPanelOpacity(Math.round(v), done); }
+                        }
+                        SliderSetting {
+                            title: i18n("Blur under the panels")
+                            valueText: value > 0 ? i18n("%1 px", Math.round(value)) : i18n("None")
+                            to: 40
+                            value: panel.map.panelBlur
+                            onMoved: function (v, done) { panel.map.setPanelBlur(Math.round(v), done); }
                         }
                         SmallSwitch {
                             text: i18n("Coasts and borders")
