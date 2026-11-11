@@ -4,7 +4,7 @@ import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // One line of the layer column: the layer's icon (a click switches it on
-// or off), its opacity on a thin line, then a wheel that opens its options
+// or off), its opacity on a slider, then a wheel that opens its options
 // (the default content) and the switch of its color legend. The whole line
 // is greyed while the layer is off. customGear: the wheel only says
 // gearClicked() (the radar opens its own menu). compact (the column
@@ -180,29 +180,9 @@ Item {
         x: iconBox.x + iconBox.width + 2
         width: gear.x - x - 2   // as long on every line, with a wheel or not
         anchors.verticalCenter: parent.verticalCenter
-        height: 20
         from: 0
         to: 100
         opacity: row.dim
-        // A thin line and a small round handle.
-        background: Rectangle {
-            x: slider.leftPadding
-            y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            width: slider.availableWidth
-            height: 2
-            radius: 1
-            color: row.checked ? row.accent : row.offColor
-        }
-        handle: Rectangle {
-            x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
-            y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            width: 10
-            height: 10
-            radius: 5
-            color: slider.pressed ? row.accent : Kirigami.Theme.backgroundColor
-            border.color: row.checked ? row.accent : row.offColor
-            border.width: 1
-        }
         // No stepSize: the style would draw a mark every 5 %; rounded below.
         Binding on value {
             when: !slider.pressed
@@ -220,34 +200,22 @@ Item {
     }
 
     // The wheel of the options.
-    Rectangle {
+    PlasmaComponents.ToolButton {
         id: gear
         visible: !row.compact && row.hasOptions
         x: row.width - width - 4
         anchors.verticalCenter: parent.verticalCenter
-        width: 24
-        height: 24
-        radius: 12
-        color: gearArea.containsMouse || popup.visible ? row.tint(0.10) : "transparent"
-        WmIcon {
-            anchors.centerIn: parent
-            width: 16
-            height: 16
-            name: "gear"
-            mask: true
-            opacity: 0.85 * row.dim
-        }
-        MouseArea {
-            id: gearArea
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: {
-                row.openOptions();
-            }
-        }
+        display: PlasmaComponents.ToolButton.IconOnly
+        icon.source: Qt.resolvedUrl("../../../icons/weathermap/gear.svg")
+        icon.width: Kirigami.Units.iconSizes.small
+        icon.height: Kirigami.Units.iconSizes.small
+        icon.color: Kirigami.Theme.textColor
+        checked: popup.visible
+        opacity: row.dim
+        onClicked: row.openOptions()
         PlasmaComponents.ToolTip {
             text: i18n("%1: options", row.title)
-            visible: row.active && gearArea.containsMouse && !popup.visible
+            visible: row.active && gear.hovered && !popup.visible
             delay: Kirigami.Units.toolTipDelay
         }
     }
@@ -274,7 +242,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: 4
             }
-            SmallSwitch {
+            PlasmaComponents.Switch {
                 visible: row.hasLegend
                 text: i18n("Color legend on the map")
                 checked: row.legendOn

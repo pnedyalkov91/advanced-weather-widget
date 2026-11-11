@@ -90,7 +90,7 @@ Rectangle {
             rowSpacing: 0
             Repeater {
                 model: os.choices
-                SmallSwitch {
+                PlasmaComponents.Switch {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
@@ -120,38 +120,17 @@ Rectangle {
         columns: wrapped ? 1 : 2
         rowSpacing: 2
         PlasmaComponents.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
-        Rectangle {
+        Row {
             id: sgBox
-            implicitWidth: sgRow.implicitWidth + 4
-            implicitHeight: 26
-            radius: 4
-            color: panel.tint(0.06)
-            border.color: panel.tint(0.12)
-            Row {
-                id: sgRow
-                anchors.centerIn: parent
-                Repeater {
-                    model: sg.choices
-                    Rectangle {
-                        required property var modelData
-                        readonly property bool taken: sg.current === modelData[0]
-                        width: Math.max(34, sgLabel.implicitWidth + 12)
-                        height: 22
-                        radius: 3
-                        color: taken ? panel.accent : "transparent"
-                        PlasmaComponents.Label {
-                            id: sgLabel
-                            anchors.centerIn: parent
-                            text: parent.modelData[1]
-                            font.bold: parent.taken
-                            color: parent.taken ? Kirigami.Theme.highlightedTextColor : panel.dimText
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: sg.picked(parent.modelData[0])
-                        }
-                    }
+            Repeater {
+                model: sg.choices
+                PlasmaComponents.ToolButton {
+                    required property var modelData
+                    text: modelData[1]
+                    checkable: true
+                    checked: sg.current === modelData[0]
+                    // Picked again: it stays taken.
+                    onClicked: { checked = Qt.binding(function () { return sg.current === modelData[0]; }); sg.picked(modelData[0]); }
                 }
             }
         }
@@ -257,7 +236,7 @@ Rectangle {
             picked(v);
         }
         PlasmaComponents.Label { text: ok.title; color: panel.dimText }
-        SmallSwitch {
+        PlasmaComponents.Switch {
             text: i18n("All")
             font.bold: true
             checked: ok.checkedValues.length === ok.choices.length
@@ -273,7 +252,7 @@ Rectangle {
             rowSpacing: 0
             Repeater {
                 model: ok.choices
-                SmallSwitch {
+                PlasmaComponents.Switch {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
@@ -318,55 +297,26 @@ Rectangle {
         onLegendToggled: function (on) { panel.map.setLegend(mlr.layerId, on); }
     }
     // A round button of the head: the help, the settings.
-    component HeadButton: Rectangle {
+    // A button at the head of the column: a drawing of contents/icons/weathermap
+    // (iconName), an icon of the icon theme (themeIcon) or a text; kept
+    // down while on.
+    component HeadButton: PlasmaComponents.ToolButton {
         id: hb
-        property string text
         property string iconName
-        property string themeIcon      // an icon of the icon theme, drawn as a mask
+        property string themeIcon
         property string tip
         property bool on: false
-        signal clicked()
-        width: 34
-        height: 34
-        radius: 17
-        color: on ? panel.accent : panel.tint(hbArea.containsMouse ? 0.13 : 0.06)
-        border.color: panel.tint(0.15)
-        PlasmaComponents.Label {
-            visible: hb.text !== ""
-            anchors.centerIn: parent
-            text: hb.text
-            color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
-            font.bold: true
-            font.pixelSize: 19
-        }
-        Kirigami.Icon {
-            visible: hb.themeIcon !== ""
-            anchors.centerIn: parent
-            width: 21
-            height: 21
-            source: hb.themeIcon
-            isMask: true
-            color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
-        }
-        WmIcon {
-            visible: hb.text === "" && hb.themeIcon === ""
-            anchors.centerIn: parent
-            width: 21
-            height: 21
-            name: hb.iconName
-            mask: true
-            tint: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
-        }
-        MouseArea {
-            id: hbArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: hb.clicked()
-        }
+        checked: on
+        display: text !== "" ? PlasmaComponents.ToolButton.TextOnly : PlasmaComponents.ToolButton.IconOnly
+        font.bold: true
+        icon.name: themeIcon
+        icon.source: themeIcon === "" && iconName !== "" ? Qt.resolvedUrl("../../../icons/weathermap/" + iconName + ".svg") : ""
+        icon.width: Kirigami.Units.iconSizes.smallMedium
+        icon.height: Kirigami.Units.iconSizes.smallMedium
+        icon.color: Kirigami.Theme.textColor
         PlasmaComponents.ToolTip {
             text: hb.tip
-            visible: hbArea.containsMouse
+            visible: hb.hovered
             delay: Kirigami.Units.toolTipDelay
         }
     }
@@ -493,7 +443,7 @@ Rectangle {
                             value: panel.map.panelBlur
                             onMoved: function (v, done) { panel.map.setPanelBlur(Math.round(v), done); }
                         }
-                        SmallSwitch {
+                        PlasmaComponents.Switch {
                             text: i18n("Coasts and borders")
                             checked: panel.map.mapLinesOn
                             onToggled: {
@@ -501,7 +451,7 @@ Rectangle {
                                 checked = Qt.binding(function () { return panel.map.mapLinesOn; });
                             }
                         }
-                        SmallSwitch {
+                        PlasmaComponents.Switch {
                             text: i18n("Dark map")
                             enabled: !panel.map.darkMapLocked
                             checked: panel.map.mapTheme === "dark"
@@ -722,7 +672,7 @@ Rectangle {
                     current: panel.map.isobars.color
                     onPicked: function (v) { panel.map.setIsobars("color", v); }
                 }
-                SmallSwitch {
+                PlasmaComponents.Switch {
                     text: i18n("Values on the lines")
                     checked: panel.map.isobars.labels
                     onToggled: panel.map.setIsobars("labels", checked)
@@ -735,7 +685,7 @@ Rectangle {
                     current: panel.map.isobars.textSize
                     onPicked: function (v) { panel.map.setIsobars("textSize", v); }
                 }
-                SmallSwitch {
+                PlasmaComponents.Switch {
                     text: i18n("Highs and lows")
                     checked: panel.map.isobars.marks
                     onToggled: panel.map.setIsobars("marks", checked)

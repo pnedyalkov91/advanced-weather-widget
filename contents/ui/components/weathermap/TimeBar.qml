@@ -27,69 +27,35 @@ Rectangle {
         onWheel: function (wheel) { wheel.accepted = true; }
     }
 
-    // A button of the bar: a drawing, a light square under the hand, or
-    // behind it while on (the loop).
-    component BarIcon: Item {
+    // A button of the bar: a drawing of contents/icons/weathermap, kept
+    // down while on (the loop).
+    component BarIcon: PlasmaComponents.ToolButton {
         id: bi
         property string iconName
         property string tip
         property bool on: false
-        signal clicked()
-        implicitWidth: 30
-        implicitHeight: 26
-        Rectangle {
-            anchors.fill: parent
-            radius: 3
-            color: bar.tint(bi.on ? 0.18 : biArea.containsMouse ? 0.08 : 0)
-        }
-        WmIcon {
-            anchors.centerIn: parent
-            width: 22
-            height: 22
-            name: bi.iconName
-            mask: true
-            opacity: bi.enabled ? (bi.on || bi.iconName !== "boucle-glyph" ? 1 : 0.6) : 0.4
-        }
-        MouseArea {
-            id: biArea
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: bi.clicked()
-        }
+        checked: on
+        display: PlasmaComponents.ToolButton.IconOnly
+        icon.source: Qt.resolvedUrl("../../../icons/weathermap/" + iconName + ".svg")
+        icon.width: Kirigami.Units.iconSizes.smallMedium
+        icon.height: Kirigami.Units.iconSizes.smallMedium
+        icon.color: Kirigami.Theme.textColor
         PlasmaComponents.ToolTip {
             text: bi.tip
-            visible: biArea.containsMouse
+            visible: bi.hovered
             delay: Kirigami.Units.toolTipDelay
         }
     }
-    // -3 h, +3 h: text on a light pill.
-    component StepPill: Rectangle {
+    // -3 h, +3 h.
+    component StepPill: PlasmaComponents.Button {
         id: pill
-        property alias text: pillText.text
         property string tip
         property string widest        // the longest text it takes: its width does not jump while playing
-        signal clicked()
-        implicitWidth: Math.max(62, Math.max(pillText.implicitWidth, widestMetrics.advanceWidth) + 20)
-        TextMetrics { id: widestMetrics; font: pillText.font; text: pill.widest }
-        implicitHeight: 30
-        radius: 8
-        color: bar.tint(pillArea.containsMouse ? 0.13 : 0.07)
-        opacity: enabled ? 1 : 0.4
-        PlasmaComponents.Label {
-            id: pillText
-            anchors.centerIn: parent
-            color: bar.fg
-            font.pixelSize: 14
-        }
-        MouseArea {
-            id: pillArea
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: pill.clicked()
-        }
+        TextMetrics { id: widestMetrics; font: pill.font; text: pill.widest }
+        implicitWidth: Math.max(implicitContentWidth, widestMetrics.advanceWidth) + leftPadding + rightPadding
         PlasmaComponents.ToolTip {
             text: pill.tip
-            visible: pillArea.containsMouse
+            visible: pill.hovered
             delay: Kirigami.Units.toolTipDelay
         }
     }
@@ -114,45 +80,15 @@ Rectangle {
             onClicked: bar.map.call("animStepButton", -1)
         }
         // Play or pause: the big round.
-        Rectangle {
-            implicitWidth: 38
-            implicitHeight: 38
-            radius: 19
-            color: playArea.containsMouse ? Qt.lighter(bar.accent, 1.15) : bar.accent
-            opacity: bar.map.readyCount > 1 ? 1 : 0.4
-            Canvas {
-                anchors.fill: parent
-                property bool playing: bar.map.animState ? bar.map.animState.playing : false
-                property color fill: Kirigami.Theme.highlightedTextColor
-                onPlayingChanged: requestPaint()
-                onFillChanged: requestPaint()
-                onPaint: {
-                    var c = getContext("2d");
-                    c.reset();
-                    c.fillStyle = fill;
-                    if (playing) {
-                        c.fillRect(13, 11, 4, 16);
-                        c.fillRect(21, 11, 4, 16);
-                    } else {
-                        c.beginPath();
-                        c.moveTo(15, 10);
-                        c.lineTo(28, 19);
-                        c.lineTo(15, 28);
-                        c.closePath();
-                        c.fill();
-                    }
-                }
-            }
-            MouseArea {
-                id: playArea
-                anchors.fill: parent
-                hoverEnabled: true
-                enabled: bar.map.readyCount > 1
-                onClicked: bar.map.toggle()
-            }
+        PlasmaComponents.RoundButton {
+            readonly property bool playing: bar.map.animState ? bar.map.animState.playing : false
+            highlighted: true
+            enabled: bar.map.readyCount > 1
+            icon.name: playing ? "media-playback-pause" : "media-playback-start"
+            onClicked: bar.map.toggle()
             PlasmaComponents.ToolTip {
                 text: i18n("Play or pause (Space)")
-                visible: playArea.containsMouse
+                visible: parent.hovered
                 delay: Kirigami.Units.toolTipDelay
             }
         }

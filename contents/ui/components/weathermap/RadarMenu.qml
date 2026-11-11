@@ -31,54 +31,27 @@ PlasmaComponents.Popup {
         implicitHeight: 1
         color: menu.tint(0.12)
     }
-    // A switch of the radar: its icon on a light square while on, and its name.
-    component Switch: Item {
+    // A switch of the radar: its icon and its name, a button kept down while on.
+    component Switch: PlasmaComponents.ToolButton {
         id: sw
         property string key
-        property url icon
         property bool mask: false
         property string title
         readonly property bool on: !!menu.options[key]
         Layout.fillWidth: true
-        implicitHeight: 32
-        Rectangle {
-            anchors.fill: parent
-            radius: 4
-            color: menu.tint(swArea.containsMouse ? 0.06 : 0)
-        }
-        Rectangle {
-            id: box
-            anchors.verticalCenter: parent.verticalCenter
-            width: 28
-            height: 26
-            radius: 3
-            color: sw.on ? menu.tint(0.2) : "transparent"
-            Kirigami.Icon {
-                anchors.centerIn: parent
-                width: 22
-                height: 22
-                roundToIconSize: false
-                source: sw.icon
-                isMask: sw.mask
-                color: sw.mask ? menu.fg : "transparent"
-                opacity: sw.on ? 1 : 0.6
-            }
-        }
-        PlasmaComponents.Label {
-            anchors.left: box.right
-            anchors.leftMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            text: sw.title
-            opacity: sw.on ? 1 : 0.75
-        }
-        MouseArea {
-            id: swArea
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: menu.optionPicked(sw.key, !sw.on)
+        text: title
+        icon.width: 22
+        icon.height: 22
+        icon.color: mask ? menu.fg : "transparent"
+        display: PlasmaComponents.ToolButton.TextBesideIcon
+        checkable: true
+        checked: on
+        onClicked: {
+            checked = Qt.binding(function () { return sw.on; });
+            menu.optionPicked(sw.key, !sw.on);
         }
     }
-    // Two choices side by side, the one taken highlighted.
+    // Two choices side by side, the one taken kept down.
     component Segmented: RowLayout {
         id: seg
         property string key
@@ -86,36 +59,17 @@ PlasmaComponents.Popup {
         property var choices: []        // [[value, text]]
         spacing: 0
         PlasmaComponents.Label { text: seg.title; color: Kirigami.Theme.disabledTextColor; Layout.fillWidth: true }
-        Rectangle {
-            implicitWidth: segRow.implicitWidth + 4
-            implicitHeight: 26
-            radius: 4
-            color: menu.tint(0.06)
-            border.color: menu.tint(0.12)
-            Row {
-                id: segRow
-                anchors.centerIn: parent
-                spacing: 0
-                Repeater {
-                    model: seg.choices
-                    Rectangle {
-                        required property var modelData
-                        readonly property bool taken: String(menu.options[seg.key]) === String(modelData[0])
-                        width: 50
-                        height: 22
-                        radius: 3
-                        color: taken ? Kirigami.Theme.highlightColor : "transparent"
-                        PlasmaComponents.Label {
-                            anchors.centerIn: parent
-                            text: modelData[1]
-                            font.bold: parent.taken
-                            color: parent.taken ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.disabledTextColor
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: menu.optionPicked(seg.key, modelData[0])
-                        }
-                    }
+        Repeater {
+            model: seg.choices
+            PlasmaComponents.ToolButton {
+                required property var modelData
+                readonly property bool taken: String(menu.options[seg.key]) === String(modelData[0])
+                text: modelData[1]
+                checkable: true
+                checked: taken
+                onClicked: {
+                    checked = Qt.binding(function () { return taken; });
+                    menu.optionPicked(seg.key, modelData[0]);
                 }
             }
         }
@@ -140,12 +94,12 @@ PlasmaComponents.Popup {
             }
         }
         Separator {}
-        Switch { key: "snow"; icon: menu.radarIcons + "neige.svg"; title: i18n("Snow") }
-        Switch { key: "smooth"; icon: menu.radarIcons + "lissage.svg"; mask: true; title: i18n("Smoothing") }
-        Switch { key: "lightning"; icon: menu.radarIcons + "eclairs.svg"; title: i18n("Lightning") }
-        Switch { key: "cells"; icon: Qt.resolvedUrl("../../../icons/flat-color/22/wi-thunderstorm.svg"); title: i18n("Storm cells") }
-        Switch { key: "arrows"; icon: menu.radarIcons + "fleches-vent.svg"; title: i18n("Wind arrows") }
-        Switch { key: "alerts"; icon: menu.radarIcons + "alertes.svg"; title: i18n("Alerts") }
+        Switch { key: "snow"; icon.source: menu.radarIcons + "neige.svg"; title: i18n("Snow") }
+        Switch { key: "smooth"; icon.source: menu.radarIcons + "lissage.svg"; mask: true; title: i18n("Smoothing") }
+        Switch { key: "lightning"; icon.source: menu.radarIcons + "eclairs.svg"; title: i18n("Lightning") }
+        Switch { key: "cells"; icon.source: Qt.resolvedUrl("../../../icons/flat-color/22/wi-thunderstorm.svg"); title: i18n("Storm cells") }
+        Switch { key: "arrows"; icon.source: menu.radarIcons + "fleches-vent.svg"; title: i18n("Wind arrows") }
+        Switch { key: "alerts"; icon.source: menu.radarIcons + "alertes.svg"; title: i18n("Alerts") }
         Separator {}
         Segmented { key: "format"; title: i18n("Format"); choices: [["webp", "WebP"], ["png", "PNG"]] }
         Item { implicitHeight: 4 }
