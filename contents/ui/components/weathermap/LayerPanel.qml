@@ -120,17 +120,50 @@ Rectangle {
         columns: wrapped ? 1 : 2
         rowSpacing: 2
         PlasmaComponents.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
-        Row {
+        Item {
             id: sgBox
-            Repeater {
-                model: sg.choices
-                PlasmaComponents.ToolButton {
-                    required property var modelData
-                    text: modelData[1]
-                    checkable: true
-                    checked: sg.current === modelData[0]
-                    // Picked again: it stays taken.
-                    onClicked: { checked = Qt.binding(function () { return sg.current === modelData[0]; }); sg.picked(modelData[0]); }
+            readonly property bool own: panel.map.ownControls
+            implicitWidth: sgRow.implicitWidth + (own ? 4 : 0)
+            implicitHeight: own ? 26 : sgRow.implicitHeight
+            // The own look: the choices in a light box, the one taken filled.
+            Rectangle {
+                visible: sgBox.own
+                anchors.fill: parent
+                radius: 4
+                color: panel.tint(0.06)
+                border.color: panel.tint(0.12)
+            }
+            Row {
+                id: sgRow
+                anchors.centerIn: parent
+                Repeater {
+                    model: sg.choices
+                    PlasmaComponents.ToolButton {
+                        id: sgButton
+                        required property var modelData
+                        text: modelData[1]
+                        checkable: true
+                        checked: sg.current === modelData[0]
+                        // Picked again: it stays taken.
+                        onClicked: { checked = Qt.binding(function () { return sg.current === modelData[0]; }); sg.picked(modelData[0]); }
+                        width: sgBox.own ? Math.max(34, sgLabel.implicitWidth + 12) : implicitWidth
+                        height: sgBox.own ? 22 : implicitHeight
+                        background.opacity: sgBox.own ? 0 : 1
+                        contentItem.opacity: sgBox.own ? 0 : 1
+                        Rectangle {
+                            visible: sgBox.own
+                            anchors.fill: parent
+                            radius: 3
+                            color: sgButton.checked ? panel.accent : "transparent"
+                            PlasmaComponents.Label {
+                                id: sgLabel
+                                anchors.centerIn: parent
+                                text: sgButton.text
+                                font.bold: sgButton.checked
+                                color: sgButton.checked ? Kirigami.Theme.highlightedTextColor : panel.dimText
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -154,6 +187,8 @@ Rectangle {
             PlasmaComponents.Label { text: ss.valueText; color: panel.dimText }
         }
         PlasmaComponents.Slider {
+            id: ssSlider
+            readonly property bool own: panel.map.ownControls
             Layout.fillWidth: true
             from: ss.from
             to: ss.to
@@ -161,6 +196,30 @@ Rectangle {
             value: ss.value
             onMoved: ss.moved(value, false)
             onPressedChanged: if (!pressed) ss.moved(value, true)
+            Layout.preferredHeight: own ? 20 : implicitHeight
+            background.opacity: own ? 0 : 1
+            handle.opacity: own ? 0 : 1
+            // The own look: a thin line and a small round handle.
+            Rectangle {
+                visible: ssSlider.own
+                x: ssSlider.leftPadding
+                y: ssSlider.topPadding + ssSlider.availableHeight / 2 - height / 2
+                width: ssSlider.availableWidth
+                height: 2
+                radius: 1
+                color: panel.accent
+            }
+            Rectangle {
+                visible: ssSlider.own
+                x: ssSlider.leftPadding + ssSlider.visualPosition * (ssSlider.availableWidth - width)
+                y: ssSlider.topPadding + ssSlider.availableHeight / 2 - height / 2
+                width: 10
+                height: 10
+                radius: 5
+                color: ssSlider.pressed ? panel.accent : Kirigami.Theme.backgroundColor
+                border.color: panel.accent
+                border.width: 1
+            }
         }
     }
     // A color among a few: a dot for each, the one taken ringed. The value
@@ -287,6 +346,7 @@ Rectangle {
         property string layerId
         width: panel.colW
         compact: panel.folded
+        ownLook: panel.map.ownControls
         key: panel.map.layerKeys[mlr.layerId] || ""
         checked: panel.map.layerOn(mlr.layerId)
         visible: panel.map.layerEnabled(mlr.layerId)
@@ -314,6 +374,46 @@ Rectangle {
         icon.width: Kirigami.Units.iconSizes.smallMedium
         icon.height: Kirigami.Units.iconSizes.smallMedium
         icon.color: Kirigami.Theme.textColor
+        readonly property bool own: panel.map.ownControls
+        // 34 in both looks: the head's row counts on it (rowW).
+        width: 34
+        height: 34
+        background.opacity: own ? 0 : 1
+        contentItem.opacity: own ? 0 : 1
+        // The own look: a round, filled with the accent while on.
+        Rectangle {
+            visible: hb.own
+            anchors.fill: parent
+            radius: width / 2
+            color: hb.on ? panel.accent : panel.tint(hb.hovered ? 0.13 : 0.06)
+            border.color: panel.tint(0.15)
+            PlasmaComponents.Label {
+                visible: hb.text !== ""
+                anchors.centerIn: parent
+                text: hb.text
+                color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+                font.bold: true
+                font.pixelSize: 19
+            }
+            Kirigami.Icon {
+                visible: hb.themeIcon !== ""
+                anchors.centerIn: parent
+                width: 21
+                height: 21
+                source: hb.themeIcon
+                isMask: true
+                color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+            }
+            WmIcon {
+                visible: hb.text === "" && hb.themeIcon === ""
+                anchors.centerIn: parent
+                width: 21
+                height: 21
+                name: hb.iconName
+                mask: true
+                tint: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+            }
+        }
         PlasmaComponents.ToolTip {
             text: hb.tip
             visible: hb.hovered
@@ -558,6 +658,7 @@ Rectangle {
             }
             RadarMenu {
                 id: radarMenu
+                ownLook: panel.map.ownControls
                 // Folded, at the left of the icon (the wheel is hidden).
                 parent: panel.folded ? radarRow.iconItem : radarRow.gearItem
                 x: panel.folded ? -width - 6 : parent.width - width

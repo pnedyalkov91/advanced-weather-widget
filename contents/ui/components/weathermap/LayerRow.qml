@@ -25,6 +25,9 @@ Item {
     property bool hasLegend: false     // a color legend over the map, shown or not
     property bool legendOn: true
     property bool compact: false
+    // The widget's own look (a thin line and a dot, a round wheel) over the
+    // Plasma components, whose theme drawing is then hidden.
+    property bool ownLook: false
     // soloable: a double click on the icon asks for this layer alone
     // (soloRequested; with Ctrl, both), a single click then waits a moment.
     property bool soloable: false
@@ -183,6 +186,30 @@ Item {
         from: 0
         to: 100
         opacity: row.dim
+        height: row.ownLook ? 20 : implicitHeight
+        background.opacity: row.ownLook ? 0 : 1
+        handle.opacity: row.ownLook ? 0 : 1
+        // The own look: a thin line and a small round handle.
+        Rectangle {
+            visible: row.ownLook
+            x: slider.leftPadding
+            y: slider.topPadding + slider.availableHeight / 2 - height / 2
+            width: slider.availableWidth
+            height: 2
+            radius: 1
+            color: row.checked ? row.accent : row.offColor
+        }
+        Rectangle {
+            visible: row.ownLook
+            x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+            y: slider.topPadding + slider.availableHeight / 2 - height / 2
+            width: 10
+            height: 10
+            radius: 5
+            color: slider.pressed ? row.accent : Kirigami.Theme.backgroundColor
+            border.color: row.checked ? row.accent : row.offColor
+            border.width: 1
+        }
         // No stepSize: the style would draw a mark every 5 %; rounded below.
         Binding on value {
             when: !slider.pressed
@@ -213,6 +240,25 @@ Item {
         checked: popup.visible
         opacity: row.dim
         onClicked: row.openOptions()
+        width: row.ownLook ? 24 : implicitWidth
+        height: row.ownLook ? 24 : implicitHeight
+        background.opacity: row.ownLook ? 0 : 1
+        contentItem.opacity: row.ownLook ? 0 : 1
+        // The own look: a round light under the hand.
+        Rectangle {
+            visible: row.ownLook
+            anchors.fill: parent
+            radius: width / 2
+            color: gear.hovered || popup.visible ? row.tint(0.10) : "transparent"
+            WmIcon {
+                anchors.centerIn: parent
+                width: 16
+                height: 16
+                name: "gear"
+                mask: true
+                opacity: 0.85
+            }
+        }
         PlasmaComponents.ToolTip {
             text: i18n("%1: options", row.title)
             visible: row.active && gear.hovered && !popup.visible

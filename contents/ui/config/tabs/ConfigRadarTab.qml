@@ -726,6 +726,23 @@ GridLayout {
         onActivated: radarTab.configRoot.cfg_librewxrTempStep = steps[currentIndex]
     }
 
+    // How the Weather Maps' buttons, sliders and choices are drawn.
+    Label {
+        text: i18n("Map controls:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    ComboBox {
+        readonly property var styles: ["plasma", "custom"]
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        Layout.preferredWidth: 200
+        model: [i18n("Plasma theme"), i18n("Widget's own")]
+        currentIndex: Math.max(0, styles.indexOf(radarTab.configRoot.cfg_weatherMapControlStyle))
+        onActivated: radarTab.configRoot.cfg_weatherMapControlStyle = styles[currentIndex]
+    }
+
     TempPaletteDialog {
         id: tempPaletteDialog
         unit: radarTab.tempUnit

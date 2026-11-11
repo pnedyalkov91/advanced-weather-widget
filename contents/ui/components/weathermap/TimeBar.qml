@@ -40,6 +40,26 @@ Rectangle {
         icon.width: Kirigami.Units.iconSizes.smallMedium
         icon.height: Kirigami.Units.iconSizes.smallMedium
         icon.color: Kirigami.Theme.textColor
+        readonly property bool own: bar.map.ownControls
+        Layout.preferredWidth: own ? 30 : implicitWidth
+        Layout.preferredHeight: own ? 26 : implicitHeight
+        background.opacity: own ? 0 : 1
+        contentItem.opacity: own ? 0 : 1
+        // The own look: a drawing on a light square under the hand, or behind it while on.
+        Rectangle {
+            visible: bi.own
+            anchors.fill: parent
+            radius: 3
+            color: bar.tint(bi.on ? 0.18 : bi.hovered ? 0.08 : 0)
+            WmIcon {
+                anchors.centerIn: parent
+                width: 22
+                height: 22
+                name: bi.iconName
+                mask: true
+                opacity: bi.enabled ? (bi.on || bi.iconName !== "boucle-glyph" ? 1 : 0.6) : 0.4
+            }
+        }
         PlasmaComponents.ToolTip {
             text: bi.tip
             visible: bi.hovered
@@ -53,6 +73,27 @@ Rectangle {
         property string widest        // the longest text it takes: its width does not jump while playing
         TextMetrics { id: widestMetrics; font: pill.font; text: pill.widest }
         implicitWidth: Math.max(implicitContentWidth, widestMetrics.advanceWidth) + leftPadding + rightPadding
+        readonly property bool own: bar.map.ownControls
+        Layout.preferredWidth: own ? Math.max(62, Math.max(pillText.implicitWidth, ownMetrics.advanceWidth) + 20) : implicitWidth
+        Layout.preferredHeight: own ? 30 : implicitHeight
+        background.opacity: own ? 0 : 1
+        contentItem.opacity: own ? 0 : 1
+        TextMetrics { id: ownMetrics; font: pillText.font; text: pill.widest }
+        // The own look: text on a light pill.
+        Rectangle {
+            visible: pill.own
+            anchors.fill: parent
+            radius: 8
+            color: bar.tint(pill.hovered ? 0.13 : 0.07)
+            opacity: pill.enabled ? 1 : 0.4
+            PlasmaComponents.Label {
+                id: pillText
+                anchors.centerIn: parent
+                text: pill.text
+                color: bar.fg
+                font.pixelSize: 14
+            }
+        }
         PlasmaComponents.ToolTip {
             text: pill.tip
             visible: pill.hovered
@@ -81,11 +122,48 @@ Rectangle {
         }
         // Play or pause: the big round.
         PlasmaComponents.RoundButton {
+            id: playButton
             readonly property bool playing: bar.map.animState ? bar.map.animState.playing : false
+            readonly property bool own: bar.map.ownControls
             highlighted: true
             enabled: bar.map.readyCount > 1
             icon.name: playing ? "media-playback-pause" : "media-playback-start"
             onClicked: bar.map.toggle()
+            Layout.preferredWidth: own ? 38 : implicitWidth
+            Layout.preferredHeight: own ? 38 : implicitHeight
+            background.opacity: own ? 0 : 1
+            contentItem.opacity: own ? 0 : 1
+            // The own look: a big round of the accent, drawn play or pause.
+            Rectangle {
+                visible: playButton.own
+                anchors.fill: parent
+                radius: width / 2
+                color: playButton.hovered ? Qt.lighter(bar.accent, 1.15) : bar.accent
+                opacity: playButton.enabled ? 1 : 0.4
+                Canvas {
+                    anchors.fill: parent
+                    property bool playing: playButton.playing
+                    property color fill: Kirigami.Theme.highlightedTextColor
+                    onPlayingChanged: requestPaint()
+                    onFillChanged: requestPaint()
+                    onPaint: {
+                        var c = getContext("2d");
+                        c.reset();
+                        c.fillStyle = fill;
+                        if (playing) {
+                            c.fillRect(13, 11, 4, 16);
+                            c.fillRect(21, 11, 4, 16);
+                        } else {
+                            c.beginPath();
+                            c.moveTo(15, 10);
+                            c.lineTo(28, 19);
+                            c.lineTo(15, 28);
+                            c.closePath();
+                            c.fill();
+                        }
+                    }
+                }
+            }
             PlasmaComponents.ToolTip {
                 text: i18n("Play or pause (Space)")
                 visible: parent.hovered

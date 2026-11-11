@@ -384,6 +384,10 @@ Item {
             call("animPlay", false);
     }
 
+    // The tab's buttons, sliders and choices drawn by the Plasma theme, or
+    // with the widget's own look (weatherMapControlStyle "custom").
+    readonly property bool ownControls: Plasmoid.configuration.weatherMapControlStyle === "custom"
+
     // Pictures per second at most, resolution while playing.
     readonly property int maxFps: [4, 8, 15].indexOf(Plasmoid.configuration.weatherMapFps) >= 0 ? Plasmoid.configuration.weatherMapFps : 8
     readonly property int resolution: [1, 2, 4].indexOf(Plasmoid.configuration.weatherMapResolution) >= 0 ? Plasmoid.configuration.weatherMapResolution : 1
