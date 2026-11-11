@@ -83,7 +83,8 @@ Item {
     readonly property int labelMin: {
         if (count < 2 || v1 <= v0)
             return 180;
-        var perMin = width / ((v1 - v0) / 60000), stepMin = (times[1] - times[0]) / 60000;
+        // Within bounds the frames are 3 h apart, the hours written as for the radar alone.
+        var perMin = width / ((v1 - v0) / 60000), stepMin = bounds ? 10 : (times[1] - times[0]) / 60000;
         var steps = [10, 20, 30, 60, 120, 180, 360, 720, 1440, 2880, 10080];
         for (var k = 0; k < steps.length; k++)
             if (steps[k] >= stepMin - 0.5 && steps[k] * perMin >= labelGap)
@@ -93,10 +94,24 @@ Item {
     // By time, not by picture: the end of a solo's range falls between two
     // steps (the end of the radar, 22:10 after 22:00) and gets no label.
     function labelShown(i) {
+        if (bounds)
+            return false;
         if (i === nowIndex)
             return true;
         var min = Math.abs(times[i] - times[nowIndex]) / 60000, r = min % labelMin;
         return (r < 0.5 || labelMin - r < 0.5) && Math.abs(xOfIndex(i) - xOfIndex(nowIndex)) >= labelGap;
+    }
+    // Within bounds: the hours by time instead, every labelMin minutes
+    // counted from now (to 10 minutes), now among them.
+    readonly property real boundNow: bounds ? Math.round(Date.now() / 600000) * 600000 : 0
+    readonly property var boundLabels: {
+        var out = [];
+        if (!bounds || count < 2 || t1 <= t0)
+            return out;
+        var S = labelMin * 60000;
+        for (var t = boundNow - Math.floor((boundNow - t0) / S) * S; t <= t1 + 1; t += S)
+            out.push(t);
+        return out;
     }
     readonly property real handleIndex: area.pressed ? area.dragIndex : position >= 0 ? position : nowIndex
 
@@ -185,6 +200,32 @@ Item {
         height: 6
         radius: 3
         color: line.accent
+    }
+
+    // Within bounds, the hours by time, each with its mark.
+    Repeater {
+        model: line.boundLabels
+        Item {
+            required property var modelData
+            readonly property bool isNow: Math.abs(modelData - line.boundNow) < 1000
+            x: line.xOfTime(modelData)
+            visible: line.inView(x) && (isNow || Math.abs(x - line.xOfTime(line.boundNow)) >= line.labelGap)
+            Rectangle {
+                x: -0.75
+                y: line.trackY + 10
+                width: 1.5
+                height: 5
+                color: line.dimText
+            }
+            QQC2.Label {
+                x: -width / 2
+                y: line.trackY + 17
+                text: line.formatTime(new Date(modelData))
+                font.pixelSize: 11
+                font.bold: isNow
+                color: isNow ? line.fg : line.dimText
+            }
+        }
     }
 
     // The marks, then the hours.
