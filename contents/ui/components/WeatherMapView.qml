@@ -344,6 +344,7 @@ Item {
     property var frameReady: []       // read, by frame
     property var frameFailed: []      // failed, by frame
     property int nowIndex: 0          // the frame of now
+    property var frameBounds: null    // { lo, hi }: the positions the play keeps to (a source's range with a forecast layer), or null
     property var layersOn: ({})       // { id: on } as the page has them, radar and satellite too
     /** radarRoot[name] = value, unless it holds the same already; whether it changed. */
     function _keep(name, value) {
@@ -481,10 +482,11 @@ Item {
             _endSolo();
             _saveLayers(id, on);
             var forecast = animLayerIds.indexOf(id) >= 0;
-            // A forecast layer on a source's range: the files' steps over it.
+            // A forecast layer on a source's range: the files' steps, the
+            // range itself kept.
             if (on && forecast && rangeKind && stepH < 3) {
                 stepH = 3;
-                var shown = _aligned(_soloSpan(rangeKind)), now = Date.now();
+                var shown = _soloSpan(rangeKind), now = Date.now();
                 pastH = Math.max(0, (now - shown[0]) / 3600e3);
                 futureH = Math.max(0, (shown[1] - now) / 3600e3);
                 timeBar.timeLine.glideTo(shown[0], shown[1]);
@@ -560,23 +562,19 @@ Item {
     // The range of a source ("radar", "satellite", "both"; "" for hours):
     // the time line on that source's range, kept when a forecast layer is
     // switched on. Its pictures then come on the files' 3 h steps that
-    // cover it; without one, every 10 minutes (radar) or hour.
+    // cover it, the play kept to the range; without one, every 10 minutes
+    // (radar) or hour.
     property string rangeKind: ""
     property bool _kindPending: false    // a source's range kept, set once its images are known
     readonly property string savedRangeKind: Plasmoid.configuration.weatherMapRangeKind || ""
     readonly property bool forecastOn: animLayerIds.some(function (id) { return layerOn(id); })
-    function _aligned(span) {
-        var S = 3 * 3600e3;
-        return [Math.floor(span[0] / S) * S, Math.ceil(span[1] / S) * S];
-    }
     function _rangeTo(kind, forecast) {
         rangeKind = kind;
         var span = _soloSpan(kind), now = Date.now();
         stepH = forecast ? 3 : kind === "radar" ? 1 / 6 : 1;
-        var shown = forecast ? _aligned(span) : span;
-        pastH = Math.max(0, (now - shown[0]) / 3600e3);
-        futureH = Math.max(0, (shown[1] - now) / 3600e3);
-        timeBar.timeLine.glideTo(shown[0], shown[1]);
+        pastH = Math.max(0, (now - span[0]) / 3600e3);
+        futureH = Math.max(0, (span[1] - now) / 3600e3);
+        timeBar.timeLine.glideTo(span[0], span[1]);
         call("animSetSpan", span[0], span[1], stepH);
     }
     onAnimStateChanged: {
@@ -1127,6 +1125,7 @@ Item {
             radarRoot._keep("frameTimes", st.times);
             radarRoot._keep("frameReady", st.ready);
             radarRoot._keep("frameFailed", st.failed);
+            radarRoot._keep("frameBounds", st.bounds || null);
             radarRoot.nowIndex = st.now;
             var on = Object.assign({ radar: !!(st.radar && st.radar.on), satellite: !!(st.satellite && st.satellite.on) }, st.layers);
             // A colored layer switched on switches the others off in the

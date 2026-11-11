@@ -535,6 +535,9 @@ function animLoad(pastH, futureH, stepH, span) {
     : WidgetAnim.spanTimes(span.start, span.end, anim.nowMs, anim.stepH))
     : WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, anim.stepH);
   anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
+  // On the files' steps, the play keeps to the range itself: its forecast
+  // layers are only added to it.
+  anim.player.bounds = span && anim.stepH >= WidgetAnim.STEP_H ? WidgetAnim.spanBounds(ft.times, span.start, span.end) : null;
   anim.group.onTime = animOverlayTime;
   // The API's hours count from the present hour, the frames from the
   // nearest 3-hour step: one step more each way covers them.
@@ -542,7 +545,7 @@ function animLoad(pastH, futureH, stepH, span) {
   if (old) old.tracks.forEach(function (t) { animTrack(t.id, t.layer, t.frames); t.layer.reload(); });
   var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now) : ft.now;
   anim.player.index = -1;
-  anim.player.show(keep);
+  anim.player.show(anim.player._clamp(keep));
 }
 
 /** Switch layer id of the animation on or off. Off, it fades out and its
@@ -690,7 +693,7 @@ window.animStepButton = function (dir) {
   var pos = last;
   for (var i = 0; i < last; i++) if (to < times[i + 1]) { pos = i + Math.max(0, to - times[i]) / (times[i + 1] - times[i]); break; }
   p.play(false);
-  p.seek(Math.max(0, Math.min(last, pos)));
+  p.seek(pos);
 };
 window.animSetStep = function (ms) { if (anim) anim.player.stepMs = ms; };
 window.animSetMaxFps = function (fps) { if (anim) anim.player.minFrameMs = 1000 / fps; };
@@ -753,6 +756,7 @@ window.animState = function () {
   for (var id in ANIM_LAYERS) layers[id] = !!g.track(id);
   return {
     times: g.times, now: g.nowIndex, index: anim.player.index, playing: anim.player.playing,
+    bounds: anim.player.bounds,
     time: anim.player.index >= 0 ? g.timeAt(anim.player.index) : null,
     fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
     ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,

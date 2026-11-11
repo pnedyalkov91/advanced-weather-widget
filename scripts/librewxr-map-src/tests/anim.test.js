@@ -1113,3 +1113,84 @@ test('Frames: a field caps the reads at once (the clouds read four variables a f
   assert.equal(new A.Frames(loader, { field: capped, parallel: 1, now: () => 0 }).parallel, 1);
   assert.equal(new A.Frames(loader, { parallel: 6, now: () => 0 }).parallel, 6);
 });
+
+// A range of the radar (08:10 to 12:10) with a forecast layer: the frames
+// stay on the files' 3 h steps that cover it (06:00 to 15:00), the play
+// keeps to the range itself.
+test('spanBounds: the positions of a range among the files steps that cover it', () => {
+  const times = [6, 9, 12, 15].map((h) => h * H);
+  assert.deepEqual(A.spanBounds(times, 8 * H + 10 * 60e3, 12 * H + 10 * 60e3), { lo: 0 + 130 / 180, hi: 2 + 10 / 180 });
+  // Ends on the steps themselves: whole frames.
+  assert.deepEqual(A.spanBounds(times, 6 * H, 15 * H), { lo: 0, hi: 3 });
+  // Out of the times: held at the ends.
+  assert.deepEqual(A.spanBounds(times, 0, 20 * H), { lo: 0, hi: 3 });
+});
+
+test('Player.bounds: the play keeps to the range and goes round inside it', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100 });
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.show(0.5);
+  p.play(true);
+  clock.t = 500;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1]);
+  clock.t = 1500;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1, 2]);
+  clock.t = 2500;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1, 2, 2.5]);         // held at the end of the range
+  clock.t = 2600;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1, 2, 2.5, 0.5]);    // round to its start, not to frame 0
+  p.play(false);
+});
+
+test('Player.bounds without the loop: stops at the end of the range, starts again from its start', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true, true], { stepMs: 1000, minFrameMs: 100, loop: false });
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.show(2);
+  p.play(true);
+  clock.t = 5000;
+  p._tick();
+  assert.deepEqual(shown, [2, 2.5]);
+  clock.t = 6000;
+  p._tick();
+  assert.equal(p.playing, false);
+  p.play(true);
+  p._tick();
+  assert.deepEqual(shown, [2, 2.5, 0.5]);
+  p.play(false);
+});
+
+test('Player.bounds: seek, step, Home and End stay inside the range', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { loop: false });
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.seek(0);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.seek(3);
+  assert.deepEqual(shown.slice(-1), [2.5]);
+  p.step(1, 3);
+  assert.deepEqual(shown.slice(-1), [2.5]);          // no further without the loop
+  p.toEnd(-1);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.toEnd(1);
+  assert.deepEqual(shown.slice(-1), [2.5]);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [2]);
+  p.stepFile(-1);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [1]);            // frame 0 is out of the range
+});
+
+test('Player.bounds with the loop: a step past an end goes round to the other', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], {});
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.show(2.5);
+  p.step(1, 3);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [2.5]);
+});

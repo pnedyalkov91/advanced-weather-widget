@@ -74,6 +74,21 @@ var WidgetAnim = (function () {
     return { times: times, now: now };
   }
 
+  /** { lo, hi }: the positions (a frame plus a fraction) of startMs and
+      endMs among times, held at their ends: the range of the radar or
+      satellite inside the files' steps that cover it (alignedTimes). */
+  function spanBounds(times, startMs, endMs) {
+    var last = times.length - 1;
+    function at(ms) {
+      if (ms <= times[0]) return 0;
+      if (ms >= times[last]) return last;
+      for (var k = 0; k < last; k++)
+        if (ms < times[k + 1]) return k + (ms - times[k]) / (times[k + 1] - times[k]);
+      return last;
+    }
+    return { lo: at(startMs), hi: at(endMs) };
+  }
+
   /** The run a valid hour is read from: the one that started at or before
       it, but never newer than the latest published run; past the 6 days of
       a run of 06 or 18 UTC, the latest of 00 or 12 UTC. */
@@ -1051,7 +1066,25 @@ var WidgetAnim = (function () {
     // then goes straight from one to the next, one every third of stepMs,
     // without the pictures in between that would show the same image.
     this.stops = opts.stops || null;
+    // { lo, hi } or null: the positions the play keeps to (a range of the
+    // radar or satellite inside the files' steps that cover it).
+    this.bounds = null;
   }
+
+  /** The first and last positions the play may show. */
+  Player.prototype._lo = function () { return this.bounds ? this.bounds.lo : 0; };
+  Player.prototype._hi = function () { return this.bounds ? this.bounds.hi : this.frames.times.length - 1; };
+  Player.prototype._clamp = function (pos) { return Math.max(this._lo(), Math.min(this._hi(), pos)); };
+
+  /** Where the play starts again after the end: the start of the range
+      when its frame is read, else the first frame read; -1 when none. */
+  Player.prototype._start = function () {
+    if (!this.bounds) return this.nextReady(this.frames.times.length - 1);
+    var lo = this.bounds.lo, hi = this.bounds.hi;
+    if (this.frames.ready(Math.floor(lo))) return lo;
+    for (var i = Math.floor(lo) + 1; i <= hi + 1e-6; i++) if (this.frames.ready(i)) return i;
+    return -1;
+  };
 
   /** Position of time ms among times (a frame plus a fraction), -1 out of them. */
   function posOf(times, ms) {
@@ -1086,7 +1119,7 @@ var WidgetAnim = (function () {
 
   /** Go to position pos once the map is free. */
   Player.prototype.seek = function (pos) {
-    this.target = pos;
+    this.target = this._clamp(pos);
     this._ensureTimer();
     this._tick();
   };
@@ -1126,16 +1159,18 @@ var WidgetAnim = (function () {
   /** The first frame read going dir (1 from the start, -1 from the end)
       that passes ok(i); -1 when none. */
   Player.prototype._firstFrom = function (dir, ok) {
-    var n = this.frames.times.length;
-    for (var i = dir > 0 ? 0 : n - 1; i >= 0 && i < n; i += dir) if (this.frames.ready(i) && ok(i)) return i;
+    var lo = this._lo(), hi = this._hi(), end = dir > 0 ? lo : hi;
+    if (this.frames.ready(Math.floor(end)) && ok(end)) return end;
+    var i = dir > 0 ? Math.floor(lo) + 1 : Math.ceil(hi) - 1;
+    for (; i >= lo - 1e-6 && i <= hi + 1e-6; i += dir) if (this.frames.ready(i) && ok(i)) return i;
     return -1;
   };
 
   /** With the loop, the frame a step past an end goes round to (the first
       or the last that passes ok); -1 when the step does not go round. */
   Player.prototype._round = function (dir, ok) {
-    var b = this._base(), last = this.frames.times.length - 1;
-    if (!this.loop || !(dir > 0 ? b >= last - 1e-6 : b <= 1e-6)) return -1;
+    var b = this._base();
+    if (!this.loop || !(dir > 0 ? b >= this._hi() - 1e-6 : b <= this._lo() + 1e-6)) return -1;
     return this._firstFrom(dir, ok);
   };
 
@@ -1144,10 +1179,10 @@ var WidgetAnim = (function () {
   Player.prototype.step = function (dir, perFrame) {
     var to = this._round(dir, function () { return true; });
     if (to >= 0) { this.play(false); this.seek(to); return; }
-    var base = this._base() * perFrame, last = this.frames.times.length - 1;
+    var base = this._base() * perFrame;
     var k = dir > 0 ? Math.floor(base + 1e-6) + 1 : Math.ceil(base - 1e-6) - 1;
     this.play(false);
-    this.seek(Math.max(0, Math.min(last, k / perFrame)));
+    this.seek(k / perFrame);
   };
 
   /** Home (dir -1) and End (1): pause on the first or the last frame read. */
@@ -1164,9 +1199,9 @@ var WidgetAnim = (function () {
   Player.prototype.stepFile = function (dir) {
     var self = this, to = this._round(dir, function (i) { return self.frames.isFile(i); });
     if (to >= 0) { this.play(false); this.seek(to); return; }
-    var base = this._base(), n = this.frames.times.length;
+    var base = this._base(), lo = this._lo(), hi = this._hi();
     var i = dir > 0 ? Math.floor(base + 1e-6) + 1 : Math.ceil(base - 1e-6) - 1;
-    for (; i >= 0 && i < n; i += dir) {
+    for (; i >= lo - 1e-6 && i <= hi + 1e-6; i += dir) {
       if (!this.frames.isFile(i)) continue;
       this.play(false);
       this.seek(i);
@@ -1175,10 +1210,10 @@ var WidgetAnim = (function () {
   };
 
   Player.prototype.play = function (on) {
-    var last = this.frames ? this.frames.times.length - 1 : -1;
+    var last = this.frames ? this._hi() : -1;
     // At the end, without the loop: from the start again.
     if (on && !this.loop && this.target === null && last > 0 && this.index >= last - 1e-6) {
-      var first = this.nextReady(last);
+      var first = this._start();
       if (first >= 0) this.target = first;
     }
     this.playing = !!on;
@@ -1197,33 +1232,38 @@ var WidgetAnim = (function () {
       return;
     }
     if (!this.playing || this.index < 0) return;
-    var now = this.now(), last = this.frames.times.length - 1;
+    var now = this.now(), last = this._hi();
     if (this.index >= last - 1e-6) {
       // At the last frame: the first comes next at the usual pace with the
       // loop; without it, the play stops there.
       if (!this.loop) { this.play(false); return; }
-      var first = this.nextReady(last);
+      var first = this._start();
       if (first >= 0 && first !== last && now >= this.dueAt) this.show(first);
       return;
     }
     var i = Math.floor(this.index), j = this.nextReady(this.index);
     if (j < 0) return;
-    if (j <= i) {
-      // The frames after this one are not read yet: with the loop, round
-      // to the first after a while; without it, wait for them.
-      if (this.loop && now - this.shownAt >= this.endPauseMs) this.show(j);
+    if (j <= i || j > Math.ceil(last - 1e-6)) {
+      // The frames after this one are not read yet (or not before the end
+      // of the range): with the loop, round to the first after a while;
+      // without it, wait for them.
+      if (this.loop && now - this.shownAt >= this.endPauseMs) {
+        var back = this._start();
+        if (back >= 0) this.show(back);
+      }
     } else if (j > i + 1 || this.index === i && !this.frames.ready(i)) {
       // A frame missing on the way: straight to the next one read.
       if (now - this.shownAt >= this.stepMs) this.show(j);
     } else if (now >= this.dueAt) {
       var f = this.slow ? Math.max(1, this.slow(this.frames.timeAt(this.index)) || 1) : 1;
-      var to = Math.min(j, this.index + (now - this.shownAt) / (this.stepMs * f));
+      var end = Math.min(j, last);
+      var to = Math.min(end, this.index + (now - this.shownAt) / (this.stepMs * f));
       var stops = this.stops && this.stops();
       if (stops) {
         // Still images only: each stays a third of a step, however many
         // hours apart (10 minutes of radar, an hour of satellite).
         if (now - this.shownAt < this.stepMs / 3) return;
-        to = this._nextStop(this.index, j, stops);
+        to = this._nextStop(this.index, end, stops);
       }
       this.show(to);
     }
@@ -1232,7 +1272,7 @@ var WidgetAnim = (function () {
   Player.prototype.stop = function () { this.play(false); };
 
   return {
-    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack, latLonGrid: latLonGrid,
+    STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, spanBounds: spanBounds, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack, latLonGrid: latLonGrid,
     FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, makeFrames: makeFrames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };

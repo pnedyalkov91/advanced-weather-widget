@@ -166,6 +166,7 @@ Rectangle {
             ready: bar.map.frameReady
             failed: bar.map.frameFailed
             nowIndex: bar.map.nowIndex
+            bounds: bar.map.frameBounds
             position: bar.map.animState ? bar.map.animState.index : -1
             fromFile: !!(bar.map.animState && bar.map.animState.fromFile)
             radar: bar.map.animState ? bar.map.animState.radar : null
@@ -173,6 +174,7 @@ Rectangle {
             formatTime: bar.map.formatTime
             onPressedOn: bar.map.call("animPlay", false)
             onShowIndex: function (i) { bar.map.call("animShow", i); }
+            onShowPosition: function (p) { bar.map.call("animShow", p); }
         }
         // Round again from the start at the end, or stop there.
         BarIcon {

@@ -16,6 +16,9 @@ Item {
     property var ready: []           // read, by frame
     property var failed: []          // failed, by frame
     property int nowIndex: 0         // the frame of now
+    // { lo, hi } or null: the positions the play keeps to (a source's range
+    // with a forecast layer, inside the files' steps that cover it).
+    property var bounds: null
     property real position: -1       // the position shown (a frame and a fraction), -1 for none
     property bool fromFile: false    // a frame as read from its file, not worked out
     property var radar: null         // the radar's range (window.animState().radar)
@@ -25,6 +28,7 @@ Item {
     readonly property int count: times.length
     signal pressedOn()
     signal showIndex(int i)
+    signal showPosition(real pos)
 
     readonly property color fg: Kirigami.Theme.textColor
     readonly property color dimText: Kirigami.Theme.disabledTextColor
@@ -33,8 +37,8 @@ Item {
 
     implicitHeight: 62
     readonly property real trackY: 28
-    readonly property real t0: count ? times[0] : 0
-    readonly property real t1: count ? times[count - 1] : 1
+    readonly property real t0: !count ? 0 : bounds ? timeOfIndex(bounds.lo) : times[0]
+    readonly property real t1: !count ? 1 : bounds ? timeOfIndex(bounds.hi) : times[count - 1]
     // The span drawn: it follows t0 and t1, gliding when the range changes,
     // so the line stretches or shrinks instead of jumping. The marks out of
     // it hide while it glides.
@@ -225,14 +229,34 @@ Item {
     MouseArea {
         id: area
         property real dragIndex: 0
-        property int sent: -1
+        property real sent: -1
         x: -9
         y: line.trackY - 14
         width: line.width + 18
         height: 34
         enabled: line.count > 0
         cursorShape: Qt.PointingHandCursor
+        // Within bounds: the time under the hand, to 10 minutes, as a
+        // position between the frames.
+        function _posOfTime(t) {
+            var ts = line.times, last = line.count - 1;
+            for (var k = 0; k < last; k++)
+                if (t < ts[k + 1])
+                    return k + Math.max(0, t - ts[k]) / (ts[k + 1] - ts[k]);
+            return last;
+        }
         function at(mx) {
+            if (line.bounds) {
+                var S = 600000, x = Math.max(0, Math.min(1, (mx - 9) / Math.max(1, line.width)));
+                var t = Math.round((line.v0 + x * (line.v1 - line.v0)) / S) * S;
+                var p = Math.max(line.bounds.lo, Math.min(line.bounds.hi, _posOfTime(t)));
+                dragIndex = p;
+                if (p === sent)
+                    return;
+                sent = p;
+                line.showPosition(p);
+                return;
+            }
             dragIndex = Math.max(0, Math.min(line.count - 1, (mx - 9) / Math.max(1, line.width) * (line.count - 1)));
             var i = Math.round(dragIndex);
             if (i === sent)
@@ -242,6 +266,6 @@ Item {
         }
         onPressed: function (m) { sent = -1; line.pressedOn(); at(m.x); }
         onPositionChanged: function (m) { if (pressed) at(m.x); }
-        onReleased: dragIndex = Math.round(dragIndex)
+        onReleased: if (!line.bounds) dragIndex = Math.round(dragIndex)
     }
 }
