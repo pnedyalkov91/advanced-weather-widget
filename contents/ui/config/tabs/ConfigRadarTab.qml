@@ -738,7 +738,7 @@ GridLayout {
         readonly property var styles: ["plasma", "custom"]
         visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
         Layout.preferredWidth: 200
-        model: [i18n("Plasma theme"), i18n("Widget's own")]
+        model: [i18n("Plasma theme"), i18n("Clean style")]
         currentIndex: Math.max(0, styles.indexOf(radarTab.configRoot.cfg_weatherMapControlStyle))
         onActivated: radarTab.configRoot.cfg_weatherMapControlStyle = styles[currentIndex]
     }

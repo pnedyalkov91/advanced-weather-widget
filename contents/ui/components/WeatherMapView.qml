@@ -385,7 +385,7 @@ Item {
     }
 
     // The tab's buttons, sliders and choices drawn by the Plasma theme, or
-    // with the widget's own look (weatherMapControlStyle "custom").
+    // with the clean look (weatherMapControlStyle "custom", "Clean style").
     readonly property bool ownControls: Plasmoid.configuration.weatherMapControlStyle === "custom"
 
     // Pictures per second at most, resolution while playing.

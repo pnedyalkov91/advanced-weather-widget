@@ -261,7 +261,7 @@
     <!-- Weather Map: opacity (%) of the layer column and the time bar over the map, and the blur (px) of the map under them -->
     <entry name="weatherMapPanelOpacity" type="Int"><default>40</default><min>0</min><max>100</max></entry>
     <entry name="weatherMapPanelBlur"   type="Int"><default>18</default><min>0</min><max>40</max></entry>
-    <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the widget's own look) -->
+    <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the clean style) -->
     <entry name="weatherMapControlStyle" type="String"><default>plasma</default></entry>
     <!-- Weather Map: pictures per second at most: 4, 8 or 15 -->
     <entry name="weatherMapFps"         type="Int"><default>8</default><min>4</min><max>15</max></entry>
