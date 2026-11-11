@@ -719,15 +719,18 @@ Item {
         call("animSetOpacity", id, pct);
     }
 
-    // The layer column folded to the width of an icon, or open. Open, the
-    // column lies over the map's right (the map does not move): the page's
-    // buttons there slide out of its way.
+    // The layer column folded to the width of an icon, or open. Folded or
+    // open, it floats over the map's right and the time bar over its
+    // bottom (the map does not move): the page's buttons there slide out
+    // of their way.
     readonly property bool panelFolded: Plasmoid.configuration.weatherMapPanelFolded === true
-    readonly property real panelOver: layerPanel.openWidth - layerPanel.foldedWidth
+    function panelInset(folded) { return folded ? layerPanel.foldedWidth : layerPanel.openWidth; }
     function setFolded(on) {
         Plasmoid.configuration.weatherMapPanelFolded = on;
-        call("animSetRightInset", on ? 0 : panelOver);
+        call("animSetRightInset", panelInset(on));
     }
+    onBottomInsetChanged: if (started) call("animSetBottomInset", bottomInset)
+    readonly property real bottomInset: timeBar.height
 
     // The color legends hidden, by layer id.
     readonly property var legendsHidden: jsonOf(Plasmoid.configuration.weatherMapLegendsHidden, {})
@@ -940,7 +943,7 @@ Item {
 
     // The legends at the top left go under the date when the map is too
     // narrow for both side by side (zoom buttons, legends 320 px, the date).
-    readonly property real legendTop: mapArea.width - layerPanel.width - (dateBox.width + 52 + 320) * overlayScale - 2 * edgeX < 12 ? dateBox.height * overlayScale + 8 : 0
+    readonly property real legendTop: mapArea.width - layerPanel.foldedWidth - layerPanel.width - (dateBox.width + 52 + 320) * overlayScale - 2 * edgeX < 12 ? dateBox.height * overlayScale + 8 : 0
     // Full screen: what lies over the map (the page's buttons and legends,
     // the date, the badges, the column's head) stands further from the
     // screen's edges, and is drawn larger.
@@ -960,7 +963,7 @@ Item {
             code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
             code.push(jsCall("animSetLegend", l, false));
-        code.push(jsCall("animSetRightInset", panelFolded ? 0 : panelOver), jsCall("animSetLegendTop", legendTop), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
+        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetLegendTop", legendTop), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
@@ -1286,15 +1289,15 @@ Item {
             }
         }
 
-        RowLayout {
+        // The map takes the whole tab; the layer column and the time bar
+        // float over it, see-through.
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 0
 
             Item {
                 id: mapArea
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                anchors.fill: parent
 
                 WebEngineView {
                     id: webView
@@ -1522,7 +1525,7 @@ Item {
                     anchors.bottom: modelsBadge.visible ? modelsBadge.top : parent.bottom
                     anchors.leftMargin: 10 + radarRoot.edgeX
                     // (the models grow upward from their bottom: clear of them)
-                    anchors.bottomMargin: modelsBadge.visible ? 4 + modelsBadge.height * (radarRoot.overlayScale - 1) : 30
+                    anchors.bottomMargin: modelsBadge.visible ? 4 + modelsBadge.height * (radarRoot.overlayScale - 1) : 30 + timeBar.height
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
                     width: countLabel.implicitWidth + 12
@@ -1552,7 +1555,7 @@ Item {
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
                     anchors.leftMargin: 10 + radarRoot.edgeX
-                    anchors.bottomMargin: 30
+                    anchors.bottomMargin: 30 + timeBar.height
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
                     width: modelsLabel.implicitWidth + 12
@@ -1583,7 +1586,8 @@ Item {
                 Item {
                     visible: radarRoot.ctrlDown
                     anchors.fill: parent
-                    anchors.rightMargin: layerPanel.width - layerPanel.foldedWidth
+                    anchors.rightMargin: layerPanel.width
+                    anchors.bottomMargin: timeBar.height
                     HoverHandler {
                         id: mapHover
                         onHoveredChanged: if (radarRoot.ctrlDown) radarRoot.call("setReadout", hovered)
@@ -1602,35 +1606,35 @@ Item {
                     map: radarRoot
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    // The page's buttons slide left with the open column
-                    // (panelOver): the date keeps clear of them too.
-                    anchors.rightMargin: layerPanel.width + radarRoot.edgeX
+                    // The page's buttons slide left with the column
+                    // (panelInset): the date keeps clear of them too.
+                    anchors.rightMargin: layerPanel.foldedWidth + layerPanel.width + radarRoot.edgeX
                     anchors.topMargin: 8 + radarRoot.edgeTop
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.TopRight
                 }
             }
 
-            // The column's place beside the map is that of the folded column;
-            // open, it grows to the left over the map.
-            Item {
-                Layout.preferredWidth: layerPanel.foldedWidth
-                Layout.fillHeight: true
+            // Folded or open, the column floats over the map's right, down
+            // to the time bar.
+            LayerPanel {
+                id: layerPanel
+                map: radarRoot
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: timeBar.top
                 z: 1
-                LayerPanel {
-                    id: layerPanel
-                    map: radarRoot
-                    anchors.right: parent.right
-                    height: parent.height
-                }
             }
-        }
 
-        TimeBar {
-            id: timeBar
-            map: radarRoot
-            Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
+            TimeBar {
+                id: timeBar
+                map: radarRoot
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: implicitHeight
+                z: 1
+            }
         }
     }
 

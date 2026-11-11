@@ -805,6 +805,11 @@ if (typeof MutationObserver !== 'undefined' && document.getElementById('lv-map')
 window.animSetRightInset = function (px) {
   document.documentElement.style.setProperty('--aww-inset', Math.max(0, +px || 0) + 'px');
 };
+/** The height (px) of the widget's time bar over the map's bottom: the
+    map's controls at the bottom stand above it. */
+window.animSetBottomInset = function (px) {
+  document.documentElement.style.setProperty('--aww-bottom', Math.max(0, +px || 0) + 'px');
+};
 /** How far everything over the map stands from its sides and from its
     top (px), on top of its own margins, and how large it is drawn (1 as
     made): more of both in full screen. */

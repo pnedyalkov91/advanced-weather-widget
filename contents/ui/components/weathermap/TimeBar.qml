@@ -16,8 +16,16 @@ Rectangle {
     function tint(a) { return Qt.rgba(fg.r, fg.g, fg.b, a); }
 
     implicitHeight: 84
-    color: Kirigami.Theme.backgroundColor
+    // See-through: the map goes on under the bar.
+    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.75)
     Rectangle { width: parent.width; height: 1; color: bar.tint(0.10) }
+    // The bar lies over the map: what nothing of the bar takes stops here.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        hoverEnabled: true
+        onWheel: function (wheel) { wheel.accepted = true; }
+    }
 
     // A button of the bar: a drawing, a light square under the hand, or
     // behind it while on (the loop).

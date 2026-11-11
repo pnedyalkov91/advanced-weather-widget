@@ -40,14 +40,16 @@ Rectangle {
     width: folded ? foldedWidth : openWidth
     Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     clip: true
-    color: Kirigami.Theme.backgroundColor
+    // See-through: the map goes on under the column.
+    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.75)
     Rectangle { width: 1; height: parent.height; color: panel.tint(0.10) }
-    // The column lies over the map: a wheel that nothing of the column
-    // takes (the scrolling, the clocks, an opacity) stops here instead of
-    // zooming the map under it.
+    // The column lies over the map: a click, a drag, a wheel or the hand
+    // that nothing of the column takes (the scrolling, the clocks, an
+    // opacity) stops here instead of moving the map under it.
     MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.NoButton
+        acceptedButtons: Qt.AllButtons
+        hoverEnabled: true
         onWheel: function (wheel) { wheel.accepted = true; }
     }
 
