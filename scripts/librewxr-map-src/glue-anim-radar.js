@@ -164,14 +164,45 @@ var WidgetAnimRadar = (function () {
   };
 
   Overlay.prototype._make = function (frame) {
-    var self = this, path = frame.path;
+    var path = frame.path;
     if (this.layers[path]) return;
-    var entry = this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true }), ready: false };
+    this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true }), ready: false, waiting: false };
+    this._await(path);
+  };
+
+  /** Wait for the tiles of image path (once at a time), then show it if
+      it is still the one asked for. */
+  Overlay.prototype._await = function (path) {
+    var self = this, entry = this.layers[path];
+    if (!entry || entry.waiting) return;
+    entry.waiting = true;
     this.adapter.onLayerReady(entry.handle, function () {
       if (self.layers[path] !== entry) return;
+      entry.waiting = false;
       entry.ready = true;
       if (self.wanted === path) self._put(path);
     });
+  };
+
+  /** Whether image path has its tiles for the map as it is now: one
+      settled before a zoom has none at the new scale yet. */
+  Overlay.prototype._loaded = function (path) {
+    var e = this.layers[path];
+    if (!e || !e.ready || e.waiting) return false;
+    return !this.adapter.frameLoaded || this.adapter.frameLoaded(e.handle);
+  };
+
+  /** Whether the image of time ms can show at once (true off or out of
+      the range); when not, its tiles are asked for. The play waits on it. */
+  Overlay.prototype.loadedAt = function (ms) {
+    if (!this.on) return true;
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
+    if (i < 0) return true;
+    var path = this.frames[i].path;
+    if (this._loaded(path)) return true;
+    this._make(this.frames[i]);
+    this._await(path);
+    return false;
   };
 
   Overlay.prototype._drop = function (path) {
@@ -289,7 +320,9 @@ var WidgetAnimRadar = (function () {
     this.wanted = f.path;
     if (this.shown === f.path) return;
     this._make(f);
-    if (this.layers[f.path].ready) this._put(f.path);
+    // Not in for the map as it is (a zoom): the image before stays meanwhile.
+    if (this._loaded(f.path)) this._put(f.path);
+    else this._await(f.path);
   };
 
   return {

@@ -607,6 +607,7 @@ window.animStart = function (pastH, futureH, layers) {
   };
   anim.player.slow = animSlow;
   anim.player.stops = animStops;
+  anim.player.canShow = animOverlaysLoaded;
   anim.player.loop = animLoop;
   animLoad(pastH == null ? 24 : pastH, futureH == null ? 48 : futureH);
   _widgetAdapter.setFramesHidden(true);
@@ -889,6 +890,14 @@ function animOverlayTime(ms) {
   if (!animOverlays) return;
   animOverlays.satellite.show(ms);
   animOverlays.radar.show(ms);
+}
+
+/** Whether the radar and satellite images of time ms are in for the map
+    as it is (after a zoom they are not): the play waits for them. */
+function animOverlaysLoaded(ms) {
+  if (!animOverlays) return true;
+  var sat = animOverlays.satellite.loadedAt(ms);
+  return animOverlays.radar.loadedAt(ms) && sat;
 }
 
 function animOverlaysRaise() {

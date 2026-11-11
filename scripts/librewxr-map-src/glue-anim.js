@@ -1069,7 +1069,15 @@ var WidgetAnim = (function () {
     // { lo, hi } or null: the positions the play keeps to (a range of the
     // radar or satellite inside the files' steps that cover it).
     this.bounds = null;
+    // (ms) -> whether the radar or satellite image of that time is in for
+    // the map as it is; the play waits for it (HOLD_MS at most), the time
+    // spent waiting not counted.
+    this.canShow = opts.canShow || null;
+    this._heldAt = null;        // last tick of a wait
+    this._heldSince = null;     // when the wait began
   }
+
+  var HOLD_MS = 3000;
 
   /** The first and last positions the play may show. */
   Player.prototype._lo = function () { return this.bounds ? this.bounds.lo : 0; };
@@ -1255,6 +1263,8 @@ var WidgetAnim = (function () {
       // A frame missing on the way: straight to the next one read.
       if (now - this.shownAt >= this.stepMs) this.show(j);
     } else if (now >= this.dueAt) {
+      // Waiting for an image: that time does not move the play on.
+      if (this._heldAt !== null) { this.shownAt += now - this._heldAt; this._heldAt = now; }
       var f = this.slow ? Math.max(1, this.slow(this.frames.timeAt(this.index)) || 1) : 1;
       var end = Math.min(j, last);
       var to = Math.min(end, this.index + (now - this.shownAt) / (this.stepMs * f));
@@ -1265,6 +1275,11 @@ var WidgetAnim = (function () {
         if (now - this.shownAt < this.stepMs / 3) return;
         to = this._nextStop(this.index, end, stops);
       }
+      if (this.canShow && !this.canShow(this.frames.timeAt(to))) {
+        if (this._heldSince === null) { this._heldSince = now; this._heldAt = now; }
+        if (now - this._heldSince < HOLD_MS) return;
+      }
+      this._heldAt = this._heldSince = null;
       this.show(to);
     }
   };

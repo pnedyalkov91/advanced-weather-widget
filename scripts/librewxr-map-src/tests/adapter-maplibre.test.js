@@ -796,3 +796,47 @@ test('the widget can open the page with the lines off, and nothing is fetched', 
   assert.deepEqual(fetched, []);
   assert.equal(adapter.getLinesShown(), false);
 });
+
+test('frameLoaded: a frame held back during a move has no tiles at the new scale', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  assert.equal(adapter.frameLoaded(h[3]), true);
+  map.fire('movestart');
+  assert.equal(adapter.frameLoaded(h[3]), false, 'held: its loaded state is from before the zoom');
+  assert.equal(adapter.frameLoaded(h[0]), true, 'the frame on screen keeps loading');
+});
+
+test('a held frame waited for settles only once drawn again and loaded', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  map.fire('movestart');
+  let calls = 0;
+  adapter.onLayerReady(h[3], () => calls++);
+  assert.equal(calls, 0, 'not from its stale state while held');
+  map.fire('moveend');
+  assert.equal(calls, 0);
+  map.loadedSources[h[3].sourceId] = false;
+  map.fire('idle');
+  map.fire('render');
+  assert.equal(calls, 0, 'its new tiles are loading');
+  map.loadedSources[h[3].sourceId] = true;
+  map.fire('sourcedata', { sourceId: h[3].sourceId });
+  assert.equal(calls, 1);
+});
+
+test('a held frame whose tiles are all cached settles on the next render once drawn again', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  map.fire('movestart');
+  let calls = 0;
+  adapter.onLayerReady(h[3], () => calls++);
+  map.fire('moveend');
+  map.fire('idle');
+  map.fire('idle');
+  assert.equal(calls, 0);
+  map.fire('render');
+  assert.equal(calls, 1);
+});

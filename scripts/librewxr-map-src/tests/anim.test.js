@@ -170,7 +170,7 @@ test('Frames.gridAt: the two frames around and the share of the second, the time
 function fakePlayer(ready, opts) {
   const shown = [];
   const clock = { t: 0, settled: true };
-  const frames = { times: ready.map((_, i) => i * 3 * H), nowIndex: 0, ready: (i) => ready[i], isFile: (i) => i === Math.floor(i) && !!ready[i] && !(opts && opts.between || [])[i],
+  const frames = { times: ready.map((_, i) => i * 3 * H), nowIndex: 0, timeAt: (pos) => pos * 3 * H, ready: (i) => ready[i], isFile: (i) => i === Math.floor(i) && !!ready[i] && !(opts && opts.between || [])[i],
     gridAt: (pos) => (ready[Math.floor(pos)] ? { pos } : null) };
   const layer = { showFile: (g) => shown.push(+g.pos.toFixed(3)), settled: () => clock.settled };
   const p = new A.Player(frames, layer, Object.assign({ now: () => clock.t }, opts));
@@ -1193,4 +1193,31 @@ test('Player.bounds with the loop: a step past an end goes round to the other', 
   assert.deepEqual(shown.slice(-1), [0.5]);
   p.step(-1, 3);
   assert.deepEqual(shown.slice(-1), [2.5]);
+});
+
+test('Player: waits for the radar image of the next picture, its time not counted, 3 s at most', () => {
+  let ok = false;
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, canShow: () => ok });
+  p.show(0);
+  p.play(true);
+  clock.t = 500;
+  p._tick();
+  assert.deepEqual(shown, [0]);                      // the radar image is not in
+  clock.t = 1500;
+  p._tick();
+  assert.deepEqual(shown, [0]);
+  ok = true;
+  clock.t = 1600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.5]);                 // from where it stopped, not 1.6 frames on
+  ok = false;
+  clock.t = 1800;
+  p._tick();
+  clock.t = 4700;
+  p._tick();
+  assert.equal(shown.length, 2);
+  clock.t = 5000;
+  p._tick();
+  assert.equal(shown.length, 3, 'given up after 3 s');
+  p.play(false);
 });

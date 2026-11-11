@@ -320,3 +320,36 @@ test('stepHours: the step of each button where the time is', () => {
   assert.equal(R.stepHours(20 * H, 1, 3, [r, s]), 3);
   assert.equal(R.stepHours(13 * H, 1, 1 / 6, [r, s]), 1 / 6);
 });
+
+// After a zoom, an image settled long ago has no tiles at the new scale yet.
+function zoomedAdapter(a) {
+  a.loaded = {};
+  a.frameLoaded = (h) => a.loaded[h.layerId] !== false;
+  return a;
+}
+
+test('Overlay: after a zoom, an image without its tiles waits for them, the one before staying', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  o.setOn(true);
+  a.made.forEach((h) => a.ready(h));
+  o.show(T0 * 1000);
+  a.loaded[a.made[1].layerId] = false;               // the map zoomed out
+  assert.equal(o.loadedAt(T0 * 1000 + 12 * MIN), false);
+  o.show(T0 * 1000 + 12 * MIN);
+  assert.deepEqual(a.shown(), [a.made[0].layerId]);  // no hole: image 0 stays
+  assert.equal((a.waiting[a.made[1].layerId] || []).length, 1, 'waited for once, not twice');
+  a.loaded[a.made[1].layerId] = true;
+  a.ready(a.made[1]);
+  assert.deepEqual(a.shown(), [a.made[1].layerId]);
+  assert.equal(o.loadedAt(T0 * 1000 + 12 * MIN), true);
+});
+
+test('Overlay: loadedAt is true out of the range or off, so the play never waits there', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  assert.equal(o.loadedAt(T0 * 1000), true);         // off
+  o.setOn(true);
+  assert.equal(o.loadedAt(T0 * 1000 - MIN), true);   // before the range
+  assert.equal(o.loadedAt(T0 * 1000), false);        // not settled yet
+});

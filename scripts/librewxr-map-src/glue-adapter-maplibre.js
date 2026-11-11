@@ -13,6 +13,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var frameById = new Map();   // their layer id -> entry
   var framesHidden = false;    // the radar and satellite frames off (the animations)
   var pendingReady = {};       // source id -> finishers of onLayerReady still waiting
+  var pendingCheck = {};       // source id -> checks of onLayerReady (finish if loaded now)
   var alertsEntry = null;      // { geojson } while the alerts overlay is on
   var tempEntry = null;        // { provider, version, opacity } while the temperature shows
   var restyleCbs = [];         // the page's own layers to put back after a new style (onRestyle)
@@ -303,14 +304,30 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function holdFrame(e, held) {
     e.held = held;
     if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
+    // Drawn again with every tile already cached, no source data may
+    // come: its waiters look once the map has drawn it.
+    if (!held && pendingCheck[e.sourceId] && pendingCheck[e.sourceId].length) {
+      map.once('render', function () { (pendingCheck[e.sourceId] || []).slice().forEach(function (c) { c(); }); });
+    }
   }
   function entryOf(handle) { return frameById.get(handle.layerId) || null; }
+  /** Whether a frame has its tiles for the map as it is: a held one's
+      loaded state is from before the move, its tiles at the new scale are not asked for. */
+  function frameReadyNow(handle) {
+    var e = entryOf(handle);
+    return !!map.getSource(handle.sourceId) && !(e && e.held) && map.isSourceLoaded(handle.sourceId);
+  }
   function holdHiddenFrames(hold) {
     moving = hold;
     var job = ++revealJob, i;
     if (hold) {
       for (i = 0; i < frameRegistry.length; i++) if (!(frameRegistry[i].opacity > 0)) holdFrame(frameRegistry[i], true);
       return;
+    }
+    // A frame waited for comes back at once.
+    for (i = 0; i < frameRegistry.length; i++) {
+      var w = frameRegistry[i];
+      if (w.held && pendingCheck[w.sourceId] && pendingCheck[w.sourceId].length) holdFrame(w, false);
     }
     var next = function () {
       if (job !== revealJob) return;
@@ -604,10 +621,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         clearTimeout(waiter);
         var list = pendingReady[handle.sourceId];
         if (list) list.splice(list.indexOf(finish), 1);
+        var checks = pendingCheck[handle.sourceId];
+        if (checks) checks.splice(checks.indexOf(check), 1);
         cb();
       }
+      function check() { if (frameReadyNow(handle)) finish(); }
       function onData(e) {
-        if (e.sourceId === handle.sourceId && map.isSourceLoaded(handle.sourceId)) finish();
+        if (e.sourceId === handle.sourceId) check();
       }
       // A dead tile host settles the layer too, so the animation never hangs.
       function onError(e) {
@@ -621,11 +641,18 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       var e = entryOf(handle);
       if (e && e.held && !moving) holdFrame(e, false);
       (pendingReady[handle.sourceId] = pendingReady[handle.sourceId] || []).push(finish);
+      (pendingCheck[handle.sourceId] = pendingCheck[handle.sourceId] || []).push(check);
       waiter = setTimeout(function () {
         console.warn('[librewxr] frame layer not settled after 25 s: ' + handle.sourceId);
         finish();
       }, 25000);
-      if (map.getSource(handle.sourceId) && map.isSourceLoaded(handle.sourceId)) finish();
+      check();
+    },
+
+    /** Whether a frame has its tiles for the map as it is (not after a
+        zoom that came while it was held back). */
+    frameLoaded: function (handle) {
+      return !!map && !!map.getLayer(handle.layerId) && frameReadyNow(handle);
     },
 
     setFrameOpacity: function (handle, v) {
@@ -645,6 +672,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       // has finished clearing its cache, before any new layer can be ready.
       var waiting = pendingReady[handle.sourceId];
       delete pendingReady[handle.sourceId];
+      delete pendingCheck[handle.sourceId];
       if (waiting && waiting.length) setTimeout(function () { waiting.slice().forEach(function (f) { f(); }); }, 0);
       var e = frameById.get(handle.layerId);
       if (e) {
