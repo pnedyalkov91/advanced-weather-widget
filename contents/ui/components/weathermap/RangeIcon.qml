@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // How far back or ahead, as an icon with its value under it: the wheel
@@ -75,7 +75,7 @@ Item {
             c.stroke();
         }
     }
-    QQC2.Label {
+    PlasmaComponents.Label {
         anchors.horizontalCenter: parent.horizontalCenter
         y: 25
         text: ri.label
@@ -91,12 +91,14 @@ Item {
         onClicked: riMenu.visible ? riMenu.close() : riMenu.open()
     }
     // Just the value (a source's range: its name, its hours under it).
-    QQC2.ToolTip.text: "<b>" + ri.label + "</b>" + (ri.detail ? "<br>" + ri.detail : "")
-    QQC2.ToolTip.visible: riArea.containsMouse && !ri._turning && !riMenu.visible
-    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+    PlasmaComponents.ToolTip {
+        text: "<b>" + ri.label + "</b>" + (ri.detail ? "<br>" + ri.detail : "")
+        visible: riArea.containsMouse && !ri._turning && !riMenu.visible
+        delay: Kirigami.Units.toolTipDelay
+    }
     // While the wheel turns: a tip of its own that follows the value (the
     // shared one may already be shown, or timed out, for the hover).
-    QQC2.ToolTip {
+    PlasmaComponents.ToolTip {
         visible: ri._turning && !riMenu.visible
         delay: 0
         timeout: -1
@@ -132,14 +134,14 @@ Item {
         }
     }
 
-    QQC2.Menu {
+    PlasmaComponents.Menu {
         id: riMenu
         margins: 6
         y: ri.height
-        closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+        closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
         Instantiator {
             model: ri.choices
-            delegate: QQC2.MenuItem {
+            delegate: PlasmaComponents.MenuItem {
                 required property var modelData
                 required property int index
                 text: ri.textOf(modelData)

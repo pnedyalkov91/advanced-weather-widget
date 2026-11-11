@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // One line of the layer column: the layer's icon (a click switches it on
@@ -137,20 +137,22 @@ Item {
         Timer { id: turnEnd; interval: 1200; onTriggered: row._turning = false }
         // The opacity while Shift + wheel changes it: a tip of its own, the
         // shared one may already be shown (or timed out) for the hover.
-        QQC2.ToolTip {
+        PlasmaComponents.ToolTip {
             visible: row._turning
             delay: 0
             timeout: -1
             text: "<b>" + i18n("Opacity: %1 %", row.opacityValue) + "</b>"
         }
-        QQC2.ToolTip.text: row.compact && row.opacityValue >= 0
-            ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (Shift + wheel)", row.opacityValue) : "")
-                + (row.hasOptions ? "<br>" + i18n("Options: right click") : "")
-            : row.compact
-            ? "<b>" + row.title + "</b>" + row._keyText + (row.hasOptions ? "<br>" + i18n("Options: right click") : "")
-            : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
-        QQC2.ToolTip.visible: iconArea.containsMouse && !row._turning && !popup.visible
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            text: row.compact && row.opacityValue >= 0
+                ? "<b>" + row.title + "</b>" + row._keyText + (row.checked ? "<br>" + i18n("Opacity: %1 % (Shift + wheel)", row.opacityValue) : "")
+                    + (row.hasOptions ? "<br>" + i18n("Options: right click") : "")
+                : row.compact
+                ? "<b>" + row.title + "</b>" + row._keyText + (row.hasOptions ? "<br>" + i18n("Options: right click") : "")
+                : row.title + row._keyText + (row.soloTip ? "<br><i>" + row.soloTip + "</i>" : "")
+            visible: iconArea.containsMouse && !row._turning && !popup.visible
+            delay: Kirigami.Units.toolTipDelay
+        }
     }
 
     // Folded: the opacity as a bar under the icon, as wide as the icon.
@@ -171,7 +173,7 @@ Item {
     }
 
     // The opacity, its value in a tip under the hand.
-    QQC2.Slider {
+    PlasmaComponents.Slider {
         id: slider
         visible: !row.compact && row.opacityValue >= 0
         enabled: row.checked
@@ -209,10 +211,14 @@ Item {
         }
         onMoved: row.opacityPicked(Math.round(value / 5) * 5)
         HoverHandler { id: sliderHover }
-        QQC2.ToolTip.text: i18n("Opacity: %1 %", row.opacityValue)
+        PlasmaComponents.ToolTip {
+            text: i18n("Opacity: %1 %", row.opacityValue)
+        }
         // A layer off (greyed) needs no tip.
-        QQC2.ToolTip.visible: row.active && (slider.pressed || sliderHover.hovered)
-        QQC2.ToolTip.delay: slider.pressed ? 0 : Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            visible: row.active && (slider.pressed || sliderHover.hovered)
+            delay: slider.pressed ? 0 : Kirigami.Units.toolTipDelay
+        }
     }
 
     // The wheel of the options.
@@ -241,14 +247,16 @@ Item {
                 row.openOptions();
             }
         }
-        QQC2.ToolTip.text: i18n("%1: options", row.title)
-        QQC2.ToolTip.visible: row.active && gearArea.containsMouse && !popup.visible
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            text: i18n("%1: options", row.title)
+            visible: row.active && gearArea.containsMouse && !popup.visible
+            delay: Kirigami.Units.toolTipDelay
+        }
     }
 
     // Under the line, its right edge on the wheel's; folded, at the left of
     // the icon, its top on the icon's.
-    QQC2.Popup {
+    PlasmaComponents.Popup {
         id: popup
         margins: 6                   // kept inside the window
         x: row.compact ? iconBox.x - width - 6 : gear.x + gear.width - width
@@ -256,10 +264,10 @@ Item {
         // As wide as its longest line (the translations differ), 230 at least.
         width: Math.max(230, Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding)
         padding: 12
-        closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+        closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
         contentItem: ColumnLayout {
             spacing: 6
-            QQC2.Label {
+            PlasmaComponents.Label {
                 text: row.title
                 font.bold: true
             }

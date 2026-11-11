@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 import "../../js/configUtils.js" as ConfigUtils
 
@@ -61,8 +61,8 @@ Rectangle {
         signal picked(var value)
         Layout.fillWidth: true
         spacing: 2
-        QQC2.Label { text: oc.title; color: panel.dimText }
-        QQC2.ComboBox {
+        PlasmaComponents.Label { text: oc.title; color: panel.dimText }
+        PlasmaComponents.ComboBox {
             Layout.fillWidth: true
             model: oc.choices.map(function (c) { return c[1]; })
             currentIndex: Math.max(0, oc.choices.map(function (c) { return c[0]; }).indexOf(oc.current))
@@ -80,7 +80,7 @@ Rectangle {
         signal picked(var value)
         Layout.fillWidth: true
         spacing: 2
-        QQC2.Label { text: os.title; color: panel.dimText }
+        PlasmaComponents.Label { text: os.title; color: panel.dimText }
         GridLayout {
             Layout.fillWidth: true
             columns: 2
@@ -117,7 +117,7 @@ Rectangle {
         Layout.fillWidth: true
         columns: wrapped ? 1 : 2
         rowSpacing: 2
-        QQC2.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+        PlasmaComponents.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
         Rectangle {
             id: sgBox
             implicitWidth: sgRow.implicitWidth + 4
@@ -137,7 +137,7 @@ Rectangle {
                         height: 22
                         radius: 3
                         color: taken ? panel.accent : "transparent"
-                        QQC2.Label {
+                        PlasmaComponents.Label {
                             id: sgLabel
                             anchors.centerIn: parent
                             text: parent.modelData[1]
@@ -164,7 +164,7 @@ Rectangle {
         signal picked(var value)
         Layout.fillWidth: true
         spacing: 2
-        QQC2.Label { text: cd.title; color: panel.dimText }
+        PlasmaComponents.Label { text: cd.title; color: panel.dimText }
         Row {
             spacing: 6
             Repeater {
@@ -202,9 +202,11 @@ Rectangle {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: cd.picked(dot.modelData[0])
                     }
-                    QQC2.ToolTip.visible: dotArea.containsMouse
-                    QQC2.ToolTip.text: dot.modelData[1]
-                    QQC2.ToolTip.delay: 400
+                    PlasmaComponents.ToolTip {
+                        visible: dotArea.containsMouse
+                        text: dot.modelData[1]
+                        delay: 400
+                    }
                 }
             }
         }
@@ -224,7 +226,7 @@ Rectangle {
             var v = choices.map(function (c) { return c[0]; }).filter(function (x) { return values.indexOf(x) >= 0; });
             picked(v);
         }
-        QQC2.Label { text: ok.title; color: panel.dimText }
+        PlasmaComponents.Label { text: ok.title; color: panel.dimText }
         SmallSwitch {
             text: i18n("All")
             font.bold: true
@@ -258,7 +260,7 @@ Rectangle {
             }
         }
     }
-    component Caption: QQC2.Label {
+    component Caption: PlasmaComponents.Label {
         visible: !panel.folded
         color: panel.dimText
         font.pixelSize: 12
@@ -299,7 +301,7 @@ Rectangle {
         radius: 17
         color: on ? panel.accent : panel.tint(hbArea.containsMouse ? 0.13 : 0.06)
         border.color: panel.tint(0.15)
-        QQC2.Label {
+        PlasmaComponents.Label {
             visible: hb.text !== ""
             anchors.centerIn: parent
             text: hb.text
@@ -332,9 +334,11 @@ Rectangle {
             cursorShape: Qt.PointingHandCursor
             onClicked: hb.clicked()
         }
-        QQC2.ToolTip.text: hb.tip
-        QQC2.ToolTip.visible: hbArea.containsMouse
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            text: hb.tip
+            visible: hbArea.containsMouse
+            delay: Kirigami.Units.toolTipDelay
+        }
     }
 
     // The help and the settings, always in sight at the top of the column
@@ -374,17 +378,17 @@ Rectangle {
                 tip: i18n("Order of the layers")
                 on: orderMenu.visible
                 onClicked: orderMenu.visible ? orderMenu.close() : orderMenu.open()
-                QQC2.Popup {
+                PlasmaComponents.Popup {
                     id: orderMenu
                     margins: 6
                     x: parent.width - width
                     y: parent.height + 6
                     width: 300
                     padding: 12
-                    closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+                    closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
                     contentItem: ColumnLayout {
                         spacing: 6
-                        QQC2.Label { text: i18n("Order of the layers"); font.bold: true }
+                        PlasmaComponents.Label { text: i18n("Order of the layers"); font.bold: true }
                         LayerStackList {
                             Layout.fillWidth: true
                             saved: JSON.stringify(panel.map.layerOrder)
@@ -397,13 +401,13 @@ Rectangle {
                             onOrderPicked: function (json) { panel.map.setLayerOrder(json); }
                             onLayerToggled: function (id, on) { panel.map.setLayerEnabled(id, on); }
                         }
-                        QQC2.Button {
+                        PlasmaComponents.Button {
                             text: i18n("Default order")
                             icon.name: "edit-undo"
                             enabled: JSON.stringify(panel.map.layerOrder) !== JSON.stringify(ConfigUtils.WEATHER_STACK)
                             onClicked: panel.map.setLayerOrder("[]")
                         }
-                        QQC2.Label {
+                        PlasmaComponents.Label {
                             Layout.fillWidth: true
                             Layout.preferredWidth: 276
                             wrapMode: Text.WordWrap
@@ -421,17 +425,17 @@ Rectangle {
                 tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map")
                 on: settingsMenu.visible
                 onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
-                QQC2.Popup {
+                PlasmaComponents.Popup {
                     id: settingsMenu
                     margins: 6
                     x: parent.width - width
                     y: parent.height + 6
                     width: 350
                     padding: 12
-                    closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+                    closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
                     contentItem: ColumnLayout {
                         spacing: 8
-                        QQC2.Label { text: i18n("Settings"); font.bold: true }
+                        PlasmaComponents.Label { text: i18n("Settings"); font.bold: true }
                         Segmented {
                             title: i18n("Pictures per second")
                             room: 326
@@ -462,9 +466,11 @@ Rectangle {
                                 panel.map.setDarkMap(checked);
                                 checked = Qt.binding(function () { return panel.map.mapTheme === "dark"; });
                             }
-                            QQC2.ToolTip.text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
-                            QQC2.ToolTip.visible: hovered
-                            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                            PlasmaComponents.ToolTip {
+                                text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
+                                visible: parent.hovered
+                                delay: Kirigami.Units.toolTipDelay
+                            }
                         }
                     }
                 }
@@ -517,8 +523,8 @@ Rectangle {
         contentHeight: layerColumn.y + layerColumn.height + 12
         boundsBehavior: Flickable.StopAtBounds
         // A thin bar at the very edge, out of the way of the wheels.
-        QQC2.ScrollBar.vertical: QQC2.ScrollBar {
-            policy: QQC2.ScrollBar.AsNeeded
+        PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {
+            policy: PlasmaComponents.ScrollBar.AsNeeded
             width: 5
             padding: 1
             background: null
@@ -798,7 +804,7 @@ Rectangle {
                         }
                     }
                 }
-                QQC2.Label {
+                PlasmaComponents.Label {
                     anchors.horizontalCenter: parent.horizontalCenter
                     y: 25
                     text: "x" + speedIcon.speed
@@ -813,9 +819,11 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: panel.map.setSpeed(speedIcon.speed % 3 + 1)
                 }
-                QQC2.ToolTip.text: "<b>" + i18n("Speed x%1", speedIcon.speed) + "</b> (+ −)"
-                QQC2.ToolTip.visible: speedArea.containsMouse
-                QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                PlasmaComponents.ToolTip {
+                    text: "<b>" + i18n("Speed x%1", speedIcon.speed) + "</b> (+ −)"
+                    visible: speedArea.containsMouse
+                    delay: Kirigami.Units.toolTipDelay
+                }
             }
         }
     }
@@ -828,7 +836,7 @@ Rectangle {
         height: 56
         radius: 4
         color: panel.tint(foldArea.containsMouse ? 0.18 : 0.07)
-        QQC2.Label {
+        PlasmaComponents.Label {
             anchors.centerIn: parent
             text: panel.folded ? "‹" : "›"
             color: panel.dimText
@@ -843,8 +851,10 @@ Rectangle {
             cursorShape: Qt.PointingHandCursor
             onClicked: panel.map.setFolded(!panel.folded)
         }
-        QQC2.ToolTip.text: panel.folded ? i18n("Open the layer column") : i18n("Fold the layer column")
-        QQC2.ToolTip.visible: foldArea.containsMouse
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            text: panel.folded ? i18n("Open the layer column") : i18n("Fold the layer column")
+            visible: foldArea.containsMouse
+            delay: Kirigami.Units.toolTipDelay
+        }
     }
 }

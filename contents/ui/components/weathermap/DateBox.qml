@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // The time shown, over the map at the top right: the dot green on a
@@ -55,7 +55,7 @@ Rectangle {
             radius: 5
             color: box.map.animState && box.map.animState.fromFile ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.neutralTextColor
         }
-        QQC2.Label {
+        PlasmaComponents.Label {
             Layout.preferredWidth: box.timeWidth
             text: box.timeText()
             color: box.fg
@@ -67,7 +67,7 @@ Rectangle {
             implicitHeight: 22
             radius: 11
             color: box.tint(0.08)
-            QQC2.Label {
+            PlasmaComponents.Label {
                 anchors.centerIn: parent
                 text: box.fromNowText()
                 color: box.dimText
@@ -124,9 +124,11 @@ Rectangle {
                 enabled: box.map.count > 0
                 onClicked: box.map.showIndex(box.map.nowIndex)
             }
-            QQC2.ToolTip.text: i18n("Back to now") + " (0)"
-            QQC2.ToolTip.visible: nowArea.containsMouse
-            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+            PlasmaComponents.ToolTip {
+                text: i18n("Back to now") + " (0)"
+                visible: nowArea.containsMouse
+                delay: Kirigami.Units.toolTipDelay
+            }
         }
         Item {
             implicitWidth: 18
@@ -172,15 +174,15 @@ Rectangle {
         color: Kirigami.Theme.highlightColor
     }
     // The days of the range: a click goes to the first picture of that day.
-    QQC2.Menu {
+    PlasmaComponents.Menu {
         id: daysMenu
         margins: 6
         x: parent.width - width
         y: parent.height + 4
-        closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+        closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
         Instantiator {
             model: box.map.days
-            delegate: QQC2.MenuItem {
+            delegate: PlasmaComponents.MenuItem {
                 required property var modelData
                 text: modelData[1]
                 checkable: true

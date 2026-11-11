@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // The time bar under the map: first picture, a step back, play or pause,
@@ -48,9 +48,11 @@ Rectangle {
             hoverEnabled: true
             onClicked: bi.clicked()
         }
-        QQC2.ToolTip.text: tip
-        QQC2.ToolTip.visible: biArea.containsMouse
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            text: bi.tip
+            visible: biArea.containsMouse
+            delay: Kirigami.Units.toolTipDelay
+        }
     }
     // -3 h, +3 h: text on a light pill.
     component StepPill: Rectangle {
@@ -65,7 +67,7 @@ Rectangle {
         radius: 8
         color: bar.tint(pillArea.containsMouse ? 0.13 : 0.07)
         opacity: enabled ? 1 : 0.4
-        QQC2.Label {
+        PlasmaComponents.Label {
             id: pillText
             anchors.centerIn: parent
             color: bar.fg
@@ -77,9 +79,11 @@ Rectangle {
             hoverEnabled: true
             onClicked: pill.clicked()
         }
-        QQC2.ToolTip.text: tip
-        QQC2.ToolTip.visible: pillArea.containsMouse
-        QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+        PlasmaComponents.ToolTip {
+            text: pill.tip
+            visible: pillArea.containsMouse
+            delay: Kirigami.Units.toolTipDelay
+        }
     }
 
     RowLayout {
@@ -138,9 +142,11 @@ Rectangle {
                 enabled: bar.map.readyCount > 1
                 onClicked: bar.map.toggle()
             }
-            QQC2.ToolTip.text: i18n("Play or pause (Space)")
-            QQC2.ToolTip.visible: playArea.containsMouse
-            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+            PlasmaComponents.ToolTip {
+                text: i18n("Play or pause (Space)")
+                visible: playArea.containsMouse
+                delay: Kirigami.Units.toolTipDelay
+            }
         }
         StepPill {
             text: "+" + bar.map.stepLabel(bar.map.stepAheadH) + "  ›"

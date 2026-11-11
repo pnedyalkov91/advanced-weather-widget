@@ -1,13 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // The options of the radar (the wheel of the radar's line; the opacities
 // are on the lines): its colors, its switches (snow, smoothing, lightning,
 // storm cells, wind arrows, alerts), then the tile format and size, which
 // the satellite follows too. options: window.animRadarOptions().
-QQC2.Popup {
+PlasmaComponents.Popup {
     id: menu
     property var schemes: []          // [[id, name]] from the catalog
     property var options: ({})
@@ -19,9 +19,9 @@ QQC2.Popup {
     width: 230
     padding: 10
     margins: 6                       // kept inside the window
-    closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutsideParent
+    closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
 
-    component Caption: QQC2.Label {
+    component Caption: PlasmaComponents.Label {
         color: Kirigami.Theme.disabledTextColor
     }
     component Separator: Rectangle {
@@ -64,7 +64,7 @@ QQC2.Popup {
                 opacity: sw.on ? 1 : 0.6
             }
         }
-        QQC2.Label {
+        PlasmaComponents.Label {
             anchors.left: box.right
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
@@ -85,7 +85,7 @@ QQC2.Popup {
         property string title
         property var choices: []        // [[value, text]]
         spacing: 0
-        QQC2.Label { text: seg.title; color: Kirigami.Theme.disabledTextColor; Layout.fillWidth: true }
+        PlasmaComponents.Label { text: seg.title; color: Kirigami.Theme.disabledTextColor; Layout.fillWidth: true }
         Rectangle {
             implicitWidth: segRow.implicitWidth + 4
             implicitHeight: 26
@@ -105,7 +105,7 @@ QQC2.Popup {
                         height: 22
                         radius: 3
                         color: taken ? Kirigami.Theme.highlightColor : "transparent"
-                        QQC2.Label {
+                        PlasmaComponents.Label {
                             anchors.centerIn: parent
                             text: modelData[1]
                             font.bold: parent.taken
@@ -127,7 +127,7 @@ QQC2.Popup {
         spacing: 2
         RowLayout {
             Caption { text: i18n("Colors"); Layout.fillWidth: true }
-            QQC2.ComboBox {
+            PlasmaComponents.ComboBox {
                 Layout.preferredWidth: 130
                 model: menu.schemes.map(function (s) { return s[1]; })
                 currentIndex: {

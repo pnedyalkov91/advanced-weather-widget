@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // How to read the Weather Map, in a panel that slides in over the right of
@@ -9,7 +9,7 @@ import org.kde.kirigami as Kirigami
 // line, the date and the keys. Each part: a title, lines ("label: text",
 // some under a heading), then a note in italics. A popup of the tab
 // (parent), not a drawer: a drawer would cover the whole Plasma popup.
-QQC2.Popup {
+PlasmaComponents.Popup {
     id: panel
     property var layers: ({})         // layer id: shown
     property var shownIds: []         // the layers in the column (the others are left out)
@@ -21,7 +21,7 @@ QQC2.Popup {
     height: parent ? parent.height : 600
     padding: 0
     modal: false
-    closePolicy: QQC2.Popup.CloseOnEscape
+    closePolicy: PlasmaComponents.Popup.CloseOnEscape
     enter: Transition { NumberAnimation { property: "x"; from: panel.parent ? panel.parent.width : 0; to: panel.parent ? panel.parent.width - panel.width : 0; duration: 220; easing.type: Easing.OutCubic } }
     exit: Transition { NumberAnimation { property: "x"; to: panel.parent ? panel.parent.width : 0; duration: 180; easing.type: Easing.InCubic } }
 
@@ -197,18 +197,18 @@ QQC2.Popup {
                 name: part.section.icon || ""
                 mask: !!part.section.mask
             }
-            QQC2.Label {
+            PlasmaComponents.Label {
                 text: part.section.title + (part.section.ids && panel.letter(part.section.ids[0]) ? " (" + panel.letter(part.section.ids[0]) + ")" : "")
                 font.bold: true
             }
-            QQC2.Label {
+            PlasmaComponents.Label {
                 visible: part.on
                 text: i18nc("@info a layer of the map is shown now", "shown")
                 color: Kirigami.Theme.highlightColor
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
             }
         }
-        QQC2.Label {
+        PlasmaComponents.Label {
             visible: !!part.section.intro
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -232,12 +232,12 @@ QQC2.Popup {
                     name: modelData.icon || ""
                     mask: !!modelData.mask
                 }
-                QQC2.Label {
+                PlasmaComponents.Label {
                     visible: !!modelData.sym
                     Layout.alignment: Qt.AlignTop
                     text: modelData.sym || ""
                 }
-                QQC2.Label {
+                PlasmaComponents.Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     textFormat: Text.StyledText
@@ -246,7 +246,7 @@ QQC2.Popup {
                 }
             }
         }
-        QQC2.Label {
+        PlasmaComponents.Label {
             visible: !!part.section.note
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
@@ -267,13 +267,13 @@ QQC2.Popup {
                 level: 3
                 text: i18n("Weather maps")
             }
-            QQC2.ToolButton {
+            PlasmaComponents.ToolButton {
                 icon.name: "window-close"
                 focusPolicy: Qt.NoFocus
                 onClicked: panel.close()
             }
         }
-        QQC2.ScrollView {
+        PlasmaComponents.ScrollView {
             id: scroll
             Layout.fillWidth: true
             Layout.fillHeight: true

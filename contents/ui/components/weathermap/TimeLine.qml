@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
 // The time line of the bar: a track, colored up to the handle; under it
@@ -145,7 +145,7 @@ Item {
         width: line.width
         Rectangle { x: band.x0; width: Math.max(2, band.xf - band.x0); height: 5; radius: 2.5; color: band.color }
         Rectangle { visible: band.x1 > band.xf; x: band.xf; width: band.x1 - band.xf; height: 5; radius: 2.5; color: band.color; opacity: 0.45 }
-        QQC2.Label {
+        PlasmaComponents.Label {
             text: band.title
             color: band.color
             font.bold: true
@@ -160,7 +160,7 @@ Item {
     Band { y: 12; src: line.radar; color: "#c93fc2"; title: i18n("Radar") }
 
     // The days: a line at each midnight, the day's name after it (the first one at the start).
-    QQC2.Label {
+    PlasmaComponents.Label {
         x: Math.max(0, line.xOfTime(line.t0))
         y: 13
         text: line.count ? new Date(line.t0).toLocaleString(Qt.locale(), "ddd d") : ""
@@ -176,7 +176,7 @@ Item {
             x: line.xOfTime(modelData)
             visible: line.inView(x)
             Rectangle { y: 10; width: 1; height: 50; color: line.tint(0.25) }
-            QQC2.Label {
+            PlasmaComponents.Label {
                 x: 4
                 y: 13
                 text: new Date(modelData).toLocaleString(Qt.locale(), "ddd d")
@@ -217,7 +217,7 @@ Item {
                 height: 5
                 color: line.dimText
             }
-            QQC2.Label {
+            PlasmaComponents.Label {
                 x: -width / 2
                 y: line.trackY + 17
                 text: line.formatTime(new Date(modelData))
@@ -243,7 +243,7 @@ Item {
                 color: line.failed[index] ? Kirigami.Theme.negativeTextColor
                      : line.ready[index] ? line.accent : line.dimText
             }
-            QQC2.Label {
+            PlasmaComponents.Label {
                 visible: line.labelShown(index)
                 x: -width / 2
                 y: line.trackY + 17

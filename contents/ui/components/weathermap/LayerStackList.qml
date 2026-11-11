@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import org.kde.plasma.components as PlasmaComponents
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import "../../js/configUtils.js" as ConfigUtils
@@ -71,7 +71,7 @@ ListView {
                     onMoveRequested: function (oldIndex, newIndex) { stackModel.move(oldIndex, newIndex, 1); }
                     onDropped: stackList.save()
                 }
-                Switch {
+                PlasmaComponents.Switch {
                     Layout.fillWidth: true
                     text: stackList.labels[model.lid] || model.lid
                     enabled: model.lid !== "radar"

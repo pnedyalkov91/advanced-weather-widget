@@ -28,7 +28,7 @@
  */
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls as QQC2
+import org.kde.plasma.components as PlasmaComponents
 import QtWebEngine
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
@@ -1530,7 +1530,7 @@ Item {
                     radius: height / 2
                     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
                     visible: radarRoot.count > 0
-                    QQC2.Label {
+                    PlasmaComponents.Label {
                         id: countLabel
                         anchors.centerIn: parent
                         color: Kirigami.Theme.disabledTextColor
@@ -1538,9 +1538,11 @@ Item {
                         text: i18n("%1/%2 · %3 fps", radarRoot.readyCount, radarRoot.count, radarRoot.maxFps)
                     }
                     HoverHandler { id: countHover }
-                    QQC2.ToolTip.text: i18n("Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column")
-                    QQC2.ToolTip.visible: countHover.hovered
-                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    PlasmaComponents.ToolTip {
+                        text: i18n("Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column")
+                        visible: countHover.hovered
+                        delay: Kirigami.Units.toolTipDelay
+                    }
                 }
 
                 // The models drawn: the global one, then the finer ones over
@@ -1558,7 +1560,7 @@ Item {
                     radius: height / 2
                     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
                     visible: !!(radarRoot.animState && radarRoot.animState.models && radarRoot.animState.models.length)
-                    QQC2.Label {
+                    PlasmaComponents.Label {
                         id: modelsLabel
                         anchors.centerIn: parent
                         color: Kirigami.Theme.disabledTextColor
@@ -1566,9 +1568,11 @@ Item {
                         text: modelsBadge.visible ? radarRoot.animState.models.join(", ") : ""
                     }
                     HoverHandler { id: modelsHover }
-                    QQC2.ToolTip.text: i18n("The global model, then the finer regional<br>ones drawn over it in this view")
-                    QQC2.ToolTip.visible: modelsHover.hovered
-                    QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    PlasmaComponents.ToolTip {
+                        text: i18n("The global model, then the finer regional<br>ones drawn over it in this view")
+                        visible: modelsHover.hovered
+                        delay: Kirigami.Units.toolTipDelay
+                    }
                 }
 
                 // The cross while Ctrl is held, set by Qt at once. Only over
