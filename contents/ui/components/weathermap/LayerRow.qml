@@ -213,9 +213,7 @@ Item {
         HoverHandler { id: sliderHover }
         PlasmaComponents.ToolTip {
             text: i18n("Opacity: %1 %", row.opacityValue)
-        }
-        // A layer off (greyed) needs no tip.
-        PlasmaComponents.ToolTip {
+            // A layer off (greyed) needs no tip.
             visible: row.active && (slider.pressed || sliderHover.hovered)
             delay: slider.pressed ? 0 : Kirigami.Units.toolTipDelay
         }
