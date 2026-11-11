@@ -66,6 +66,7 @@ KCM.AbstractKCM {
     property int cfg_librewxrTempOpacity: 45
     property real cfg_librewxrTempStep: 5
     property string cfg_weatherMapControlStyle: "plasma"
+    property string cfg_weatherMapIconTheme: "weathermap"
     property bool cfg_radarGpuWorkaround: false
     property bool cfg_radarKeepLoaded: false
     property string cfg_alertsProvider: "native"

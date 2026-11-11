@@ -263,6 +263,8 @@
     <entry name="weatherMapPanelBlur"   type="Int"><default>18</default><min>0</min><max>40</max></entry>
     <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the clean style) -->
     <entry name="weatherMapControlStyle" type="String"><default>plasma</default></entry>
+    <!-- Weather Map: icons of the layers and of the radar menu: "weathermap" (its own drawings) | "symbolic" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" -->
+    <entry name="weatherMapIconTheme"   type="String"><default>weathermap</default></entry>
     <!-- Weather Map: pictures per second at most: 4, 8 or 15 -->
     <entry name="weatherMapFps"         type="Int"><default>8</default><min>4</min><max>15</max></entry>
     <!-- Weather Map: resolution while playing: 1 (full), 2 (half) or 4 (quarter) -->

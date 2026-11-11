@@ -209,6 +209,7 @@ PlasmaComponents.Popup {
                 implicitHeight: 22
                 name: part.section.icon || ""
                 mask: !!part.section.mask
+                layerKey: part.section.ids && part.section.ids.length === 1 ? part.section.ids[0] : ""
             }
             PlasmaComponents.Label {
                 text: part.section.title + (part.section.ids && panel.letter(part.section.ids[0]) ? " (" + panel.letter(part.section.ids[0]) + ")" : "")

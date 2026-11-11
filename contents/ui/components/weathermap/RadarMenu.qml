@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasmoid
+import "mapIcons.js" as MapIcons
 
 // The options of the radar (the wheel of the radar's line; the opacities
 // are on the lines): its colors, its switches (snow, smoothing, lightning,
@@ -40,12 +42,21 @@ PlasmaComponents.Popup {
         property string key
         property bool mask: false
         property string title
+        // Follows the map's icon theme (all but smoothing, a drawing of the map's own).
+        property bool themed: true
+        readonly property var themedIcon: themed
+            ? MapIcons.resolve(key, Plasmoid.configuration.weatherMapIconTheme || "weathermap", 22, Qt.resolvedUrl("../../../icons/"))
+            : null
+        readonly property bool iconMask: themedIcon ? themedIcon.mask : mask
+        readonly property bool kdeIcon: themedIcon !== null && themedIcon.source !== "" && themedIcon.source.indexOf("/") < 0
+        icon.name: kdeIcon ? themedIcon.source : ""
+        icon.source: themedIcon && !kdeIcon ? themedIcon.source : ""
         readonly property bool on: !!menu.options[key]
         Layout.fillWidth: true
         text: title
         icon.width: 22
         icon.height: 22
-        icon.color: mask ? menu.fg : "transparent"
+        icon.color: iconMask ? menu.fg : "transparent"
         display: PlasmaComponents.ToolButton.TextBesideIcon
         checkable: true
         checked: on
@@ -74,9 +85,10 @@ PlasmaComponents.Popup {
                     width: 22
                     height: 22
                     roundToIconSize: false
-                    source: sw.icon.source
-                    isMask: sw.mask
-                    color: sw.mask ? menu.fg : "transparent"
+                    source: sw.kdeIcon ? sw.icon.name : sw.icon.source
+                    fallback: sw.themedIcon && sw.themedIcon.fallback !== "" ? sw.themedIcon.fallback : "unknown"
+                    isMask: sw.iconMask
+                    color: sw.iconMask ? menu.fg : "transparent"
                     opacity: sw.on ? 1 : 0.6
                 }
             }
@@ -165,12 +177,12 @@ PlasmaComponents.Popup {
             }
         }
         Separator {}
-        Switch { key: "snow"; icon.source: menu.radarIcons + "neige.svg"; title: i18n("Snow") }
-        Switch { key: "smooth"; icon.source: menu.radarIcons + "lissage.svg"; mask: true; title: i18n("Smoothing") }
-        Switch { key: "lightning"; icon.source: menu.radarIcons + "eclairs.svg"; title: i18n("Lightning") }
-        Switch { key: "cells"; icon.source: Qt.resolvedUrl("../../../icons/flat-color/22/wi-thunderstorm.svg"); title: i18n("Storm cells") }
-        Switch { key: "arrows"; icon.source: menu.radarIcons + "fleches-vent.svg"; title: i18n("Wind arrows") }
-        Switch { key: "alerts"; icon.source: menu.radarIcons + "alertes.svg"; title: i18n("Alerts") }
+        Switch { key: "snow"; title: i18n("Snow") }
+        Switch { key: "smooth"; themed: false; icon.source: menu.radarIcons + "lissage.svg"; mask: true; title: i18n("Smoothing") }
+        Switch { key: "lightning"; title: i18n("Lightning") }
+        Switch { key: "cells"; title: i18n("Storm cells") }
+        Switch { key: "arrows"; title: i18n("Wind arrows") }
+        Switch { key: "alerts"; title: i18n("Alerts") }
         Separator {}
         Segmented { key: "format"; title: i18n("Format"); choices: [["webp", "WebP"], ["png", "PNG"]] }
         Item { implicitHeight: 4 }

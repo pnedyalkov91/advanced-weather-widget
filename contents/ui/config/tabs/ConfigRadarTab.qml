@@ -743,6 +743,23 @@ GridLayout {
         onActivated: radarTab.configRoot.cfg_weatherMapControlStyle = styles[currentIndex]
     }
 
+    // Icons of the Weather Maps' layers and radar menu.
+    Label {
+        text: i18n("Map icon theme:")
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    ComboBox {
+        readonly property var themes: ["weathermap", "symbolic", "flat-color", "3d-oxygen", "meteocons", "kde"]
+        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        Layout.preferredWidth: 200
+        model: [i18n("Weather Map (Bundled)"), i18n("Symbolic (Bundled)"), i18n("Flat Color (Bundled)"), i18n("3D Oxygen (Bundled)"), i18n("Meteocons (Bundled)"), i18n("KDE Icon Theme")]
+        currentIndex: Math.max(0, themes.indexOf(radarTab.configRoot.cfg_weatherMapIconTheme))
+        onActivated: radarTab.configRoot.cfg_weatherMapIconTheme = themes[currentIndex]
+    }
+
     TempPaletteDialog {
         id: tempPaletteDialog
         unit: radarTab.tempUnit

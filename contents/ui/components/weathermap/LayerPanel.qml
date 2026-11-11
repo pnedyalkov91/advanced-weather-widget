@@ -358,6 +358,7 @@ Rectangle {
     component MapLayerRow: LayerRow {
         id: mlr
         property string layerId
+        iconLayer: layerId
         width: panel.colW
         compact: panel.folded
         ownLook: panel.map.ownControls

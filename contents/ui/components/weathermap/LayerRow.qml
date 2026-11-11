@@ -15,6 +15,7 @@ Item {
     id: row
     property string iconName           // in contents/icons/weathermap
     property bool iconMask: false       // a white drawing, tinted with the theme's text
+    property string iconLayer           // layer key: the icon follows the map's icon theme
     property string title
     property bool checked: false
     property bool active: checked
@@ -85,6 +86,7 @@ Item {
             height: row.iconSize
             name: row.iconName
             mask: row.iconMask
+            layerKey: row.iconLayer
             opacity: row.dim
         }
         MouseArea {
