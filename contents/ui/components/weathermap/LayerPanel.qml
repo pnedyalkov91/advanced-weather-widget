@@ -90,7 +90,8 @@ Rectangle {
             rowSpacing: 0
             Repeater {
                 model: os.choices
-                PlasmaComponents.Switch {
+                MapSwitch {
+                    own: panel.map.ownControls
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
@@ -295,9 +296,10 @@ Rectangle {
             picked(v);
         }
         PlasmaComponents.Label { text: ok.title; color: panel.dimText }
-        PlasmaComponents.Switch {
+        MapSwitch {
+            own: panel.map.ownControls
             text: i18n("All")
-            font.bold: true
+            bold: true
             checked: ok.checkedValues.length === ok.choices.length
             onToggled: {
                 ok.set(checked ? ok.choices.map(function (c) { return c[0]; }) : []);
@@ -311,7 +313,8 @@ Rectangle {
             rowSpacing: 0
             Repeater {
                 model: ok.choices
-                PlasmaComponents.Switch {
+                MapSwitch {
+                    own: panel.map.ownControls
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredWidth: 1
@@ -471,6 +474,7 @@ Rectangle {
                         PlasmaComponents.Label { text: i18n("Order of the layers"); font.bold: true }
                         LayerStackList {
                             Layout.fillWidth: true
+                            ownLook: panel.map.ownControls
                             saved: JSON.stringify(panel.map.layerOrder)
                             disabled: panel.map.disabledLayers
                             labels: ({
@@ -543,7 +547,8 @@ Rectangle {
                             value: panel.map.panelBlur
                             onMoved: function (v, done) { panel.map.setPanelBlur(Math.round(v), done); }
                         }
-                        PlasmaComponents.Switch {
+                        MapSwitch {
+                            own: panel.map.ownControls
                             text: i18n("Coasts and borders")
                             checked: panel.map.mapLinesOn
                             onToggled: {
@@ -551,7 +556,8 @@ Rectangle {
                                 checked = Qt.binding(function () { return panel.map.mapLinesOn; });
                             }
                         }
-                        PlasmaComponents.Switch {
+                        MapSwitch {
+                            own: panel.map.ownControls
                             text: i18n("Dark map")
                             enabled: !panel.map.darkMapLocked
                             checked: panel.map.mapTheme === "dark"
@@ -773,7 +779,8 @@ Rectangle {
                     current: panel.map.isobars.color
                     onPicked: function (v) { panel.map.setIsobars("color", v); }
                 }
-                PlasmaComponents.Switch {
+                MapSwitch {
+                    own: panel.map.ownControls
                     text: i18n("Values on the lines")
                     checked: panel.map.isobars.labels
                     onToggled: panel.map.setIsobars("labels", checked)
@@ -786,7 +793,8 @@ Rectangle {
                     current: panel.map.isobars.textSize
                     onPicked: function (v) { panel.map.setIsobars("textSize", v); }
                 }
-                PlasmaComponents.Switch {
+                MapSwitch {
+                    own: panel.map.ownControls
                     text: i18n("Highs and lows")
                     checked: panel.map.isobars.marks
                     onToggled: panel.map.setIsobars("marks", checked)

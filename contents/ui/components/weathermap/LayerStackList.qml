@@ -12,6 +12,7 @@ import "../../js/configUtils.js" as ConfigUtils
 // always shows.
 ListView {
     id: stackList
+    property bool ownLook: false     // the widget's own small switches
     property string saved
     property var disabled: []
     property var labels: ({})
@@ -71,7 +72,8 @@ ListView {
                     onMoveRequested: function (oldIndex, newIndex) { stackModel.move(oldIndex, newIndex, 1); }
                     onDropped: stackList.save()
                 }
-                PlasmaComponents.Switch {
+                MapSwitch {
+                    own: stackList.ownLook
                     Layout.fillWidth: true
                     text: stackList.labels[model.lid] || model.lid
                     enabled: model.lid !== "radar"

@@ -288,7 +288,8 @@ Item {
                 Layout.fillWidth: true
                 spacing: 4
             }
-            PlasmaComponents.Switch {
+            MapSwitch {
+                own: row.ownLook
                 visible: row.hasLegend
                 text: i18n("Color legend on the map")
                 checked: row.legendOn
