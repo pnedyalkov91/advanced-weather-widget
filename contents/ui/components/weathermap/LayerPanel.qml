@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
 import "../../js/configUtils.js" as ConfigUtils
 
 // The layer column of the Weather Map, at the right of the map: the help
@@ -41,8 +42,17 @@ Rectangle {
     Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     clip: true
     // See-through as the widget's frame: the page blurs the map under it.
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, panel.map.panelOpacity / 100)
-    Rectangle { width: 1; height: parent.height; color: panel.tint(0.10) }
+    // The Plasma look takes the theme's frame, its edge on the map's side;
+    // the clean look a plain tint and a thin line.
+    color: panel.map.ownControls ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, panel.map.panelOpacity / 100) : "transparent"
+    KSvg.FrameSvgItem {
+        visible: !panel.map.ownControls
+        anchors.fill: parent
+        imagePath: "widgets/background"
+        enabledBorders: KSvg.FrameSvg.LeftBorder
+        opacity: panel.map.panelOpacity / 100
+    }
+    Rectangle { visible: panel.map.ownControls; width: 1; height: parent.height; color: panel.tint(0.10) }
     // The column lies over the map: a click, a drag, a wheel or the hand
     // that nothing of the column takes (the scrolling, the clocks, an
     // opacity) stops here instead of moving the map under it.
@@ -340,7 +350,8 @@ Rectangle {
     component Divider: Item {
         width: panel.colW
         height: 9
-        Rectangle { y: 4; width: parent.width; height: 1; color: panel.tint(0.22) }
+        Kirigami.Separator { visible: !panel.map.ownControls; y: 4; width: parent.width }
+        Rectangle { visible: panel.map.ownControls; y: 4; width: parent.width; height: 1; color: panel.tint(0.22) }
     }
     // The row of layer layerId: its switch, opacity and legend as the map
     // keeps them.
@@ -623,14 +634,21 @@ Rectangle {
         boundsBehavior: Flickable.StopAtBounds
         // A thin bar at the very edge, out of the way of the wheels.
         PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {
+            id: layerBar
+            readonly property bool own: panel.map.ownControls
             policy: PlasmaComponents.ScrollBar.AsNeeded
-            width: 5
-            padding: 1
-            background: null
-            contentItem: Rectangle {
-                implicitWidth: 3
+            width: own ? 5 : implicitWidth
+            background.opacity: own ? 0 : 1
+            contentItem.opacity: own ? 0 : 1
+            // The clean look: a thin bar at the very edge, out of the way of the wheels.
+            Rectangle {
+                visible: layerBar.own && layerBar.size < 1
+                x: layerBar.contentItem.x + (layerBar.contentItem.width - width) / 2
+                y: layerBar.contentItem.y
+                width: 3
+                height: layerBar.contentItem.height
                 radius: 1.5
-                color: panel.tint(parent.pressed ? 0.55 : parent.hovered ? 0.4 : 0.25)
+                color: panel.tint(layerBar.pressed ? 0.55 : layerBar.hovered ? 0.4 : 0.25)
             }
         }
 
@@ -931,31 +949,39 @@ Rectangle {
     }
 
     // Folds the column to its icons, or opens it.
-    Rectangle {
+    PlasmaComponents.ToolButton {
+        id: foldButton
+        readonly property bool own: panel.map.ownControls
         x: 1
         anchors.verticalCenter: parent.verticalCenter
-        width: 8
+        width: own ? 8 : 16
         height: 56
-        radius: 4
-        color: panel.tint(foldArea.containsMouse ? 0.18 : 0.07)
-        PlasmaComponents.Label {
-            anchors.centerIn: parent
-            text: panel.folded ? "‹" : "›"
-            color: panel.dimText
-            font.pixelSize: 12
-            font.bold: true
-        }
-        MouseArea {
-            id: foldArea
+        display: PlasmaComponents.ToolButton.IconOnly
+        icon.name: panel.folded ? "arrow-left" : "arrow-right"
+        icon.width: Kirigami.Units.iconSizes.small
+        icon.height: Kirigami.Units.iconSizes.small
+        leftPadding: 0
+        rightPadding: 0
+        onClicked: panel.map.setFolded(!panel.folded)
+        background.opacity: own ? 0 : 1
+        contentItem.opacity: own ? 0 : 1
+        // The clean look: a thin tab with its arrow.
+        Rectangle {
+            visible: foldButton.own
             anchors.fill: parent
-            anchors.margins: -3
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: panel.map.setFolded(!panel.folded)
+            radius: 4
+            color: panel.tint(foldButton.hovered ? 0.18 : 0.07)
+            PlasmaComponents.Label {
+                anchors.centerIn: parent
+                text: panel.folded ? "‹" : "›"
+                color: panel.dimText
+                font.pixelSize: 12
+                font.bold: true
+            }
         }
         PlasmaComponents.ToolTip {
             text: panel.folded ? i18n("Open the layer column") : i18n("Fold the layer column")
-            visible: foldArea.containsMouse
+            visible: foldButton.hovered
             delay: Kirigami.Units.toolTipDelay
         }
     }

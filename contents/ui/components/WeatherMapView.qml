@@ -1661,6 +1661,7 @@ Item {
     HelpPanel {
         id: helpPanel
         parent: tabContent
+        ownLook: radarRoot.ownControls
         keys: radarRoot.layerKeys
         layers: {
             var o = {};

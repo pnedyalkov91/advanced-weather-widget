@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
 
 // How to read the Weather Map, in a panel that slides in over the right of
 // the tab. The layers shown now come first and are marked; the others
@@ -14,6 +15,7 @@ PlasmaComponents.Popup {
     property var layers: ({})         // layer id: shown
     property var shownIds: []         // the layers in the column (the others are left out)
     property var keys: ({})           // layer id: its keyboard letter
+    property bool ownLook: false      // the clean look: a plain background and a line
 
     x: parent ? parent.width - width : 0
     y: 0
@@ -171,9 +173,20 @@ PlasmaComponents.Popup {
           note: i18n("The same keys in every language. They work while the Weather Map tab is shown.") }
     ]
 
-    background: Rectangle {
-        color: Kirigami.Theme.backgroundColor
-        Rectangle { width: 1; height: parent.height; color: Kirigami.Theme.disabledTextColor; opacity: 0.4 }
+    background: Item {
+        // The Plasma look: the theme's frame, its edge on the map's side.
+        KSvg.FrameSvgItem {
+            visible: !panel.ownLook
+            anchors.fill: parent
+            imagePath: "dialogs/background"
+            enabledBorders: KSvg.FrameSvg.LeftBorder
+        }
+        Rectangle {
+            visible: panel.ownLook
+            anchors.fill: parent
+            color: Kirigami.Theme.backgroundColor
+            Rectangle { width: 1; height: parent.height; color: Kirigami.Theme.disabledTextColor; opacity: 0.4 }
+        }
     }
 
     // One part: title (icon, letter, "shown" for a layer on), an intro in

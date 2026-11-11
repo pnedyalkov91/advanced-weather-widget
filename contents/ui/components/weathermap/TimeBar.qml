@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
 
 // The time bar under the map: first picture, a step back, play or pause,
 // a step ahead, last picture, the time line, the loop. map: the
@@ -17,8 +18,17 @@ Rectangle {
 
     implicitHeight: 84
     // See-through as the widget's frame: the page blurs the map under it.
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, bar.map.panelOpacity / 100)
-    Rectangle { width: parent.width; height: 1; color: bar.tint(0.10) }
+    // The Plasma look takes the theme's frame, its edge on the map's side;
+    // the clean look a plain tint and a thin line.
+    color: bar.map.ownControls ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, bar.map.panelOpacity / 100) : "transparent"
+    KSvg.FrameSvgItem {
+        visible: !bar.map.ownControls
+        anchors.fill: parent
+        imagePath: "widgets/background"
+        enabledBorders: KSvg.FrameSvg.TopBorder
+        opacity: bar.map.panelOpacity / 100
+    }
+    Rectangle { visible: bar.map.ownControls; width: parent.width; height: 1; color: bar.tint(0.10) }
     // The bar lies over the map: what nothing of the bar takes stops here.
     MouseArea {
         anchors.fill: parent

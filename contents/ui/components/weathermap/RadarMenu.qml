@@ -26,12 +26,13 @@ PlasmaComponents.Popup {
     component Caption: PlasmaComponents.Label {
         color: Kirigami.Theme.disabledTextColor
     }
-    component Separator: Rectangle {
+    component Separator: Item {
         Layout.fillWidth: true
         Layout.topMargin: 4
         Layout.bottomMargin: 4
         implicitHeight: 1
-        color: menu.tint(0.12)
+        Kirigami.Separator { visible: !menu.ownLook; anchors.fill: parent }
+        Rectangle { visible: menu.ownLook; anchors.fill: parent; color: menu.tint(0.12) }
     }
     // A switch of the radar: its icon and its name, a button kept down while on.
     component Switch: PlasmaComponents.ToolButton {
