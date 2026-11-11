@@ -75,7 +75,7 @@ ListView {
                 MapSwitch {
                     own: stackList.ownLook
                     Layout.fillWidth: true
-                    text: stackList.labels[model.lid] || model.lid
+                    text: stackList.labels[model.lid] || model.lid || ""
                     enabled: model.lid !== "radar"
                     checked: stackList.isOn(model.lid)
                     onToggled: {
