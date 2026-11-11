@@ -40,8 +40,8 @@ Rectangle {
     width: folded ? foldedWidth : openWidth
     Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     clip: true
-    // See-through: the map goes on under the column.
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.75)
+    // See-through as the widget's frame: the page blurs the map under it.
+    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.4)
     Rectangle { width: 1; height: parent.height; color: panel.tint(0.10) }
     // The column lies over the map: a click, a drag, a wheel or the hand
     // that nothing of the column takes (the scrolling, the clocks, an
