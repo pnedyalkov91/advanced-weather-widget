@@ -729,7 +729,7 @@ Rectangle {
                     valueText: i18n("×%1", Number(live).toLocaleString(Qt.locale(), "f", 1))
                     from: 0.5
                     to: 2
-                    stepSize: 0.1
+                    stepSize: 0       // no tick marks; rounded to 0.1 when moved
                     value: panel.map.windDensity
                     onMoved: function (v, done) {
                         live = Math.round(v * 10) / 10;
@@ -744,7 +744,7 @@ Rectangle {
                     valueText: i18n("%1 px", Number(value).toLocaleString(Qt.locale(), "f", 1))
                     from: 0.5
                     to: 2
-                    stepSize: 0.1
+                    stepSize: 0       // no tick marks; rounded to 0.1 when moved
                     value: panel.map.windLineWidth
                     onMoved: function (v, done) { panel.map.setWindLineWidth(Math.round(v * 10) / 10, done); }
                 }
