@@ -453,6 +453,16 @@ test('particleCount: one particle per 300 px2 times the density, within 200..max
   assert.equal(WindField.particleCount(100 * 100, 1, 1500), 200);
 });
 
+test('maxParticles: 5000 per unit of density, so the density still counts full screen', () => {
+  assert.equal(WindField.maxParticles(1), 5000);
+  assert.equal(WindField.maxParticles(0.5), 2500);
+  assert.equal(WindField.maxParticles(2), 10000);
+  assert.equal(WindField.maxParticles(undefined), 5000);
+  // Full screen, 2200 x 1340 CSS px: the density changes the count.
+  assert.equal(WindField.particleCount(2200 * 1340, 1, WindField.maxParticles(1)), 5000);
+  assert.equal(WindField.particleCount(2200 * 1340, 2, WindField.maxParticles(2)), 10000);
+});
+
 test('wantApi: the API only once its grid is finer than the file', () => {
   assert.equal(WindField.wantApi({ lonStep: 0.352 }, 0.25), false);
   assert.equal(WindField.wantApi({ lonStep: 0.176 }, 0.25), true);

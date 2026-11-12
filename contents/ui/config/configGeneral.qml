@@ -55,8 +55,6 @@ KCM.AbstractKCM {
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
     property string cfg_librewxrWindQuality: "balanced"
-    property real cfg_librewxrWindLineWidth: 1
-    property real cfg_librewxrWindDensity: 1
     property int cfg_librewxrNightDepth: 40
     property int cfg_librewxrGlow: 30
     property string cfg_librewxrWindPalettes: "[]"

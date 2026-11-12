@@ -403,6 +403,14 @@ var WidgetWind = (function () {
       return Math.max(200, Math.min(maxP, Math.round(area * density / 300)));
     },
 
+    /** Cap on the particles for a density: 5000 per unit, so a full screen
+        map (about 9800 asked at density 1) still follows the density
+        setting. Measured full screen: 5000 cost about 65 % of a core,
+        10000 about 80 %. */
+    maxParticles: function (density) {
+      return Math.round(5000 * (density > 0 ? density : 1));
+    },
+
     /** Whether the API grid for a view is finer than a file of resolution
         fileRes (degrees): only then does the API add detail. */
     wantApi: function (spec, fileRes) {

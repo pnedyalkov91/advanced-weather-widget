@@ -721,6 +721,33 @@ Rectangle {
                     current: panel.map.windPaletteId
                     onPicked: function (v) { panel.map.setWindPaletteId(v); }
                 }
+                SliderSetting {
+                    // The value shown while dragging; the density itself is
+                    // set once the slider is let go (it starts the particles over).
+                    property real live: panel.map.windDensity
+                    title: i18n("Density")
+                    valueText: i18n("×%1", Number(live).toLocaleString(Qt.locale(), "f", 1))
+                    from: 0.5
+                    to: 2
+                    stepSize: 0.1
+                    value: panel.map.windDensity
+                    onMoved: function (v, done) {
+                        live = Math.round(v * 10) / 10;
+                        if (done) {
+                            panel.map.setWindDensity(live);
+                            live = Qt.binding(function () { return panel.map.windDensity; });
+                        }
+                    }
+                }
+                SliderSetting {
+                    title: i18n("Width")
+                    valueText: i18n("%1 px", Number(value).toLocaleString(Qt.locale(), "f", 1))
+                    from: 0.5
+                    to: 2
+                    stepSize: 0.1
+                    value: panel.map.windLineWidth
+                    onMoved: function (v, done) { panel.map.setWindLineWidth(Math.round(v * 10) / 10, done); }
+                }
             }
             MapLayerRow {
                 id: tempRow

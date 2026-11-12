@@ -15,7 +15,6 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
   var CELL = 12;              // px between table nodes
   var SLICE_MS = 4;           // longest slice of table building per frame
   var REVEAL_MS = 250;        // fade in of the wind after a change of projection
-  var MAX_PARTICLES = 1500;
   var FILE_RES = 0.25;        // degrees of the files given in manual mode
 
   // Nested grids: every zoom of a band samples the same points (the map
@@ -374,7 +373,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     _build: function* () {
       yield* this._buildTable();
       var t = this._table;
-      this._n = WindField.particleCount(t.area, this.options.density, MAX_PARTICLES);
+      this._n = WindField.particleCount(t.area, this.options.density, WindField.maxParticles(this.options.density));
       this._px = new Float32Array(this._n);
       this._py = new Float32Array(this._n);
       this._age = new Uint16Array(this._n);

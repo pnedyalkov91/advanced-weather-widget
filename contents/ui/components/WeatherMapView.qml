@@ -55,10 +55,20 @@ Item {
             return [20, 30];
         return [10, 20];
     }
-    // Particle width from the settings, in CSS px (the page clamps it to 0.5-2).
-    readonly property real windLineWidth: Plasmoid.configuration.librewxrWindLineWidth > 0 ? Plasmoid.configuration.librewxrWindLineWidth : 1
-    // Particle density factor from the settings (the page keeps it within 0.5-2 by clamping the count).
+    // Particle width, in CSS px (the page clamps it to 0.5-2), set from the
+    // wind layer's options: the map follows the slider, the setting is saved
+    // when it is let go.
+    property real windLineWidth: Plasmoid.configuration.librewxrWindLineWidth > 0 ? Plasmoid.configuration.librewxrWindLineWidth : 1
+    function setWindLineWidth(v, save) {
+        windLineWidth = v;
+        if (save)
+            Plasmoid.configuration.librewxrWindLineWidth = v;
+    }
+    // Particle density factor (0.5-2), from the wind layer's options. A new
+    // density starts the particles over, so it is only set once the slider
+    // is let go.
     readonly property real windDensity: Plasmoid.configuration.librewxrWindDensity > 0 ? Plasmoid.configuration.librewxrWindDensity : 1
+    function setWindDensity(v) { Plasmoid.configuration.librewxrWindDensity = v; }
     // Flat map or globe, switched from the globe button on the map.
     readonly property string projection: Plasmoid.configuration.librewxrProjection === "globe" ? "globe" : "flat"
     // Day and night on the map, switched from the button under the globe one.

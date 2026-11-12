@@ -1425,6 +1425,10 @@ msgstr "Supprimer"
 msgid "Dense drizzle"
 msgstr "Bruine dense"
 
+#: contents/ui/components/weathermap/LayerPanel.qml:727
+msgid "Density"
+msgstr "Densité"
+
 #: contents/ui/DetailsView.qml:2441 contents/ui/DetailsView.qml:2443
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
@@ -5918,6 +5922,10 @@ msgstr "Widget › Détails › Thème d'icônes"
 #: contents/ui/config/configAppearance.qml:188
 msgid "Widget › General › Weather icon theme"
 msgstr "Widget › Général › Thème d'icônes météo"
+
+#: contents/ui/components/weathermap/LayerPanel.qml:743
+msgid "Width"
+msgstr "Épaisseur"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:76
 #: contents/ui/components/weathermap/LayerPanel.qml:732

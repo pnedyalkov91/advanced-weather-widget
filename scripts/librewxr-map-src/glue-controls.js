@@ -182,16 +182,22 @@ window.setWindRate = function (fps, maxFps) {
   if (windLayer) windLayer.setRate(fps, maxFps);
 };
 
-// Particle width chosen in the widget settings (CSS px).
+// Particle width chosen in the wind layer's options (CSS px), for the
+// radar's wind and the animation's.
 window.setWindWidth = function (w) {
   windLineWidth = w;
   if (windLayer) windLayer.setLineWidth(w);
+  var t = anim && anim.group.track('wind');
+  if (t) t.layer.setLineWidth(w);
 };
 
-// Particle density chosen in the widget settings (1 = one particle per 300 px2).
+// Particle density chosen in the wind layer's options (1 = one particle per
+// 300 px2), for the radar's wind and the animation's.
 window.setWindDensity = function (d) {
   windDensity = d;
   if (windLayer) windLayer.setDensity(d);
+  var t = anim && anim.group.track('wind');
+  if (t) t.layer.setDensity(d);
 };
 
 // Wind palette chosen in the widget settings, in the "max:rrggbb" x 8 form.
