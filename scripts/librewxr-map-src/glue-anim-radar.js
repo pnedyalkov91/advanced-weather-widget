@@ -338,6 +338,23 @@ var WidgetAnimRadar = (function () {
     else this._await(f.path);
   };
 
+  /** The time of the last observed radar image of a catalog (ms; the
+      nowcast left out), null when none. */
+  function lastPast(catalog) {
+    var past = catalog && catalog.radar && catalog.radar.past;
+    return past && past.length ? past[past.length - 1].time * 1000 : null;
+  }
+
+  /** The time whose image the radar shows at time ms. LibreWXR draws the
+      lightning only on the observed images of the last half hour, and the
+      step of now (on the hour, every 3 h) is mostly older: with lightning
+      on, that step shows the last observed image. o: { lightning, nowStep,
+      lastPast }. */
+  function radarTime(ms, o) {
+    if (o.lightning && o.nowStep != null && o.lastPast != null && ms === o.nowStep) return o.lastPast;
+    return ms;
+  }
+
   /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
       keeps it to itself. To spare a second copy over HTTP, the page's
       WebSocket is wrapped before the viewer opens it: every weather-maps
@@ -368,7 +385,8 @@ var WidgetAnimRadar = (function () {
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
     framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
-    stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush
+    stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
+    lastPast: lastPast, radarTime: radarTime
   };
 })();
 

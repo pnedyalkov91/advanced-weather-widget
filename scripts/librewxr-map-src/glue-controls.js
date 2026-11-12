@@ -915,10 +915,19 @@ function animCatalogTake(c) {
 }
 
 /** The time of the picture shown: the radar and satellite follow. */
+var animOverlayMs = null;
 function animOverlayTime(ms) {
+  animOverlayMs = ms;
   if (!animOverlays) return;
   animOverlays.satellite.show(ms);
-  animOverlays.radar.show(ms);
+  // On the files' steps, with lightning, the step of now shows the last
+  // observed radar image: the only ones LibreWXR draws lightning on.
+  var g = anim && anim.stepH >= WidgetAnim.STEP_H ? anim.group : null;
+  animOverlays.radar.show(WidgetAnimRadar.radarTime(ms, {
+    lightning: animRadarOpts.lightning,
+    nowStep: g && g.nowIndex >= 0 ? g.timeAt(g.nowIndex) : null,
+    lastPast: WidgetAnimRadar.lastPast(animCatalogData)
+  }));
 }
 
 /** Whether the radar and satellite images of time ms are in for the map
@@ -1010,6 +1019,8 @@ window.animSetRadarOption = function (key, value) {
   var grid = animTileOpts().grid;
   animOverlays.radar.setUrl(animOverlayUrl('radar'), grid);
   if (key === 'format' || key === 'tileSize') animOverlays.satellite.setUrl(animOverlayUrl('satellite'), grid);
+  // Lightning moves the radar of the step of now to its last image, or back.
+  if (key === 'lightning' && animOverlayMs != null) animOverlayTime(animOverlayMs);
 };
 
 window.animRadarOptions = function () { return Object.assign({}, animRadarOpts); };

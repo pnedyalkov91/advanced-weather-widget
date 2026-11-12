@@ -424,3 +424,20 @@ test('watchPush: other sockets and a socket that never opened are left alone', (
 test('watchPush: no WebSocket in the page, never open', () => {
   assert.equal(R.watchPush({}, () => {}).open(), false);
 });
+
+test('lastPast: the last observed radar image, never the nowcast', () => {
+  const cat = { radar: { past: radar.slice(0, 12), nowcast: radar.slice(12) } };
+  assert.equal(R.lastPast(cat), radar[11].time * 1000);
+  assert.equal(R.lastPast({ radar: { past: [] } }), null);
+  assert.equal(R.lastPast(null), null);
+});
+
+test('radarTime: with lightning, the step of now shows the last observed image', () => {
+  const nowStep = Date.parse('2026-11-12T12:00:00Z'), last = Date.parse('2026-11-12T13:10:00Z');
+  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: last }), last);
+  // Any other step, lightning off, or no image: the time as it is.
+  assert.equal(R.radarTime(nowStep - 3 * H, { lightning: true, nowStep, lastPast: last }), nowStep - 3 * H);
+  assert.equal(R.radarTime(nowStep, { lightning: false, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: null }), nowStep);
+  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep: null, lastPast: last }), nowStep);
+});
