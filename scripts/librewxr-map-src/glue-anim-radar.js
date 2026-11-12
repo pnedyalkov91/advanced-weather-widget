@@ -338,10 +338,37 @@ var WidgetAnimRadar = (function () {
     else this._await(f.path);
   };
 
+  /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
+      keeps it to itself. To spare a second copy over HTTP, the page's
+      WebSocket is wrapped before the viewer opens it: every weather-maps
+      snapshot or update on it goes to onCatalog too. Returns { open }:
+      whether such a socket is open now (the page polls only when not). */
+  function watchPush(win, onCatalog) {
+    var Native = win.WebSocket, opened = 0;
+    if (!Native) return { open: function () { return false; } };
+    function Watched(url, protocols) {
+      var socket = protocols === undefined ? new Native(url) : new Native(url, protocols);
+      if (!/\/v2\/ws(\?|$)/.test(String(url))) return socket;
+      var isOpen = false;
+      socket.addEventListener('open', function () { isOpen = true; opened++; });
+      socket.addEventListener('close', function () { if (isOpen) { isOpen = false; opened--; } });
+      socket.addEventListener('message', function (event) {
+        var msg;
+        try { msg = JSON.parse(event.data); } catch (err) { return; }
+        if (msg && (msg.type === 'snapshot' || msg.type === 'update') && msg.topic === 'weather-maps') onCatalog(msg.data);
+      });
+      return socket;
+    }
+    Watched.prototype = Native.prototype;
+    ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach(function (k) { if (k in Native) Watched[k] = Native[k]; });
+    win.WebSocket = Watched;
+    return { open: function () { return opened > 0; } };
+  }
+
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
     framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
-    stepHours: stepHours, stepTime: stepTime, Overlay: Overlay
+    stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush
   };
 })();
 

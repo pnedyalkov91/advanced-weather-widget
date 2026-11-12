@@ -32,6 +32,12 @@ var config = {
 // used for config.arrows above (ARROWS_ON), so onThemeChange stays correct.
 var arrowsOn = ARROWS_ON;
 
+// The catalog the viewer gets pushed on its socket serves the animation's
+// radar and satellite too (glue-anim-radar.js): wrapped before it opens.
+var animPush = typeof WidgetAnimRadar !== 'undefined'
+  ? WidgetAnimRadar.watchPush(window, function (c) { animCatalogTake(c); })
+  : null;
+
 // Capture the viewer API: every window.* setter drives the engine directly.
 var viewer = window.LibreWXR.createViewer(config, _widgetAdapter);
 
@@ -872,8 +878,12 @@ function animOverlaysStart() {
       satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, fadeMs: 400, url: animOverlayUrl('satellite'), tileSize: animTileOpts().grid })
     };
   }
-  animCatalog();
-  if (!animCatalogTimer) animCatalogTimer = setInterval(animCatalog, ANIM_CATALOG_MS);
+  if (animCatalogData) animCatalogTake(animCatalogData);
+  else animCatalog();
+  // Polled only while no socket pushes it (an older server, or a socket down).
+  if (!animCatalogTimer) animCatalogTimer = setInterval(function () {
+    if (!animPush || !animPush.open()) animCatalog();
+  }, ANIM_CATALOG_MS);
 }
 
 function animOverlaysStop() {
@@ -887,12 +897,21 @@ function animCatalog() {
   return fetch(API_BASE + '/public/weather-maps.json', { cache: 'no-store' }).then(function (r) {
     if (!r.ok) throw new Error('catalog ' + r.status);
     return r.json();
-  }).then(function (c) {
-    animCatalogData = c;
-    if (!animOverlays) return;
-    animOverlays.radar.setFrames(WidgetAnimRadar.framesOf(c, 'radar'));
-    animOverlays.satellite.setFrames(WidgetAnimRadar.framesOf(c, 'satellite'));
-  }).catch(function (err) { console.warn('[anim] radar catalog: ' + err); });
+  }).then(animCatalogTake).catch(function (err) { console.warn('[anim] radar catalog: ' + err); });
+}
+
+/** The catalog while a socket pushes it, else null: the hidden page reads
+    it to follow the radar (shell-maplibre.html), as this module is not global. */
+window.animPushedCatalog = function () {
+  return animPush && animPush.open() ? animCatalogData : null;
+};
+
+/** A catalog, fetched or pushed: the radar's and satellite's images. */
+function animCatalogTake(c) {
+  animCatalogData = c;
+  if (!animOverlays) return;
+  animOverlays.radar.setFrames(WidgetAnimRadar.framesOf(c, 'radar'));
+  animOverlays.satellite.setFrames(WidgetAnimRadar.framesOf(c, 'satellite'));
 }
 
 /** The time of the picture shown: the radar and satellite follow. */

@@ -372,3 +372,55 @@ test('Overlay: its images are made on its grid, the new one after other tile opt
   o.setUrl((f) => 'v' + f.time, 256);
   assert.deepEqual(a.made.slice(2).map((h) => h.tileSize), [256, 256]);
 });
+
+// A WebSocket stand-in: listeners by type, fire(type, event) calls them.
+function fakeSocketClass() {
+  function FakeSocket(url) {
+    this.url = url;
+    this.handlers = {};
+    FakeSocket.made.push(this);
+  }
+  FakeSocket.made = [];
+  FakeSocket.OPEN = 1;
+  FakeSocket.prototype.addEventListener = function (type, fn) { (this.handlers[type] = this.handlers[type] || []).push(fn); };
+  FakeSocket.prototype.fire = function (type, ev) { (this.handlers[type] || []).forEach((fn) => fn(ev || {})); };
+  return FakeSocket;
+}
+
+test('watchPush: the viewer socket hands its catalogs to the page', () => {
+  const win = { WebSocket: fakeSocketClass() };
+  const got = [];
+  const push = R.watchPush(win, (c) => got.push(c));
+  const s = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  assert.ok(s instanceof win.WebSocket, 'still a WebSocket for the viewer');
+  assert.equal(win.WebSocket.OPEN, 1, 'constants kept');
+  assert.equal(push.open(), false);
+  s.fire('open');
+  assert.equal(push.open(), true);
+  s.fire('message', { data: JSON.stringify({ type: 'hello', available: ['weather-maps'] }) });
+  s.fire('message', { data: JSON.stringify({ type: 'snapshot', topic: 'weather-maps', data: { a: 1 } }) });
+  s.fire('message', { data: JSON.stringify({ type: 'update', topic: 'lightning', data: { b: 2 } }) });
+  s.fire('message', { data: 'not json' });
+  s.fire('message', { data: JSON.stringify({ type: 'update', topic: 'weather-maps', data: { a: 2 } }) });
+  assert.deepEqual(got, [{ a: 1 }, { a: 2 }]);
+  s.fire('close');
+  assert.equal(push.open(), false);
+});
+
+test('watchPush: other sockets and a socket that never opened are left alone', () => {
+  const win = { WebSocket: fakeSocketClass() };
+  const got = [];
+  const push = R.watchPush(win, (c) => got.push(c));
+  const other = new win.WebSocket('wss://elsewhere/feed');
+  other.fire('open');
+  other.fire('message', { data: JSON.stringify({ type: 'snapshot', topic: 'weather-maps', data: {} }) });
+  assert.equal(push.open(), false);
+  assert.deepEqual(got, []);
+  const dead = new win.WebSocket('ws://localhost:8099/v2/ws?topics=weather-maps');
+  dead.fire('close');
+  assert.equal(push.open(), false);
+});
+
+test('watchPush: no WebSocket in the page, never open', () => {
+  assert.equal(R.watchPush({}, () => {}).open(), false);
+});
