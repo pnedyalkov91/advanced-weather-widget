@@ -69,6 +69,7 @@ KCM.AbstractKCM {
     property string cfg_weatherMapIconTheme: "weathermap"
     property bool cfg_radarGpuWorkaround: false
     property bool cfg_radarKeepLoaded: false
+    property bool cfg_weatherMapPrepareLayers: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
     property bool cfg_alertsLanguageNative: true

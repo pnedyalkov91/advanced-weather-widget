@@ -1221,3 +1221,34 @@ test('Player: waits for the radar image of the next picture, its time not counte
   assert.equal(shown.length, 3, 'given up after 3 s');
   p.play(false);
 });
+
+test('Frames: newRun says whether latest.json moved past the run it read', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  let ref = '2026-11-09T00:00:00Z';
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: ref }) }),
+    _readVars: async () => ({ data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 }),
+  };
+  const f = new A.Frames(loader, { now: () => at('2026-11-09T10:50:00Z'), pastH: 3, futureH: 3 });
+  assert.equal(await f.newRun(), false, 'nothing read yet: nothing to compare');
+  await f.load();
+  assert.equal(f.ref, '2026-11-09T00:00:00Z');
+  assert.equal(await f.newRun(), false);
+  ref = '2026-11-09T06:00:00Z';
+  assert.equal(await f.newRun(), true);
+});
+
+test('Frames: newRun is false when latest.json cannot be read', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  let ok = true;
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ok ? { ok: true, json: async () => ({ reference_time: '2026-11-09T00:00:00Z' }) } : { ok: false, status: 503 },
+    _readVars: async () => ({ data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 }),
+  };
+  const f = new A.Frames(loader, { now: () => at('2026-11-09T10:50:00Z'), pastH: 3, futureH: 3 });
+  await f.load();
+  ok = false;
+  assert.equal(await f.newRun(), false);
+});

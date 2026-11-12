@@ -434,6 +434,7 @@ var WidgetAnim = (function () {
   Frames.prototype.load = function () {
     var self = this;
     return this._latest().then(function (latest) {
+      self.ref = latest.reference_time;
       var plan = self._plan(latest);
       self.between = self.times.map(function (t) { return plan.between(t); });
       var queue = loadOrder(self.times.length, self.nowIndex).filter(function (i) { return !self.packed[i] && !self.between[i]; });
@@ -453,6 +454,17 @@ var WidgetAnim = (function () {
       runOf: function (t) { return sched.runFor(t, refMs); },
       between: function (t) { return !sched.hasFile(t, sched.runFor(t, refMs)); }
     };
+  };
+
+  /** Whether the model published a run newer than the one these pictures
+      were read from (latest.json read again); false before a load, or
+      when latest.json cannot be read. */
+  Frames.prototype.newRun = function () {
+    var ref = this.ref;
+    if (!ref) return Promise.resolve(false);
+    return this._latest().then(function (latest) {
+      return !!(latest && latest.reference_time && latest.reference_time !== ref);
+    }, function () { return false; });
   };
 
   /** latest.json of the model the files come from. */

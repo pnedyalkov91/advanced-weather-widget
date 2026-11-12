@@ -70,6 +70,12 @@ Item {
     // "Prepare the radar in advance" (Radar settings): kept loaded, the
     // hidden page prepares the latest image.
     readonly property string prepareMode: Plasmoid.configuration.radarKeepLoaded === true ? "all" : "none"
+    // "Download the forecast layers in the background" (Radar settings): while
+    // the map is kept loaded out of sight, the page reads each new run of
+    // its layers as it comes out (window.animSetPrepare).
+    readonly property bool prepareLayers: started && !shown && Plasmoid.configuration.radarKeepLoaded === true
+        && Plasmoid.configuration.weatherMapPrepareLayers === true
+    onPrepareLayersChanged: call("animSetPrepare", prepareLayers)
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
     // m/s, "inf" for the last level). Empty for the default palette, and for
     // an entry that does not read: the page then uses the default one.

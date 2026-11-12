@@ -5121,6 +5121,14 @@ msgstr "L'onglet Radar peut animer le vent sous forme de particules en mouvement
 msgid "The Radar tab opens at once on the most recent radar image, and the animation plays at once. It uses about 200 MB more memory: leave it off on a computer with little memory."
 msgstr "L'onglet Radar s'ouvre tout de suite sur l'image radar la plus récente, et l'animation démarre tout de suite. Utilise environ 200 Mo de mémoire en plus : à laisser désactivé sur une configuration avec peu de mémoire."
 
+#: contents/ui/config/tabs/ConfigRadarTab.qml
+msgid "Download the forecast layers in the background"
+msgstr "Télécharger les calques de prévision en arrière-plan"
+
+#: contents/ui/config/tabs/ConfigRadarTab.qml
+msgid "Each new forecast run is downloaded as it comes out, so the map opens without waiting. Useful on a slow connection; it downloads even if you never open the map, so leave it off on a metered one."
+msgstr "Chaque nouvelle prévision est téléchargée dès sa sortie : la carte s'ouvre sans attendre. Utile avec une connexion lente. Le téléchargement a lieu même si la carte n'est jamais ouverte : à laisser désactivé avec un forfait limité."
+
 #: contents/ui/RadarView.qml:345
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
 msgstr "L'onglet Radar nécessite le paquet QtWebEngine, qui n'est pas installé sur ce système."

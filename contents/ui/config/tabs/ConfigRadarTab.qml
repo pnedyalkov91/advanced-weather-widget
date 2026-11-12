@@ -185,6 +185,23 @@ GridLayout {
             opacity: 0.7
             text: i18n("The Radar tab opens at once on the most recent radar image, and the animation plays at once. It uses about 200 MB more memory: leave it off on a computer with little memory.")
         }
+
+        WrappingSwitch {
+            objectName: "weatherMapPrepareLayersSwitch"
+            visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
+            enabled: radarTab.configRoot.cfg_radarKeepLoaded
+            text: i18n("Download the forecast layers in the background")
+            checked: radarTab.configRoot.cfg_weatherMapPrepareLayers
+            onToggled: radarTab.configRoot.cfg_weatherMapPrepareLayers = checked
+        }
+
+        Label {
+            Layout.fillWidth: true
+            visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("Each new forecast run is downloaded as it comes out, so the map opens without waiting. Useful on a slow connection; it downloads even if you never open the map, so leave it off on a metered one.")
+        }
     }
 
     Item {

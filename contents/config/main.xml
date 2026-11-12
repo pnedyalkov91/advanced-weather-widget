@@ -300,6 +300,11 @@
          opens at once. Off by default: it starts QtWebEngine with Plasma and
          keeps its memory for the whole session. -->
     <entry name="radarKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- With radarKeepLoaded: the hidden Weather Maps page also follows the
+         new runs of its forecast layers' models and reads their pictures as
+         they come out, so the map opens on them at once. Off by default: it
+         downloads even if the map is never opened. -->
+    <entry name="weatherMapPrepareLayers" type="Bool"><default>false</default></entry>
     <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
          the background after startup and keep them loaded, so the popup opens
          instantly. Off by default (uses extra memory for the whole session). -->

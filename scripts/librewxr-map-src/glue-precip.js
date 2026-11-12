@@ -148,6 +148,7 @@ var WidgetPrecip = (function () {
   PrecipFrames.prototype.load = function () {
     var self = this;
     return this._latest().then(function (latest) {
+      self.ref = latest.reference_time;
       var refMs = Date.parse(latest.reference_time);
       if (self.store) prune(self.store, self.now() - (self.keepH + 6) * HOUR);
       self.between = self.times.map(function () { return false; });
