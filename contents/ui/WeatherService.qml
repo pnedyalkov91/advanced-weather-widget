@@ -388,8 +388,9 @@ QtObject {
             _aemetAutoRetryTimer.stop();
             _aemetRetryAttempt = 0;
             // StormGlass' answer is otherwise reused for 3 h (10 requests a day on the free plan),
-            // and a provider that refused (bad key, daily limit) is otherwise left alone for a while
+            // Tomorrow.io's forecast for 10 min (25 requests an hour), and a provider that refused (bad key, daily limit) is otherwise left alone for a while
             Shared.invalidate("api.stormglass.io");
+            Shared.invalidate("api.tomorrow.io");
             Refusals.clear();
         }
 
@@ -852,77 +853,11 @@ QtObject {
         }
 
         // ── Tomorrow.io ───────────────────────────────────────────────────────
+        // The forecast answer every other Tomorrow.io fetch shares - see tomorrowIo.js.
         if (ap === "tomorrowIo") {
-            var key = service._tioKey();
-            if (!key) {
+            var _pT = _providers();
+            if (!_pT || !_pT.fetchHourlyDirect(ap, service, dateStr, callback))
                 callback([]);
-                return;
-            }
-            var url = "https://api.tomorrow.io/v4/weather/forecast" + "?location=" + lat + "," + lon + "&timesteps=1h&units=metric&apikey=" + encodeURIComponent(key);
-            var xhr = Dbg.xhr("WeatherService", "hourlyDirect/tomorrowIo");
-            xhr.open("GET", url);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== XMLHttpRequest.DONE)
-                    return;
-                if (xhr.status !== 200) {
-                    callback([]);
-                    return;
-                }
-                try {
-                    var d = JSON.parse(xhr.responseText);
-                    var arr = [];
-                    var m = {
-                        1000: 0,
-                        1100: 1,
-                        1101: 2,
-                        1102: 3,
-                        1001: 3,
-                        2000: 45,
-                        2100: 45,
-                        4000: 51,
-                        4200: 61,
-                        4001: 63,
-                        4201: 65,
-                        5001: 77,
-                        5100: 71,
-                        5000: 73,
-                        5101: 75,
-                        6000: 56,
-                        6200: 66,
-                        6001: 66,
-                        6201: 67,
-                        7102: 77,
-                        7000: 77,
-                        7101: 77,
-                        8000: 95
-                    };
-                    function _tioWmo(code) {
-                        return m[code] !== undefined ? m[code] : 2;
-                    }
-                    var ht = d.timelines && d.timelines.hourly;
-                    if (ht)
-                        ht.forEach(function (h) {
-                            var dt = new Date(h.time);
-                            if (Qt.formatDate(dt, "yyyy-MM-dd") !== dateStr)
-                                return;
-                            var v = h.values;
-                            arr.push({
-                                hour: Qt.formatTime(dt, "HH:mm"),
-                                tempC: v.temperature,
-                                code: _tioWmo(v.weatherCode),
-                                windKmh: v.windSpeed !== undefined ? v.windSpeed * 3.6 : NaN,
-                                windDeg: v.windDirection !== undefined ? v.windDirection : NaN,
-                                humidity: v.humidity !== undefined ? Math.round(v.humidity) : NaN,
-                                precipProb: v.precipitationProbability !== undefined ? Math.round(v.precipitationProbability) : NaN,
-                                precipMm: v.precipitationIntensity !== undefined ? v.precipitationIntensity : NaN
-                            });
-                        });
-                    callback(arr);
-                } catch (e) {
-                    callback([]);
-                }
-            };
-            xhr.send();
             return;
         }
 
