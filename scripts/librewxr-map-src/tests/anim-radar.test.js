@@ -60,7 +60,7 @@ test('slowFactor: the radar steps of 10 min take a third of a 3 h step each', ()
 function fakeAdapter() {
   const a = { made: [], opacity: {}, gone: [], waiting: {}, n: 0 };
   a.createFrameLayer = (url, kind, opts) => {
-    const h = { sourceId: 's' + a.n, layerId: 'l' + a.n++, url, kind, anim: !!(opts && opts.anim) };
+    const h = { sourceId: 's' + a.n, layerId: 'l' + a.n++, url, kind, anim: !!(opts && opts.anim), tileSize: opts && opts.tileSize };
     a.made.push(h);
     a.opacity[h.layerId] = 0;
     return h;
@@ -352,4 +352,23 @@ test('Overlay: loadedAt is true out of the range or off, so the play never waits
   o.setOn(true);
   assert.equal(o.loadedAt(T0 * 1000 - MIN), true);   // before the range
   assert.equal(o.loadedAt(T0 * 1000), false);        // not settled yet
+});
+
+test('tileSizes: 512 px files on a 512 grid, a 256 grid on HiDPI for sharpness; 256 asked stays 256', () => {
+  assert.deepEqual(R.tileSizes('auto', 1), { size: 512, grid: 512 });
+  assert.deepEqual(R.tileSizes('auto', 1.15), { size: 512, grid: 512 });
+  assert.deepEqual(R.tileSizes('auto', 1.5), { size: 512, grid: 256 });
+  assert.deepEqual(R.tileSizes('512', 1), { size: 512, grid: 512 });
+  assert.deepEqual(R.tileSizes('512', 2), { size: 512, grid: 256 });
+  assert.deepEqual(R.tileSizes('256', 1), { size: 256, grid: 256 });
+  assert.deepEqual(R.tileSizes('256', 2), { size: 256, grid: 256 });
+  assert.deepEqual(R.tileSizes('nonsense', 1), { size: 256, grid: 256 });
+});
+
+test('Overlay: its images are made on its grid, the new one after other tile options', () => {
+  const { a, o } = overlay(radar.slice(0, 2), { tileSize: 512 });
+  o.setOn(true);
+  assert.deepEqual(a.made.map((h) => h.tileSize), [512, 512]);
+  o.setUrl((f) => 'v' + f.time, 256);
+  assert.deepEqual(a.made.slice(2).map((h) => h.tileSize), [256, 256]);
 });

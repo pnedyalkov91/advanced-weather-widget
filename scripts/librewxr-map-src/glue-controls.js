@@ -845,9 +845,9 @@ var animCatalogTimer = null;
 var ANIM_CATALOG_MS = 5 * 60e3;
 
 function animTileOpts() {
-  var o = animRadarOpts, size = o.tileSize === 'auto' ? (window.devicePixelRatio >= 1.5 ? 512 : 256) : parseInt(o.tileSize, 10) || 256;
+  var o = animRadarOpts, t = WidgetAnimRadar.tileSizes(String(o.tileSize), window.devicePixelRatio || 1);
   return {
-    size: size, color: o.color, smooth: o.smooth, snow: o.snow, format: o.format,
+    size: t.size, grid: t.grid, color: o.color, smooth: o.smooth, snow: o.snow, format: o.format,
     arrows: o.arrows ? (currentTheme() === 'dark' ? 'light' : 'dark') : '', cells: o.cells || '', lightning: o.lightning ? 'bolts' : ''
   };
 }
@@ -868,8 +868,8 @@ function animOverlaysStart() {
   if (typeof WidgetAnimRadar === 'undefined') return;
   if (!animOverlays) {
     animOverlays = {
-      radar: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'radar', gapMs: WidgetAnimRadar.RADAR_GAP, opacity: 0.8, fadeMs: 400, url: animOverlayUrl('radar') }),
-      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, fadeMs: 400, url: animOverlayUrl('satellite') })
+      radar: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'radar', gapMs: WidgetAnimRadar.RADAR_GAP, opacity: 0.8, fadeMs: 400, url: animOverlayUrl('radar'), tileSize: animTileOpts().grid }),
+      satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, fadeMs: 400, url: animOverlayUrl('satellite'), tileSize: animTileOpts().grid })
     };
   }
   animCatalog();
@@ -988,8 +988,9 @@ window.animSetRadarOption = function (key, value) {
   }[key];
   apply();
   if (!animOverlays || key === 'alerts') return;
-  animOverlays.radar.setUrl(animOverlayUrl('radar'));
-  if (key === 'format' || key === 'tileSize') animOverlays.satellite.setUrl(animOverlayUrl('satellite'));
+  var grid = animTileOpts().grid;
+  animOverlays.radar.setUrl(animOverlayUrl('radar'), grid);
+  if (key === 'format' || key === 'tileSize') animOverlays.satellite.setUrl(animOverlayUrl('satellite'), grid);
 };
 
 window.animRadarOptions = function () { return Object.assign({}, animRadarOpts); };

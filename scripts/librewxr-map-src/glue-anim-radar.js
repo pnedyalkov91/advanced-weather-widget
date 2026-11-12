@@ -58,6 +58,16 @@ var WidgetAnimRadar = (function () {
     return q.length ? url + '?' + q.join('&') : url;
   }
 
+  /** The tiles for the size chosen ('auto', '256' or '512') at device
+      pixel ratio dpr: size, the files' pixels, and grid, the size MapLibre
+      lays them on. Files of 512 on a 512 grid take a quarter of the
+      requests of 256 ones, for the same pixels on screen; on HiDPI (1.5
+      and more) 'auto' and '512' keep files of 512 on a 256 grid, sharper. */
+  function tileSizes(choice, dpr) {
+    var size = choice === 'auto' ? 512 : parseInt(choice, 10) === 512 ? 512 : 256;
+    return { size: size, grid: size === 512 && dpr < 1.5 ? 512 : 256 };
+  }
+
   /** How many times slower the animation goes at ms: RADAR_SLOW in the
       radar's range, 1 elsewhere. */
   function slowFactor(ms, range) {
@@ -116,6 +126,7 @@ var WidgetAnimRadar = (function () {
     this.until = opts.until || null;
     this.opacity = opts.opacity == null ? 0.8 : opts.opacity;
     this.url = opts.url;
+    this.tileSize = opts.tileSize || 256;   // the grid of its tiles (tileSizes)
     this.frames = [];
     this.on = false;
     this.layers = {};           // path -> { handle, ready }
@@ -166,7 +177,7 @@ var WidgetAnimRadar = (function () {
   Overlay.prototype._make = function (frame) {
     var path = frame.path;
     if (this.layers[path]) return;
-    this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true }), ready: false, waiting: false };
+    this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true, tileSize: this.tileSize }), ready: false, waiting: false };
     this._await(path);
   };
 
@@ -246,11 +257,13 @@ var WidgetAnimRadar = (function () {
     if (this.time !== null) this.show(this.time);
   };
 
-  /** Other tiles (color, smoothing, arrows, lightning...): every layer
-      made again, the image of the time shown first. That image stays on
-      the map until its new one is in (no blink), the hidden ones go now. */
-  Overlay.prototype.setUrl = function (url) {
+  /** Other tiles (color, smoothing, arrows, lightning, size...): every
+      layer made again, on grid tileSize when given, the image of the time
+      shown first. That image stays on the map until its new one is in (no
+      blink), the hidden ones go now. */
+  Overlay.prototype.setUrl = function (url, tileSize) {
     this.url = url;
+    if (tileSize) this.tileSize = tileSize;
     var self = this, kept = this.shown && this.layers[this.shown];
     if (kept) {
       this._dropStale();
@@ -327,7 +340,7 @@ var WidgetAnimRadar = (function () {
 
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
-    framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, slowFactor: slowFactor,
+    framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay
   };
 })();

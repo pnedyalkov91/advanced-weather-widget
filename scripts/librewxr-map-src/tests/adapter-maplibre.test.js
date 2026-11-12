@@ -98,9 +98,11 @@ function loadAdapter(globals, opts = {}) {
   vm.runInNewContext(src + '\nthis.WidgetMapLibreAdapter = WidgetMapLibreAdapter;', ctx);
   const protocols = {};
   const markers = [];
+  const parallel = { n: 16 };
   const maplibregl = {
     Map: function () { map = new FakeMap(); return map; },
     addProtocol: (name, handler) => { protocols[name] = handler; },
+    setMaxParallelImageRequests: (n) => { parallel.n = n; },
     NavigationControl: function () {},
     AttributionControl: function (opts) { this.opts = opts || {}; },
     Marker: function () {
@@ -116,7 +118,7 @@ function loadAdapter(globals, opts = {}) {
   const adapter = ctx.WidgetMapLibreAdapter(maplibregl);
   adapter.createMap('lv-map', { lat: 48, lon: 6, zoom: 6, maxZoom: 12 });
   if (opts.load !== false) map.fire('load');
-  return { adapter, map, ctx, protocols, markers };
+  return { adapter, map, ctx, protocols, markers, parallel };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
@@ -839,4 +841,33 @@ test('a held frame whose tiles are all cached settles on the next render once dr
   assert.equal(calls, 0);
   map.fire('render');
   assert.equal(calls, 1);
+});
+
+test('a frame layer is declared at the size of its grid, 256 by default', () => {
+  const { adapter, map } = loadAdapter();
+  const big = adapter.createFrameLayer('https://radar/512/{z}/{x}/{y}.webp', 'radar', { anim: true, tileSize: 512 });
+  const small = adapter.createFrameLayer('https://radar/256/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(map.getSource(big.sourceId).tileSize, 512);
+  assert.equal(map.getSource(small.sourceId).tileSize, 256);
+});
+
+test('a local server is reached under several names, six connections each; a remote one under its own', () => {
+  const { adapter, map } = loadAdapter();
+  const url = 'http://localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark';
+  const local = adapter.createFrameLayer(url, 'radar');
+  assert.deepEqual(Array.from(map.getSource(local.sourceId).tiles), [url,
+    'http://a.localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark',
+    'http://b.localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark',
+    'http://c.localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark']);
+  const ip = adapter.createFrameLayer('http://127.0.0.1:8099/s/{z}/{x}/{y}.webp', 'satellite');
+  assert.deepEqual(Array.from(map.getSource(ip.sourceId).tiles).slice(0, 2), ['http://127.0.0.1:8099/s/{z}/{x}/{y}.webp', 'http://a.localhost:8099/s/{z}/{x}/{y}.webp']);
+  const remote = adapter.createFrameLayer('https://api.librewxr.net/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp', 'radar');
+  assert.deepEqual(Array.from(map.getSource(remote.sourceId).tiles), ['https://api.librewxr.net/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp']);
+  const lookalike = adapter.createFrameLayer('https://localhost.example.org/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(map.getSource(lookalike.sourceId).tiles.length, 1);
+});
+
+test('MapLibre may load 32 images at once, not 16', () => {
+  const { parallel } = loadAdapter();
+  assert.equal(parallel.n, 32);
 });

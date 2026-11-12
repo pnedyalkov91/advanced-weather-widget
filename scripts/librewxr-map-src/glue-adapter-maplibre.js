@@ -32,6 +32,16 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function toGl(z) { return z - 1; }
   function fromGl(z) { return z + 1; }
 
+  // A browser opens at most 6 connections to a host over HTTP/1.1, as a
+  // local server is: the frames' tiles go to it under other names too, all
+  // on the same machine (the browser sends any *.localhost there).
+  var LOOPBACK = /^(https?:\/\/)(localhost|127\.0\.0\.1|[a-z0-9-]+\.localhost)(:\d+)?(\/.*)$/i;
+  function frameTiles(url) {
+    var m = LOOPBACK.exec(url);
+    if (!m) return [url];
+    return [url].concat(['a', 'b', 'c'].map(function (s) { return m[1] + s + '.localhost' + (m[3] || '') + m[4]; }));
+  }
+
   // MapLibre has no {s} subdomain placeholder: list the hosts instead.
   function tileUrls(url) {
     if (url.indexOf('{s}') < 0) return [url];
@@ -89,6 +99,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   var dayNight = DAYNIGHT_INIT;
   var sunTimer = null;
   var shade = { sun: WidgetEarth.subsolarPoint(new Date()), version: 0 };
+  // 16 by default: the animation preloads a few hundred tiles at once,
+  // and a server over HTTP/2 takes more in parallel.
+  if (maplibregl.setMaxParallelImageRequests) maplibregl.setMaxParallelImageRequests(32);
   maplibregl.addProtocol('lvshade', function (params) {
     var m = /^lvshade:\/\/\d+\/(\d+)\/(\d+)\/(\d+)/.exec(params.url);
     var img = WidgetEarth.shadeTile(shade.sun, { z: +m[1], x: +m[2], y: +m[3] }, SHADE_TILE,
@@ -243,7 +256,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
   function addFrameEntry(entry) {
     if (!map.getSource(entry.sourceId)) {
-      map.addSource(entry.sourceId, { type: 'raster', tiles: [entry.url], tileSize: 256, maxzoom: entry.maxZoom });
+      map.addSource(entry.sourceId, { type: 'raster', tiles: frameTiles(entry.url), tileSize: entry.tileSize, maxzoom: entry.maxZoom });
     }
     if (map.getLayer(entry.layerId)) return;
     addLayer({
@@ -594,13 +607,15 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     },
 
     /** opts.anim: an image of the animation (glue-anim-radar.js), shown
-        while the viewer's are hidden, over the animation's layers. */
+        while the viewer's are hidden, over the animation's layers;
+        opts.tileSize: the grid of its tiles, 256 or 512 (256 by default). */
     createFrameLayer: function (url, kind, opts) {
       var id = 'lv-frame-' + (frameSeq++), anim = !!(opts && opts.anim);
       var entry = {
         sourceId: 'lv-src-' + id,
         layerId: (anim ? 'lv-anim-' : '') + (kind === 'satellite' ? 'lv-layer-sat-' : 'lv-layer-radar-') + id,
-        kind: kind, url: url, maxZoom: maxZoom, opacity: 0, anim: anim
+        kind: kind, url: url, maxZoom: maxZoom, opacity: 0, anim: anim,
+        tileSize: opts && opts.tileSize === 512 ? 512 : 256
       };
       frameRegistry.push(entry);
       frameById.set(entry.layerId, entry);
