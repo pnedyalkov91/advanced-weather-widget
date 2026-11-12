@@ -27,6 +27,9 @@
  * answered a moment ago is answered again from memory. Only successful answers are kept,
  * and only briefly: this is not a long-lived cache, the callers' own caches are.
  *
+ * With { reuseMs: N } a successful answer is reused for N ms instead of the default 2 minutes
+ * (StormGlass: 3 hours, see stormGlass.js); invalidate(urlPart) forgets such answers early.
+ *
  * With { revalidate: true } the answer is also kept past that short window together with its
  * Last-Modified / Expires headers, the way met.no's terms of service ask clients to behave:
  *   - before the Expires time nothing is requested again (the data cannot have changed);
@@ -37,9 +40,9 @@
  * open(), setRequestHeader(), send(), onreadystatechange, readyState, status, responseText.
  */
 
-var REUSE_MS = 120000;       // how long an answer may be reused
+var REUSE_MS = 120000;       // how long an answer may be reused (default; xhr() opts.reuseMs overrides it per request)
 var MAX_ENTRIES = 6;
-var _entries = {};           // key -> { t, done, status, text, waiters: [] }
+var _entries = {};           // key -> { t, ttl, done, status, text, waiters: [] }
 var _validators = {};        // key -> { t, text, lastModified, expiresMs } (revalidate: true only)
 var MAX_VALIDATORS = 4;
 
@@ -67,11 +70,30 @@ function _remember(key, req, text) {
     }
 }
 
+function _ago(ms) {
+    return ms < 120000 ? ms + " ms" : Math.round(ms / 60000) + " min";
+}
+
+/** Forgets the saved answers whose URL contains `part` (answers still in flight are left alone).
+ *  A manual refresh uses it to really ask again. Returns how many were dropped. */
+function invalidate(part) {
+    var n = 0;
+    Object.keys(_entries).forEach(function (k) {
+        if (k.indexOf(part) >= 0 && _entries[k].done) {
+            delete _entries[k];
+            ++n;
+        }
+    });
+    if (n > 0)
+        Dbg.log("Shared", "manual refresh → forgot " + n + " saved answer(s) from " + part);
+    return n;
+}
+
 function _prune() {
     var keys = Object.keys(_entries);
     for (var i = 0; i < keys.length; ++i) {
         var e = _entries[keys[i]];
-        if (e.done && Date.now() - e.t >= REUSE_MS)
+        if (e.done && Date.now() - e.t >= (e.ttl || REUSE_MS))
             delete _entries[keys[i]];
     }
     keys = Object.keys(_entries);
@@ -85,6 +107,7 @@ function _prune() {
 
 function xhr(component, label, opts) {
     var revalidate = !!(opts && opts.revalidate);
+    var reuseMs = (opts && opts.reuseMs > 0) ? opts.reuseMs : REUSE_MS;
     var facade = {
         readyState: 0,
         status: 0,
@@ -106,8 +129,8 @@ function xhr(component, label, opts) {
             _prune();
             var e = _entries[key];
             if (e && e.done) {
-                Dbg.log(component, label + ": an identical request was answered " + (Date.now() - e.t)
-                        + " ms ago → reusing that answer, request skipped");
+                Dbg.log(component, label + ": an identical request was answered " + _ago(Date.now() - e.t)
+                        + " ago → reusing that answer, request skipped");
                 Dbg.hold();
                 Qt.callLater(function () {
                     try { _finish(e.status, e.text); } finally { Dbg.release(); }
@@ -129,7 +152,7 @@ function xhr(component, label, opts) {
                 });
                 return;
             }
-            e = { t: Date.now(), done: false, status: 0, text: "", waiters: [_finish] };
+            e = { t: Date.now(), ttl: reuseMs, done: false, status: 0, text: "", waiters: [_finish] };
             _entries[key] = e;
             var real = Dbg.xhr(component, label);
             real.open("GET", facade._url);

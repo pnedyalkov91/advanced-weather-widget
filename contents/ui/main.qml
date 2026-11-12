@@ -595,7 +595,7 @@ PlasmoidItem {
         }
     }
     function _runProbe() {
-        if (_probeBusy || !syncLost || !hasSelectedTown)
+        if (_probeBusy || !syncLost || !hasSelectedTown || weatherService._lastFailureRefused)
             return;
         _probeBusy = true;
         Dbg.log("Connectivity", "last sync failed → probing whether the Internet is back (" + _probeUrls.join(", ") + ")");
@@ -612,7 +612,8 @@ PlasmoidItem {
         interval: 60000
         repeat: true
         // AEMET alone has its own retry timer (and a request quota to respect)
-        running: root.syncLost && root.hasSelectedTown && root._cacheProviderKey() !== "aemet"
+        // (and a provider that answered "no" - bad key, used-up daily limit - is not a lost connection)
+        running: root.syncLost && root.hasSelectedTown && root._cacheProviderKey() !== "aemet" && !weatherService._lastFailureRefused
         onTriggered: root._runProbe()
     }
     // Sunrise/sunset (and therefore isNightTime()) only settle once weatherData

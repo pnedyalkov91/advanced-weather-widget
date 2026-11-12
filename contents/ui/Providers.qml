@@ -209,6 +209,13 @@ QtObject {
             AemetJS.fetchHourlyDirect(service, W, dateStr, callback, AemetMunicipiosData);
             return true;
         }
+        if (ap === "stormGlass") {
+            // one day out of the answer every other StormGlass fetch shares (10 requests a day)
+            StormGlassJS.fetchHourlyAll(service, W, dateStr, dateStr, function (map) {
+                callback(map[dateStr] || []);
+            });
+            return true;
+        }
         return false;
     }
 

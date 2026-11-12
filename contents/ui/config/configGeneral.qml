@@ -336,12 +336,11 @@ KCM.AbstractKCM {
             }
             url = "https://api.tomorrow.io/v4/weather/realtime?location=" + lat + "," + lon + "&units=metric&apikey=" + encodeURIComponent(tioKey);
         } else if (provider === "stormGlass") {
-            var sgKey = (cfg_sgApiKey || "").trim();
-            if (!sgKey) {
-                locationCheckState = 0;
-                return;
-            }
-            url = "https://api.stormglass.io/v2/weather/point?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lon) + "&params=airTemperature";
+            // No location probe: every request counts against StormGlass' 10 a day on the free plan,
+            // and its point endpoint accepts any coordinates. The "Test API key" button (an explicit
+            // click) and the first refresh still tell the person if the key or place does not work.
+            locationCheckState = 0;
+            return;
         } else if (provider === "weatherbit") {
             var wbKey = (cfg_wbApiKey || "").trim();
             if (!wbKey) {

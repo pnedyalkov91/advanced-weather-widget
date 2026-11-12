@@ -26,6 +26,8 @@
  */
 
 .import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+.import "../js/refusals.js" as Refusals
 
 /**
  * Maps a Visual Crossing icon string to a WMO weather code.
@@ -98,6 +100,12 @@ function fetchCurrent(service, W, chain, idx) {
         service._tryProvider(chain, idx + 1);
         return;
     }
+    var refused = Refusals.active("visualCrossing", key);
+    if (refused) {
+        Refusals.logSkip("Visual Crossing", "fetchCurrent", refused);
+        service._tryProvider(chain, idx + 1);
+        return;
+    }
 
     var url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
         + service.latitude + "," + service.longitude
@@ -106,13 +114,15 @@ function fetchCurrent(service, W, chain, idx) {
         + "&include=current,days,alerts"
         + "&iconSet=icons2";
 
-    var req = Dbg.xhr("Visual Crossing", "fetchCurrent");
+    var req = Shared.xhr("Visual Crossing", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("visualCrossing", req.status, key);
             service._tryProvider(chain, idx + 1);
             return;
         }
@@ -186,22 +196,39 @@ function fetchCurrent(service, W, chain, idx) {
     req.send();
 }
 
+// Titles that only say "there is nothing to warn about" (Bulgarian, English)
+var _NO_DANGER_RE = /^(няма опасност|no danger|no warnings?|no alerts?|no special awareness required|no awareness (needed|required))[.!\s]*$/i;
+
 function _parseAlerts(r, alerts) {
     var parsed = [];
     var now = new Date();
     for (var i = 0; i < alerts.length; i++) {
         var a = alerts[i];
+        // Debug only: Visual Crossing sends no severity, so show what each alert really carries
+        Dbg.log("Visual Crossing", "native alert #" + i + ": fields=[" + Object.keys(a).join(",") + "] event=\"" + (a.event || "")
+            + "\" headline=\"" + (a.headline || "") + "\" onset=" + (a.onset || "-") + " ends=" + (a.ends || "-")
+            + " description=" + String(a.description || "").length + " chars: \"" + String(a.description || "").substring(0, 120)
+            + "\" id=" + String(a.id || "-").substring(0, 60) + " link=" + String(a.link || "-").substring(0, 100)
+            + " language=" + (a.language || "-"));
         // Skip expired
         if (a.ends) {
             var exp = new Date(a.ends);
             if (exp < now) continue;
         }
 
+        // Some national feeds (e.g. weather.bg for Bulgaria) pass their "no danger" level through
+        // as an ordinary alert ("Няма опасност"). Visual Crossing gives no severity to tell it
+        // apart, so only an explicit "nothing to report" title is dropped.
+        if (_NO_DANGER_RE.test(String(a.event || a.headline || "").trim()))
+            continue;
+        // Placeholder descriptions such as "---" carry no information
+        var desc = /^[\s\-–—.]*$/.test(String(a.description || "")) ? "" : String(a.description);
+
         parsed.push({
             headline: a.headline || a.event || "",
             displayName: a.event || a.headline || "",
             severity: "",
-            description: a.description || "",
+            description: desc,
             event: a.event || "",
             area: "",
             color: "orange",
@@ -280,6 +307,12 @@ function fetchHourly(service, W, dateStr) {
         r.hourlyData = [];
         return;
     }
+    var refused = Refusals.active("visualCrossing", key);
+    if (refused) {
+        Refusals.logSkip("Visual Crossing", "fetchHourly", refused);
+        r.hourlyData = [];
+        return;
+    }
 
     // Request dateStr through the following day (not dateStr alone), so the
     // one response also carries the next day's 00:00 hour needed to close
@@ -293,13 +326,15 @@ function fetchHourly(service, W, dateStr) {
         + "&include=hours"
         + "&iconSet=icons2";
 
-    var req = Dbg.xhr("Visual Crossing", "fetchHourly");
+    var req = Shared.xhr("Visual Crossing", "fetchHourly");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("visualCrossing", req.status, key);
             r.hourlyData = [];
             return;
         }
@@ -327,6 +362,12 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         callback({});
         return;
     }
+    var refused = Refusals.active("visualCrossing", key);
+    if (refused) {
+        Refusals.logSkip("Visual Crossing", "fetchHourlyAll", refused);
+        callback({});
+        return;
+    }
 
     // Request dateStr through the following day (not dateStr alone), so the
     // one response also carries the next day's 00:00 hour needed to close
@@ -340,12 +381,14 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         + "&include=hours"
         + "&iconSet=icons2";
 
-    var req = Dbg.xhr("Visual Crossing", "fetchHourlyAll");
+    var req = Shared.xhr("Visual Crossing", "fetchHourlyAll");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("visualCrossing", req.status, key);
             callback({});
             return;
         }

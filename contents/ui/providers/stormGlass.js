@@ -28,6 +28,7 @@
 
 .import "../js/debug.js" as Dbg
 .import "../js/sharedGet.js" as Shared
+.import "../js/refusals.js" as Refusals
 
 /**
  * Derives a WMO weather code from cloud cover, precipitation, and temp.
@@ -35,6 +36,24 @@
  */
 var _PARAMS = "airTemperature,humidity,pressure,windSpeed,windDirection,"
     + "visibility,precipitation,snowDepth,cloudCover,dewPointTemperature";
+
+// The free plan allows 10 requests a day (about one per 2.4 h), yet the widget refreshes every few
+// minutes. The answer is a 10-day hourly forecast and the current hour is picked out of it each
+// time, so it stays correct for hours: one answer is reused for 3 h (8 requests a day at most,
+// leaving a few for restarts and manual refreshes, which ask again - see refreshNow(force)).
+var _REUSE_MS = 3 * 3600 * 1000;
+var _SHARED_OPTS = { reuseMs: _REUSE_MS };
+
+/** StormGlass' "pressure" is the pressure at the model's own surface (Sofia, 559 m: 943 hPa while the
+ *  sea-level sources said 1014), but this widget shows sea-level pressure for every provider.
+ *  Reduces it with the standard barometric formula and the location's altitude; unchanged at 0 m. */
+function _seaLevelHpa(p, tempC, altM) {
+    if (isNaN(p) || isNaN(altM) || altM === 0 || Math.abs(altM) > 5000)
+        return p;
+    var k = 0.0065 * altM;
+    var t = isNaN(tempC) ? 15 : tempC;
+    return p * Math.pow(1 - k / (t + k + 273.15), -5.257);
+}
 
 function _deriveWmoCode(cloudCover, precipitation, temp) {
     var cc = (cloudCover !== undefined && cloudCover !== null && !isNaN(cloudCover)) ? cloudCover : 0;
@@ -90,6 +109,13 @@ function fetchCurrent(service, W, chain, idx) {
         return;
     }
 
+    var refused = Refusals.active("stormGlass", key);
+    if (refused) {
+        Refusals.logSkip("StormGlass", "fetchCurrent", refused);
+        service._tryProvider(chain, idx + 1);
+        return;
+    }
+
     var params = _PARAMS;
 
     var url = "https://api.stormglass.io/v2/weather/point"
@@ -97,7 +123,7 @@ function fetchCurrent(service, W, chain, idx) {
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = Shared.xhr("StormGlass", "fetchCurrent");
+    var req = Shared.xhr("StormGlass", "fetchCurrent", _SHARED_OPTS);
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {
@@ -105,6 +131,8 @@ function fetchCurrent(service, W, chain, idx) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("stormGlass", req.status, key);
             service._tryProvider(chain, idx + 1);
             return;
         }
@@ -138,13 +166,18 @@ function fetchCurrent(service, W, chain, idx) {
 
         var ws = _val(c.windSpeed);
         var sd = _val(c.snowDepth);
+        var rawPressure = _val(c.pressure);
+        var seaLevelPressure = _seaLevelHpa(rawPressure, temp, service.altitude);
+        if (seaLevelPressure !== rawPressure)
+            Dbg.log("StormGlass", "pressure " + Math.round(rawPressure) + " hPa is at the model's surface → "
+                + Math.round(seaLevelPressure) + " hPa at sea level (altitude " + service.altitude + " m)");
         var _cur = {
             temperatureC:    temp,
             apparentC:       NaN,
             humidityPercent: _val(c.humidity),
             windKmh:         !isNaN(ws) ? ws * 3.6 : NaN,
             windDirection:   _val(c.windDirection),
-            pressureHpa:     _val(c.pressure),
+            pressureHpa:     seaLevelPressure,
             dewPointC:       _val(c.dewPointTemperature),
             visibilityKm:    _val(c.visibility),
             precipMmh:       precip,
@@ -304,6 +337,13 @@ function fetchHourly(service, W, dateStr) {
         return;
     }
 
+    var refused = Refusals.active("stormGlass", key);
+    if (refused) {
+        Refusals.logSkip("StormGlass", "fetchHourly", refused);
+        r.hourlyData = [];
+        return;
+    }
+
     // the same parameters as fetchCurrent (a superset of what the hours need) so both can share ONE request:
     // StormGlass counts requests, not parameters, and the free plan allows only 10 a day
     var params = _PARAMS;
@@ -313,7 +353,7 @@ function fetchHourly(service, W, dateStr) {
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = Shared.xhr("StormGlass", "fetchHourly");
+    var req = Shared.xhr("StormGlass", "fetchHourly", _SHARED_OPTS);
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {
@@ -321,6 +361,8 @@ function fetchHourly(service, W, dateStr) {
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("stormGlass", req.status, key);
             r.hourlyData = [];
             return;
         }
@@ -348,6 +390,13 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         return;
     }
 
+    var refused = Refusals.active("stormGlass", key);
+    if (refused) {
+        Refusals.logSkip("StormGlass", "fetchHourlyAll", refused);
+        callback({});
+        return;
+    }
+
     // the same parameters as fetchCurrent (a superset of what the hours need) so both can share ONE request:
     // StormGlass counts requests, not parameters, and the free plan allows only 10 a day
     var params = _PARAMS;
@@ -357,13 +406,15 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         + "&lng=" + service.longitude
         + "&params=" + params;
 
-    var req = Shared.xhr("StormGlass", "fetchHourlyAll");
+    var req = Shared.xhr("StormGlass", "fetchHourlyAll", _SHARED_OPTS);
     req.open("GET", url);
     req.setRequestHeader("Authorization", key);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("stormGlass", req.status, key);
             callback({});
             return;
         }

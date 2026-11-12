@@ -29,6 +29,8 @@ import org.kde.plasma.plasmoid
 import "js/weather.js" as W
 import "js/airQuality.js" as AQI
 import "js/debug.js" as Dbg
+import "js/sharedGet.js" as Shared
+import "js/refusals.js" as Refusals
 
 // NOTE: the 12 provider .js modules are intentionally NOT imported here.
 // They live in Providers.qml, which is created lazily on the first fetch
@@ -349,6 +351,10 @@ QtObject {
     // "real" refreshNow() call (manual, periodic, resume, config change)
     // and only preserved across the timer's own auto-retry call, so it
     // can't reset itself back to attempt 1 forever.
+    // True when the last total failure was an answer of "no" from every provider tried (a rejected API
+    // key, a used-up daily limit - see js/refusals.js): the Internet works, so no quick retries and
+    // main.qml's connectivity probe stays off.
+    property bool _lastFailureRefused: false
     property int _totalFailureRetryCount: 0
     readonly property var _totalFailureRetryDelaysMs: [5000, 15000, 45000]
     property Timer _totalFailureRetryTimer: Timer {
@@ -381,6 +387,10 @@ QtObject {
             // redundant fetch shortly after this one.
             _aemetAutoRetryTimer.stop();
             _aemetRetryAttempt = 0;
+            // StormGlass' answer is otherwise reused for 3 h (10 requests a day on the free plan),
+            // and a provider that refused (bad key, daily limit) is otherwise left alone for a while
+            Shared.invalidate("api.stormglass.io");
+            Refusals.clear();
         }
 
         var r = weatherRoot;
@@ -917,73 +927,12 @@ QtObject {
         }
 
         // ── StormGlass ────────────────────────────────────────────────────────
+        // The same request (and saved answer) as the Forecast tab's hourly fetch - see stormGlass.js.
+        // A second, different URL here used to cost one more of the 10 daily requests of the free plan.
         if (ap === "stormGlass") {
-            var key = service._sgKey();
-            if (!key) {
+            var _pS = _providers();
+            if (!_pS || !_pS.fetchHourlyDirect(ap, service, dateStr, callback))
                 callback([]);
-                return;
-            }
-            var url = "https://api.stormglass.io/v2/weather/point" + "?lat=" + lat + "&lng=" + lon + "&params=airTemperature,humidity,windSpeed,windDirection,precipitation,cloudCover";
-            var xhr = Dbg.xhr("WeatherService", "hourlyDirect/stormGlass");
-            xhr.open("GET", url);
-            xhr.setRequestHeader("Authorization", key);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== XMLHttpRequest.DONE)
-                    return;
-                if (xhr.status !== 200) {
-                    callback([]);
-                    return;
-                }
-                try {
-                    var d = JSON.parse(xhr.responseText);
-                    var arr = [];
-                    function _sgV(obj) {
-                        if (obj === undefined || obj === null)
-                            return NaN;
-                        if (typeof obj === "number")
-                            return obj;
-                        if (obj.sg !== undefined)
-                            return obj.sg;
-                        var k = Object.keys(obj);
-                        return k.length > 0 ? obj[k[0]] : NaN;
-                    }
-                    function _sgWmo(cc, pr, t) {
-                        cc = isNaN(cc) ? 0 : cc;
-                        pr = isNaN(pr) ? 0 : pr;
-                        t = isNaN(t) ? 10 : t;
-                        if (pr > 0.1) {
-                            if (t <= 0)
-                                return pr > 2 ? 75 : pr > 0.5 ? 73 : 71;
-                            return pr > 7.5 ? 65 : pr > 2.5 ? 63 : 61;
-                        }
-                        return cc > 80 ? 3 : cc > 50 ? 2 : cc > 20 ? 1 : 0;
-                    }
-                    if (d.hours)
-                        d.hours.forEach(function (h) {
-                            var dt = new Date(h.time);
-                            if (Qt.formatDate(dt, "yyyy-MM-dd") !== dateStr)
-                                return;
-                            var t = _sgV(h.airTemperature), cc = _sgV(h.cloudCover), pr = _sgV(h.precipitation), ws = _sgV(h.windSpeed);
-                            arr.push({
-                                hour: Qt.formatTime(dt, "HH:mm"),
-                                tempC: t,
-                                code: _sgWmo(cc, pr, t),
-                                windKmh: !isNaN(ws) ? ws * 3.6 : NaN,
-                                windDeg: _sgV(h.windDirection),
-                                humidity: (function () {
-                                        var v = _sgV(h.humidity);
-                                        return !isNaN(v) ? Math.round(v) : NaN;
-                                    })(),
-                                precipProb: NaN,
-                                precipMm: pr
-                            });
-                        });
-                    callback(arr);
-                } catch (e) {
-                    callback([]);
-                }
-            };
-            xhr.send();
             return;
         }
 
@@ -1419,7 +1368,15 @@ QtObject {
                 return _providerLabel(p);
             });
             service._clearUpdateMetadata();
-            if (_totalFailureRetryCount < _totalFailureRetryDelaysMs.length) {
+            var refusal = Refusals.allRefused(chain);
+            _lastFailureRefused = refusal !== null;
+            if (refusal) {
+                var keyRejected = refusal.status === 401 || refusal.status === 403;
+                weatherRoot.updateText = keyRejected
+                    ? i18n("%1: the API key was rejected (HTTP %2)", names.join(", "), refusal.status)
+                    : i18n("%1: request limit reached (HTTP %2) — trying again later", names.join(", "), refusal.status);
+                Dbg.log("WeatherService", "every provider refused the request (HTTP " + refusal.status + ") → no quick retries and no connectivity probe: the Internet works, retrying cannot help. The next scheduled refresh skips it until the refusal window ends; a manual refresh asks at once");
+            } else if (_totalFailureRetryCount < _totalFailureRetryDelaysMs.length) {
                 _totalFailureRetryTimer.interval = _totalFailureRetryDelaysMs[_totalFailureRetryCount];
                 _totalFailureRetryCount++;
                 _totalFailureRetryTimer.restart();
