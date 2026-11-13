@@ -377,6 +377,10 @@ QtObject {
         _refreshGen++;
         _safetyTimer.stop();
         _totalFailureRetryTimer.stop();
+        // A refresh that starts now makes a pending AEMET auto-retry redundant (it would only run a second
+        // refresh behind this one: seen after switching from an unsupported place to a Spanish one). If this
+        // refresh fails too, _tryProvider schedules the next retry itself.
+        _aemetAutoRetryTimer.stop();
         if (isAutoRetry !== true)
             _totalFailureRetryCount = 0;
         if (force) {
@@ -1189,6 +1193,19 @@ QtObject {
             weatherRoot.syncLost = true;
             if (!weatherRoot._weatherDataIsForCurrentLocation())
                 weatherRoot.weatherDataStaged = null;
+            if (chain.length === 1 && chain[0] === "aemet" && !_isSpainLocation()) {
+                // Not a failure that can pass: no retries, no backoff. Choosing another provider or a place in
+                // Spain starts a refresh by itself.
+                service._clearUpdateMetadata();
+                _aemetAutoRetryTimer.stop();
+                _aemetRetryAttempt = 0;
+                _aemetRateLimited = false;
+                weatherRoot.updateText = i18n("AEMET only covers Spain — choose another weather provider or a location in Spain.");
+                Dbg.log("WeatherService", "AEMET has no data for this location (outside Spain) → no automatic retry; a different provider or a location in Spain starts a new refresh");
+                _failed = [];
+                _fetchAlertsIfNeeded();
+                return;
+            }
             if (chain.length === 1 && chain[0] === "aemet") {
                 service._clearUpdateMetadata();
                 // Exponential backoff, capped at 5 minutes - long enough to
@@ -1263,6 +1280,12 @@ QtObject {
         if (idx > 0)
             Dbg.log("WeatherService", "previous provider '" + chain[idx - 1] + "' gave no usable data after " + (Date.now() - _providerStartMs) + " ms → falling back");
         _providerStartMs = Date.now();
+        if (p === "aemet" && !_isSpainLocation()) {
+            // AEMET has no data outside Spain: ask it nothing (no municipio lookup, no daily/hourly request)
+            Dbg.log("WeatherService", "AEMET covers Spain only and this location is outside it (country=" + (countryCode || "?") + ", " + latitude + ", " + longitude + ") → AEMET is not asked anything");
+            _tryProvider(chain, idx + 1);
+            return;
+        }
         Dbg.log("WeatherService", "trying provider " + (idx + 1) + "/" + chain.length + ": " + _providerLabel(p) + " [" + p + "] (20 s safety timeout armed)");
         _p.fetchCurrent(p, service, chain, idx);
     }
@@ -1610,7 +1633,10 @@ QtObject {
         var gen = _refreshGen;
         var r = weatherRoot;
         var tz = (Plasmoid.configuration.timezone || "").trim();
-        var days = Math.min(Math.max((r.dailyData || []).length, 1), 16);
+        // the provider has just STAGED its rows (weatherData only follows a moment later), so count those -
+        // after a place change r.dailyData is still empty here and the backfill asked for one day only
+        var _rows = (r.weatherDataStaged && r.weatherDataStaged.dailyData) ? r.weatherDataStaged.dailyData : (r.dailyData || []);
+        var days = Math.min(Math.max(_rows.length, 1), 16);
         var url = "https://api.open-meteo.com/v1/forecast" + "?latitude=" + Plasmoid.configuration.latitude + "&longitude=" + Plasmoid.configuration.longitude + "&timezone=" + encodeURIComponent(tz.length > 0 ? tz : "auto") + "&current=wind_speed_10m,wind_direction_10m,uv_index" + "&daily=wind_speed_10m_max,wind_direction_10m_dominant,uv_index_max" + "&forecast_days=" + days;
         var req2 = Dbg.xhr("WeatherService", "wind/UV backfill (Open-Meteo)");
         req2.open("GET", url);
@@ -1624,51 +1650,57 @@ QtObject {
             try {
                 var d = JSON.parse(req2.responseText);
 
-                if (r.weatherData && d.current) {
+                // One patched copy of the weather data for both parts (current + daily). The daily rows live
+                // INSIDE weatherData (main.qml's dailyData is a read-only alias of weatherData.dailyData), so
+                // they are changed by staging a new weatherData - assigning r.dailyData throws "Cannot assign
+                // to read-only property" and used to discard the whole daily wind/UV backfill.
+                if (r.weatherData) {
                     var patched = Object.assign({}, r.weatherData);
                     var curChanged = false;
-                    if (isNaN(patched.windKmh) && d.current.wind_speed_10m !== undefined) {
-                        patched.windKmh = d.current.wind_speed_10m;
-                        curChanged = true;
-                    }
-                    if (isNaN(patched.windDirection) && d.current.wind_direction_10m !== undefined) {
-                        patched.windDirection = d.current.wind_direction_10m;
-                        curChanged = true;
-                    }
-                    if (isNaN(patched.uvIndex) && d.current.uv_index !== undefined) {
-                        patched.uvIndex = d.current.uv_index;
-                        curChanged = true;
-                    }
-                    if (curChanged)
-                        r.weatherDataStaged = patched;
-                }
-
-                if (d.daily && d.daily.time && r.dailyData && r.dailyData.length > 0) {
-                    var nd = r.dailyData.slice();
-                    var dailyChanged = false;
-                    for (var i = 0; i < d.daily.time.length; i++) {
-                        for (var j = 0; j < nd.length; j++) {
-                            if (nd[j].dateStr !== d.daily.time[i])
-                                continue;
-                            var day = Object.assign({}, nd[j]);
-                            if (isNaN(day.windKmh) && d.daily.wind_speed_10m_max && d.daily.wind_speed_10m_max[i] !== undefined) {
-                                day.windKmh = d.daily.wind_speed_10m_max[i];
-                                dailyChanged = true;
-                            }
-                            if (isNaN(day.windDir) && d.daily.wind_direction_10m_dominant && d.daily.wind_direction_10m_dominant[i] !== undefined) {
-                                day.windDir = d.daily.wind_direction_10m_dominant[i];
-                                dailyChanged = true;
-                            }
-                            if (isNaN(day.uvMax) && d.daily.uv_index_max && d.daily.uv_index_max[i] !== undefined) {
-                                day.uvMax = d.daily.uv_index_max[i];
-                                dailyChanged = true;
-                            }
-                            nd[j] = day;
-                            break;
+                    if (d.current) {
+                        if (isNaN(patched.windKmh) && d.current.wind_speed_10m !== undefined) {
+                            patched.windKmh = d.current.wind_speed_10m;
+                            curChanged = true;
+                        }
+                        if (isNaN(patched.windDirection) && d.current.wind_direction_10m !== undefined) {
+                            patched.windDirection = d.current.wind_direction_10m;
+                            curChanged = true;
+                        }
+                        if (isNaN(patched.uvIndex) && d.current.uv_index !== undefined) {
+                            patched.uvIndex = d.current.uv_index;
+                            curChanged = true;
                         }
                     }
-                    if (dailyChanged)
-                        r.dailyData = nd;
+
+                    var dailyChanged = false;
+                    if (d.daily && d.daily.time && patched.dailyData && patched.dailyData.length > 0) {
+                        var nd = patched.dailyData.slice();
+                        for (var i = 0; i < d.daily.time.length; i++) {
+                            for (var j = 0; j < nd.length; j++) {
+                                if (nd[j].dateStr !== d.daily.time[i])
+                                    continue;
+                                var day = Object.assign({}, nd[j]);
+                                if (isNaN(day.windKmh) && d.daily.wind_speed_10m_max && d.daily.wind_speed_10m_max[i] !== undefined) {
+                                    day.windKmh = d.daily.wind_speed_10m_max[i];
+                                    dailyChanged = true;
+                                }
+                                if (isNaN(day.windDir) && d.daily.wind_direction_10m_dominant && d.daily.wind_direction_10m_dominant[i] !== undefined) {
+                                    day.windDir = d.daily.wind_direction_10m_dominant[i];
+                                    dailyChanged = true;
+                                }
+                                if (isNaN(day.uvMax) && d.daily.uv_index_max && d.daily.uv_index_max[i] !== undefined) {
+                                    day.uvMax = d.daily.uv_index_max[i];
+                                    dailyChanged = true;
+                                }
+                                nd[j] = day;
+                                break;
+                            }
+                        }
+                        if (dailyChanged)
+                            patched.dailyData = nd;
+                    }
+                    if (curChanged || dailyChanged)
+                        r.weatherDataStaged = patched;
                     Dbg.log("WeatherService", "wind/UV backfill from Open-Meteo: current " + (curChanged ? "patched" : "complete already") + ", daily " + (dailyChanged ? "patched" : "complete already"));
                 }
             } catch (e) {
