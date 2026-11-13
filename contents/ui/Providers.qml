@@ -216,6 +216,13 @@ QtObject {
             });
             return true;
         }
+        if (ap === "weatherbit") {
+            // one day out of the hourly answer every other Weatherbit fetch shares (about 50 calls a day)
+            WeatherbitJS.fetchHourlyAll(service, W, dateStr, dateStr, function (map) {
+                callback(map[dateStr] || []);
+            });
+            return true;
+        }
         if (ap === "stormGlass") {
             // one day out of the answer every other StormGlass fetch shares (10 requests a day)
             StormGlassJS.fetchHourlyAll(service, W, dateStr, dateStr, function (map) {

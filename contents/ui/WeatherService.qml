@@ -388,9 +388,10 @@ QtObject {
             _aemetAutoRetryTimer.stop();
             _aemetRetryAttempt = 0;
             // StormGlass' answer is otherwise reused for 3 h (10 requests a day on the free plan),
-            // Tomorrow.io's forecast for 10 min (25 requests an hour), and a provider that refused (bad key, daily limit) is otherwise left alone for a while
+            // Tomorrow.io's forecast for 10 min (25 requests an hour), Weatherbit's daily forecast for 3 h (about 50 calls a day), and a provider that refused (bad key, daily limit) is otherwise left alone for a while
             Shared.invalidate("api.stormglass.io");
             Shared.invalidate("api.tomorrow.io");
+            Shared.invalidate("api.weatherbit.io");
             Refusals.clear();
         }
 
@@ -872,91 +873,11 @@ QtObject {
         }
 
         // ── Weatherbit ────────────────────────────────────────────────────────
+        // The hourly answer every other Weatherbit fetch shares - see weatherbit.js.
         if (ap === "weatherbit") {
-            var key = service._wbKey();
-            if (!key) {
+            var _pW = _providers();
+            if (!_pW || !_pW.fetchHourlyDirect(ap, service, dateStr, callback))
                 callback([]);
-                return;
-            }
-            var url = "https://api.weatherbit.io/v2.0/forecast/hourly" + "?lat=" + lat + "&lon=" + lon + "&key=" + encodeURIComponent(key) + "&units=M&hours=48";
-            var xhr = Dbg.xhr("WeatherService", "hourlyDirect/weatherbit");
-            xhr.open("GET", url);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== XMLHttpRequest.DONE)
-                    return;
-                if (xhr.status !== 200) {
-                    callback([]);
-                    return;
-                }
-                try {
-                    var d = JSON.parse(xhr.responseText);
-                    var arr = [];
-                    function _wbWmo(code) {
-                        if (!code)
-                            return 2;
-                        if (code >= 200 && code <= 233)
-                            return 95;
-                        if (code >= 300 && code <= 302)
-                            return 51;
-                        if (code === 500)
-                            return 61;
-                        if (code === 501)
-                            return 63;
-                        if (code === 502)
-                            return 65;
-                        if (code === 511)
-                            return 66;
-                        if (code >= 520 && code <= 522)
-                            return 80;
-                        if (code === 600)
-                            return 71;
-                        if (code === 601)
-                            return 73;
-                        if (code === 602)
-                            return 75;
-                        if (code === 610 || code === 611 || code === 612)
-                            return 66;
-                        if (code === 621)
-                            return 85;
-                        if (code === 622)
-                            return 86;
-                        if (code === 623)
-                            return 77;
-                        if (code >= 700 && code <= 751)
-                            return 45;
-                        if (code === 800)
-                            return 0;
-                        if (code === 801)
-                            return 1;
-                        if (code === 802)
-                            return 2;
-                        if (code >= 803)
-                            return 3;
-                        return 2;
-                    }
-                    if (d.data)
-                        d.data.forEach(function (h) {
-                            var s = (h.timestamp_local || h.datetime || "");
-                            if (s.substring(0, 10) !== dateStr)
-                                return;
-                            var dt = new Date(s);
-                            arr.push({
-                                hour: Qt.formatTime(dt, "HH:mm"),
-                                tempC: h.temp,
-                                code: _wbWmo(h.weather ? h.weather.code : undefined),
-                                windKmh: h.wind_spd !== undefined ? h.wind_spd * 3.6 : NaN,
-                                windDeg: h.wind_dir !== undefined ? h.wind_dir : NaN,
-                                humidity: h.rh !== undefined ? Math.round(h.rh) : NaN,
-                                precipProb: h.pop !== undefined ? Math.round(h.pop) : NaN,
-                                precipMm: h.precip !== undefined ? h.precip : NaN
-                            });
-                        });
-                    callback(arr);
-                } catch (e) {
-                    callback([]);
-                }
-            };
-            xhr.send();
             return;
         }
 

@@ -25,6 +25,8 @@
  */
 
 .import "../js/debug.js" as Dbg
+.import "../js/sharedGet.js" as Shared
+.import "../js/refusals.js" as Refusals
 
 /**
  * Maps a Weatherbit weather code to a WMO weather code.
@@ -72,12 +74,82 @@ function _nextDateStr(dateStr) {
     return Qt.formatDate(d, "yyyy-MM-dd");
 }
 
+
+// ── Requests ─────────────────────────────────────────────────────────────────
+// Weatherbit's free plan is tiny: about 50 calls a day (the x-ratelimit headers say 55) and NO hourly
+// forecast - /forecast/hourly answers HTTP 403 "Your API key does not allow access to this endpoint"
+// while /current and /forecast/daily work. So:
+//  - the daily forecast (it changes a few times a day) is reused for 3 h, the hourly one for 10 min;
+//  - the hourly 403 is remembered as its own "provider" (weatherbitHourly): it says nothing about the
+//    key, so current + daily keep working, but the hourly request is not repeated for every day the
+//    Forecast tab opens (that was 7+ refused requests in a row);
+//  - 401/402/429 (bad key, daily limit used up) are remembered for the whole provider, see refusals.js.
+var _DAILY_REUSE_MS = 3 * 3600 * 1000;
+var _HOURLY_REUSE_MS = 10 * 60000;
+
+function _hourlyUrl(service, key) {
+    return "https://api.weatherbit.io/v2.0/forecast/hourly"
+        + "?lat=" + service.latitude
+        + "&lon=" + service.longitude
+        + "&key=" + encodeURIComponent(key)
+        + "&units=M"
+        + "&hours=48";
+}
+
+/** The refusal (whole provider, or the hourly endpoint alone) that rules out a request now, else null. */
+function _hourlyRefused(key) {
+    return Refusals.active("weatherbit", key) || Refusals.active("weatherbitHourly", key);
+}
+
+/** One hourly answer: callback(status, parsed) - status 200 with the parsed answer, else what the server said. */
+function _hourly(service, key, label, callback) {
+    var refused = _hourlyRefused(key);
+    if (refused) {
+        Refusals.logSkip("Weatherbit", label, refused);
+        callback(refused.status, null);
+        return;
+    }
+    var req = Shared.xhr("Weatherbit", label, { reuseMs: _HOURLY_REUSE_MS });
+    req.open("GET", _hourlyUrl(service, key));
+    req.onreadystatechange = function () {
+        if (req.readyState !== XMLHttpRequest.DONE)
+            return;
+        if (req.status !== 200) {
+            if (req.status === 403) {
+                // this plan has no hourly forecast: not a verdict on the key
+                Dbg.log("Weatherbit", label + ": the hourly forecast is not part of this API key's plan (HTTP 403: "
+                        + Dbg.snippet(req.responseText, 100) + ") → no hourly hours for this provider");
+                Refusals.note("weatherbitHourly", 403, key);
+            } else if (Refusals.isRefusal(req.status)) {
+                Refusals.note("weatherbit", req.status, key);
+            }
+            callback(req.status, null);
+            return;
+        }
+        var d;
+        try {
+            d = JSON.parse(req.responseText);
+        } catch (e) {
+            callback(200, null);
+            return;
+        }
+        callback(200, d);
+    };
+    req.send();
+}
+
 function fetchCurrent(service, W, chain, idx) {
     var gen = service._refreshGen;
     var r = service.weatherRoot;
     var key = service._wbKey();
     if (!key) {
         Dbg.log("Weatherbit", "no API key set in Settings → provider skipped, trying the next one");
+        service._tryProvider(chain, idx + 1);
+        return;
+    }
+    var refused = Refusals.active("weatherbit", key);
+    if (refused) {
+        Refusals.logSkip("Weatherbit", "fetchCurrent", refused);
         service._tryProvider(chain, idx + 1);
         return;
     }
@@ -88,13 +160,15 @@ function fetchCurrent(service, W, chain, idx) {
         + "&key=" + encodeURIComponent(key)
         + "&units=M";
 
-    var req = Dbg.xhr("Weatherbit", "fetchCurrent");
+    var req = Shared.xhr("Weatherbit", "fetchCurrent");
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         if (service._refreshGen !== gen) return;
         if (req.status !== 200) {
+            if (Refusals.isRefusal(req.status))
+                Refusals.note("weatherbit", req.status, key);
             service._tryProvider(chain, idx + 1);
             return;
         }
@@ -134,7 +208,7 @@ function fetchCurrent(service, W, chain, idx) {
         // No native air quality or pollen - both are supplied by the shared
         // Open-Meteo fetch started in WeatherService.refreshNow(). Clearing
         // them here would race that fetch and discard its result.
-        _fetchDailyForecast(service, W, gen);
+        _fetchDailyForecast(service, W, gen, key);
     };
     req.send();
 }
@@ -143,9 +217,8 @@ function fetchCurrent(service, W, chain, idx) {
  * Fetches the daily forecast from Weatherbit.
  * Sets dailyData, then marks loading complete.
  */
-function _fetchDailyForecast(service, W, gen) {
+function _fetchDailyForecast(service, W, gen, key) {
     var r = service.weatherRoot;
-    var key = service._wbKey();
 
     var url = "https://api.weatherbit.io/v2.0/forecast/daily"
         + "?lat=" + service.latitude
@@ -154,13 +227,15 @@ function _fetchDailyForecast(service, W, gen) {
         + "&units=M"
         + "&days=" + Math.min(service.forecastDays, 16);
 
-    var req = Dbg.xhr("Weatherbit", "_fetchDailyForecast");
+    var req = Shared.xhr("Weatherbit", "_fetchDailyForecast", { reuseMs: _DAILY_REUSE_MS });
     req.open("GET", url);
     req.onreadystatechange = function () {
         if (req.readyState !== XMLHttpRequest.DONE)
             return;
         if (service._refreshGen !== gen) return;
 
+        if (req.status !== 200 && Refusals.isRefusal(req.status))
+            Refusals.note("weatherbit", req.status, key);
         if (req.status === 200) {
             try {
                 var d = JSON.parse(req.responseText);
@@ -275,40 +350,18 @@ function fetchHourly(service, W, dateStr) {
         return;
     }
 
-    var url = "https://api.weatherbit.io/v2.0/forecast/hourly"
-        + "?lat=" + service.latitude
-        + "&lon=" + service.longitude
-        + "&key=" + encodeURIComponent(key)
-        + "&units=M"
-        + "&hours=48";
-
-    var req = Dbg.xhr("Weatherbit", "fetchHourly");
-    req.open("GET", url);
-    req.onreadystatechange = function () {
-        if (req.readyState !== XMLHttpRequest.DONE)
-            return;
+    _hourly(service, key, "fetchHourly", function (status, d) {
         if (service._refreshGen !== gen) return;
-        if (req.status !== 200) {
+        if (status !== 200 || !d) {
             r.hourlyData = [];
             return;
         }
-        try {
-            var d = JSON.parse(req.responseText);
-        } catch (e) {
-            r.hourlyData = [];
-            return;
-        }
-
         r.setHourlyResult(dateStr, _hourlyDay(d, W, dateStr));
-    };
-    req.send();
+    });
 }
 
 /** Hours of every day firstDate..lastDate from ONE request: callback({ dateStr: [hours] }), {} on any failure. */
 function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
-    var dateStr = firstDate;
-    var gen = service._refreshGen;
-    var r = service.weatherRoot;
     var key = service._wbKey();
     if (!key) {
         Dbg.log("Weatherbit", "no API key set in Settings → no hourly forecast");
@@ -316,30 +369,11 @@ function fetchHourlyAll(service, W, firstDate, lastDate, callback) {
         return;
     }
 
-    var url = "https://api.weatherbit.io/v2.0/forecast/hourly"
-        + "?lat=" + service.latitude
-        + "&lon=" + service.longitude
-        + "&key=" + encodeURIComponent(key)
-        + "&units=M"
-        + "&hours=48";
-
-    var req = Dbg.xhr("Weatherbit", "fetchHourlyAll");
-    req.open("GET", url);
-    req.onreadystatechange = function () {
-        if (req.readyState !== XMLHttpRequest.DONE)
-            return;
-        if (req.status !== 200) {
+    _hourly(service, key, "fetchHourlyAll", function (status, d) {
+        if (status !== 200 || !d) {
             callback({});
             return;
         }
-        try {
-            var d = JSON.parse(req.responseText);
-        } catch (e) {
-            callback({});
-            return;
-        }
-
         callback(_hourlyDays(d, W, firstDate, lastDate));
-    };
-    req.send();
+    });
 }
