@@ -11,3 +11,10 @@ License: GPL-2.0-only (https://github.com/open-meteo/typescript-omfiles).
 
 Served from unpkg, the WebAssembly arrives truncated in QtWebEngine, hence
 this local copy.
+
+# Coasts and borders
+
+`coast-borders.bin`: the coasts and land borders the radar map draws over
+its color layers (temperature...). Natural Earth 1:10m, public domain
+(https://www.naturalearthdata.com/), simplified to about 500 m and packed by
+`scripts/make_coast_lines.py`.

@@ -35,6 +35,11 @@ function fakeMap() {
     zoom: 2,
     on: (e, f) => { (handlers[e] = handlers[e] || []).push(f); },
     off: () => {},
+    once: (e, f) => {
+      const g = () => { handlers[e] = handlers[e].filter((h) => h !== g); f(); };
+      (handlers[e] = handlers[e] || []).push(g);
+    },
+    triggerRepaint: () => {},
     fire: (e) => (handlers[e] || []).slice().forEach((f) => f()),
     unproject: ([x, y]) => ({ lng: x / 10 - 15, lat: 6 - y / 10 }),
     project: (ll) => ({ x: (ll.lng + 15) * 10, y: (6 - ll.lat) * 10 }),
@@ -93,4 +98,144 @@ test('table layer: a resize that leaves the view as it was keeps the particles g
   } finally {
     layer.remove();
   }
+});
+
+test('table layer: reproject clears the old particles at once, builds on the new frame and fades in', async () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const map = fakeMap(), layer = new Layer(source, fakeOpen(), {}, {});
+  layer.addTo(map);
+  try {
+    await new Promise((r) => setImmediate(r));
+    layer.settle();
+    flushRaf();
+    assert.equal(layer.isDrawing(), true);
+    const fades = [];
+    layer._canvas.animate = (frames) => fades.push(frames);
+    layer.reproject();
+    assert.equal(layer.isDrawing(), false);      // gone before the map has the new projection
+    flushRaf();
+    assert.equal(layer.isDrawing(), false);      // nothing built on the old one
+    map.fire('render');                           // the first frame of the new projection
+    flushRaf();
+    assert.equal(layer.isDrawing(), true);
+    assert.equal(fades.length, 1);
+    assert.deepEqual(fades[0], [{ opacity: 0 }, { opacity: 1 }]);
+    map.fire('render');                           // later frames: no new build
+    flushRaf();
+    assert.equal(fades.length, 1);
+  } finally {
+    layer.remove();
+  }
+});
+
+test('table layer, manual: only the grids it is given, at the time they say, nothing asked', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  let asked = 0;
+  const src = Object.assign({}, source, { best: () => { asked++; return null; }, ensure: () => { asked++; return new Promise(() => {}); } });
+  const map = fakeMap(), layer = new Layer(src, null, {}, { manual: true });
+  const seen = [], tw = WidgetWind.WindField.timeWeights;
+  WidgetWind.WindField.timeWeights = (times, nowSec) => { seen.push(nowSec); return tw(times, nowSec); };
+  layer.addTo(map);
+  try {
+    layer.settle();
+    flushRaf();
+    assert.equal(layer.isDrawing(), false);       // nothing to draw yet
+    const grid = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
+    grid.at = 1800;
+    layer.showFile(grid);
+    assert.equal(layer.settled(), false);         // the table is being built
+    flushRaf();
+    assert.equal(layer.isDrawing(), true);
+    assert.equal(layer.settled(), true);
+    assert.equal(asked, 0);
+    assert.ok(seen.length > 0 && seen.every((s) => s === 1800));
+    const next = Object.assign({}, grid, { at: 2000 });
+    layer.showFile(next);                          // swapped under running particles
+    assert.equal(layer.isDrawing(), true);
+    assert.equal(layer._grid(), next);
+  } finally {
+    WidgetWind.WindField.timeWeights = tw;
+    layer.remove();
+  }
+});
+
+test('table layer, manual, zoomed in: the API grid as the radar has it, at the time of the picture given', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const tiny = { west: 0, south: 0, east: 0.4, north: 0.2 };   // finer than the file: the API
+  const spec = WidgetWind.WindField.gridSpec(tiny), pts = [];
+  for (let i = 0; i < spec.lats.length * spec.lons.length; i++) pts.push({ elevation: 500, hourly: { time: [0, 3600], wind_speed_10m: [1, 2], wind_direction_10m: [270, 270] } });
+  const api = { spec, fetchedAt: 0, grid: WidgetWind.WindField.buildGrid(spec, pts) };
+  const src = Object.assign({}, source, { best: () => api, ensure: () => Promise.resolve(api) });
+  const map = fakeMap();
+  map.getBounds = () => ({ getWest: () => tiny.west, getEast: () => tiny.east, getSouth: () => tiny.south, getNorth: () => tiny.north });
+  const layer = new Layer(src, null, {}, { manual: true });
+  const seen = [], tw = WidgetWind.WindField.timeWeights;
+  WidgetWind.WindField.timeWeights = (times, nowSec) => { seen.push([times.length, nowSec]); return tw(times, nowSec); };
+  layer.addTo(map);
+  try {
+    layer.settle();
+    const file = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
+    file.at = 1800;
+    layer.showFile(file);
+    flushRaf();
+    assert.equal(layer._grid(), api.grid);
+    assert.ok(seen.length > 0 && seen.every(([n, s]) => n === 2 && s === 1800));
+    seen.length = 0;
+    layer.showFile(Object.assign({}, file, { at: 900 }));   // next picture: the API grid stays, its hour moves
+    layer._frame();
+    assert.equal(layer._grid(), api.grid);
+    assert.deepEqual(seen, [[2, 900]]);
+  } finally {
+    WidgetWind.WindField.timeWeights = tw;
+    layer.remove();
+  }
+});
+
+test('table layer: valueAt reads the wind drawn, where it is drawn', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const map = fakeMap(), layer = new Layer(source, null, {}, { manual: true });
+  layer.addTo(map);
+  try {
+    assert.equal(layer.valueAt(0, 0), null);       // nothing drawn yet
+    layer.settle();
+    const grid = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
+    grid.at = 3600;
+    layer.showFile(grid);
+    flushRaf();
+    const w = layer.valueAt(10, 20);
+    assert.ok(Math.abs(w.speed - 5) < 1e-6);
+    assert.ok(Math.abs(w.dir - 270) < 1e-6);         // u = +5: from the west
+  } finally {
+    layer.remove();
+  }
+});
+
+test('table layer: colorOf gives the color of the particles at that speed', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const WF = WidgetWind.WindField, layer = new Layer(source, null, {}, { theme: 'dark' });
+  for (const ms of [0.5, 5, 12, 40]) assert.equal(layer.colorOf(ms), WF.bandColor(WF.DEFAULT_PALETTE, WF.paletteBand(ms, WF.DEFAULT_PALETTE), 'dark'));
+});
+
+test('table layer: setFade is the opacity of its canvas, kept across a new one', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const layer = new Layer(source, null, {}, { manual: true });
+  layer.setFade(0.25);
+  layer.addTo(fakeMap());
+  assert.equal(layer._canvas.style.opacity, '0.25');
+  layer.setFade(1);
+  assert.equal(layer._canvas.style.opacity, '1');
+  layer.remove();
+});
+
+test('table layer: its opacity times the fade is the canvas opacity', () => {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const layer = new Layer(source, null, {}, { manual: true, opacity: 0.8 });
+  layer.addTo(fakeMap());
+  assert.equal(layer._canvas.style.opacity, '0.8');
+  layer.setFade(0.5);
+  assert.equal(layer._canvas.style.opacity, '0.4');
+  layer.setOpacity(0.6);
+  assert.equal(layer._canvas.style.opacity, '0.3');
+  assert.equal(layer.getOpacity(), 0.6);
+  layer.remove();
 });

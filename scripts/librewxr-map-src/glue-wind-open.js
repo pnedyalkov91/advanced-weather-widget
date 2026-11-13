@@ -8,6 +8,8 @@
 // ==========================================================================
 var WidgetOpenData = (function () {
   'use strict';
+  // The regional grids (glue-grids.js): a global in the page, required under Node.
+  var Grids = typeof WidgetGrids !== 'undefined' ? WidgetGrids : require('./glue-grids.js');
 
   var BASE = 'https://openmeteo.s3.amazonaws.com/data_spatial/';
   var MERGE_GAP = 65536;   // bytes between two reads that still share one request
@@ -98,6 +100,9 @@ var WidgetOpenData = (function () {
     return this.open().then(function () { return self.size; });
   };
 
+  // Bytes read from the files so far, by model (measuring).
+  var traffic = {};
+
   TailBackend.prototype.fetchRange = function (offset, size) {
     var self = this;
     return this.fetch(this.url, { headers: { Range: 'bytes=' + offset + '-' + (offset + size - 1) } }).then(function (r) {
@@ -108,6 +113,9 @@ var WidgetOpenData = (function () {
       if (b.length !== size) throw new Error('got ' + b.length + ' bytes, wanted ' + size);
       self.requests++;
       self.bytes += size;
+      var m = /data_spatial\/([^/]+)\//.exec(self.url) || /\/data\/([^/]+)\//.exec(self.url);
+      var k = m ? m[1] : '?';
+      traffic[k] = (traffic[k] || 0) + size;
       return b;
     });
   };
@@ -143,25 +151,55 @@ var WidgetOpenData = (function () {
       run south to north from -180: rows flipped north to south, and one more
       column at +180 so the antimeridian has wind. */
   function toGrid(du, dv, ny, nx, validMs, level) {
-    var cols = nx + 1, res = 180 / (ny - 1);
-    var U = new Float32Array(ny * cols), V = new Float32Array(ny * cols);
+    var lv = { u: [flipRows(du, ny, nx)], v: [flipRows(dv, ny, nx)] }, levels = {};
+    levels[level] = lv;
+    var g = gridAxes(ny, nx);
+    return { lats: g.lats, lons: g.lons, elev: null, times: [validMs / 1000], u: lv.u, v: lv.v, levels: levels, res: g.res };
+  }
+
+  /** The same for one field (temperature, ground height): { lats, lons,
+      times, values, res }, times null for a field without a valid hour. */
+  function toScalarGrid(d, ny, nx, validMs) {
+    var g = gridAxes(ny, nx);
+    return { lats: g.lats, lons: g.lons, times: validMs == null ? null : [validMs / 1000], values: flipRows(d, ny, nx), res: g.res };
+  }
+
+  /** A field of a regional model, kept as the file holds it (one point in
+      step each way when step > 1): { desc (its WidgetGrids grid), times,
+      values }; an error when the file is not the size of the model's grid. */
+  function toModelGrid(d, ny, nx, validMs, model, step) {
+    var full = Grids.of(model, ny, nx);
+    return { desc: Grids.thin(full, step || 1), times: validMs == null ? null : [validMs / 1000], values: Grids.thinValues(d, full, step || 1) };
+  }
+
+  /** Rows of a field flipped north to south, plus a column at +180. */
+  function flipRows(d, ny, nx) {
+    var cols = nx + 1, out = new Float32Array(ny * cols);
     for (var r = 0; r < ny; r++) {
       var src = (ny - 1 - r) * nx, dst = r * cols;
-      U.set(du.subarray(src, src + nx), dst);
-      V.set(dv.subarray(src, src + nx), dst);
-      U[dst + nx] = du[src];
-      V[dst + nx] = dv[src];
+      out.set(d.subarray(src, src + nx), dst);
+      out[dst + nx] = d[src];
     }
-    var lats = [], lons = [], c;
-    for (r = 0; r < ny; r++) lats.push(90 - r * res);
-    for (c = 0; c < cols; c++) lons.push(-180 + c * res);
-    var lv = { u: [U], v: [V] }, levels = {};
-    levels[level] = lv;
-    return { lats: lats, lons: lons, elev: null, times: [validMs / 1000], u: lv.u, v: lv.v, levels: levels, res: res };
+    return out;
+  }
+
+  function gridAxes(ny, nx) {
+    var res = 180 / (ny - 1), lats = [], lons = [], i;
+    for (i = 0; i < ny; i++) lats.push(90 - i * res);
+    for (i = 0; i <= nx; i++) lons.push(-180 + i * res);
+    return { lats: lats, lons: lons, res: res };
   }
 
   var TAIL_BYTES = 262144;    // the file's end read at once (headers and chunk indexes)
   var KEEP_HOURS = 3;          // a kept wind further from now than this is not shown
+
+  // The 2 m temperature goes through the same loading as a wind level,
+  // under this key; the model's ground height (one static file) under SURFACE.
+  var TEMP_KEY = 't2m', SURFACE_KEY = 'hsurf';
+  var DATA_BASE = 'https://openmeteo.s3.amazonaws.com/data/';
+
+  /** The model's ground height per cell, which its temperature is valid at. */
+  function SURFACE_URL(model, dataBase) { return (dataBase || DATA_BASE) + model + '/static/HSURF.om'; }
 
   /** Key of a kept wind: one per model and level. */
   function cacheKey(model, level) { return model + ':' + level; }
@@ -172,16 +210,18 @@ var WidgetOpenData = (function () {
     return Math.abs(nowMs - entry.validMs) <= (maxHours || KEEP_HOURS) * 3600e3;
   }
 
-  /** The browser's IndexedDB as a small key/value store. Storage can be
-      missing or refused (a private profile): every call then gives null and
-      the wind is read from the file each time. */
-  function idbStore(dbName) {
-    var opening = null;
+  /** The browser's IndexedDB as a small key/value store (object store
+      storeName of database dbName): get, put, keys, del. Storage can be
+      missing or refused (a private profile): every call then gives null
+      and the data are read from the files each time. The kept wind uses
+      it, and the animation's pictures (WidgetAnim.frameStore). */
+  function idbStore(dbName, storeName) {
+    var opening = null, name = storeName || 'wind';
     function open() {
       if (!opening) {
         opening = new Promise(function (resolve, reject) {
           var r = indexedDB.open(dbName || 'awwOpenData', 1);
-          r.onupgradeneeded = function () { r.result.createObjectStore('wind'); };
+          r.onupgradeneeded = function () { r.result.createObjectStore(name); };
           r.onsuccess = function () { resolve(r.result); };
           r.onerror = function () { reject(r.error); };
         });
@@ -191,15 +231,20 @@ var WidgetOpenData = (function () {
     function run(mode, op) {
       return Promise.resolve().then(open).then(function (db) {
         return new Promise(function (resolve, reject) {
-          var tx = db.transaction('wind', mode), req = op(tx.objectStore('wind'));
-          tx.oncomplete = function () { resolve(req.result === undefined ? null : req.result); };
+          var tx = db.transaction(name, mode), req = op(tx.objectStore(name));
+          tx.oncomplete = function () { resolve(req && req.result !== undefined ? req.result : null); };
           tx.onerror = function () { reject(tx.error); };
+          tx.onabort = function () { reject(tx.error); };
         });
       }).catch(function () { return null; });
     }
     return {
       get: function (key) { return run('readonly', function (s) { return s.get(key); }); },
-      put: function (key, value) { return run('readwrite', function (s) { return s.put(value, key); }); }
+      put: function (key, value) { return run('readwrite', function (s) { return s.put(value, key); }); },
+      keys: function () { return run('readonly', function (s) { return s.getAllKeys(); }).then(function (k) { return k || []; }); },
+      del: function (keys) {
+        return run('readwrite', function (s) { keys.forEach(function (k) { s.delete(k); }); return null; });
+      }
     };
   }
 
@@ -210,7 +255,9 @@ var WidgetOpenData = (function () {
   function Loader(opts) {
     opts = opts || {};
     this.model = opts.model || 'ecmwf_ifs025';
+    this.step = opts.step || 1;  // a regional grid read one point in step each way
     this.base = opts.base || BASE;
+    this.dataBase = opts.dataBase || DATA_BASE;
     this.store = opts.store || idbStore();
     this.fetch = opts.fetchFn || function (u, init) { return fetch(u, init); };
     this.importReader = opts.importReader;
@@ -221,10 +268,13 @@ var WidgetOpenData = (function () {
     this.urls = {};
     this.checkedAt = {};
     this.loading = {};
+    this.surface = null;
+    this.surfaceLoading = null;
   }
 
   Loader.prototype._use = function (level, entry) {
-    var grid = toGrid(entry.du, entry.dv, entry.ny, entry.nx, entry.validMs, level);
+    var grid = level === TEMP_KEY ? toScalarGrid(entry.d, entry.ny, entry.nx, entry.validMs)
+      : toGrid(entry.du, entry.dv, entry.ny, entry.nx, entry.validMs, level);
     this.res = grid.res;
     this.grids[level] = grid;
     this.urls[level] = entry.url;
@@ -272,36 +322,87 @@ var WidgetOpenData = (function () {
     return this.loading[level];
   };
 
-  /** The u and v fields of a level in one file: { url, validMs, ny, nx, du, dv }. */
+  /** The kept temperature when recent enough, else null. */
+  Loader.prototype.keptTemp = function () { return this.kept(TEMP_KEY); };
+
+  /** { grid, changed } with the latest file's temperature; null on failure. */
+  Loader.prototype.loadTemp = function () { return this.load(TEMP_KEY); };
+
+  /** The model's ground height, read once and then kept for good (it does
+      not change between runs); null when it cannot be read. */
+  Loader.prototype.loadSurface = function () {
+    var self = this, key = cacheKey(this.model, SURFACE_KEY);
+    if (this.surface) return Promise.resolve(this.surface);
+    if (this.surfaceLoading) return this.surfaceLoading;
+    this.surfaceLoading = Promise.resolve(this.store.get(key)).catch(function () { return null; }).then(function (entry) {
+      if (entry && entry.d) return entry;
+      return self._readVars({ url: SURFACE_URL(self.model, self.dataBase), validMs: null }, null).then(function (e) {
+        var kept = { url: e.url, ny: e.ny, nx: e.nx, d: e.data[0] };
+        self.store.put(key, kept);
+        return kept;
+      });
+    }).then(function (entry) {
+      self.surface = Grids.of(self.model) ? toModelGrid(entry.d, entry.ny, entry.nx, null, self.model, self.step)
+        : toScalarGrid(entry.d, entry.ny, entry.nx, null);
+      return self.surface;
+    }).catch(function (err) {
+      console.warn('[temp] model ground height: ' + err);
+      return null;
+    }).then(function (grid) {
+      self.surfaceLoading = null;
+      return grid;
+    });
+    return this.surfaceLoading;
+  };
+
+  /** The fields of a level in one file: { url, validMs, ny, nx, du, dv },
+      or { …, d } for the temperature. */
   Loader.prototype._read = function (f, level) {
-    var self = this, lib = null, names = varNames(level);
+    var temp = level === TEMP_KEY;
+    return this._readVars(f, temp ? ['temperature_2m'] : varNames(level)).then(function (e) {
+      var out = { url: e.url, validMs: e.validMs, ny: e.ny, nx: e.nx };
+      if (temp) out.d = e.data[0];
+      else { out.du = e.data[0]; out.dv = e.data[1]; }
+      return out;
+    });
+  };
+
+  /** Named fields of a file, all the same size: { url, validMs, ny, nx,
+      data: [Float32Array] }. names null reads the root itself, for a file
+      holding a single field (HSURF.om). */
+  Loader.prototype._readVars = function (f, names) {
+    var self = this, lib = null;
     return this.importReader().then(function (m) {
       lib = m;
       return lib.OmFileReader.create(new TailBackend(f.url, TAIL_BYTES, self.fetch));
     }).then(function (root) {
+      if (!names) return [root];
       var kids = [];
       for (var i = 0; i < root.numberOfChildren(); i++) kids.push(root.getChild(i));
-      return Promise.all(kids);
-    }).then(function (kids) {
-      var find = function (n) { return kids.filter(function (k) { return k && k.getName() === n; })[0]; };
-      var u = find(names[0]), v = find(names[1]);
-      if (!u || !v) throw new Error('no ' + names[0] + ' in ' + f.url);
-      var dims = u.getDimensions(), ny = Number(dims[0]), nx = Number(dims[1]);
+      return Promise.all(kids).then(function (all) {
+        return names.map(function (n) {
+          var k = all.filter(function (c) { return c && c.getName() === n; })[0];
+          if (!k) throw new Error('no ' + n + ' in ' + f.url);
+          return k;
+        });
+      });
+    }).then(function (vars) {
+      var dims = vars[0].getDimensions(), ny = Number(dims[0]), nx = Number(dims[1]);
       var args = {
         type: lib.OmDataType.FloatArray,
         ranges: [{ start: 0, end: ny }, { start: 0, end: nx }],
         ioSizeMax: BigInt(1048576),
         ioSizeMerge: BigInt(65536)
       };
-      return Promise.all([u.read(args), v.read(args)]).then(function (d) {
-        return { url: f.url, validMs: f.validMs, ny: ny, nx: nx, du: d[0], dv: d[1] };
+      return Promise.all(vars.map(function (v) { return v.read(args); })).then(function (data) {
+        return { url: f.url, validMs: f.validMs, ny: ny, nx: nx, data: data };
       });
     });
   };
 
   return {
     BASE: BASE, fileUrl: fileUrl, varNames: varNames, mergeRanges: mergeRanges, TailBackend: TailBackend,
-    toGrid: toGrid, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
+    toGrid: toGrid, toScalarGrid: toScalarGrid, toModelGrid: toModelGrid, gridOf: function (model, step) { return Grids.thin(Grids.of(model), step || 1); }, traffic: traffic, SURFACE_URL: SURFACE_URL, cacheKey: cacheKey, usableKept: usableKept, idbStore: idbStore, Loader: Loader
   };
 })();
 

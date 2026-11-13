@@ -20,7 +20,7 @@
  *
  * The tile definitions live in providers/mapProviders.js; the labels live here
  * because that is what the gettext extraction and the two radar views share.
- * Both RadarWebEngineView and RadarWebEngineViewLibreWXR instantiate this and
+ * Both RadarWebEngineView and WeatherMapView instantiate this and
  * hand the resulting list to their Leaflet page.
  */
 import QtQuick

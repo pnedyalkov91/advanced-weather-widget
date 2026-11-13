@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="26" viewBox="0 0 30 26">
+<title>isobares</title>
+<g fill="none" stroke="#4aa3ff" stroke-width="1.7">
+<ellipse cx="15" cy="13" rx="8.5" ry="6.5"/>
+<ellipse cx="15" cy="13" rx="5" ry="3.7"/>
+<ellipse cx="15" cy="13" rx="1.6" ry="1.1"/>
+</g>
+</svg>

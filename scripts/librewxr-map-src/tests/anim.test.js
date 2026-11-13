@@ -1,0 +1,1254 @@
+'use strict';
+// Unit tests for the temperature animation (glue-anim.js).
+// Run: node --test scripts/librewxr-map-src/tests/*.test.js
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const A = require('../glue-anim.js');
+
+const H = 3600e3;
+const at = (s) => Date.parse(s);
+
+test('alignedTimes: the steps of the files that cover a range, its ends rounded out', () => {
+  // The radar's range, 21:10 to 00:20: from 21:00 to 03:00, every 3 h.
+  const a = A.alignedTimes(at('2026-11-08T21:10:00Z'), at('2026-11-09T00:20:00Z'), at('2026-11-08T23:00:00Z'), 3);
+  assert.deepEqual(a.times.map((t) => new Date(t).toISOString().substring(11, 16)), ['21:00', '00:00', '03:00']);
+  assert.equal(a.now, 1);                           // 00:00 is nearest to 23:00
+  const b = A.alignedTimes(at('2026-11-08T21:00:00Z'), at('2026-11-09T00:00:00Z'), at('2026-11-08T21:00:00Z'), 3);
+  assert.equal(b.times.length, 2);                  // ends on steps: nothing added
+  assert.equal(b.now, 0);
+});
+
+test('frameTimes: every 3 h around the step nearest to now', () => {
+  const ft = A.frameTimes(at('2026-11-01T14:10:00Z'), 24, 48, 3);
+  assert.equal(ft.times.length, 25);
+  assert.equal(ft.times[ft.now], at('2026-11-01T15:00:00Z'));
+  assert.equal(ft.times[0], at('2026-10-31T15:00:00Z'));
+  assert.equal(ft.times[24], at('2026-11-03T15:00:00Z'));
+});
+
+test('frameTimes: no hours before, now is the first picture', () => {
+  const ft = A.frameTimes(at('2026-11-01T14:10:00Z'), 0, 12, 3);
+  assert.equal(ft.times.length, 5);
+  assert.equal(ft.now, 0);
+  assert.equal(ft.times[0], at('2026-11-01T15:00:00Z'));
+});
+
+test('runFor: the run of that hour, never newer than the latest one', () => {
+  const latest = at('2026-11-01T06:00:00Z');
+  assert.equal(A.runFor(at('2026-10-31T21:00:00Z'), latest), at('2026-10-31T18:00:00Z'));
+  assert.equal(A.runFor(at('2026-10-31T18:00:00Z'), latest), at('2026-10-31T18:00:00Z'));
+  assert.equal(A.runFor(at('2026-11-01T15:00:00Z'), latest), latest);
+  assert.equal(A.runFor(at('2026-11-03T00:00:00Z'), latest), latest);
+  // Past the 6 days of the 06 UTC run: the 00 UTC one, 15 days long.
+  assert.equal(A.runFor(at('2026-11-07T06:00:00Z'), latest), latest);
+  assert.equal(A.runFor(at('2026-11-07T09:00:00Z'), latest), at('2026-11-01T00:00:00Z'));
+  assert.equal(A.runFor(at('2026-11-07T09:00:00Z'), at('2026-11-01T12:00:00Z')), at('2026-11-01T12:00:00Z'));
+});
+
+test('Frames: given the times of the animation (a range of the radar or satellite), it reads those, not its own', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-09T06:00:00Z' }) }),
+    _readVars: async (f) => { read.push(new Date(f.validMs).toISOString().slice(11, 16)); return { data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 }; },
+  };
+  // The satellite's range, 23:00 to 12:00, on the files' steps: 21:00 to 12:00.
+  const times = A.alignedTimes(at('2026-11-08T23:00:00Z'), at('2026-11-09T12:00:00Z'), at('2026-11-09T10:50:00Z'), 3);
+  // pastH and futureH as the page works them out: from now they give 00:00 to 15:00.
+  const f = new A.Frames(loader, { now: () => at('2026-11-09T10:50:00Z'), pastH: 12, futureH: 2, times: times.times, nowIndex: times.now });
+  assert.deepEqual(f.times, times.times);
+  assert.equal(f.nowIndex, times.now);
+  await f.load();
+  assert.deepEqual(read.sort(), ['00:00', '03:00', '06:00', '09:00', '12:00', '21:00']);
+  assert.ok(f.times.every((_, i) => f.ready(i)));
+});
+
+test('hasFile: every 3 h for 6 days, then every 6 h', () => {
+  const run = at('2026-11-01T00:00:00Z');
+  assert.equal(A.hasFile(at('2026-11-07T00:00:00Z'), run), true);
+  assert.equal(A.hasFile(at('2026-11-07T03:00:00Z'), run), false);
+  assert.equal(A.hasFile(at('2026-11-07T06:00:00Z'), run), true);
+  assert.equal(A.hasFile(at('2026-11-06T21:00:00Z'), run), true);
+});
+
+test('Frames: an hour without file is halfway between its neighbors', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-01T00:00:00Z' }) }),
+    _readVars: async (f) => { read.push(new Date(f.validMs).toISOString()); return { data: [new Float32Array(12).fill(f.validMs % (12 * H) ? 10 : 0)], ny: 3, nx: 4 }; },
+  };
+  const f = new A.Frames(loader, { now: () => at('2026-11-07T03:00:00Z'), pastH: 3, futureH: 3 });
+  await f.load();
+  assert.equal(read.includes('2026-11-07T03:00:00.000Z'), false);
+  assert.deepEqual(f.between, [false, true, false]);
+  assert.equal(f.grid(1).values[0], 5);            // between 0 at 00 h and 10 at 06 h
+});
+
+test('frameUrl: run folder, then the valid hour', () => {
+  assert.equal(A.frameUrl(at('2026-10-31T21:00:00Z'), at('2026-10-31T18:00:00Z'), 'ecmwf_ifs025', 'https://x/data_spatial/'),
+    'https://x/data_spatial/ecmwf_ifs025/2026/10/31/1800Z/2026-10-31T2100.om');
+});
+
+test('pack and unpack: half degrees, ends held, NaN kept', () => {
+  const back = A.unpack(A.pack(Float32Array.from([12.34, -45.66, NaN, 0, -95, 52])));
+  assert.equal(back[0], 12.5);
+  assert.equal(back[1], -45.5);
+  assert.ok(Number.isNaN(back[2]));
+  assert.equal(back[3], 0);
+  assert.equal(back[4], -80);
+  assert.equal(back[5], 47);
+});
+
+test('Frames: the pictures of the old range are taken over, the rest is read', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-01T06:00:00Z' }) }),
+    _readVars: async (f) => { read.push(f.validMs); return { data: [new Float32Array(12).fill(5)], ny: 3, nx: 4 }; },
+  };
+  const now = () => at('2026-11-01T14:00:00Z');
+  const small = new A.Frames(loader, { now, pastH: 3, futureH: 3 });
+  await small.load();
+  assert.equal(read.length, 3);
+  read.length = 0;
+  const big = new A.Frames(loader, { now, pastH: 6, futureH: 6, reuse: small });
+  assert.equal(big.ready(big.nowIndex), true);
+  await big.load();
+  assert.deepEqual(read.sort(), [at('2026-11-01T09:00:00Z'), at('2026-11-01T21:00:00Z')]);
+  assert.equal(big.grid(0).values[0], 5);
+});
+
+test('Frames.gridAt: the frame after next is unpacked ahead, when the page is idle', () => {
+  const f = Object.create(A.Frames.prototype), idle = [];
+  let unpacked = 0;
+  f.times = [0, 3 * H, 6 * H, 9 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = Object.assign({}, A.FIELDS.temperature, { unpack: (parts) => { unpacked++; return A.unpack(parts[0]); } });
+  f.packed = [0, 10, 20, 30].map((t) => [A.pack(Float32Array.from([t]))]);
+  f.idle = (cb) => idle.push(cb);
+  f.gridAt(0.5);
+  assert.equal(unpacked, 2);
+  assert.equal(idle.length, 1);                     // frame 2 asked for
+  idle.shift()();
+  assert.equal(unpacked, 3);
+  assert.equal(f.gridAt(1.5).valuesB[0], 20);       // already there when the step comes
+  assert.equal(unpacked, 3);
+  f.gridAt(1.6);
+  assert.equal(idle.length, 1);                     // frame 3, once
+  f.gridAt(1.7);
+  assert.equal(idle.length, 1);
+});
+
+test('loadOrder: nearest to now first, the future first on a tie', () => {
+  assert.deepEqual(A.loadOrder(5, 2), [2, 3, 1, 4, 0]);
+});
+
+test('Frames.gridAt: the two frames around and the share of the second, the time in between', () => {
+  const f = Object.create(A.Frames.prototype);
+  f.times = [0, 3 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = A.FIELDS.temperature;
+  f.packed = [[A.pack(Float32Array.from([0, NaN]))], [A.pack(Float32Array.from([10, 4]))]];
+  const g = f.gridAt(0.25);
+  assert.deepEqual([g.values[0], g.valuesB[0], g.mix], [0, 10, 0.25]);   // mixed where the layer reads them
+  assert.ok(Number.isNaN(g.values[1]));
+  assert.equal(g.times[0], 0.75 * H / 1000);
+  assert.equal(f.gridAt(0.5).values, g.values);                       // unpacked once
+  assert.equal(f.gridAt(1).values[0], 10);          // the last frame alone
+  f.between = [false, true];
+  assert.equal(f.isFile(0), true);
+  assert.equal(f.isFile(0.25), false);
+  assert.equal(f.isFile(1), false);                 // no file: halfway between its neighbors
+  f.packed[1] = null;
+  assert.equal(f.gridAt(0.5).values[0], 0);         // the next one not read yet
+});
+
+function fakePlayer(ready, opts) {
+  const shown = [];
+  const clock = { t: 0, settled: true };
+  const frames = { times: ready.map((_, i) => i * 3 * H), nowIndex: 0, timeAt: (pos) => pos * 3 * H, ready: (i) => ready[i], isFile: (i) => i === Math.floor(i) && !!ready[i] && !(opts && opts.between || [])[i],
+    gridAt: (pos) => (ready[Math.floor(pos)] ? { pos } : null) };
+  const layer = { showFile: (g) => shown.push(+g.pos.toFixed(3)), settled: () => clock.settled };
+  const p = new A.Player(frames, layer, Object.assign({ now: () => clock.t }, opts));
+  return { p, shown, clock };
+}
+
+test('Player: in between pictures as the map draws them, up to the next frame', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 500, minFrameMs: 100 });
+  p.show(0);
+  p.play(true);
+  clock.t = 50;
+  p._tick();
+  assert.deepEqual(shown, [0]);                      // too soon after the last picture
+  clock.t = 250; clock.settled = false;
+  p._tick();
+  assert.deepEqual(shown, [0]);                      // the map is still drawing
+  clock.settled = true;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.25]);
+  clock.t = 1750;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.25, 1]);             // held at the next frame
+  clock.t = 3000;
+  p._tick();
+  p._tick();
+  assert.deepEqual(shown, [0, 0.25, 1, 2]);          // the last one stays
+  clock.t = 3600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.25, 1, 2, 0]);
+  p.play(false);
+});
+
+test('Player: the cap of pictures per second holds with a timer of 16 ms', () => {
+  // A cap of 15 a second used to give 12.5: 66.7 ms waited for, 80 ms
+  // reached at the timer's steps.
+  for (const fps of [4, 8, 15]) {
+    const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 100000, endPauseMs: 0, minFrameMs: 1000 / fps });
+    p.show(0);
+    p.play(true);
+    for (clock.t = 16; clock.t <= 2000; clock.t += 16) p._tick();
+    p.play(false);
+    const got = (shown.length - 1) / 2;
+    assert.ok(Math.abs(got - fps) <= 0.5, fps + ' a second asked, ' + got + ' shown');
+  }
+});
+
+test('Player: with only still images (stops), one image every third of a step, however far apart', () => {
+  // Frames every 3 h; images change at 0, 1 h and 2.5 h, then the frames.
+  // Each stays stepMs / 3, whatever the hours between: the radar's 10
+  // minutes and the satellite's hour go by as fast as the files' 3 h.
+  const stops = [0, 1 * H, 2.5 * H];
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 3000, endPauseMs: 0, minFrameMs: 50, stops: () => stops });
+  p.show(0);
+  p.play(true);
+  for (clock.t = 16; clock.t <= 900; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0]);                      // nothing in between: the same image
+  for (; clock.t <= 1100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333]);               // the 1 h image, after a third of a step
+  for (; clock.t <= 1900; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333]);
+  for (; clock.t <= 2100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333, 0.833]);        // 1.5 h later, the same third of a step
+  for (; clock.t <= 3100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333, 0.833, 1]);     // the next frame is a stop too
+  p.play(false);
+});
+
+test('Player: stops() null (a layer drawn between frames) plays in between as before', () => {
+  const { p, shown, clock } = fakePlayer([true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, stops: () => null });
+  p.show(0);
+  p.play(true);
+  clock.t = 250;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.25]);
+  p.play(false);
+});
+
+test('Player: a frame not read is jumped over after stepMs', () => {
+  const { p, shown, clock } = fakePlayer([true, false, true], { stepMs: 1000, endPauseMs: 0 });
+  p.show(0);
+  p.play(true);
+  clock.t = 500;
+  p._tick();
+  assert.deepEqual(shown, [0]);
+  clock.t = 1000;
+  p._tick();
+  assert.deepEqual(shown, [0, 2]);
+  p.play(false);
+});
+
+test('Player.seek: only the last position asked counts, once the map is free', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true, true], {});
+  p.show(0);
+  clock.settled = false;
+  p.seek(1); p.seek(2); p.seek(3); p.seek(2);
+  assert.deepEqual(shown, [0]);
+  clock.settled = true;
+  p._tick();
+  assert.deepEqual(shown, [0, 2]);
+  p._tick();
+  assert.deepEqual(shown, [0, 2]);                   // nothing more to do
+  assert.equal(p.timer, null);
+});
+
+test('Player.seek: a map that never answers does not hold it for ever', () => {
+  const { p, shown, clock } = fakePlayer([true, true], {});
+  p.show(0);
+  clock.settled = false;
+  p.seek(1);
+  clock.t = 2000;
+  p._tick();
+  assert.deepEqual(shown, [0, 1]);
+  p.play(false);
+});
+
+test('Player.step: one hour at a time on the hour grid, paused, held at the ends without the loop', () => {
+  const { p, shown } = fakePlayer([true, true, true], { loop: false });
+  p.show(0);
+  p.play(true);
+  p.step(1, 3);
+  assert.equal(p.playing, false);
+  assert.deepEqual(shown, [0, 0.333]);
+  p.step(1, 3); p.step(1, 3);
+  assert.deepEqual(shown, [0, 0.333, 0.667, 1]);
+  p.show(1.5);                                       // between hours
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [1.333]);
+  p.show(0);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [0]);
+});
+
+test('Player.stepFile: to the next frame from its file, none past the ends without the loop', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { between: [false, false, true, false], loop: false });
+  p.show(0.5);
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [1]);
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [3]);            // 2 is worked out, not from a file
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [3]);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [1]);
+});
+
+test('Player.toEnd: Home and End, to the first or last picture read, paused', () => {
+  const { p, shown } = fakePlayer([false, true, true, true, false]);
+  p.show(2);
+  p.play(true);
+  p.toEnd(1);
+  assert.equal(p.playing, false);
+  assert.deepEqual(shown.slice(-1), [3]);            // 4 not read yet
+  p.toEnd(-1);
+  assert.deepEqual(shown.slice(-1), [1]);
+});
+
+test('Player with the loop: the first picture follows the last at the pace of the others', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, minFrameMs: 100 });
+  p.show(2);
+  p.play(true);
+  clock.t = 50;
+  p._tick();
+  assert.deepEqual(shown, [2]);
+  clock.t = 100;
+  p._tick();
+  assert.deepEqual(shown, [2, 0]);
+  p.play(false);
+});
+
+test('Player without the loop: the play stops on the last picture, and starts again from the first', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, minFrameMs: 100, loop: false });
+  p.show(1);
+  p.play(true);
+  clock.t = 5000;
+  p._tick();
+  assert.deepEqual(shown, [1, 2]);
+  clock.t = 6000;
+  p._tick();
+  assert.equal(p.playing, false);
+  assert.deepEqual(shown, [1, 2]);
+  p.play(true);
+  p._tick();
+  assert.deepEqual(shown, [1, 2, 0]);
+  assert.equal(p.playing, true);
+  p.play(false);
+});
+
+test('Player.step and stepFile with the loop: past the last to the first, before the first to the last', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { between: [false, false, true, false] });
+  p.show(3);
+  p.step(1, 3);
+  assert.deepEqual(shown.slice(-1), [0]);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [3]);
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [0]);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [3]);
+  p.loop = false;
+  p.stepFile(1);
+  assert.deepEqual(shown.slice(-1), [3]);
+});
+
+test('Frames.gridAt: near the end, the first two frames are unpacked ahead for the loop', () => {
+  const f = Object.create(A.Frames.prototype), asked = [];
+  f.times = [0, 3 * H, 6 * H, 9 * H, 12 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = A.FIELDS.temperature;
+  f.packed = [0, 10, 20, 30, 40].map((t) => [A.pack(Float32Array.from([t]))]);
+  f._warm = (i) => asked.push(i);
+  f.gridAt(1.5);
+  assert.deepEqual(asked, [3]);
+  asked.length = 0;
+  f.gridAt(2.5);
+  assert.deepEqual(asked.sort(), [0, 1, 4]);
+});
+
+test('windField: the 10 m wind as it was, another level a field of its own without finer models', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  assert.equal(A.windField('10m'), A.FIELDS.wind);
+  const f = A.windField('700hPa');
+  assert.equal(A.windField('700hPa'), f);
+  assert.equal(f.id, 'wind');
+  assert.equal(f.store, 'wind-700hPa-0.25');
+  assert.equal(f.fines, false);
+  assert.deepEqual(f.vars, ['wind_u_component_700hPa', 'wind_v_component_700hPa']);
+  const read = [];
+  const frames = new A.Frames(windLoader(read), { field: f, now: () => at('2026-11-01T14:00:00Z'), pastH: 3, futureH: 3 });
+  await frames.load();
+  assert.equal(read[0], 'wind_u_component_700hPa,wind_v_component_700hPa');
+  assert.equal(frames.grid(1).u[0][22], 15);
+});
+
+test('Frames: a read of the global model takes a place of the gate per million points read, one per variable', () => {
+  const loader = { base: 'b/', model: 'ecmwf_ifs025' };
+  const weight = (vars) => new A.Frames(loader, { field: { id: 'x', store: 'x', vars }, now: () => 0, pastH: 0, futureH: 3 }).weight;
+  assert.equal(weight(['temperature_2m']), 1);
+  assert.equal(weight(['wind_u_component_10m', 'wind_v_component_10m']), 2);
+  assert.equal(weight(['precipitation', 'precipitation_type', 'snowfall_water_equivalent']), 3);
+  assert.equal(weight(['cloud_cover', 'cloud_cover_high', 'cloud_cover_mid', 'cloud_cover_low']), 4);
+});
+
+test('FIELDS.wind: u and v by half m/s on one byte, ends held, NaN kept', () => {
+  const w = A.FIELDS.wind;
+  const back = w.unpackPart(w.packPart(Float32Array.from([3.26, -12.7, NaN, 80, -80])));
+  assert.deepEqual(Array.from(back.slice(0, 2)), [3.5, -12.5]);
+  assert.ok(Number.isNaN(back[2]));
+  assert.deepEqual(Array.from(back.slice(3)), [63.5, -63.5]);
+});
+
+function windLoader(read) {
+  return {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-01T06:00:00Z' }) }),
+    // 5 x 8 from the file, 45 degrees (south to north, no +180 column): u = hour, v = -hour
+    _readVars: async (f, names) => {
+      read.push(names.join(','));
+      const h = new Date(f.validMs).getUTCHours();
+      return { data: [new Float32Array(40).fill(h), new Float32Array(40).fill(-h)], ny: 5, nx: 8 };
+    },
+  };
+}
+
+test('Frames of the wind: both components read, every point of the file, mixed in time by the layer', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const f = new A.Frames(windLoader(read), { field: A.FIELDS.wind, now: () => at('2026-11-01T14:00:00Z'), pastH: 3, futureH: 3 });
+  await f.load();
+  assert.equal(read[0], 'wind_u_component_10m,wind_v_component_10m');
+  const g = f.grid(1);
+  assert.deepEqual([g.lats.length, g.lons.length, g.res], [5, 9, 45]);   // with the +180 column, as the radar reads it
+  assert.deepEqual([g.lats[0], g.lats[4], g.lons[0], g.lons[8]], [90, -90, -180, 180]);
+  assert.equal(g.u[0].length, 45);
+  assert.equal(g.u[0][22], 15);
+  assert.equal(g.v[0][22], -15);
+  const m = f.gridAt(1.5);
+  assert.deepEqual(m.times, [at('2026-11-01T15:00:00Z') / 1000, at('2026-11-01T18:00:00Z') / 1000]);
+  assert.equal(m.at, at('2026-11-01T16:30:00Z') / 1000);
+  assert.equal(m.u[1][0], 18);
+});
+
+test('Group: ready when every layer is, one grid each, settled when all are', () => {
+  const mk = (ready, settled) => {
+    const shown = [];
+    return {
+      shown,
+      frames: { ready: (i) => ready[i], isFile: (p) => p === 0, gridAt: (p) => (ready[Math.floor(p)] ? { p } : null), failed: [false, ready[1] === false] },
+      layer: { showFile: (g) => shown.push(g.p), settled: () => settled.v, setMoving: (on) => shown.push(on ? 'moving' : 'still') },
+    };
+  };
+  const g = new A.Group([0, 3 * H], 0);
+  assert.equal(g.ready(0), true);                   // no layer, nothing to wait for (radar alone)
+  const s1 = { v: true }, s2 = { v: false };
+  const temp = mk([true, true], s1), wind = mk([true, false], s2);
+  g.add('temperature', temp.frames, temp.layer);
+  g.add('wind', wind.frames, wind.layer);
+  assert.deepEqual([g.ready(0), g.ready(1)], [true, false]);
+  assert.deepEqual(g.failed(), [false, true]);
+  assert.equal(g.gridAt(1), null);
+  g.showFile(g.gridAt(0.5));
+  assert.deepEqual([temp.shown, wind.shown], [[0.5], [0.5]]);
+  assert.equal(g.settled(), false);
+  s2.v = true;
+  assert.equal(g.settled(), true);
+  g.setMoving(true);
+  assert.deepEqual(temp.shown, [0.5, 'moving']);
+  assert.equal(g.timeAt(0.5), 1.5 * H);
+  g.remove('wind');
+  assert.equal(g.ready(1), true);
+});
+
+test('Gate: never more than n at once, the rest in turn', async () => {
+  const g = new A.Gate(2);
+  let running = 0, most = 0;
+  const job = () => g.run(async () => {
+    running++; most = Math.max(most, running);
+    await new Promise((r) => setImmediate(r));
+    running--;
+  });
+  await Promise.all([job(), job(), job(), job(), job()]);
+  assert.equal(most, 2);
+  await assert.rejects(g.run(async () => { throw new Error('x'); }));
+  await job();                                       // a failure frees its place
+});
+
+/** An in-memory stand-in for frameStore(). */
+function memStore() {
+  const m = new Map();
+  return {
+    m,
+    get: async (k) => (m.has(k) ? m.get(k) : null),
+    put: async (k, v) => { m.set(k, v); },
+    keys: async () => [...m.keys()],
+    del: async (ks) => { ks.forEach((k) => m.delete(k)); },
+  };
+}
+
+test('frameKey and parseKey: model, layer, run and hour, read back from the key alone', () => {
+  const k = A.frameKey('ecmwf_ifs025', 'wind', at('2026-11-01T06:00:00Z'), at('2026-11-01T15:00:00Z'));
+  assert.deepEqual(A.parseKey(k), { model: 'ecmwf_ifs025', field: 'wind', runMs: at('2026-11-01T06:00:00Z'), validMs: at('2026-11-01T15:00:00Z') });
+  assert.equal(A.parseKey('something else'), null);
+});
+
+test('Frames with a store: read from the network once, from the store the next time', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [], store = memStore(), now = () => at('2026-11-01T14:00:00Z');
+  const first = new A.Frames(windLoader(read), { field: A.FIELDS.wind, now, pastH: 3, futureH: 3, store, model: 'm' });
+  await first.load();
+  assert.equal(read.length, 3);
+  assert.equal(store.m.size, 3);
+  read.length = 0;
+  const again = new A.Frames(windLoader(read), { field: A.FIELDS.wind, now, pastH: 3, futureH: 3, store, model: 'm' });
+  const seen = [];
+  again.onFrame = (i) => seen.push(i);
+  await again.load();
+  assert.equal(read.length, 0);
+  assert.deepEqual(seen.sort(), [0, 1, 2]);
+  assert.equal(again.grid(1).u[0][22], 15);
+  assert.equal(again.grid(1).lons.length, 9);
+});
+
+test('Frames with a store: what failed in the store or the network does not stop the rest', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [], store = memStore();
+  store.get = async () => { throw new Error('refused'); };
+  store.put = async () => { throw new Error('full'); };
+  const f = new A.Frames(windLoader(read), { field: A.FIELDS.wind, now: () => at('2026-11-01T14:00:00Z'), pastH: 3, futureH: 3, store, model: 'm' });
+  await f.load();
+  assert.equal(read.length, 3);
+  assert.equal(f.ready(0) && f.ready(1) && f.ready(2), true);
+});
+
+test('pruneStore: hours past the longest range and those of a run since replaced go', async () => {
+  const store = memStore(), latest = at('2026-11-01T06:00:00Z'), now = at('2026-11-01T14:00:00Z');
+  const keep = [
+    A.frameKey('m', A.FIELDS.wind.store, at('2026-10-31T18:00:00Z'), at('2026-10-31T21:00:00Z')),   // the past, from its own run
+    A.frameKey('m', 'temperature', latest, at('2026-11-02T00:00:00Z')),                // the future, from the latest run
+    A.frameKey('m', 'wind-700hPa-0.25', latest, at('2026-11-02T00:00:00Z')),           // the wind at another level, even never asked for here
+  ];
+  const drop = [
+    A.frameKey('m', A.FIELDS.wind.store, at('2026-11-01T00:00:00Z'), at('2026-11-02T00:00:00Z')),   // future of an older run
+    A.frameKey('m', A.FIELDS.wind.store, at('2026-10-23T12:00:00Z'), at('2026-10-23T15:00:00Z')),   // older than 8 days and a bit
+  ];
+  drop.push(A.frameKey('m', 'wind', latest, at('2026-11-01T15:00:00Z')));   // a layer kept another way before (the wind at 0.5 degree)
+  for (const k of keep.concat(drop, ['other|stuff'])) await store.put(k, {});
+  await A.pruneStore(store, 'm', latest, now, 192);
+  assert.deepEqual([...store.m.keys()].sort(), keep.concat(['other|stuff']).sort());
+});
+
+// === Switching layers: pictures kept, fades ===
+test('Frames.pause keeps the pictures: a Frames taking them over is ready at once and reads nothing', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const read = [];
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-01T00:00:00Z' }) }),
+    _readVars: async (f) => { read.push(f.validMs); return { data: [new Float32Array(12).fill(f.validMs % (12 * H) ? 10 : 0)], ny: 3, nx: 4 }; },
+  };
+  const now = () => at('2026-11-07T03:00:00Z');
+  const first = new A.Frames(loader, { now, pastH: 3, futureH: 3 });
+  await first.load();
+  first.pause();
+  assert.equal(first.stopped, true);
+  read.length = 0;
+  const again = new A.Frames(loader, { now, pastH: 3, futureH: 3, reuse: first });
+  // The hour without file too, before latest.json is read again.
+  assert.deepEqual([0, 1, 2].map((i) => again.ready(i)), [true, true, true]);
+  assert.equal(again.grid(1).values[0], 5);
+  await again.load();
+  assert.deepEqual(read, []);
+});
+
+/** A clock and a frame loop driven by hand. */
+function fakeFrames() {
+  const c = { t: 0, cbs: [], later: [] };
+  c.now = () => c.t;
+  c.raf = (f) => { c.cbs.push(f); };
+  c.defer = (f) => { c.later.push(f); };
+  c.step = (ms) => { c.t += ms; const cbs = c.cbs; c.cbs = []; cbs.forEach((f) => f(c.t)); };
+  c.run = (ms, every = 16) => { for (let n = 0; n < ms; n += every) c.step(every); };
+  c.tick = () => { const l = c.later; c.later = []; l.forEach((f) => f()); };
+  return c;
+}
+
+test('Fade: from where it is to the target in ms, a new target takes over at once', () => {
+  const c = fakeFrames(), seen = [];
+  const f = new A.Fade((v) => seen.push(+v.toFixed(2)), { ms: 400, now: c.now, raf: c.raf, from: 0 });
+  let done = 0;
+  f.to(1, () => done++);
+  c.run(200);
+  assert.ok(f.value > 0.4 && f.value < 0.6, String(f.value));
+  f.to(0, () => done += 10);
+  c.run(500);
+  assert.equal(f.value, 0);
+  assert.equal(done, 10, 'the first end never comes');
+  assert.equal(seen[seen.length - 1], 0);
+});
+
+function fakeLayer() {
+  return { fade: 1, removed: 0, setFade(v) { this.fade = v; }, remove() { this.removed++; } };
+}
+const fakeTrackFrames = () => ({ paused: 0, pause() { this.paused++; } });
+
+test('Switcher: a layer switched off fades out, then goes; its pictures are kept', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const layer = fakeLayer(), frames = fakeTrackFrames();
+  s.leave('pressure', layer, frames);
+  assert.equal(frames.paused, 1);
+  c.tick();
+  c.run(200);
+  assert.ok(layer.fade > 0 && layer.fade < 1);
+  assert.equal(layer.removed, 0);
+  c.run(300);
+  assert.equal(layer.removed, 1);
+  assert.equal(s.enter('pressure').reuse, frames);
+});
+
+test('Switcher: one color for another, the old one waits for the first picture of the new', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, waitMs: 2000 });
+  const temp = fakeLayer(), pres = fakeLayer();
+  s.leave('temperature', temp, fakeTrackFrames());
+  const e = s.enter('pressure');
+  assert.equal(e.layer, null);                       // a new layer to make
+  s.entered('pressure', pres);
+  assert.equal(pres.fade, 0);
+  c.tick();
+  c.run(600);
+  assert.equal(temp.fade, 1, 'still there while the new one has nothing');
+  s.shown('pressure');
+  c.run(200);
+  assert.ok(temp.fade < 1 && pres.fade > 0);
+  assert.ok(Math.abs(temp.fade + pres.fade - 1) < 0.1, 'one goes as the other comes');
+  c.run(300);
+  assert.equal(pres.fade, 1);
+  assert.equal(temp.removed, 1);
+});
+
+test('Switcher: the old one does not wait for ever', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, waitMs: 1000 });
+  const temp = fakeLayer();
+  s.leave('temperature', temp, fakeTrackFrames());
+  s.enter('pressure');
+  s.entered('pressure', fakeLayer());
+  c.tick();
+  c.run(1500);
+  assert.equal(temp.removed, 1);
+});
+
+test('Switcher: switched on again while it fades out, the same layer comes back', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const temp = fakeLayer(), frames = fakeTrackFrames();
+  s.leave('temperature', temp, frames);
+  c.tick();
+  c.run(200);
+  const e = s.enter('temperature');
+  assert.equal(e.layer, temp);
+  assert.equal(e.reuse, frames);
+  s.entered('temperature', temp);
+  s.shown('temperature');
+  c.run(500);
+  assert.equal(temp.fade, 1);
+  assert.equal(temp.removed, 0);
+});
+
+test('Switcher: at most `keep` sets of pictures kept, the oldest go first', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 0, now: c.now, raf: c.raf, defer: c.defer, keep: 2 });
+  const f = { a: fakeTrackFrames(), b: fakeTrackFrames(), d: fakeTrackFrames() };
+  for (const id of ['a', 'b', 'd']) s.leave(id, fakeLayer(), f[id]);
+  assert.equal(s.enter('a').reuse, null);
+  assert.equal(s.enter('b').reuse, f.b);
+});
+
+test('Switcher.clear: every layer leaving goes at once, nothing kept', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const temp = fakeLayer();
+  s.leave('temperature', temp, fakeTrackFrames());
+  s.clear();
+  assert.equal(temp.removed, 1);
+  assert.equal(s.enter('temperature').reuse, null);
+});
+
+test('Group: onShow of a layer, once, after its first picture', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  let n = 0;
+  g.add('t', { ready: () => true, gridAt: (p) => ({ p }) }, { showFile() {} }, { onShow: () => n++ });
+  g.showFile(g.gridAt(0));
+  g.showFile(g.gridAt(1));
+  assert.equal(n, 1);
+});
+
+test('Switcher: a layer without setFade just comes and goes; flush ends the fades out at once', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer });
+  const bare = { removed: 0, remove() { this.removed++; } }, frames = fakeTrackFrames();
+  s.entered('isobars', bare);
+  s.shown('isobars');
+  s.leave('isobars', bare, frames);
+  s.flush();
+  assert.equal(bare.removed, 1);
+  assert.equal(s.enter('isobars').reuse, frames, 'pictures still kept');
+});
+
+test('Switcher.drop: the pictures kept for a layer go (its data changed)', () => {
+  const c = fakeFrames();
+  const s = new A.Switcher({ ms: 0, now: c.now, raf: c.raf, defer: c.defer });
+  s.leave('airquality', fakeLayer(), fakeTrackFrames());
+  s.drop('airquality');
+  assert.equal(s.enter('airquality').reuse, null);
+});
+
+// === Playing on while layers come and go ===
+const trackOf = (ready) => {
+  const shown = [];
+  return {
+    shown,
+    frames: { ready: (i) => !!ready[i], isFile: () => true, gridAt: (p) => (ready[Math.floor(p)] ? { p } : null), failed: ready.map(() => false) },
+    layer: { showFile: (g) => shown.push(g.p), settled: () => true },
+  };
+};
+
+test('Group: a layer still loading does not hold the others; it joins once it has the picture', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 0);
+  const wind = trackOf([true, true, true]), temp = trackOf([false, true, false]);
+  g.add('wind', wind.frames, wind.layer);
+  let shownTemp = 0;
+  g.add('temperature', temp.frames, temp.layer, { optional: true, onShow: () => shownTemp++ });
+  assert.deepEqual([0, 1, 2].map((i) => g.ready(i)), [true, true, true]);
+  g.showFile(g.gridAt(0));
+  assert.deepEqual([wind.shown, temp.shown, shownTemp], [[0], [], 0]);
+  g.showFile(g.gridAt(1));
+  assert.deepEqual([wind.shown, temp.shown, shownTemp], [[0, 1], [1], 1]);
+  // Loaded: it counts again.
+  g.setOptional('temperature', false);
+  assert.equal(g.ready(2), false);
+});
+
+test('Group: layers all still loading count as before', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  const temp = trackOf([false, true]);
+  g.add('temperature', temp.frames, temp.layer, { optional: true });
+  assert.deepEqual([g.ready(0), g.ready(1)], [false, true]);
+  assert.equal(g.gridAt(0), null);
+});
+
+test('Group: a layer leaving still gets the pictures, without counting for ready or settled', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  const wind = trackOf([true, true]), old = trackOf([true, false]);
+  old.layer.settled = () => false;
+  g.add('wind', wind.frames, wind.layer);
+  g.addGhost('pressure', old.frames, old.layer);
+  assert.equal(g.ready(1), true);
+  assert.equal(g.settled(), true);
+  g.showFile(g.gridAt(0.5));
+  assert.deepEqual(old.shown, [0.5]);
+  g.showFile(g.gridAt(1));          // it has no picture there: nothing
+  assert.deepEqual(old.shown, [0.5]);
+  g.removeGhost('pressure');
+  g.showFile(g.gridAt(0));
+  assert.deepEqual(old.shown, [0.5]);
+});
+
+test('Switcher: onGone once a layer is gone, after its fade, a flush or a clear', () => {
+  const c = fakeFrames(), gone = [];
+  const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, onGone: (key, layer) => gone.push(key) });
+  s.leave('a', fakeLayer(), fakeTrackFrames());
+  c.tick();
+  c.run(500);
+  s.leave('b', fakeLayer(), fakeTrackFrames());
+  s.flush();
+  s.leave('d', fakeLayer(), fakeTrackFrames());
+  s.clear();
+  assert.deepEqual(gone, ['a', 'b', 'd']);
+});
+
+const AROME = 'meteofrance_arome_france0025';
+
+test('schedule of AROME: runs every 3 h, hourly files for 51 h', () => {
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const s = A.scheduleOf(AROME), latest = at('2026-11-07T15:00:00Z');
+  assert.equal(s.runFor(at('2026-11-07T11:00:00Z'), latest), at('2026-11-07T09:00:00Z'));
+  assert.equal(s.runFor(at('2026-11-09T12:00:00Z'), latest), latest);
+  assert.equal(s.hasFile(at('2026-11-09T18:00:00Z'), latest), true);    // +51 h
+  assert.equal(s.hasFile(at('2026-11-09T21:00:00Z'), latest), false);   // +54 h
+  assert.equal(A.scheduleOf('ecmwf_ifs025').runFor, A.runFor);
+});
+
+/** A loader over regional files of AROME's size, latest run 15Z; reads
+    lists the urls asked. */
+function aromeLoader(reads) {
+  return {
+    base: 'b/', model: 'ecmwf_ifs025',
+    fetch: async (url) => { reads.push(url); return { ok: true, json: async () => ({ reference_time: '2026-11-07T15:00:00Z' }) }; },
+    _readVars: async (f) => {
+      reads.push(f.url);
+      const d = new Float32Array(717 * 1121).fill(12);
+      d[0] = NaN;
+      return { data: [d], ny: 717, nx: 1121 };
+    }
+  };
+}
+
+test('Frames of AROME: its own latest.json and files, a regional grid with its edge weights', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const reads = [];
+  const f = new A.Frames(aromeLoader(reads), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3 });
+  await f.load();
+  assert.equal(reads[0], 'b/' + AROME + '/latest.json');
+  assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1500Z/2026-11-07T1800.om'));
+  assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1200Z/2026-11-07T1200.om'));
+  const g = f.grid(1);
+  assert.equal(g.desc.id, AROME);
+  assert.equal(g.values.length, 717 * 1121);
+  assert.equal(g.weights.length, 717 * 1121);
+  assert.ok(Number.isNaN(g.weights[0]));                 // the missing value: first point of the file (south-west)
+  assert.equal(g.weights[1120], 0);                      // grid edge (south-east)
+  assert.equal(g.weights[358 * 1121 + 560], 1);          // middle
+  assert.equal(f.grid(1).weights, g.weights);            // worked out once
+  // The blend starts up to EDGE_JITTER degrees in, varying along the edge
+  // (2 degrees in from the east edge, 80 points), and is done past both.
+  const along = (c) => { const out = []; for (let r = 300; r < 500; r++) out.push(g.weights[r * 1121 + c]); return out; };
+  const at2 = along(1120 - 80);
+  assert.ok(Math.max(...at2) - Math.min(...at2) > 0.3, 'spread ' + Math.min(...at2) + '..' + Math.max(...at2));
+  assert.ok(along(1120 - 170).every((w) => w === 1));
+});
+
+test('Frames.gridAt: the fine model rides along when it has the picture', () => {
+  const coarse = Object.create(A.Frames.prototype);
+  coarse.field = A.FIELDS.temperature;
+  coarse.times = [0, 3 * H];
+  coarse.meta = { lats: [], lons: [], res: 1 };
+  coarse.packed = [[A.pack(Float32Array.from([1]))], [A.pack(Float32Array.from([3]))]];
+  coarse.idle = () => {};
+  assert.equal(coarse.gridAt(0).fines, undefined);
+  coarse.fines = [{ fineAt: (pos) => (pos < 1 ? { tag: 'a' + pos } : null) }, { fineAt: (pos) => ({ tag: 'b' + pos }) }];
+  assert.deepEqual(coarse.gridAt(0.5).fines, [{ tag: 'a0.5' }, { tag: 'b0.5' }]);   // finest first
+  assert.deepEqual(coarse.gridAt(1).fines, [{ tag: 'b1' }]);                       // those without the picture left out
+});
+
+/** Frames of one-point pictures at 0, 3, 6 and 9 h, those of `have` in,
+    loaded when done. */
+function smallFrames(have, done) {
+  const f = Object.create(A.Frames.prototype);
+  f.field = A.FIELDS.temperature;
+  f.times = [0, 3 * H, 6 * H, 9 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.packed = f.times.map((t, i) => (have.includes(i) ? [A.pack(Float32Array.from([i * 10]))] : null));
+  f.failed = f.times.map(() => false);
+  f.idle = () => {};
+  f.done = done;
+  return f;
+}
+
+test('Frames.fineAt: full weight between two pictures in', () => {
+  const g = smallFrames([0, 1, 2, 3], true).fineAt(1.5);
+  assert.equal(g.fade, 1);
+  assert.equal(g.mix, 0.5);
+});
+
+test('Frames.fineAt: fades out toward a picture it will never have, in toward the first it has', () => {
+  const f = smallFrames([1, 2], true);
+  const out = f.fineAt(2.25);
+  assert.equal(out.values[0], 20);           // picture 2 held
+  assert.equal(out.fade, 0.75);
+  assert.equal(f.fineAt(2).fade, 1);
+  assert.equal(f.fineAt(3), null);
+  const into = f.fineAt(0.5);
+  assert.equal(into.values[0], 10);          // picture 1 ahead
+  assert.equal(into.fade, 0.5);
+});
+
+test('Frames.fineAt: a picture still loading is waited for at full weight', () => {
+  const g = smallFrames([1, 2], false).fineAt(2.25);
+  assert.equal(g.fade, 1);
+  assert.equal(smallFrames([1, 2], false).fineAt(0.5), null);
+});
+
+test('FineKeep: models out of view kept paused while they fit, the least recently seen let go', () => {
+  const mk = (model, mb) => ({ fileModel: model, packed: [[new Uint8Array(mb * 1e6)]], paused: 0, stopped: 0, pause() { this.paused++; }, stop() { this.stopped++; } });
+  const keep = new A.FineKeep(150e6);
+  const a = mk('a', 60), b = mk('b', 60), c = mk('c', 60);
+  keep.put(a); keep.put(b);
+  assert.equal(a.paused, 1);
+  assert.equal(keep.bytes(), 120e6);
+  keep.put(c);                                         // 180 MB: a goes
+  assert.equal(a.stopped, 1);
+  assert.equal(keep.take('a'), null);
+  assert.equal(keep.take('b'), b);                     // taken back, no longer kept
+  assert.equal(keep.bytes(), 60e6);
+  keep.trim(90e6);                                     // the models in view hold 90 MB: 150 in all, it fits
+  assert.equal(c.stopped, 0);
+  keep.trim(100e6);
+  assert.equal(c.stopped, 1);
+});
+
+test('Frames of a large grid: read one point in two, kept so in the store, a picture kept another way read again', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const META = 'metno_nordic_pp', reads = [], m = new Map();
+  const store = { get: async (k) => m.get(k) || null, put: async (k, v) => { m.set(k, v); }, keys: async () => [...m.keys()], del: async () => {} };
+  const loader = {
+    base: 'b/', model: 'ecmwf_ifs025',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-07T20:00:00Z' }) }),
+    _readVars: async (f) => { reads.push(f.url); return { data: [new Float32Array(2321 * 1796).fill(4)], ny: 2321, nx: 1796 }; }
+  };
+  const opts = { field: A.FIELDS.temperatureFine, fileModel: META, now: () => at('2026-11-07T21:10:00Z'), pastH: 0, futureH: 0, store };
+  // One picture kept the old way (every point) is not taken.
+  const key = A.frameKey(META, 'temperature-file', at('2026-11-07T20:00:00Z'), at('2026-11-07T21:00:00Z'));
+  m.set(key, { meta: { model: META }, parts: [new Uint8Array(4)] });
+  const f = new A.Frames(loader, opts);
+  await f.load();
+  assert.equal(reads.length, 1);
+  const g = f.grid(0);
+  assert.equal(g.desc.nx, 898);
+  assert.equal(g.values.length, 898 * 1161);
+  assert.equal(m.get(key).meta.step, 2);
+  const again = new A.Frames(loader, opts);
+  await again.load();
+  assert.equal(reads.length, 1);                       // from the store this time
+});
+
+test('Gate: a heavy job takes several places, never more than n in all', async () => {
+  const g = new A.Gate(6);
+  let used = 0, most = 0;
+  const job = (w) => g.run(async () => {
+    const took = Math.min(w, 6);
+    used += took; most = Math.max(most, used);
+    await new Promise((r) => setImmediate(r));
+    used -= took;
+  }, w);
+  await Promise.all([job(4), job(4), job(1), job(1), job(3), job(9)]);   // 9 is held to 6
+  assert.ok(most <= 6, 'at most 6, saw ' + most);
+});
+
+test('Frames: the weight of a read follows the size of the grid', () => {
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const w = (model) => new A.Frames({ base: 'b/', model: 'ecmwf_ifs025' }, { fileModel: model, now: () => 0 }).weight;
+  assert.equal(w('ecmwf_ifs025'), 1);
+  assert.equal(w('meteofrance_arome_france0025'), 1);
+  assert.equal(w('ncep_hrrr_conus'), 2);
+  assert.equal(w('cmc_gem_hrdps'), 3);
+  assert.equal(w('metno_nordic_pp'), 4);
+});
+
+test('Frames of a regional wind: its own variables, turned to u and v, two places of the gate a million points', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  const asked = [];
+  const loader = {
+    base: 'b/', model: 'ecmwf_ifs025',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-07T18:00:00Z' }) }),
+    _readVars: async (f, names) => {
+      asked.push(names.join());
+      const n = 761 * 761;
+      return { data: [new Float32Array(n).fill(10), new Float32Array(n).fill(270)], ny: 761, nx: 761 };   // 10 m/s from the west
+    }
+  };
+  const f = new A.Frames(loader, { field: A.FIELDS.windFine, fileModel: 'italia_meteo_arpae_icon_2i', now: () => at('2026-11-07T18:10:00Z'), pastH: 0, futureH: 0 });
+  assert.equal(f.weight, 1);
+  await f.load();
+  assert.deepEqual(asked, ['wind_speed_10m,wind_direction_10m']);
+  const g = f.grid(0);
+  assert.equal(g.desc.id, 'italia_meteo_arpae_icon_2i');
+  assert.equal(g.u[380 * 761 + 380], 10);              // blowing east, half m/s steps
+  assert.equal(g.v[380 * 761 + 380], 0);
+  assert.equal(g.weights.length, 761 * 761);
+  const big = new A.Frames(loader, { field: A.FIELDS.windFine, fileModel: 'ncep_hrrr_conus', now: () => 0 });
+  assert.equal(big.weight, 4);                         // 1.9 M points, two fields
+});
+
+test('FineKeep: the temperature and the wind of one model kept apart', () => {
+  const mk = (key) => ({ fileModel: 'm', keepKey: key, packed: [[new Uint8Array(10)]], pause() {}, stop() {} });
+  const keep = new A.FineKeep(1e9), t = mk('temperature|m'), w = mk('wind|m');
+  keep.put(t); keep.put(w);
+  assert.equal(keep.take('wind|m'), w);
+  assert.equal(keep.take('temperature|m'), t);
+});
+
+test('Player: slow(time) stretches the steps where it asks (the radar range)', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100 });
+  p._ensureTimer = () => {};                       // ticks by hand only
+  p.frames.timeAt = (pos) => pos * 3 * H;
+  // Six times slower from the start to 1 h, the time of position 1/3.
+  p.slow = (t) => (t < H ? 6 : 1);
+  p.show(0);
+  p.play(true);
+  clock.t = 600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1]);                 // 600 ms of a 6000 ms step
+  clock.t = 1600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267]);          // still slowed: 1000 ms more, 1/6 of a step
+  clock.t = 1700;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267, 0.283]);   // 0.267 is before 1 h: still slowed
+  clock.t = 2700;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267, 0.283, 0.45]);
+  clock.t = 2800;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.1, 0.267, 0.283, 0.45, 0.55]);   // past 1 h: full speed again
+  p.play(false);
+});
+
+test('Group: onTime gets the time of each picture shown', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 0);
+  const layer = { showFile: () => {} };
+  g.add('t', { times: g.times, ready: () => true, gridAt: (pos) => ({ pos }) }, layer);
+  const times = [];
+  g.onTime = (t) => times.push(t);
+  const grids = g.gridAt(1.5);
+  g.showFile(grids);
+  assert.deepEqual(times, [4.5 * H]);
+});
+
+test('Group: without any layer, every picture is ready and its time still goes to onTime (radar or satellite alone)', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 1);
+  const times = [];
+  g.onTime = (t) => times.push(t);
+  assert.equal(g.ready(0), true);
+  const grids = g.gridAt(1.5);
+  assert.ok(grids, 'a grid list, empty');
+  assert.equal(grids.length, 0);
+  g.showFile(grids);
+  assert.deepEqual(times, [4.5 * H]);
+});
+
+test('frameTimes: one an hour (radar and satellite views), now on the nearest hour', () => {
+  const ft = A.frameTimes(Date.parse('2026-11-08T16:40:00Z'), 2, 1, 1);
+  assert.deepEqual(ft.times.map((t) => new Date(t).toISOString().slice(11, 16)), ['15:00', '16:00', '17:00', '18:00']);
+  assert.equal(ft.now, 2);
+});
+
+test('frameTimes: every 10 minutes (the radar alone), whole minutes, the last one kept', () => {
+  const ft = A.frameTimes(Date.parse('2026-11-08T15:52:00Z'), 17 / 6, 1, 1 / 6);
+  const hm = ft.times.map((t) => new Date(t).toISOString().slice(11, 19));
+  assert.equal(hm[0], '13:00:00');                 // 15:50, the nearest 10 minutes, less 2 h 50
+  assert.equal(hm[hm.length - 1], '16:50:00');
+  assert.equal(ft.times.length, 24);
+  assert.equal(ft.now, 17);
+  assert.ok(ft.times.every((t) => t % 60000 === 0));
+});
+
+test('spanTimes: from the start to the end of the sources, a picture each step between, now the nearest', () => {
+  const at = (s) => Date.parse('2026-11-08T' + s + ':00Z');
+  const hm = (ft) => ft.times.map((t) => new Date(t).toISOString().slice(11, 16));
+  let ft = A.spanTimes(at('03:00'), at('16:10'), at('15:52'), 1);
+  assert.deepEqual(hm(ft), ['03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '16:10']);
+  assert.equal(ft.now, 13);
+  ft = A.spanTimes(at('13:10'), at('16:10'), at('15:52'), 1 / 6);
+  assert.equal(ft.times.length, 19);
+  assert.equal(hm(ft)[0], '13:10');
+  assert.equal(hm(ft)[18], '16:10');
+  assert.equal(hm(ft)[ft.now], '15:50');
+});
+
+test('keptIndex: a new range keeps the time shown, but now moves on with now', () => {
+  const old = A.frameTimes(at('2026-11-09T19:00:00Z'), 24, 48, 3);
+  const fresh = A.frameTimes(at('2026-11-10T08:00:00Z'), 24, 48, 3);
+  // On now yesterday evening: now this morning.
+  assert.equal(A.keptIndex(old.times, old.now, old.now, fresh.times, fresh.now), fresh.now);
+  // On a time picked by hand, still in the new range: that time.
+  const picked = old.now + 4;
+  assert.equal(fresh.times[A.keptIndex(old.times, old.now, picked, fresh.times, fresh.now)], old.times[picked]);
+  // Between two frames, nearer now: now.
+  assert.equal(A.keptIndex(old.times, old.now, old.now + 0.3, fresh.times, fresh.now), fresh.now);
+  // A time gone out of the range, or none shown yet: now.
+  assert.equal(A.keptIndex(old.times, old.now, 0, fresh.times, fresh.now), fresh.now);
+  assert.equal(A.keptIndex(old.times, old.now, -1, fresh.times, fresh.now), fresh.now);
+  assert.equal(A.keptIndex(null, 0, -1, fresh.times, fresh.now), fresh.now);
+});
+
+test('makeFrames: a field with Frames of its own gets them, the others plain Frames', () => {
+  const loader = { base: 'b/', model: 'ecmwf_ifs025' }, made = [];
+  const own = { id: 'x', store: 'x', vars: ['v'], frames: (l, o) => { made.push([l, o]); return 'own'; } };
+  const opts = { field: own, now: () => 0 };
+  assert.equal(A.makeFrames(loader, opts), 'own');
+  assert.deepEqual(made, [[loader, opts]]);
+  assert.ok(A.makeFrames(loader, { now: () => 0 }) instanceof A.Frames);
+});
+
+test('Frames: a field caps the reads at once (the clouds read four variables a file)', () => {
+  const loader = { base: 'b/', model: 'ecmwf_ifs025' };
+  const capped = { id: 'x', store: 'x', vars: ['a', 'b', 'c', 'd'], parallel: 2 };
+  assert.equal(new A.Frames(loader, { field: capped, parallel: 6, now: () => 0 }).parallel, 2);
+  assert.equal(new A.Frames(loader, { field: capped, parallel: 1, now: () => 0 }).parallel, 1);
+  assert.equal(new A.Frames(loader, { parallel: 6, now: () => 0 }).parallel, 6);
+});
+
+// A range of the radar (08:10 to 12:10) with a forecast layer: the frames
+// stay on the files' 3 h steps that cover it (06:00 to 15:00), the play
+// keeps to the range itself.
+test('spanBounds: the positions of a range among the files steps that cover it', () => {
+  const times = [6, 9, 12, 15].map((h) => h * H);
+  assert.deepEqual(A.spanBounds(times, 8 * H + 10 * 60e3, 12 * H + 10 * 60e3), { lo: 0 + 130 / 180, hi: 2 + 10 / 180 });
+  // Ends on the steps themselves: whole frames.
+  assert.deepEqual(A.spanBounds(times, 6 * H, 15 * H), { lo: 0, hi: 3 });
+  // Out of the times: held at the ends.
+  assert.deepEqual(A.spanBounds(times, 0, 20 * H), { lo: 0, hi: 3 });
+});
+
+test('Player.bounds: the play keeps to the range and goes round inside it', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100 });
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.show(0.5);
+  p.play(true);
+  clock.t = 500;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1]);
+  clock.t = 1500;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1, 2]);
+  clock.t = 2500;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1, 2, 2.5]);         // held at the end of the range
+  clock.t = 2600;
+  p._tick();
+  assert.deepEqual(shown, [0.5, 1, 2, 2.5, 0.5]);    // round to its start, not to frame 0
+  p.play(false);
+});
+
+test('Player.bounds without the loop: stops at the end of the range, starts again from its start', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true, true], { stepMs: 1000, minFrameMs: 100, loop: false });
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.show(2);
+  p.play(true);
+  clock.t = 5000;
+  p._tick();
+  assert.deepEqual(shown, [2, 2.5]);
+  clock.t = 6000;
+  p._tick();
+  assert.equal(p.playing, false);
+  p.play(true);
+  p._tick();
+  assert.deepEqual(shown, [2, 2.5, 0.5]);
+  p.play(false);
+});
+
+test('Player.bounds: seek, step, Home and End stay inside the range', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], { loop: false });
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.seek(0);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.seek(3);
+  assert.deepEqual(shown.slice(-1), [2.5]);
+  p.step(1, 3);
+  assert.deepEqual(shown.slice(-1), [2.5]);          // no further without the loop
+  p.toEnd(-1);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.toEnd(1);
+  assert.deepEqual(shown.slice(-1), [2.5]);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [2]);
+  p.stepFile(-1);
+  p.stepFile(-1);
+  assert.deepEqual(shown.slice(-1), [1]);            // frame 0 is out of the range
+});
+
+test('Player.bounds with the loop: a step past an end goes round to the other', () => {
+  const { p, shown } = fakePlayer([true, true, true, true], {});
+  p.bounds = { lo: 0.5, hi: 2.5 };
+  p.show(2.5);
+  p.step(1, 3);
+  assert.deepEqual(shown.slice(-1), [0.5]);
+  p.step(-1, 3);
+  assert.deepEqual(shown.slice(-1), [2.5]);
+});
+
+test('Player: waits for the radar image of the next picture, its time not counted, 3 s at most', () => {
+  let ok = false;
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, canShow: () => ok });
+  p.show(0);
+  p.play(true);
+  clock.t = 500;
+  p._tick();
+  assert.deepEqual(shown, [0]);                      // the radar image is not in
+  clock.t = 1500;
+  p._tick();
+  assert.deepEqual(shown, [0]);
+  ok = true;
+  clock.t = 1600;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.5]);                 // from where it stopped, not 1.6 frames on
+  ok = false;
+  clock.t = 1800;
+  p._tick();
+  clock.t = 4700;
+  p._tick();
+  assert.equal(shown.length, 2);
+  clock.t = 5000;
+  p._tick();
+  assert.equal(shown.length, 3, 'given up after 3 s');
+  p.play(false);
+});
+
+test('Frames: newRun says whether latest.json moved past the run it read', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  let ref = '2026-11-09T00:00:00Z';
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: ref }) }),
+    _readVars: async () => ({ data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 }),
+  };
+  const f = new A.Frames(loader, { now: () => at('2026-11-09T10:50:00Z'), pastH: 3, futureH: 3 });
+  assert.equal(await f.newRun(), false, 'nothing read yet: nothing to compare');
+  await f.load();
+  assert.equal(f.ref, '2026-11-09T00:00:00Z');
+  assert.equal(await f.newRun(), false);
+  ref = '2026-11-09T06:00:00Z';
+  assert.equal(await f.newRun(), true);
+});
+
+test('Frames: newRun is false when latest.json cannot be read', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  let ok = true;
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ok ? { ok: true, json: async () => ({ reference_time: '2026-11-09T00:00:00Z' }) } : { ok: false, status: 503 },
+    _readVars: async () => ({ data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 }),
+  };
+  const f = new A.Frames(loader, { now: () => at('2026-11-09T10:50:00Z'), pastH: 3, futureH: 3 });
+  await f.load();
+  ok = false;
+  assert.equal(await f.newRun(), false);
+});

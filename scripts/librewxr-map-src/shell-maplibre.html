@@ -56,6 +56,10 @@
   </head>
   <body data-theme="dark">
 
+    <!-- The map blurred under the widget's layer column and time bar (overrides.css) -->
+    <div class="aww-blur" id="aww-blur-right"></div>
+    <div class="aww-blur" id="aww-blur-bottom"></div>
+
     <!-- Map -->
     <div id="lv-map">
       <div class="preload-indicator" id="lv-preload">
@@ -121,13 +125,17 @@
 /*@__WIDGET_GLUE_PREPARE__*/
 // Kept loaded behind a closed popup, the map prepares in the hidden page and
 // follows the new radar images; the hidden retry button reloads the
-// viewer's list (glue-prepare.js).
+// viewer's list (glue-prepare.js). While the socket pushes the catalog
+// (animPushedCatalog, glue-controls.js), the one pushed is read instead.
 var widgetPrepare = PREPARE_MODE !== 'none' ? WidgetPrepare.create(window, document, {
   latest: function () {
-    return fetch(API_BASE + '/public/weather-maps.json').then(function (r) { return r.json(); }).then(function (d) {
+    var lastPast = function (d) {
       var past = d && d.radar && d.radar.past;
       return past && past.length ? past[past.length - 1].time : null;
-    });
+    };
+    var pushed = window.animPushedCatalog && window.animPushedCatalog();
+    if (pushed) return Promise.resolve(lastPast(pushed));
+    return fetch(API_BASE + '/public/weather-maps.json').then(function (r) { return r.json(); }).then(lastPast);
   },
   reload: function () {
     var retry = document.getElementById('lv-error-retry');
@@ -143,8 +151,15 @@ if (!hasWebGL()) location.replace('librewxr-map-leaflet.html' + location.search)
 
     <script>
 /*@__WIDGET_GLUE_WIND__*/
+/*@__WIDGET_GLUE_GRIDS__*/
+/*@__WIDGET_GLUE_MODELS__*/
 /*@__WIDGET_GLUE_WIND_OPEN__*/
 /*@__WIDGET_GLUE_WIND_TABLE__*/
+/*@__WIDGET_GLUE_TEMP__*/
+/*@__WIDGET_GLUE_TEMP_LAYER__*/
+/*@__WIDGET_GLUE_TEMP_GL__*/
+/*@__WIDGET_GLUE_ANIM__*/
+/*@__WIDGET_GLUE_ANIM_RADAR__*/
 /*@__WIDGET_GLUE_EARTH__*/
 
     </script>
@@ -158,6 +173,12 @@ var _widgetAdapter = new WidgetMapLibreAdapter(maplibregl);
 // Module code is not global: tests reach the map through remote debugging.
 window._widgetAdapter = _widgetAdapter;
 /*@__WIDGET_GLUE_CONTROLS__*/
+/*@__WIDGET_GLUE_FIELDS__*/
+/*@__WIDGET_GLUE_PRESSURE__*/
+/*@__WIDGET_GLUE_AIRQUALITY__*/
+/*@__WIDGET_GLUE_PRECIP__*/
+/*@__WIDGET_GLUE_CLOUDS__*/
+/*@__WIDGET_GLUE_HUMIDITY__*/
 
     </script>
   </body>

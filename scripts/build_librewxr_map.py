@@ -33,10 +33,26 @@ GLUE_CONFIG_TOKEN = "/*@__WIDGET_GLUE_CONFIG__*/"
 GLUE_ADAPTER_TOKEN = "/*@__WIDGET_GLUE_ADAPTER__*/"
 GLUE_WIND_TOKEN = "/*@__WIDGET_GLUE_WIND__*/"
 GLUE_CONTROLS_TOKEN = "/*@__WIDGET_GLUE_CONTROLS__*/"
+GLUE_GRIDS_TOKEN = "/*@__WIDGET_GLUE_GRIDS__*/"
+GLUE_MODELS_TOKEN = "/*@__WIDGET_GLUE_MODELS__*/"
 GLUE_WIND_OPEN_TOKEN = "/*@__WIDGET_GLUE_WIND_OPEN__*/"
 GLUE_WIND_TABLE_TOKEN = "/*@__WIDGET_GLUE_WIND_TABLE__*/"
+GLUE_TEMP_TOKEN = "/*@__WIDGET_GLUE_TEMP__*/"
+GLUE_TEMP_LAYER_TOKEN = "/*@__WIDGET_GLUE_TEMP_LAYER__*/"
+GLUE_TEMP_GL_TOKEN = "/*@__WIDGET_GLUE_TEMP_GL__*/"
+GLUE_ANIM_TOKEN = "/*@__WIDGET_GLUE_ANIM__*/"
+GLUE_ANIM_RADAR_TOKEN = "/*@__WIDGET_GLUE_ANIM_RADAR__*/"
 GLUE_EARTH_TOKEN = "/*@__WIDGET_GLUE_EARTH__*/"
 GLUE_PREPARE_TOKEN = "/*@__WIDGET_GLUE_PREPARE__*/"
+# The layers of the animation beyond temperature and wind, after the
+# controls in the page's module: each reaches ANIM_LAYERS, anim and the
+# adapter, and the later ones borrow the pressure's GL layer.
+GLUE_FIELDS_TOKEN = "/*@__WIDGET_GLUE_FIELDS__*/"
+GLUE_PRESSURE_TOKEN = "/*@__WIDGET_GLUE_PRESSURE__*/"
+GLUE_AIRQUALITY_TOKEN = "/*@__WIDGET_GLUE_AIRQUALITY__*/"
+GLUE_PRECIP_TOKEN = "/*@__WIDGET_GLUE_PRECIP__*/"
+GLUE_CLOUDS_TOKEN = "/*@__WIDGET_GLUE_CLOUDS__*/"
+GLUE_HUMIDITY_TOKEN = "/*@__WIDGET_GLUE_HUMIDITY__*/"
 
 # Vendored in this repository under scripts/librewxr-map-src/. shell.html is
 # the assembly base and carries no token of its own; the remaining fragments
@@ -59,10 +75,23 @@ PAGES = [
         ("glue-prepare.js", GLUE_PREPARE_TOKEN),
         ("glue-adapter-maplibre.js", GLUE_ADAPTER_TOKEN),
         ("glue-wind.js", GLUE_WIND_TOKEN),
+        ("glue-grids.js", GLUE_GRIDS_TOKEN),
+        ("glue-models.js", GLUE_MODELS_TOKEN),
         ("glue-wind-open.js", GLUE_WIND_OPEN_TOKEN),
         ("glue-wind-table.js", GLUE_WIND_TABLE_TOKEN),
+        ("glue-temp.js", GLUE_TEMP_TOKEN),
+        ("glue-temp-layer.js", GLUE_TEMP_LAYER_TOKEN),
+        ("glue-temp-gl.js", GLUE_TEMP_GL_TOKEN),
+        ("glue-anim.js", GLUE_ANIM_TOKEN),
+        ("glue-anim-radar.js", GLUE_ANIM_RADAR_TOKEN),
         ("glue-earth.js", GLUE_EARTH_TOKEN),
         ("glue-controls.js", GLUE_CONTROLS_TOKEN),
+        ("glue-fields.js", GLUE_FIELDS_TOKEN),
+        ("glue-pressure.js", GLUE_PRESSURE_TOKEN),
+        ("glue-airquality.js", GLUE_AIRQUALITY_TOKEN),
+        ("glue-precip.js", GLUE_PRECIP_TOKEN),
+        ("glue-clouds.js", GLUE_CLOUDS_TOKEN),
+        ("glue-humidity.js", GLUE_HUMIDITY_TOKEN),
     ]),
     ("librewxr-map-leaflet.html", "shell.html", LOCAL_SOURCES[1:]),
 ]

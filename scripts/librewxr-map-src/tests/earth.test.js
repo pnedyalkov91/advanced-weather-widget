@@ -136,3 +136,38 @@ test('shadeTile: a tile of zoom 1 is a quarter of the world at twice the detail'
     }
   }
 });
+
+// === Coasts and borders (vendor/coast-borders.bin) ===
+test('decodeLines reads the packed lines as GeoJSON, coasts and borders apart', () => {
+  // "AWL1", 2 lines; coast (1,2) (1.5,2.25); border (-0.001,0) (0,0.001) (0.002,0.001)
+  const bytes = Uint8Array.from([0x41, 0x57, 0x4c, 0x31, 2,
+    0, 2, 0xd0, 0x0f, 0xa0, 0x1f, 0xe8, 0x07, 0xf4, 0x03,
+    1, 3, 1, 0, 2, 2, 4, 0]);
+  const fc = E.decodeLines(bytes.buffer);
+  assert.equal(fc.type, 'FeatureCollection');
+  assert.deepEqual(JSON.parse(JSON.stringify(fc.features.map((f) => [f.properties.kind, f.geometry.coordinates]))), [
+    ['coast', [[1, 2], [1.5, 2.25]]],
+    ['border', [[-0.001, 0], [0, 0.001], [0.002, 0.001]]]
+  ]);
+});
+
+test('decodeLines refuses what is not a lines file', () => {
+  assert.throws(() => E.decodeLines(Uint8Array.from([1, 2, 3, 4, 0]).buffer));
+});
+
+test('the widget file holds the coasts and borders of the whole Earth', () => {
+  const buf = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../../contents/ui/components/vendor/coast-borders.bin'));
+  const fc = E.decodeLines(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
+  const kinds = { coast: 0, border: 0 };
+  let minLat = 90, maxLat = -90, out = 0;
+  for (const f of fc.features) {
+    kinds[f.properties.kind]++;
+    for (const [lon, lat] of f.geometry.coordinates) {
+      if (lon < -180 || lon > 180) out++;
+      minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
+    }
+  }
+  assert.ok(kinds.coast > 1000 && kinds.border > 100, JSON.stringify(kinds));
+  assert.equal(out, 0);
+  assert.ok(minLat < -80 && maxLat > 80, minLat + ' ' + maxLat);
+});

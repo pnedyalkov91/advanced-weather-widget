@@ -207,10 +207,8 @@
          OpenStreetMap. Any other value is an id from providers/mapProviders.js
          and applies to both maps. -->
     <entry name="mapBackground"         type="String"><default>auto</default></entry>
-    <entry name="librewxrLayer"         type="String"><default>radar</default></entry>
     <entry name="librewxrColorScheme"   type="Int"><default>10</default><min>0</min><max>12</max></entry>
     <entry name="librewxrArrows"        type="Bool"><default>false</default></entry>
-    <entry name="librewxrWind"          type="Bool"><default>false</default></entry>
     <!-- Wind level for the animated particles: "10m" (surface) or "700hPa" (aloft) -->
     <entry name="librewxrWindLevel"     type="String"><default>10m</default></entry>
     <!-- Frame-rate budget of the wind animation: "economy" (8-10 fps),
@@ -233,6 +231,17 @@
     <entry name="librewxrWindPalettes"  type="String"><default>[]</default></entry>
     <!-- Name of the wind palette in use; empty for the default one -->
     <entry name="librewxrWindPalette"   type="String"><default></default></entry>
+    <!-- Coasts and borders drawn over the temperature (MapLibre page), switched in the map's Options -->
+    <entry name="librewxrMapLines"      type="Bool"><default>true</default></entry>
+    <!-- Temperature palette in use: empty for the vivid one, "builtin:muted",
+         "builtin:bluered", or the name of a palette made in the settings -->
+    <entry name="librewxrTempPalette"   type="String"><default></default></entry>
+    <!-- Temperature palettes made in the settings: JSON [{ "name", "stops": [{ "t" (°C), "color" }] }] -->
+    <entry name="librewxrTempPalettes"  type="String"><default>[]</default></entry>
+    <!-- Opacity of the temperature, percent; also set on its line of the Weather Map -->
+    <entry name="librewxrTempOpacity"   type="Int"><default>45</default><min>0</min><max>100</max></entry>
+    <!-- Width of the temperature bands in the widget's unit: 0 (smooth), 2, 2.5, 5 or 10 -->
+    <entry name="librewxrTempStep"      type="Double"><default>5</default></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
     <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
     <entry name="librewxrCells"         type="String"><default></default></entry>
@@ -241,8 +250,47 @@
     <entry name="librewxrSnow"          type="Bool"><default>true</default></entry>
     <entry name="librewxrFormat"        type="String"><default>webp</default></entry>
     <entry name="librewxrTileSize"      type="String"><default>auto</default></entry>
-    <!-- Whether the "Options" panel (smoothing/snow mask/format/tile size) is expanded -->
-    <entry name="librewxrOptionsExpanded" type="Bool"><default>false</default></entry>
+    <!-- Weather Map tab: the layers switched on, JSON { "id": true|false } -->
+    <entry name="weatherMapLayers"      type="String"><default>{"radar":true,"satellite":true,"wind":true,"temperature":true}</default></entry>
+    <!-- Weather Map: the opacity of each layer but the temperature (librewxrTempOpacity), JSON { "id": percent } -->
+    <entry name="weatherMapOpacities"   type="String"><default>{}</default></entry>
+    <!-- Weather Map: the color legends hidden, JSON { "id": true } -->
+    <entry name="weatherMapLegendsHidden" type="String"><default>{}</default></entry>
+    <!-- Weather Map: the layer column folded to its icons -->
+    <entry name="weatherMapPanelFolded" type="Bool"><default>false</default></entry>
+    <!-- Weather Map: opacity (%) of the layer column and the time bar over the map, and the blur (px) of the map under them -->
+    <entry name="weatherMapPanelOpacity" type="Int"><default>40</default><min>0</min><max>100</max></entry>
+    <entry name="weatherMapPanelBlur"   type="Int"><default>18</default><min>0</min><max>40</max></entry>
+    <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the clean style) -->
+    <entry name="weatherMapControlStyle" type="String"><default>plasma</default></entry>
+    <!-- Weather Map: icons of the layers and of the radar menu: "weathermap" (its own drawings) | "symbolic" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" -->
+    <entry name="weatherMapIconTheme"   type="String"><default>weathermap</default></entry>
+    <!-- Weather Map: pictures per second at most: 4, 8 or 15 -->
+    <entry name="weatherMapFps"         type="Int"><default>8</default><min>4</min><max>15</max></entry>
+    <!-- Weather Map: resolution while playing: 1 (full), 2 (half) or 4 (quarter) -->
+    <entry name="weatherMapResolution"  type="Int"><default>1</default><min>1</min><max>4</max></entry>
+    <!-- Weather Map: hours shown before and after now -->
+    <entry name="weatherMapPastHours"   type="Int"><default>24</default><min>0</min><max>192</max></entry>
+    <entry name="weatherMapFutureHours" type="Int"><default>48</default><min>12</min><max>144</max></entry>
+    <entry name="weatherMapRangeKind"   type="String"><default></default></entry>
+    <!-- Weather Map: speed, x1 to x3 -->
+    <entry name="weatherMapSpeed"       type="Int"><default>1</default><min>1</min><max>3</max></entry>
+    <!-- Weather Map: back to the first picture after the last one, or stop there -->
+    <entry name="weatherMapLoop"        type="Bool"><default>true</default></entry>
+    <!-- Weather Map: lightning strikes over the radar -->
+    <entry name="weatherMapLightning"   type="Bool"><default>false</default></entry>
+    <!-- Weather Map: the kinds of precipitation shown, JSON list of ids; empty for all -->
+    <entry name="weatherMapPrecipKinds" type="String"><default></default></entry>
+    <!-- Weather Map: the cloud levels shown, JSON list of ids (high, mid, low); empty for all -->
+    <entry name="weatherMapCloudLevels" type="String"><default></default></entry>
+    <!-- Weather Map: the pollutant of the air quality layer (pm2_5, pm10, ozone, nitrogen_dioxide, sulphur_dioxide, dust, aerosol_optical_depth, uv_index) -->
+    <!-- Weather Map: the layers taken out of the column (the radar always stays), JSON list of ids -->
+    <entry name="weatherMapDisabledLayers" type="String"><default>[]</default></entry>
+    <!-- Weather Map: the stack of the layers on the map and in the column, JSON list of ids top first; empty for the default one -->
+    <entry name="weatherMapLayerOrder" type="String"><default>[]</default></entry>
+    <entry name="weatherMapPollutant"   type="String"><default>pm2_5</default></entry>
+    <!-- Weather Map: the isobars' settings, JSON {width: 0.6|1|2, step: 2|4|8 hPa, labels, marks, textSize: 11|13|16 px, color: "#rrggbb" or "" for the theme's}; empty for the defaults -->
+    <entry name="weatherMapIsobars"     type="String"><default>{}</default></entry>
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->
     <entry name="radarGpuWorkaround"    type="Bool"><default>false</default></entry>
@@ -252,6 +300,11 @@
          opens at once. Off by default: it starts QtWebEngine with Plasma and
          keeps its memory for the whole session. -->
     <entry name="radarKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- With radarKeepLoaded: the hidden Weather Maps page also follows the
+         new runs of its forecast layers' models and reads their pictures as
+         they come out, so the map opens on them at once. Off by default: it
+         downloads even if the map is never opened. -->
+    <entry name="weatherMapPrepareLayers" type="Bool"><default>false</default></entry>
     <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
          the background after startup and keep them loaded, so the popup opens
          instantly. Off by default (uses extra memory for the whole session). -->

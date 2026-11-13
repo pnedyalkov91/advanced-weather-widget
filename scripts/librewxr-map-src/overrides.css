@@ -208,6 +208,25 @@
         color: var(--accent);
         border-color: var(--accent);
       }
+      /* The map's four buttons (locate, base map, globe, day and night)
+         share one look, the globe's: under the hand and while on,
+         the drawing turns accent with an accent frame. */
+      .bg-btn:hover {
+        border-color: var(--accent);
+      }
+      .bg-btn:hover svg,
+      .bg-picker:has(.bg-menu.open) .bg-btn svg,
+      .proj-btn.active svg,
+      .night-btn.active svg {
+        stroke: var(--accent);
+      }
+      .night-btn:hover svg path,
+      .night-btn.active svg path {
+        fill: var(--accent);
+      }
+      .bg-picker:has(.bg-menu.open) .bg-btn {
+        border-color: var(--accent);
+      }
       .bg-picker {
         position: absolute;
         top: calc(var(--space-2) + 38px + var(--space-1));
@@ -295,3 +314,100 @@
          come up together instead of popping in one after the other. */
       body { opacity: 0; transition: opacity 400ms ease-out; }
       body.lv-ready { opacity: 1; }
+
+      /* The color legends (legendBox of glue-fields.js, the temperature's
+         of glue-temp-layer.js): a box over the map in the page's font. */
+      .lv-legend {
+        position: absolute; z-index: 5; pointer-events: none;
+        display: grid; column-gap: 6px;
+        padding: 3px 8px 5px; border-radius: 6px;
+        font: 11px var(--font-ui, sans-serif);
+        background: rgba(20, 22, 28, 0.72); color: #eee;
+      }
+      body[data-theme="light"] .lv-legend { background: rgba(255, 255, 255, 0.82); color: #222; }
+      .lv-legend .lv-temp-ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+
+      /* Legends of one bar (temperature, pressure, air quality, humidity,
+         dew point): the palette's colors with their ticks, top center over
+         the map, the unit at the right end. */
+      .lv-legend-bar { top: 8px; left: 50%; transform: translateX(-50%); grid-template-columns: 240px auto; }
+      .lv-legend-bar .lv-temp-ticks { grid-column: 1; grid-row: 1; position: relative; height: 14px; }
+      .lv-legend-bar .lv-temp-bar { grid-column: 1; grid-row: 2; width: 240px; height: 8px; border-radius: 2px; }
+      .lv-legend-bar .lv-temp-unit { grid-column: 2; grid-row: 2; align-self: center; }
+      @media (max-width: 320px) { .lv-legend-bar { display: none; } }
+
+      /* Precipitation legend (glue-precip.js): bottom left, a bar for each
+         kind shown, its name before it. */
+      .lv-precip-legend { bottom: 8px; left: 8px; grid-template-columns: auto 180px auto; row-gap: 1px; }
+      .lv-precip-legend .lv-temp-ticks { grid-column: 2; grid-row: 1; position: relative; height: 14px; }
+      .lv-precip-legend canvas { grid-column: 2; width: 180px; height: 6px; border-radius: 2px; align-self: center; }
+      .lv-precip-legend .lv-precip-name { grid-column: 1; text-align: right; line-height: 12px; }
+      .lv-precip-legend .lv-temp-unit { grid-column: 3; grid-row: 1; align-self: end; }
+      @media (max-width: 480px) { .lv-precip-legend { display: none; } }
+
+/* Readout under the pointer while Ctrl is held (glue-controls.js). */
+#lv-readout {
+  position: fixed; z-index: 20; pointer-events: none; display: none;
+  padding: 6px 10px; border-radius: 8px; white-space: nowrap;
+  font: 15px var(--font-ui, sans-serif); line-height: 1.5;
+  background: rgba(41, 49, 37, 0.9); color: #eee;   /* #293125, as the time shown over the map */
+}
+body[data-theme="light"] #lv-readout { background: rgba(255, 255, 255, 0.92); color: #222; }
+#lv-readout .lv-readout-row { display: flex; align-items: center; gap: 6px; }
+#lv-readout .lv-readout-icon { display: inline-flex; width: 26px; height: 26px; }
+#lv-readout .lv-readout-arrow { display: inline-flex; width: 26px; height: 26px; }
+#lv-readout .lv-readout-icon svg, #lv-readout .lv-readout-arrow svg { width: 100%; height: 100%; }
+/* Over MapLibre's grab hand too. */
+body.lv-readout-on, body.lv-readout-on * { cursor: crosshair !important; }
+
+/* Animations: the widget's own time bar replaces the radar's. */
+body.lv-anim .replayer { display: none; }
+/* The color legends of the animation's layers, one under the other at the
+   top left, right of the zoom buttons, all as wide (their ticks are placed
+   in percent); the widget's date takes the top right (glue-controls.js). */
+#lv-legend-stack { position: absolute; top: calc(8px + var(--aww-legend-top, 0px)); left: 52px; z-index: 5; pointer-events: none;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+#lv-legend-stack > * { position: static !important; transform: none !important; margin: 0 !important;
+  width: 320px !important; box-sizing: border-box !important; }
+#lv-legend-stack > .lv-legend-off { display: none !important; }
+#lv-legend-stack > .lv-legend-bar {
+  grid-template-columns: minmax(0, 1fr) auto !important; }
+#lv-legend-stack .lv-temp-bar { width: 100% !important; }
+#lv-legend-stack > .lv-precip-legend { grid-template-columns: auto minmax(0, 1fr) auto !important; }
+#lv-legend-stack > .lv-precip-legend canvas { width: 100% !important; }
+/* The widget's layer column floats over the map's right, which stays where
+   it is: the map's buttons on the right slide out of its way, in step with
+   it (--aww-inset). The time bar floats over its bottom: the controls at
+   the bottom stand above it (--aww-bottom). */
+/* Full screen: everything over the map stands further from the screen's
+   edges, --aww-edge-x from the sides, --aww-edge-top from the top, and is
+   drawn --aww-scale times as large. zoom scales the offsets from the
+   corners too, so each group grows from its corner; the translations,
+   zoomed as well, are divided back. */
+body.lv-anim #lv-locate, body.lv-anim #lv-proj, body.lv-anim #lv-night, body.lv-anim #bgPicker,
+body.lv-anim .maplibregl-ctrl-top-right {
+  translate: calc(-1 * (var(--aww-inset, 0px) + var(--aww-edge-x, 0px)) / var(--aww-scale, 1)) calc(var(--aww-edge-top, 0px) / var(--aww-scale, 1)); }
+body.lv-anim .maplibregl-ctrl-bottom-right {
+  translate: calc(-1 * (var(--aww-inset, 0px) + var(--aww-edge-x, 0px)) / var(--aww-scale, 1)) calc(-1 * var(--aww-bottom, 0px) / var(--aww-scale, 1)); }
+body.lv-anim .maplibregl-ctrl-top-left, body.lv-anim #lv-legend-stack {
+  translate: calc(var(--aww-edge-x, 0px) / var(--aww-scale, 1)) calc(var(--aww-edge-top, 0px) / var(--aww-scale, 1)); }
+body.lv-anim .maplibregl-ctrl-bottom-left { translate: calc(var(--aww-edge-x, 0px) / var(--aww-scale, 1)) calc(-1 * var(--aww-bottom, 0px) / var(--aww-scale, 1)); }
+body.lv-anim #lv-locate, body.lv-anim #lv-proj, body.lv-anim #lv-night, body.lv-anim #bgPicker,
+body.lv-anim .maplibregl-ctrl-top-right, body.lv-anim .maplibregl-ctrl-bottom-right,
+body.lv-anim .maplibregl-ctrl-top-left, body.lv-anim .maplibregl-ctrl-bottom-left, body.lv-anim #lv-legend-stack {
+  zoom: var(--aww-scale, 1);
+  transition: translate 220ms cubic-bezier(0.33, 1, 0.68, 1); }
+
+/* The widget's layer column and time bar float over the map, see-through
+   as the widget's own frame: the map under them is blurred here, in the
+   page, where Chromium does it on the GPU (a blur in QML would read the
+   whole web view back on every frame). Over #lv-map (z-index 1), whose
+   controls keep out of them; they take no input. */
+.aww-blur { display: none; }
+body.lv-anim .aww-blur {
+  display: block; position: fixed; z-index: 2; pointer-events: none;
+  -webkit-backdrop-filter: var(--aww-backdrop, blur(18px) saturate(1.3)); backdrop-filter: var(--aww-backdrop, blur(18px) saturate(1.3)); }
+body.lv-anim #aww-blur-right {
+  top: 0; right: 0; width: var(--aww-inset, 0px); bottom: var(--aww-bottom, 0px);
+  transition: width 220ms cubic-bezier(0.33, 1, 0.68, 1); }
+body.lv-anim #aww-blur-bottom { left: 0; right: 0; bottom: 0; height: var(--aww-bottom, 0px); }

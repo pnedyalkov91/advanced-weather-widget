@@ -143,7 +143,9 @@ Rectangle {
     // The visible tabs, in that order: [{label, logicalIdx}]
     readonly property var _tabBarModel: {
         var shown = [showDetailsTab, showForecastTab, showRadarTab, showHistoryTab];
-        var labels = [i18n("Details"), i18n("Forecast"), i18n("Radar"), i18n("History")];
+        // LibreWXR's map plays the weather's layers: the Weather Map.
+        var mapLabel = (Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr" ? i18n("Weather Maps") : i18n("Radar");
+        var labels = [i18n("Details"), i18n("Forecast"), mapLabel, i18n("History")];
         var tabs = [];
         for (var i = 0; i < _tabOrder.length; ++i) {
             var idx = _tabLogicalIdx[_tabOrder[i]];

@@ -1,0 +1,1016 @@
+import QtQuick
+import QtQuick.Layouts
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.kirigami as Kirigami
+import org.kde.ksvg as KSvg
+import "../../js/configUtils.js" as ConfigUtils
+
+// The layer column of the Weather Map, at the right of the map: the help
+// and the settings at the top, the layers (radar and satellite, then the
+// forecast layers), the range and the speed, the models drawn at the
+// bottom. Folded, it keeps the width of an icon; open, it grows to the left
+// over the map, which stays where it is. map: the WeatherMapView, which
+// talks to the page and keeps the settings.
+Rectangle {
+    id: panel
+    property var map
+    readonly property real openWidth: 190
+    readonly property real foldedWidth: 56
+    readonly property bool folded: map.panelFolded
+    readonly property real colW: folded ? 36 : 169
+    readonly property alias radarRow: radarRow
+    readonly property alias satRow: satRow
+    readonly property alias windRow: windRow
+    readonly property alias tempRow: tempRow
+    readonly property alias precipRow: precipRow
+    readonly property alias cloudRow: cloudRow
+    readonly property alias presRow: presRow
+    readonly property alias isoRow: isoRow
+    readonly property alias aqRow: aqRow
+    readonly property alias radarMenu: radarMenu
+    readonly property alias settingsMenu: settingsMenu
+    readonly property alias orderMenu: orderMenu
+    readonly property alias pastPick: pastPick
+    readonly property alias futurePick: futurePick
+
+    readonly property color fg: Kirigami.Theme.textColor
+    readonly property color dimText: Kirigami.Theme.disabledTextColor
+    readonly property color accent: Kirigami.Theme.highlightColor
+    function tint(a) { return Qt.rgba(fg.r, fg.g, fg.b, a); }
+
+    width: folded ? foldedWidth : openWidth
+    Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+    clip: true
+    // See-through as the widget's frame: the page blurs the map under it.
+    // The Plasma look takes the theme's frame, its edge on the map's side;
+    // the clean look a plain tint and a thin line.
+    color: panel.map.ownControls ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, panel.map.panelOpacity / 100) : "transparent"
+    KSvg.FrameSvgItem {
+        visible: !panel.map.ownControls
+        anchors.fill: parent
+        imagePath: "widgets/background"
+        enabledBorders: KSvg.FrameSvg.LeftBorder
+        opacity: panel.map.panelOpacity / 100
+    }
+    Rectangle { visible: panel.map.ownControls; width: 1; height: parent.height; color: panel.tint(0.10) }
+    // The column lies over the map: a click, a drag, a wheel or the hand
+    // that nothing of the column takes (the scrolling, the clocks, an
+    // opacity) stops here instead of moving the map under it.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        hoverEnabled: true
+        onWheel: function (wheel) { wheel.accepted = true; }
+    }
+
+    // An option with one value among a list that can be long: its name,
+    // then the list under it.
+    component OptCombo: ColumnLayout {
+        id: oc
+        property string title
+        property var choices: []        // [[value, text]]
+        property var current            // the value taken
+        signal picked(var value)
+        Layout.fillWidth: true
+        spacing: 2
+        PlasmaComponents.Label { text: oc.title; color: panel.dimText }
+        PlasmaComponents.ComboBox {
+            Layout.fillWidth: true
+            model: oc.choices.map(function (c) { return c[1]; })
+            currentIndex: Math.max(0, oc.choices.map(function (c) { return c[0]; }).indexOf(oc.current))
+            onActivated: function (i) { oc.picked(oc.choices[i][0]); }
+        }
+    }
+    // An option with one value among several: its name, then a switch for
+    // each, two by two. Switching one on switches the one before off; the
+    // one on stays on.
+    component OptSwitches: ColumnLayout {
+        id: os
+        property string title
+        property var choices: []        // [[value, text]]
+        property var current            // the value taken
+        signal picked(var value)
+        Layout.fillWidth: true
+        spacing: 2
+        PlasmaComponents.Label { text: os.title; color: panel.dimText }
+        GridLayout {
+            Layout.fillWidth: true
+            columns: 2
+            columnSpacing: 6
+            rowSpacing: 0
+            Repeater {
+                model: os.choices
+                MapSwitch {
+                    own: panel.map.ownControls
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    text: modelData[1]
+                    checked: os.current === modelData[0]
+                    onToggled: {
+                        if (checked)
+                            os.picked(modelData[0]);
+                        checked = Qt.binding(function () { return os.current === modelData[0]; });
+                    }
+                }
+            }
+        }
+    }
+    // A setting with a few values: its name, then the values side by side,
+    // the one taken highlighted. When both do not fit in room (the width of
+    // the menu), the values go on the line under the name.
+    component Segmented: GridLayout {
+        id: sg
+        property string title
+        property var choices: []        // [[value, text]]
+        property var current            // the value taken
+        property real room: 206         // a layer's options: 230 less the padding
+        signal picked(var value)
+        readonly property bool wrapped: sgTitle.implicitWidth + columnSpacing + sgBox.implicitWidth > room
+        Layout.fillWidth: true
+        columns: wrapped ? 1 : 2
+        rowSpacing: 2
+        PlasmaComponents.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+        Item {
+            id: sgBox
+            readonly property bool own: panel.map.ownControls
+            implicitWidth: sgRow.implicitWidth + (own ? 4 : 0)
+            implicitHeight: own ? 26 : sgRow.implicitHeight
+            // The own look: the choices in a light box, the one taken filled.
+            Rectangle {
+                visible: sgBox.own
+                anchors.fill: parent
+                radius: 4
+                color: panel.tint(0.06)
+                border.color: panel.tint(0.12)
+            }
+            Row {
+                id: sgRow
+                anchors.centerIn: parent
+                Repeater {
+                    model: sg.choices
+                    PlasmaComponents.ToolButton {
+                        id: sgButton
+                        required property var modelData
+                        text: modelData[1]
+                        checkable: true
+                        checked: sg.current === modelData[0]
+                        // Picked again: it stays taken.
+                        onClicked: { checked = Qt.binding(function () { return sg.current === modelData[0]; }); sg.picked(modelData[0]); }
+                        width: sgBox.own ? Math.max(34, sgLabel.implicitWidth + 12) : implicitWidth
+                        height: sgBox.own ? 22 : implicitHeight
+                        background.opacity: sgBox.own ? 0 : 1
+                        contentItem.opacity: sgBox.own ? 0 : 1
+                        Rectangle {
+                            visible: sgBox.own
+                            anchors.fill: parent
+                            radius: 3
+                            color: sgButton.checked ? panel.accent : "transparent"
+                            PlasmaComponents.Label {
+                                id: sgLabel
+                                anchors.centerIn: parent
+                                text: sgButton.text
+                                font.bold: sgButton.checked
+                                color: sgButton.checked ? Kirigami.Theme.highlightedTextColor : panel.dimText
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // A setting with a range: its name and value, then a slider. moved(v,
+    // done): done once the slider is let go.
+    component SliderSetting: ColumnLayout {
+        id: ss
+        property string title
+        property string valueText
+        property real from: 0
+        property real to: 100
+        property real stepSize: 1
+        property real value
+        signal moved(real v, bool done)
+        Layout.fillWidth: true
+        spacing: 0
+        RowLayout {
+            Layout.fillWidth: true
+            PlasmaComponents.Label { text: ss.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+            PlasmaComponents.Label { text: ss.valueText; color: panel.dimText }
+        }
+        PlasmaComponents.Slider {
+            id: ssSlider
+            readonly property bool own: panel.map.ownControls
+            Layout.fillWidth: true
+            from: ss.from
+            to: ss.to
+            stepSize: ss.stepSize
+            value: ss.value
+            onMoved: ss.moved(value, false)
+            onPressedChanged: if (!pressed) ss.moved(value, true)
+            Layout.preferredHeight: own ? 20 : implicitHeight
+            background.opacity: own ? 0 : 1
+            handle.opacity: own ? 0 : 1
+            // The own look: a thin line and a small round handle.
+            Rectangle {
+                visible: ssSlider.own
+                x: ssSlider.leftPadding
+                y: ssSlider.topPadding + ssSlider.availableHeight / 2 - height / 2
+                width: ssSlider.availableWidth
+                height: 2
+                radius: 1
+                color: panel.accent
+            }
+            Rectangle {
+                visible: ssSlider.own
+                x: ssSlider.leftPadding + ssSlider.visualPosition * (ssSlider.availableWidth - width)
+                y: ssSlider.topPadding + ssSlider.availableHeight / 2 - height / 2
+                width: 10
+                height: 10
+                radius: 5
+                color: ssSlider.pressed ? panel.accent : Kirigami.Theme.backgroundColor
+                border.color: panel.accent
+                border.width: 1
+            }
+        }
+    }
+    // A color among a few: a dot for each, the one taken ringed. The value
+    // "" is the theme's color, drawn half white, half dark.
+    component ColorDots: ColumnLayout {
+        id: cd
+        property string title
+        property var choices: []        // [[value, name]]
+        property var current
+        signal picked(var value)
+        Layout.fillWidth: true
+        spacing: 2
+        PlasmaComponents.Label { text: cd.title; color: panel.dimText }
+        Row {
+            spacing: 6
+            Repeater {
+                model: cd.choices
+                Rectangle {
+                    id: dot
+                    required property var modelData
+                    readonly property bool taken: cd.current === modelData[0]
+                    width: 22
+                    height: 22
+                    radius: 11
+                    color: "transparent"
+                    border.width: 2
+                    border.color: taken ? panel.accent : "transparent"
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 16
+                        height: 16
+                        radius: 8
+                        border.width: 1
+                        border.color: panel.tint(0.35)
+                        color: dot.modelData[0] || "#ffffff"
+                        gradient: dot.modelData[0] ? null : autoFill
+                        Gradient {
+                            id: autoFill
+                            orientation: Gradient.Horizontal
+                            GradientStop { position: 0.5; color: "#ffffff" }
+                            GradientStop { position: 0.501; color: "#1a1a24" }
+                        }
+                    }
+                    MouseArea {
+                        id: dotArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: cd.picked(dot.modelData[0])
+                    }
+                    PlasmaComponents.ToolTip {
+                        visible: dotArea.containsMouse
+                        text: dot.modelData[1]
+                        delay: 400
+                    }
+                }
+            }
+        }
+    }
+    // The kinds of a layer shown, several at once: a switch for each, two
+    // by two, "All" first. Each change is sent at once.
+    component OptKinds: ColumnLayout {
+        id: ok
+        property string title
+        property var choices: []        // [[value, text]]
+        property var checkedValues: choices.map(function (c) { return c[0]; })
+        signal picked(var values)
+        Layout.fillWidth: true
+        spacing: 2
+        function set(values) {
+            // In the order of the choices.
+            var v = choices.map(function (c) { return c[0]; }).filter(function (x) { return values.indexOf(x) >= 0; });
+            picked(v);
+        }
+        PlasmaComponents.Label { text: ok.title; color: panel.dimText }
+        MapSwitch {
+            own: panel.map.ownControls
+            text: i18n("All")
+            bold: true
+            checked: ok.checkedValues.length === ok.choices.length
+            onToggled: {
+                ok.set(checked ? ok.choices.map(function (c) { return c[0]; }) : []);
+                checked = Qt.binding(function () { return ok.checkedValues.length === ok.choices.length; });
+            }
+        }
+        GridLayout {
+            Layout.fillWidth: true
+            columns: 2
+            columnSpacing: 6
+            rowSpacing: 0
+            Repeater {
+                model: ok.choices
+                MapSwitch {
+                    own: panel.map.ownControls
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 1
+                    text: modelData[1]
+                    checked: ok.checkedValues.indexOf(modelData[0]) >= 0
+                    onToggled: {
+                        var v = ok.checkedValues.filter(function (x) { return x !== modelData[0]; });
+                        if (checked)
+                            v.push(modelData[0]);
+                        ok.set(v);
+                        checked = Qt.binding(function () { return ok.checkedValues.indexOf(modelData[0]) >= 0; });
+                    }
+                }
+            }
+        }
+    }
+    component Caption: PlasmaComponents.Label {
+        visible: !panel.folded
+        color: panel.dimText
+        font.pixelSize: 12
+        font.bold: true
+    }
+    component Divider: Item {
+        width: panel.colW
+        height: 9
+        Kirigami.Separator { visible: !panel.map.ownControls; y: 4; width: parent.width }
+        Rectangle { visible: panel.map.ownControls; y: 4; width: parent.width; height: 1; color: panel.tint(0.22) }
+    }
+    // The row of layer layerId: its switch, opacity and legend as the map
+    // keeps them.
+    component MapLayerRow: LayerRow {
+        id: mlr
+        property string layerId
+        iconLayer: layerId
+        width: panel.colW
+        compact: panel.folded
+        ownLook: panel.map.ownControls
+        key: panel.map.layerKeys[mlr.layerId] || ""
+        checked: panel.map.layerOn(mlr.layerId)
+        visible: panel.map.layerEnabled(mlr.layerId)
+        opacityValue: panel.map.opacities[mlr.layerId]
+        legendOn: !panel.map.legendsHidden[mlr.layerId]
+        onToggled: function (on) { panel.map.toggleLayer(mlr.layerId, on); }
+        onOpacityPicked: function (p) { panel.map.setOpacity(mlr.layerId, p); }
+        onLegendToggled: function (on) { panel.map.setLegend(mlr.layerId, on); }
+    }
+    // A round button of the head: the help, the settings.
+    // A button at the head of the column: a drawing of contents/icons/weathermap
+    // (iconName), an icon of the icon theme (themeIcon) or a text; kept
+    // down while on.
+    component HeadButton: PlasmaComponents.ToolButton {
+        id: hb
+        property string iconName
+        property string themeIcon
+        property string tip
+        property bool on: false
+        checked: on
+        display: text !== "" ? PlasmaComponents.ToolButton.TextOnly : PlasmaComponents.ToolButton.IconOnly
+        font.bold: true
+        icon.name: themeIcon
+        icon.source: themeIcon === "" && iconName !== "" ? Qt.resolvedUrl("../../../icons/weathermap/" + iconName + ".svg") : ""
+        icon.width: Kirigami.Units.iconSizes.smallMedium
+        icon.height: Kirigami.Units.iconSizes.smallMedium
+        icon.color: Kirigami.Theme.textColor
+        readonly property bool own: panel.map.ownControls
+        // 34 in both looks: the head's row counts on it (rowW).
+        width: 34
+        height: 34
+        background.opacity: own ? 0 : 1
+        contentItem.opacity: own ? 0 : 1
+        // The own look: a round, filled with the accent while on.
+        Rectangle {
+            visible: hb.own
+            anchors.fill: parent
+            radius: width / 2
+            color: hb.on ? panel.accent : panel.tint(hb.hovered ? 0.13 : 0.06)
+            border.color: panel.tint(0.15)
+            PlasmaComponents.Label {
+                visible: hb.text !== ""
+                anchors.centerIn: parent
+                text: hb.text
+                color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+                font.bold: true
+                font.pixelSize: 19
+            }
+            Kirigami.Icon {
+                visible: hb.themeIcon !== ""
+                anchors.centerIn: parent
+                width: 21
+                height: 21
+                source: hb.themeIcon
+                isMask: true
+                color: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+            }
+            WmIcon {
+                visible: hb.text === "" && hb.themeIcon === ""
+                anchors.centerIn: parent
+                width: 21
+                height: 21
+                name: hb.iconName
+                mask: true
+                tint: hb.on ? Kirigami.Theme.highlightedTextColor : panel.fg
+            }
+        }
+        PlasmaComponents.ToolTip {
+            text: hb.tip
+            visible: hb.hovered
+            delay: Kirigami.Units.toolTipDelay
+        }
+    }
+
+    // The help and the settings, always in sight at the top of the column
+    // (the layers scroll under them), as the time is at the bottom.
+    Column {
+        id: headBox
+        x: 9.5
+        y: 8 + panel.map.edgeTop
+        spacing: 7
+        // The help and the settings side by side at the right (one under the
+        // other, folded): the row glides to the left as the second glides
+        // under the first, in step with the time's below.
+        Flow {
+            readonly property real rowW: 4 * 34 + 3 * spacing
+            x: panel.folded ? 0 : panel.colW - rowW
+            width: panel.folded ? panel.colW : rowW
+            Behavior on x { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            spacing: 8
+            // Side by side open, one under the other folded: they glide there.
+            move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
+            HeadButton {
+                iconName: panel.map.fullScreen ? "fullscreen-exit" : "fullscreen-enter"
+                tip: panel.map.fullScreen ? i18n("Leave full screen (F11 or Esc)") : i18n("Full screen (F11)")
+                on: panel.map.fullScreen
+                onClicked: panel.map.setFullScreen(!panel.map.fullScreen)
+            }
+            HeadButton {
+                text: "?"
+                tip: i18n("How to read the weather maps")
+                on: panel.map.helpOpen
+                onClicked: panel.map.toggleHelp()
+            }
+            // The stack of the layers, as in the settings: a handle drags a
+            // layer up or down, a switch takes it out of the column.
+            HeadButton {
+                themeIcon: "dialog-layers"
+                tip: i18n("Order of the layers")
+                on: orderMenu.visible
+                onClicked: orderMenu.visible ? orderMenu.close() : orderMenu.open()
+                PlasmaComponents.Popup {
+                    id: orderMenu
+                    margins: 6
+                    x: parent.width - width
+                    y: parent.height + 6
+                    width: 300
+                    padding: 12
+                    closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+                    contentItem: ColumnLayout {
+                        spacing: 6
+                        PlasmaComponents.Label { text: i18n("Order of the layers"); font.bold: true }
+                        LayerStackList {
+                            Layout.fillWidth: true
+                            ownLook: panel.map.ownControls
+                            saved: JSON.stringify(panel.map.layerOrder)
+                            disabled: panel.map.disabledLayers
+                            labels: ({
+                                wind: i18n("Wind"), radar: i18n("Radar"), satellite: i18n("Satellite"),
+                                precipitation: i18n("Precipitation"), clouds: i18n("Cloud cover"), temperature: i18n("Temperature"),
+                                pressure: i18n("Pressure"), isobars: i18n("Isobars"), humidity: i18n("Relative humidity"), dewpoint: i18n("Dew point"), airquality: i18n("Air quality")
+                            })
+                            onOrderPicked: function (json) { panel.map.setLayerOrder(json); }
+                            onLayerToggled: function (id, on) { panel.map.setLayerEnabled(id, on); }
+                        }
+                        PlasmaComponents.Button {
+                            text: i18n("Default order")
+                            icon.name: "edit-undo"
+                            enabled: JSON.stringify(panel.map.layerOrder) !== JSON.stringify(ConfigUtils.WEATHER_STACK)
+                            onClicked: panel.map.setLayerOrder("[]")
+                        }
+                        PlasmaComponents.Label {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 276
+                            wrapMode: Text.WordWrap
+                            color: panel.dimText
+                            text: i18n("The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only.")
+                        }
+                    }
+                }
+            }
+            // Set once: pictures per second at most, the resolution
+            // while playing, coasts and borders, the dark map.
+            HeadButton {
+                id: settingsButton
+                iconName: "gear"
+                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, see-through panels")
+                on: settingsMenu.visible
+                onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
+                PlasmaComponents.Popup {
+                    id: settingsMenu
+                    margins: 6
+                    x: parent.width - width
+                    y: parent.height + 6
+                    width: 350
+                    padding: 12
+                    closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+                    contentItem: ColumnLayout {
+                        spacing: 8
+                        PlasmaComponents.Label { text: i18n("Settings"); font.bold: true }
+                        Segmented {
+                            title: i18n("Pictures per second")
+                            room: 326
+                            choices: [[4, "4"], [8, "8"], [15, "15"]]
+                            current: panel.map.maxFps
+                            onPicked: function (v) { panel.map.setMaxFps(v); }
+                        }
+                        Segmented {
+                            title: i18n("Resolution while playing")
+                            room: 326
+                            choices: [[1, i18n("Full")], [2, i18n("Half")], [4, i18n("Quarter")]]
+                            current: panel.map.resolution
+                            onPicked: function (v) { panel.map.setResolution(v); }
+                        }
+                        SliderSetting {
+                            title: i18n("Panel opacity")
+                            valueText: i18n("%1 %", Math.round(value))
+                            value: panel.map.panelOpacity
+                            onMoved: function (v, done) { panel.map.setPanelOpacity(Math.round(v), done); }
+                        }
+                        SliderSetting {
+                            title: i18n("Blur under the panels")
+                            valueText: value > 0 ? i18n("%1 px", Math.round(value)) : i18n("None")
+                            to: 40
+                            value: panel.map.panelBlur
+                            onMoved: function (v, done) { panel.map.setPanelBlur(Math.round(v), done); }
+                        }
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Coasts and borders")
+                            checked: panel.map.mapLinesOn
+                            onToggled: {
+                                panel.map.setMapLines(checked);
+                                checked = Qt.binding(function () { return panel.map.mapLinesOn; });
+                            }
+                        }
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Dark map")
+                            enabled: !panel.map.darkMapLocked
+                            checked: panel.map.mapTheme === "dark"
+                            onToggled: {
+                                panel.map.setDarkMap(checked);
+                                checked = Qt.binding(function () { return panel.map.mapTheme === "dark"; });
+                            }
+                            PlasmaComponents.ToolTip {
+                                text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
+                                visible: parent.hovered
+                                delay: Kirigami.Units.toolTipDelay
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Divider {}
+    }
+
+    // The rows in the order of the stack (map.layerOrder, top first; the
+    // wind's place orders the column only, it is drawn over the map). Each
+    // row hung again on the column, in turn, goes after those before it.
+    function arrangeRows() {
+        var rowOf = {};
+        layerColumn.children.forEach(function (r) { if (r.layerId) rowOf[r.layerId] = r; });
+        var rows = [layersCaption].concat(map.layerOrder.filter(function (id) { return !!rowOf[id]; })
+            .map(function (id) { return rowOf[id]; }));
+        rows.forEach(function (r) {
+            r.parent = null;
+            r.parent = layerColumn;
+        });
+    }
+    Component.onCompleted: arrangeRows()
+    /** The titles of the column's rows, in their order (the test hook "rows"). */
+    function rowTitles() {
+        return layerColumn.children.filter(function (r) { return r.title !== undefined && r.visible; })
+            .map(function (r) { return r.title; });
+    }
+    Connections {
+        target: panel.map
+        function onLayerOrderChanged() { panel.arrangeRows(); }
+    }
+
+    // The column scrolled to show this row (the test hooks).
+    function showRow(row) {
+        var y = row.mapToItem(layerScroll.contentItem, 0, 0).y;
+        layerScroll.contentY = Math.max(0, Math.min(layerScroll.contentHeight - layerScroll.height, y - 8));
+    }
+
+    // The whole column scrolls when the popup is too short for it.
+    Flickable {
+        id: layerScroll
+        anchors.fill: parent
+        anchors.leftMargin: 1
+        anchors.topMargin: headBox.y + headBox.height
+        // In step with the buttons gliding one under the other.
+        Behavior on anchors.topMargin { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        anchors.bottomMargin: timeBox.height + 12
+        clip: true
+        contentWidth: width
+        contentHeight: layerColumn.y + layerColumn.height + 12
+        boundsBehavior: Flickable.StopAtBounds
+        // A thin bar at the very edge, out of the way of the wheels.
+        PlasmaComponents.ScrollBar.vertical: PlasmaComponents.ScrollBar {
+            id: layerBar
+            readonly property bool own: panel.map.ownControls
+            policy: PlasmaComponents.ScrollBar.AsNeeded
+            width: own ? 5 : implicitWidth
+            background.opacity: own ? 0 : 1
+            contentItem.opacity: own ? 0 : 1
+            // The clean look: a thin bar at the very edge, out of the way of the wheels.
+            Rectangle {
+                visible: layerBar.own && layerBar.size < 1
+                x: layerBar.contentItem.x + (layerBar.contentItem.width - width) / 2
+                y: layerBar.contentItem.y
+                width: 3
+                height: layerBar.contentItem.height
+                radius: 1.5
+                color: panel.tint(layerBar.pressed ? 0.55 : layerBar.hovered ? 0.4 : 0.25)
+            }
+        }
+
+        Column {
+            id: layerColumn
+            x: 9.5
+            y: 4
+            spacing: 7
+
+            Caption { id: layersCaption; text: i18n("Layers") }
+
+            // Radar and satellite; the radar's wheel opens their tile options.
+            MapLayerRow {
+                id: radarRow
+                layerId: "radar"
+                title: i18n("Radar")
+                iconName: "radar"
+                customGear: true
+                soloable: true
+                soloed: panel.map.solo === "radar" || panel.map.solo === "both"
+                soloTip: i18n("Double-click: radar range")
+                onSoloRequested: function (withCtrl) { panel.map.soloSource(withCtrl ? "both" : "radar"); }
+                onGearClicked: {
+                    if (radarMenu.visible) {
+                        radarMenu.close();
+                        return;
+                    }
+                    panel.map.readRadar();
+                    radarMenu.open();
+                }
+            }
+            RadarMenu {
+                id: radarMenu
+                ownLook: panel.map.ownControls
+                // Folded, at the left of the icon (the wheel is hidden).
+                parent: panel.folded ? radarRow.iconItem : radarRow.gearItem
+                x: panel.folded ? -width - 6 : parent.width - width
+                y: panel.folded ? 0 : parent.height + 6
+                schemes: panel.map.radarSchemes
+                options: panel.map.radarOptions
+                onOptionPicked: function (key, value) { panel.map.setRadarOption(key, value); }
+            }
+            MapLayerRow {
+                id: satRow
+                layerId: "satellite"
+                title: i18n("Satellite")
+                iconName: "satellite"
+                hasOptions: false
+                soloable: true
+                soloed: panel.map.solo === "satellite" || panel.map.solo === "both"
+                soloTip: i18n("Double-click: satellite range")
+                onSoloRequested: function (withCtrl) { panel.map.soloSource(withCtrl ? "both" : "satellite"); }
+            }
+
+            MapLayerRow {
+                id: windRow
+                layerId: "wind"
+                title: i18n("Wind")
+                iconName: "vent-glyph"
+                Segmented {
+                    title: i18n("Height")
+                    choices: panel.map.windLevelChoices
+                    current: panel.map.windLevel
+                    onPicked: function (v) { panel.map.setWindLevel(v); }
+                }
+                OptCombo {
+                    title: i18n("Colors")
+                    choices: panel.map.windPaletteChoices
+                    current: panel.map.windPaletteId
+                    onPicked: function (v) { panel.map.setWindPaletteId(v); }
+                }
+                SliderSetting {
+                    // The value shown while dragging; the density itself is
+                    // set once the slider is let go (it starts the particles over).
+                    property real live: panel.map.windDensity
+                    title: i18n("Density")
+                    valueText: i18n("×%1", Number(live).toLocaleString(Qt.locale(), "f", 1))
+                    from: 0.5
+                    to: 2
+                    stepSize: 0       // no tick marks; rounded to 0.1 when moved
+                    value: panel.map.windDensity
+                    onMoved: function (v, done) {
+                        live = Math.round(v * 10) / 10;
+                        if (done) {
+                            panel.map.setWindDensity(live);
+                            live = Qt.binding(function () { return panel.map.windDensity; });
+                        }
+                    }
+                }
+                SliderSetting {
+                    title: i18n("Width")
+                    valueText: i18n("%1 px", Number(value).toLocaleString(Qt.locale(), "f", 1))
+                    from: 0.5
+                    to: 2
+                    stepSize: 0       // no tick marks; rounded to 0.1 when moved
+                    value: panel.map.windLineWidth
+                    onMoved: function (v, done) { panel.map.setWindLineWidth(Math.round(v * 10) / 10, done); }
+                }
+            }
+            MapLayerRow {
+                id: tempRow
+                layerId: "temperature"
+                title: i18n("Temperature")
+                iconName: "temperature-glyph"
+                hasLegend: true
+                Segmented {
+                    title: i18n("Width of the bands")
+                    choices: panel.map.tempStepChoices
+                    current: panel.map.tempStep
+                    onPicked: function (v) { panel.map.setTempStep(v); }
+                }
+                OptCombo {
+                    title: i18n("Colors")
+                    choices: panel.map.tempPaletteChoices
+                    current: panel.map.tempPaletteId
+                    onPicked: function (v) { panel.map.setTempPaletteId(v); }
+                }
+            }
+            MapLayerRow {
+                id: precipRow
+                layerId: "precipitation"
+                title: i18n("Precipitation (rain, snow)")
+                iconName: "precipitations-glyph"
+                hasLegend: true
+                OptKinds {
+                    title: i18n("Kinds shown")
+                    choices: panel.map.precipChoices
+                    checkedValues: panel.map.precipKinds
+                    onPicked: function (values) { panel.map.setPrecipKinds(values); }
+                }
+            }
+            MapLayerRow {
+                id: cloudRow
+                layerId: "clouds"
+                title: i18n("Cloud cover")
+                iconName: "nuages-glyph"
+                iconMask: true
+                OptKinds {
+                    title: i18n("Levels shown")
+                    choices: panel.map.cloudChoices
+                    checkedValues: panel.map.cloudLevels
+                    onPicked: function (values) { panel.map.setCloudLevels(values); }
+                }
+            }
+            MapLayerRow {
+                id: presRow
+                layerId: "pressure"
+                title: i18n("Sea level pressure")
+                iconName: "pression-glyph"
+                hasLegend: true
+            }
+            // The isobars: the lines of the pressure, a layer of their own.
+            MapLayerRow {
+                id: isoRow
+                layerId: "isobars"
+                title: i18n("Isobars")
+                iconName: "isobares-glyph"
+                Segmented {
+                    title: i18n("Lines")
+                    choices: panel.map.isoWidthChoices
+                    current: panel.map.isobars.width
+                    onPicked: function (v) { panel.map.setIsobars("width", v); }
+                }
+                Segmented {
+                    title: i18n("Every (hPa)")
+                    choices: panel.map.isoStepChoices
+                    current: panel.map.isobars.step
+                    onPicked: function (v) { panel.map.setIsobars("step", v); }
+                }
+                ColorDots {
+                    title: i18n("Color")
+                    choices: panel.map.isoColorChoices
+                    current: panel.map.isobars.color
+                    onPicked: function (v) { panel.map.setIsobars("color", v); }
+                }
+                MapSwitch {
+                    own: panel.map.ownControls
+                    text: i18n("Values on the lines")
+                    checked: panel.map.isobars.labels
+                    onToggled: panel.map.setIsobars("labels", checked)
+                }
+                Segmented {
+                    title: i18n("Size")
+                    enabled: panel.map.isobars.labels
+                    opacity: enabled ? 1 : 0.5
+                    choices: panel.map.isoTextChoices
+                    current: panel.map.isobars.textSize
+                    onPicked: function (v) { panel.map.setIsobars("textSize", v); }
+                }
+                MapSwitch {
+                    own: panel.map.ownControls
+                    text: i18n("Highs and lows")
+                    checked: panel.map.isobars.marks
+                    onToggled: panel.map.setIsobars("marks", checked)
+                }
+            }
+            MapLayerRow {
+                id: humRow
+                layerId: "humidity"
+                title: i18n("Relative humidity")
+                iconName: "humidite-glyph"
+                hasLegend: true
+            }
+            MapLayerRow {
+                id: dewRow
+                layerId: "dewpoint"
+                title: i18n("Dew point")
+                iconName: "rosee-glyph"
+                hasLegend: true
+            }
+            MapLayerRow {
+                id: aqRow
+                layerId: "airquality"
+                title: i18n("Air quality (CAMS)")
+                iconName: "qualite-air-glyph"
+                iconMask: true
+                hasLegend: true
+                OptSwitches {
+                    title: i18n("Pollutant")
+                    choices: panel.map.aqChoices
+                    current: panel.map.pollutant
+                    onPicked: function (v) { panel.map.setPollutant(v); }
+                }
+            }
+        }
+    }
+
+    // The time, always in sight at the bottom of the column (the column
+    // scrolls above it): how far back, how far ahead, the speed.
+    Column {
+        id: timeBox
+        x: 9.5
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 8
+        spacing: 7
+        Divider {}
+        Caption { text: i18n("Time") }
+        // How far back, how far ahead (the wheel steps them), the speed.
+        Flow {
+            width: panel.colW
+            spacing: panel.folded ? 4 : 10
+            // Side by side open, one under the other folded: they glide there.
+            move: Transition { NumberAnimation { properties: "x,y"; duration: 220; easing.type: Easing.OutCubic } }
+            RangeIcon {
+                id: pastPick
+                prefix: "−"
+                // A source's range shows its name on both clocks, its hours in the bubble.
+                override: panel.map.solo ? "−" + panel.map.hoursText(panel.map.pastH) : ""
+                detail: panel.map.rangeKind && !panel.map.solo ? "−" + panel.map.hoursText(panel.map.pastH) : ""
+                choices: panel.map.pastChoices
+                current: Math.max(0, panel.map.pastChoices.map(function (c) { return c[0]; }).indexOf(panel.map.rangeKind || panel.map.savedPastH))
+                tip: i18n("How far back")
+                onPicked: function (h) { panel.map.pickRange(h, panel.map.rangeKind ? panel.map.savedFutureH : panel.map.futureH); }
+            }
+            RangeIcon {
+                id: futurePick
+                prefix: "+"
+                // A source's range shows its name on both clocks, its hours in the bubble.
+                override: panel.map.solo ? "+" + panel.map.hoursText(panel.map.futureH) : ""
+                detail: panel.map.rangeKind && !panel.map.solo ? "+" + panel.map.hoursText(panel.map.futureH) : ""
+                mirror: true
+                choices: panel.map.futureChoices
+                current: Math.max(0, panel.map.futureChoices.map(function (c) { return c[0]; }).indexOf(panel.map.rangeKind || panel.map.savedFutureH))
+                tip: i18n("How far ahead")
+                onPicked: function (h) { panel.map.pickRange(panel.map.rangeKind ? panel.map.savedPastH : panel.map.pastH, h); }
+            }
+            // x1, x2, x3 in turn, one a click: 3 hours of weather in 1.5 s, 0.75 s, 0.5 s.
+            Item {
+                id: speedIcon
+                readonly property int speed: panel.map.speed
+                implicitWidth: 36
+                implicitHeight: 40
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 4
+                    color: panel.tint(speedArea.containsMouse ? 0.10 : 0)
+                }
+                // One triangle a step of speed.
+                Canvas {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: 5
+                    width: 26
+                    height: 16
+                    property int n: speedIcon.speed
+                    property color fill: panel.fg
+                    onNChanged: requestPaint()
+                    onFillChanged: requestPaint()
+                    onPaint: {
+                        var c = getContext("2d"), w = 8, gap = 1, total = n * w + (n - 1) * gap, x0 = (width - total) / 2;
+                        c.reset();
+                        c.fillStyle = fill;
+                        for (var i = 0; i < n; i++) {
+                            var x = x0 + i * (w + gap);
+                            c.beginPath();
+                            c.moveTo(x, 2);
+                            c.lineTo(x + w, 8);
+                            c.lineTo(x, 14);
+                            c.closePath();
+                            c.fill();
+                        }
+                    }
+                }
+                PlasmaComponents.Label {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: 25
+                    text: "x" + speedIcon.speed
+                    color: panel.fg
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+                MouseArea {
+                    id: speedArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: panel.map.setSpeed(speedIcon.speed % 3 + 1)
+                }
+                PlasmaComponents.ToolTip {
+                    text: "<b>" + i18n("Speed x%1", speedIcon.speed) + "</b> (+ −)"
+                    visible: speedArea.containsMouse
+                    delay: Kirigami.Units.toolTipDelay
+                }
+            }
+        }
+    }
+
+    // Folds the column to its icons, or opens it.
+    PlasmaComponents.ToolButton {
+        id: foldButton
+        readonly property bool own: panel.map.ownControls
+        x: 1
+        anchors.verticalCenter: parent.verticalCenter
+        width: own ? 8 : 16
+        height: 56
+        display: PlasmaComponents.ToolButton.IconOnly
+        icon.name: panel.folded ? "arrow-left" : "arrow-right"
+        icon.width: Kirigami.Units.iconSizes.small
+        icon.height: Kirigami.Units.iconSizes.small
+        leftPadding: 0
+        rightPadding: 0
+        onClicked: panel.map.setFolded(!panel.folded)
+        background.opacity: own ? 0 : 1
+        contentItem.opacity: own ? 0 : 1
+        // The clean look: a thin tab with its arrow.
+        Rectangle {
+            visible: foldButton.own
+            anchors.fill: parent
+            radius: 4
+            color: panel.tint(foldButton.hovered ? 0.18 : 0.07)
+            PlasmaComponents.Label {
+                anchors.centerIn: parent
+                text: panel.folded ? "‹" : "›"
+                color: panel.dimText
+                font.pixelSize: 12
+                font.bold: true
+            }
+        }
+        PlasmaComponents.ToolTip {
+            text: panel.folded ? i18n("Open the layer column") : i18n("Fold the layer column")
+            visible: foldButton.hovered
+            delay: Kirigami.Units.toolTipDelay
+        }
+    }
+}

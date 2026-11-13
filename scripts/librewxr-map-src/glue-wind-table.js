@@ -14,7 +14,8 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
   var DEG = Math.PI / 180;
   var CELL = 12;              // px between table nodes
   var SLICE_MS = 4;           // longest slice of table building per frame
-  var MAX_PARTICLES = 1500;
+  var REVEAL_MS = 250;        // fade in of the wind after a change of projection
+  var FILE_RES = 0.25;        // degrees of the files given in manual mode
 
   // Nested grids: every zoom of a band samples the same points (the map
   // zooms in fractions), and a finer grid holds the points of a coarser one.
@@ -26,12 +27,15 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     this._source = source;
     this._open = openData;
     this._dem = dem;
+    this._fade = 1;           // 0..1, the canvas's opacity while the layer fades in or out
+    this._opacity = options && options.opacity != null ? Math.max(0, Math.min(1, options.opacity)) : 1;   // set by the user
     this.options = {
       fps: 10, maxFps: 20, stepPx: 2.5, cadenceFraction: 0.98,
       relief: true, reliefMinZoom: 9, sigma: 250,
       fade: 0.90, maxAge: 60, density: 1, lineWidth: 1, palette: null, theme: 'dark',
       speedScale: 3, minPx: 2, maxPx: 60,
-      fetchDelayMs: 600, settleMs: 1500, level: '10m'
+      fetchDelayMs: 600, settleMs: 1500, level: '10m',
+      manual: false          // the file grid comes from showFile() (the animation); the API as usual
     };
     for (var k in options) if (options[k] !== undefined) this.options[k] = options[k];
     this.options.lineWidth = WindField.lineWidth(this.options.lineWidth);
@@ -52,13 +56,14 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     this.nudging = false;    // set by fixViewport around its repaint nudge
   }
 
-  TableWindLayer.prototype = {
+  TableWindLayer.prototype = WidgetWind.withParticles({
     addTo: function (map) {
       var self = this;
       this._map = map;
       this._canvas = document.createElement('canvas');
       this._canvas.className = 'lv-wind-canvas';
       this._canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+      this._canvas.style.opacity = String(this._fade * this._opacity);
       // Right over the map's own canvas: markers and popups stay on top.
       var gl = map.getCanvas();
       gl.parentNode.insertBefore(this._canvas, gl.nextSibling);
@@ -82,7 +87,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       // Nothing is drawn before settle(): the page's first viewport fix
       // would land the particles in a provisional frame.
       this._settleTimer = setTimeout(function () { self.settle(); }, this.options.settleMs);
-      if (this._open) {
+      if (this._open && !this.options.manual) {
         this._loadFile(this.options.level);
         // A newer file now and then; the loader reads latest.json at most every 10 min.
         this._recheck = setInterval(function () { self._loadFile(self.options.level); }, 600000);
@@ -104,12 +109,19 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._canvas = this._ctx = this._map = null;
     },
 
-    settle: function () {
-      if (this._settleTimer) { clearTimeout(this._settleTimer); this._settleTimer = null; }
-      if (this._settled) return;
-      this._settled = true;
-      this._reset();
+    /** Fade in or out (0..1): the canvas's opacity, the particles go on. */
+    setFade: function (f) {
+      this._fade = Math.max(0, Math.min(1, f));
+      if (this._canvas) this._canvas.style.opacity = String(this._fade * this._opacity);
     },
+
+    /** The opacity chosen for the layer (0..1), under its fade. */
+    setOpacity: function (v) {
+      this._opacity = Math.max(0, Math.min(1, v));
+      if (this._canvas) this._canvas.style.opacity = String(this._fade * this._opacity);
+    },
+
+    getOpacity: function () { return this._opacity; },
 
     /** Pause (popup collapsed) or resume. */
     setActive: function (active) {
@@ -118,17 +130,53 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       else this._stop(true);
     },
 
-    isDrawing: function () { return !!this._running; },
-
-    setRate: function (fps, maxFps) {
-      this.options.fps = Math.max(4, Math.min(30, fps || 10));
-      this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
-      this._fps = this.options.fps;
+    /** Manual mode: the file grid to draw far out, in place of the latest
+        file. Its `at` (s) is the time drawn, also on the API grids closer in
+        (they hold every hour of the animation). The particles go on across
+        the swap. */
+    showFile: function (grid) {
+      var level = this.options.level, first = this._fileState[level] !== 'ready';
+      this._at = grid.at;
+      this._fileGrid[level] = grid;
+      this._fileState[level] = 'ready';
+      if (!this._map) return;
+      if (first) { this._reset(); return; }
+      if (this._mode === 'file') {
+        this._entry = { grid: grid };
+        if (!this._running && !this._building) this._start();
+      }
     },
 
-    setLineWidth: function (w) { this.options.lineWidth = WindField.lineWidth(w); },
-    setTheme: function (theme) { this.options.theme = theme; },
-    setPalette: function (palette) { this.options.palette = palette || WindField.DEFAULT_PALETTE; },
+    /** Whether the grid given is on screen: false while the table of the
+        projection is being built. */
+    settled: function () { return !this._building; },
+
+    /** The wind drawn at lat/lon, { speed (m/s), dir (from, degrees) }, or
+        null where none is drawn. */
+    valueAt: function (lat, lon) {
+      var grid = this._grid();
+      if (!grid || !this._map) return null;
+      var o = this.options, z = this._map.getZoom() + 1, hP = NaN;
+      var sigma = o.relief && z >= o.reliefMinZoom && grid.elev && o.level === '10m' ? o.sigma : 0;
+      if (sigma > 0) {
+        var dz = this._demZoom(), p = WindField.worldPx(lat, lon, dz);
+        hP = this._dem.elevationAtWorld(p.x, p.y, dz);
+      }
+      var uv = WindField.sampleChain(grid, lat, lon, WindField.timeWeights(grid.times, this._time(grid)), hP, sigma, o.level);
+      return uv ? WindField.fromUV(uv.u, uv.v) : null;
+    },
+
+    /** The color of the particles at speed ms (m/s). */
+    colorOf: function (ms) {
+      var p = this.options.palette;
+      return WindField.bandColor(p, WindField.paletteBand(ms, p), this.options.theme);
+    },
+
+    /** The time a grid is drawn at (s): its own (a file of the animation),
+        the animation's (manual mode), else now. */
+    _time: function (grid) {
+      return grid.at != null ? grid.at : this._at != null ? this._at : Date.now() / 1000;
+    },
 
     setDensity: function (density) {
       this.options.density = density > 0 ? density : 1;
@@ -143,6 +191,26 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
 
     /** The projection changed under the layer: rebuild the table. */
     refresh: function () { if (this._map) this._reset(); },
+
+    /** The projection is changing: the particles of the old one go at once
+        (they would stand in the wrong places), the table is built again on
+        the first frame of the new one, and the wind fades back in. */
+    reproject: function () {
+      if (!this._map) return;
+      var self = this;
+      this._stop(true);
+      this._map.once('render', function () {
+        requestAnimationFrame(function () {
+          if (!self._map) return;
+          self._fadeIn = true;
+          self._reset();
+        });
+      });
+      this._map.triggerRepaint();
+    },
+
+    /** The source's grids changed (other hours): draw again from it. */
+    reload: function () { if (this._map) this._reset(); },
 
     _stop: function (clear) {
       this._running = false;
@@ -187,8 +255,11 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       var view = this._view(), self = this, token = ++this._resetToken, level = this.options.level;
       // Far out, the open-data file: the model's own field, no API call. The
       // API only once its grid is finer than the file's; while the file is
-      // on its way, wait for it; if it failed, the API at every zoom.
-      if (this._open && !WindField.wantApi(WindField.gridSpec(view.bounds), this._open.res)) {
+      // on its way, wait for it; if it failed, the API at every zoom. In
+      // manual mode the file is the one given (showFile).
+      var fileRes = this.options.manual ? FILE_RES : this._open && this._open.res;
+      if (fileRes && !WindField.wantApi(WindField.gridSpec(view.bounds), fileRes)) {
+        if (this.options.manual && this._fileState[level] !== 'ready') { this._setMode('file'); return; }
         if (this._fileState[level] === 'ready') {
           this._setMode('file');
           this._entry = { grid: this._fileGrid[level] };
@@ -289,6 +360,10 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         if (!done) { requestAnimationFrame(slice); return; }
         self._building = false;
         self._canvas.style.visibility = '';
+        if (self._fadeIn) {
+          self._fadeIn = false;
+          if (self._canvas.animate) self._canvas.animate([{ opacity: 0 }, { opacity: self._fade * self._opacity }], { duration: REVEAL_MS, easing: 'ease-out' });
+        }
         self._running = true;
         self._schedule();
       };
@@ -298,7 +373,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     _build: function* () {
       yield* this._buildTable();
       var t = this._table;
-      this._n = WindField.particleCount(t.area, this.options.density, MAX_PARTICLES);
+      this._n = WindField.particleCount(t.area, this.options.density, WindField.maxParticles(this.options.density));
       this._px = new Float32Array(this._n);
       this._py = new Float32Array(this._n);
       this._age = new Uint16Array(this._n);
@@ -383,36 +458,18 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._age[i] = this.options.maxAge;
     },
 
-    // One frame every 1000/fps ms: a timer, then a single rAF to draw.
-    _schedule: function () {
-      var self = this, loop = this._loop;
-      this._timer = setTimeout(function () {
-        self._timer = null;
-        if (!self._running || self._loop !== loop) return;
-        requestAnimationFrame(function () {
-          if (!self._running || self._loop !== loop) return;
-          self._frame();
-          self._schedule();
-        });
-      }, 1000 / this._fps);
-    },
-
     _frame: function () {
       var grid = this._grid();
       if (!grid || !this._table) return;
       var t0 = performance.now(), ctx = this._ctx, dpr = this._dpr, o = this.options, t = this._table, cols = t.cols;
-      ctx.globalCompositeOperation = 'destination-in';
-      ctx.fillStyle = 'rgba(0,0,0,' + o.fade + ')';
-      ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
-      ctx.globalCompositeOperation = 'source-over';
+      this._fadeTrails(ctx, o.fade);
       var map = this._map, glZoom = map.getZoom(), z = glZoom + 1;
       var pxPerDeg = 512 * Math.pow(2, glZoom) / 360 / Math.cos(map.getCenter().lat * DEG);
-      var tw = WindField.timeWeights(grid.times, Date.now() / 1000);
+      var tw = WindField.timeWeights(grid.times, this._time(grid));
       // Relief weighting near the ground, from the API grid's elevations.
       var sigma = o.relief && z >= o.reliefMinZoom && grid.elev && o.level === '10m' ? o.sigma : 0;
       var dz = this._demZoom(), worldSize = 256 * Math.pow(2, dz);
-      var dt = 1 / this._fps, palette = o.palette, spd = this._spd, pxCount = 0;
-      var paths = palette.map(function () { return new Path2D(); });
+      var dt = 1 / this._fps, palette = o.palette, spd = this._spd, pxCount = 0, paths = this._paths();
       for (var i = 0; i < this._n; i++) {
         if (++this._age[i] > o.maxAge) { this._spawn(i, false); continue; }
         var x = this._px[i], y = this._py[i], k = this._cell(x, y);
@@ -428,7 +485,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
           var wy = (1 - Math.log(Math.tan(Math.PI / 4 + lat * DEG / 2)) / Math.PI) / 2 * worldSize;
           hP = this._dem.elevationAtWorld(wx, wy, dz);
         }
-        var uv = WindField.sample(grid, lat, lon, tw, hP, sigma, o.level);
+        var uv = WindField.sampleChain(grid, lat, lon, tw, hP, sigma, o.level);
         if (!uv) { this._spawn(i, false); continue; }
         var sv = WindField.screenVelocity(uv.u, uv.v, this._velOpts);
         var dlon = sv.dx / (pxPerDeg * Math.max(0.05, Math.cos(lat * DEG))), dlat = -sv.dy / pxPerDeg;
@@ -443,34 +500,10 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         this._px[i] = nx;
         this._py[i] = ny;
       }
-      ctx.lineWidth = o.lineWidth * dpr;
-      ctx.lineCap = 'round';
-      for (var p = 0; p < paths.length; p++) {
-        ctx.strokeStyle = WindField.bandColor(palette, p, o.theme);
-        ctx.globalAlpha = WindField.BAND_ALPHA[p];
-        ctx.stroke(paths[p]);
-      }
-      ctx.globalAlpha = 1;
-      if (pxCount) {
-        var want = WindField.targetFps(WindField.cadenceSpeed(spd, pxCount, o.cadenceFraction), o.fps, o.maxFps, o.stepPx);
-        this._fps = this._fps * 0.8 + want * 0.2;
-      }
+      this._stroke(ctx, paths, dpr, pxCount);
       if (!this._warming) this._stat(performance.now() - t0);
-    },
-
-    _stat: function (jsMs) {
-      var now = Date.now();
-      if (!this._statT0) { this._statT0 = now; this._statFrames = 0; this._statMs = 0; }
-      this._statFrames++;
-      this._statMs += jsMs;
-      if (now - this._statT0 >= 10000) {
-        var secs = (now - this._statT0) / 1000;
-        console.log('[wind] ' + (this._statFrames / secs).toFixed(1) + ' fps, ' +
-          (this._statMs / this._statFrames).toFixed(2) + ' ms JS per frame, ' + this._n + ' particles');
-        this._statT0 = now; this._statFrames = 0; this._statMs = 0;
-      }
     }
-  };
+  });
 
   return TableWindLayer;
 };

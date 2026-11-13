@@ -453,6 +453,16 @@ test('particleCount: one particle per 300 px2 times the density, within 200..max
   assert.equal(WindField.particleCount(100 * 100, 1, 1500), 200);
 });
 
+test('maxParticles: 5000 per unit of density, so the density still counts full screen', () => {
+  assert.equal(WindField.maxParticles(1), 5000);
+  assert.equal(WindField.maxParticles(0.5), 2500);
+  assert.equal(WindField.maxParticles(2), 10000);
+  assert.equal(WindField.maxParticles(undefined), 5000);
+  // Full screen, 2200 x 1340 CSS px: the density changes the count.
+  assert.equal(WindField.particleCount(2200 * 1340, 1, WindField.maxParticles(1)), 5000);
+  assert.equal(WindField.particleCount(2200 * 1340, 2, WindField.maxParticles(2)), 10000);
+});
+
 test('wantApi: the API only once its grid is finer than the file', () => {
   assert.equal(WindField.wantApi({ lonStep: 0.352 }, 0.25), false);
   assert.equal(WindField.wantApi({ lonStep: 0.176 }, 0.25), true);
@@ -585,4 +595,59 @@ test('afterEnsure: draw a grid covering most of the view, ask again while it doe
   const far = entry({ west: 8, south: 44, east: 12, north: 46 }, 7);
   assert.deepEqual(WindField.afterEnsure(view, far, now, ttl), { draw: false, retry: true });
   assert.deepEqual(WindField.afterEnsure(view, null, now, ttl), { draw: false, retry: true });
+});
+
+test('buildGrid: temperature per hour when the points have it, null otherwise', () => {
+  const spec = { n: 2, lats: [48.1, 48.0], lons: [6.5, 6.6] };
+  const mk = (t) => ({ elevation: 0, hourly: { time: [1000, 4600], wind_speed_10m: [1, 1], wind_direction_10m: [270, 270], temperature_2m: t } });
+  const g = WindField.buildGrid(spec, [mk([1, 2]), mk([3, 4]), mk([5, null]), mk([7, 8])]);
+  assert.equal(g.temp.length, 2);
+  assert.deepEqual(Array.from(g.temp[0]), [1, 3, 5, 7]);
+  assert.ok(Number.isNaN(g.temp[1][2]));
+  const old = WindField.buildGrid(spec, [1, 2, 3, 4].map(() => ({ elevation: 0, hourly: { time: [1000], wind_speed_10m: [1], wind_direction_10m: [270] } })));
+  assert.equal(old.temp, null);
+});
+
+test('fromUV: speed and the direction the wind comes from, the inverse of toUV', () => {
+  for (const dir of [0, 45, 90, 200, 270, 315]) {
+    const uv = WindField.toUV(7, dir), back = WindField.fromUV(uv.u, uv.v);
+    assert.ok(Math.abs(back.speed - 7) < 1e-9);
+    assert.ok(Math.abs(back.dir - dir) < 1e-9 || Math.abs(back.dir - dir) > 359.999);
+  }
+  assert.deepEqual(WindField.fromUV(0, 0), { speed: 0, dir: 0 });
+});
+
+test('speedText: the widget\'s wind units, as the widget writes them', () => {
+  assert.equal(WindField.speedText(10, 'kmh'), '36');
+  assert.equal(WindField.speedText(10, 'ms'), '10.0');
+  assert.equal(WindField.speedText(10, 'kn'), '19.4');
+  assert.equal(WindField.speedText(10, 'mph'), '22.4');
+  assert.equal(WindField.speedText(10, 'other'), '36');
+});
+
+test('compassIndex: eight points, N first, turning east', () => {
+  assert.deepEqual([0, 22, 23, 90, 180, 247, 300, 338, 359].map(WindField.compassIndex), [0, 0, 1, 2, 4, 5, 7, 0, 0]);
+});
+
+test('sampleChain: a finer model over the global wind by its weight and fade, the global one outside', () => {
+  global.WidgetGrids = require('../glue-grids.js');
+  const T = require('../glue-temp.js');
+  const WidgetOpenData = require('../glue-wind-open.js');
+  const coarse = WidgetOpenData.toGrid(new Float32Array(12).fill(10), new Float32Array(12).fill(0), 3, 4, 3600000, '10m');
+  const n = 9, desc = WidgetGrids.latlon({ nx: n, ny: n, south: 40, west: 0, dLon: 0.25, dLat: 0.25 });
+  const fu = new Float32Array(n * n).fill(0), fv = new Float32Array(n * n).fill(4);
+  const fine = { desc, u: fu, v: fv, uB: null, vB: null, mix: 0, weights: T.edgeWeights(fu, n, n, 2), fade: 1 };
+  const g = Object.assign({}, coarse, { fines: [fine] });
+  const tw = WindField.timeWeights(g.times, g.times[0]);
+  const mid = WindField.sampleChain(g, 41, 1, tw, NaN, 0, '10m');      // center: all fine
+  assert.ok(Math.abs(mid.u) < 1e-6 && Math.abs(mid.v - 4) < 1e-6);
+  const out = WindField.sampleChain(g, 30, 1, tw, NaN, 0, '10m');      // outside: global
+  assert.ok(Math.abs(out.u - 10) < 1e-6 && Math.abs(out.v) < 1e-6);
+  const half = WindField.sampleChain(Object.assign({}, g, { fines: [Object.assign({}, fine, { fade: 0.5 })] }), 41, 1, tw, NaN, 0, '10m');
+  assert.ok(Math.abs(half.u - 5) < 1e-6 && Math.abs(half.v - 2) < 1e-6);
+  // Two hours of the fine model, mixed.
+  const mixed = WindField.sampleChain(Object.assign({}, g, { fines: [Object.assign({}, fine, { uB: new Float32Array(n * n).fill(2), vB: fv, mix: 0.5 })] }), 41, 1, tw, NaN, 0, '10m');
+  assert.ok(Math.abs(mixed.u - 1) < 1e-6);
+  // No fines: as sample().
+  assert.deepEqual(WindField.sampleChain(coarse, 41, 1, tw, NaN, 0, '10m'), WindField.sample(coarse, 41, 1, tw, NaN, 0, '10m'));
 });
