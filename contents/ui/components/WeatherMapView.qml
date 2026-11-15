@@ -352,11 +352,24 @@ Item {
     property bool started: false      // window.animStart() took
     property bool startFailed: false  // the page cannot animate here (no WebGL)
     property bool ctrlDown: false     // Ctrl held: readout under the pointer, cross cursor
-    // The map's credits are open (the (i) button): the date and the badges,
-    // drawn over the page, fade out so the credits can be read.
+    // The map's credits are open (the (i) button), and where they stand
+    // over the map ([left, top, right, bottom], null if not known). When
+    // they reach the date and the badges at the bottom left, these rise
+    // above them, and come back down as the credits fold. A wide map
+    // leaves them where they are.
     property bool creditsOpen: false
-    property real creditsFade: creditsOpen ? 0 : 1
-    Behavior on creditsFade { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+    property var creditsRect: null
+    readonly property real creditsLift: {
+        var c = creditsRect;
+        if (!creditsOpen || !c)
+            return 0;
+        var w = Math.max(dateBox.visible ? dateBox.width : 0, modelsBadge.visible ? modelsBadge.width : 0, countBadge.visible ? countBadge.width : 0);
+        if (c[0] >= dateLeft + w * overlayScale + 4)
+            return 0;
+        return Math.max(0, mapArea.height - 10 - timeBar.height - c[1] + 6);
+    }
+    property real creditsLiftShown: creditsLift
+    Behavior on creditsLiftShown { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
     onCtrlDownChanged: if (ctrlDown && !mapHover.hovered) call("setReadout", false)
     // None while a page loads (its pictures are not known yet).
     readonly property int count: animState ? frameTimes.length : 0
@@ -366,6 +379,9 @@ Item {
     // ones shown are kept while the range reloads (no picture shown then).
     property var shownTime: null
     property var shownNow: null
+    // Now as the time line counts from it: the clock to 10 minutes within
+    // the radar's or the satellite's bounds, the frame of now otherwise.
+    readonly property var fromNowRef: frameBounds && timeBar.timeLine.boundNow ? timeBar.timeLine.boundNow : shownNow
     // The parts of animState that change seldom, each set only when it
     // changes (_keep): what reads them (the marks of the time line, the
     // switches of the column) is not worked out again ten times a second.
@@ -1024,10 +1040,10 @@ Item {
     // The date at the bottom left, over the map's credits: where it stands
     // from the map's left and bottom, and how far it lifts the badges.
     readonly property real dateLeft: 10 + edgeX
-    readonly property real dateBottom: 10 + timeBar.height
+    readonly property real dateBottom: 10 + timeBar.height + creditsLiftShown
     readonly property real dateLift: dateBox.visible ? (dateBox.height + 6) * overlayScale : 0
     // The page blurs the map under the date, as under the column and the bar.
-    readonly property var dateRect: dateBox.visible && !creditsOpen ? [dateLeft, dateBottom, dateBox.width * overlayScale, dateBox.height * overlayScale, dateBox.radius * overlayScale] : [0, 0, 0, 0, 0]
+    readonly property var dateRect: dateBox.visible ? [dateLeft, dateBottom, dateBox.width * overlayScale, dateBox.height * overlayScale, dateBox.radius * overlayScale] : [0, 0, 0, 0, 0]
     onDateRectChanged: if (started) call("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4])
     // Full screen: what lies over the map (the page's buttons and legends,
     // the date, the badges, the column's head) stands further from the
@@ -1428,7 +1444,9 @@ Item {
                         } else if (message.indexOf("[readout] ctrl:") === 0) {
                             radarRoot.ctrlDown = message.slice(15) === "1";
                         } else if (message.indexOf("[credits] ") === 0) {
-                            radarRoot.creditsOpen = message.slice(10) === "1";
+                            var cr = message.slice(10).split(" ").map(Number);
+                            radarRoot.creditsRect = cr.length === 5 ? cr.slice(1) : null;
+                            radarRoot.creditsOpen = cr[0] === 1;
                         }
                     }
 
@@ -1609,11 +1627,12 @@ Item {
                 // per second at most: small, at the bottom left of the map,
                 // the models drawn under them.
                 Rectangle {
+                    id: countBadge
                     anchors.left: parent.left
                     anchors.bottom: modelsBadge.visible ? modelsBadge.top : parent.bottom
                     anchors.leftMargin: 10 + radarRoot.edgeX
                     // (the models grow upward from their bottom: clear of them)
-                    anchors.bottomMargin: modelsBadge.visible ? 4 + modelsBadge.height * (radarRoot.overlayScale - 1) : 30 + timeBar.height + radarRoot.dateLift
+                    anchors.bottomMargin: modelsBadge.visible ? 4 + modelsBadge.height * (radarRoot.overlayScale - 1) : 30 + timeBar.height + radarRoot.dateLift + radarRoot.creditsLiftShown
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
                     width: countLabel.implicitWidth + 12
@@ -1621,8 +1640,6 @@ Item {
                     radius: height / 2
                     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
                     visible: radarRoot.count > 0
-                    opacity: radarRoot.creditsFade
-                    enabled: !radarRoot.creditsOpen
                     PlasmaComponents.Label {
                         id: countLabel
                         anchors.centerIn: parent
@@ -1645,7 +1662,7 @@ Item {
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
                     anchors.leftMargin: 10 + radarRoot.edgeX
-                    anchors.bottomMargin: 10 + timeBar.height + radarRoot.dateLift
+                    anchors.bottomMargin: 10 + timeBar.height + radarRoot.dateLift + radarRoot.creditsLiftShown
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
                     width: modelsLabel.implicitWidth + 12
@@ -1653,8 +1670,6 @@ Item {
                     radius: height / 2
                     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
                     visible: !!(radarRoot.animState && radarRoot.animState.models && radarRoot.animState.models.length)
-                    opacity: radarRoot.creditsFade
-                    enabled: !radarRoot.creditsOpen
                     PlasmaComponents.Label {
                         id: modelsLabel
                         anchors.centerIn: parent
@@ -1702,8 +1717,6 @@ Item {
                     anchors.bottomMargin: radarRoot.dateBottom
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
-                    opacity: radarRoot.creditsFade
-                    enabled: !radarRoot.creditsOpen
                 }
             }
 

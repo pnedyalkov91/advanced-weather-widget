@@ -34,21 +34,29 @@ Rectangle {
     function timeText() {
         return box.map.shownTime !== null ? dayText(box.map.shownTime) + ", " + box.map.formatTime(new Date(box.map.shownTime)) : "…";
     }
-    function fromNowText() {
-        if (box.map.shownTime === null || box.map.shownNow === null)
+    // How far t is from now, to 10 minutes: "0 h", "+10 min", "-2 h 50".
+    // Now as the time line counts it: within the radar's or the
+    // satellite's bounds, the clock to 10 minutes; otherwise the frame of now.
+    readonly property var nowRef: box.map.fromNowRef
+    function offsetText(t) {
+        if (t === null || box.nowRef === null)
             return "";
-        var h = Math.round((box.map.shownTime - box.map.shownNow) / 3600000);
-        return h === 0 ? i18nc("@label the time shown is now", "now") : (h > 0 ? i18n("+%1 h", h) : i18n("%1 h", h));
+        var h = (t - box.nowRef) / 3600000;
+        if (Math.round(h * 6) === 0)
+            return i18n("%1 h", 0);
+        return (h > 0 ? "+" : "-") + box.map.hoursText(Math.abs(h));
     }
+    function fromNowText() { return box.map.shownTime === null ? "" : offsetText(box.map.shownTime); }
     // One width for the whole range: that of its longest date, and of its
-    // widest distance from now in whole hours.
+    // widest distance from now.
     FontMetrics { id: timeMetrics; font.pixelSize: 15; font.bold: true }
     FontMetrics { id: fromNowMetrics; font.pixelSize: 13 }
     readonly property real timeWidth: Math.ceil(Math.max.apply(null, [0].concat(box.map.frameTimes.map(function (t) {
         return timeMetrics.advanceWidth(dayText(t) + ", " + box.map.formatTime(new Date(t)));
     })))) + 2
-    readonly property real fromNowWidth: Math.ceil(Math.max(fromNowMetrics.advanceWidth(i18nc("@label the time shown is now", "now")),
-        fromNowMetrics.advanceWidth(i18n("%1 h", -Math.ceil(box.map.pastH))), fromNowMetrics.advanceWidth(i18n("+%1 h", Math.ceil(box.map.futureH))))) + 2
+    readonly property real fromNowWidth: Math.ceil(Math.max.apply(null, [0].concat(box.map.frameTimes.map(function (t) {
+        return fromNowMetrics.advanceWidth(box.offsetText(t));
+    })))) + 2
 
     visible: box.map.shownTime !== null
     width: dateRow.implicitWidth + 24
