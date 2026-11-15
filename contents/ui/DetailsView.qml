@@ -621,18 +621,25 @@ Item {
     }
 
     // ── UI when data exists ───────────────────────────────────────────────
-    ScrollView {
+    // Flickable instead of ScrollView: styled ScrollViews (e.g. KDE Union) pad the
+    // view by scrollbar size, which created a binding loop on bottomPadding (and a
+    // crash in plasmawindowed). Attached ScrollBars on a Flickable overlay the
+    // content, so nothing here depends on scrollbar visibility.
+    Flickable {
         id: detailsScroll
         anchors.fill: parent
         clip: true
-        contentWidth: Math.max(availableWidth, 560)
-        ScrollBar.horizontal.policy: ScrollBar.AsNeeded
-        ScrollBar.vertical.policy: ScrollBar.AsNeeded
         visible: root.hasData
+        boundsBehavior: Flickable.StopAtBounds
+        contentWidth: detailsColumn.width
+        contentHeight: detailsColumn.height
+
+        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+        ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
 
         Column {
             id: detailsColumn
-            width: Math.max(detailsScroll.availableWidth, 560)
+            width: Math.max(detailsScroll.width, 560)
             spacing: root.isList ? 0 : 8
             bottomPadding: 4
 
