@@ -2045,7 +2045,7 @@ msgstr "Pleine lune"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:459
 msgid "Full screen (F11)"
-msgstr ""
+msgstr "Plein écran (F11)"
 
 #: contents/ui/DetailsView.qml:2839
 msgid "Future alerts"
@@ -2683,7 +2683,7 @@ msgstr "Type de disposition :"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:459
 msgid "Leave full screen (F11 or Esc)"
-msgstr ""
+msgstr "Quitter le plein écran (F11 ou Échap)"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:394
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
@@ -6140,7 +6140,7 @@ msgstr "ciel dégagé"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:172
 msgid "closes this panel, then leaves full screen."
-msgstr ""
+msgstr "ferme ce panneau, puis quitte le plein écran."
 
 #: contents/ui/main.qml:2860
 msgid "cloudy skies"
@@ -6184,7 +6184,7 @@ msgstr "ft"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:171
 msgid "full screen on or off."
-msgstr ""
+msgstr "passe en plein écran ou en sort."
 
 #: contents/ui/DetailsView.qml:1583 contents/ui/DetailsView.qml:1718
 msgid "grains/m³"
