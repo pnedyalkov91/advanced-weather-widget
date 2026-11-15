@@ -441,21 +441,35 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   }
   if (typeof window !== 'undefined') window.closeCredits = closeCredits;
   // The credits opened or closed (the (i) button, or MapLibre folding them
-  // on the first move): the widget hides what it draws over them meanwhile.
-  var creditsObserver = null, creditsOpen = null;
+  // on the first move), and where they stand while open: the widget hides
+  // what it draws over them meanwhile, only what they cover.
+  // "[credits] 1 left top right bottom" (view pixels) or "[credits] 0".
+  var creditsObserver = null, creditsResize = null, creditsSent = null;
   function watchCredits(el) {
     if (creditsObserver) creditsObserver.disconnect();
-    creditsObserver = null;
+    if (creditsResize) creditsResize.disconnect();
+    creditsObserver = creditsResize = null;
     if (!el || typeof MutationObserver === 'undefined') return;
     var report = function () {
       var open = el.hasAttribute('open') || el.classList.contains('maplibregl-compact-show');
-      if (open === creditsOpen) return;
-      creditsOpen = open;
-      console.log('[credits] ' + (open ? 1 : 0));
+      var msg = '0';
+      if (open) {
+        var b = el.getBoundingClientRect();
+        msg = '1 ' + [b.left, b.top, b.right, b.bottom].map(Math.round).join(' ');
+      }
+      if (msg === creditsSent) return;
+      creditsSent = msg;
+      console.log('[credits] ' + msg);
     };
     creditsObserver = new MutationObserver(report);
     creditsObserver.observe(el, { attributes: true, attributeFilter: ['open', 'class'] });
-    creditsOpen = null;
+    // Its lines wrap again as the widget is resized.
+    if (typeof ResizeObserver !== 'undefined') {
+      creditsResize = new ResizeObserver(report);
+      creditsResize.observe(el);
+      creditsResize.observe(document.body);
+    }
+    creditsSent = null;
     report();
   }
   // The Sun of the picture shown while the animation runs (setSkyTime),
@@ -753,7 +767,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     // its light through the air at the Earth's rim says where it is: a thin
     // bright line right at the edge, in a blue glow that fades out into
     // space (rimGlow), like the atmosphere of the day side.
-    var sp = skyShown ? WidgetEarth.projectDir(cam, sv, f) : null, sunR = 0.03 * Math.min(w, h);
+    var sp = skyShown ? WidgetEarth.projectDir(cam, sv, f) : null, sunR = 0.024 * Math.min(w, h);
     if (sp) {
       sp = { x: mid.x + sp.x, y: mid.y + sp.y };
       var off = Math.hypot(sp.x - mid.x, sp.y - mid.y);
