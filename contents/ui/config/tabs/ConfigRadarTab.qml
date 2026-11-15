@@ -149,28 +149,10 @@ GridLayout {
         Layout.preferredHeight: Kirigami.Units.smallSpacing
     }
 
-    WrappingSwitch {
-        Layout.columnSpan: radarTab.columns
-        text: i18n("Show Radar tab in widget")
-        checked: radarTab.configRoot.cfg_radarEnabled
-        onToggled: radarTab.configRoot.cfg_radarEnabled = checked
-    }
-
-    Item {
-        // empty label cell: keeps the control in the second column
-        visible: radarTab.columns === 2
-        implicitWidth: 0
-        implicitHeight: 0
-    }
-    Item {
-        Layout.preferredHeight: Kirigami.Units.smallSpacing
-    }
-
     ColumnLayout {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         spacing: Kirigami.Units.smallSpacing
-        visible: radarTab.configRoot.cfg_radarEnabled
 
         WrappingSwitch {
             objectName: "radarPrepareSwitch"
@@ -216,7 +198,6 @@ GridLayout {
 
     WrappingSwitch {
         Layout.columnSpan: radarTab.columns
-        visible: radarTab.configRoot.cfg_radarEnabled
         text: i18n("Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)")
         checked: radarTab.configRoot.cfg_radarGpuWorkaround
         onToggled: {
@@ -233,7 +214,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarGpuWorkaround
+        visible: radarTab.configRoot.cfg_radarGpuWorkaround
         showCloseButton: false
         type: Kirigami.MessageType.Warning
         text: i18n("<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>" + "On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>" + "Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/>" + `<b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.
@@ -249,12 +230,12 @@ GridLayout {
 
     Item {
         // empty label cell: keeps the control in the second column
-        visible: radarTab.columns === 2 && (radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarGpuWorkaround)
+        visible: radarTab.columns === 2 && radarTab.configRoot.cfg_radarGpuWorkaround
         implicitWidth: 0
         implicitHeight: 0
     }
     RowLayout {
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarGpuWorkaround
+        visible: radarTab.configRoot.cfg_radarGpuWorkaround
         Layout.fillWidth: true
 
         Button {
@@ -268,7 +249,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 2
+        visible: radarTab.configRoot.radarGpuTestState === 2
         type: Kirigami.MessageType.Positive
         text: radarTab.configRoot.radarGpuTestMessage
     }
@@ -276,7 +257,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 3
+        visible: radarTab.configRoot.radarGpuTestState === 3
         type: Kirigami.MessageType.Warning
         text: radarTab.configRoot.radarGpuTestMessage
     }
@@ -284,7 +265,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 4
+        visible: radarTab.configRoot.radarGpuTestState === 4
         type: Kirigami.MessageType.Error
         text: radarTab.configRoot.radarGpuTestMessage
     }
@@ -292,7 +273,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.radarGpuTestState === 5
+        visible: radarTab.configRoot.radarGpuTestState === 5
         showCloseButton: true
         type: Kirigami.MessageType.Information
         text: radarTab.configRoot.radarGpuTestMessage
@@ -317,7 +298,6 @@ GridLayout {
 
     Label {
         text: i18n("Radar provider:")
-        visible: radarTab.configRoot.cfg_radarEnabled
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -326,7 +306,6 @@ GridLayout {
     ComboBox {
         id: radarProviderCombo
         Layout.preferredWidth: 280
-        visible: radarTab.configRoot.cfg_radarEnabled
         model: [
             {
                 text: i18n("Rain Viewer"),
@@ -345,7 +324,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider !== "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider !== "librewxr"
         showCloseButton: true
         type: Kirigami.MessageType.Information
         text: i18n("Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>" + "The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>" + "Rain Viewer does not guarantee the availability of radar data. " + "They do not conclude contracts with owners of this data. " + "The reason is that the owners can ask them to remove their data from Rain Viewer, " + "change the format, or stop sharing the data. " + "They are trying to keep radar data for as long as possible, " + "but sometimes the owners just stop providing the images.")
@@ -355,7 +334,7 @@ GridLayout {
     Kirigami.InlineMessage {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         showCloseButton: true
         type: Kirigami.MessageType.Information
         text: i18n("Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>" + "LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>" + "Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically.")
@@ -366,7 +345,7 @@ GridLayout {
     // alerts provider at their own instance instead of the public API.
     Label {
         text: i18n("LibreWXR server:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -375,7 +354,7 @@ GridLayout {
     ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         TextField {
             id: librewxrUrlField
@@ -399,7 +378,7 @@ GridLayout {
     // are shown (the button on the map switches them).
     Label {
         text: i18n("Night darkness:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -408,7 +387,7 @@ GridLayout {
     ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         RowLayout {
             spacing: Kirigami.Units.smallSpacing
@@ -439,7 +418,7 @@ GridLayout {
     // the map out.
     Label {
         text: i18n("Globe glow:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -448,7 +427,7 @@ GridLayout {
     ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         RowLayout {
             spacing: Kirigami.Units.smallSpacing
@@ -481,7 +460,7 @@ GridLayout {
     // depends on; the rate rises with the wind speed inside the range.
     Label {
         text: i18n("Wind animation:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignTop
@@ -490,7 +469,7 @@ GridLayout {
     ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         ComboBox {
             id: windQualityCombo
@@ -526,7 +505,7 @@ GridLayout {
     // Wind palettes: the default one, and the ones made here, kept by name.
     Label {
         text: i18n("Wind palette:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -534,7 +513,7 @@ GridLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: Kirigami.Units.smallSpacing
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         ComboBox {
             id: windPaletteCombo
@@ -579,7 +558,7 @@ GridLayout {
     // made here, kept by name.
     Label {
         text: i18n("Temperature palette:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -587,7 +566,7 @@ GridLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: Kirigami.Units.smallSpacing
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         ComboBox {
             id: tempPaletteCombo
@@ -649,7 +628,7 @@ GridLayout {
     // A see-through layer leaves the base map and its names readable.
     Label {
         text: i18n("Temperature opacity:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
@@ -657,7 +636,7 @@ GridLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: Kirigami.Units.smallSpacing
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
 
         Slider {
             Layout.preferredWidth: 220
@@ -675,14 +654,14 @@ GridLayout {
     // Zones of one color every few degrees, or a smooth gradient.
     Label {
         text: i18n("Temperature bands:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
     }
     ComboBox {
         readonly property var steps: [0, 2, 2.5, 5, 10]
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         Layout.preferredWidth: 200
         model: steps.map(function (n) {
             // 2.5 written the local way (2,5 in French)
@@ -695,14 +674,14 @@ GridLayout {
     // How the Weather Maps' buttons, sliders and choices are drawn.
     Label {
         text: i18n("Map controls:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
     }
     ComboBox {
         readonly property var styles: ["plasma", "custom"]
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         Layout.preferredWidth: 200
         model: [i18n("Plasma theme"), i18n("Clean style")]
         currentIndex: Math.max(0, styles.indexOf(radarTab.configRoot.cfg_weatherMapControlStyle))
@@ -712,14 +691,14 @@ GridLayout {
     // Icons of the Weather Maps' layers and radar menu.
     Label {
         text: i18n("Map icon theme:")
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         wrapMode: Text.Wrap
         Layout.maximumWidth: Kirigami.Units.gridUnit * 14
         Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
     }
     ComboBox {
         readonly property var themes: ["weathermap", "symbolic", "flat-color", "3d-oxygen", "meteocons", "kde"]
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+        visible: radarTab.configRoot.cfg_radarProvider === "librewxr"
         Layout.preferredWidth: 200
         model: [i18n("Weather Map (Bundled)"), i18n("Symbolic (Bundled)"), i18n("Flat Color (Bundled)"), i18n("3D Oxygen (Bundled)"), i18n("Meteocons (Bundled)"), i18n("KDE Icon Theme")]
         currentIndex: Math.max(0, themes.indexOf(radarTab.configRoot.cfg_weatherMapIconTheme))
@@ -1029,7 +1008,7 @@ GridLayout {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         showCloseButton: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider !== "librewxr" && radarTab.configRoot.cfg_radarEnabled && (radarTab.configRoot.cfg_owApiKey || "").trim() === ""
+        visible: radarTab.configRoot.cfg_radarProvider !== "librewxr" && (radarTab.configRoot.cfg_owApiKey || "").trim() === ""
         type: Kirigami.MessageType.Information
         text: i18n("To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): " + "disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again.")
     }
@@ -1038,7 +1017,7 @@ GridLayout {
         Layout.columnSpan: radarTab.columns
         Layout.fillWidth: true
         showCloseButton: true
-        visible: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider !== "librewxr" && radarTab.configRoot.cfg_radarEnabled && (radarTab.configRoot.cfg_owApiKey || "").trim() !== ""
+        visible: radarTab.configRoot.cfg_radarProvider !== "librewxr" && (radarTab.configRoot.cfg_owApiKey || "").trim() !== ""
         type: Kirigami.MessageType.Warning
         text: i18n("<b>Why OWM layers may not match RainViewer radar</b><br/><br/>" + "OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. " + "They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>" + "RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. " + "This discrepancy is expected and known.")
     }

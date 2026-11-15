@@ -819,15 +819,13 @@ GridLayout {
         implicitWidth: 0
         implicitHeight: 0
     }
-    Label {
-        text: i18n("Logs every API request (address without keys, HTTP status, time taken, size, what came back), the provider fallback chain, caches, timers and how long the widget needs to load everything. Every line starts with [Advanced Weather Widget - <component>]. View it with: journalctl --user -f | grep \"Advanced Weather Widget\"")
-        textFormat: Text.PlainText   // the text contains <component>, which must not be read as HTML
-        wrapMode: Text.WordWrap
-        opacity: 0.65
-        font: Kirigami.Theme.smallFont
+
+    Kirigami.InlineMessage {
         Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.maximumWidth: 340
+        visible: miscTab.configRoot.cfg_debugMode
+        type: Kirigami.MessageType.Information
+        text: i18n("Logs every API request (address without keys, HTTP status, time taken, size, what came back), the provider fallback chain, caches, timers and how long the widget needs to load everything. Every line starts with [Advanced Weather Widget - <component>].\nView it with: journalctl --user -f | grep \"Advanced Weather Widget\". \nPlease enable only when you experience issues with the widget.")
+        showCloseButton: false
     }
 
     // Invisible filler row: it lets the second column take ALL spare width, so the

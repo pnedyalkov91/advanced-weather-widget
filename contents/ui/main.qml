@@ -73,7 +73,7 @@ PlasmoidItem {
     // waits for radarBackgroundReady rather than for the view to exist.
     readonly property bool radarKeepLoaded: Plasmoid.configuration.radarKeepLoaded === true && Plasmoid.configuration.radarEnabled !== false
     // "Keep the popup ready": the popup (Forecast, Details, History tabs) is built in the background
-    // at the same moment and stays built when it is closed. The Radar tab has its own setting above.
+    // at the same moment and stays built when it is closed.  above.
     readonly property bool popupKeepLoaded: Plasmoid.configuration.popupKeepLoaded === true
     readonly property bool _prepareWanted: radarKeepLoaded || popupKeepLoaded
     readonly property bool _shellStarted: {
@@ -1637,8 +1637,9 @@ PlasmoidItem {
                     callback(_withPastHours(dateStr, arr));
                 else if (map && !_hourlyBulkIsAuthoritative())
                     _fetchHourlyDay(dateStr, callback);
-                    // answered, but this day is not in the range
-                else {
+                else
+                // answered, but this day is not in the range
+                {
                     var cached = _hourlyCacheGet(dateStr);
                     callback(cached ? _withPastHours(dateStr, cached) : []);
                 }

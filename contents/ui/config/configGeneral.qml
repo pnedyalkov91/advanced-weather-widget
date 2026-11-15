@@ -51,6 +51,8 @@ KCM.AbstractKCM {
     property string cfg_qwApiKey: ""
     property string cfg_qwApiHost: ""
     property string cfg_aemetApiKey: ""
+    // No longer shown in the UI (the Visible tabs setting on the Appearance page decides);
+    // kept bound so the KCM does not lose the stored value.
     property bool cfg_radarEnabled: true
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
@@ -93,6 +95,26 @@ KCM.AbstractKCM {
     readonly property bool isQWeather: cfg_weatherProvider === "qWeather"
     readonly property bool isAemet: cfg_weatherProvider === "aemet"
     readonly property bool needsKeyUi: isOpenWeather || isWeatherApi || isPirateWeather || isVisualCrossing || isTomorrowIo || isStormGlass || isWeatherbit || isQWeather || isAemet
+
+    // Whether the Weather Maps / Radar tab is shown in the widget. That is decided
+    // in Appearance -> Widget -> General -> Visible tabs (widgetVisibleTabs: a
+    // semicolon-separated list of tab ids; the legacy "both" means all tabs and
+    // "none" means all hidden - same reading as ConfigWidgetTab.visibleTabList()).
+    // Read from the saved configuration instead of declaring a cfg_widgetVisibleTabs
+    // copy here: this page is a separate KCM, so a declared copy would go stale and
+    // could write an old value back over the Appearance page's choice on Apply.
+    // The flip-side is that a switch changed on the Appearance page shows up here
+    // once it has been applied.
+    readonly property bool radarTabVisible: {
+        var v = Plasmoid.configuration.widgetVisibleTabs || "both";
+        if (v === "both")
+            return true;
+        if (v === "none")
+            return false;
+        return v.split(";").map(function (t) {
+            return t.trim();
+        }).indexOf("radar") >= 0;
+    }
 
     // Owned by the Location page (not part of this tab set), but declared
     // here too so this page can force it off for AEMET below - kcfg entries
@@ -662,9 +684,29 @@ KCM.AbstractKCM {
             }
 
             // TAB 1 - RADAR
-            ConfigRadarTab {
+            ColumnLayout {
                 visible: tabBar.currentIndex === 1
-                configRoot: root
+                Layout.fillWidth: true
+                // The InlineMessage is a SIBLING of ConfigRadarTab, not a descendant:
+                // enabled: false cascades to every descendant of an item and a child
+                // cannot opt back out, so the notice has to live outside the disabled
+                // subtree to stay fully legible (same pattern as the Panel tab in
+                // configAppearance.qml).
+                spacing: Kirigami.Units.smallSpacing
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    visible: !root.radarTabVisible
+                    type: Kirigami.MessageType.Information
+                    text: i18n("Weather Maps / Radar is turned off, so these settings are read-only. Turn it on in Appearance \u203A Widget \u203A General \u203A Visible tabs.")
+                    showCloseButton: false
+                }
+                ConfigRadarTab {
+                    Layout.fillWidth: true
+                    configRoot: root
+                    // Read-only while the tab is hidden in the widget: enabled: false
+                    // cascades to every control inside the grid.
+                    enabled: root.radarTabVisible
+                }
             }
 
             // TAB 2 - WEATHER ALERTS

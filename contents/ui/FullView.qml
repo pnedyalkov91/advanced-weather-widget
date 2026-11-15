@@ -208,7 +208,7 @@ Rectangle {
 
     // "Keep the popup ready" (opt-in): Details, Forecast and History are built in the background
     // once main.qml says startup is over, and stay built when the popup is closed - the popup then
-    // opens at once, at the cost of the memory those tabs use. The Radar tab has its own setting.
+    // opens at once, at the cost of the memory those tabs use.
     readonly property bool _keepPopupLoaded: !!weatherRoot && weatherRoot.popupKeepLoaded === true && _hasLocation && !isSimpleMode
     readonly property bool _preloadPopup: _keepPopupLoaded && weatherRoot.radarBackgroundReady === true
     readonly property bool _keepHiddenTabs: _keepHiddenTabsOpen || _keepPopupLoaded

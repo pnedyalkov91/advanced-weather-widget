@@ -5141,7 +5141,7 @@ msgid "The CAMS forecast. The colors follow the European Air Quality Index: cyan
 msgstr "La prévision CAMS. Les couleurs suivent l'indice européen de qualité de l'air : cyan bon, vert correct, jaune moyen, rouge mauvais, rouge foncé très mauvais, violet extrêmement mauvais. L'échelle est logarithmique : chaque classe couvre un écart plus large que la précédente."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:995
-msgid "The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup. The Radar tab has its own setting (Radar)."
+msgid "The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup.  (Radar)."
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:521
