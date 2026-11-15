@@ -24,6 +24,7 @@ import QtQuick.Layouts
 import Qt.labs.platform as Platform
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.plasmoid
 
 ColumnLayout {
     id: widgetTab
@@ -713,7 +714,8 @@ ColumnLayout {
         case "forecast":
             return i18n("Forecast");
         case "radar":
-            return i18n("Radar");
+            // LibreWXR's map plays the weather's layers: the Weather Map.
+            return (Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr" ? i18n("Weather Maps") : i18n("Radar");
         case "history":
             return i18n("History");
         }

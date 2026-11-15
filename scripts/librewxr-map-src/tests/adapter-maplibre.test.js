@@ -20,20 +20,37 @@ class FakeMap {
   once(e, f) { const g = (x) => { this.off(e, g); f(x); }; this.on(e, g); }
   off(e, f) { this.handlers[e] = (this.handlers[e] || []).filter((h) => h !== f); }
   fire(e, data) { (this.handlers[e] || []).slice().forEach((f) => f(data || {})); }
-  addControl() {}
+  addControl(c) { (this.controls = this.controls || []).push(c); }
+  removeControl(c) { this.controls = (this.controls || []).filter((x) => x !== c); }
   getSource(id) { return this.sources[id]; }
   addSource(id, s) {
     this.sources[id] = Object.assign({
-      uploads: 0,
+      uploads: 0, plays: 0, pauses: 0,
       setData(d) { this.data = d; },
-      setTiles(t) { this.tiles = t; }
+      setTiles(t) { this.tiles = t; },
+      setCoordinates(c) { this.coordinates = c; },
+      play() { this.plays++; },
+      pause() { this.pauses++; }
     }, s);
   }
   removeSource(id) { delete this.sources[id]; }
   getLayer(id) { return this.layers.find((l) => l.id === id); }
-  addLayer(l) { this.layers.push(Object.assign({ layout: {} }, l, { layout: Object.assign({}, l.layout) })); }
+  // Layers in drawing order: a layer added or moved before another goes right under it.
+  addLayer(l, before) {
+    const layer = Object.assign({ layout: {}, paint: {} }, l, { layout: Object.assign({}, l.layout), paint: Object.assign({}, l.paint) });
+    const i = before ? this.layers.findIndex((x) => x.id === before) : -1;
+    if (i >= 0) this.layers.splice(i, 0, layer); else this.layers.push(layer);
+  }
   removeLayer(id) { this.layers = this.layers.filter((l) => l.id !== id); }
-  moveLayer() {}
+  getLayersOrder() { return this.layers.map((l) => l.id); }
+  moveLayer(id, before) {
+    this.moves = (this.moves || 0) + 1;
+    const l = this.getLayer(id);
+    if (!l) return;
+    this.removeLayer(id);
+    const i = before ? this.layers.findIndex((x) => x.id === before) : -1;
+    if (i >= 0) this.layers.splice(i, 0, l); else this.layers.push(l);
+  }
   getStyle() { return { layers: this.layers, sources: this.sources }; }
   isSourceLoaded(id) {
     if (!this.sources[id]) throw new Error('There is no source with ID ' + id);
@@ -48,6 +65,7 @@ class FakeMap {
   }
   setSky(sky) { this.sky = sky; }
   setLight(l) { this.light = l; }
+  triggerRepaint() { this.repaints = (this.repaints || 0) + 1; }
   getContainer() { return { clientWidth: 800, clientHeight: 330 }; }
   getMinZoom() { return 0; }
   getMaxZoom() { return 12; }
@@ -56,7 +74,7 @@ class FakeMap {
   getZoom() { return 5; }
 }
 
-function loadAdapter(globals) {
+function loadAdapter(globals, opts = {}) {
   const src = fs.readFileSync(path.join(__dirname, '../glue-adapter-maplibre.js'), 'utf8');
   let map = null;
   const ctx = {
@@ -80,19 +98,82 @@ function loadAdapter(globals) {
   Object.assign(ctx, globals);
   vm.runInNewContext(src + '\nthis.WidgetMapLibreAdapter = WidgetMapLibreAdapter;', ctx);
   const protocols = {};
+  const markers = [];
+  const parallel = { n: 16 };
   const maplibregl = {
     Map: function () { map = new FakeMap(); return map; },
     addProtocol: (name, handler) => { protocols[name] = handler; },
+    setMaxParallelImageRequests: (n) => { parallel.n = n; },
     NavigationControl: function () {},
-    Marker: function () { this.setLngLat = () => this; this.addTo = () => this; },
+    AttributionControl: function (opts) { this.opts = opts || {}; },
+    Marker: function () {
+      // The default marker's SVG, its shadow a black group of ellipses.
+      const shadow = { removed: false, remove() { this.removed = true; } };
+      const el = { querySelector: (sel) => (sel === 'g[fill="#000000"]' ? shadow : null) };
+      this.shadow = shadow;
+      this.getElement = () => el;
+      this.setLngLat = () => this;
+      this.addTo = () => { markers.push(this); return this; };
+    },
   };
   const adapter = ctx.WidgetMapLibreAdapter(maplibregl);
   adapter.createMap('lv-map', { lat: 48, lon: 6, zoom: 6, maxZoom: 12 });
-  map.fire('load');
-  return { adapter, map, ctx, protocols };
+  if (opts.load !== false) map.fire('load');
+  return { adapter, map, ctx, protocols, markers, parallel };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
+
+// The weather layers as MapLibre ids, scrambled, over a base map layer.
+function stackMap() {
+  const r = loadAdapter();
+  const ids = ['lv-lines', 'lv-anim-lv-layer-radar-1', 'lv-clouds-gl', 'lv-temp-gl', 'lv-iso-gl', 'lv-alerts-fill',
+    'lv-anim-lv-layer-radar-2', 'lv-iso-label', 'lv-precip-gl', 'lv-anim-lv-layer-sat-1', 'lv-night', 'lv-pres-gl', 'lv-aq-gl-pm10'];
+  r.map.layers = [{ id: 'base-water' }].concat(ids.map((id) => ({ id })));
+  return r;
+}
+const weather = (map) => map.getLayersOrder().filter((id) => id.indexOf('lv-') === 0);
+
+test('the weather layers stack in the default order, bottom to top, the isobars over the colors, the lines over all', () => {
+  const { adapter, map } = stackMap();
+  adapter.restack();
+  assert.equal(map.getLayersOrder()[0], 'base-water');
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl', 'lv-iso-gl', 'lv-iso-label',
+    'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-lines']);
+});
+
+test('an order from the widget: first on top; the radar frames keep their own order; a missing layer after its neighbour of the default', () => {
+  const { adapter, map } = stackMap();
+  adapter.setLayerOrder(['temperature', 'clouds', 'radar', 'nonsense', 'isobars', 'clouds']);
+  // temperature, pressure, ..., airquality, clouds, radar, satellite, isobars, precipitation
+  assert.deepEqual(weather(map), ['lv-night', 'lv-precip-gl', 'lv-iso-gl', 'lv-iso-label',
+    'lv-anim-lv-layer-sat-1', 'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-clouds-gl', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-temp-gl',
+    'lv-lines']);
+});
+
+test('the isobars take their place in the stack: over the colors when put on top', () => {
+  const { adapter, map } = stackMap();
+  adapter.setLayerOrder(['isobars', 'radar', 'satellite', 'precipitation', 'clouds', 'temperature', 'pressure', 'humidity', 'dewpoint', 'airquality']);
+  assert.deepEqual(weather(map), ['lv-night', 'lv-aq-gl-pm10', 'lv-pres-gl', 'lv-temp-gl', 'lv-clouds-gl', 'lv-precip-gl', 'lv-anim-lv-layer-sat-1',
+    'lv-alerts-fill', 'lv-anim-lv-layer-radar-1', 'lv-anim-lv-layer-radar-2', 'lv-iso-gl', 'lv-iso-label', 'lv-lines']);
+});
+
+test('a stack already in order moves nothing, a layer added on top goes back to its place', () => {
+  const { adapter, map } = stackMap();
+  adapter.restack();
+  map.moves = 0;
+  adapter.restack();
+  assert.equal(map.moves, 0);
+  map.addLayer({ id: 'lv-humidity-gl' });
+  map.fire('styledata');
+  assert.deepEqual(weather(map).slice(0, 4), ['lv-night', 'lv-aq-gl-pm10', 'lv-humidity-gl', 'lv-pres-gl']);
+});
+
+test('the place marker has no shadow', () => {
+  const { markers } = loadAdapter();
+  assert.equal(markers.length, 1);
+  assert.equal(markers[0].shadow.removed, true);
+});
 
 test('a frame layer destroyed while loading settles at once, not 25 s later', async () => {
   const { adapter } = loadAdapter();
@@ -152,6 +233,56 @@ test('day and night on: one raster of tiles made by the page, 40 % dark at its d
   assert.equal(map.light.anchor, 'map');
 });
 
+/** A stand-in for the chip's layer class (WidgetTemp.TempLayerGL.GLLayer). */
+function fakeGL() {
+  function GLLayer(id, fs, draw) { this.id = id; this.type = 'custom'; this.fs = fs; this.draw = draw; this.onFail = null; }
+  return { TempLayerGL: { GLLayer } };
+}
+/** The uniforms the night's layer gives the chip: { u_sun: [..], u_ln: [..] }. */
+function nightUniforms(map) {
+  const got = {}, gl = { uniform3f(l, a, b, c) { got[l] = [a, b, c]; }, uniform2f(l, a, b) { got[l] = [a, b]; } };
+  assert.equal(map.getLayer('lv-night').draw(gl, { u_sun: 'u_sun', u_ln: 'u_ln' }), true);
+  return got;
+}
+
+test('with the chip, the night is one layer it draws: no tiles made again for each picture', () => {
+  const { adapter, map } = loadAdapter({ WidgetTemp: fakeGL() });
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  assert.equal(map.getLayer('lv-night').type, 'custom');
+  assert.equal(map.getLayer('lv-night').fs, E.NIGHT_FS);
+  assert.equal(map.getSource('lv-night'), undefined, 'no tiles');
+  const t = Date.UTC(2026, 10, 14, 12), sun = E.subsolarPoint(new Date(t));
+  const before = map.repaints || 0;
+  adapter.setSkyTime(t);
+  assert.ok(map.repaints > before, 'drawn again');
+  const want = E.shadeUniforms(sun, 0.4, 0.07), u = nightUniforms(map);
+  assert.deepEqual(u.u_sun, [...want.sun], 'the Sun of the picture');
+  assert.deepEqual(u.u_ln, [...want.ln], '40 % dark, the veil of a dark map over the day');
+  adapter.setNightDepth(60);
+  assert.deepEqual(nightUniforms(map).u_ln, [...E.shadeUniforms(sun, 0.6, 0.07).ln], 'the darkness live');
+  adapter.setBasemap('light');
+  assert.equal(nightUniforms(map).u_ln[1], 0, 'no veil on a light map');
+  adapter.setDayNight(false);
+  assert.equal(map.getLayer('lv-night'), undefined);
+});
+
+test('with the chip, the night stays right over the base map, under the lights', () => {
+  const { adapter, map } = loadAdapter({ WidgetTemp: fakeGL() });
+  adapter.setDayNight(true);
+  const order = map.getLayersOrder();
+  assert.equal(order.indexOf('lv-lights'), order.indexOf('lv-night') + 1);
+});
+
+test('the chip cannot build the night\'s shader: back to the tiles', async () => {
+  const { adapter, map, protocols } = loadAdapter({ WidgetTemp: fakeGL() });
+  adapter.setDayNight(true);
+  map.getLayer('lv-night').onFail();
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(map.getLayer('lv-night').type, 'raster');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.4) <= 1 / 255);
+});
+
 test('the darkness of the night comes from the widget, and changes live', async () => {
   const { adapter, map, protocols } = loadAdapter({ NIGHTDEPTH_INIT: '60' });
   adapter.setDayNight(true);
@@ -167,6 +298,50 @@ test('the darkness of the night comes from the widget, and changes live', async 
   adapter.setDayNight(true);
   assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.5) <= 1 / 255, 'kept while off');
   assert.equal(adapter.getNightDepth(), 50);
+});
+
+/** The night at the equator under a longitude, 0..1 (tile 0/0/0): the
+    black only, not the light veil a dark map lays over the day. */
+async function shadeAt(map, protocols, lon) {
+  const url = map.getSource('lv-night').tiles[0].replace('{z}/{x}/{y}', '0/0/0');
+  const name = url.slice(0, url.indexOf('://'));
+  const px = (await protocols[name]({ url, type: 'image' }, new AbortController())).data.data;
+  const c = Math.min(127, Math.floor(((lon + 540) % 360) / 360 * 128));
+  const k = (64 * 128 + c) * 4;
+  return px[k] === 0 ? px[k + 3] / 255 : 0;
+}
+
+test('the night and the glow follow the time of the picture shown, then come back to now', async () => {
+  const { adapter, map, protocols } = loadAdapter();
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  // Twelve hours apart: noon at one longitude, midnight there after.
+  const t = Date.UTC(2026, 10, 14, 12), sun = E.subsolarPoint(new Date(t));
+  adapter.setSkyTime(t);
+  assert.deepEqual(map.light.position, E.sunLightPosition(sun), 'the glow at the picture\'s Sun');
+  assert.equal(await shadeAt(map, protocols, sun.lon), 0, 'day under the Sun of the picture');
+  assert.ok(await shadeAt(map, protocols, sun.lon + 180) > 0.3, 'night on the other side');
+  adapter.setSkyTime(t + 12 * 3600e3);
+  assert.ok(await shadeAt(map, protocols, sun.lon) > 0.3, 'twelve hours on: night there');
+  assert.equal(await shadeAt(map, protocols, sun.lon + 180), 0, 'and day on the other side');
+  // The animation stops: back to now.
+  adapter.setSkyTime(null);
+  const now = E.subsolarPoint(new Date());
+  assert.ok(Math.abs(map.light.position[1] - E.sunLightPosition(now)[1]) < 0.5, 'the glow at today\'s Sun');
+  assert.equal(await shadeAt(map, protocols, now.lon), 0, 'day under today\'s Sun');
+});
+
+test('the glow moves at once: a light that fades to its new place keeps the map drawing between two pictures', () => {
+  const { adapter, map } = loadAdapter();
+  const atOnce = (what) => ['position', 'color', 'intensity'].forEach((p) => {
+    const t = map.light[p + '-transition'];
+    assert.deepEqual([t.duration, t.delay], [0, 0], p + ', ' + what);
+  });
+  adapter.setDayNight(true);
+  adapter.setSkyTime(Date.UTC(2026, 10, 14, 12));
+  atOnce('the Sun of the picture');
+  adapter.setDayNight(false);
+  atOnce('the even light');
 });
 
 test('day and night off: no night, and the glow no longer follows the Sun', () => {
@@ -363,4 +538,513 @@ test('no preparation asked: map moves reach the viewer as before', () => {
   assert.equal(moves, 1);
   page.adapter.createFrameLayer('https://radar/1/{z}/{x}/{y}.webp', 'radar');
   page.map.fire('render');
+});
+
+// === Temperature layer ===
+const ids = (map) => map.layers.map((l) => l.id);
+const provider = () => Promise.resolve(new Uint8ClampedArray(256 * 256 * 4));
+
+test('the temperature goes right over the base map and the night, under the frames', () => {
+  const { adapter, map } = loadAdapter({ DAYNIGHT_INIT: true });
+  adapter.createFrameLayer('https://radar/a/{z}/{x}/{y}.webp', 'radar');
+  adapter.createFrameLayer('https://radar/b/{z}/{x}/{y}.webp', 'radar');
+  adapter.setTempTiles(provider, 1, 0.45);
+  // The fake map only holds the layers added at run time: lv-base is in the style.
+  const order = ids(map).filter((id) => id.indexOf('lv-') === 0);
+  // The lights of the towns right over the night, under the weather.
+  assert.deepEqual(order.slice(0, 3), ['lv-night', 'lv-lights', 'lv-temp']);
+  assert.ok(order[3].indexOf('lv-layer-radar-') === 0);
+  assert.equal(map.getLayer('lv-temp').paint['raster-opacity'], 0.45);
+  const src = map.getSource('lv-temp-src');
+  assert.equal(src.type, 'raster');
+  assert.deepEqual([...src.tiles], ['lvtemp://1/{z}/{x}/{y}']);
+  // Drawn on 256 px, shown on 512: a quarter of the tiles to draw and of the elevation to fetch.
+  assert.equal(src.tileSize, 512);
+});
+
+test('the temperature tiles come from the layer, z/x/y and the abort signal passed on', async () => {
+  const { adapter, protocols } = loadAdapter();
+  const asked = [];
+  const ctl = new AbortController();
+  adapter.setTempTiles((z, x, y, signal) => {
+    asked.push([z, x, y, signal]);
+    return Promise.resolve(new Uint8ClampedArray(256 * 256 * 4).fill(9));
+  }, 3, 0.45);
+  const res = await protocols.lvtemp({ url: 'lvtemp://3/5/16/11' }, ctl);
+  assert.deepEqual(asked, [[5, 16, 11, ctl.signal]]);
+  assert.equal(res.data.width, 256);
+  assert.equal(res.data.data[0], 9);
+});
+
+test('new temperature tiles: same source, new tile address', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.setTempTiles(provider, 2, 0.45);
+  assert.deepEqual([...map.getSource('lv-temp-src').tiles], ['lvtemp://2/{z}/{x}/{y}']);
+  assert.equal(ids(map).filter((id) => id === 'lv-temp').length, 1);
+});
+
+test('the night switched on later still goes under the temperature', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.setDayNight(true);
+  const order = ids(map).filter((id) => id.indexOf('lv-') === 0);
+  assert.ok(order.indexOf('lv-night') < order.indexOf('lv-temp'));
+});
+
+test('a satellite frame added later still goes over the temperature', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setTempTiles(provider, 1, 0.45);
+  const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite');
+  assert.ok(ids(map).indexOf('lv-temp') < ids(map).indexOf(sat.layerId));
+});
+
+test('a base map change puts the temperature back, at the same place', () => {
+  const { adapter, map, ctx } = loadAdapter();
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  adapter.setTempTiles(provider, 4, 0.3);
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('light');
+  // What MapLibre does with a new style: only its own layers and sources are left.
+  map.layers = []; map.sources = {};
+  for (const l of map.loadedStyle.layers) map.addLayer(l);
+  for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
+  map.fire('style.load');
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-temp') > order.indexOf('lv-base'));
+  assert.ok(order.indexOf('lv-temp') < order.indexOf(radar.layerId));
+  assert.equal(map.getLayer('lv-temp').paint['raster-opacity'], 0.3);
+  assert.deepEqual([...map.getSource('lv-temp-src').tiles], ['lvtemp://4/{z}/{x}/{y}']);
+});
+
+test('after a base map change, the page is told once the adapter has put its own layers back', () => {
+  const { adapter, map, ctx } = loadAdapter();
+  adapter.setTempTiles(provider, 4, 0.3);
+  const seen = [];
+  adapter.onRestyle(() => seen.push(!!map.getLayer('lv-temp')));
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('light');
+  assert.deepEqual(seen, []);
+  map.layers = []; map.sources = {};
+  for (const l of map.loadedStyle.layers) map.addLayer(l);
+  for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
+  map.fire('style.load');
+  assert.deepEqual(seen, [true]);
+});
+
+test('setTempOpacity changes the layer only; clearTemp removes layer and source', async () => {
+  const { adapter, map, protocols } = loadAdapter();
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.setTempOpacity(0.8);
+  assert.equal(map.getLayer('lv-temp').paint['raster-opacity'], 0.8);
+  adapter.clearTemp();
+  assert.equal(map.getLayer('lv-temp'), undefined);
+  assert.equal(map.getSource('lv-temp-src'), undefined);
+  // A tile asked for just before: empty.
+  const res = await protocols.lvtemp({ url: 'lvtemp://1/0/0/0' }, new AbortController());
+  assert.equal(res.data.data.every((v) => v === 0), true);
+});
+
+test('setDataAttribution adds the Open-Meteo line once, and takes it away', () => {
+  const { adapter, map } = loadAdapter();
+  const lines = () => map.controls.filter((c) => c.opts && c.opts.customAttribution).map((c) => c.opts.customAttribution);
+  assert.deepEqual(lines(), []);
+  adapter.setDataAttribution(true);
+  adapter.setDataAttribution(true);
+  assert.equal(lines().length, 1);
+  assert.ok(/open-meteo\.com/.test(lines()[0]));
+  adapter.setDataAttribution(false);
+  assert.deepEqual(lines(), []);
+  assert.equal(map.controls.filter((c) => c instanceof Object && 'opts' in c).length, 1, 'one attribution control at a time');
+});
+
+test('temperature tiles given before the style loads show once it has', () => {
+  const { adapter, map } = loadAdapter({}, { load: false });
+  adapter.setTempTiles(provider, 2, 0.45);
+  assert.equal(map.getLayer('lv-temp'), undefined);
+  map.fire('load');
+  assert.ok(map.getLayer('lv-temp'));
+  assert.deepEqual([...map.getSource('lv-temp-src').tiles], ['lvtemp://2/{z}/{x}/{y}']);
+});
+
+// === Coasts and borders over the color layers ===
+const LINES = { type: 'FeatureCollection', features: [] };
+const linesGlobals = (fetched) => ({
+  fetch: (url) => { fetched.push(url); return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve('bin') }); },
+  WidgetEarth: Object.assign({}, require('../glue-earth.js'), { decodeLines: (b) => (b === 'bin' ? LINES : null) })
+});
+
+test('the temperature brings the coasts and borders, on top of the stack, over the frames too', async () => {
+  const fetched = [];
+  const { adapter, map } = loadAdapter(linesGlobals(fetched));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-temp') < order.indexOf(radar.layerId));
+  assert.equal(order[order.length - 1], 'lv-lines');
+  assert.equal(map.getLayer('lv-lines').type, 'line');
+  assert.equal(map.getSource('lv-lines-src').data, LINES);
+  // The widget's own file, read once.
+  assert.deepEqual(fetched, ['vendor/coast-borders.bin']);
+});
+
+// The value of a linear ['interpolate', ['linear'], ['zoom'], z0, v0, ...] at a zoom.
+function widthAt(expr, zoom) {
+  const stops = expr.slice(3);
+  if (zoom <= stops[0]) return stops[1];
+  for (let i = 2; i < stops.length; i += 2) {
+    if (zoom <= stops[i]) {
+      const t = (zoom - stops[i - 2]) / (stops[i] - stops[i - 2]);
+      return stops[i - 1] + t * (stops[i + 1] - stops[i - 1]);
+    }
+  }
+  return stops[stops.length - 1];
+}
+
+test('the lines are thicker on the whole globe, where they are dense and small', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const width = map.getLayer('lv-lines').paint['line-width'];
+  assert.equal(JSON.stringify(width.slice(0, 3)), '["interpolate",["linear"],["zoom"]]');
+  // The whole globe sits around zoom 1 in the widget.
+  assert.ok(widthAt(width, 1) >= 1.3);
+  assert.ok(widthAt(width, 0) >= widthAt(width, 2));
+  // Close in, as before.
+  assert.ok(Math.abs(widthAt(width, 6) - 1.2) < 1e-9);
+  assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
+});
+
+test('a light edge right under the dark lines, so they still show over the night', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const order = ids(map), halo = map.getLayer('lv-lines-halo'), line = map.getLayer('lv-lines');
+  assert.equal(order.indexOf('lv-lines-halo') + 1, order.indexOf('lv-lines'), 'right under the lines: ' + order.join());
+  assert.equal(halo.type, 'line');
+  assert.equal(halo.source, 'lv-lines-src', 'the same lines');
+  for (const z of [0, 1, 2, 4, 6, 10]) {
+    assert.ok(widthAt(halo.paint['line-width'], z) > widthAt(line.paint['line-width'], z) + 1, 'wider at zoom ' + z);
+  }
+  assert.match(halo.paint['line-color'], /^rgba\(2\d\d, 2\d\d, 2\d\d, 0\.\d+\)$/, 'light, see-through');
+  adapter.setLines('pressure', false);
+  assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'none', 'hidden with the lines');
+  adapter.setLines('pressure', true);
+  assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'visible');
+  assert.equal(ids(map).filter((id) => id === 'lv-lines-halo').length, 1, 'made once');
+});
+
+test('a layer that asks for the lines before the style loads gets them once it has', async () => {
+  // The widget switches the radar on as soon as the page is up, which can
+  // be before MapLibre's 'load' (the popup closed, the page kept loaded).
+  const { adapter, map } = loadAdapter(linesGlobals([]), { load: false });
+  adapter.setLines('radar', true);
+  assert.equal(map.getLayer('lv-lines'), undefined);
+  map.fire('load');
+  await tick(); await tick();
+  assert.ok(linesVisible(map));
+});
+
+test('the lines are fetched once, whatever asks for them', async () => {
+  const fetched = [];
+  const { adapter } = loadAdapter(linesGlobals(fetched));
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.clearTemp();
+  adapter.setTempTiles(provider, 2, 0.45);
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.equal(fetched.length, 1);
+});
+
+const linesVisible = (map) => !!map.getLayer('lv-lines') && map.getLayer('lv-lines').layout.visibility !== 'none';
+
+test('the lines stay while one layer still wants them, then only hide', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  adapter.clearTemp();
+  assert.ok(linesVisible(map));
+  const source = map.getSource('lv-lines-src');
+  adapter.setLines('pressure', false);
+  assert.equal(linesVisible(map), false);
+  // Kept, tiles and all: the next color layer shows them at once.
+  assert.equal(map.getSource('lv-lines-src'), source);
+});
+
+test('one color layer for another: the same lines, never made again', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  const source = map.getSource('lv-lines-src'), layer = map.getLayer('lv-lines');
+  adapter.clearTemp();
+  adapter.setLines('pressure', true);
+  adapter.addLayer({ id: 'lv-pres-gl', type: 'custom' });
+  assert.equal(map.getSource('lv-lines-src'), source);
+  assert.equal(map.getLayer('lv-lines'), layer);
+  assert.ok(linesVisible(map));
+  adapter.setLines('pressure', false);
+  adapter.setTempTiles(provider, 2, 0.45);
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-temp') < order.indexOf('lv-lines'), order.join());
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+  assert.ok(linesVisible(map));
+});
+
+test('the night switched on later goes under the lines kept hidden', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  adapter.clearTemp();
+  adapter.setDayNight(true);
+  assert.ok(ids(map).indexOf('lv-night') < ids(map).indexOf('lv-lines'));
+});
+
+test('turned off before the file arrives: no lines', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  adapter.clearTemp();
+  await tick(); await tick();
+  assert.equal(linesVisible(map), false);
+});
+
+test('a color layer of another script goes at its place through addLayer(), under the frames and the lines', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(adapter.beforeFor('lv-lines'), undefined);
+  assert.equal(adapter.beforeFor('lv-pres-gl'), radar.layerId);
+  assert.equal(adapter.beforeFor('some-label'), undefined);
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  adapter.addLayer({ id: 'lv-pres-gl', type: 'custom' });
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-pres-gl') < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+});
+
+test('a satellite frame added later goes over the temperature, under the lines', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite');
+  assert.ok(ids(map).indexOf('lv-temp') < ids(map).indexOf(sat.layerId));
+  assert.ok(ids(map).indexOf(sat.layerId) < ids(map).indexOf('lv-lines'));
+});
+
+test('the animation: the lines go over its satellite and radar images, the satellite under the radar, raised or not', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('satellite', true);
+  await tick(); await tick();
+  const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite', { anim: true });
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar', { anim: true });
+  const check = () => {
+    const order = ids(map);
+    assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId));
+    assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+  };
+  check();
+  adapter.raise(sat);
+  adapter.raise(radar);
+  check();
+});
+
+test('the animation: a weather layer goes under its satellite and radar images, so the radar is over all', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('precipitation', true);
+  await tick(); await tick();
+  const sat = adapter.createFrameLayer('https://sat/{z}/{x}/{y}.webp', 'satellite', { anim: true });
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar', { anim: true });
+  adapter.raise(radar);
+  adapter.raise(sat);
+  // Added, or put back on top as the precipitation and clouds do after a change of the style.
+  adapter.addLayer({ id: 'lv-precip-gl', type: 'custom' });
+  const order = ids(map);
+  assert.ok(order.indexOf('lv-precip-gl') < order.indexOf(sat.layerId));
+  assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId));
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+});
+
+test('the animation: images made before the lines come, then the lines: the images go under them', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  const viewer = adapter.createFrameLayer('https://radar/live/{z}/{x}/{y}.webp', 'radar');   // the live view's, hidden
+  const sats = [1, 2, 3].map((n) => adapter.createFrameLayer('https://sat/' + n + '/{z}/{x}/{y}.webp', 'satellite', { anim: true }));
+  const radar = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar', { anim: true });
+  adapter.setLines('satellite', true);
+  await tick(); await tick();
+  const order = ids(map);
+  for (const sat of sats) assert.ok(order.indexOf(sat.layerId) < order.indexOf(radar.layerId), sat.layerId);
+  assert.ok(order.indexOf(radar.layerId) < order.indexOf('lv-lines'));
+});
+
+test('a base map change puts the lines back over the temperature', async () => {
+  const { adapter, map, ctx } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 4, 0.3);
+  await tick(); await tick();
+  ctx.BG_CURRENT = 'cyclosm';
+  adapter.setBasemap('light');
+  map.layers = []; map.sources = {};
+  for (const l of map.loadedStyle.layers) map.addLayer(l);
+  for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
+  map.fire('style.load');
+  const order = ids(map);
+  // The light edge of the lines, then the lines.
+  assert.equal(order.indexOf('lv-lines-halo'), order.indexOf('lv-temp') + 1);
+  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 2);
+  assert.equal(map.getSource('lv-lines-src').data, LINES);
+});
+
+test('lines switched off: none drawn, even wanted; back on, they come back', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  adapter.setLinesShown(false);
+  assert.equal(linesVisible(map), false);
+  adapter.setLinesShown(true);
+  assert.ok(linesVisible(map));
+  assert.equal(ids(map).indexOf('lv-lines'), ids(map).indexOf('lv-temp') + 2, 'over their light edge');
+});
+
+test('the widget can open the page with the lines off, and nothing is fetched', async () => {
+  const fetched = [];
+  const { adapter, map } = loadAdapter(Object.assign(linesGlobals(fetched), { LINES_INIT: false }));
+  adapter.setTempTiles(provider, 1, 0.45);
+  await tick(); await tick();
+  assert.equal(map.getLayer('lv-lines'), undefined);
+  assert.deepEqual(fetched, []);
+  assert.equal(adapter.getLinesShown(), false);
+});
+
+test('frameLoaded: a frame held back during a move has no tiles at the new scale', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  assert.equal(adapter.frameLoaded(h[3]), true);
+  map.fire('movestart');
+  assert.equal(adapter.frameLoaded(h[3]), false, 'held: its loaded state is from before the zoom');
+  assert.equal(adapter.frameLoaded(h[0]), true, 'the frame on screen keeps loading');
+});
+
+test('a held frame waited for settles only once drawn again and loaded', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  map.fire('movestart');
+  let calls = 0;
+  adapter.onLayerReady(h[3], () => calls++);
+  assert.equal(calls, 0, 'not from its stale state while held');
+  map.fire('moveend');
+  assert.equal(calls, 0);
+  map.loadedSources[h[3].sourceId] = false;
+  map.fire('idle');
+  map.fire('render');
+  assert.equal(calls, 0, 'its new tiles are loading');
+  map.loadedSources[h[3].sourceId] = true;
+  map.fire('sourcedata', { sourceId: h[3].sourceId });
+  assert.equal(calls, 1);
+});
+
+test('a held frame whose tiles are all cached settles on the next render once drawn again', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  map.fire('movestart');
+  let calls = 0;
+  adapter.onLayerReady(h[3], () => calls++);
+  map.fire('moveend');
+  map.fire('idle');
+  map.fire('idle');
+  assert.equal(calls, 0);
+  map.fire('render');
+  assert.equal(calls, 1);
+});
+
+test('a frame layer is declared at the size of its grid, 256 by default', () => {
+  const { adapter, map } = loadAdapter();
+  const big = adapter.createFrameLayer('https://radar/512/{z}/{x}/{y}.webp', 'radar', { anim: true, tileSize: 512 });
+  const small = adapter.createFrameLayer('https://radar/256/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(map.getSource(big.sourceId).tileSize, 512);
+  assert.equal(map.getSource(small.sourceId).tileSize, 256);
+});
+
+test('a local server is reached under several names, six connections each; a remote one under its own', () => {
+  const { adapter, map } = loadAdapter();
+  const url = 'http://localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark';
+  const local = adapter.createFrameLayer(url, 'radar');
+  assert.deepEqual(Array.from(map.getSource(local.sourceId).tiles), [url,
+    'http://a.localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark',
+    'http://b.localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark',
+    'http://c.localhost:8099/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp?arrows=dark']);
+  const ip = adapter.createFrameLayer('http://127.0.0.1:8099/s/{z}/{x}/{y}.webp', 'satellite');
+  assert.deepEqual(Array.from(map.getSource(ip.sourceId).tiles).slice(0, 2), ['http://127.0.0.1:8099/s/{z}/{x}/{y}.webp', 'http://a.localhost:8099/s/{z}/{x}/{y}.webp']);
+  const remote = adapter.createFrameLayer('https://api.librewxr.net/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp', 'radar');
+  assert.deepEqual(Array.from(map.getSource(remote.sourceId).tiles), ['https://api.librewxr.net/v2/radar/1/512/{z}/{x}/{y}/2/1_1.webp']);
+  const lookalike = adapter.createFrameLayer('https://localhost.example.org/{z}/{x}/{y}.webp', 'radar');
+  assert.equal(map.getSource(lookalike.sourceId).tiles.length, 1);
+});
+
+test('MapLibre may load 32 images at once, not 16', () => {
+  const { parallel } = loadAdapter();
+  assert.equal(parallel.n, 32);
+});
+
+const order = (map) => map.getLayersOrder();
+
+test('night lights: with the day and night, right over the night, 70 % by default; gone at 0, back above it', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  const l = map.getLayer('lv-lights');
+  assert.equal(l.type, 'custom');
+  assert.equal(order(map).indexOf('lv-lights'), order(map).indexOf('lv-night') + 1, 'right over the night');
+  assert.equal(adapter.nightLightsState().percent, 70);
+  adapter.setNightLights(0);
+  assert.equal(map.getLayer('lv-lights'), undefined, 'the slider at 0: no layer');
+  adapter.setNightLights(35);
+  assert.ok(map.getLayer('lv-lights'), 'back');
+  assert.equal(adapter.nightLightsState().percent, 35);
+  adapter.setNightLights('x');
+  assert.equal(adapter.nightLightsState().percent, 35, 'unreadable: unchanged');
+  adapter.setDayNight(false);
+  assert.equal(map.getLayer('lv-lights'), undefined, 'no night, no lights');
+  adapter.setNightLights(60);
+  assert.equal(map.getLayer('lv-lights'), undefined, 'still none while the night is off');
+  adapter.setDayNight(true);
+  assert.ok(map.getLayer('lv-lights'));
+  assert.equal(adapter.nightLightsState().percent, 60, 'kept while off');
+});
+
+test('night lights: from the page address, 0 for none', () => {
+  let r = loadAdapter({ LIGHTS_INIT: '20' });
+  r.adapter.setDayNight(true);
+  assert.equal(r.adapter.nightLightsState().percent, 20);
+  r = loadAdapter({ LIGHTS_INIT: '0' });
+  r.adapter.setDayNight(true);
+  assert.equal(r.map.getLayer('lv-lights'), undefined);
+});
+
+test('night lights: lit by the Sun of the picture shown', () => {
+  const { adapter, map } = loadAdapter();
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  const t = Date.UTC(2026, 10, 15, 3), sun = E.subsolarPoint(new Date(t)), want = E.placeVector(sun.lat, sun.lon);
+  const before = map.repaints || 0;
+  adapter.setSkyTime(t);
+  const got = adapter.nightLightsState().sun;
+  for (let i = 0; i < 3; i++) assert.ok(Math.abs(got[i] - want[i]) < 1e-9, 'sun ' + i);
+  assert.ok((map.repaints || 0) > before, 'drawn again');
+});
+
+
+test('night lights: all of them far out, fading as the map closes in, none on half of France', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  // The fake map: 800 px wide, its middle at 48 degrees north.
+  map.getZoom = () => 5;       // some 1300 km across
+  assert.equal(adapter.nightLightsState().fade, 1);
+  map.getZoom = () => 6;       // some 650 km
+  const f = adapter.nightLightsState().fade;
+  assert.ok(f > 0 && f < 1, 'fading: ' + f);
+  map.getZoom = () => 7;       // some 330 km
+  assert.equal(adapter.nightLightsState().fade, 0);
 });

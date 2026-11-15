@@ -93,9 +93,12 @@ function fakeReader() {
   const field = (name, k) => ({ getName: () => name, getDimensions: () => [3, 2],
     read: async () => Float32Array.from([1, 2, 3, 4, 5, 6].map((x) => x * k)) });
   const kids = [field('cape', 0), field('wind_u_component_10m', 1), field('wind_v_component_10m', 2),
-    field('wind_u_component_700hPa', 3), field('wind_v_component_700hPa', 4)];
+    field('wind_u_component_700hPa', 3), field('wind_v_component_700hPa', 4), field('temperature_2m', 5)];
+  // HSURF.om has no children: its root is the field itself (seen on the real file).
+  const surface = Object.assign(field(null, 7), { numberOfChildren: () => 0 });
   return { OmDataType: { FloatArray: 20 },
-    OmFileReader: { create: async () => ({ numberOfChildren: () => kids.length, getChild: async (i) => kids[i] }) } };
+    OmFileReader: { create: async (backend) => (/\/static\/HSURF\.om$/.test(backend.url) ? surface
+      : { numberOfChildren: () => kids.length, getChild: async (i) => kids[i] }) } };
 }
 
 function memStore() {
@@ -140,4 +143,62 @@ test('Loader.kept: the kept wind when recent enough, else null', async () => {
   assert.equal(g.levels['10m'].u[0][0], 5);
   assert.equal(await loaderWith(now + 4 * 3600e3, store).loader.kept('10m'), null);
   assert.equal(await loaderWith(now, store).loader.kept('700hPa'), null);
+});
+
+test('toScalarGrid: rows flipped north-first, antimeridian column added', () => {
+  const g = WidgetOpenData.toScalarGrid(Float32Array.from([5, 10, 15, 20, 25, 30]), 3, 2, 3600000);
+  assert.deepEqual(Array.from(g.values), [25, 30, 25, 15, 20, 15, 5, 10, 5]);
+  assert.deepEqual(g.lats, [90, 0, -90]);
+  assert.deepEqual(g.lons, [-180, -90, 0]);
+  assert.equal(g.res, 90);
+  assert.deepEqual(g.times, [3600]);
+});
+
+test('Loader.loadTemp: reads temperature_2m, keeps it under its own key, wind keys untouched', async () => {
+  const store = memStore(), now = Date.parse('2026-10-23T15:20:00Z');
+  const res = await loaderWith(now, store).loader.loadTemp();
+  assert.equal(res.changed, true);
+  assert.equal(res.grid.values[0], 25);   // north row first: 5 * 5
+  assert.ok(store.m.has('ecmwf_ifs025:t2m'));
+  assert.equal(store.m.has('ecmwf_ifs025:10m'), false);
+});
+
+test('Loader.keptTemp: the kept temperature up to 3 h from now, else null', async () => {
+  const store = memStore(), now = Date.parse('2026-10-23T15:20:00Z');
+  await loaderWith(now, store).loader.loadTemp();
+  assert.equal((await loaderWith(now + 3600e3, store).loader.keptTemp()).values[0], 25);
+  assert.equal(await loaderWith(now + 4 * 3600e3, store).loader.keptTemp(), null);
+});
+
+test('Loader.loadSurface: read once, then from the store even years later', async () => {
+  const store = memStore(), now = Date.parse('2026-10-23T15:20:00Z');
+  let imports = 0;
+  const make = (t) => new WidgetOpenData.Loader({ store, fetchFn: async () => { throw new Error('no fetch'); },
+    importReader: async () => { imports++; return fakeReader(); }, now: () => t });
+  const a = await make(now).loadSurface();
+  assert.equal(a.values[0], 35);          // north row first: 5 * 7
+  assert.ok(store.m.has('ecmwf_ifs025:hsurf'));
+  const b = await make(now + 365 * 86400e3).loadSurface();
+  assert.equal(b.values[0], 35);
+  assert.equal(imports, 1);
+});
+
+test('Loader.loadSurface: null when the file cannot be read', async () => {
+  const loader = new WidgetOpenData.Loader({ store: memStore(), fetchFn: async () => { throw new Error('offline'); },
+    importReader: async () => { throw new Error('no reader'); }, now: () => 0 });
+  const warn = console.warn; console.warn = () => {};
+  try { assert.equal(await loader.loadSurface(), null); } finally { console.warn = warn; }
+});
+
+test('SURFACE_URL: the model ground height of the open-data bucket', () => {
+  assert.equal(WidgetOpenData.SURFACE_URL('ecmwf_ifs025'), 'https://openmeteo.s3.amazonaws.com/data/ecmwf_ifs025/static/HSURF.om');
+});
+
+test('toModelGrid: a regional field kept as the file holds it, on its model grid, its size checked', () => {
+  const d = new Float32Array(717 * 1121).fill(3);
+  const g = WidgetOpenData.toModelGrid(d, 717, 1121, 3600000, 'meteofrance_arome_france0025');
+  assert.equal(g.values, d);
+  assert.equal(g.desc.id, 'meteofrance_arome_france0025');
+  assert.deepEqual(g.times, [3600]);
+  assert.throws(() => WidgetOpenData.toModelGrid(d, 700, 1121, 0, 'meteofrance_arome_france0025'), /717 x 1121/);
 });

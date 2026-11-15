@@ -191,7 +191,7 @@ Item {
         id: radarLoader
         anchors.fill: parent
         active: (radarRoot.visible || radarRoot.keepLoaded) && radarRoot.loadEmbeddedRadar
-        source: radarRoot.radarProvider === "librewxr" ? Qt.resolvedUrl("components/RadarWebEngineViewLibreWXR.qml") : Qt.resolvedUrl("components/RadarWebEngineView.qml")
+        source: radarRoot.radarProvider === "librewxr" ? Qt.resolvedUrl("components/WeatherMapView.qml") : Qt.resolvedUrl("components/RadarWebEngineView.qml")
         // Load synchronously: QtWebEngine has GUI-thread requirements during
         // init and is historically fragile when created via an async Loader,
         // so for this crash-sensitive component we prefer the conventional

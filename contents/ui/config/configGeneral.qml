@@ -55,14 +55,19 @@ KCM.AbstractKCM {
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
     property string cfg_librewxrWindQuality: "balanced"
-    property real cfg_librewxrWindLineWidth: 1
-    property real cfg_librewxrWindDensity: 1
     property int cfg_librewxrNightDepth: 40
     property int cfg_librewxrGlow: 30
     property string cfg_librewxrWindPalettes: "[]"
     property string cfg_librewxrWindPalette: ""
+    property string cfg_librewxrTempPalettes: "[]"
+    property string cfg_librewxrTempPalette: ""
+    property int cfg_librewxrTempOpacity: 45
+    property real cfg_librewxrTempStep: 5
+    property string cfg_weatherMapControlStyle: "plasma"
+    property string cfg_weatherMapIconTheme: "weathermap"
     property bool cfg_radarGpuWorkaround: false
     property bool cfg_radarKeepLoaded: false
+    property bool cfg_weatherMapPrepareLayers: false
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
     property bool cfg_alertsLanguageNative: true
@@ -632,7 +637,8 @@ KCM.AbstractKCM {
         }
         PlasmaComponents.TabButton {
             icon.name: "weather-showers-scattered"
-            text: i18n("Radar")
+            // Named like the popup's tab: LibreWXR plays the weather maps.
+            text: root.cfg_radarProvider === "librewxr" ? i18n("Weather Maps") : i18n("Radar")
         }
         PlasmaComponents.TabButton {
             icon.name: "task-attention"
