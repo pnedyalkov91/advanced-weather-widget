@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  From the KDE Breeze icon theme (https://invent.kde.org/frameworks/breeze-icons),
+  LGPL-3.0. Icon: media-playlist-repeat.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="28" viewBox="0 0 30 28">
 <title>boucle</title>
 <!-- media-playlist-repeat from the Breeze icon theme (KDE), LGPL-3.0-or-later -->

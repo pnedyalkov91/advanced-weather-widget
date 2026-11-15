@@ -325,6 +325,19 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
 
 - This project uses the **Meteocons** weather icons by **Bas Milius** (https://meteocons.com / https://bas.dev/work/meteocons), licensed under the **MIT License**, with a copy bundled at `contents/icons/meteocons/LICENSE`.
 
+- The **Weather Maps** use three icons from the KDE **Breeze** icon theme (loop, satellite, smoothing), licensed under the **LGPL-3.0**:  
+  https://invent.kde.org/frameworks/breeze-icons
+
+- The **Weather Maps** radar icon is based on "Radar" by **Zlatko Najdenovski** (Nimble Tiny Line Icons), licensed under **CC Attribution**:  
+  https://www.svgrepo.com/svg/444756/radar
+
+- The **Weather Maps** coasts and borders come from **Natural Earth** (public domain):  
+  https://www.naturalearthdata.com/
+
+- The **Weather Maps** globe uses two NASA images, both in the public domain: the Moon's colors from the **NASA SVS CGI Moon Kit** (LROC color map), and the city lights from **NASA Earth Observatory Black Marble 2016**:  
+  https://svs.gsfc.nasa.gov/4720  
+  https://earthobservatory.nasa.gov/features/NightLights
+
 - This project uses code from the **SunCalc** library:  
   https://github.com/mourner/suncalc
 
