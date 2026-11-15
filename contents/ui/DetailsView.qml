@@ -637,11 +637,18 @@ Item {
         ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
         ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
 
+        // The scrollbars overlay the edges of the view, so the cards leave room
+        // for them (same 24 px as the History tab) instead of running underneath.
+        // Constant, so it does not depend on scrollbar visibility (no binding loop).
+        readonly property real _scrollBarGap: 24
+
         Column {
             id: detailsColumn
-            width: Math.max(detailsScroll.width, 560)
+            width: Math.max(detailsScroll.width - detailsScroll._scrollBarGap, 560)
             spacing: root.isList ? 0 : 8
-            bottomPadding: 4
+            // Clear the horizontal scrollbar when the content is wider than the view
+            // (compares widths only, so it cannot loop with the vertical bar).
+            bottomPadding: width > detailsScroll.width ? 16 : 4
 
             Repeater {
                 model: root._cachedRows
