@@ -1,3 +1,14 @@
+/*
+ * Copyright 2026 rcspam
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
 // === PRESSURE AND ISOBARS (glue-pressure.js; MapLibre page, after glue-fields.js) ===
 // Mean sea level pressure in the animation: a colored field (layer
 // 'pressure', a FieldLayer of glue-fields.js) and isobars (layer

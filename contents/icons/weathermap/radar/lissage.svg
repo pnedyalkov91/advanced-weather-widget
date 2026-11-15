@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  From the KDE Breeze icon theme (https://invent.kde.org/frameworks/breeze-icons),
+  LGPL-3.0. Icon: blur.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="28" height="24" viewBox="0 0 28 24">
 <title>lissage</title>
 <g opacity="0.8"><g transform="translate(6 4) translate(0 0) scale(0.727273) translate(-0 -0)">
