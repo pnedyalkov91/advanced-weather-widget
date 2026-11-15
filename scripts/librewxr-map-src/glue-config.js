@@ -87,6 +87,9 @@ var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
 var GLOW_INIT = PARAMS.get('glow');
 // Darkness of the deep night, in percent of black; the adapter reads and bounds it.
 var NIGHTDEPTH_INIT = PARAMS.get('nightdepth');
+// Brightness of the lights of the towns at night, in percent (0 for none).
+var LIGHTS_INIT = PARAMS.get('lights');
+var RIM_INIT = PARAMS.get('rim');
 // What the map prepares while hidden: 'none', 'first' (the latest image) or
 // 'all' (the whole animation).
 var PREPARE_MODE = /^(first|all)$/.test(PARAMS.get('prepare')) ? PARAMS.get('prepare') : 'none';
@@ -137,6 +140,8 @@ var WIND_FILES_BASE = PARAMS.get('omfiles') || '';
 var TEMP_ON = PARAMS.get('temp') === '1';
 // Coasts and borders over the color layers; on unless the widget says no.
 var LINES_INIT = PARAMS.get('lines') !== '0';
+// The Sun and the Moon around the globe, from the widget's settings.
+var SKY_INIT = PARAMS.get('sky') !== '0';
 var TEMP_PALETTE_PARAM = PARAMS.get('temppalette') || '';
 var TEMP_OPACITY = PARAMS.get('tempopacity');
 var TEMP_STEP = PARAMS.get('tempstep');

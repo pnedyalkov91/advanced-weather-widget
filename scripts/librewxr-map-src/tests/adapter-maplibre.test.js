@@ -65,6 +65,7 @@ class FakeMap {
   }
   setSky(sky) { this.sky = sky; }
   setLight(l) { this.light = l; }
+  triggerRepaint() { this.repaints = (this.repaints || 0) + 1; }
   getContainer() { return { clientWidth: 800, clientHeight: 330 }; }
   getMinZoom() { return 0; }
   getMaxZoom() { return 12; }
@@ -232,6 +233,56 @@ test('day and night on: one raster of tiles made by the page, 40 % dark at its d
   assert.equal(map.light.anchor, 'map');
 });
 
+/** A stand-in for the chip's layer class (WidgetTemp.TempLayerGL.GLLayer). */
+function fakeGL() {
+  function GLLayer(id, fs, draw) { this.id = id; this.type = 'custom'; this.fs = fs; this.draw = draw; this.onFail = null; }
+  return { TempLayerGL: { GLLayer } };
+}
+/** The uniforms the night's layer gives the chip: { u_sun: [..], u_ln: [..] }. */
+function nightUniforms(map) {
+  const got = {}, gl = { uniform3f(l, a, b, c) { got[l] = [a, b, c]; }, uniform2f(l, a, b) { got[l] = [a, b]; } };
+  assert.equal(map.getLayer('lv-night').draw(gl, { u_sun: 'u_sun', u_ln: 'u_ln' }), true);
+  return got;
+}
+
+test('with the chip, the night is one layer it draws: no tiles made again for each picture', () => {
+  const { adapter, map } = loadAdapter({ WidgetTemp: fakeGL() });
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  assert.equal(map.getLayer('lv-night').type, 'custom');
+  assert.equal(map.getLayer('lv-night').fs, E.NIGHT_FS);
+  assert.equal(map.getSource('lv-night'), undefined, 'no tiles');
+  const t = Date.UTC(2026, 10, 14, 12), sun = E.subsolarPoint(new Date(t));
+  const before = map.repaints || 0;
+  adapter.setSkyTime(t);
+  assert.ok(map.repaints > before, 'drawn again');
+  const want = E.shadeUniforms(sun, 0.4, 0.07), u = nightUniforms(map);
+  assert.deepEqual(u.u_sun, [...want.sun], 'the Sun of the picture');
+  assert.deepEqual(u.u_ln, [...want.ln], '40 % dark, the veil of a dark map over the day');
+  adapter.setNightDepth(60);
+  assert.deepEqual(nightUniforms(map).u_ln, [...E.shadeUniforms(sun, 0.6, 0.07).ln], 'the darkness live');
+  adapter.setBasemap('light');
+  assert.equal(nightUniforms(map).u_ln[1], 0, 'no veil on a light map');
+  adapter.setDayNight(false);
+  assert.equal(map.getLayer('lv-night'), undefined);
+});
+
+test('with the chip, the night stays right over the base map, under the lights', () => {
+  const { adapter, map } = loadAdapter({ WidgetTemp: fakeGL() });
+  adapter.setDayNight(true);
+  const order = map.getLayersOrder();
+  assert.equal(order.indexOf('lv-lights'), order.indexOf('lv-night') + 1);
+});
+
+test('the chip cannot build the night\'s shader: back to the tiles', async () => {
+  const { adapter, map, protocols } = loadAdapter({ WidgetTemp: fakeGL() });
+  adapter.setDayNight(true);
+  map.getLayer('lv-night').onFail();
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(map.getLayer('lv-night').type, 'raster');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.4) <= 1 / 255);
+});
+
 test('the darkness of the night comes from the widget, and changes live', async () => {
   const { adapter, map, protocols } = loadAdapter({ NIGHTDEPTH_INIT: '60' });
   adapter.setDayNight(true);
@@ -247,6 +298,50 @@ test('the darkness of the night comes from the widget, and changes live', async 
   adapter.setDayNight(true);
   assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.5) <= 1 / 255, 'kept while off');
   assert.equal(adapter.getNightDepth(), 50);
+});
+
+/** The night at the equator under a longitude, 0..1 (tile 0/0/0): the
+    black only, not the light veil a dark map lays over the day. */
+async function shadeAt(map, protocols, lon) {
+  const url = map.getSource('lv-night').tiles[0].replace('{z}/{x}/{y}', '0/0/0');
+  const name = url.slice(0, url.indexOf('://'));
+  const px = (await protocols[name]({ url, type: 'image' }, new AbortController())).data.data;
+  const c = Math.min(127, Math.floor(((lon + 540) % 360) / 360 * 128));
+  const k = (64 * 128 + c) * 4;
+  return px[k] === 0 ? px[k + 3] / 255 : 0;
+}
+
+test('the night and the glow follow the time of the picture shown, then come back to now', async () => {
+  const { adapter, map, protocols } = loadAdapter();
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  // Twelve hours apart: noon at one longitude, midnight there after.
+  const t = Date.UTC(2026, 10, 14, 12), sun = E.subsolarPoint(new Date(t));
+  adapter.setSkyTime(t);
+  assert.deepEqual(map.light.position, E.sunLightPosition(sun), 'the glow at the picture\'s Sun');
+  assert.equal(await shadeAt(map, protocols, sun.lon), 0, 'day under the Sun of the picture');
+  assert.ok(await shadeAt(map, protocols, sun.lon + 180) > 0.3, 'night on the other side');
+  adapter.setSkyTime(t + 12 * 3600e3);
+  assert.ok(await shadeAt(map, protocols, sun.lon) > 0.3, 'twelve hours on: night there');
+  assert.equal(await shadeAt(map, protocols, sun.lon + 180), 0, 'and day on the other side');
+  // The animation stops: back to now.
+  adapter.setSkyTime(null);
+  const now = E.subsolarPoint(new Date());
+  assert.ok(Math.abs(map.light.position[1] - E.sunLightPosition(now)[1]) < 0.5, 'the glow at today\'s Sun');
+  assert.equal(await shadeAt(map, protocols, now.lon), 0, 'day under today\'s Sun');
+});
+
+test('the glow moves at once: a light that fades to its new place keeps the map drawing between two pictures', () => {
+  const { adapter, map } = loadAdapter();
+  const atOnce = (what) => ['position', 'color', 'intensity'].forEach((p) => {
+    const t = map.light[p + '-transition'];
+    assert.deepEqual([t.duration, t.delay], [0, 0], p + ', ' + what);
+  });
+  adapter.setDayNight(true);
+  adapter.setSkyTime(Date.UTC(2026, 10, 14, 12));
+  atOnce('the Sun of the picture');
+  adapter.setDayNight(false);
+  atOnce('the even light');
 });
 
 test('day and night off: no night, and the glow no longer follows the Sun', () => {
@@ -456,8 +551,9 @@ test('the temperature goes right over the base map and the night, under the fram
   adapter.setTempTiles(provider, 1, 0.45);
   // The fake map only holds the layers added at run time: lv-base is in the style.
   const order = ids(map).filter((id) => id.indexOf('lv-') === 0);
-  assert.deepEqual(order.slice(0, 2), ['lv-night', 'lv-temp']);
-  assert.ok(order[2].indexOf('lv-layer-radar-') === 0);
+  // The lights of the towns right over the night, under the weather.
+  assert.deepEqual(order.slice(0, 3), ['lv-night', 'lv-lights', 'lv-temp']);
+  assert.ok(order[3].indexOf('lv-layer-radar-') === 0);
   assert.equal(map.getLayer('lv-temp').paint['raster-opacity'], 0.45);
   const src = map.getSource('lv-temp-src');
   assert.equal(src.type, 'raster');
@@ -620,6 +716,25 @@ test('the lines are thicker on the whole globe, where they are dense and small',
   assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
 });
 
+test('a light edge right under the dark lines, so they still show over the night', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const order = ids(map), halo = map.getLayer('lv-lines-halo'), line = map.getLayer('lv-lines');
+  assert.equal(order.indexOf('lv-lines-halo') + 1, order.indexOf('lv-lines'), 'right under the lines: ' + order.join());
+  assert.equal(halo.type, 'line');
+  assert.equal(halo.source, 'lv-lines-src', 'the same lines');
+  for (const z of [0, 1, 2, 4, 6, 10]) {
+    assert.ok(widthAt(halo.paint['line-width'], z) > widthAt(line.paint['line-width'], z) + 1, 'wider at zoom ' + z);
+  }
+  assert.match(halo.paint['line-color'], /^rgba\(2\d\d, 2\d\d, 2\d\d, 0\.\d+\)$/, 'light, see-through');
+  adapter.setLines('pressure', false);
+  assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'none', 'hidden with the lines');
+  adapter.setLines('pressure', true);
+  assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'visible');
+  assert.equal(ids(map).filter((id) => id === 'lv-lines-halo').length, 1, 'made once');
+});
+
 test('a layer that asks for the lines before the style loads gets them once it has', async () => {
   // The widget switches the radar on as soon as the page is up, which can
   // be before MapLibre's 'load' (the popup closed, the page kept loaded).
@@ -774,7 +889,9 @@ test('a base map change puts the lines back over the temperature', async () => {
   for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
   map.fire('style.load');
   const order = ids(map);
-  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 1);
+  // The light edge of the lines, then the lines.
+  assert.equal(order.indexOf('lv-lines-halo'), order.indexOf('lv-temp') + 1);
+  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 2);
   assert.equal(map.getSource('lv-lines-src').data, LINES);
 });
 
@@ -786,7 +903,7 @@ test('lines switched off: none drawn, even wanted; back on, they come back', asy
   assert.equal(linesVisible(map), false);
   adapter.setLinesShown(true);
   assert.ok(linesVisible(map));
-  assert.equal(ids(map).indexOf('lv-lines'), ids(map).indexOf('lv-temp') + 1);
+  assert.equal(ids(map).indexOf('lv-lines'), ids(map).indexOf('lv-temp') + 2, 'over their light edge');
 });
 
 test('the widget can open the page with the lines off, and nothing is fetched', async () => {
@@ -870,4 +987,64 @@ test('a local server is reached under several names, six connections each; a rem
 test('MapLibre may load 32 images at once, not 16', () => {
   const { parallel } = loadAdapter();
   assert.equal(parallel.n, 32);
+});
+
+const order = (map) => map.getLayersOrder();
+
+test('night lights: with the day and night, right over the night, 70 % by default; gone at 0, back above it', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  const l = map.getLayer('lv-lights');
+  assert.equal(l.type, 'custom');
+  assert.equal(order(map).indexOf('lv-lights'), order(map).indexOf('lv-night') + 1, 'right over the night');
+  assert.equal(adapter.nightLightsState().percent, 70);
+  adapter.setNightLights(0);
+  assert.equal(map.getLayer('lv-lights'), undefined, 'the slider at 0: no layer');
+  adapter.setNightLights(35);
+  assert.ok(map.getLayer('lv-lights'), 'back');
+  assert.equal(adapter.nightLightsState().percent, 35);
+  adapter.setNightLights('x');
+  assert.equal(adapter.nightLightsState().percent, 35, 'unreadable: unchanged');
+  adapter.setDayNight(false);
+  assert.equal(map.getLayer('lv-lights'), undefined, 'no night, no lights');
+  adapter.setNightLights(60);
+  assert.equal(map.getLayer('lv-lights'), undefined, 'still none while the night is off');
+  adapter.setDayNight(true);
+  assert.ok(map.getLayer('lv-lights'));
+  assert.equal(adapter.nightLightsState().percent, 60, 'kept while off');
+});
+
+test('night lights: from the page address, 0 for none', () => {
+  let r = loadAdapter({ LIGHTS_INIT: '20' });
+  r.adapter.setDayNight(true);
+  assert.equal(r.adapter.nightLightsState().percent, 20);
+  r = loadAdapter({ LIGHTS_INIT: '0' });
+  r.adapter.setDayNight(true);
+  assert.equal(r.map.getLayer('lv-lights'), undefined);
+});
+
+test('night lights: lit by the Sun of the picture shown', () => {
+  const { adapter, map } = loadAdapter();
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  const t = Date.UTC(2026, 10, 15, 3), sun = E.subsolarPoint(new Date(t)), want = E.placeVector(sun.lat, sun.lon);
+  const before = map.repaints || 0;
+  adapter.setSkyTime(t);
+  const got = adapter.nightLightsState().sun;
+  for (let i = 0; i < 3; i++) assert.ok(Math.abs(got[i] - want[i]) < 1e-9, 'sun ' + i);
+  assert.ok((map.repaints || 0) > before, 'drawn again');
+});
+
+
+test('night lights: all of them far out, fading as the map closes in, none on half of France', () => {
+  const { adapter, map } = loadAdapter();
+  adapter.setDayNight(true);
+  // The fake map: 800 px wide, its middle at 48 degrees north.
+  map.getZoom = () => 5;       // some 1300 km across
+  assert.equal(adapter.nightLightsState().fade, 1);
+  map.getZoom = () => 6;       // some 650 km
+  const f = adapter.nightLightsState().fade;
+  assert.ok(f > 0 && f < 1, 'fading: ' + f);
+  map.getZoom = () => 7;       // some 330 km
+  assert.equal(adapter.nightLightsState().fade, 0);
 });

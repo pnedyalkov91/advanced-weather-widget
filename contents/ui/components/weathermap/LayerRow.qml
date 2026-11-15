@@ -40,6 +40,7 @@ Item {
     // The widget's own look (a thin line and a dot, a round wheel) over the
     // Plasma components, whose theme drawing is then hidden.
     property bool ownLook: false
+    property var map                   // WeatherMapView: the options' see-through background
     // soloable: a double click on the icon asks for this layer alone
     // (soloRequested; with Ctrl, both), a single click then waits a moment.
     property bool soloable: false
@@ -290,6 +291,7 @@ Item {
         width: Math.max(230, Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding)
         padding: 12
         closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+        background: MenuBackdrop { map: row.map; popup: popup }
         contentItem: ColumnLayout {
             spacing: 6
             PlasmaComponents.Label {

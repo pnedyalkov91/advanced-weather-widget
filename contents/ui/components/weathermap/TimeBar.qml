@@ -55,15 +55,16 @@ Rectangle {
         property string iconName
         property string tip
         property bool on: false
+        property int iconSize: Kirigami.Units.iconSizes.smallMedium
         checked: on
         display: PlasmaComponents.ToolButton.IconOnly
         icon.source: Qt.resolvedUrl("../../../icons/weathermap/" + iconName + ".svg")
-        icon.width: Kirigami.Units.iconSizes.smallMedium
-        icon.height: Kirigami.Units.iconSizes.smallMedium
+        icon.width: iconSize
+        icon.height: iconSize
         icon.color: Kirigami.Theme.textColor
         readonly property bool own: bar.map.ownControls
-        Layout.preferredWidth: own ? 30 : implicitWidth
-        Layout.preferredHeight: own ? 26 : implicitHeight
+        Layout.preferredWidth: own ? Math.max(30, iconSize + 8) : implicitWidth
+        Layout.preferredHeight: own ? Math.max(26, iconSize + 4) : implicitHeight
         background.opacity: own ? 0 : 1
         contentItem.opacity: own ? 0 : 1
         // The own look: a drawing on a light square under the hand, or behind it while on.
@@ -74,8 +75,8 @@ Rectangle {
             color: bar.tint(bi.on ? 0.18 : bi.hovered ? 0.08 : 0)
             WmIcon {
                 anchors.centerIn: parent
-                width: 22
-                height: 22
+                width: bi.iconSize
+                height: bi.iconSize
                 name: bi.iconName
                 mask: true
                 opacity: bi.enabled ? (bi.on || bi.iconName !== "boucle-glyph" ? 1 : 0.6) : 0.4
@@ -130,6 +131,7 @@ Rectangle {
 
         BarIcon {
             iconName: "debut-glyph"
+            iconSize: 28
             tip: i18n("First picture") + " (" + i18nc("@info keyboard key", "Home") + ")"
             enabled: bar.map.count > 0
             onClicked: bar.map.showIndex(0)
@@ -200,6 +202,7 @@ Rectangle {
         }
         BarIcon {
             iconName: "fin-glyph"
+            iconSize: 28
             tip: i18n("Last picture") + " (" + i18nc("@info keyboard key", "End") + ")"
             enabled: bar.map.count > 0
             onClicked: bar.map.showIndex(bar.map.count - 1)
@@ -220,6 +223,7 @@ Rectangle {
             fromFile: !!(bar.map.animState && bar.map.animState.fromFile)
             radar: bar.map.animState ? bar.map.animState.radar : null
             satellite: bar.map.animState ? bar.map.animState.satellite : null
+            interpolate: bar.map.interpolate
             formatTime: bar.map.formatTime
             onPressedOn: bar.map.call("animPlay", false)
             onShowIndex: function (i) { bar.map.call("animShow", i); }

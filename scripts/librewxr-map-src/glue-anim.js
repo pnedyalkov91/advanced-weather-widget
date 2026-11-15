@@ -573,22 +573,26 @@ var WidgetAnim = (function () {
 
   Frames.prototype.ready = function (i) { return !!this.packed[i]; };
 
-  var UNPACKED_KEPT = 3;        // frames kept in full: the two being mixed, and the one before
+  var UNPACKED_KEPT = 3;        // frames kept in full: the two being mixed, and the one that comes next
 
-  /** Frame i in full (4 bytes a point and field), unpacked once and kept while it is
-      among the last few used. */
+  /** Frame i in full (4 bytes a point and field), unpacked once and kept
+      while it is among the next few the play needs: over UNPACKED_KEPT, the
+      one that comes back last going round from the frame shown (_at) is
+      dropped, the frame just left first. (Dropping the least recently used
+      one threw away the frame unpacked ahead, read again as its step came.) */
   Frames.prototype._values = function (i) {
     var kept = this.unpacked || (this.unpacked = []);
-    for (var k = 0; k < kept.length; k++) {
-      if (kept[k].i === i) {
-        var hit = kept.splice(k, 1)[0];
-        kept.push(hit);
-        return hit.values;
-      }
-    }
+    for (var k = 0; k < kept.length; k++) if (kept[k].i === i) return kept[k].values;
     var values = this.field.unpack(this.packed[i]);
+    if (kept.length >= UNPACKED_KEPT) {
+      var n = this.times.length, at = this._at == null ? i : this._at, worst = 0, far = -1;
+      for (var j = 0; j < kept.length; j++) {
+        var d = ((kept[j].i - at) % n + n) % n;
+        if (d > far) { far = d; worst = j; }
+      }
+      kept.splice(worst, 1);
+    }
     kept.push({ i: i, values: values });
-    if (kept.length > UNPACKED_KEPT) kept.shift();
     return values;
   };
 
@@ -668,10 +672,11 @@ var WidgetAnim = (function () {
       frame i is in. */
   Frames.prototype.gridAt = function (pos) {
     var i = Math.floor(pos), f = pos - i, m = this.meta;
-    // Near the end, the first two too: with the loop they come next.
-    if (pos > this.times.length - 3) { this._warm(0); this._warm(1); }
     if (!this.packed[i] || !m) return null;
-    this._warm(i + 2);
+    this._at = i;
+    // The frame after next, the first ones after the last: with the loop
+    // they come next.
+    this._warm((i + 2) % this.times.length);
     if (!this.packed[i + 1] || f < 1e-3) return this.grid(i);
     return this._dress(this.field.grid(m, this._values(i), this._values(i + 1), f, this.times[i], this.times[i + 1], this.timeAt(pos)), pos);
   };
@@ -1168,6 +1173,7 @@ var WidgetAnim = (function () {
     var base = now >= this.dueAt && now - this.dueAt < this.minFrameMs ? this.dueAt : now;
     this.dueAt = base + this.minFrameMs;
     this.layer.showFile(g);
+    if (this.onShown) this.onShown(pos);
     return true;
   };
 
@@ -1294,8 +1300,9 @@ var WidgetAnim = (function () {
       var stops = this.stops && this.stops();
       if (stops) {
         // Still images only: each stays a third of a step, however many
-        // hours apart (10 minutes of radar, an hour of satellite).
-        if (now - this.shownAt < this.stepMs / 3) return;
+        // hours apart (10 minutes of radar, an hour of satellite), or
+        // stops.holdSteps steps (the files' frames alone).
+        if (now - this.shownAt < this.stepMs * (stops.holdSteps || 1 / 3)) return;
         to = this._nextStop(this.index, end, stops);
       }
       if (this.canShow && !this.canShow(this.frames.timeAt(to))) {

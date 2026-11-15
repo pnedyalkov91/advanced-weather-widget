@@ -94,6 +94,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // comes from the viewer and the globe glows evenly.
   var SHADE_TILE = 128, SHADE_MAXZOOM = 2, DAY_VEIL = 0.07;
   var EVEN_LIGHT = { anchor: 'viewport', position: [1, 0, 0] };
+  // The light goes to its new place at once. MapLibre would take 300 ms
+  // over it, drawing the whole map at every frame of the screen meanwhile:
+  // with the Sun moved at each picture of the animation, it never stopped.
+  var AT_ONCE = { duration: 0, delay: 0 };
+  function lightAt(light) {
+    return { anchor: light.anchor, position: light.position, 'position-transition': AT_ONCE, 'color-transition': AT_ONCE, 'intensity-transition': AT_ONCE };
+  }
   var nightDepth = percent(NIGHTDEPTH_INIT);
   if (nightDepth === null) nightDepth = 40;
   var dayNight = DAYNIGHT_INIT;
@@ -105,31 +112,203 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   maplibregl.addProtocol('lvshade', function (params) {
     var m = /^lvshade:\/\/\d+\/(\d+)\/(\d+)\/(\d+)/.exec(params.url);
     var img = WidgetEarth.shadeTile(shade.sun, { z: +m[1], x: +m[2], y: +m[3] }, SHADE_TILE,
-      nightDepth / 100, skyTheme === 'dark' ? DAY_VEIL : 0);
+      nightDepth / 100, dayVeil());
     return createImageBitmap(new ImageData(img, SHADE_TILE, SHADE_TILE)).then(function (bitmap) {
       return { data: bitmap };
     });
   });
   function shadeTiles() { return ['lvshade://' + shade.version + '/{z}/{x}/{y}']; }
-  // New tiles for the Sun now, the darkness and the theme; the shown ones
-  // stay until they arrive.
+  function dayVeil() { return skyTheme === 'dark' ? DAY_VEIL : 0; }
+  // Where the chip's layers are in the page (glue-temp-gl.js), the night
+  // is one of them: the Sun, the darkness and the veil go to its shader
+  // (WidgetEarth.NIGHT_FS) and moving the Sun costs one drawing of the map.
+  // The tiles took the page's time at each picture of the animation (16
+  // tiles worked out, sent to the chip, the map drawn twice). They stay for
+  // a page without those layers, or a chip that does not build the shader.
+  var night = { layer: null, failed: false };
+  function nightClass() {
+    return !night.failed && typeof WidgetTemp !== 'undefined' && WidgetTemp.TempLayerGL && WidgetTemp.TempLayerGL.GLLayer || null;
+  }
+  function nightLayer(GLLayer) {
+    if (night.layer) return night.layer;
+    night.layer = new GLLayer('lv-night', WidgetEarth.NIGHT_FS, function (gl, u) {
+      var v = WidgetEarth.shadeUniforms(shade.sun, nightDepth / 100, dayVeil());
+      gl.uniform3f(u.u_sun, v.sun[0], v.sun[1], v.sun[2]);
+      gl.uniform2f(u.u_ln, v.ln[0], v.ln[1]);
+      return true;
+    });
+    // Called while the map draws: the tiles take over right after.
+    night.layer.onFail = function () {
+      night.failed = true;
+      night.layer = null;
+      setTimeout(function () {
+        if (!map || !styleReady || swapInProgress) return;
+        if (map.getLayer('lv-night')) map.removeLayer('lv-night');
+        addSunLayers();
+      }, 0);
+    };
+    return night.layer;
+  }
+  // The night for the Sun now, the darkness and the theme: drawn again by
+  // the chip, or new tiles, the shown ones staying until they arrive.
   function drawShade(sun) {
     shade.sun = sun;
     shade.version++;
     var src = map.getSource('lv-night');
     if (src) src.setTiles(shadeTiles());
+    else if (map.getLayer('lv-night') && map.triggerRepaint) map.triggerRepaint();
   }
   // The shade the setting asks for; after a style swap too.
   function addSunLayers() {
     if (!dayNight) {
       if (map.getLayer('lv-night')) map.removeLayer('lv-night');
       if (map.getSource('lv-night')) map.removeSource('lv-night');
+      applyLights();
+      return;
+    }
+    var GLLayer = nightClass();
+    if (GLLayer) {
+      if (!map.getLayer('lv-night')) addLayer(nightLayer(GLLayer));
+      applyLights();
       return;
     }
     if (!map.getSource('lv-night')) {
       map.addSource('lv-night', { type: 'raster', tiles: shadeTiles(), tileSize: 256, maxzoom: SHADE_MAXZOOM });
     }
     if (!map.getLayer('lv-night')) addLayer({ id: 'lv-night', type: 'raster', source: 'lv-night', paint: { 'raster-fade-duration': 0 } });
+    applyLights();
+  }
+
+  // The lights of the towns on the night side: some 240 000 points from
+  // NASA's Black Marble (vendor/night-lights.bin, WidgetEarth), each lit by
+  // the chip as the Sun goes down where it stands, sharp at every zoom.
+  // A layer of MapLibre's own (type custom) right over the night, for the
+  // day and night only, as bright as the widget's slider says (percent, 0
+  // for none).
+  var LIGHTS_URL = 'vendor/night-lights.bin';
+  var nightLights = percent(typeof LIGHTS_INIT === 'undefined' ? null : LIGHTS_INIT);
+  if (nightLights === null) nightLights = 70;
+  var lights = { layer: null, vertices: null, loading: false, sun: [0, 0, 1] };
+  function applyLights() {
+    if (!dayNight || !(nightLights > 0)) {
+      if (map.getLayer('lv-lights')) map.removeLayer('lv-lights');
+      return;
+    }
+    if (!lights.layer) lights.layer = makeLightsLayer();
+    if (!map.getLayer('lv-lights')) addLayer(lights.layer);
+    loadLights();
+    if (map.triggerRepaint) map.triggerRepaint();
+  }
+  function makeLightsLayer() {
+    return {
+      id: 'lv-lights',
+      type: 'custom',
+      renderingMode: '2d',
+      programs: {},
+      vbo: null,
+      count: 0,
+      failed: false,
+      onAdd: function () {},
+      onRemove: function (m, gl) {
+        var self = this;
+        Object.keys(this.programs).forEach(function (k) {
+          var pr = self.programs[k];
+          if (pr) { gl.deleteProgram(pr.p); gl.deleteVertexArray(pr.vao); }
+        });
+        this.programs = {};
+        if (this.vbo) gl.deleteBuffer(this.vbo);
+        this.vbo = null;
+      },
+      // The program for MapLibre's projection variant (flat or globe), made once.
+      program: function (gl, sd) {
+        if (sd.variantName in this.programs) return this.programs[sd.variantName];
+        var ok = true;
+        function sh(type, src) {
+          var x = gl.createShader(type);
+          gl.shaderSource(x, src);
+          gl.compileShader(x);
+          if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) { ok = false; console.warn('[gl] lv-lights shader: ' + gl.getShaderInfoLog(x)); }
+          return x;
+        }
+        var pr = gl.createProgram();
+        var v = sh(gl.VERTEX_SHADER, '#version 300 es\n' + sd.vertexShaderPrelude + '\n' + sd.define + '\n' + WidgetEarth.NIGHT_LIGHTS_VS);
+        var f = sh(gl.FRAGMENT_SHADER, WidgetEarth.NIGHT_LIGHTS_FS);
+        gl.attachShader(pr, v);
+        gl.attachShader(pr, f);
+        gl.linkProgram(pr);
+        gl.deleteShader(v);
+        gl.deleteShader(f);
+        if (!ok || !gl.getProgramParameter(pr, gl.LINK_STATUS)) {
+          console.warn('[gl] lv-lights link: ' + gl.getProgramInfoLog(pr));
+          gl.deleteProgram(pr);
+          return (this.programs[sd.variantName] = null);
+        }
+        var loc = {}, n = gl.getProgramParameter(pr, gl.ACTIVE_UNIFORMS);
+        for (var i = 0; i < n; i++) {
+          var name = gl.getActiveUniform(pr, i).name.replace(/\[0\]$/, '');
+          loc[name] = gl.getUniformLocation(pr, name);
+        }
+        var vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+        var ap = gl.getAttribLocation(pr, 'a_pos');
+        gl.enableVertexAttribArray(ap);
+        gl.vertexAttribPointer(ap, 3, gl.FLOAT, false, 0, 0);
+        gl.bindVertexArray(null);
+        return (this.programs[sd.variantName] = { p: pr, loc: loc, vao: vao });
+      },
+      render: function (gl, args) {
+        var fade = lightsFade();
+        if (this.failed || !lights.vertices || !(nightLights > 0) || !(fade > 0)) return;
+        if (!this.vbo) {
+          this.vbo = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+          gl.bufferData(gl.ARRAY_BUFFER, lights.vertices, gl.STATIC_DRAW);
+          this.count = lights.vertices.length / 3;
+        }
+        var sd = args.shaderData, d = args.defaultProjectionData, pr = this.program(gl, sd);
+        if (!pr) { this.failed = true; return; }
+        var u = pr.loc, look = WidgetEarth.nightLightsLook(map.getZoom()), dpr = window.devicePixelRatio || 1;
+        gl.useProgram(pr.p);
+        gl.uniformMatrix4fv(u.u_projection_matrix, false, d.mainMatrix);
+        if (u.u_projection_fallback_matrix) gl.uniformMatrix4fv(u.u_projection_fallback_matrix, false, d.fallbackMatrix);
+        if (u.u_projection_tile_mercator_coords) gl.uniform4fv(u.u_projection_tile_mercator_coords, d.tileMercatorCoords);
+        if (u.u_projection_clipping_plane) gl.uniform4fv(u.u_projection_clipping_plane, d.clippingPlane);
+        if (u.u_projection_transition) gl.uniform1f(u.u_projection_transition, d.projectionTransition);
+        gl.uniform3fv(u.u_sun, lights.sun);
+        gl.uniform1f(u.u_opacity, nightLights / 100);
+        gl.uniform1f(u.u_size, look.size * dpr);
+        gl.uniform1f(u.u_gain, look.gain * fade);
+        // Added to what is under them: lights glow, and many in one place glow more.
+        gl.enable(gl.BLEND);
+        gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE);
+        gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.STENCIL_TEST);
+        gl.disable(gl.CULL_FACE);
+        gl.bindVertexArray(pr.vao);
+        // Flat, the copies of the world on either side; on the globe one is all.
+        var shifts = sd.variantName === 'globe' ? [0] : [-1, 0, 1];
+        for (var k = 0; k < shifts.length; k++) {
+          gl.uniform1f(u.u_shift, shifts[k]);
+          gl.drawArrays(gl.POINTS, 0, this.count);
+        }
+        gl.bindVertexArray(null);
+      }
+    };
+  }
+  // How much of the lights shows: all of them over a country, fading out
+  // as the map closes in on half of France (WidgetEarth.nightLightsFade).
+  function lightsFade() {
+    return WidgetEarth.nightLightsFade(WidgetEarth.viewWidthKm(map.getContainer().clientWidth, map.getZoom(), map.getCenter().lat));
+  }
+  // Read once, the first time the lights are on.
+  function loadLights() {
+    if (lights.vertices || lights.loading || typeof fetch !== 'function') return;
+    lights.loading = true;
+    fetch(LIGHTS_URL).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
+      lights.vertices = WidgetEarth.nightLightsVertices(WidgetEarth.decodeNightLights(buf));
+      if (map && map.triggerRepaint) map.triggerRepaint();
+    }).catch(function (e) { lights.loading = false; console.warn('night lights: ' + e); });
   }
 
   // The temperature (glue-temp-layer.js): raster tiles the layer draws,
@@ -178,6 +357,16 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // color layer to another they stay as they are, tiles and all.
   var homeMarker = null;      // the widget's place
   var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
+  // Under the dark lines, a light edge: they still show where the map is
+  // dark, the night side above all, now that the night turns with the
+  // time bar.
+  var LINES_HALO = 'lv-lines-halo';
+  var LINES_WIDTH = [0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8];
+  function linesWidth(extra) {
+    var e = ['interpolate', ['linear'], ['zoom']];
+    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], LINES_WIDTH[i + 1] + extra);
+    return e;
+  }
   var linesOwners = {}, linesData = null, linesLoading = false;
   var linesShown = typeof LINES_INIT === 'undefined' || LINES_INIT !== false;
   function linesWanted() {
@@ -189,7 +378,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function applyLines() {
     if (!styleReady) return;
     if (!linesWanted()) {
-      if (map.getLayer(LINES_LAYER)) map.setLayoutProperty(LINES_LAYER, 'visibility', 'none');
+      [LINES_HALO, LINES_LAYER].forEach(function (id) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+      });
       return;
     }
     if (!linesData) {
@@ -205,6 +396,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       return;
     }
     if (!map.getSource(LINES_SOURCE)) map.addSource(LINES_SOURCE, { type: 'geojson', data: linesData });
+    if (!map.getLayer(LINES_HALO)) {
+      addLayer({
+        id: LINES_HALO, type: 'line', source: LINES_SOURCE,
+        layout: { 'line-join': 'round', visibility: 'visible' },
+        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(1.6), 'line-blur': 1 }
+      });
+    } else map.setLayoutProperty(LINES_HALO, 'visibility', 'visible');
     if (map.getLayer(LINES_LAYER)) {
       map.setLayoutProperty(LINES_LAYER, 'visibility', 'visible');
       return;
@@ -216,7 +414,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         'line-color': 'rgba(20, 20, 20, 0.6)',
         // Thicker far out: on the whole globe (zoom ~1) a hairline is lost
         // in the colors. Thinnest around zoom 4, then wider again close in.
-        'line-width': ['interpolate', ['linear'], ['zoom'], 0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8]
+        'line-width': linesWidth(0)
       }
     });
   }
@@ -230,11 +428,47 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (attribution) map.removeControl(attribution);
     attribution = new maplibregl.AttributionControl(dataAttribution ? { compact: true, customAttribution: OPEN_METEO } : { compact: true });
     map.addControl(attribution);
+    closeCredits();
+    watchCredits(attribution._container);
   }
+  // The credits are an aside: folded at every start (MapLibre opens them
+  // until the first move), and whenever the widget is hidden.
+  function closeCredits() {
+    var el = attribution && attribution._container;
+    if (!el) return;
+    el.removeAttribute('open');
+    el.classList.remove('maplibregl-compact-show');
+  }
+  if (typeof window !== 'undefined') window.closeCredits = closeCredits;
+  // The credits opened or closed (the (i) button, or MapLibre folding them
+  // on the first move): the widget hides what it draws over them meanwhile.
+  var creditsObserver = null, creditsOpen = null;
+  function watchCredits(el) {
+    if (creditsObserver) creditsObserver.disconnect();
+    creditsObserver = null;
+    if (!el || typeof MutationObserver === 'undefined') return;
+    var report = function () {
+      var open = el.hasAttribute('open') || el.classList.contains('maplibregl-compact-show');
+      if (open === creditsOpen) return;
+      creditsOpen = open;
+      console.log('[credits] ' + (open ? 1 : 0));
+    };
+    creditsObserver = new MutationObserver(report);
+    creditsObserver.observe(el, { attributes: true, attributeFilter: ['open', 'class'] });
+    creditsOpen = null;
+    report();
+  }
+  // The Sun of the picture shown while the animation runs (setSkyTime),
+  // now otherwise: the night, the glow and the sky around the globe turn
+  // with the time bar.
+  function skyDate() { return new Date(skyTime == null ? Date.now() : skyTime); }
   function moveSun() {
-    var sun = WidgetEarth.subsolarPoint(new Date());
-    map.setLight(dayNight ? { anchor: 'map', position: WidgetEarth.sunLightPosition(sun) } : EVEN_LIGHT);
+    var sun = WidgetEarth.subsolarPoint(skyDate());
+    map.setLight(lightAt(dayNight ? { anchor: 'map', position: WidgetEarth.sunLightPosition(sun) } : EVEN_LIGHT));
     drawShade(sun);
+    lights.sun = WidgetEarth.placeVector(sun.lat, sun.lon);
+    if (map.getLayer('lv-lights') && map.triggerRepaint) map.triggerRepaint();
+    drawSpaceSoon();
   }
   function applyDayNight() {
     addSunLayers();
@@ -403,8 +637,247 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     map.setProjection({ type: projection === 'globe' ? 'globe' : 'mercator' });
     var sky = {}, base = SKY[skyTheme] || SKY.dark, g = glow / 100;
     for (var k in base) sky[k] = base[k];
+    // Space on the globe is the page's own canvas under the map (drawSpace).
+    if (projection === 'globe') sky['sky-color'] = sky['fog-color'] = 'rgba(0,0,0,0)';
     sky['atmosphere-blend'] = ['interpolate', ['linear'], ['zoom'], 0, 0.5 * g, 4, 0.35 * g, 7, 0];
     map.setSky(sky);
+    drawSpaceSoon();
+  }
+
+  // Around the globe, a small model of the sky seen by MapLibre's camera,
+  // at the time of the picture shown (setSkyTime) or now: black space and
+  // the stars where they are (they turn with the globe), the Sun in its
+  // true direction, far away, and the Moon on its true orbit, brought in
+  // to MOON_ORBIT Earth radii, MOON_SIZE across. The Moon passes behind the
+  // globe (on the canvas under the map's) and in front of it (on a canvas
+  // over it), lit by the Sun: its phase is the one seen from the camera.
+  var STARS = 9000, SPACE = '#02040a', MOON_ORBIT = 1.45, MOON_SIZE = 0.2;
+  // The colors round the Sun, from 1.5 to 3.6 of its radius: [place, color].
+  var SUN_RINGS = [[0, 'rgba(255,120,90,0)'], [0.18, 'rgba(255,120,90,0.10)'], [0.36, 'rgba(255,214,96,0.09)'],
+    [0.54, 'rgba(120,230,150,0.07)'], [0.72, 'rgba(110,170,255,0.08)'], [0.88, 'rgba(180,130,255,0.05)'], [1, 'rgba(180,130,255,0)']];
+  var space = null, spaceFrame = 0, skyTime = null;
+  // How bright the Sun's light at the globe's edge (rimGlow), percent: set
+  // from the widget's slider; 60 by default, the strength it was drawn for.
+  var RIM_FULL = 60, rimPercent = percent(typeof RIM_INIT === 'undefined' ? null : RIM_INIT);
+  if (rimPercent === null) rimPercent = RIM_FULL;
+  // The stars, the Sun and the Moon come and go together (one setting).
+  var skyShown = typeof SKY_INIT === 'undefined' || SKY_INIT !== false;
+  function makeSpace() {
+    var canvas = document.createElement('canvas');
+    canvas.id = 'lv-space';
+    canvas.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none';
+    var front = document.createElement('canvas');
+    front.id = 'lv-space-front';
+    front.style.cssText = canvas.style.cssText;
+    var under = map.getCanvasContainer();
+    map.getContainer().insertBefore(canvas, under);
+    map.getContainer().insertBefore(front, under.nextSibling);
+    var raw = WidgetEarth.starField(STARS, 20261114), n = STARS;
+    // Each star as sin ra cos dec, sin dec, cos ra cos dec (the sky as it is
+    // at sidereal time 0), its size and its alpha.
+    var stars = new Float32Array(n * 5);
+    for (var i = 0; i < n; i++) {
+      var ra = raw[i * 3] * Math.PI / 180, dec = raw[i * 3 + 1] * Math.PI / 180, b = raw[i * 3 + 2];
+      stars[i * 5] = Math.sin(ra) * Math.cos(dec);
+      stars[i * 5 + 1] = Math.sin(dec);
+      stars[i * 5 + 2] = Math.cos(ra) * Math.cos(dec);
+      stars[i * 5 + 3] = 0.7 + 1.6 * b;
+      stars[i * 5 + 4] = 0.25 + 0.75 * b;
+    }
+    space = { canvas: canvas, ctx: canvas.getContext('2d'), front: front, fctx: front.getContext('2d'), stars: stars };
+  }
+  // The globe's radius on screen, px: the farthest a point on the meridian
+  // through the middle of the map projects from it (towards the equator,
+  // never past a pole). globeApparentRadius() comes out a few percent short.
+  function globeEdge(c, mid) {
+    var dir = c.lat >= 0 ? -1 : 1, lo = 0, hi = 90;
+    function dist(a) { var p = map.project([c.lng, c.lat + dir * a]); return Math.hypot(p.x - mid.x, p.y - mid.y); }
+    for (var i = 0; i < 24; i++) {   // ternary search: the distance rises to the edge, then falls
+      var m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+      if (dist(m1) < dist(m2)) lo = m1; else hi = m2;
+    }
+    return dist((lo + hi) / 2);
+  }
+  function drawSpaceSoon() {
+    // (No animation frames in the unit tests' stand-in page.)
+    if (!map || spaceFrame || typeof requestAnimationFrame !== 'function') return;
+    spaceFrame = requestAnimationFrame(function () { spaceFrame = 0; drawSpace(); });
+  }
+  function drawSpace() {
+    if (!map || !styleReady) return;
+    if (!space) makeSpace();
+    var canvas = space.canvas, show = projection === 'globe';
+    canvas.style.display = space.front.style.display = show ? '' : 'none';
+    if (!show) return;
+    var box = map.getContainer(), w = box.clientWidth, h = box.clientHeight, dpr = window.devicePixelRatio || 1;
+    if (!(w > 0 && h > 0)) return;
+    [canvas, space.front].forEach(function (cv) {
+      if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+        cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      }
+    });
+    var ctx = space.ctx, fctx = space.fctx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    fctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = SPACE;
+    ctx.fillRect(0, 0, w, h);
+    var c = map.getCenter(), mid = map.project(c), f = WidgetEarth.CAMERA * h;
+    var r = globeEdge(c, mid);
+    if (r > Math.hypot(w, h)) return;   // the globe covers it all
+    var cam = WidgetEarth.camera(c.lat, c.lng, map.getBearing(), map.getPitch());
+    var now = skyDate(), g = WidgetEarth.gmst(now) * Math.PI / 180, cg = Math.cos(g), sg = Math.sin(g);
+    var F = cam.fwd, R = cam.right, U = cam.up, st = space.stars, v = [0, 0, 0];
+    ctx.fillStyle = '#fff';
+    for (var i = 0; skyShown && i < st.length; i += 5) {
+      // The sky turned by the sidereal time: longitude = right ascension - GMST.
+      v[0] = st[i] * cg - st[i + 2] * sg; v[1] = st[i + 1]; v[2] = st[i + 2] * cg + st[i] * sg;
+      var z = v[0] * F[0] + v[1] * F[1] + v[2] * F[2];
+      if (z <= 0) continue;
+      var x = mid.x + f * (v[0] * R[0] + v[1] * R[1] + v[2] * R[2]) / z;
+      var y = mid.y - f * (v[0] * U[0] + v[1] * U[1] + v[2] * U[2]) / z;
+      if (x < 0 || y < 0 || x > w || y > h) continue;
+      var s = st[i + 3];
+      ctx.globalAlpha = st[i + 4];
+      ctx.fillRect(x - s / 2, y - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+    var sun = WidgetEarth.subsolarPoint(now), moon = WidgetEarth.sublunarPoint(now);
+    var sv = WidgetEarth.placeVector(sun.lat, sun.lon), mv = WidgetEarth.placeVector(moon.lat, moon.lon);
+    var earthR = WidgetEarth.earthRadiusPx(r, f);
+    var pos = WidgetEarth.cameraPosition(cam, WidgetEarth.placeVector(c.lat, c.lng), earthR, f);
+    var earthDist = Math.hypot(pos[0], pos[1], pos[2]);
+
+    // The Sun, at infinity: where its direction meets the screen, hidden
+    // by the globe when it is behind it. As it comes near the globe's edge,
+    // its light through the air at the Earth's rim says where it is: a thin
+    // bright line right at the edge, in a blue glow that fades out into
+    // space (rimGlow), like the atmosphere of the day side.
+    var sp = skyShown ? WidgetEarth.projectDir(cam, sv, f) : null, sunR = 0.03 * Math.min(w, h);
+    if (sp) {
+      sp = { x: mid.x + sp.x, y: mid.y + sp.y };
+      var off = Math.hypot(sp.x - mid.x, sp.y - mid.y);
+      var near = Math.max(0, Math.min(1, 1 - (off - r) / (r * 0.6))) * rimPercent / RIM_FULL;
+      if (near > 0) {
+        // Brightest towards the Sun, gone 50 degrees either side (all
+        // round the edge when the Sun is straight behind the globe).
+        var phi = Math.atan2(sp.y - mid.y, sp.x - mid.x);
+        var spread = Math.min(0.5, 0.14 + 0.36 * Math.max(0, 1 - off / r));
+        // Straight behind the globe, the light comes round the whole edge.
+        var round = Math.max(0, 1 - off / (r * 0.7));
+        rimGlow(phi, spread, round, 0.16, '110,170,255', 0.5 * near);
+        rimGlow(phi, spread * 0.8, round, 0.07, '150,205,255', 0.55 * near);
+        rimGlow(phi, spread * 0.5, round, 0.025, '255,240,214', 0.8 * near);
+      }
+      // A yellow disc, paler at its heart, in a warm glow; round it, faint
+      // rings of color (SUN_RINGS): the iridescence of a light seen through
+      // a lens, red inside to blue outside, added to what is under them.
+      var glowR = sunR * 2.4, halo = ctx.createRadialGradient(sp.x, sp.y, sunR * 0.6, sp.x, sp.y, glowR);
+      halo.addColorStop(0, 'rgba(255,222,130,0.42)');
+      halo.addColorStop(0.4, 'rgba(255,198,100,0.11)');
+      halo.addColorStop(1, 'rgba(255,186,90,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, glowR, 0, 2 * Math.PI); ctx.fill();
+      var ringR = sunR * 3.6, rings = ctx.createRadialGradient(sp.x, sp.y, sunR * 1.5, sp.x, sp.y, ringR);
+      SUN_RINGS.forEach(function (s) { rings.addColorStop(s[0], s[1]); });
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = rings;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, ringR, 0, 2 * Math.PI); ctx.fill();
+      ctx.restore();
+      var disc = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sunR);
+      disc.addColorStop(0, '#fffbe8');
+      disc.addColorStop(0.55, '#fff1b8');
+      disc.addColorStop(1, '#ffe07a');
+      ctx.fillStyle = disc;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, sunR, 0, 2 * Math.PI); ctx.fill();
+    }
+
+    // A glow round the globe's edge, added to the sky: `rgb` at `alpha`
+    // right at the edge, fading out over `reach` globe radii; brightest at
+    // the angle phi, down to `round` of it `spread` turns either side and
+    // beyond (0: gone there). Drawn on a canvas of
+    // its own, so cutting it to its arc leaves the stars alone.
+    function rimGlow(phi, spread, round, reach, rgb, alpha) {
+      var gc = space.glow || (space.glow = document.createElement('canvas')), g = gc.getContext('2d');
+      if (gc.width !== canvas.width || gc.height !== canvas.height) { gc.width = canvas.width; gc.height = canvas.height; }
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.globalCompositeOperation = 'source-over';
+      g.clearRect(0, 0, w, h);
+      var r0 = r * 0.985, r1 = r * (1 + reach), edge = (r - r0) / (r1 - r0);
+      var ring = g.createRadialGradient(mid.x, mid.y, r0, mid.x, mid.y, r1);
+      var col = function (a) { return 'rgba(' + rgb + ',' + Math.min(1, alpha * a).toFixed(3) + ')'; };
+      ring.addColorStop(0, col(0));
+      ring.addColorStop(edge, col(1));
+      // Thinning air: half as bright every eighth of the way out.
+      for (var k = 1; k <= 8; k++) ring.addColorStop(edge + (1 - edge) * k / 8, col(k === 8 ? 0 : Math.pow(0.5, k)));
+      g.fillStyle = ring;
+      g.beginPath(); g.arc(mid.x, mid.y, r1, 0, 2 * Math.PI); g.fill();
+      var arc = g.createConicGradient(phi + Math.PI, mid.x, mid.y);
+      var part = function (a) { return 'rgba(0,0,0,' + (round + (1 - round) * a).toFixed(3) + ')'; };
+      arc.addColorStop(0, part(0));
+      [[1, 0], [0.7, 0.2], [0.4, 0.65], [0, 1]].forEach(function (st) {
+        arc.addColorStop(Math.max(0, 0.5 - spread * st[0]), part(st[1]));
+      });
+      [[0.4, 0.65], [0.7, 0.2], [1, 0]].forEach(function (st) {
+        arc.addColorStop(Math.min(1, 0.5 + spread * st[0]), part(st[1]));
+      });
+      arc.addColorStop(1, part(0));
+      g.globalCompositeOperation = 'destination-in';
+      g.fillStyle = arc;
+      g.fillRect(0, 0, w, h);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(gc, 0, 0, w, h);
+      ctx.restore();
+    }
+
+    // The Moon, a ball in space: under the map when farther than the
+    // Earth's centre (the globe hides it), over it when nearer. Only with
+    // the whole Earth in view: it fades out over the first zoom step.
+    var moonAlpha = skyShown ? Math.max(0, Math.min(1, 1 - (map.getZoom() - map.getMinZoom() - 0.1) / 0.5)) : 0;
+    var X = [mv[0] * MOON_ORBIT * earthR, mv[1] * MOON_ORBIT * earthR, mv[2] * MOON_ORBIT * earthR];
+    var mp = moonAlpha > 0 ? WidgetEarth.projectPoint(cam, pos, X, f) : null;
+    if (mp) {
+      var mx = mid.x + mp.x, my = mid.y + mp.y, mrad = f * MOON_SIZE / 2 * earthR / mp.z;
+      var inFront = mp.dist < earthDist;
+      if (mx > -mrad && my > -mrad && mx < w + mrad && my < h + mrad) drawMoon(inFront ? fctx : ctx, mx, my, mrad);
+      mp = { x: mx, y: my, r: mrad, front: inFront, alpha: moonAlpha, textured: !!space.moonTex };
+    }
+    space.last = { sun: sp, moon: mp, edge: r, time: now.getTime() };   // for the test bench
+
+    // Its texture on the ball, drawn through a small canvas, as the camera
+    // sees it (WidgetEarth.moonView): lit by the same Sun as the globe, its
+    // bright side always turns the same way as the Earth's day side. Its
+    // near side faces the Earth, so on the small orbit the camera sees the
+    // far side whenever the Moon passes in front of the globe.
+    function drawMoon(cx, x, y, rad) {
+      var tex = space.moonTex;
+      if (!tex) { loadMoonTexture(); return; }
+      var size = Math.max(2, Math.ceil(2 * rad * dpr) + 2), mc = space.moonCanvas;
+      if (!mc) mc = space.moonCanvas = document.createElement('canvas');
+      if (mc.width !== size) { mc.width = mc.height = size; space.moonPixels = mc.getContext('2d').createImageData(size, size); }
+      var img = space.moonPixels;
+      WidgetEarth.renderMoon(img.data, size, rad * dpr, WidgetEarth.moonView(cam, pos, X), mv, sv, tex, moonAlpha);
+      mc.getContext('2d').putImageData(img, 0, 0);
+      cx.drawImage(mc, x - size / dpr / 2, y - size / dpr / 2, size / dpr, size / dpr);
+    }
+  }
+
+  // The Moon's colors (vendor/moon.jpg), read once into pixels: fetched as
+  // a blob so the canvas that reads them is not tainted by the file:// page.
+  var MOON_URL = 'vendor/moon.jpg', moonLoading = false;
+  function loadMoonTexture() {
+    if (moonLoading || !space) return;
+    moonLoading = true;
+    fetch(MOON_URL).then(function (r) { return r.blob(); }).then(function (b) { return createImageBitmap(b); }).then(function (bmp) {
+      var c = document.createElement('canvas');
+      c.width = bmp.width; c.height = bmp.height;
+      var g = c.getContext('2d');
+      g.drawImage(bmp, 0, 0);
+      space.moonTex = g.getImageData(0, 0, c.width, c.height);
+      drawSpaceSoon();
+    }).catch(function (e) { console.warn('moon texture: ' + e); });
   }
 
   // A new style drops every source and layer the page added: put them back
@@ -456,7 +929,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   /** [group, rank inside the group] of a layer id; null for one not stacked. */
   function stackGroup(id) {
     if (id === 'lv-night') return ['night', 0];
-    if (id === LINES_LAYER) return ['lines', 0];
+    if (id === 'lv-lights') return ['night', 1];
+    if (id === LINES_HALO) return ['lines', 0];
+    if (id === LINES_LAYER) return ['lines', 1];
     if (id.indexOf('lv-alerts') === 0) return ['radar', 0];
     if (id.indexOf('lv-layer-sat-') >= 0) return ['satellite', 1];
     if (id.indexOf('lv-layer-radar-') >= 0) return ['radar', 1];
@@ -584,6 +1059,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.on('movestart', function () { holdHiddenFrames(true); });
       map.on('moveend', function () { holdHiddenFrames(false); });
       map.on('resize', fitMinZoom);
+      map.on('move', drawSpaceSoon);
+      map.on('resize', drawSpaceSoon);
       map.on('render', checkPrepared);
       map.on('styledata', restack);
       return map;
@@ -603,7 +1080,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       // Same base map, other theme: the space around the globe and the day veil follow.
       applyProjection();
       addSunLayers();
-      drawShade(WidgetEarth.subsolarPoint(new Date()));
+      drawShade(WidgetEarth.subsolarPoint(skyDate()));
     },
 
     /** opts.anim: an image of the animation (glue-anim-radar.js), shown
@@ -772,6 +1249,25 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     getMap: function () { return map; },
 
+    /** The stars, the Sun and the Moon around the globe, on or off. */
+    setSkyShown: function (on) {
+      skyShown = !!on;
+      drawSpaceSoon();
+    },
+
+    /** The time (ms) of the Sun, the night and the sky around the globe:
+        the picture's while the animation runs; null for now. */
+    setSkyTime: function (ms) {
+      var t = ms == null || !isFinite(ms) ? null : +ms;
+      if (t === skyTime) return;
+      skyTime = t;
+      if (map && styleReady && !swapInProgress) moveSun();
+      else drawSpaceSoon();
+    },
+
+    /** Where the space canvas last put the Sun and the Moon (test bench). */
+    spaceState: function () { return space && space.last; },
+
     /* What glue-controls.js asks of any map. */
     resize: function () { if (map) map.resize(); },
 
@@ -822,10 +1318,31 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       var d = percent(value);
       if (d === null) return;
       nightDepth = d;
-      if (styleReady && map.getLayer('lv-night')) drawShade(WidgetEarth.subsolarPoint(new Date()));
+      if (styleReady && map.getLayer('lv-night')) drawShade(WidgetEarth.subsolarPoint(skyDate()));
     },
 
     getNightDepth: function () { return nightDepth; },
+
+    /** How bright the Sun's light at the globe's edge, percent; 0 for none. */
+    setRimGlow: function (value) {
+      var d = percent(value);
+      if (d === null) return;
+      rimPercent = d;
+      drawSpaceSoon();
+    },
+
+    /** How bright the lights of the towns at night, percent; 0 for none. */
+    setNightLights: function (value) {
+      var d = percent(value);
+      if (d === null) return;
+      nightLights = d;
+      if (styleReady && !swapInProgress) applyLights();
+    },
+
+    /** The lights' setting and Sun (test bench). */
+    nightLightsState: function () {
+      return { percent: nightLights, sun: lights.sun.slice(), shown: !!(map && map.getLayer('lv-lights')), loaded: !!lights.vertices, points: lights.vertices ? lights.vertices.length / 3 : 0, fade: map ? lightsFade() : 1 };
+    },
 
     /** Show the temperature tiles drawn by provider(z, x, y, signal) ->
         Promise of 256 x 256 RGBA pixels, at opacity 0..1; again with a new

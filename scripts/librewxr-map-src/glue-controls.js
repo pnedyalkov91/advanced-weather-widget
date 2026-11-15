@@ -302,6 +302,19 @@ window.setMapLines = function (on) {
   if (_widgetAdapter.setLinesShown) _widgetAdapter.setLinesShown(!!on);
 };
 
+// The stars, the Sun and the Moon around the globe, from the widget's setting.
+window.setGlobeSky = function (on) {
+  if (_widgetAdapter.setSkyShown) _widgetAdapter.setSkyShown(!!on);
+};
+// The Sun's light at the globe's edge, in percent (0 for none).
+window.setRimGlow = function (percent) {
+  if (_widgetAdapter.setRimGlow) _widgetAdapter.setRimGlow(percent);
+};
+// The lights of the towns at night, in percent (0 for none).
+window.setNightLights = function (percent) {
+  if (_widgetAdapter.setNightLights) _widgetAdapter.setNightLights(percent);
+};
+
 if (TEMP_ON) window.setTemp(true);
 
 // === ANIMATIONS (glue-anim.js; MapLibre page) ===
@@ -394,6 +407,29 @@ window.animSetWindLevel = function (level) {
 
 // Looping or not (WidgetAnim.Player.loop), kept across starts.
 var animLoop = true;
+// The pictures worked out between those of the files, or the play and
+// the time line on real images only (lighter), kept across starts.
+var animInterpolate = true;
+window.animSetInterpolate = function (on) {
+  animInterpolate = !!on;
+  return animInterpolate;
+};
+/** Without the pictures in between: the times the play stops on besides
+    the files' frames, those of the radar's and the satellite's images
+    while they are on; null with them. */
+function animStops() {
+  if (animInterpolate || !anim || !animOverlays) return null;
+  var out = [];
+  ['radar', 'satellite'].forEach(function (k) {
+    var o = animOverlays[k], r = o.on && o.range();
+    if (!r) return;
+    o.frames.forEach(function (f) { out.push(f.time * 1000); });
+    out.push(r.end);
+  });
+  // The files' frames alone: each stays a whole step, as when played through.
+  if (!out.length) out.holdSteps = 1;
+  return out;
+}
 window.animSetLoop = function (on) {
   animLoop = !!on;
   if (anim) anim.player.loop = animLoop;
@@ -630,6 +666,10 @@ window.animStart = function (pastH, futureH, layers) {
   anim.player.stops = animStops;
   anim.player.canShow = animOverlaysLoaded;
   anim.player.loop = animLoop;
+  // The sky around the globe at the time of the picture shown.
+  anim.player.onShown = function (pos) {
+    if (anim && anim.group && _widgetAdapter.setSkyTime) _widgetAdapter.setSkyTime(anim.group.timeAt(pos));
+  };
   animLoad(pastH == null ? 24 : pastH, futureH == null ? 48 : futureH);
   _widgetAdapter.setFramesHidden(true);
   document.body.classList.add('lv-anim');
@@ -699,6 +739,7 @@ window.animStop = function () {
   anim.switcher.clear();
   animOverlaysStop();
   anim = null;
+  if (_widgetAdapter.setSkyTime) _widgetAdapter.setSkyTime(null);
   if (windLayer) windLayer.setActive(true);
   _widgetAdapter.setFramesHidden(false);
   document.body.classList.remove('lv-anim');
@@ -884,6 +925,16 @@ window.animSetEdges = function (x, top, scale) {
 };
 /** How far down the legends start (px): under the widget's date when the
     map is too narrow for both side by side. */
+/** Where the widget's date lies over the map (px): from the left, from the
+    bottom, its width, height and corner radius; the map is blurred under it. */
+window.animSetDateBox = function (left, bottom, w, h, r) {
+  var s = document.documentElement.style, px = function (v) { return Math.max(0, +v || 0) + 'px'; };
+  s.setProperty('--aww-date-left', px(left));
+  s.setProperty('--aww-date-bottom', px(bottom));
+  s.setProperty('--aww-date-w', px(w));
+  s.setProperty('--aww-date-h', px(h));
+  s.setProperty('--aww-date-r', px(r));
+};
 window.animSetLegendTop = function (px) {
   document.documentElement.style.setProperty('--aww-legend-top', Math.max(0, +px || 0) + 'px');
 };
@@ -995,21 +1046,6 @@ function animOverlaysRaise() {
   ['satellite', 'radar'].forEach(function (k) { var o = animOverlays[k]; if (o.shown) o._put(o.shown); });
 }
 
-/** With no layer drawn between frames (the radar and satellite alone),
-    the times their images change: the play goes from one to the next
-    without the pictures in between. null while a layer is on or fading. */
-function animStops() {
-  if (!anim || !animOverlays || anim.group.tracks.length || anim.group.ghosts.length) return null;
-  var out = [];
-  ['radar', 'satellite'].forEach(function (k) {
-    var o = animOverlays[k], r = o.on && o.range();
-    if (!r) return;
-    o.frames.forEach(function (f) { out.push(f.time * 1000); });
-    out.push(r.end);
-  });
-  return out;
-}
-
 /** How many times slower the animation goes at ms (the radar's range, while it is on). */
 function animSlow(ms) {
   // Frames already 10 minutes apart (the radar alone): no slowing down.
@@ -1026,6 +1062,8 @@ function animOverlayState(kind) {
   var nc = kind === 'radar' && animCatalogData && animCatalogData.radar && animCatalogData.radar.nowcast;
   return {
     on: o.on, start: r ? r.start : null, end: r ? r.end : null, last: o.lastTime(), time: o.shownTime(), opacity: Math.round(o.opacity * 100),
+    // The time between two of its images: the time line's handle stops on them.
+    gap: o.gapMs,
     forecastFrom: nc && nc.length ? nc[0].time * 1000 : null
   };
 }

@@ -388,7 +388,7 @@ body.lv-anim #lv-locate, body.lv-anim #lv-proj, body.lv-anim #lv-night, body.lv-
 body.lv-anim .maplibregl-ctrl-top-right {
   translate: calc(-1 * (var(--aww-inset, 0px) + var(--aww-edge-x, 0px)) / var(--aww-scale, 1)) calc(var(--aww-edge-top, 0px) / var(--aww-scale, 1)); }
 body.lv-anim .maplibregl-ctrl-bottom-right {
-  translate: calc(-1 * (var(--aww-inset, 0px) + var(--aww-edge-x, 0px)) / var(--aww-scale, 1)) calc(-1 * var(--aww-bottom, 0px) / var(--aww-scale, 1)); }
+  translate: calc(-1 * (var(--aww-inset, 0px) + var(--aww-edge-x, 0px)) / var(--aww-scale, 1)) calc(-1 * (var(--aww-bottom, 0px) + 8px) / var(--aww-scale, 1)); }
 body.lv-anim .maplibregl-ctrl-top-left, body.lv-anim #lv-legend-stack {
   translate: calc(var(--aww-edge-x, 0px) / var(--aww-scale, 1)) calc(var(--aww-edge-top, 0px) / var(--aww-scale, 1)); }
 body.lv-anim .maplibregl-ctrl-bottom-left { translate: calc(var(--aww-edge-x, 0px) / var(--aww-scale, 1)) calc(-1 * var(--aww-bottom, 0px) / var(--aww-scale, 1)); }
@@ -411,3 +411,7 @@ body.lv-anim #aww-blur-right {
   top: 0; right: 0; width: var(--aww-inset, 0px); bottom: var(--aww-bottom, 0px);
   transition: width 220ms cubic-bezier(0.33, 1, 0.68, 1); }
 body.lv-anim #aww-blur-bottom { left: 0; right: 0; bottom: 0; height: var(--aww-bottom, 0px); }
+/* Under the widget's date, at the bottom left (animSetDateBox). */
+body.lv-anim #aww-blur-date {
+  left: var(--aww-date-left, 0px); bottom: var(--aww-date-bottom, 0px); width: var(--aww-date-w, 0px); height: var(--aww-date-h, 0px);
+  border-radius: var(--aww-date-r, 0px); }

@@ -24,6 +24,7 @@ Item {
     property string prefix
     property bool mirror: false        // the icon turned left to right (ahead)
     property string tip
+    property var map                   // WeatherMapView: the menu's see-through background
     property int settleMs: 350
     property real _wheel: 0
     property bool _turning: false      // the wheel just moved: the bubble shows the value
@@ -150,6 +151,11 @@ Item {
         margins: 6
         y: ri.height
         closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+        background: MenuBackdrop { id: riBack; map: ri.map; popup: riMenu }
+        topPadding: riBack.margins.top
+        leftPadding: riBack.margins.left
+        rightPadding: riBack.margins.right
+        bottomPadding: riBack.margins.bottom
         Instantiator {
             model: ri.choices
             delegate: PlasmaComponents.MenuItem {

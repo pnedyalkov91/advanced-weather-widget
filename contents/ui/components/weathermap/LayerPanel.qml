@@ -84,7 +84,7 @@ Rectangle {
         signal picked(var value)
         Layout.fillWidth: true
         spacing: 2
-        PlasmaComponents.Label { text: oc.title; color: panel.dimText }
+        PlasmaComponents.Label { text: oc.title; color: enabled ? Kirigami.Theme.textColor : panel.dimText }
         PlasmaComponents.ComboBox {
             Layout.fillWidth: true
             model: oc.choices.map(function (c) { return c[1]; })
@@ -103,7 +103,7 @@ Rectangle {
         signal picked(var value)
         Layout.fillWidth: true
         spacing: 2
-        PlasmaComponents.Label { text: os.title; color: panel.dimText }
+        PlasmaComponents.Label { text: os.title; color: enabled ? Kirigami.Theme.textColor : panel.dimText }
         GridLayout {
             Layout.fillWidth: true
             columns: 2
@@ -141,7 +141,7 @@ Rectangle {
         Layout.fillWidth: true
         columns: wrapped ? 1 : 2
         rowSpacing: 2
-        PlasmaComponents.Label { id: sgTitle; text: sg.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+        PlasmaComponents.Label { id: sgTitle; text: sg.title; color: enabled ? Kirigami.Theme.textColor : panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
         Item {
             id: sgBox
             readonly property bool own: panel.map.ownControls
@@ -205,8 +205,8 @@ Rectangle {
         spacing: 0
         RowLayout {
             Layout.fillWidth: true
-            PlasmaComponents.Label { text: ss.title; color: panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
-            PlasmaComponents.Label { text: ss.valueText; color: panel.dimText }
+            PlasmaComponents.Label { text: ss.title; color: enabled ? Kirigami.Theme.textColor : panel.dimText; Layout.fillWidth: true; elide: Text.ElideRight }
+            PlasmaComponents.Label { text: ss.valueText; color: enabled ? Kirigami.Theme.textColor : panel.dimText }
         }
         PlasmaComponents.Slider {
             id: ssSlider
@@ -254,7 +254,7 @@ Rectangle {
         signal picked(var value)
         Layout.fillWidth: true
         spacing: 2
-        PlasmaComponents.Label { text: cd.title; color: panel.dimText }
+        PlasmaComponents.Label { text: cd.title; color: enabled ? Kirigami.Theme.textColor : panel.dimText }
         Row {
             spacing: 6
             Repeater {
@@ -316,7 +316,7 @@ Rectangle {
             var v = choices.map(function (c) { return c[0]; }).filter(function (x) { return values.indexOf(x) >= 0; });
             picked(v);
         }
-        PlasmaComponents.Label { text: ok.title; color: panel.dimText }
+        PlasmaComponents.Label { text: ok.title; color: enabled ? Kirigami.Theme.textColor : panel.dimText }
         MapSwitch {
             own: panel.map.ownControls
             text: i18n("All")
@@ -373,6 +373,7 @@ Rectangle {
         width: panel.colW
         compact: panel.folded
         ownLook: panel.map.ownControls
+        map: panel.map
         key: panel.map.layerKeys[mlr.layerId] || ""
         checked: panel.map.layerOn(mlr.layerId)
         visible: panel.map.layerEnabled(mlr.layerId)
@@ -492,6 +493,7 @@ Rectangle {
                     width: 300
                     padding: 12
                     closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+                    background: MenuBackdrop { map: panel.map; popup: orderMenu }
                     contentItem: ColumnLayout {
                         spacing: 6
                         PlasmaComponents.Label { text: i18n("Order of the layers"); font.bold: true }
@@ -525,11 +527,13 @@ Rectangle {
                 }
             }
             // Set once: pictures per second at most, the resolution
-            // while playing, coasts and borders, the dark map.
+            // while playing, coasts and borders, the Sun and the Moon around
+            // the globe, the lights of the towns at night, the dark map, then
+            // the panels' look.
             HeadButton {
                 id: settingsButton
                 iconName: "gear"
-                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, dark map, see-through panels")
+                tip: i18n("Settings: pictures per second, resolution while playing,<br>coasts and borders, Sun, Moon and night lights, dark map, see-through panels")
                 on: settingsMenu.visible
                 onClicked: settingsMenu.visible ? settingsMenu.close() : settingsMenu.open()
                 PlasmaComponents.Popup {
@@ -540,6 +544,7 @@ Rectangle {
                     width: 350
                     padding: 12
                     closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+                    background: MenuBackdrop { map: panel.map; popup: settingsMenu }
                     contentItem: ColumnLayout {
                         spacing: 8
                         PlasmaComponents.Label { text: i18n("Settings"); font.bold: true }
@@ -557,18 +562,15 @@ Rectangle {
                             current: panel.map.resolution
                             onPicked: function (v) { panel.map.setResolution(v); }
                         }
-                        SliderSetting {
-                            title: i18n("Panel opacity")
-                            valueText: i18n("%1 %", Math.round(value))
-                            value: panel.map.panelOpacity
-                            onMoved: function (v, done) { panel.map.setPanelOpacity(Math.round(v), done); }
-                        }
-                        SliderSetting {
-                            title: i18n("Blur under the panels")
-                            valueText: value > 0 ? i18n("%1 px", Math.round(value)) : i18n("None")
-                            to: 40
-                            value: panel.map.panelBlur
-                            onMoved: function (v, done) { panel.map.setPanelBlur(Math.round(v), done); }
+                        // The pictures worked out between those of the files; off, real images only.
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Interpolated pictures")
+                            checked: panel.map.interpolate
+                            onToggled: {
+                                panel.map.setInterpolate(checked);
+                                checked = Qt.binding(function () { return panel.map.interpolate; });
+                            }
                         }
                         MapSwitch {
                             own: panel.map.ownControls
@@ -578,6 +580,36 @@ Rectangle {
                                 panel.map.setMapLines(checked);
                                 checked = Qt.binding(function () { return panel.map.mapLinesOn; });
                             }
+                        }
+                        // The stars, the Sun and the Moon around the globe, together.
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Celestial bodies")
+                            checked: panel.map.globeSkyOn
+                            onToggled: {
+                                panel.map.setGlobeSky(checked);
+                                checked = Qt.binding(function () { return panel.map.globeSkyOn; });
+                            }
+                        }
+                        // The Sun's light through the air at the globe's edge, when
+                        // it stands behind the Earth: with the stars, the Sun and the Moon.
+                        SliderSetting {
+                            title: i18n("Atmosphere rim")
+                            valueText: value > 0 ? i18n("%1 %", Math.round(value)) : i18nc("atmosphere rim at 0", "Off")
+                            enabled: panel.map.globeSkyOn
+                            opacity: enabled ? 1 : 0.5
+                            value: panel.map.rimGlow
+                            onMoved: function (v, done) { panel.map.setRimGlow(Math.round(v), done); }
+                        }
+                        // The lights of the towns on the night side: 0 turns them off.
+                        // They light the night of the day and night setting only.
+                        SliderSetting {
+                            title: i18n("Night lights")
+                            valueText: value > 0 ? i18n("%1 %", Math.round(value)) : i18nc("night lights at 0", "Off")
+                            enabled: panel.map.dayNight
+                            opacity: enabled ? 1 : 0.5
+                            value: panel.map.nightLights
+                            onMoved: function (v, done) { panel.map.setNightLights(Math.round(v), done); }
                         }
                         MapSwitch {
                             own: panel.map.ownControls
@@ -593,6 +625,19 @@ Rectangle {
                                 visible: parent.hovered
                                 delay: Kirigami.Units.toolTipDelay
                             }
+                        }
+                        SliderSetting {
+                            title: i18n("Panel opacity")
+                            valueText: i18n("%1 %", Math.round(value))
+                            value: panel.map.panelOpacity
+                            onMoved: function (v, done) { panel.map.setPanelOpacity(Math.round(v), done); }
+                        }
+                        SliderSetting {
+                            title: i18n("Blur under the panels")
+                            valueText: value > 0 ? i18n("%1 px", Math.round(value)) : i18n("None")
+                            to: 40
+                            value: panel.map.panelBlur
+                            onMoved: function (v, done) { panel.map.setPanelBlur(Math.round(v), done); }
                         }
                     }
                 }
@@ -695,6 +740,7 @@ Rectangle {
             RadarMenu {
                 id: radarMenu
                 ownLook: panel.map.ownControls
+                map: panel.map
                 // Folded, at the left of the icon (the wheel is hidden).
                 parent: panel.folded ? radarRow.iconItem : radarRow.gearItem
                 x: panel.folded ? -width - 6 : parent.width - width
@@ -925,6 +971,7 @@ Rectangle {
             height: 40 + fold * 2 * step
             RangeIcon {
                 id: pastPick
+                map: panel.map
                 x: 0
                 y: 0
                 prefix: "−"
@@ -938,6 +985,7 @@ Rectangle {
             }
             RangeIcon {
                 id: futurePick
+                map: panel.map
                 x: (1 - timeRow.fold) * timeRow.cell
                 y: timeRow.fold * timeRow.step
                 prefix: "+"

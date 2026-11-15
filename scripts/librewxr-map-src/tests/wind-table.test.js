@@ -76,7 +76,7 @@ test('table layer: a move while the table is being built does not leave the wind
     map.fire('moveend');                          // ...and start again
     flushRaf();
     assert.equal(layer.isDrawing(), true);
-    assert.equal(layer._canvas.style.visibility, '');
+    assert.equal(layer._canvas.style.opacity, '1');
   } finally {
     layer.remove();
   }

@@ -34,6 +34,7 @@ Item {
     property bool fromFile: false    // a frame as read from its file, not worked out
     property var radar: null         // the radar's range (window.animState().radar)
     property var satellite: null     // the satellite's
+    property bool interpolate: true  // the pictures in between; off, real images only
     // The time of a Date as the widget writes it (its date and time settings).
     property var formatTime: function (d) { return d.toLocaleTimeString(Qt.locale(), Locale.ShortFormat); }
     readonly property int count: times.length
@@ -139,19 +140,32 @@ Item {
     }
 
     // A source's range above the line: [start, end) clipped to the line,
-    // paler from forecastFrom; its name beside it.
+    // paler from forecastFrom; its name beside it. Its layer off, it goes
+    // away; on, it is lit while the handle stands in its range, greyed
+    // outside it. It fades and slides between the three.
     component Band: Item {
         id: band
         property var src: null         // line.radar or line.satellite
         property color color
         property string title
         property bool nameAfter: true
-        readonly property bool known: !!src && src.start !== null && line.count > 1 && src.end > line.v0 && src.start < line.v1
-        readonly property real x0: known ? Math.max(0, line.xOfTime(src.start)) : 0
-        readonly property real x1: known ? Math.min(line.width, line.xOfTime(src.end)) : 0
-        readonly property real xf: known && src.forecastFrom ? Math.max(x0, Math.min(x1, line.xOfTime(src.forecastFrom))) : x1
-        visible: known
-        opacity: src && src.on ? 1 : 0.35
+        // The last range known: the band fades out on it once its layer is off.
+        property var range: null
+        onSrcChanged: if (src && src.start !== null) range = src
+        readonly property bool layerOn: !!src && !!src.on
+        readonly property bool known: !!range && line.count > 1 && range.end > line.v0 && range.start < line.v1
+        readonly property real handleTime: line.position >= 0 ? line.timeOfIndex(line.position) : NaN
+        readonly property bool lit: layerOn && known && handleTime >= range.start && handleTime <= range.end
+        readonly property real x0: known ? Math.max(0, line.xOfTime(range.start)) : 0
+        readonly property real x1: known ? Math.min(line.width, line.xOfTime(range.end)) : 0
+        readonly property real xf: known && range.forecastFrom ? Math.max(x0, Math.min(x1, line.xOfTime(range.forecastFrom))) : x1
+        visible: known && opacity > 0
+        opacity: !layerOn ? 0 : lit ? 1 : 0.55
+        Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        transform: Translate {
+            y: band.layerOn ? 0 : 4
+            Behavior on y { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        }
         height: 5
         width: line.width
         Rectangle { x: band.x0; width: Math.max(2, band.xf - band.x0); height: 5; radius: 2.5; color: band.color }
@@ -167,13 +181,13 @@ Item {
     }
 
     // The satellite in the grey of the theme's text, the radar in magenta.
-    Band { y: 4; src: line.satellite; color: Qt.tint(line.dimText, "#3080a0d0"); title: i18n("Satellite"); nameAfter: false }
-    Band { y: 12; src: line.radar; color: "#c93fc2"; title: i18n("Radar") }
+    Band { y: 2; src: line.satellite; color: Qt.tint(line.dimText, "#3080a0d0"); title: i18n("Satellite"); nameAfter: false }
+    Band { y: 10; src: line.radar; color: "#c93fc2"; title: i18n("Radar") }
 
     // The days: a line at each midnight, the day's name after it (the first one at the start).
     PlasmaComponents.Label {
         x: Math.max(0, line.xOfTime(line.t0))
-        y: 13
+        y: 15
         text: line.count ? new Date(line.t0).toLocaleString(Qt.locale(), "ddd d") : ""
         color: line.dimText
         font.pixelSize: 11
@@ -189,7 +203,7 @@ Item {
             Rectangle { y: 10; width: 1; height: 50; color: line.tint(0.25) }
             PlasmaComponents.Label {
                 x: 4
-                y: 13
+                y: 15
                 text: new Date(modelData).toLocaleString(Qt.locale(), "ddd d")
                 color: line.dimText
                 font.pixelSize: 11
@@ -288,8 +302,12 @@ Item {
         height: 34
         enabled: line.count > 0
         cursorShape: Qt.PointingHandCursor
-        // Within bounds: the time under the hand, to 10 minutes, as a
-        // position between the frames.
+        // The time under the hand, as a position between the frames: to 10
+        // minutes everywhere (the pictures worked out between those of the
+        // files, the Sun, the Moon and the night move between them too), or
+        // on an image of the radar or the satellite, on in its range, when
+        // one is nearer. Without the pictures in between: the nearest real
+        // one, a frame of the files or an image of those two.
         function _posOfTime(t) {
             var ts = line.times, last = line.count - 1;
             for (var k = 0; k < last; k++)
@@ -297,27 +315,37 @@ Item {
                     return k + Math.max(0, t - ts[k]) / (ts[k + 1] - ts[k]);
             return last;
         }
-        function at(mx) {
-            if (line.bounds) {
-                var S = 600000, x = Math.max(0, Math.min(1, (mx - 9) / Math.max(1, line.width)));
-                var t = Math.round((line.v0 + x * (line.v1 - line.v0)) / S) * S;
-                var p = Math.max(line.bounds.lo, Math.min(line.bounds.hi, _posOfTime(t)));
-                dragIndex = p;
-                if (p === sent)
-                    return;
-                sent = p;
-                line.showPosition(p);
-                return;
+        function _snap(t) {
+            var S = 600000, best = Math.round(t / S) * S;
+            if (!line.interpolate) {
+                best = line.times[0];
+                for (var k = 1; k < line.count; k++)
+                    if (Math.abs(line.times[k] - t) < Math.abs(best - t))
+                        best = line.times[k];
             }
-            dragIndex = Math.max(0, Math.min(line.count - 1, (mx - 9) / Math.max(1, line.width) * (line.count - 1)));
-            var i = Math.round(dragIndex);
-            if (i === sent)
+            [line.radar, line.satellite].forEach(function (s) {
+                if (!s || !s.on || s.start === null || !(s.gap > 0) || t < s.start || t >= s.end)
+                    return;
+                var top = s.last !== null && s.last !== undefined ? s.last : s.end - s.gap;
+                var img = Math.min(top, s.start + Math.round((t - s.start) / s.gap) * s.gap);
+                if (Math.abs(img - t) < Math.abs(best - t))
+                    best = img;
+            });
+            return best;
+        }
+        function at(mx) {
+            var x = Math.max(0, Math.min(1, (mx - 9) / Math.max(1, line.width)));
+            var t = Math.max(line.times[0], Math.min(line.times[line.count - 1], _snap(line.v0 + x * (line.v1 - line.v0))));
+            var p = _posOfTime(t);
+            if (line.bounds)
+                p = Math.max(line.bounds.lo, Math.min(line.bounds.hi, p));
+            dragIndex = p;
+            if (p === sent)
                 return;
-            sent = i;
-            line.showIndex(i);
+            sent = p;
+            line.showPosition(p);
         }
         onPressed: function (m) { sent = -1; line.pressedOn(); at(m.x); }
         onPositionChanged: function (m) { if (pressed) at(m.x); }
-        onReleased: if (!line.bounds) dragIndex = Math.round(dragIndex)
     }
 }

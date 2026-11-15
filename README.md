@@ -334,6 +334,10 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
 - The **Weather Maps** coasts and borders come from **Natural Earth** (public domain):  
   https://www.naturalearthdata.com/
 
+- The **Weather Maps** globe uses two NASA images, both in the public domain: the Moon's colors from the **NASA SVS CGI Moon Kit** (LROC color map), and the city lights from **NASA Earth Observatory Black Marble 2016**:  
+  https://svs.gsfc.nasa.gov/4720  
+  https://earthobservatory.nasa.gov/features/NightLights
+
 - This project uses code from the **SunCalc** library:  
   https://github.com/mourner/suncalc
 
