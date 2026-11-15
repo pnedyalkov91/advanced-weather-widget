@@ -624,7 +624,8 @@ Item {
     // Flickable instead of ScrollView: styled ScrollViews (e.g. KDE Union) pad the
     // view by scrollbar size, which created a binding loop on bottomPadding (and a
     // crash in plasmawindowed). Attached ScrollBars on a Flickable overlay the
-    // content, so nothing here depends on scrollbar visibility.
+    // content, so there is no style padding to loop on (see _showGap below for the
+    // gap that keeps the cards clear of the vertical bar).
     Flickable {
         id: detailsScroll
         anchors.fill: parent
@@ -637,14 +638,58 @@ Item {
         ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
         ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
 
-        // The scrollbars overlay the edges of the view, so the cards leave room
-        // for them (same 24 px as the History tab) instead of running underneath.
-        // Constant, so it does not depend on scrollbar visibility (no binding loop).
+        // The vertical scrollbar overlays the right edge, so when the content is
+        // taller than the view the cards leave room for it (same 24 px as the
+        // History tab); when everything fits they use the full width.
+        //
+        // Rule: gap <=> contentHeight > height (exactly when the bar is shown).
+        // It is set from the handlers below rather than bound, and card heights
+        // are computed from the full-width card size (see _refScale), so adding
+        // the gap cannot change the content height and flip the rule back.
+        // The flip guard is only a safety net: if the state still flip-flops it
+        // keeps the gap on for a moment, then re-evaluates.
         readonly property real _scrollBarGap: 24
+        property bool _showGap: false
+        property int _gapFlips: 0
+        property bool _gapLocked: false
+
+        function _updateGap() {
+            if (_gapLocked || height <= 0)
+                return;
+            var want = contentHeight > height;
+            if (want === _showGap)
+                return;
+            if (_gapFlips >= 3) {
+                _showGap = true;
+                _gapLocked = true;
+                _gapFlipReset.restart();
+                return;
+            }
+            _gapFlips++;
+            _gapFlipReset.restart();
+            _showGap = want;
+        }
+        Timer {
+            id: _gapFlipReset
+            interval: 600
+            onTriggered: {
+                detailsScroll._gapFlips = 0;
+                if (detailsScroll._gapLocked) {
+                    detailsScroll._gapLocked = false;
+                    detailsScroll._updateGap();
+                }
+            }
+        }
+        onContentHeightChanged: _updateGap()
+        onHeightChanged: _updateGap()
+        Component.onCompleted: _updateGap()
 
         Column {
             id: detailsColumn
-            width: Math.max(detailsScroll.width - detailsScroll._scrollBarGap, 560)
+            width: Math.max(detailsScroll.width - (detailsScroll._showGap ? detailsScroll._scrollBarGap : 0), 560)
+            // Card width as it would be WITHOUT the scrollbar gap: card heights use
+            // it so showing/hiding the gap never changes the content height.
+            readonly property real _refScale: Math.max(detailsScroll.width, 560) / width
             spacing: root.isList ? 0 : 8
             // Clear the horizontal scrollbar when the content is wider than the view
             // (compares widths only, so it cannot loop with the vertical bar).
@@ -671,7 +716,7 @@ Item {
                             // suntimes and moonphase: height scales with card width
                             // so the arc grows when the widget is stretched.
                             readonly property int autoHeight: {
-                                var arcLikeHeight = Plasmoid.configuration.widgetExpandedCardsHeightAuto ? Math.max(165, Math.round(card.width * 0.55)) : Plasmoid.configuration.widgetExpandedCardsHeight;
+                                var arcLikeHeight = Plasmoid.configuration.widgetExpandedCardsHeightAuto ? Math.max(165, Math.round(card.width * detailsColumn._refScale * 0.55)) : Plasmoid.configuration.widgetExpandedCardsHeight;
                                 if (card.modelData === "alerts") {
                                     var n = weatherRoot ? (weatherRoot.weatherAlerts || []).length : 0;
                                     if (n <= 1)
