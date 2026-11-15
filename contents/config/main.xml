@@ -433,8 +433,8 @@
          one of the graphs of the "Graphs" layouts: it can be switched off and moved like the
          others. A saved order without "temp" keeps it on top. -->
     <entry name="forecastShowTemp"       type="Bool"><default>true</default></entry>
-    <entry name="forecastGraphOrder"       type="String"><default>temp;wind;pressure;kp;uv;precip;vis</default></entry>
-    <entry name="forecastHourlyGraphOrder" type="String"><default>temp;wind;pressure;kp;uv;precip;vis</default></entry>
+    <entry name="forecastGraphOrder"       type="String"><default>temp;precip;wind;pressure;kp;uv;vis</default></entry>
+    <entry name="forecastHourlyGraphOrder" type="String"><default>temp;precip;wind;pressure;kp;uv;vis</default></entry>
     <!-- Own colors of the graphs, "key=#rrggbb;key=#rrggbb" (keys: wind, pressure, kp, uv,
          precip, vis; the temperature graph: temphigh and templow (daily), temp and precipprob
          (hourly: the temperature line and the precipitation bars)).

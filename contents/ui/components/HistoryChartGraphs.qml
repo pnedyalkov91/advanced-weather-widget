@@ -1083,6 +1083,13 @@ ColumnLayout {
                 readonly property var hoverDay: hovering ? root.days[root.hoverIndex] : null
                 readonly property real cursorX: hovering ? area.xOf(root.hoverIndex) : 0
                 readonly property bool badgesRight: cursorX < area.vw / 2
+                // Space between the cursor and the value badges. A graph that draws a glyph (the wind
+                // arrow) at the hovered point keeps its badge clear of it, so the arrow stays whole.
+                readonly property real badgeGap: {
+                    if (hovering && root.glyphAt && (root.glyphAt(root.hoverIndex, hoverDay) || "") !== "")
+                        return Math.max(Kirigami.Units.largeSpacing, glyphSize * 0.66 + Kirigami.Units.smallSpacing);
+                    return Kirigami.Units.largeSpacing;
+                }
 
                 Rectangle {
                     visible: pinned.hovering
@@ -1199,34 +1206,21 @@ ColumnLayout {
                         required property var modelData
                         required property int index
                         visible: pinned.hovering && modelData.ok
-                        width: badgeRow.implicitWidth + 8
+                        width: badgeText.implicitWidth + 8
                         height: root.badgeH
                         radius: 4
                         color: Qt.tint(Kirigami.Theme.backgroundColor, Qt.alpha(modelData.color, 0.18))
                         border.width: 1
                         border.color: Qt.alpha(modelData.color, 0.6)
-                        x: pinned.badgesRight ? pinned.cursorX + Kirigami.Units.largeSpacing : pinned.cursorX - Kirigami.Units.largeSpacing - width
+                        x: pinned.badgesRight ? pinned.cursorX + pinned.badgeGap : pinned.cursorX - pinned.badgeGap - width
                         y: pinned.badgeYs[index]
-                        // the value, and (the wind graph) the direction arrow after it
-                        Row {
-                            id: badgeRow
+                        // the value (the wind arrow is drawn on the graph itself, not in the badge)
+                        Label {
+                            id: badgeText
                             anchors.centerIn: parent
-                            spacing: 3
-                            Label {
-                                id: badgeText
-                                text: badge.modelData.text
-                                font: Kirigami.Theme.smallFont
-                                color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
-                            }
-                            GlyphInk {
-                                visible: badge.modelData.glyph !== ""
-                                glyph: badge.modelData.glyph
-                                family: root.glyphFont
-                                pixelSize: root.glyphTextPx
-                                color: badgeText.color
-                                boxH: badgeText.height
-                                centerY: area.digitCenterY
-                            }
+                            text: badge.modelData.text
+                            font: Kirigami.Theme.smallFont
+                            color: badge.modelData.color === root.meanColor ? Kirigami.Theme.textColor : badge.modelData.color
                         }
                     }
                 }

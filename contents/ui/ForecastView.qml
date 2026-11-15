@@ -861,8 +861,9 @@ Item {
                 var mm1 = m % 1440;
                 night = mm1 < rise || mm1 >= set_;
             }
-            // the hover title of the graphs: just the time (the icons show the weather, the graphs the wind)
-            var title = label;
+            // the hover title of the graphs: the time and the weather condition
+            var cond = h.code !== undefined && h.code !== null ? weatherRoot.weatherCodeToText(h.code, night) : "";
+            var title = label + (cond ? " · " + cond : "");
             items.push({
                 dateStr: key,
                 tempC: h.tempC,
@@ -996,8 +997,9 @@ Item {
                         var parts = ds.split("-");
                         name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                     }
-                    // (the weather condition is not part of it: the icons show it)
-                    return name + ", " + weatherRoot.formatIsoDate(ds, true);
+                    // the weather condition follows the date
+                    var cond = entry && entry.code !== undefined && entry.code !== null ? weatherRoot.weatherCodeToText(entry.code) : "";
+                    return name + ", " + weatherRoot.formatIsoDate(ds, true) + (cond ? " · " + cond : "");
                 }
             }
 
