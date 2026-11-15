@@ -114,6 +114,36 @@ test('shadeTile: a light veil over the day, fading in over its first 18 degrees'
   }
 });
 
+test('shadeFrom: what the chip draws for the night is what the tiles held, night and day veil', () => {
+  const sun = { lat: -11.6, lon: 30 }, size = 64, depth = 0.4, veil = 0.07;
+  const img = E.shadeTile(sun, WORLD, size, depth, veil), u = E.shadeUniforms(sun, depth, veil);
+  assert.equal(u.sun.length, 3);
+  assert.equal(u.ln.length, 2);
+  for (let row = 0; row < size; row += 2) {
+    for (let col = 0; col < size; col += 2) {
+      const { lat, lon } = pixelLatLon(col, row, size), k = (row * size + col) * 4;
+      // Mercator 0..1, as the chip's shader gets the place.
+      const c = E.shadeFrom(u, (lon + 180) / 360, (row + 0.5) / size);
+      assert.ok(Math.abs(c[3] - img[k + 3] / 255) <= 1.5 / 255, `alpha at ${lat.toFixed(1)}, ${lon.toFixed(1)}`);
+      // Premultiplied: black over the night, white as strong as its alpha over the day.
+      const white = img[k] === 255;
+      assert.ok(Math.abs(c[0] - (white ? c[3] : 0)) < 1e-9, 'color');
+    }
+  }
+});
+
+test('shadeUniforms: no day veil asked, none drawn', () => {
+  const u = E.shadeUniforms({ lat: 0, lon: 0 }, 0.4, 0);
+  assert.deepEqual([...E.shadeFrom(u, 0.5, 0.5)], [0, 0, 0, 0], 'noon at the equator');
+  assert.ok(Math.abs(E.shadeFrom(u, 0, 0.5)[3] - 0.4) < 1e-6, 'midnight on the other side');
+});
+
+test('NIGHT_FS: the shader of the night reads the same uniforms', () => {
+  assert.match(E.NIGHT_FS, /uniform vec3 u_sun;/);
+  assert.match(E.NIGHT_FS, /uniform vec2 u_ln;/);
+  assert.match(E.NIGHT_FS, /in vec2 v_merc;/);
+});
+
 test('shadeTile: the middle rows of the world tile lie on the equator, the top one near 85 degrees north', () => {
   // Sun over the equator at 0: the antisolar point (equator, 180) is the deepest night.
   const sun = { lat: 0, lon: 0 }, size = 64;

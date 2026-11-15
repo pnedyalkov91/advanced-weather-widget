@@ -83,6 +83,56 @@ var WidgetEarth = (function () {
     return img;
   }
 
+  /** The same day and night for the chip, which draws them in one layer
+      over the whole map instead of tiles made again at each move of the
+      Sun: what its shader (NIGHT_FS) needs for a Sun position, { sun: [sin
+      and cos of the Sun's latitude, its longitude in radians], ln: [ln(1 -
+      depth), ln(1 - dayVeil)] } (a veil of 0 gives 0: none drawn). */
+  function shadeUniforms(sun, depth, dayVeil) {
+    return {
+      sun: [Math.sin(sun.lat * RAD), Math.cos(sun.lat * RAD), sun.lon * RAD],
+      ln: [Math.log(1 - Math.min(depth, 0.999)), Math.log(1 - Math.min(dayVeil, 0.999))]
+    };
+  }
+
+  /** The color (premultiplied, 0..1) the chip gives the place at x, y in
+      Mercator (0..1) with the uniforms u. Line for line what NIGHT_FS does. */
+  function shadeFrom(u, x, y) {
+    var lon = ((x - Math.floor(x)) * 2 - 1) * Math.PI;
+    var lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * y)));
+    var s = Math.max(-1, Math.min(1, Math.sin(lat) * u.sun[0] + Math.cos(lat) * u.sun[1] * Math.cos(lon - u.sun[2])));
+    var h = Math.asin(s) * DEG, a;
+    if (h < 0) {
+      a = 1 - Math.exp(u.ln[0] * Math.min(1, -h / TWILIGHT));
+      return [0, 0, 0, a];
+    }
+    a = 1 - Math.exp(u.ln[1] * Math.min(1, h / TWILIGHT));
+    return [a, a, a, a];
+  }
+
+  // For the mesh of the chip's layers (v_merc: Mercator 0..1, see
+  // WidgetTemp.TempLayerGL.GLLayer).
+  var NIGHT_FS = [
+    '#version 300 es',
+    'precision highp float;',
+    'in vec2 v_merc;',
+    'out vec4 fragColor;',
+    'const float PI = 3.141592653589793;',
+    'uniform vec3 u_sun;',
+    'uniform vec2 u_ln;',
+    'void main() {',
+    '  float lon = (fract(v_merc.x) * 2.0 - 1.0) * PI;',
+    '  float lat = atan(sinh(PI * (1.0 - 2.0 * v_merc.y)));',
+    '  float s = clamp(sin(lat) * u_sun.x + cos(lat) * u_sun.y * cos(lon - u_sun.z), -1.0, 1.0);',
+    '  float h = degrees(asin(s));',
+    '  if (h < 0.0) {',
+    '    fragColor = vec4(0.0, 0.0, 0.0, 1.0 - exp(u_ln.x * min(1.0, -h / ' + TWILIGHT + '.0)));',
+    '  } else {',
+    '    fragColor = vec4(1.0 - exp(u_ln.y * min(1.0, h / ' + TWILIGHT + '.0)));',
+    '  }',
+    '}'
+  ].join('\n');
+
   /** The lights of the towns on the night side, as points
       (vendor/night-lights.bin, made by scripts/make_night_lights.py from
       NASA's Black Marble 2016, 3 km, a grid of `cols` columns): off while
@@ -461,7 +511,7 @@ var WidgetEarth = (function () {
     cameraPosition: cameraPosition, projectPoint: projectPoint, moonView: moonView, renderMoon: renderMoon, dot: dot, starField: starField, CAMERA: CAMERA,
     decodeLines: decodeLines,
     GLOBE_FILL: GLOBE_FILL, subsolarPoint: subsolarPoint, sunAltitude: sunAltitude,
-    shadeTile: shadeTile, sunLightPosition: sunLightPosition,
+    shadeTile: shadeTile, shadeUniforms: shadeUniforms, shadeFrom: shadeFrom, NIGHT_FS: NIGHT_FS, sunLightPosition: sunLightPosition,
     NIGHT_LIGHTS: NIGHT_LIGHTS, nightLight: nightLight, NIGHT_LIGHTS_VS: NIGHT_LIGHTS_VS, NIGHT_LIGHTS_FS: NIGHT_LIGHTS_FS, glslFloat: glslFloat,
     decodeNightLights: decodeNightLights, nightLightsVertices: nightLightsVertices, nightLightsLook: nightLightsLook,
     viewWidthKm: viewWidthKm, nightLightsFade: nightLightsFade,

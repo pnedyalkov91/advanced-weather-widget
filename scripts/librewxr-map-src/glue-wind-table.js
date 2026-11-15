@@ -63,7 +63,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._canvas = document.createElement('canvas');
       this._canvas.className = 'lv-wind-canvas';
       this._canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
-      this._canvas.style.opacity = String(this._fade * this._opacity);
+      this._showOpacity();
       // Right over the map's own canvas: markers and popups stay on top.
       var gl = map.getCanvas();
       gl.parentNode.insertBefore(this._canvas, gl.nextSibling);
@@ -112,16 +112,24 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     /** Fade in or out (0..1): the canvas's opacity, the particles go on. */
     setFade: function (f) {
       this._fade = Math.max(0, Math.min(1, f));
-      if (this._canvas) this._canvas.style.opacity = String(this._fade * this._opacity);
+      this._showOpacity();
     },
 
     /** The opacity chosen for the layer (0..1), under its fade. */
     setOpacity: function (v) {
       this._opacity = Math.max(0, Math.min(1, v));
-      if (this._canvas) this._canvas.style.opacity = String(this._fade * this._opacity);
+      this._showOpacity();
     },
 
     getOpacity: function () { return this._opacity; },
+
+    /** The canvas at its opacity; clear while the particles are being
+        built. Clear and not hidden: Chromium keeps what is drawn on a
+        hidden canvas for later, and the frames of the warm-up, all drawn at
+        once when the canvas came back, froze the page for a moment. */
+    _showOpacity: function () {
+      if (this._canvas) this._canvas.style.opacity = String(this._building ? 0 : this._fade * this._opacity);
+    },
 
     /** Pause (popup collapsed) or resume. */
     setActive: function (active) {
@@ -219,6 +227,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       // and gives up; a restart may begin a new build at once.
       this._job++;
       this._building = false;
+      this._showOpacity();
       if (this._timer) { clearTimeout(this._timer); this._timer = null; }
       if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
       if (this._retryTimer) { clearTimeout(this._retryTimer); this._retryTimer = null; }
@@ -352,14 +361,14 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       if (this._running || this._building || !this._settled) return;
       var self = this, job = ++this._job, steps = this._build();
       this._building = true;
-      this._canvas.style.visibility = 'hidden';
+      this._showOpacity();
       var slice = function () {
         if (job !== self._job) return;
         var t0 = performance.now(), done = false;
         do { done = steps.next().done; } while (!done && performance.now() - t0 < SLICE_MS);
         if (!done) { requestAnimationFrame(slice); return; }
         self._building = false;
-        self._canvas.style.visibility = '';
+        self._showOpacity();
         if (self._fadeIn) {
           self._fadeIn = false;
           if (self._canvas.animate) self._canvas.animate([{ opacity: 0 }, { opacity: self._fade * self._opacity }], { duration: REVEAL_MS, easing: 'ease-out' });

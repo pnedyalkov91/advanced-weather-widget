@@ -109,9 +109,8 @@ Item {
     readonly property string tempPalette: ConfigUtils.formatTempPalette(ConfigUtils.tempPaletteStops(Plasmoid.configuration.librewxrTempPalette || "", Plasmoid.configuration.librewxrTempPalettes || "[]"))
     // Coasts and borders drawn over the color layers (the settings of the column).
     readonly property bool mapLinesOn: Plasmoid.configuration.librewxrMapLines !== false
-    // The Sun and the Moon around the globe (the settings of the column).
-    readonly property bool globeSunOn: Plasmoid.configuration.librewxrGlobeSun !== false
-    readonly property bool globeMoonOn: Plasmoid.configuration.librewxrGlobeMoon !== false
+    // The stars, the Sun and the Moon around the globe (one setting of the column).
+    readonly property bool globeSkyOn: Plasmoid.configuration.librewxrGlobeSky !== false
     readonly property int tempOpacity: Plasmoid.configuration.librewxrTempOpacity >= 0 ? Plasmoid.configuration.librewxrTempOpacity : 45
     readonly property real tempStep: Plasmoid.configuration.librewxrTempStep
     // The widget's temperature unit, which the bands and the legend follow.
@@ -247,9 +246,14 @@ Item {
 
     // Whether the map can be seen: a closed popup does not hide its items.
     readonly property bool shown: visible && (fullScreen || !weatherRoot || weatherRoot.expanded !== false)
-    // The help panel does not outlive the tab: it closes with the popup or on
-    // another tab, so the next opening starts on the map.
-    onShownChanged: if (!shown) helpPanel.close()
+    // The help panel and the map's credits do not outlive the tab: they
+    // close with the popup or on another tab, so the next opening starts on the map.
+    onShownChanged: {
+        if (shown)
+            return;
+        helpPanel.close();
+        call("closeCredits");
+    }
 
     Connections {
         target: radarRoot.weatherRoot ? radarRoot.weatherRoot : null
@@ -347,6 +351,11 @@ Item {
     property bool started: false      // window.animStart() took
     property bool startFailed: false  // the page cannot animate here (no WebGL)
     property bool ctrlDown: false     // Ctrl held: readout under the pointer, cross cursor
+    // The map's credits are open (the (i) button): the date and the badges,
+    // drawn over the page, fade out so the credits can be read.
+    property bool creditsOpen: false
+    property real creditsFade: creditsOpen ? 0 : 1
+    Behavior on creditsFade { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
     onCtrlDownChanged: if (ctrlDown && !mapHover.hovered) call("setReadout", false)
     // None while a page loads (its pictures are not known yet).
     readonly property int count: animState ? frameTimes.length : 0
@@ -415,6 +424,8 @@ Item {
     // saved once it is let go.
     property int panelOpacity: Plasmoid.configuration.weatherMapPanelOpacity
     property int panelBlur: Plasmoid.configuration.weatherMapPanelBlur
+    // What the menus blur under them, as the page does under the column and the bar.
+    readonly property Item menuStage: mapStage
     function setPanelOpacity(v, save) {
         panelOpacity = v;
         if (save)
@@ -438,16 +449,20 @@ Item {
         Plasmoid.configuration.librewxrMapLines = on;
         call("setMapLines", on);
     }
-    function setGlobeSun(on) {
-        Plasmoid.configuration.librewxrGlobeSun = on;
-        call("setGlobeSun", on);
-    }
-    function setGlobeMoon(on) {
-        Plasmoid.configuration.librewxrGlobeMoon = on;
-        call("setGlobeMoon", on);
+    function setGlobeSky(on) {
+        Plasmoid.configuration.librewxrGlobeSky = on;
+        call("setGlobeSky", on);
     }
     // The lights of the towns at night, percent (0 for none): shown while
     // the slider moves, saved once it is let go.
+    // How bright the Sun's light through the air at the globe's edge, percent.
+    property int rimGlow: Plasmoid.configuration.librewxrRimGlow
+    function setRimGlow(v, save) {
+        rimGlow = v;
+        call("setRimGlow", v);
+        if (save)
+            Plasmoid.configuration.librewxrRimGlow = v;
+    }
     property int nightLights: Plasmoid.configuration.librewxrNightLights
     function setNightLights(v, save) {
         nightLights = v;
@@ -891,6 +906,12 @@ Item {
         Plasmoid.configuration.weatherMapLoop = on;
         call("animSetLoop", on);
     }
+    // The pictures in between, or the play and the time line on real images only.
+    readonly property bool interpolate: Plasmoid.configuration.weatherMapInterpolate !== false
+    function setInterpolate(on) {
+        Plasmoid.configuration.weatherMapInterpolate = on;
+        call("animSetInterpolate", on);
+    }
 
     // The help panel.
     readonly property bool helpOpen: helpPanel.opened
@@ -997,9 +1018,16 @@ Item {
             helpPanel.open();
     }
 
-    // The legends at the top left go under the date when the map is too
-    // narrow for both side by side (zoom buttons, legends 320 px, the date).
-    readonly property real legendTop: mapArea.width - layerPanel.foldedWidth - layerPanel.width - (dateBox.width + 52 + 320) * overlayScale - 2 * edgeX < 12 ? dateBox.height * overlayScale + 8 : 0
+    // (The date stood at the top right once, and pushed the legends down.)
+    readonly property real legendTop: 0
+    // The date at the bottom left, over the map's credits: where it stands
+    // from the map's left and bottom, and how far it lifts the badges.
+    readonly property real dateLeft: 10 + edgeX
+    readonly property real dateBottom: 10 + timeBar.height
+    readonly property real dateLift: dateBox.visible ? (dateBox.height + 6) * overlayScale : 0
+    // The page blurs the map under the date, as under the column and the bar.
+    readonly property var dateRect: dateBox.visible && !creditsOpen ? [dateLeft, dateBottom, dateBox.width * overlayScale, dateBox.height * overlayScale, dateBox.radius * overlayScale] : [0, 0, 0, 0, 0]
+    onDateRectChanged: if (started) call("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4])
     // Full screen: what lies over the map (the page's buttons and legends,
     // the date, the badges, the column's head) stands further from the
     // screen's edges, and is drawn larger.
@@ -1014,12 +1042,12 @@ Item {
     // Everything the page needs once the animation has started.
     function _afterStart() {
         var code = [jsCall("animSetStep", Math.round(1500 / speed)), jsCall("animSetMaxFps", maxFps), jsCall("animSetResolution", resolution),
-            jsCall("animSetLoop", loop), jsCall("animSetWindLevel", windLevel), jsCall("setLayerOrder", layerOrder)];
+            jsCall("animSetLoop", loop), jsCall("animSetInterpolate", interpolate), jsCall("animSetWindLevel", windLevel), jsCall("setLayerOrder", layerOrder)];
         for (var id in opacities)
             code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
             code.push(jsCall("animSetLegend", l, false));
-        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
+        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4]), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
@@ -1075,7 +1103,7 @@ Item {
             ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
             ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
             ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
-            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sun", globeSunOn ? 1 : 0], ["moon", globeMoonOn ? 1 : 0], ["lights", nightLights],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["rim", rimGlow],
             ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
             ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
             ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],
@@ -1348,6 +1376,7 @@ Item {
         // The map takes the whole tab; the layer column and the time bar
         // float over it, see-through.
         Item {
+            id: mapStage
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -1397,6 +1426,8 @@ Item {
                             radarRoot.testUi(message.slice(5));
                         } else if (message.indexOf("[readout] ctrl:") === 0) {
                             radarRoot.ctrlDown = message.slice(15) === "1";
+                        } else if (message.indexOf("[credits] ") === 0) {
+                            radarRoot.creditsOpen = message.slice(10) === "1";
                         }
                     }
 
@@ -1581,7 +1612,7 @@ Item {
                     anchors.bottom: modelsBadge.visible ? modelsBadge.top : parent.bottom
                     anchors.leftMargin: 10 + radarRoot.edgeX
                     // (the models grow upward from their bottom: clear of them)
-                    anchors.bottomMargin: modelsBadge.visible ? 4 + modelsBadge.height * (radarRoot.overlayScale - 1) : 30 + timeBar.height
+                    anchors.bottomMargin: modelsBadge.visible ? 4 + modelsBadge.height * (radarRoot.overlayScale - 1) : 30 + timeBar.height + radarRoot.dateLift
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
                     width: countLabel.implicitWidth + 12
@@ -1589,6 +1620,8 @@ Item {
                     radius: height / 2
                     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
                     visible: radarRoot.count > 0
+                    opacity: radarRoot.creditsFade
+                    enabled: !radarRoot.creditsOpen
                     PlasmaComponents.Label {
                         id: countLabel
                         anchors.centerIn: parent
@@ -1611,7 +1644,7 @@ Item {
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
                     anchors.leftMargin: 10 + radarRoot.edgeX
-                    anchors.bottomMargin: 30 + timeBar.height
+                    anchors.bottomMargin: 10 + timeBar.height + radarRoot.dateLift
                     scale: radarRoot.overlayScale
                     transformOrigin: Item.BottomLeft
                     width: modelsLabel.implicitWidth + 12
@@ -1619,6 +1652,8 @@ Item {
                     radius: height / 2
                     color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.7)
                     visible: !!(radarRoot.animState && radarRoot.animState.models && radarRoot.animState.models.length)
+                    opacity: radarRoot.creditsFade
+                    enabled: !radarRoot.creditsOpen
                     PlasmaComponents.Label {
                         id: modelsLabel
                         anchors.centerIn: parent
@@ -1655,19 +1690,19 @@ Item {
                     }
                 }
 
-                // The time shown, top right, left of the map's own buttons
-                // and clear of the column, open or folded.
+                // The time shown, bottom left, over the map's credits and
+                // under the badges.
                 DateBox {
                     id: dateBox
                     map: radarRoot
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    // The page's buttons slide left with the column
-                    // (panelInset): the date keeps clear of them too.
-                    anchors.rightMargin: layerPanel.foldedWidth + layerPanel.width + radarRoot.edgeX
-                    anchors.topMargin: 8 + radarRoot.edgeTop
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: radarRoot.dateLeft
+                    anchors.bottomMargin: radarRoot.dateBottom
                     scale: radarRoot.overlayScale
-                    transformOrigin: Item.TopRight
+                    transformOrigin: Item.BottomLeft
+                    opacity: radarRoot.creditsFade
+                    enabled: !radarRoot.creditsOpen
                 }
             }
 

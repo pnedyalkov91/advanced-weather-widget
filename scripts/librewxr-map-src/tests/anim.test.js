@@ -238,6 +238,19 @@ test('Player: with only still images (stops), one image every third of a step, h
   p.play(false);
 });
 
+test('Player: stops with holdSteps (the files\' frames alone) keep each frame a whole step', () => {
+  const stops = [];
+  stops.holdSteps = 1;
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 50, stops: () => stops });
+  p.show(0);
+  p.play(true);
+  for (clock.t = 16; clock.t <= 980; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0]);                      // nothing in between
+  for (; clock.t <= 1100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 1]);                   // the next frame after a whole step
+  p.play(false);
+});
+
 test('Player: stops() null (a layer drawn between frames) plays in between as before', () => {
   const { p, shown, clock } = fakePlayer([true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, stops: () => null });
   p.show(0);
@@ -374,7 +387,7 @@ test('Player.step and stepFile with the loop: past the last to the first, before
   assert.deepEqual(shown.slice(-1), [3]);
 });
 
-test('Frames.gridAt: near the end, the first two frames are unpacked ahead for the loop', () => {
+test('Frames.gridAt: near the end, the first frames are unpacked ahead for the loop, one a step', () => {
   const f = Object.create(A.Frames.prototype), asked = [];
   f.times = [0, 3 * H, 6 * H, 9 * H, 12 * H];
   f.meta = { lats: [], lons: [], res: 1 };
@@ -382,10 +395,36 @@ test('Frames.gridAt: near the end, the first two frames are unpacked ahead for t
   f.packed = [0, 10, 20, 30, 40].map((t) => [A.pack(Float32Array.from([t]))]);
   f._warm = (i) => asked.push(i);
   f.gridAt(1.5);
-  assert.deepEqual(asked, [3]);
-  asked.length = 0;
   f.gridAt(2.5);
-  assert.deepEqual(asked.sort(), [0, 1, 4]);
+  f.gridAt(3.5);
+  f.gridAt(4);
+  assert.deepEqual(asked, [3, 4, 0, 1]);
+});
+
+test('Frames: a whole loop unpacks each frame once, ahead of its step, never while a picture waits', () => {
+  const f = Object.create(A.Frames.prototype), idle = [], n = 6;
+  let unpacked = 0;
+  f.times = Array.from({ length: n }, (_, i) => i * 3 * H);
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = Object.assign({}, A.FIELDS.temperature, { unpack: (parts) => { unpacked++; return A.unpack(parts[0]); } });
+  f.packed = f.times.map((_, i) => [A.pack(Float32Array.from([i]))]);
+  f.idle = (cb) => idle.push(cb);
+  const rest = () => { while (idle.length) idle.shift()(); };
+  f.gridAt(0.125);                                  // the start: frames 0 and 1 at once, 2 ahead
+  rest();
+  assert.equal(unpacked, 3);
+  // Two loops, eight pictures a step, the page idle between two pictures.
+  for (let loop = 0; loop < 2; loop++) {
+    for (let k = loop ? 0 : 2; k <= (n - 1) * 8; k++) {
+      const before = unpacked;
+      const g = f.gridAt(k / 8);
+      assert.equal(unpacked, before, 'nothing unpacked for the picture at ' + k / 8);
+      assert.equal(g.values[0], Math.floor(k / 8));
+      rest();
+    }
+  }
+  // Then one a step: 3, 4, 5, 0, 1 to the end of the first loop, six more round the second.
+  assert.equal(unpacked, 3 + (n - 1) + n);
 });
 
 test('windField: the 10 m wind as it was, another level a field of its own without finer models', async () => {

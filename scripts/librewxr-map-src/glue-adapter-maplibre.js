@@ -94,6 +94,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // comes from the viewer and the globe glows evenly.
   var SHADE_TILE = 128, SHADE_MAXZOOM = 2, DAY_VEIL = 0.07;
   var EVEN_LIGHT = { anchor: 'viewport', position: [1, 0, 0] };
+  // The light goes to its new place at once. MapLibre would take 300 ms
+  // over it, drawing the whole map at every frame of the screen meanwhile:
+  // with the Sun moved at each picture of the animation, it never stopped.
+  var AT_ONCE = { duration: 0, delay: 0 };
+  function lightAt(light) {
+    return { anchor: light.anchor, position: light.position, 'position-transition': AT_ONCE, 'color-transition': AT_ONCE, 'intensity-transition': AT_ONCE };
+  }
   var nightDepth = percent(NIGHTDEPTH_INIT);
   if (nightDepth === null) nightDepth = 40;
   var dayNight = DAYNIGHT_INIT;
@@ -105,25 +112,63 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   maplibregl.addProtocol('lvshade', function (params) {
     var m = /^lvshade:\/\/\d+\/(\d+)\/(\d+)\/(\d+)/.exec(params.url);
     var img = WidgetEarth.shadeTile(shade.sun, { z: +m[1], x: +m[2], y: +m[3] }, SHADE_TILE,
-      nightDepth / 100, skyTheme === 'dark' ? DAY_VEIL : 0);
+      nightDepth / 100, dayVeil());
     return createImageBitmap(new ImageData(img, SHADE_TILE, SHADE_TILE)).then(function (bitmap) {
       return { data: bitmap };
     });
   });
   function shadeTiles() { return ['lvshade://' + shade.version + '/{z}/{x}/{y}']; }
-  // New tiles for the Sun now, the darkness and the theme; the shown ones
-  // stay until they arrive.
+  function dayVeil() { return skyTheme === 'dark' ? DAY_VEIL : 0; }
+  // Where the chip's layers are in the page (glue-temp-gl.js), the night
+  // is one of them: the Sun, the darkness and the veil go to its shader
+  // (WidgetEarth.NIGHT_FS) and moving the Sun costs one drawing of the map.
+  // The tiles took the page's time at each picture of the animation (16
+  // tiles worked out, sent to the chip, the map drawn twice). They stay for
+  // a page without those layers, or a chip that does not build the shader.
+  var night = { layer: null, failed: false };
+  function nightClass() {
+    return !night.failed && typeof WidgetTemp !== 'undefined' && WidgetTemp.TempLayerGL && WidgetTemp.TempLayerGL.GLLayer || null;
+  }
+  function nightLayer(GLLayer) {
+    if (night.layer) return night.layer;
+    night.layer = new GLLayer('lv-night', WidgetEarth.NIGHT_FS, function (gl, u) {
+      var v = WidgetEarth.shadeUniforms(shade.sun, nightDepth / 100, dayVeil());
+      gl.uniform3f(u.u_sun, v.sun[0], v.sun[1], v.sun[2]);
+      gl.uniform2f(u.u_ln, v.ln[0], v.ln[1]);
+      return true;
+    });
+    // Called while the map draws: the tiles take over right after.
+    night.layer.onFail = function () {
+      night.failed = true;
+      night.layer = null;
+      setTimeout(function () {
+        if (!map || !styleReady || swapInProgress) return;
+        if (map.getLayer('lv-night')) map.removeLayer('lv-night');
+        addSunLayers();
+      }, 0);
+    };
+    return night.layer;
+  }
+  // The night for the Sun now, the darkness and the theme: drawn again by
+  // the chip, or new tiles, the shown ones staying until they arrive.
   function drawShade(sun) {
     shade.sun = sun;
     shade.version++;
     var src = map.getSource('lv-night');
     if (src) src.setTiles(shadeTiles());
+    else if (map.getLayer('lv-night') && map.triggerRepaint) map.triggerRepaint();
   }
   // The shade the setting asks for; after a style swap too.
   function addSunLayers() {
     if (!dayNight) {
       if (map.getLayer('lv-night')) map.removeLayer('lv-night');
       if (map.getSource('lv-night')) map.removeSource('lv-night');
+      applyLights();
+      return;
+    }
+    var GLLayer = nightClass();
+    if (GLLayer) {
+      if (!map.getLayer('lv-night')) addLayer(nightLayer(GLLayer));
       applyLights();
       return;
     }
@@ -383,6 +428,35 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (attribution) map.removeControl(attribution);
     attribution = new maplibregl.AttributionControl(dataAttribution ? { compact: true, customAttribution: OPEN_METEO } : { compact: true });
     map.addControl(attribution);
+    closeCredits();
+    watchCredits(attribution._container);
+  }
+  // The credits are an aside: folded at every start (MapLibre opens them
+  // until the first move), and whenever the widget is hidden.
+  function closeCredits() {
+    var el = attribution && attribution._container;
+    if (!el) return;
+    el.removeAttribute('open');
+    el.classList.remove('maplibregl-compact-show');
+  }
+  if (typeof window !== 'undefined') window.closeCredits = closeCredits;
+  // The credits opened or closed (the (i) button, or MapLibre folding them
+  // on the first move): the widget hides what it draws over them meanwhile.
+  var creditsObserver = null, creditsOpen = null;
+  function watchCredits(el) {
+    if (creditsObserver) creditsObserver.disconnect();
+    creditsObserver = null;
+    if (!el || typeof MutationObserver === 'undefined') return;
+    var report = function () {
+      var open = el.hasAttribute('open') || el.classList.contains('maplibregl-compact-show');
+      if (open === creditsOpen) return;
+      creditsOpen = open;
+      console.log('[credits] ' + (open ? 1 : 0));
+    };
+    creditsObserver = new MutationObserver(report);
+    creditsObserver.observe(el, { attributes: true, attributeFilter: ['open', 'class'] });
+    creditsOpen = null;
+    report();
   }
   // The Sun of the picture shown while the animation runs (setSkyTime),
   // now otherwise: the night, the glow and the sky around the globe turn
@@ -390,7 +464,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function skyDate() { return new Date(skyTime == null ? Date.now() : skyTime); }
   function moveSun() {
     var sun = WidgetEarth.subsolarPoint(skyDate());
-    map.setLight(dayNight ? { anchor: 'map', position: WidgetEarth.sunLightPosition(sun) } : EVEN_LIGHT);
+    map.setLight(lightAt(dayNight ? { anchor: 'map', position: WidgetEarth.sunLightPosition(sun) } : EVEN_LIGHT));
     drawShade(sun);
     lights.sun = WidgetEarth.placeVector(sun.lat, sun.lon);
     if (map.getLayer('lv-lights') && map.triggerRepaint) map.triggerRepaint();
@@ -578,9 +652,16 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // globe (on the canvas under the map's) and in front of it (on a canvas
   // over it), lit by the Sun: its phase is the one seen from the camera.
   var STARS = 9000, SPACE = '#02040a', MOON_ORBIT = 1.45, MOON_SIZE = 0.2;
+  // The colors round the Sun, from 1.5 to 3.6 of its radius: [place, color].
+  var SUN_RINGS = [[0, 'rgba(255,120,90,0)'], [0.18, 'rgba(255,120,90,0.10)'], [0.36, 'rgba(255,214,96,0.09)'],
+    [0.54, 'rgba(120,230,150,0.07)'], [0.72, 'rgba(110,170,255,0.08)'], [0.88, 'rgba(180,130,255,0.05)'], [1, 'rgba(180,130,255,0)']];
   var space = null, spaceFrame = 0, skyTime = null;
-  var sunShown = typeof SUN_INIT === 'undefined' || SUN_INIT !== false;
-  var moonShown = typeof MOON_INIT === 'undefined' || MOON_INIT !== false;
+  // How bright the Sun's light at the globe's edge (rimGlow), percent: set
+  // from the widget's slider; 60 by default, the strength it was drawn for.
+  var RIM_FULL = 60, rimPercent = percent(typeof RIM_INIT === 'undefined' ? null : RIM_INIT);
+  if (rimPercent === null) rimPercent = RIM_FULL;
+  // The stars, the Sun and the Moon come and go together (one setting).
+  var skyShown = typeof SKY_INIT === 'undefined' || SKY_INIT !== false;
   function makeSpace() {
     var canvas = document.createElement('canvas');
     canvas.id = 'lv-space';
@@ -648,7 +729,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var now = skyDate(), g = WidgetEarth.gmst(now) * Math.PI / 180, cg = Math.cos(g), sg = Math.sin(g);
     var F = cam.fwd, R = cam.right, U = cam.up, st = space.stars, v = [0, 0, 0];
     ctx.fillStyle = '#fff';
-    for (var i = 0; i < st.length; i += 5) {
+    for (var i = 0; skyShown && i < st.length; i += 5) {
       // The sky turned by the sidereal time: longitude = right ascension - GMST.
       v[0] = st[i] * cg - st[i + 2] * sg; v[1] = st[i + 1]; v[2] = st[i + 2] * cg + st[i] * sg;
       var z = v[0] * F[0] + v[1] * F[1] + v[2] * F[2];
@@ -669,47 +750,92 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     // The Sun, at infinity: where its direction meets the screen, hidden
     // by the globe when it is behind it. As it comes near the globe's edge,
-    // a faint touch of light on that side of the edge says where it is:
-    // blue, its light through the air at the Earth's rim.
-    var sp = sunShown ? WidgetEarth.projectDir(cam, sv, f) : null, sunR = 0.03 * Math.min(w, h);
+    // its light through the air at the Earth's rim says where it is: a thin
+    // bright line right at the edge, in a blue glow that fades out into
+    // space (rimGlow), like the atmosphere of the day side.
+    var sp = skyShown ? WidgetEarth.projectDir(cam, sv, f) : null, sunR = 0.03 * Math.min(w, h);
     if (sp) {
       sp = { x: mid.x + sp.x, y: mid.y + sp.y };
       var off = Math.hypot(sp.x - mid.x, sp.y - mid.y);
-      var near = Math.max(0, Math.min(1, 1 - (off - r) / (r * 0.6)));
+      var near = Math.max(0, Math.min(1, 1 - (off - r) / (r * 0.6))) * rimPercent / RIM_FULL;
       if (near > 0) {
         // Brightest towards the Sun, gone 50 degrees either side (all
         // round the edge when the Sun is straight behind the globe).
         var phi = Math.atan2(sp.y - mid.y, sp.x - mid.x);
         var spread = Math.min(0.5, 0.14 + 0.36 * Math.max(0, 1 - off / r));
-        var hint = ctx.createConicGradient(phi + Math.PI, mid.x, mid.y), a = (0.32 * near).toFixed(3);
-        hint.addColorStop(0, 'rgba(140,195,255,0)');
-        hint.addColorStop(0.5 - spread, 'rgba(140,195,255,0)');
-        hint.addColorStop(0.5, 'rgba(140,195,255,' + a + ')');
-        hint.addColorStop(0.5 + spread, 'rgba(140,195,255,0)');
-        hint.addColorStop(1, 'rgba(140,195,255,0)');
-        ctx.save();
-        ctx.filter = 'blur(2px)';
-        ctx.fillStyle = hint;
-        ctx.beginPath();
-        ctx.arc(mid.x, mid.y, r * 1.035, 0, 2 * Math.PI);
-        ctx.arc(mid.x, mid.y, r * 0.99, 0, 2 * Math.PI, true);
-        ctx.fill();
-        ctx.restore();
+        // Straight behind the globe, the light comes round the whole edge.
+        var round = Math.max(0, 1 - off / (r * 0.7));
+        rimGlow(phi, spread, round, 0.16, '110,170,255', 0.5 * near);
+        rimGlow(phi, spread * 0.8, round, 0.07, '150,205,255', 0.55 * near);
+        rimGlow(phi, spread * 0.5, round, 0.025, '255,240,214', 0.8 * near);
       }
+      // A yellow disc, paler at its heart, in a warm glow; round it, faint
+      // rings of color (SUN_RINGS): the iridescence of a light seen through
+      // a lens, red inside to blue outside, added to what is under them.
       var glowR = sunR * 2.4, halo = ctx.createRadialGradient(sp.x, sp.y, sunR * 0.6, sp.x, sp.y, glowR);
-      halo.addColorStop(0, 'rgba(255,226,160,0.4)');
-      halo.addColorStop(0.4, 'rgba(255,200,120,0.1)');
-      halo.addColorStop(1, 'rgba(255,190,110,0)');
+      halo.addColorStop(0, 'rgba(255,222,130,0.42)');
+      halo.addColorStop(0.4, 'rgba(255,198,100,0.11)');
+      halo.addColorStop(1, 'rgba(255,186,90,0)');
       ctx.fillStyle = halo;
       ctx.beginPath(); ctx.arc(sp.x, sp.y, glowR, 0, 2 * Math.PI); ctx.fill();
-      ctx.fillStyle = '#fff7df';
+      var ringR = sunR * 3.6, rings = ctx.createRadialGradient(sp.x, sp.y, sunR * 1.5, sp.x, sp.y, ringR);
+      SUN_RINGS.forEach(function (s) { rings.addColorStop(s[0], s[1]); });
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = rings;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, ringR, 0, 2 * Math.PI); ctx.fill();
+      ctx.restore();
+      var disc = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sunR);
+      disc.addColorStop(0, '#fffbe8');
+      disc.addColorStop(0.55, '#fff1b8');
+      disc.addColorStop(1, '#ffe07a');
+      ctx.fillStyle = disc;
       ctx.beginPath(); ctx.arc(sp.x, sp.y, sunR, 0, 2 * Math.PI); ctx.fill();
+    }
+
+    // A glow round the globe's edge, added to the sky: `rgb` at `alpha`
+    // right at the edge, fading out over `reach` globe radii; brightest at
+    // the angle phi, down to `round` of it `spread` turns either side and
+    // beyond (0: gone there). Drawn on a canvas of
+    // its own, so cutting it to its arc leaves the stars alone.
+    function rimGlow(phi, spread, round, reach, rgb, alpha) {
+      var gc = space.glow || (space.glow = document.createElement('canvas')), g = gc.getContext('2d');
+      if (gc.width !== canvas.width || gc.height !== canvas.height) { gc.width = canvas.width; gc.height = canvas.height; }
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.globalCompositeOperation = 'source-over';
+      g.clearRect(0, 0, w, h);
+      var r0 = r * 0.985, r1 = r * (1 + reach), edge = (r - r0) / (r1 - r0);
+      var ring = g.createRadialGradient(mid.x, mid.y, r0, mid.x, mid.y, r1);
+      var col = function (a) { return 'rgba(' + rgb + ',' + Math.min(1, alpha * a).toFixed(3) + ')'; };
+      ring.addColorStop(0, col(0));
+      ring.addColorStop(edge, col(1));
+      // Thinning air: half as bright every eighth of the way out.
+      for (var k = 1; k <= 8; k++) ring.addColorStop(edge + (1 - edge) * k / 8, col(k === 8 ? 0 : Math.pow(0.5, k)));
+      g.fillStyle = ring;
+      g.beginPath(); g.arc(mid.x, mid.y, r1, 0, 2 * Math.PI); g.fill();
+      var arc = g.createConicGradient(phi + Math.PI, mid.x, mid.y);
+      var part = function (a) { return 'rgba(0,0,0,' + (round + (1 - round) * a).toFixed(3) + ')'; };
+      arc.addColorStop(0, part(0));
+      [[1, 0], [0.7, 0.2], [0.4, 0.65], [0, 1]].forEach(function (st) {
+        arc.addColorStop(Math.max(0, 0.5 - spread * st[0]), part(st[1]));
+      });
+      [[0.4, 0.65], [0.7, 0.2], [1, 0]].forEach(function (st) {
+        arc.addColorStop(Math.min(1, 0.5 + spread * st[0]), part(st[1]));
+      });
+      arc.addColorStop(1, part(0));
+      g.globalCompositeOperation = 'destination-in';
+      g.fillStyle = arc;
+      g.fillRect(0, 0, w, h);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(gc, 0, 0, w, h);
+      ctx.restore();
     }
 
     // The Moon, a ball in space: under the map when farther than the
     // Earth's centre (the globe hides it), over it when nearer. Only with
     // the whole Earth in view: it fades out over the first zoom step.
-    var moonAlpha = moonShown ? Math.max(0, Math.min(1, 1 - (map.getZoom() - map.getMinZoom() - 0.1) / 0.5)) : 0;
+    var moonAlpha = skyShown ? Math.max(0, Math.min(1, 1 - (map.getZoom() - map.getMinZoom() - 0.1) / 0.5)) : 0;
     var X = [mv[0] * MOON_ORBIT * earthR, mv[1] * MOON_ORBIT * earthR, mv[2] * MOON_ORBIT * earthR];
     var mp = moonAlpha > 0 ? WidgetEarth.projectPoint(cam, pos, X, f) : null;
     if (mp) {
@@ -1123,11 +1249,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     getMap: function () { return map; },
 
-    /** The Sun and the Moon around the globe on or off: { sun, moon }
-        (booleans; a key left out stays as it is). */
-    setSkyBodies: function (on) {
-      if (on && on.sun !== undefined) sunShown = !!on.sun;
-      if (on && on.moon !== undefined) moonShown = !!on.moon;
+    /** The stars, the Sun and the Moon around the globe, on or off. */
+    setSkyShown: function (on) {
+      skyShown = !!on;
       drawSpaceSoon();
     },
 
@@ -1198,6 +1322,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     },
 
     getNightDepth: function () { return nightDepth; },
+
+    /** How bright the Sun's light at the globe's edge, percent; 0 for none. */
+    setRimGlow: function (value) {
+      var d = percent(value);
+      if (d === null) return;
+      rimPercent = d;
+      drawSpaceSoon();
+    },
 
     /** How bright the lights of the towns at night, percent; 0 for none. */
     setNightLights: function (value) {

@@ -3131,10 +3131,6 @@ msgstr ""
 msgid "Moon Phase"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:571
-msgid "Moon around the globe"
-msgstr ""
-
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:510
 msgid "Moon mode:"
 msgstr ""
@@ -3338,6 +3334,15 @@ msgstr ""
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:401
 msgid "Night darkness:"
+msgstr ""
+
+#: contents/ui/components/weathermap/LayerPanel.qml:575
+msgid "Atmosphere rim"
+msgstr ""
+
+#: contents/ui/components/weathermap/LayerPanel.qml:576
+msgctxt "atmosphere rim at 0"
+msgid "Off"
 msgstr ""
 
 #: contents/ui/components/weathermap/LayerPanel.qml:581
@@ -4241,6 +4246,10 @@ msgstr ""
 msgid "Resolution while playing"
 msgstr ""
 
+#: contents/ui/components/weathermap/LayerPanel.qml:557
+msgid "Interpolated pictures"
+msgstr ""
+
 #: contents/ui/ForecastView.qml:1056 contents/ui/ForecastView.qml:1057
 #: contents/ui/ForecastView.qml:1830 contents/ui/ForecastView.qml:1831
 #: contents/ui/HistoryView.qml:977 contents/ui/HistoryView.qml:978
@@ -4841,8 +4850,8 @@ msgstr ""
 msgid "Sulfur Dioxide (SO₂)"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:562
-msgid "Sun around the globe"
+#: contents/ui/components/weathermap/LayerPanel.qml:563
+msgid "Celestial bodies"
 msgstr ""
 
 #: contents/ui/config/configAppearance.qml:1993

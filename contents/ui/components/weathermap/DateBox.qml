@@ -3,7 +3,8 @@ import QtQuick.Layouts
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.kirigami as Kirigami
 
-// The time shown, over the map at the top right: the dot green on a
+// The time shown, over the map at the bottom left, see-through as the
+// column and the time bar (the page blurs the map under it): the dot green on a
 // picture from a forecast file, orange on one worked out; how far from
 // now; a round arrow back to now; the arrow that lists the days. The wheel
 // over it goes to the start of the next or previous day. A bar along its
@@ -42,7 +43,9 @@ Rectangle {
     width: dateRow.implicitWidth + 24
     height: 36
     radius: 8
-    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.85)
+    color: Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, box.map.panelOpacity / 100)
+    border.width: 1
+    border.color: box.tint(0.10)
 
     RowLayout {
         id: dateRow
@@ -177,9 +180,15 @@ Rectangle {
     PlasmaComponents.Menu {
         id: daysMenu
         margins: 6
-        x: parent.width - width
-        y: parent.height + 4
+        // Upward: the date stands at the bottom of the map.
+        x: 0
+        y: -height - 4
         closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+        background: MenuBackdrop { id: daysBack; map: box.map; popup: daysMenu }
+        topPadding: daysBack.margins.top
+        leftPadding: daysBack.margins.left
+        rightPadding: daysBack.margins.right
+        bottomPadding: daysBack.margins.bottom
         Instantiator {
             model: box.map.days
             delegate: PlasmaComponents.MenuItem {

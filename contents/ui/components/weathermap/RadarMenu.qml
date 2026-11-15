@@ -15,6 +15,7 @@ PlasmaComponents.Popup {
     property var options: ({})
     // The widget's own look over the Plasma components, whose theme drawing is then hidden.
     property bool ownLook: false
+    property var map                  // WeatherMapView: the see-through background
     signal optionPicked(string key, var value)
 
     readonly property color fg: Kirigami.Theme.textColor
@@ -24,9 +25,10 @@ PlasmaComponents.Popup {
     padding: 10
     margins: 6                       // kept inside the window
     closePolicy: PlasmaComponents.Popup.CloseOnEscape | PlasmaComponents.Popup.CloseOnPressOutsideParent
+    background: MenuBackdrop { map: menu.map; popup: menu }
 
     component Caption: PlasmaComponents.Label {
-        color: Kirigami.Theme.disabledTextColor
+        color: enabled ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor
     }
     component Separator: Item {
         Layout.fillWidth: true
@@ -108,7 +110,7 @@ PlasmaComponents.Popup {
         property string title
         property var choices: []        // [[value, text]]
         spacing: 0
-        PlasmaComponents.Label { text: seg.title; color: Kirigami.Theme.disabledTextColor; Layout.fillWidth: true }
+        PlasmaComponents.Label { text: seg.title; color: enabled ? Kirigami.Theme.textColor : Kirigami.Theme.disabledTextColor; Layout.fillWidth: true }
         Item {
             implicitWidth: segRow.implicitWidth + (menu.ownLook ? 4 : 0)
             implicitHeight: menu.ownLook ? 26 : segRow.implicitHeight

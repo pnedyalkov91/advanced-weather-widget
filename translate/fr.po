@@ -3143,10 +3143,6 @@ msgstr "Lune"
 msgid "Moon Phase"
 msgstr "Phase lunaire"
 
-#: contents/ui/components/weathermap/LayerPanel.qml:571
-msgid "Moon around the globe"
-msgstr "Lune autour du globe"
-
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:510
 msgid "Moon mode:"
 msgstr "Mode lune :"
@@ -3351,6 +3347,15 @@ msgstr "Nuit"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:401
 msgid "Night darkness:"
 msgstr "Obscurité de la nuit :"
+
+#: contents/ui/components/weathermap/LayerPanel.qml:575
+msgid "Atmosphere rim"
+msgstr "Bande d'atmosphère"
+
+#: contents/ui/components/weathermap/LayerPanel.qml:576
+msgctxt "atmosphere rim at 0"
+msgid "Off"
+msgstr "Éteinte"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:581
 msgid "Night lights"
@@ -4257,6 +4262,10 @@ msgstr "Rétablir par défaut"
 msgid "Resolution while playing"
 msgstr "Résolution en lecture"
 
+#: contents/ui/components/weathermap/LayerPanel.qml:557
+msgid "Interpolated pictures"
+msgstr "Images intermédiaires"
+
 #: contents/ui/ForecastView.qml:1056 contents/ui/ForecastView.qml:1057
 #: contents/ui/ForecastView.qml:1830 contents/ui/ForecastView.qml:1831
 #: contents/ui/HistoryView.qml:977 contents/ui/HistoryView.qml:978
@@ -4857,9 +4866,9 @@ msgstr ""
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "Dioxyde de soufre (SO₂)"
 
-#: contents/ui/components/weathermap/LayerPanel.qml:562
-msgid "Sun around the globe"
-msgstr "Soleil autour du globe"
+#: contents/ui/components/weathermap/LayerPanel.qml:563
+msgid "Celestial bodies"
+msgstr "Astres"
 
 #: contents/ui/config/configAppearance.qml:1993
 #: contents/ui/config/configAppearance.qml:2130

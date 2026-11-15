@@ -233,6 +233,56 @@ test('day and night on: one raster of tiles made by the page, 40 % dark at its d
   assert.equal(map.light.anchor, 'map');
 });
 
+/** A stand-in for the chip's layer class (WidgetTemp.TempLayerGL.GLLayer). */
+function fakeGL() {
+  function GLLayer(id, fs, draw) { this.id = id; this.type = 'custom'; this.fs = fs; this.draw = draw; this.onFail = null; }
+  return { TempLayerGL: { GLLayer } };
+}
+/** The uniforms the night's layer gives the chip: { u_sun: [..], u_ln: [..] }. */
+function nightUniforms(map) {
+  const got = {}, gl = { uniform3f(l, a, b, c) { got[l] = [a, b, c]; }, uniform2f(l, a, b) { got[l] = [a, b]; } };
+  assert.equal(map.getLayer('lv-night').draw(gl, { u_sun: 'u_sun', u_ln: 'u_ln' }), true);
+  return got;
+}
+
+test('with the chip, the night is one layer it draws: no tiles made again for each picture', () => {
+  const { adapter, map } = loadAdapter({ WidgetTemp: fakeGL() });
+  const E = require('../glue-earth.js');
+  adapter.setDayNight(true);
+  assert.equal(map.getLayer('lv-night').type, 'custom');
+  assert.equal(map.getLayer('lv-night').fs, E.NIGHT_FS);
+  assert.equal(map.getSource('lv-night'), undefined, 'no tiles');
+  const t = Date.UTC(2026, 10, 14, 12), sun = E.subsolarPoint(new Date(t));
+  const before = map.repaints || 0;
+  adapter.setSkyTime(t);
+  assert.ok(map.repaints > before, 'drawn again');
+  const want = E.shadeUniforms(sun, 0.4, 0.07), u = nightUniforms(map);
+  assert.deepEqual(u.u_sun, [...want.sun], 'the Sun of the picture');
+  assert.deepEqual(u.u_ln, [...want.ln], '40 % dark, the veil of a dark map over the day');
+  adapter.setNightDepth(60);
+  assert.deepEqual(nightUniforms(map).u_ln, [...E.shadeUniforms(sun, 0.6, 0.07).ln], 'the darkness live');
+  adapter.setBasemap('light');
+  assert.equal(nightUniforms(map).u_ln[1], 0, 'no veil on a light map');
+  adapter.setDayNight(false);
+  assert.equal(map.getLayer('lv-night'), undefined);
+});
+
+test('with the chip, the night stays right over the base map, under the lights', () => {
+  const { adapter, map } = loadAdapter({ WidgetTemp: fakeGL() });
+  adapter.setDayNight(true);
+  const order = map.getLayersOrder();
+  assert.equal(order.indexOf('lv-lights'), order.indexOf('lv-night') + 1);
+});
+
+test('the chip cannot build the night\'s shader: back to the tiles', async () => {
+  const { adapter, map, protocols } = loadAdapter({ WidgetTemp: fakeGL() });
+  adapter.setDayNight(true);
+  map.getLayer('lv-night').onFail();
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(map.getLayer('lv-night').type, 'raster');
+  assert.ok(Math.abs((await shadeOf(map, protocols)).night - 0.4) <= 1 / 255);
+});
+
 test('the darkness of the night comes from the widget, and changes live', async () => {
   const { adapter, map, protocols } = loadAdapter({ NIGHTDEPTH_INIT: '60' });
   adapter.setDayNight(true);
@@ -279,6 +329,19 @@ test('the night and the glow follow the time of the picture shown, then come bac
   const now = E.subsolarPoint(new Date());
   assert.ok(Math.abs(map.light.position[1] - E.sunLightPosition(now)[1]) < 0.5, 'the glow at today\'s Sun');
   assert.equal(await shadeAt(map, protocols, now.lon), 0, 'day under today\'s Sun');
+});
+
+test('the glow moves at once: a light that fades to its new place keeps the map drawing between two pictures', () => {
+  const { adapter, map } = loadAdapter();
+  const atOnce = (what) => ['position', 'color', 'intensity'].forEach((p) => {
+    const t = map.light[p + '-transition'];
+    assert.deepEqual([t.duration, t.delay], [0, 0], p + ', ' + what);
+  });
+  adapter.setDayNight(true);
+  adapter.setSkyTime(Date.UTC(2026, 10, 14, 12));
+  atOnce('the Sun of the picture');
+  adapter.setDayNight(false);
+  atOnce('the even light');
 });
 
 test('day and night off: no night, and the glow no longer follows the Sun', () => {
