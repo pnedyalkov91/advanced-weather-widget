@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -970,8 +970,8 @@ Item {
                 function _regionDayMonthPattern() {
                     var fmt = Qt.locale().dateFormat(Locale.ShortFormat);
                     var f = fmt.replace(/[\s.\/\-,]*y+[^dM]*$/, "")      // year at the end (with a trailing "г." and the like)
-                        .replace(/^\s*y+[\s.\/\-,]*/, "")              // year first
-                        .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
+                    .replace(/^\s*y+[\s.\/\-,]*/, "")              // year first
+                    .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
                     return f.trim() !== "" ? f : fmt;
                 }
                 /** The axis labels follow Appearance > Misc > Date format exactly as it is set (a preset

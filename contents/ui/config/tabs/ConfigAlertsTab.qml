@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -146,14 +146,45 @@ GridLayout {
     // its alerts in. Countries without one clear language (CH, BE, LU, ...)
     // are left out and get a generic "Native language" label.
     readonly property var _nativeLang: ({
-            "AL": "sq", "AT": "de", "AU": "en", "BG": "bg", "CA": "en",
-            "CY": "el", "CZ": "cs", "DE": "de", "DK": "da", "EE": "et",
-            "ES": "es", "FI": "fi", "FR": "fr", "GB": "en", "GR": "el",
-            "HR": "hr", "HU": "hu", "IE": "en", "IL": "he", "IS": "is",
-            "IT": "it", "LT": "lt", "LV": "lv", "MD": "ro", "MK": "mk",
-            "MT": "mt", "NL": "nl", "NO": "no", "NZ": "en", "PL": "pl",
-            "PT": "pt", "RO": "ro", "RS": "sr", "SE": "sv", "SI": "sl",
-            "SK": "sk", "TR": "tr", "UA": "uk", "US": "en"
+            "AL": "sq",
+            "AT": "de",
+            "AU": "en",
+            "BG": "bg",
+            "CA": "en",
+            "CY": "el",
+            "CZ": "cs",
+            "DE": "de",
+            "DK": "da",
+            "EE": "et",
+            "ES": "es",
+            "FI": "fi",
+            "FR": "fr",
+            "GB": "en",
+            "GR": "el",
+            "HR": "hr",
+            "HU": "hu",
+            "IE": "en",
+            "IL": "he",
+            "IS": "is",
+            "IT": "it",
+            "LT": "lt",
+            "LV": "lv",
+            "MD": "ro",
+            "MK": "mk",
+            "MT": "mt",
+            "NL": "nl",
+            "NO": "no",
+            "NZ": "en",
+            "PL": "pl",
+            "PT": "pt",
+            "RO": "ro",
+            "RS": "sr",
+            "SE": "sv",
+            "SI": "sl",
+            "SK": "sk",
+            "TR": "tr",
+            "UA": "uk",
+            "US": "en"
         })
 
     /** A language written in itself ("Deutsch", "Български"), or "" if unknown. */

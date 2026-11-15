@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -635,8 +635,12 @@ Item {
         contentWidth: detailsColumn.width
         contentHeight: detailsColumn.height
 
-        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
-        ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AsNeeded
+        }
+        ScrollBar.horizontal: ScrollBar {
+            policy: ScrollBar.AsNeeded
+        }
 
         // The vertical scrollbar overlays the right edge, so when the content is
         // taller than the view the cards leave room for it (same 24 px as the

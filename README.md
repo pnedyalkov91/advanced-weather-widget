@@ -5,7 +5,7 @@ A modern, highly customizable weather widget built specifically for KDE Plasma 6
 ### Why this widget?
 *   **Granular Precision:** Uses exact Latitude/Longitude coordinates for local data rather than generic city-level lookups.
 *   **Modern UX:** A clean, native-feeling interface with smooth animations and intuitive layouts.
-*   **Feature Rich:** From interactive radar maps and air quality to space weather and moon phases - everything is configurable.
+*   **Feature Rich:** From interactive Weather maps maps and air quality to space weather and moon phases - everything is configurable.
 *   **KDE Notifications support:** Stay informed with KDE notifications for weather alerts, forecasts, the UV index, and the Kp index. All notifications can be individually configured.
 
 ## 📑 Table of Contents
@@ -40,8 +40,8 @@ For the full functionality of this widget, please ensure you have the following 
 | **Arch Linux** | `qt6-location` |
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
 
-### 📡 Radar Map
-*Required for the interactive Radar tab (Chromium-based).*
+### 📡 Weather maps Map
+*Required for the interactive Weather maps tab (Chromium-based).*
 
 | Distribution | Package Name |
 |---|---|
@@ -50,16 +50,16 @@ For the full functionality of this widget, please ensure you have the following 
 | **Arch Linux** | `qt6-webengine` |
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtwebengine` |
 
-> Some users have reported that KDE Plasma crashes when opening the Radar tab or the map in the location selection dialog.  On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the entire *plasmashell* the first time it renders, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside the browser view to prevent the crash.
+> Some users have reported that KDE Plasma crashes when opening the Weather maps tab or the map in the location selection dialog.  On some hybrid-GPU laptops running Wayland, the Weather maps tab's embedded browser view can crash the entire *plasmashell* the first time it renders, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside the browser view to prevent the crash.
 > The problem is not caused by the widget itself, but by certain versions of QtWebEngine.
-> To enable this workaround, go to the widget settings -> General -> Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL).
-> Only enable this option if you are actually experiencing this crash, as it may reduce rendering performance on the radar map.
+> To enable this workaround, go to the widget settings -> General -> Workaround Weather maps map crashes on hybrid-GPU systems (EXPERIMENTAL).
+> Only enable this option if you are actually experiencing this crash, as it may reduce rendering performance on the Weather maps map.
 > You need to log out and log back in for this option to take effect, as the setting needs to be applied before Plasma starts. It also applies to the entire session, so any other application that embeds a Chromium-based browser view will use the same setting.
 > If you enable this option, the following file will be created:
 
-> ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh
+> ~/.config/plasma-workspace/env/advanced-weather-widget-Weather maps-gpu-workaround.sh
 
-> **MangoHud and other `LD_PRELOAD` overlays:** starting plasmashell under MangoHud (`mangohud plasmashell --replace`) has been observed to crash the whole shell when the embedded radar starts. If the widget finds MangoHud in plasmashell's `LD_PRELOAD`, it does not load the embedded radar. The Radar tab then shows an **Open radar in browser** button and a **Load embedded radar anyway** button, so you can still try it at your own risk.
+> **MangoHud and other `LD_PRELOAD` overlays:** starting plasmashell under MangoHud (`mangohud plasmashell --replace`) has been observed to crash the whole shell when the embedded Weather maps starts. If the widget finds MangoHud in plasmashell's `LD_PRELOAD`, it does not load the embedded Weather maps. The Weather maps tab then shows an **Open Weather maps in browser** button and a **Load embedded Weather maps anyway** button, so you can still try it at your own risk.
 
 ### 📈 Charts (History tab and Forecast graphs)
 *Required for the charts in the History tab and for the **Graphs** layouts of the daily and hourly forecast. You only need **one** of the two modules below.*
@@ -119,7 +119,7 @@ systemctl --user restart plasma-plasmashell
 
 ### Rebuilding the embedded LibreWXR radar map
 
-The radar tab embeds a page assembled from the KDE-widget glue fragments vendored in this repository under `scripts/librewxr-map-src/` plus the shared engine (`viewer-core.js`) and stylesheet (`viewer.css`) from the [LibreWXR](https://github.com/JoshuaKimsey/LibreWXR) checkout given via `--librewxr` (or `LIBREWXR_DIR`). After pulling changes from a LibreWXR checkout, regenerate it with:
+The Weather maps tab embeds a page assembled from the KDE-widget glue fragments vendored in this repository under `scripts/librewxr-map-src/` plus the shared engine (`viewer-core.js`) and stylesheet (`viewer.css`) from the [LibreWXR](https://github.com/JoshuaKimsey/LibreWXR) checkout given via `--librewxr` (or `LIBREWXR_DIR`). After pulling changes from a LibreWXR checkout, regenerate it with:
 
 ```bash
 python3 scripts/build_librewxr_map.py --librewxr /path/to/LibreWXR
@@ -170,7 +170,7 @@ python3 scripts/build_librewxr_map.py --librewxr /path/to/LibreWXR
   <br><br>
   <img src="screenshots/widget/tabs/radar.png" width="500" alt="Radar tab">
       <br>
-  (Radar tab)
+  (Weather maps tab)
    <br><br>
    <img src="screenshots/notifications/regular-notifications.png" width="300" alt="Regular Notifications">
    <br>
@@ -228,10 +228,10 @@ For providers that require an API key, you can enter it in the widget's settings
 ### 🖥 Customization
 - **Dual Temperature:** Option to display two different temperature metrics simultaneously (e.g., Actual + Apparent).
 - **Panel Layouts:** Single line, Multiline (XFCE weather applet style with scrollbox), or Simple (compact icon + temp).
-- **Widget Layouts:** Advanced (Details, Forecast, History and Radar tabs) and Simple (no tabs)
+- **Widget Layouts:** Advanced (Details, Forecast, History and Weather maps tabs) and Simple (no tabs)
 - **Themes:** 7 icon themes (Symbolic, Font, Flat, 3D, Meteocons, KDE) plus a custom per-item picker, with an optional adjustable glow effect for weather icons.
 - **Forecast layouts:** The daily forecast can be shown as **Standard** rows or as **Graphs** (high/low temperature lines, precipitation bars and a weather icon per day; click a day to open its hours). The hourly forecast can be **Cards**, **Strip** or **Graphs** (temperature line, chance of precipitation or amount, sunrise/sunset marks). In the **Graphs** layouts every stat you switch on in the forecast settings (wind, pressure, Kp index with its G scale, UV index, precipitation sum, visibility) gets a graph of its own below the temperature graph, for both the daily and the hourly forecast. The graphs line up and zoom together; an opened day is headed by an *Hourly forecast for <date>* separator (click it to fold or unfold that day's hours). The order of the graphs below the temperature graph can be changed in *Appearance → Widget → Forecast* (up/down buttons, separately for the daily and the hourly forecast, shown when the *Graphs* layout is chosen and two or more details are switched on). Set the layouts in *Appearance → Widget → Forecast*.
-- **Visuals:** Fully interactive Radar Map (RainViewer or LibreWXR), 16-day daily forecast, hourly weather forecast, and interactive History charts.
+- **Visuals:** Fully interactive weather maps (RainViewer or LibreWXR), 16-day daily forecast, hourly weather forecast, and interactive History charts.
 
 ---
 
@@ -399,4 +399,4 @@ If you enjoy using it, you can support the project:
 
 ## 📜 License
 
-This project is licensed under the **GNU General Public License v3.0 or later**.
+This project is licensed under the **GNU General Public License v2.0 or later**.

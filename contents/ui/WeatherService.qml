@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -1245,9 +1245,7 @@ QtObject {
             _lastFailureRefused = refusal !== null;
             if (refusal) {
                 var keyRejected = refusal.status === 401 || refusal.status === 403;
-                weatherRoot.updateText = keyRejected
-                    ? i18n("%1: the API key was rejected (HTTP %2)", names.join(", "), refusal.status)
-                    : i18n("%1: request limit reached (HTTP %2) — trying again later", names.join(", "), refusal.status);
+                weatherRoot.updateText = keyRejected ? i18n("%1: the API key was rejected (HTTP %2)", names.join(", "), refusal.status) : i18n("%1: request limit reached (HTTP %2) — trying again later", names.join(", "), refusal.status);
                 Dbg.log("WeatherService", "every provider refused the request (HTTP " + refusal.status + ") → no quick retries and no connectivity probe: the Internet works, retrying cannot help. The next scheduled refresh skips it until the refusal window ends; a manual refresh asks at once");
             } else if (_totalFailureRetryCount < _totalFailureRetryDelaysMs.length) {
                 _totalFailureRetryTimer.interval = _totalFailureRetryDelaysMs[_totalFailureRetryCount];

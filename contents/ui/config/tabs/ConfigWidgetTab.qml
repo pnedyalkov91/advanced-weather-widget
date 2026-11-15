@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -992,7 +992,7 @@ ColumnLayout {
                     visible: widgetTab.configRoot.cfg_popupKeepLoaded
                     type: Kirigami.MessageType.Information
                     showCloseButton: true
-                    text: i18n("The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup. The Radar tab has its own setting (Radar).")
+                    text: i18n("The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup.")
                 }
             }
 
@@ -1066,7 +1066,7 @@ ColumnLayout {
                     onToggled: widgetTab.setTabVisible("forecast", checked)
                 }
                 Switch {
-                    text: i18n("Radar")
+                    text: i18n("Weather Maps / Radar")
                     checked: widgetTab.isTabVisible("radar")
                     onToggled: widgetTab.setTabVisible("radar", checked)
                 }

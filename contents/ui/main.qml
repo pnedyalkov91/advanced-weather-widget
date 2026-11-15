@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -213,7 +213,12 @@ PlasmoidItem {
     property var _hourlyCacheObj: null
     // Hours of the forecast days after tomorrow. Kept in memory only (not in the saved settings, so
     // the config file does not grow by a few KB per day); reset when the place or provider changes.
-    property var _hourlyExtraObj: ({ prov: "", lat: 0, lon: 0, days: ({}) })
+    property var _hourlyExtraObj: ({
+            prov: "",
+            lat: 0,
+            lon: 0,
+            days: ({})
+        })
     property var _pastHoursObj: null
     property bool _dirtyWeather: false
     property bool _dirtyHourly: false
@@ -359,7 +364,12 @@ PlasmoidItem {
         var prov = _cacheProviderKey();
         var o = _hourlyExtraObj;
         if (o.prov !== prov || !_sameLocation(o.lat, o.lon)) {
-            o = { prov: prov, lat: _locLat(), lon: _locLon(), days: {} };
+            o = {
+                prov: prov,
+                lat: _locLat(),
+                lon: _locLon(),
+                days: {}
+            };
             _hourlyExtraObj = o;
         }
         return o.days;
@@ -1468,7 +1478,9 @@ PlasmoidItem {
             root._hourlyBulkToken++;
             var w = root._hourlyBulkWaiters;
             root._hourlyBulkWaiters = null;
-            w.forEach(function (f) { f(null); });
+            w.forEach(function (f) {
+                f(null);
+            });
         }
     }
     // { first, last } = today .. the last forecast day (as many days as the daily forecast asks for,
@@ -1482,7 +1494,10 @@ PlasmoidItem {
         var d0 = new Date();
         var d1 = new Date(d0.getTime());
         d1.setDate(d1.getDate() + days - 1);
-        return { first: Qt.formatDate(d0, "yyyy-MM-dd"), last: Qt.formatDate(d1, "yyyy-MM-dd") };
+        return {
+            first: Qt.formatDate(d0, "yyyy-MM-dd"),
+            last: Qt.formatDate(d1, "yyyy-MM-dd")
+        };
     }
     // callback(map) with { dateStr: [hours] }, or callback(null) when the request failed or this
     // provider cannot fetch all days at once.
@@ -1581,8 +1596,7 @@ PlasmoidItem {
                         _applyHourly(_withPastHours(dateStr, kept));
                     else
                         setHourlyResult(dateStr, []);
-                }
-                else
+                } else
                     weatherService.fetchHourlyForDate(dateStr); // failed, or not in the range: that day alone
             });
             return;
@@ -1622,7 +1636,8 @@ PlasmoidItem {
                 if (arr && arr.length)
                     callback(_withPastHours(dateStr, arr));
                 else if (map && !_hourlyBulkIsAuthoritative())
-                    _fetchHourlyDay(dateStr, callback); // answered, but this day is not in the range
+                    _fetchHourlyDay(dateStr, callback);
+                    // answered, but this day is not in the range
                 else {
                     var cached = _hourlyCacheGet(dateStr);
                     callback(cached ? _withPastHours(dateStr, cached) : []);
@@ -3631,8 +3646,8 @@ PlasmoidItem {
 
     onWeatherAlertsChanged: {
         Dbg.mark("Alerts", "alerts updated", (weatherAlerts ? weatherAlerts.length : 0) + " active alert(s)" + (weatherAlerts && weatherAlerts.length > 0 ? ": " + weatherAlerts.map(function (a) {
-            return (a.headline || a.event || "?") + " [" + (a.severity || a.color || "?") + "]";
-        }).join("; ") : ""));
+                return (a.headline || a.event || "?") + " [" + (a.severity || a.color || "?") + "]";
+            }).join("; ") : ""));
         _evaluateNotifications();
     }
     onDailyDataChanged: _evaluateNotifications()
@@ -4279,8 +4294,7 @@ PlasmoidItem {
                 // lines logged right at the start of the gap are what triggered the work (a click), not proof that the thread was free
                 var between = Dbg.linesBetween(from + 60, t - 60);
                 var msg = "QML timers were late by ~" + (gap - interval) + " ms (from +" + from + " ms to +" + t + " ms). ";
-                msg += "Debug lines logged inside it (apart from the first/last 60 ms): " + between
-                     + ". A line inside the gap does not prove the thread was free - it can be the work itself logging just before it blocks (e.g. a click opening a day).";
+                msg += "Debug lines logged inside it (apart from the first/last 60 ms): " + between + ". A line inside the gap does not prove the thread was free - it can be the work itself logging just before it blocks (e.g. a click opening a day).";
                 Dbg.log("Stall", msg + " Last debug line before it: " + (Dbg.lastLineBefore(from) || "(none)") + " | first line after it: " + (Dbg.firstLineAfter(from) || "(none yet)"));
             }
             if (t > 60000)

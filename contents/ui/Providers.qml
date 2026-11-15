@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -146,8 +146,7 @@ QtObject {
      *  Weather, Tomorrow.io, StormGlass, Weatherbit, QWeather, OpenWeather, WeatherAPI, BBC, AEMET: their whole
      *  window; Visual Crossing: the range asked for), so one request serves every day of the Forecast tab. */
     function hasHourlyAll(ap) {
-        return ["openMeteo", "metno", "openWeather", "weatherApi", "pirateWeather", "visualCrossing",
-                "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "bbc", "aemet"].indexOf(ap) >= 0;
+        return ["openMeteo", "metno", "openWeather", "weatherApi", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "bbc", "aemet"].indexOf(ap) >= 0;
     }
     function fetchHourlyAll(ap, service, firstDate, lastDate, callback) {
         switch (ap) {
