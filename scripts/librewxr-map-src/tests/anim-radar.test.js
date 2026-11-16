@@ -24,7 +24,8 @@ const sat = Array.from({ length: 12 }, (_, i) => ({ time: T0 - 11 * 3600 + i * 3
 
 test('framesOf: the past radar then the nowcast, the satellite infrared', () => {
   const cat = { radar: { past: radar.slice(0, 12), nowcast: radar.slice(12) }, satellite: { infrared: sat } };
-  assert.deepEqual(R.framesOf(cat, 'radar'), radar);
+  const run = radar[11].time;
+  assert.deepEqual(R.framesOf(cat, 'radar'), radar.slice(0, 12).concat(radar.slice(12).map((f) => Object.assign({}, f, { run }))));
   assert.deepEqual(R.framesOf(cat, 'satellite'), sat);
   assert.deepEqual(R.framesOf({ radar: { past: radar } }, 'satellite'), []);
   assert.deepEqual(R.framesOf(null, 'radar'), []);
@@ -463,4 +464,27 @@ test('Overlay.progress: null off; on, the images whose tiles are in, out of all'
   a.loaded[a.made[0].layerId] = true;
   a.loaded[a.made[2].layerId] = true;
   assert.deepEqual(o.progress(), { done: 2, total: 3 });
+});
+
+test('framesOf: the nowcast images carry the run they come from (the last observed image)', () => {
+  const c = { radar: { past: [{ time: 100, path: '/p/100' }, { time: 700, path: '/p/700' }], nowcast: [{ time: 1300, path: '/p/1300' }] } };
+  const f = R.framesOf(c, 'radar');
+  assert.equal(f[0].run, undefined);
+  assert.equal(f[2].path, '/p/1300');
+  assert.equal(f[2].run, 700);
+});
+
+test('Overlay: a nowcast image made again with each new run, and once observed; the past kept', () => {
+  const cat = (past, nowcast) => R.framesOf({ radar: { past: past.map((t) => ({ time: t, path: '/p/' + t })), nowcast: nowcast.map((t) => ({ time: t, path: '/p/' + t })) } }, 'radar');
+  const { a, o } = overlay(cat([0, 600], [1200, 1800]));
+  o.setOn(true);
+  const first = a.made.map((h) => h.layerId);
+  assert.equal(a.made.length, 4);
+  // A new run: 1200 observed now, 1800 forecast again from it, 2400 new.
+  o.setFrames(cat([0, 600, 1200], [1800, 2400]));
+  assert.deepEqual(a.gone.sort(), [first[2], first[3]].sort());
+  assert.equal(a.made.length, 7);
+  // The same catalog again: nothing made again.
+  o.setFrames(cat([0, 600, 1200], [1800, 2400]));
+  assert.equal(a.made.length, 7);
 });
