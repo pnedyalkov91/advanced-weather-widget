@@ -87,10 +87,14 @@ var WidgetAnimRadar = (function () {
     return { size: size, grid: size === 512 && dpr < 1.5 ? 512 : 256 };
   }
 
-  /** How many times slower the animation goes at ms: RADAR_SLOW in the
-      radar's range, 1 elsewhere. */
-  function slowFactor(ms, range) {
-    return range && ms >= range.start && ms < range.end ? RADAR_SLOW : 1;
+  /** How many times slower the animation goes at ms, on a time line of
+      stepH hours a step (3 when left out): an image of the radar (10 min)
+      or of the satellite (1 h) lasts a third of a step whatever stepH, so
+      a forecast layer switched on or off keeps the same pace. RADAR_SLOW
+      in the radar's range and 1 elsewhere on steps of 3 h. */
+  function slowFactor(ms, range, stepH) {
+    var k = (stepH == null ? 3 : stepH) / 3;
+    return (range && ms >= range.start && ms < range.end ? RADAR_SLOW : 1) * k;
   }
 
   /* The step buttons over a forecast animation. sources: { start, end,

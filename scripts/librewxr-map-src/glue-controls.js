@@ -444,35 +444,42 @@ window.animSetLoop = function (on) {
   return animLoop;
 };
 
-/** Pictures of layer id for the range of the animation, those of `reuse`
-    (the same layer's Frames of another range, or kept while it was off)
-    taken over; onShow once its first picture is drawn. */
-function animTrack(id, layer, reuse, onShow) {
+/** The Frames of layer id at times (now at nowIndex), with its finer
+    models when it takes them; those of `reuse` taken over, then stopped. */
+function animFramesFor(id, reuse, times, nowIndex, onFrame) {
   var frames = WidgetAnim.makeFrames(_windOpen, {
     field: animField(id), now: function () { return anim.nowMs; },
-    pastH: anim.pastH, futureH: anim.futureH, times: anim.group.times, nowIndex: anim.group.nowIndex,
+    pastH: anim.pastH, futureH: anim.futureH, times: times, nowIndex: nowIndex,
     reuse: reuse, parallel: 6, gate: animGate,
-    store: animStore, pruneH: ANIM_KEEP_H,
-    onFrame: function (i) {
-      var t = anim && anim.group.track(id);
-      if (!t || t.frames !== frames) return;
-      var p = anim.player;
-      // The picture of now goes up as soon as every layer has it; a layer
-      // switched on while paused joins the others once its picture is in.
-      if (p.index < 0) { if (i === anim.group.nowIndex && anim.group.ready(i)) p.show(i); }
-      else if (!p.playing && (i === Math.floor(p.index) || i === Math.ceil(p.index))) p.seek(p.index);
-    }
+    store: animStore, pruneH: ANIM_KEEP_H, unpackLater: true,
+    onFrame: onFrame || null
   });
-  var fines = [];
-  frames.fines = fines;   // none unless the layer takes them (a field taken over may hold some)
+  frames.fines = [];   // none unless the layer takes them (a field taken over may hold some)
   if (animFineField(id) && animFineOn(id)) {
     if (animFineAuto) animFineModels = animPickFines();
-    fines = frames.fines = animFineModels.map(function (model) {
+    frames.fines = animFineModels.map(function (model) {
       var old = reuse && reuse.fines ? reuse.fines.filter(function (f) { return f.fileModel === model; })[0] : null;
       return animMakeFine(id, model, frames, old || animFineKeep.take(id + '|' + model));
     });
   }
   if (reuse) reuse.stop();
+  return frames;
+}
+
+/** Pictures of layer id for the range of the animation, those of `reuse`
+    (the same layer's Frames of another range, or kept while it was off)
+    taken over; onShow once its first picture is drawn. */
+function animTrack(id, layer, reuse, onShow) {
+  var frames = animFramesFor(id, reuse, anim.group.times, anim.group.nowIndex, function (i) {
+    var t = anim && anim.group.track(id);
+    if (!t || t.frames !== frames) return;
+    var p = anim.player;
+    // The picture of now goes up as soon as every layer has it; a layer
+    // switched on while paused joins the others once its picture is in.
+    if (p.index < 0) { if (i === anim.group.nowIndex && anim.group.ready(i)) p.show(i); }
+    else if (!p.playing && (i === Math.floor(p.index) || i === Math.ceil(p.index))) p.seek(p.index);
+  });
+  var fines = frames.fines;
   // Loading, it holds no other layer: they play on, it joins them picture
   // by picture; once loaded, they wait for it again where it misses one.
   anim.group.add(id, frames, layer, { onShow: onShow, optional: true });
@@ -484,6 +491,18 @@ function animTrack(id, layer, reuse, onShow) {
       (Date.now() - t0) + ' ms, ' + frames.fromStore + ' from the store');
   }, function (err) { console.warn('[anim] ' + id + ': ' + err); });
   fines.forEach(animLoadFine);
+}
+
+/** A finer model's edge weights are in: it fades in over the picture
+    shown; paused, that picture is drawn again until it is in full. */
+function animFineFadeIn() {
+  var end = Date.now() + WidgetAnim.WEIGHTS_FADE_MS + 50;
+  (function again() {
+    if (!anim) return;
+    var p = anim.player;
+    if (!p.playing && p.index >= 0 && p.target === null) p.seek(p.index);
+    if (Date.now() < end) requestAnimationFrame(again);
+  })();
 }
 
 /** The regional models for the map's view, finest first. */
@@ -513,6 +532,8 @@ function animMakeFine(id, model, frames, reuse) {
     pastH: anim.pastH, futureH: anim.futureH, times: anim.group.times, nowIndex: anim.group.nowIndex,
     reuse: reuse, parallel: 6, gate: animGate,
     store: animStore, pruneH: ANIM_KEEP_H, surface: temp ? function () { return fineSurface(model); } : null,
+    onWeights: animFineFadeIn,
+    unpackLater: true,
     onFrame: function (i) {
       var t = anim && anim.group.track(id), p = anim && anim.player;
       if (!t || t.frames !== frames || (frames.fines || []).indexOf(fine) < 0 || p.index < 0 || p.playing) return;
@@ -575,7 +596,7 @@ function animSetFines(ids) {
 function animLoad(pastH, futureH, stepH, span, fresh) {
   // Layers fading out belong to the old range: they go at once.
   anim.switcher.flush();
-  var old = anim.group;
+  var old = anim.group, oldStepH = anim.stepH;
   anim.nowMs = Date.now();
   anim.stepH = stepH || WidgetAnim.STEP_H;
   if (span) {
@@ -587,9 +608,7 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
   // A range of the radar or satellite stays when a forecast layer comes:
   // then on the files' steps that cover it.
   anim.span = span || null;
-  var ft = span ? (anim.stepH >= WidgetAnim.STEP_H ? WidgetAnim.alignedTimes(span.start, span.end, anim.nowMs, anim.stepH)
-    : WidgetAnim.spanTimes(span.start, span.end, anim.nowMs, anim.stepH))
-    : WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, anim.stepH);
+  var ft = animTimes(anim.stepH, span, pastH, futureH);
   anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
   // On the files' steps, the play keeps to the range itself: its forecast
   // layers are only added to it.
@@ -608,9 +627,68 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
     animTrack(t.id, t.layer, fresh ? null : t.frames);
     t.layer.reload();
   });
-  var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now) : ft.now;
+  // Other steps (a forecast layer on or off): the cursor keeps its time.
+  var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now, oldStepH !== anim.stepH) : ft.now;
   anim.player.index = -1;
   anim.player.show(anim.player._clamp(keep));
+  animPreloadSoon(!!fresh);
+}
+
+/** The times of the pictures at steps of stepH hours: over span (a range
+    of the radar or satellite), else pastH before and futureH after now. */
+function animTimes(stepH, span, pastH, futureH) {
+  if (span) {
+    return stepH >= WidgetAnim.STEP_H ? WidgetAnim.alignedTimes(span.start, span.end, anim.nowMs, stepH)
+      : WidgetAnim.spanTimes(span.start, span.end, anim.nowMs, stepH);
+  }
+  return WidgetAnim.frameTimes(anim.nowMs, pastH, futureH, stepH);
+}
+
+// The layers switched off, read ahead (the widget's "Download the forecast
+// layers in the background"): their pictures parked as if they had just
+// been switched off, so switching one on takes them back at once. Without,
+// the first time the wind came on it read and unpacked its pictures and
+// those of its finer models first, a second or more. One layer at a time,
+// a moment after the range is set (the layers shown first), at the times
+// a forecast layer switched on would have (the files' 3-hour steps).
+var PRELOAD_DELAY_MS = 1500;
+var animPreloadIds = [], animPreloadJob = 0, animPreloadTimer = null;
+window.animSetPreload = function (ids) {
+  animPreloadIds = (ids || []).filter(function (id) { return !!ANIM_LAYERS[id]; });
+  animPreloadSoon(false);
+};
+
+/** Read the layers off again once the range has settled; fresh: a new run,
+    nothing taken over from memory. */
+function animPreloadSoon(fresh) {
+  var job = ++animPreloadJob;
+  if (animPreloadTimer) clearTimeout(animPreloadTimer);
+  animPreloadTimer = null;
+  if (!anim || !animPreloadIds.length) return;
+  animPreloadTimer = setTimeout(function () { animPreloadTimer = null; animPreload(job, fresh); }, PRELOAD_DELAY_MS);
+}
+
+function animPreload(job, fresh) {
+  if (!anim) return;
+  var ft = anim.stepH >= WidgetAnim.STEP_H ? { times: anim.group.times, now: anim.group.nowIndex }
+    : animTimes(WidgetAnim.STEP_H, anim.span, anim.pastH, anim.futureH);
+  var ids = animPreloadIds.slice(), t0 = Date.now();
+  (function next() {
+    if (!anim || job !== animPreloadJob) return;
+    var id = ids.shift();
+    if (!id) { console.log('[anim] layers off read ahead in ' + (Date.now() - t0) + ' ms'); return; }
+    if (anim.group.track(id)) { next(); return; }
+    var key = animKey(id), old = anim.switcher.takeParked(key);
+    if (old && fresh) { old.stop(); old = null; }
+    var frames = animFramesFor(id, old, ft.times, ft.now, null);
+    // Parked at once: switched on meanwhile, it is taken over as it stands.
+    anim.switcher.park(key, frames);
+    var all = [frames].concat(frames.fines);
+    Promise.all(all.map(function (f) { return f.load().catch(function () {}); })).then(function () {
+      if (anim && anim.switcher.parked(key) && !anim.group.track(id)) frames.pause();
+      next();
+    });
+  })();
 }
 
 /** Switch layer id of the animation on or off. Off, it fades out and its
@@ -666,7 +744,8 @@ window.animStart = function (pastH, futureH, layers) {
   if (windLayer) windLayer.setActive(false);
   anim = {
     group: null, player: new WidgetAnim.Player(null, null), movingStep: 1,
-    switcher: new WidgetAnim.Switcher({ onGone: function (key) { if (anim && anim.group) anim.group.removeGhost(key); } }),
+    // Every layer kept while off: those read ahead (animPreload) too.
+    switcher: new WidgetAnim.Switcher({ keep: 12, onGone: function (key) { if (anim && anim.group) anim.group.removeGhost(key); } }),
     // Not stored: a grid of the whole range would not fit in localStorage.
     api: new WidgetWind.WindSource({ storage: null, world: false })
   };
@@ -741,6 +820,7 @@ var animMoveHooked = false;
 
 window.animStop = function () {
   if (!anim) return;
+  animPreloadSoon(false);   // cancels a reading ahead under way
   if (animFineKeep) animFineKeep.clear();
   anim.player.stop();
   anim.group.tracks.forEach(function (t) { t.frames.stop(); t.layer.remove(); });
@@ -875,6 +955,11 @@ window.animMeasure = function () {
     anim.group.tracks.forEach(function (t) {
       add(t.id, t.frames);
       (t.frames.fines || []).forEach(function (f) { add(t.id + ' ' + f.fileModel, f); });
+    });
+    // The layers off, kept or read ahead.
+    anim.switcher._parked.forEach(function (p) {
+      add(p.id + ' (off)', p.frames);
+      (p.frames.fines || []).forEach(function (f) { add(p.id + ' (off) ' + f.fileModel, f); });
     });
   }
   var kept = {};
@@ -1102,12 +1187,12 @@ function animOverlaysRaise() {
   ['satellite', 'radar'].forEach(function (k) { var o = animOverlays[k]; if (o.shown) o._put(o.shown); });
 }
 
-/** How many times slower the animation goes at ms (the radar's range, while it is on). */
+/** How many times slower (or faster, under 1) the animation goes at ms:
+    the radar's and satellite's images keep one pace, a forecast layer on
+    or not (the radar's range while it is on). */
 function animSlow(ms) {
-  // Frames already 10 minutes apart (the radar alone): no slowing down.
-  if (anim && anim.stepH < 1) return 1;
   var r = animOverlays && animOverlays.radar;
-  return r && r.on ? WidgetAnimRadar.slowFactor(ms, r.range()) : 1;
+  return WidgetAnimRadar.slowFactor(ms, r && r.on ? r.range() : null, anim ? anim.stepH : null);
 }
 
 function animOverlayState(kind) {

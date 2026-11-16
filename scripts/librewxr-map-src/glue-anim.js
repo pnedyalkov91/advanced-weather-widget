@@ -63,8 +63,11 @@ var WidgetAnim = (function () {
       in the old (index, -1 for none, between two frames while playing):
       the same time when the new range has it, but now when it was now,
       so that now follows the clock. */
-  function keptIndex(oldTimes, oldNow, index, newTimes, newNow) {
+  function keptIndex(oldTimes, oldNow, index, newTimes, newNow, keepTime) {
     if (!oldTimes || index < 0) return newNow;
+    // Other steps (a forecast layer switched on or off): the same time to
+    // the minute, now included, so the cursor does not move.
+    if (keepTime) return Group.prototype.posAt.call({ times: newTimes }, Frames.prototype.timeAt.call({ times: oldTimes }, index));
     var i = Math.round(index);
     if (i === oldNow) return newNow;
     var k = newTimes.indexOf(oldTimes[i]);
@@ -416,6 +419,14 @@ var WidgetAnim = (function () {
     this.pruneH = opts.pruneH || 0;
     this.fromStore = 0;
     this.onFrame = opts.onFrame || function () {};
+    this.unpackLater = !!opts.unpackLater;   // see _unpackedNow
+    // The edge weights of a finer model are worked out in pieces between
+    // two pictures (slices(steps, done)); the model rides along once they
+    // are in, fading in over WEIGHTS_FADE_MS of clock() (ms), and
+    // onWeights() is called then, for a picture paused to be drawn again.
+    this.slices = opts.slices || runSlices;
+    this.clock = opts.clock || function () { return Date.now(); };
+    this.onWeights = opts.onWeights || null;
     // opts.times: the animation's own (a range of the radar or satellite
     // starts on its first image, not on a count of hours from now); the
     // animation asks for pictures by their index, so both must agree.
@@ -625,10 +636,40 @@ var WidgetAnim = (function () {
     });
   };
 
+  /** Whether frame i can be had in full now. With unpackLater (a layer
+      just switched on), the first picture is not unpacked where it is
+      asked for: the wind's two frames and its finer model's took 35 to
+      60 ms in the click, the map stood still. Each is unpacked on a turn
+      of its own, then onFrame(i) has the picture asked again; once one
+      is shown, frames are unpacked at once as before. */
+  Frames.prototype._unpackedNow = function (i) {
+    if (!this.unpackLater) return true;
+    var kept = this.unpacked || [];
+    for (var k = 0; k < kept.length; k++) if (kept[k].i === i) return true;
+    var queue = this._toUnpack || (this._toUnpack = []);
+    if (queue.indexOf(i) >= 0) return false;
+    queue.push(i);
+    if (queue.length === 1) this._unpackNext();
+    return false;
+  };
+
+  Frames.prototype._unpackNext = function () {
+    var self = this;
+    (this.later || function (cb) { setTimeout(cb, 0); })(function () {
+      var queue = self._toUnpack, i = queue.shift();
+      if (!self.stopped && self.packed[i]) {
+        self._values(i);
+        self.onFrame(i);
+      }
+      if (queue.length) self._unpackNext();
+    });
+  };
+
   /** Picture i as a grid of the layer, null until it is in. */
   Frames.prototype.grid = function (i) {
     var p = this.packed[i], m = this.meta;
-    if (!p || !m) return null;
+    if (!p || !m || !this._unpackedNow(i)) return null;
+    this.unpackLater = false;
     return this._dress(this.field.grid(m, this._values(i), null, 0, this.times[i]), i);
   };
 
@@ -648,30 +689,79 @@ var WidgetAnim = (function () {
     return g;
   };
 
-  /** How far in (points) the blend of a finer model on grid d starts at
-      each of its points: up to EDGE_JITTER degrees, by WidgetTemp.edgeNoise. */
-  function edgeJitter(d) {
-    var j = new Float32Array(d.nx * d.ny), s = EDGE_JITTER / d.res;
-    for (var r = 0; r < d.ny; r++) {
-      for (var c = 0; c < d.nx; c++) {
-        var p = WidgetGrids.lonLatAt(d, c, r);
-        j[r * d.nx + c] = s * WidgetTemp.edgeNoise(p.lat, p.lon);
-      }
-    }
-    return j;
+  // Edge weights by field, model and step: the same for every picture of a
+  // model (its grid and where it has no data), and long to work out (a
+  // noise a point, millions of points), so worked out once for all the
+  // Frames of the page, in pieces: { w, at (clock when in) } once in, the
+  // Frames waiting for them meanwhile.
+  var weightsKept = {}, weightsWaiting = {};
+  var WEIGHTS_FADE_MS = 400;     // a finer model fades in once its weights are in
+  var SLICE_MS = 4;              // longest piece of work between two pictures
+
+  /** Run generator steps in pieces of SLICE_MS, one a turn of the page,
+      then done(its value). */
+  function runSlices(steps, done) {
+    (function piece() {
+      var t0 = Date.now(), r;
+      do { r = steps.next(); } while (!r.done && Date.now() - t0 < SLICE_MS);
+      if (r.done) done(r.value);
+      else setTimeout(piece, 0);
+    })();
+  }
+  /** All at once (tests). */
+  function runSlicesNow(steps, done) {
+    var r;
+    do { r = steps.next(); } while (!r.done);
+    done(r.value);
   }
 
-  /** The edge weights of this model's grid, worked out once from the first
-      picture in (every picture has its values at the same points). */
+  function* weightsSteps(vals, rows, cols, feather, d) {
+    var jitter = null;
+    if (d) {
+      jitter = new Float32Array(d.nx * d.ny);
+      var s = EDGE_JITTER / d.res;
+      for (var r = 0; r < d.ny; r++) {
+        for (var c = 0; c < d.nx; c++) {
+          var p = WidgetGrids.lonLatAt(d, c, r);
+          jitter[r * d.nx + c] = s * WidgetTemp.edgeNoise(p.lat, p.lon);
+        }
+        if (r % 4 === 0) yield;
+      }
+    }
+    return yield* WidgetTemp.edgeWeightsSteps(vals, rows, cols, feather, jitter);
+  }
+
+  /** The edge weights of this finer model, null while they are worked out
+      (begun at the first call). */
   Frames.prototype.weights = function () {
     if (this._weights) return this._weights;
-    var m = this.meta;
+    var m = this.meta, key = m && m.model ? this.field.store + '|' + m.model + '|' + (m.step || 1) : null;
+    if (key && weightsKept[key]) {
+      this._weightsAt = weightsKept[key].at;
+      return (this._weights = weightsKept[key].w);
+    }
     for (var i = 0; i < this.packed.length && m; i++) {
       if (!this.packed[i] || this.between[i]) continue;
       var vals = this._values(i), d = this.field.grid(m, vals, null, 0, this.times[i]).desc;
       var rows = d ? d.ny : m.lats.length, cols = d ? d.nx : m.lons.length, res = d ? d.res : m.res;
-      this._weights = WidgetTemp.edgeWeights(vals.u || vals, rows, cols, this.field.feather / res, d ? edgeJitter(d) : null);
-      return this._weights;
+      var steps = weightsSteps(vals.u || vals, rows, cols, this.field.feather / res, d);
+      if (!key) {
+        runSlicesNow(steps, function (w) { steps = w; });
+        return (this._weights = steps);
+      }
+      var waiting = weightsWaiting[key];
+      if (waiting) {
+        if (waiting.indexOf(this) < 0) waiting.push(this);
+        return null;
+      }
+      waiting = weightsWaiting[key] = [this];
+      var clock = this.clock;
+      this.slices(steps, function (w) {
+        weightsKept[key] = { w: w, at: clock() };
+        delete weightsWaiting[key];
+        waiting.forEach(function (f) { if (f.onWeights) f.onWeights(); });
+      });
+      return weightsKept[key] ? this.weights() : null;
     }
     return null;
   };
@@ -688,6 +778,9 @@ var WidgetAnim = (function () {
     // they come next.
     this._warm((i + 2) % this.times.length);
     if (!this.packed[i + 1] || f < 1e-3) return this.grid(i);
+    var a = this._unpackedNow(i), b = this._unpackedNow(i + 1);
+    if (!a || !b) return null;
+    this.unpackLater = false;
     return this._dress(this.field.grid(m, this._values(i), this._values(i + 1), f, this.times[i], this.times[i + 1], this.timeAt(pos)), pos);
   };
 
@@ -710,10 +803,15 @@ var WidgetAnim = (function () {
       if (g) g.fade = 1;
     } else if (a) {
       g = this.grid(i);
-      g.fade = this.gone(i + 1) ? 1 - f : 1;
+      if (g) g.fade = this.gone(i + 1) ? 1 - f : 1;
     } else if (b && this.gone(i)) {
       g = this.grid(i + 1);
-      g.fade = f;
+      if (g) g.fade = f;
+    }
+    // Its edge weights still worked out: not yet; then in by WEIGHTS_FADE_MS.
+    if (g && this.field.feather) {
+      if (!g.weights) return null;
+      if (this._weightsAt != null) g.fade *= Math.max(0, Math.min(1, (this.clock() - this._weightsAt) / WEIGHTS_FADE_MS));
     }
     return g;
   };
@@ -876,12 +974,15 @@ var WidgetAnim = (function () {
   /** One grid per layer, in the order of tracks (null for a layer still
       loading that misses it), and the position (pos); null while a layer
       that counts misses it. Without any layer, an empty list: the time
-      still moves on for the radar and the satellite. */
-  Group.prototype.gridAt = function (pos) {
+      still moves on for the radar and the satellite. going: the
+      animation already shows something; a layer still loading then holds
+      nothing (switched on while the radar played, it stopped the time for
+      the 0.3 to 0.8 s of its first picture) and joins once it has it. */
+  Group.prototype.gridAt = function (pos, going) {
     var counted = this._counted(), grids = [];
     for (var k = 0; k < this.tracks.length; k++) {
       var t = this.tracks[k], g = t.frames.gridAt(pos);
-      if (!g && counted.indexOf(t) >= 0) return null;
+      if (!g && counted.indexOf(t) >= 0 && !(going && t.optional)) return null;
       grids.push(g);
     }
     grids.pos = pos;
@@ -979,9 +1080,7 @@ var WidgetAnim = (function () {
     var self = this;
     if (frames) {
       frames.pause();
-      this._parked = this._parked.filter(function (p) { return p.id !== id; });
-      this._parked.push({ id: id, frames: frames });
-      while (this._parked.length > this.keep) this._parked.shift();
+      this.park(id, frames);
     }
     delete this._pending[id];
     this._leaving[id] = { layer: layer, fade: this._fade(layer, 1), waiting: true, since: this.now() };
@@ -989,13 +1088,31 @@ var WidgetAnim = (function () {
     this.defer(function () { self._poll(); });
   };
 
+  /** The pictures of layer id kept for when it comes back (at most keep
+      sets, the oldest dropped first): those of a layer switched off, or
+      read ahead while it is off (still reading, so not paused here). */
+  Switcher.prototype.park = function (id, frames) {
+    this._parked = this._parked.filter(function (p) { return p.id !== id; });
+    this._parked.push({ id: id, frames: frames });
+    while (this._parked.length > this.keep) this._parked.shift();
+  };
+
+  /** The pictures parked for id, taken out; null when none. */
+  Switcher.prototype.takeParked = function (id) {
+    for (var k = 0; k < this._parked.length; k++) {
+      if (this._parked[k].id === id) return this._parked.splice(k, 1)[0].frames;
+    }
+    return null;
+  };
+
+  Switcher.prototype.parked = function (id) {
+    return this._parked.some(function (p) { return p.id === id; });
+  };
+
   /** Layer id goes on: { layer: the one fading out to take back, or null
       for a new one; reuse: its kept pictures, or null }. */
   Switcher.prototype.enter = function (id) {
-    var reuse = null, layer = null;
-    for (var k = 0; k < this._parked.length; k++) {
-      if (this._parked[k].id === id) { reuse = this._parked[k].frames; this._parked.splice(k, 1); break; }
-    }
+    var reuse = this.takeParked(id), layer = null;
     var l = this._leaving[id];
     if (l) { layer = l.layer; delete this._leaving[id]; }
     return { layer: layer, reuse: reuse };
@@ -1108,8 +1225,8 @@ var WidgetAnim = (function () {
     this.shownAt = 0;
     this.dueAt = 0;             // when the next picture may come
     this.timer = null;
-    // (ms) -> how many times slower the time goes there (1: not at all):
-    // the radar's images of 10 min each get their own moment.
+    // (ms) -> how many times slower the time goes there (1: not at all,
+    // under 1: faster): the radar's and satellite's images keep one pace.
     this.slow = opts.slow || null;
     // With the loop, the first picture follows the last at the pace of the
     // others and the steps go round; without it, the play stops on the last.
@@ -1128,6 +1245,7 @@ var WidgetAnim = (function () {
     this.canShow = opts.canShow || null;
     this._heldAt = null;        // last tick of a wait
     this._heldSince = null;     // when the wait began
+    this._wanted = null;        // a position shown before its frame was read
   }
 
   var HOLD_MS = 3000;
@@ -1187,8 +1305,9 @@ var WidgetAnim = (function () {
 
   /** Show position pos; false when its frame is not read yet. */
   Player.prototype.show = function (pos) {
-    var g = this.frames.gridAt(pos);
-    if (!g) return false;
+    var g = this.frames.gridAt(pos, this.index >= 0);
+    if (!g) { this._wanted = pos; return false; }
+    this._wanted = null;
     var now = this.now();
     this.index = pos;
     this.shownAt = now;
@@ -1293,7 +1412,17 @@ var WidgetAnim = (function () {
       this._ensureTimer();
       return;
     }
-    if (!this.playing || this.index < 0) return;
+    if (!this.playing) return;
+    if (this.index < 0) {
+      // Nothing shown yet (a new range whose pictures were not read):
+      // the position asked for once its frame is in, else the first read.
+      var w = this._wanted;
+      if (w == null || !this.show(w)) {
+        var s = this._start();
+        if (s < 0 || !this.show(s)) this._wanted = w;
+      }
+      return;
+    }
     var now = this.now(), last = this._hi();
     if (this.index >= last - 1e-6) {
       // At the last frame: the first comes next at the usual pace with the
@@ -1319,7 +1448,8 @@ var WidgetAnim = (function () {
     } else if (now >= this.dueAt) {
       // Waiting for an image: that time does not move the play on.
       if (this._heldAt !== null) { this.shownAt += now - this._heldAt; this._heldAt = now; }
-      var f = this.slow ? Math.max(1, this.slow(this.frames.timeAt(this.index)) || 1) : 1;
+      var f = this.slow ? this.slow(this.frames.timeAt(this.index)) : 1;
+      if (!(f > 0)) f = 1;
       var end = Math.min(j, last);
       var to = Math.min(end, this.index + (now - this.shownAt) / (this.stepMs * f));
       var stops = this.stops && this.stops();
@@ -1343,7 +1473,7 @@ var WidgetAnim = (function () {
 
   return {
     STEP_H: STEP_H, TEMP_QUANTUM: 0.5, frameTimes: frameTimes, spanTimes: spanTimes, keptIndex: keptIndex, alignedTimes: alignedTimes, spanBounds: spanBounds, runFor: runFor, hasFile: hasFile, scheduleOf: scheduleOf, frameUrl: frameUrl, pack: pack, unpack: unpack, latLonGrid: latLonGrid,
-    FIELDS: FIELDS, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, makeFrames: makeFrames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
+    FIELDS: FIELDS, WEIGHTS_FADE_MS: WEIGHTS_FADE_MS, runSlicesNow: runSlicesNow, _forgetWeights: function () { weightsKept = {}; weightsWaiting = {}; }, windField: windField, WIND_LEVELS: WIND_LEVELS, Gate: Gate, frameKey: frameKey, parseKey: parseKey, frameStore: frameStore, pruneStore: pruneStore, loadOrder: loadOrder, Frames: Frames, makeFrames: makeFrames, FineKeep: FineKeep, heldBytes: heldBytes, Group: Group, Player: Player,
     Fade: Fade, Switcher: Switcher
   };
 })();

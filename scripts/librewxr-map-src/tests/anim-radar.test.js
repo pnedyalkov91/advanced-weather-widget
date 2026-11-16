@@ -68,6 +68,19 @@ test('slowFactor: the radar steps of 10 min take a third of a 3 h step each', ()
   assert.equal(R.slowFactor(range.start, null), 1);
 });
 
+test('slowFactor: an image of the radar or satellite lasts a third of a step whatever the time line\'s step', () => {
+  const range = R.rangeOf(radar, 10 * MIN);
+  // 3 h steps (a forecast layer on): as before.
+  assert.equal(R.slowFactor(range.start, range, 3), 6);
+  assert.equal(R.slowFactor(range.end, range, 3), 1);
+  // The radar alone, a step of 10 min: one image a third of a step.
+  assert.equal(R.slowFactor(range.start, range, 1 / 6), 1 / 3);
+  // Radar and satellite alone, a step of 1 h: 6 radar images, 2 steps.
+  assert.equal(R.slowFactor(range.start, range, 1), 2);
+  // The satellite alone (hourly), a step of 1 h: a third of a step.
+  assert.equal(R.slowFactor(range.start, null, 1), 1 / 3);
+});
+
 // An adapter as glue-adapter-maplibre.js gives it, layers ready on demand.
 function fakeAdapter() {
   const a = { made: [], opacity: {}, gone: [], waiting: {}, n: 0 };

@@ -19,7 +19,7 @@ function flushRaf() {
   for (let i = 0; i < 10000 && rafQueue.length; i++) rafQueue.shift()();
 }
 global.Path2D = class { moveTo() {} lineTo() {} };
-const ctx = { clearRect() {}, fillRect() {}, stroke() {} };
+const ctx = { clearRect() {}, fillRect() {}, stroke() {}, drawImage() {} };
 global.window = { devicePixelRatio: 1 };
 global.document = {
   hidden: false,
@@ -143,7 +143,7 @@ test('table layer, manual: only the grids it is given, at the time they say, not
     const grid = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
     grid.at = 1800;
     layer.showFile(grid);
-    assert.equal(layer.settled(), false);         // the table is being built
+    assert.equal(layer.settled(), true);          // built while the animation plays on: nothing shown yet to wait for
     flushRaf();
     assert.equal(layer.isDrawing(), true);
     assert.equal(layer.settled(), true);

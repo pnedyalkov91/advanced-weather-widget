@@ -87,6 +87,11 @@ Item {
     readonly property bool prepareLayers: started && !shown && Plasmoid.configuration.radarKeepLoaded === true
         && Plasmoid.configuration.weatherMapPrepareLayers === true
     onPrepareLayersChanged: call("animSetPrepare", prepareLayers)
+    // With it, the layers switched off are read ahead too, as soon as the
+    // map starts, so switching one on shows it at once (window.animSetPreload).
+    readonly property var preloadIds: Plasmoid.configuration.weatherMapPrepareLayers === true
+        ? animLayerIds.filter(function (id) { return layerEnabled(id); }) : []
+    onPreloadIdsChanged: if (started) call("animSetPreload", preloadIds)
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
     // m/s, "inf" for the last level). Empty for the default palette, and for
     // an entry that does not read: the page then uses the default one.
@@ -1100,6 +1105,7 @@ Item {
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
+        code.push(jsCall("animSetPreload", preloadIds));
         js(code.join(""));
     }
 

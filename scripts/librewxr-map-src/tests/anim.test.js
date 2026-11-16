@@ -154,6 +154,31 @@ test('Frames.gridAt: the frame after next is unpacked ahead, when the page is id
   assert.equal(idle.length, 1);
 });
 
+test('Frames.gridAt with unpackLater: the first picture unpacked a frame a turn, then shown; the next ones at once', () => {
+  const f = Object.create(A.Frames.prototype), turns = [], told = [];
+  let unpacked = 0;
+  f.times = [0, 3 * H, 6 * H, 9 * H];
+  f.meta = { lats: [], lons: [], res: 1 };
+  f.field = Object.assign({}, A.FIELDS.temperature, { unpack: (parts) => { unpacked++; return A.unpack(parts[0]); } });
+  f.packed = [0, 10, 20, 30].map((t) => [A.pack(Float32Array.from([t]))]);
+  f.idle = () => {};
+  f.unpackLater = true;
+  f.later = (cb) => turns.push(cb);
+  f.onFrame = (i) => told.push(i);
+  assert.equal(f.gridAt(0.5), null);                // nothing unpacked in the click
+  assert.equal(unpacked, 0);
+  assert.equal(turns.length, 1);
+  turns.shift()();
+  assert.deepEqual([unpacked, told], [1, [0]]);     // one frame a turn, then told
+  assert.equal(f.gridAt(0.5), null);
+  turns.shift()();
+  assert.deepEqual([unpacked, told], [2, [0, 1]]);
+  assert.equal(turns.length, 0);
+  assert.equal(f.gridAt(0.5).valuesB[0], 10);
+  assert.equal(f.gridAt(2.5).valuesB[0], 30);       // playing on: unpacked at once, as before
+  assert.equal(turns.length, 0);
+});
+
 test('loadOrder: nearest to now first, the future first on a tie', () => {
   assert.deepEqual(A.loadOrder(5, 2), [2, 3, 1, 4, 0]);
 });
@@ -679,6 +704,22 @@ test('Switcher: a layer switched off fades out, then goes; its pictures are kept
   assert.equal(s.enter('pressure').reuse, frames);
 });
 
+test('Switcher: pictures parked ahead (a layer read while off) are taken back, by enter or takeParked', () => {
+  const s = new A.Switcher({ keep: 2 });
+  const a = fakeTrackFrames(), b = fakeTrackFrames(), c = fakeTrackFrames();
+  s.park('wind', a);
+  assert.equal(a.paused, 0);                       // still reading: not paused
+  s.park('temperature', b);
+  s.park('clouds', c);                             // past keep: the oldest goes
+  assert.equal(s.takeParked('wind'), null);
+  assert.equal(s.takeParked('temperature'), b);
+  assert.equal(s.takeParked('temperature'), null); // taken once
+  assert.equal(s.enter('clouds').reuse, c);
+  assert.equal(s.parked('clouds'), false);
+  s.park('clouds', c);
+  assert.equal(s.parked('clouds'), true);
+});
+
 test('Switcher: one color for another, the old one waits for the first picture of the new', () => {
   const c = fakeFrames();
   const s = new A.Switcher({ ms: 400, now: c.now, raf: c.raf, defer: c.defer, waitMs: 2000 });
@@ -809,6 +850,21 @@ test('Group: layers all still loading count as before', () => {
   g.add('temperature', temp.frames, temp.layer, { optional: true });
   assert.deepEqual([g.ready(0), g.ready(1)], [false, true]);
   assert.equal(g.gridAt(0), null);
+  // The animation already going (the radar plays): the time goes on without it.
+  assert.deepEqual(g.gridAt(0, true), Object.assign([null], { pos: 0 }));
+});
+
+test('Player: going, a layer switched on that is still loading does not stop the time', () => {
+  const g = new A.Group([0, 3 * H], 0);
+  const temp = trackOf([false, false]);
+  g.add('temperature', temp.frames, temp.layer, { optional: true });
+  const times = [];
+  g.onTime = (ms) => times.push(ms);
+  const p = new A.Player(g, g, { now: () => 0 });
+  assert.equal(p.show(0), false);                  // nothing shown yet: waits for it
+  p.index = 0;
+  assert.equal(p.show(0.5), true);                 // going: on to the next time
+  assert.deepEqual([times, temp.shown], [[1.5 * H], []]);
 });
 
 test('Group: a layer leaving still gets the pictures, without counting for ready or settled', () => {
@@ -875,7 +931,8 @@ test('Frames of AROME: its own latest.json and files, a regional grid with its e
   global.WidgetGrids = require('../glue-grids.js');
   global.WidgetModels = require('../glue-models.js');
   const reads = [];
-  const f = new A.Frames(aromeLoader(reads), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3 });
+  A._forgetWeights();
+  const f = new A.Frames(aromeLoader(reads), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3, slices: A.runSlicesNow });
   await f.load();
   assert.equal(reads[0], 'b/' + AROME + '/latest.json');
   assert.ok(reads.includes('b/' + AROME + '/2026/11/07/1500Z/2026-11-07T1800.om'));
@@ -894,6 +951,39 @@ test('Frames of AROME: its own latest.json and files, a regional grid with its e
   const at2 = along(1120 - 80);
   assert.ok(Math.max(...at2) - Math.min(...at2) > 0.3, 'spread ' + Math.min(...at2) + '..' + Math.max(...at2));
   assert.ok(along(1120 - 170).every((w) => w === 1));
+  // New Frames of the same model (a layer switched on again, a new range):
+  // the weights are not worked out again.
+  const f2 = new A.Frames(aromeLoader([]), { field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3, slices: () => assert.fail('worked out again') });
+  await f2.load();
+  assert.equal(f2.grid(1).weights, g.weights);
+});
+
+test('Frames.fineAt: the edge weights worked out in slices, the finer model left out until then, then fading in', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  global.WidgetTemp = require('../glue-temp.js');
+  global.WidgetGrids = require('../glue-grids.js');
+  global.WidgetModels = require('../glue-models.js');
+  A._forgetWeights();
+  let job = null, clock = 1000, ready = 0;
+  const f = new A.Frames(aromeLoader([]), {
+    field: A.FIELDS.temperatureFine, fileModel: AROME, now: () => at('2026-11-07T16:10:00Z'), pastH: 3, futureH: 3,
+    slices: (steps, done) => { job = { steps, done }; }, clock: () => clock, onWeights: () => { ready++; }
+  });
+  await f.load();
+  assert.equal(f.fineAt(1), null);             // the weights not in yet: the coarse model alone
+  assert.equal(f.fineAt(1), null);
+  assert.ok(job, 'a job of slices');
+  let n = 0, r;
+  do { r = job.steps.next(); n++; } while (!r.done);
+  assert.ok(n > 100, n + ' slices');           // small pieces, not one block
+  job.done(r.value);
+  assert.equal(ready, 1);
+  assert.equal(f.fineAt(1).fade, 0);           // in from nothing...
+  clock += A.WEIGHTS_FADE_MS / 2;
+  assert.equal(f.fineAt(1).fade, 0.5);
+  clock += A.WEIGHTS_FADE_MS;
+  assert.equal(f.fineAt(1).fade, 1);           // ...to full
+  assert.equal(f.fineAt(1).weights[358 * 1121 + 560], 1);
 });
 
 test('Frames.gridAt: the fine model rides along when it has the picture', () => {
@@ -1032,7 +1122,8 @@ test('Frames of a regional wind: its own variables, turned to u and v, two place
       return { data: [new Float32Array(n).fill(10), new Float32Array(n).fill(270)], ny: 761, nx: 761 };   // 10 m/s from the west
     }
   };
-  const f = new A.Frames(loader, { field: A.FIELDS.windFine, fileModel: 'italia_meteo_arpae_icon_2i', now: () => at('2026-11-07T18:10:00Z'), pastH: 0, futureH: 0 });
+  A._forgetWeights();
+  const f = new A.Frames(loader, { field: A.FIELDS.windFine, fileModel: 'italia_meteo_arpae_icon_2i', now: () => at('2026-11-07T18:10:00Z'), pastH: 0, futureH: 0, slices: A.runSlicesNow });
   assert.equal(f.weight, 1);
   await f.load();
   assert.deepEqual(asked, ['wind_speed_10m,wind_direction_10m']);
@@ -1051,6 +1142,17 @@ test('FineKeep: the temperature and the wind of one model kept apart', () => {
   keep.put(t); keep.put(w);
   assert.equal(keep.take('wind|m'), w);
   assert.equal(keep.take('temperature|m'), t);
+});
+
+test('Player: a slow(time) under 1 makes the steps go faster', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 900, endPauseMs: 0, minFrameMs: 100 });
+  p._ensureTimer = () => {};
+  p.slow = () => 1 / 3;
+  p.show(0);
+  p.play(true);
+  clock.t = 150;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.5]);                 // 150 ms of a 300 ms step
 });
 
 test('Player: slow(time) stretches the steps where it asks (the radar range)', () => {
@@ -1129,6 +1231,37 @@ test('spanTimes: from the start to the end of the sources, a picture each step b
   assert.equal(hm(ft)[0], '13:10');
   assert.equal(hm(ft)[18], '16:10');
   assert.equal(hm(ft)[ft.now], '15:50');
+});
+
+const MIN_MS = 60 * 1000;
+test('keptIndex: with keepTime, the time shown stays to the minute on the new steps', () => {
+  // Radar alone, 10 min steps; a forecast layer comes: 3 h steps.
+  const old = { times: [0, 1, 2, 3, 4, 5, 6].map((k) => 12 * H + k * 10 * MIN_MS) };
+  const fresh = { times: [9 * H, 12 * H, 15 * H] };
+  const pos = A.keptIndex(old.times, 6, 4, fresh.times, 1, true);   // 12:40
+  assert.ok(Math.abs(pos - (1 + 40 / 180)) < 1e-9);
+  // Even on now: the cursor does not move.
+  assert.ok(Math.abs(A.keptIndex(old.times, 4, 4, fresh.times, 2, true) - (1 + 40 / 180)) < 1e-9);
+  // And back to the 10 min steps: the same minute.
+  assert.equal(A.keptIndex(fresh.times, 1, 1 + 40 / 180, old.times, 6, true), 4);
+});
+
+test('Player: playing with nothing shown yet, it starts on the first picture read', () => {
+  const ready = [false, false, false];
+  const { p, shown, clock } = fakePlayer(ready, { stepMs: 1000, endPauseMs: 0, minFrameMs: 100 });
+  p._ensureTimer = () => {};
+  assert.equal(p.show(0), false);                    // a new range, its pictures not read yet
+  p.play(true);
+  clock.t = 100;
+  p._tick();
+  assert.deepEqual(shown, []);
+  ready[0] = ready[1] = ready[2] = true;             // the download ends
+  clock.t = 200;
+  p._tick();
+  assert.deepEqual(shown, [0]);
+  clock.t = 700;
+  p._tick();
+  assert.deepEqual(shown, [0, 0.5]);                 // and it plays on
 });
 
 test('keptIndex: a new range keeps the time shown, but now moves on with now', () => {

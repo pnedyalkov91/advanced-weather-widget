@@ -159,9 +159,11 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       }
     },
 
-    /** Whether the grid given is on screen: false while the table of the
-        projection is being built. */
-    settled: function () { return !this._building; },
+    /** Always: the animation never waits for the wind. While the table and
+        the particles are built (300 to 900 ms) the canvas is clear, and the
+        particles follow whatever grid is given last; waiting stopped the
+        radar for that long when the wind was switched on, then it jumped. */
+    settled: function () { return true; },
 
     /** The wind drawn at lat/lon, { speed (m/s), dir (from, degrees) }, or
         null where none is drawn. */
@@ -231,6 +233,9 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       // and gives up; a restart may begin a new build at once.
       this._job++;
       this._building = false;
+      // An abandoned build never ends its warm-up: draw on the shown canvas again.
+      this._warmCtx = null;
+      this._warming = false;
       this._showOpacity();
       if (this._timer) { clearTimeout(this._timer); this._timer = null; }
       if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
@@ -393,10 +398,33 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._spd = new Float32Array(this._n);
       for (var i = 0; i < this._n; i++) this._spawn(i, true);
       // The first frames at once, so the first frame shown has full trails.
+      // Drawn off the GPU, then copied once: on the shown canvas (clear
+      // while building, so never composited) these frames piled up in the
+      // GPU queue and Chromium held the page 50 to 75 ms, several times.
       var n = WindField.warmUpFrames(this.options.fade);
+      var soft = n ? this._softContext() : null;
       this._warming = true;
+      this._warmCtx = soft;
       for (var f = 0; f < n; f++) { this._frame(); yield; }
+      this._warmCtx = null;
       this._warming = false;
+      if (soft && this._ctx) {
+        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.drawImage(soft.canvas, 0, 0);
+      }
+    },
+
+    /** A clear canvas of the shown one's size, rasterized by the CPU
+        (willReadFrequently), or null where there is no DOM. */
+    _softContext: function () {
+      try {
+        var c = this._soft || (this._soft = document.createElement('canvas'));
+        var w = this._canvas.width, h = this._canvas.height;
+        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+        var ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.clearRect(0, 0, w, h);
+        return ctx;
+      } catch (e) { return null; }
     },
 
     _buildTable: function* () {
@@ -482,7 +510,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     _frame: function () {
       var grid = this._grid();
       if (!grid || !this._table) return;
-      var t0 = performance.now(), ctx = this._ctx, dpr = this._dpr, o = this.options, t = this._table, cols = t.cols;
+      var t0 = performance.now(), ctx = this._warmCtx || this._ctx, dpr = this._dpr, o = this.options, t = this._table, cols = t.cols;
       this._fadeTrails(ctx, o.fade);
       var map = this._map, glZoom = map.getZoom(), z = glZoom + 1;
       var pxPerDeg = 512 * Math.pow(2, glZoom) / 360 / Math.cos(map.getCenter().lat * DEG);
