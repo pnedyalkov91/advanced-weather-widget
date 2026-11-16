@@ -510,6 +510,17 @@ Item {
         Plasmoid.configuration.librewxrTempStep = v;   // the page follows (onTempStepChanged)
     }
 
+    // The layers drawn with the global model alone (their "Regional models" option off).
+    readonly property var regionalOff: jsonOf(Plasmoid.configuration.weatherMapRegionalOff, [])
+    function regionalOn(id) { return regionalOff.indexOf(id) < 0; }
+    function setRegional(id, on) {
+        var off = regionalOff.filter(function (x) { return x !== id; });
+        if (!on)
+            off.push(id);
+        Plasmoid.configuration.weatherMapRegionalOff = JSON.stringify(off);
+        call("animSetRegional", off);
+    }
+
     // The wind's height.
     readonly property var windLevelChoices: [["10m", i18n("10 m")], ["700hPa", i18n("700 hPa")]]
     readonly property string windLevel: Plasmoid.configuration.librewxrWindLevel === "700hPa" ? "700hPa" : "10m"
@@ -789,7 +800,8 @@ Item {
     // pictures of the right pollutant are the first read.
     function _layerChoices() {
         return jsCall("precipSetKinds", precipKinds) + jsCall("cloudSetLevels", cloudLevels)
-            + jsCall("aqSetPollutant", pollutant) + jsCall("isoSetOptions", isobars);
+            + jsCall("aqSetPollutant", pollutant) + jsCall("isoSetOptions", isobars)
+            + jsCall("animSetRegional", regionalOff);
     }
 
     // The opacity of each layer, in percent: the temperature's is the
@@ -990,6 +1002,12 @@ Item {
         if (what.indexOf("order:") === 0) {
             var ord = what.slice(6);
             Plasmoid.configuration.weatherMapLayerOrder = JSON.stringify(ord ? ord.split(",") : []);
+            return;
+        }
+        // "regional-wind:off", "regional-temperature:on": a layer's "Regional models" option.
+        if (what.indexOf("regional-") === 0) {
+            var rg = what.slice(9).split(":");
+            setRegional(rg[0], rg[1] === "on");
             return;
         }
         // "palette-temp:builtin:bluered", "palette-wind:": a palette picked in the options.

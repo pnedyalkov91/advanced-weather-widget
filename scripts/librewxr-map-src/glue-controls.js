@@ -337,6 +337,10 @@ var ANIM_KEEP_H = 192;
 // Their ground heights for the relief, one loader each. Those out of view
 // keep their pictures while they fit in ANIM_FINE_BUDGET with those in view.
 var animFine = true;
+// The layers drawn with the global model alone: their "Regional models"
+// option is off (animSetRegional), to download less.
+var animFineOff = {};
+function animFineOn(id) { return animFine && !animFineOff[id]; }
 var animFineAuto = true;
 var animFineModels = [];
 var ANIM_FINE_BUDGET = 150e6;
@@ -457,7 +461,7 @@ function animTrack(id, layer, reuse, onShow) {
   });
   var fines = [];
   frames.fines = fines;   // none unless the layer takes them (a field taken over may hold some)
-  if (animFineField(id) && animFine) {
+  if (animFineField(id) && animFineOn(id)) {
     if (animFineAuto) animFineModels = animPickFines();
     fines = frames.fines = animFineModels.map(function (model) {
       var old = reuse && reuse.fines ? reuse.fines.filter(function (f) { return f.fileModel === model; })[0] : null;
@@ -541,7 +545,7 @@ function animSetFines(ids) {
   anim.group.tracks.forEach(function (t) {
     if (!animFineField(t.id)) return;
     var frames = t.frames, old = frames.fines || [];
-    var fines = ids.map(function (model) {
+    var fines = (animFineOn(t.id) ? ids : []).map(function (model) {
       var here = old.filter(function (f) { return f.fileModel === model; })[0];
       if (here) return here;
       var fine = animMakeFine(t.id, model, frames, animFineKeep.take(t.id + '|' + model));
@@ -811,6 +815,23 @@ window.animSetFine = function (on) {
   if (anim) animLoad(anim.pastH, anim.futureH, anim.stepH);
 };
 
+/** The layers (ids) drawn with the global model alone, their "Regional
+    models" option off; the others take the finer models of the view.
+    Their pictures read so far are kept (animFineKeep) for a switch back. */
+window.animSetRegional = function (off) {
+  animFineOff = {};
+  (off || []).forEach(function (id) { animFineOff[id] = true; });
+  if (anim) animSetFines(animFineAuto ? animPickFines() : animFineModels);
+};
+
+/** The finer models some layer draws now, in their order of priority. */
+function animFinesDrawn() {
+  if (!anim) return [];
+  var drawn = {};
+  anim.group.tracks.forEach(function (t) { (t.frames.fines || []).forEach(function (f) { drawn[f.fileModel] = true; }); });
+  return animFineModels.filter(function (id) { return drawn[id]; });
+}
+
 /** The finer models drawn (ids of WidgetModels), put in their order of
     priority, finest first, unknown ids left out; null gives the choice
     back to the view. The list drawn. */
@@ -861,7 +882,7 @@ window.animState = function () {
     fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
     ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,
     radar: animOverlayState('radar'), satellite: animOverlayState('satellite'),
-    models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFine ? animFineModels : []),
+    models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFinesDrawn()),
     loop: animLoop, windLevel: animWindLevel,
     stepBack: animButtonStepH(-1), stepAhead: animButtonStepH(1)
   };

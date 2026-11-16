@@ -312,6 +312,9 @@
          they come out, so the map opens on them at once. Off by default: it
          downloads even if the map is never opened. -->
     <entry name="weatherMapPrepareLayers" type="Bool"><default>false</default></entry>
+    <!-- Weather Map: the layers drawn with the global model alone, their
+         "Regional models" option off (wind, temperature), JSON list of ids -->
+    <entry name="weatherMapRegionalOff" type="String"><default>[]</default></entry>
     <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
          the background after startup and keep them loaded, so the popup opens
          instantly. Off by default (uses extra memory for the whole session). -->

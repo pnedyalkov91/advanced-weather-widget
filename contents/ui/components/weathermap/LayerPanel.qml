@@ -127,6 +127,11 @@ Rectangle {
             }
         }
     }
+    // An option on or off: a switch with its name.
+    component OptSwitch: MapSwitch {
+        own: panel.map.ownControls
+        Layout.fillWidth: true
+    }
     // A setting with a few values: its name, then the values side by side,
     // the one taken highlighted. When both do not fit in room (the width of
     // the menu), the values go on the line under the name.
@@ -805,6 +810,16 @@ Rectangle {
                     value: panel.map.windLineWidth
                     onMoved: function (v, done) { panel.map.setWindLineWidth(Math.round(v * 10) / 10, done); }
                 }
+                OptSwitch {
+                    // At 700 hPa only the global model is drawn.
+                    enabled: panel.map.windLevel === "10m"
+                    text: i18n("Regional models")
+                    checked: panel.map.regionalOn("wind")
+                    onToggled: {
+                        panel.map.setRegional("wind", checked);
+                        checked = Qt.binding(function () { return panel.map.regionalOn("wind"); });
+                    }
+                }
             }
             MapLayerRow {
                 id: tempRow
@@ -823,6 +838,14 @@ Rectangle {
                     choices: panel.map.tempPaletteChoices
                     current: panel.map.tempPaletteId
                     onPicked: function (v) { panel.map.setTempPaletteId(v); }
+                }
+                OptSwitch {
+                    text: i18n("Regional models")
+                    checked: panel.map.regionalOn("temperature")
+                    onToggled: {
+                        panel.map.setRegional("temperature", checked);
+                        checked = Qt.binding(function () { return panel.map.regionalOn("temperature"); });
+                    }
                 }
             }
             MapLayerRow {
