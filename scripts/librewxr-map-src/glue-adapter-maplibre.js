@@ -301,6 +301,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         gl.uniform1f(u.u_opacity, nightLights / 100);
         gl.uniform1f(u.u_size, look.size * dpr);
         gl.uniform1f(u.u_gain, look.gain * fade);
+        gl.uniform1f(u.u_keep, look.keep);
         // Added to what is under them: lights glow, and many in one place glow more.
         gl.enable(gl.BLEND);
         gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE);

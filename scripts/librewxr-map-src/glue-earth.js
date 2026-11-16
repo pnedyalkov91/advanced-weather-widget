@@ -143,7 +143,7 @@ var WidgetEarth = (function () {
       fadeKm[1] km or more (a whole country), none from fadeKm[0] (half
       of France). `density`: the points a cell of full light gets, from
       density[0] to density[1], density[2] unless the widget says. */
-  var NIGHT_LIGHTS = { on: -2, full: -10, gamma: 0.55, floor: 0.02, color: [1, 0.96, 0.82], cols: 13500, boost: 2, fadeKm: [500, 1000], density: [1, 6, 3] };
+  var NIGHT_LIGHTS = { on: -2, full: -10, gamma: 0.55, floor: 0.02, color: [1, 0.96, 0.82], cols: 13500, boost: 2, fadeKm: [500, 1000], density: [1, 6, 3], minGain: 0.1 };
 
   /** How bright a light of value v (0..1, the picture's) shows with the
       Sun h degrees above the horizon, 0..1. Line for line what the vertex
@@ -223,15 +223,20 @@ var WidgetEarth = (function () {
   }
 
   /** The points at zoom z and `density`: their size in CSS px (1.5 far
-      out, a little larger than their cell closer in, 4 at most) and how
-      much of their light each gives (far out, where many share a pixel,
-      what its cell would give, `boost` times, whatever the density; full
-      once they stand apart). */
+      out, a little larger than their cell closer in, 4 at most), the share
+      of them drawn (`keep`, 0..1) and how much of their light each gives
+      (far out, where many share a pixel, together what their cell would
+      give, `boost` times, whatever the density; full once they stand
+      apart). Never less than `minGain` a point: the screen's 256 levels
+      would round fainter ones to nothing, so far out fewer points are
+      drawn, each brighter. */
   function nightLightsLook(z, density) {
-    var D = density > 0 ? density : NIGHT_LIGHTS.density[2];
-    var cell = 512 * Math.pow(2, z) / NIGHT_LIGHTS.cols;
+    var L = NIGHT_LIGHTS, D = density > 0 ? density : L.density[2];
+    var cell = 512 * Math.pow(2, z) / L.cols;
     var size = Math.max(1.5, Math.min(4, cell * 1.2));
-    return { size: size, gain: Math.min(1, NIGHT_LIGHTS.boost * cell * cell / (size * size * D)) };
+    var gain = Math.min(1, L.boost * cell * cell / (size * size * D));
+    var keep = Math.min(1, gain / L.minGain);
+    return { size: size, gain: gain / keep, keep: keep };
   }
 
   /** The ground across a map widthPx wide at zoom z, its middle at
@@ -263,8 +268,15 @@ var WidgetEarth = (function () {
       'uniform float u_opacity;',
       'uniform float u_size;',
       'uniform float u_gain;',
+      'uniform float u_keep;',
       'out float v_a;',
       'void main() {',
+      // The share of the points drawn far out, the same ones every time.
+      '  uint n = uint(gl_VertexID);',
+      '  n = (n ^ (n >> 16u)) * 0x45d9f3bu;',
+      '  n = (n ^ (n >> 16u)) * 0x45d9f3bu;',
+      '  n = n ^ (n >> 16u);',
+      '  float kept = float(n) / 4294967296.0 < u_keep ? 1.0 : 0.0;',
       '  float lat = atan(sinh(LV_PI * (1.0 - 2.0 * a_pos.y)));',
       '  float lon = (a_pos.x - 0.5) * 2.0 * LV_PI;',
       '  vec3 p = vec3(sin(lon) * cos(lat), sin(lat), cos(lon) * cos(lat));',
@@ -272,7 +284,7 @@ var WidgetEarth = (function () {
       '  float t = clamp((' + glslFloat(L.on) + ' - h) / (' + glslFloat(L.on) + ' - (' + glslFloat(L.full) + ')), 0.0, 1.0);',
       '  float dusk = t * t * (3.0 - 2.0 * t);',
       '  float b = pow(max(a_pos.z - ' + glslFloat(L.floor) + ', 0.0) / (1.0 - ' + glslFloat(L.floor) + '), ' + glslFloat(L.gamma) + ');',
-      '  v_a = b * dusk * u_opacity * u_gain;',
+      '  v_a = b * dusk * u_opacity * u_gain * kept;',
       '  gl_Position = projectTile(vec2(a_pos.x + u_shift, a_pos.y), vec2(0.0));',
       '  gl_PointSize = u_size;',
       // Off: out of the picture, nothing to draw.

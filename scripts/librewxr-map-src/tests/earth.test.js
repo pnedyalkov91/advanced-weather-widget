@@ -467,18 +467,25 @@ test('nightLightsVertices: Mercator x, y and the brightness of points spread in 
 
 test('nightLightsLook: small points far out, a little larger closer in, never past 4 px; as bright in all as the picture', () => {
   for (const D of [1, 3, 6]) {
-    let last = { size: 0, gain: 0 };
+    let last = { size: 0, gain: 0, keep: 0 };
     for (let z = 0; z <= 10; z += 0.5) {
       const k = E.nightLightsLook(z, D);
-      assert.ok(k.size >= last.size && k.gain >= last.gain, 'grows with the zoom at ' + z);
+      assert.ok(k.size >= last.size && k.gain >= last.gain - 1e-12 && k.keep >= last.keep, 'grows with the zoom at ' + z);
       assert.ok(k.size >= 1.5 && k.size <= 4, 'size at ' + z + ': ' + k.size);
-      assert.ok(k.gain > 0 && k.gain <= 1, 'gain at ' + z + ': ' + k.gain);
+      assert.ok(k.gain >= E.NIGHT_LIGHTS.minGain - 1e-12 && k.gain <= 1, 'gain at ' + z + ': ' + k.gain);
+      assert.ok(k.keep > 0 && k.keep <= 1, 'keep at ' + z + ': ' + k.keep);
       last = k;
     }
     // Far out, many points share a pixel: all of a cell give what it would.
-    const z = 2, cell = 512 * Math.pow(2, z) / E.NIGHT_LIGHTS.cols, k = E.nightLightsLook(z, D);
-    near(D * k.size * k.size * k.gain, E.NIGHT_LIGHTS.boost * cell * cell, 1e-9, 'the light of a cell at density ' + D);
+    for (const z of [0, 1.3, 2, 4]) {
+      const cell = 512 * Math.pow(2, z) / E.NIGHT_LIGHTS.cols, k = E.nightLightsLook(z, D);
+      near(D * k.keep * k.size * k.size * k.gain, E.NIGHT_LIGHTS.boost * cell * cell, 1e-9, 'the light of a cell at zoom ' + z + ', density ' + D);
+    }
   }
+  // The whole globe: fewer points, none too faint for the screen.
+  const far = E.nightLightsLook(1.3, 3);
+  assert.ok(far.keep < 0.2 && far.gain * 255 * 0.7 > 10, JSON.stringify(far));
+  assert.equal(E.nightLightsLook(9, 3).keep, 1, 'close in: all of them');
   assert.equal(E.nightLightsLook(9, 3).gain, 1, 'close in: each point at full light');
   assert.equal(E.nightLightsLook(2).gain, E.nightLightsLook(2, E.NIGHT_LIGHTS.density[2]).gain, 'the default density');
 });
