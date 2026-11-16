@@ -194,3 +194,64 @@ test('the shaders read the latitude of the caps', () => {
   assert.match(GL.VS_MAIN, /v_pole = a_pos\.z;/);
   assert.match(GL.VS_MAIN, /projectTile\(v_merc, raw\)/);
 });
+
+/** A WebGL2 stand-in that notes the calls; every program builds. */
+function fakeWebGL() {
+  const calls = [];
+  const gl = new Proxy({}, {
+    get(_, k) {
+      if (k === 'calls') return calls;
+      if (typeof k === 'string' && /^[A-Z_0-9]+$/.test(k)) return k;
+      if (k === 'getShaderParameter' || k === 'getProgramParameter') return (o, p) => (p === 'ACTIVE_UNIFORMS' ? 0 : true);
+      if (k === 'getAttribLocation') return () => 0;
+      return (...a) => { calls.push([k, ...a]); return {}; };
+    }
+  });
+  return gl;
+}
+const args = (variant) => ({
+  shaderData: { variantName: variant, vertexShaderPrelude: '', define: '' },
+  defaultProjectionData: { mainMatrix: [], fallbackMatrix: [], tileMercatorCoords: [], clippingPlane: [], projectionTransition: 0 }
+});
+
+test('the caps\' shader writes the nearest depth on the caps, nothing in the body', () => {
+  assert.match(GL.CAPS_FS, /in float v_pole;/);
+  assert.match(GL.CAPS_FS, /discard/);
+  assert.match(GL.CAPS_FS, /gl_FragDepth = 0\.0;/);
+});
+
+test('GLLayer, depth only: on the globe the depth written, no color, the colors back after', () => {
+  const l = new GL.GLLayer('lv-caps', GL.CAPS_FS, () => true), gl = fakeWebGL();
+  l.depthOnly = true;
+  l.onAdd(null, gl);
+  l.render(gl, args('globe'));
+  const names = gl.calls.map((c) => c[0] + (c[1] !== undefined ? ':' + c.slice(1).join(',') : ''));
+  const at = (n) => names.indexOf(n);
+  assert.ok(at('enable:DEPTH_TEST') >= 0, names.join(' '));
+  assert.ok(at('depthFunc:ALWAYS') >= 0);
+  assert.ok(at('depthMask:true') >= 0);
+  assert.ok(at('colorMask:false,false,false,false') >= 0);
+  const draw = names.findIndex((n) => n.startsWith('drawElements'));
+  assert.ok(draw > at('colorMask:false,false,false,false'));
+  assert.ok(at('colorMask:true,true,true,true') > draw, 'colors back');
+  assert.equal(at('enable:BLEND'), -1, 'no blending: nothing drawn in color');
+});
+
+test('GLLayer, depth only: nothing on the flat map, whose caps are not drawn', () => {
+  const l = new GL.GLLayer('lv-caps', GL.CAPS_FS, () => true), gl = fakeWebGL();
+  l.depthOnly = true;
+  l.onAdd(null, gl);
+  l.render(gl, args('mercator'));
+  assert.ok(!gl.calls.some((c) => c[0] === 'drawElements'));
+  assert.ok(!gl.calls.some((c) => c[0] === 'colorMask'));
+});
+
+test('GLLayer, in color as before: blending on, the depth test off', () => {
+  const l = new GL.GLLayer('lv-x', GL.FS_HEAD + 'void main() {}', () => true), gl = fakeWebGL();
+  l.onAdd(null, gl);
+  l.render(gl, args('globe'));
+  const names = gl.calls.map((c) => c[0] + ':' + c.slice(1).join(','));
+  assert.ok(names.includes('enable:BLEND'));
+  assert.ok(names.includes('disable:DEPTH_TEST'));
+  assert.ok(!names.some((n) => n.startsWith('colorMask')));
+});

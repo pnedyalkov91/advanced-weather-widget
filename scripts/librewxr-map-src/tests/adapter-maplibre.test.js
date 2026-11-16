@@ -236,7 +236,7 @@ test('day and night on: one raster of tiles made by the page, 40 % dark at its d
 /** A stand-in for the chip's layer class (WidgetTemp.TempLayerGL.GLLayer). */
 function fakeGL() {
   function GLLayer(id, fs, draw) { this.id = id; this.type = 'custom'; this.fs = fs; this.draw = draw; this.onFail = null; }
-  return { TempLayerGL: { GLLayer } };
+  return { TempLayerGL: { GLLayer, CAPS_FS: 'caps-fs' } };
 }
 /** The uniforms the night's layer gives the chip: { u_sun: [..], u_ln: [..] }. */
 function nightUniforms(map) {
@@ -1047,4 +1047,42 @@ test('night lights: all of them far out, fading as the map closes in, none on ha
   assert.ok(f > 0 && f < 1, 'fading: ' + f);
   map.getZoom = () => 7;       // some 330 km
   assert.equal(adapter.nightLightsState().fade, 0);
+});
+
+// On the globe MapLibre fills the polar caps of every raster layer with the
+// row of pixels at 85 degrees stretched to the pole. A layer of the chip
+// right over the base map writes the nearest depth there: the rasters drawn
+// after it (radar, satellite, tiles) fail their depth test in the caps.
+test('with the chip, a layer over the base map keeps the rasters out of the polar caps', () => {
+  const { map } = loadAdapter({ WidgetTemp: fakeGL() });
+  const caps = map.getLayer('lv-caps');
+  assert.ok(caps, 'added with the map');
+  assert.equal(caps.type, 'custom');
+  assert.equal(caps.fs, 'caps-fs');
+  assert.equal(caps.depthOnly, true);
+  assert.equal(caps.draw(), true);
+});
+
+test('the caps\' layer goes under all the weather layers, the night included', () => {
+  const r = loadAdapter({ WidgetTemp: fakeGL() });
+  const ids = ['lv-lines', 'lv-anim-lv-layer-radar-1', 'lv-temp-gl', 'lv-anim-lv-layer-sat-1', 'lv-night', 'lv-caps', 'lv-alerts-fill'];
+  r.map.layers = [{ id: 'base-water' }].concat(ids.map((id) => ({ id })));
+  r.adapter.restack();
+  assert.equal(r.map.getLayersOrder()[0], 'base-water');
+  assert.deepEqual(weather(r.map).slice(0, 2), ['lv-caps', 'lv-night']);
+});
+
+test('the caps\' layer whose shader does not build goes, and does not come back', async () => {
+  const { map, adapter } = loadAdapter({ WidgetTemp: fakeGL() });
+  const caps = map.getLayer('lv-caps');
+  caps.onFail();
+  await tick();
+  assert.equal(map.getLayer('lv-caps'), undefined);
+  adapter.setDayNight(true);        // the sun layers again, as after a new base map
+  assert.equal(map.getLayer('lv-caps'), undefined);
+});
+
+test('without the chip, no caps\' layer', () => {
+  const { map } = loadAdapter();
+  assert.equal(map.getLayer('lv-caps'), undefined);
 });

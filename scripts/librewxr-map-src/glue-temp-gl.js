@@ -228,6 +228,25 @@ WidgetTemp.TempLayerGL = (function () {
     '}'
   ].join('\n');
 
+  // The globe's polar caps in depth only (GLLayer.depthOnly): the nearest
+  // depth on the caps' rows (v_pole not 0), nothing on the body. MapLibre
+  // draws its raster layers with a depth test, each nearer than the one
+  // under it, and fills their caps with the row of pixels at 85 degrees
+  // stretched to the pole: a layer of this shader right over the base map
+  // keeps the rasters over it (radar, satellite, tiles) out of the caps.
+  // The chip's own layers draw without the depth test and fill them.
+  var CAPS_FS = [
+    '#version 300 es',
+    'precision highp float;',
+    'in float v_pole;',
+    'out vec4 fragColor;',
+    'void main() {',
+    '  if (abs(v_pole) < 1e-6) discard;',
+    '  gl_FragDepth = 0.0;',
+    '  fragColor = vec4(0.0);',
+    '}'
+  ].join('\n');
+
   /** A custom layer drawing one mesh over the world, Mercator 0..1, fine
       enough to follow the globe, with a row on each side reaching the
       pole, colored by fragment shader fs; draw(gl, u, layer) binds its
@@ -251,6 +270,7 @@ WidgetTemp.TempLayerGL = (function () {
     this.failed = false;
     this.onFail = null;
     this.timings = null;
+    this.depthOnly = false;           // the depth alone, on the globe (CAPS_FS)
   }
   function note(list, ms) { list.push(ms); if (list.length > 40) list.shift(); }
   var FLAT_SHIFTS = [-1, 0, 1], GLOBE_SHIFTS = [0];
@@ -372,6 +392,8 @@ WidgetTemp.TempLayerGL = (function () {
         if (this.onFail) this.onFail();
         return;
       }
+      // Flat, the caps' rows are not drawn: nothing to keep out.
+      if (this.depthOnly && sd.variantName !== 'globe') return;
       var u = pr.loc;
       this.frame++;
       gl.useProgram(pr.p);
@@ -381,9 +403,17 @@ WidgetTemp.TempLayerGL = (function () {
       if (u.u_projection_tile_mercator_coords) gl.uniform4fv(u.u_projection_tile_mercator_coords, d.tileMercatorCoords);
       if (u.u_projection_clipping_plane) gl.uniform4fv(u.u_projection_clipping_plane, d.clippingPlane);
       if (u.u_projection_transition) gl.uniform1f(u.u_projection_transition, d.projectionTransition);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      gl.disable(gl.DEPTH_TEST);
+      if (this.depthOnly) {
+        gl.disable(gl.BLEND);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.ALWAYS);
+        gl.depthMask(true);
+        gl.colorMask(false, false, false, false);
+      } else {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.disable(gl.DEPTH_TEST);
+      }
       gl.disable(gl.STENCIL_TEST);
       gl.disable(gl.CULL_FACE);
       gl.bindVertexArray(pr.vao);
@@ -394,6 +424,7 @@ WidgetTemp.TempLayerGL = (function () {
         gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_INT, 0);
       }
       gl.bindVertexArray(null);
+      if (this.depthOnly) gl.colorMask(true, true, true, true);
       this._sweep(gl);
       if (this.timings) note(this.timings.render, performance.now() - t0);
     }
@@ -627,6 +658,7 @@ WidgetTemp.TempLayerGL = (function () {
   TempLayerGL.clean = clean;
   TempLayerGL.GLLayer = GLLayer;
   TempLayerGL.FS_HEAD = FS_HEAD;
+  TempLayerGL.CAPS_FS = CAPS_FS;
   TempLayerGL.VS_MAIN = VS_MAIN;
   TempLayerGL.MESH_X = MESH_X;
   TempLayerGL.MESH_Y = MESH_Y;

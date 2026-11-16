@@ -158,8 +158,33 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (src) src.setTiles(shadeTiles());
     else if (map.getLayer('lv-night') && map.triggerRepaint) map.triggerRepaint();
   }
+  // The globe's polar caps kept clear of the raster layers (MapLibre
+  // stretches the row of pixels at 85 degrees of each up to the pole: rain
+  // on it came out as a wedge pointing at the pole). A layer of the chip
+  // right over the base map writes the nearest depth there; the rasters
+  // over it fail their depth test in the caps (WidgetTemp.TempLayerGL.CAPS_FS).
+  var caps = { layer: null, failed: false };
+  function addCapsLayer() {
+    if (caps.failed || map.getLayer('lv-caps')) return;
+    var GLLayer = nightClass();
+    if (!GLLayer) return;
+    if (!caps.layer) {
+      caps.layer = new GLLayer('lv-caps', WidgetTemp.TempLayerGL.CAPS_FS, function () { return true; });
+      caps.layer.depthOnly = true;
+      // Called while the map draws: the caps go back to MapLibre's way.
+      caps.layer.onFail = function () {
+        caps.failed = true;
+        caps.layer = null;
+        setTimeout(function () {
+          if (map && map.getLayer('lv-caps')) map.removeLayer('lv-caps');
+        }, 0);
+      };
+    }
+    addLayer(caps.layer);
+  }
   // The shade the setting asks for; after a style swap too.
   function addSunLayers() {
+    addCapsLayer();
     if (!dayNight) {
       if (map.getLayer('lv-night')) map.removeLayer('lv-night');
       if (map.getSource('lv-night')) map.removeSource('lv-night');
@@ -972,6 +997,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   }
   /** [group, rank inside the group] of a layer id; null for one not stacked. */
   function stackGroup(id) {
+    if (id === 'lv-caps') return ['night', -1];
     if (id === 'lv-night') return ['night', 0];
     if (id === 'lv-lights') return ['night', 1];
     if (id === LINES_HALO) return ['lines', 0];
