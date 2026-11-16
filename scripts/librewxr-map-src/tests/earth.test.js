@@ -520,6 +520,10 @@ test('viewWidthKm: the ground across the map, from its width in px, the zoom and
   near(E.viewWidthKm(512, 0, 0), 40075.0167, 1e-3, 'the equator at zoom 0');
   near(E.viewWidthKm(512, 1, 0), 40075.0167 / 2, 1e-3, 'half at zoom 1');
   near(E.viewWidthKm(512, 0, 60), 40075.0167 / 2, 1e-3, 'half as much ground at 60 degrees');
+  // The globe turned to a pole: MapLibre sizes it as at 85 degrees.
+  near(E.viewWidthKm(512, -1.585, 90), E.viewWidthKm(512, -1.585, 85.0511), 1e-9, 'at the north pole');
+  near(E.viewWidthKm(512, -1.585, -89.9), E.viewWidthKm(512, -1.585, 85.0511), 1e-9, 'near the south pole');
+  near(E.nightLightsLook(-1.585, 3, 90).keep, E.nightLightsLook(-1.585, 3, 85.0511).keep, 1e-12, 'the lights too');
 });
 
 test('nightLightsFade: all the lights over a whole country, none once half of France fills the map', () => {

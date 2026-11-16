@@ -236,7 +236,7 @@ var WidgetEarth = (function () {
       that says. */
   function nightLightsLook(z, density, globeLat) {
     var L = NIGHT_LIGHTS, D = density > 0 ? density : L.density[2];
-    var around = globeLat == null ? 1 : 1 / Math.max(0.05, Math.cos(Math.min(85, Math.abs(globeLat)) * RAD));
+    var around = globeLat == null ? 1 : 1 / Math.cos(Math.min(MERC_LAT, Math.abs(globeLat)) * RAD);
     var cell = 512 * Math.pow(2, z) * around / L.cols;
     var size = Math.max(1.5, Math.min(4, cell * 1.2));
     var gain = Math.min(1, L.boost * cell * cell / (size * size * D));
@@ -245,9 +245,12 @@ var WidgetEarth = (function () {
   }
 
   /** The ground across a map widthPx wide at zoom z, its middle at
-      latitude lat, in km (MapLibre's 512 px tiles). */
+      latitude lat, in km (MapLibre's 512 px tiles). The globe's middle
+      goes up to the pole, but MapLibre sizes it as if at 85 degrees past
+      them: so does this, or the ground would shrink to nothing there. */
   function viewWidthKm(widthPx, z, lat) {
-    return widthPx * 40075.0167 * Math.cos(lat * RAD) / (512 * Math.pow(2, z));
+    var la = Math.min(MERC_LAT, Math.abs(lat));
+    return widthPx * 40075.0167 * Math.cos(la * RAD) / (512 * Math.pow(2, z));
   }
 
   /** How much of the lights shows on a map viewKm across, 0..1. */
