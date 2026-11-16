@@ -36,8 +36,7 @@
 
 .import "../js/debug.js" as Dbg
 .import "../js/sharedGet.js" as Shared
-
-var _LOCATOR_KEY = "AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv";
+.import "../js/bbcLocator.js" as BbcLocator
 
 /**
  * BBC visibility is a text band ("Very Poor" … "Excellent"). Map it to an
@@ -104,13 +103,7 @@ function _resolveLocationId(service, gen, cb) {
     }
     Dbg.log("BBC Weather", "no cached location id for " + key + " → asking the BBC locator service for the nearest place");
 
-    var url = "https://locator-service.api.bbci.co.uk/locations?"
-        + "api_key=" + _LOCATOR_KEY
-        + "&stack=aws&locale=en&filter=international"
-        + "&place-types=settlement%2Cairport%2Cdistrict&order=importance"
-        + "&latitude=" + encodeURIComponent(lat)
-        + "&longitude=" + encodeURIComponent(lon)
-        + "&format=json";
+    var url = BbcLocator.locatorUrl(lat, lon);
     var req = Shared.xhr("BBC Weather", "_resolveLocationId");
     req.open("GET", url);
     req.onreadystatechange = function () {

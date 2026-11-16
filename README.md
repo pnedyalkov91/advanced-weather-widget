@@ -5,7 +5,7 @@ A modern, highly customizable weather widget built specifically for KDE Plasma 6
 ### Why this widget?
 *   **Granular Precision:** Uses exact Latitude/Longitude coordinates for local data rather than generic city-level lookups.
 *   **Modern UX:** A clean, native-feeling interface with smooth animations and intuitive layouts.
-*   **Feature Rich:** From interactive Weather maps maps and air quality to space weather and moon phases - everything is configurable.
+*   **Feature Rich:** From interactive weather maps and air quality to space weather and moon phases - everything is configurable.
 *   **KDE Notifications support:** Stay informed with KDE notifications for weather alerts, forecasts, the UV index, and the Kp index. All notifications can be individually configured.
 
 ## 📑 Table of Contents
@@ -17,9 +17,10 @@ A modern, highly customizable weather widget built specifically for KDE Plasma 6
 - [✨ Detailed Features](#-detailed-features)
 - [💻 Code Contributors](#-code-contributors)
 - [🌐 Translation](#-translation)
-- [📚 External Resources](#external-resources)
+- [📦 Data Sources](#-data-sources)
 - [🔑 Entering API Keys](#-entering-api-keys)
 - [🐛 Bug Reports & Feedback](#-bug-reports--feedback)
+- [🔒 Privacy](#-privacy)
 - [❤️ Support](#-support-the-project)
 - [📜 License](#-license)
 
@@ -40,7 +41,7 @@ For the full functionality of this widget, please ensure you have the following 
 | **Arch Linux** | `qt6-location` |
 | **Debian / Kubuntu / KDE Neon** | `qml6-module-qtlocation` `qml6-module-qtpositioning` |
 
-### 📡 Weather maps Map
+### 📡 Weather maps
 *Required for the interactive Weather maps tab (Chromium-based).*
 
 | Distribution | Package Name |
@@ -57,7 +58,7 @@ For the full functionality of this widget, please ensure you have the following 
 > You need to log out and log back in for this option to take effect, as the setting needs to be applied before Plasma starts. It also applies to the entire session, so any other application that embeds a Chromium-based browser view will use the same setting.
 > If you enable this option, the following file will be created:
 
-> ~/.config/plasma-workspace/env/advanced-weather-widget-Weather maps-gpu-workaround.sh
+> ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh
 
 > **MangoHud and other `LD_PRELOAD` overlays:** starting plasmashell under MangoHud (`mangohud plasmashell --replace`) has been observed to crash the whole shell when the embedded Weather maps starts. If the widget finds MangoHud in plasmashell's `LD_PRELOAD`, it does not load the embedded Weather maps. The Weather maps tab then shows an **Open Weather maps in browser** button and a **Load embedded Weather maps anyway** button, so you can still try it at your own risk.
 
@@ -108,7 +109,7 @@ The History tab and the Graphs layouts of the Forecast tab draw their charts wit
 3. Search for **Advanced Weather Widget**.
 4. Click **Install**.
 
-##  Manual Installation (Development)
+## 🛠 Manual Installation (Development)
 If you prefer to install from source:
 ```bash
 git clone https://github.com/pnedyalkov91/advanced-weather-widget.git && cd advanced-weather-widget
@@ -131,65 +132,43 @@ python3 scripts/build_librewxr_map.py --librewxr /path/to/LibreWXR
 
 # 🖼️ Screenshots
 
-<p align="center">
-  <b>Panel Layout Styles</b><br>
-  <img src="screenshots/panel/Single line.png" width="420" alt="Single line">
-  <br>
-  (<b>Single line:</b> A compact, one-row layout for a minimalist look.)
-  <br><br>
-  <img src="screenshots/panel/Simple mode.png" width="130" alt="Simple mode"> <br>  
-    (<b>Simple mode:</b> Displays only the essential icon and current temperature.)
-    <br><br>
-  <img src="screenshots/panel/xfce style.png" width="130" alt="XFCE style"> <br>(<b>XFCE style:</b> A multiline display with an automatic scrollbox for detailed info.)
-  <br><br>
-  </p>
+### Panel layout styles
+| Single line | Simple mode | XFCE style |
+|:---:|:---:|:---:|
+| <img src="screenshots/panel/Single line.png" width="300" alt="Single line"> | <img src="screenshots/panel/Simple mode.png" width="130" alt="Simple mode"> | <img src="screenshots/panel/xfce style.png" width="130" alt="XFCE style"> |
+| A compact, one-row layout for a minimalist look. | Only the essential icon and current temperature. | A multiline display with an automatic scrollbox for detailed info. |
 
-<p align="center">
-  <b>Detailed Widget Layouts</b><br>
-  <img src="screenshots/widget/advanced/advanced mode (cards).png" width="500" alt="Advanced Weather Widget (Advance mode)">
-  <img src="screenshots/widget/advanced/advanced mode (list).png" width="500" alt="Advanced Weather Widget (List mode)">
-  <br>
-  (<b>Advanced mode:</b> Choose between modern Cards or a clean List view.)
-  <br><br>
-  <img src="screenshots/widget/simple/simple mode (default).png" width="500" alt="Simple mode">
-  <br>
-  <img src="screenshots/widget/simple/super simple.png" width="500" alt="Super Simple mode">
-    <br>
-      (<b>Simple modes:</b> Focused views for those who want weather without the tabs.)
-</p>
+### Widget layouts
+| Advanced mode (cards) | Advanced mode (list) |
+|:---:|:---:|
+| <img src="screenshots/widget/advanced/advanced mode (cards).png" width="400" alt="Advanced mode (cards)"> | <img src="screenshots/widget/advanced/advanced mode (list).png" width="400" alt="Advanced mode (list)"> |
+| Modern cards. | A clean list view. |
 
-<p align="center">
-  <b>Tabs</b><br>
-    <img src="screenshots/widget/tabs/forecast-strip.png" width="500" alt="Forecast tab">
-      <br>
-  (Forecast tab - Strip)
-      <br>
-  <img src="screenshots/widget/tabs/forecast.png" width="500" alt="Forecast tab">
-    <br>
-  (Forecast tab - Cards)
-  <br><br>
-  <img src="screenshots/widget/tabs/radar.png" width="500" alt="Radar tab">
-      <br>
-  (Weather maps tab)
-   <br><br>
-   <img src="screenshots/notifications/regular-notifications.png" width="300" alt="Regular Notifications">
-   <br>
-  (Regular Notifications)
-   <br><br>
-      <img src="screenshots/notifications/alerts-notifications.png" width="300" alt="Alerts Notifications with native language support">
-   <br>
-  (Alerts Notifications with native language support)
-</p>
+| Simple mode (default) | Super simple |
+|:---:|:---:|
+| <img src="screenshots/widget/simple/simple mode (default).png" width="400" alt="Simple mode"> | <img src="screenshots/widget/simple/super simple.png" width="400" alt="Super simple mode"> |
+| Focused view for weather without the tabs. | The most minimal view. |
+
+### Tabs
+| Forecast (strip) | Forecast (cards) | Weather maps |
+|:---:|:---:|:---:|
+| <img src="screenshots/widget/tabs/forecast-strip.png" width="300" alt="Forecast tab (strip)"> | <img src="screenshots/widget/tabs/forecast.png" width="300" alt="Forecast tab (cards)"> | <img src="screenshots/widget/tabs/radar.png" width="300" alt="Weather maps tab"> |
+
+### Notifications
+| Regular notifications | Alert notifications |
+|:---:|:---:|
+| <img src="screenshots/notifications/regular-notifications.png" width="300" alt="Regular notifications"> | <img src="screenshots/notifications/alerts-notifications.png" width="300" alt="Alert notifications with native language support"> |
+| Forecast, UV index and Kp index. | Alerts with native language support. |
 
 # ✨ Detailed Features
 
 ### 📍 Location Management
-- **Precision:** Automatic detection via GeoClue2 or manual search with dual geocoding ([OpenStreetMap](https://www.openstreetmap.org/) + [Photon](https://photon.komoot.io/)).
+- **Precision:** Automatic detection via GeoClue2 (with an HTTPS IP-lookup fallback, see [Privacy](#-privacy)) or manual search with [Photon](https://photon.komoot.io/); place names are resolved with [OpenStreetMap Nominatim](https://www.openstreetmap.org/).
 - **Map Picker:** Integrated OpenStreetMap preview to pin your exact location.
 - **Smart Data:** Automatic timezone, altitude detection, and localized city names.
 
 ### 🌦 Weather Providers & Adaptive Mode
-- Choose from **11 different providers**, including free options (Open-Meteo, BBC Weather, met.no) and Key-required providers.
+- Choose from **12 different providers**, including free options (Open-Meteo, BBC Weather, met.no) and Key-required providers.
 - **Adaptive Failover:** Automatically cycles through providers if one goes offline, ensuring you never have a widget without data.
 - **National High-Res Models:** When using Open-Meteo, the widget automatically prefers your country's official high-resolution model (e.g. DWD ICON for Germany/Austria, Météo-France AROME, UK Met Office, NOAA GFS/HRRR, MeteoSwiss ICON-CH, MET Norway, Environment Canada GEM, JMA, KNMI, DMI, ItaliaMeteo ARPAE, CMA) for more precise local forecasts.
 
@@ -204,6 +183,7 @@ For providers that require an API key, you can enter it in the widget's settings
 | Provider | Key Required | Signup Link |
 |---|:---:|---|
 | **[Open-Meteo](https://open-meteo.com/) / [MET Norway](https://www.met.no/)** | No | - |
+| **[BBC Weather](https://www.bbc.com/weather)** | No | - |
 | **OpenWeatherMap** | ✅ | [Sign Up](https://openweathermap.org/api) |
 | **WeatherAPI** | ✅ | [Sign Up](https://www.weatherapi.com/) |
 | **Pirate Weather** | ✅ | [Sign Up](https://pirateweather.net/) |
@@ -240,10 +220,10 @@ For providers that require an API key, you can enter it in the widget's settings
 Thank you to everyone who has contributed code to this project ❤️
 
 - **[Mizu Ikki](https://github.com/mizuikki)** - QWeather provider fixes and perfomance improvements (refresh handling, forecast display, precipitation fallback)
-- **[rcspam](https://github.com/rcspam)** - [PR-151](https://github.com/pnedyalkov91/advanced-weather-widget/pull/151), [PR-146](https://github.com/pnedyalkov91/advanced-weather-widget/pull/146), [PR-157](https://github.com/pnedyalkov91/advanced-weather-widget/pull/157), [PR-179](https://github.com/pnedyalkov91/advanced-weather-widget/pull/179), [PR-180](https://github.com/pnedyalkov91/advanced-weather-widget/pull/180), [PR-198](https://github.com/pnedyalkov91/advanced-weather-widget/pull/198), 
+- **[rcspam](https://github.com/rcspam)** - [PR-151](https://github.com/pnedyalkov91/advanced-weather-widget/pull/151), [PR-146](https://github.com/pnedyalkov91/advanced-weather-widget/pull/146), [PR-157](https://github.com/pnedyalkov91/advanced-weather-widget/pull/157), [PR-179](https://github.com/pnedyalkov91/advanced-weather-widget/pull/179), [PR-180](https://github.com/pnedyalkov91/advanced-weather-widget/pull/180), [PR-198](https://github.com/pnedyalkov91/advanced-weather-widget/pull/198)
 - **[ydimitrof](https://github.com/ydimitrof)** - [PR-168](https://github.com/pnedyalkov91/advanced-weather-widget/pull/168)
 - **[Katze-942](https://github.com/Katze-942)** - [PR-185](https://github.com/pnedyalkov91/advanced-weather-widget/pull/185)
-- **[KassLavender](https://github.com/KassLavender)** - [PR-174](https://github.com/pnedyalkov91/advanced-weather-widget/pull/174), 
+- **[KassLavender](https://github.com/KassLavender)** - [PR-174](https://github.com/pnedyalkov91/advanced-weather-widget/pull/174)
 - **[JoshuaKimsey](https://github.com/JoshuaKimsey)** - [PR-192](https://github.com/pnedyalkov91/advanced-weather-widget/pull/192)
 
 ## 🌐 Translation
@@ -363,6 +343,8 @@ If you encounter any issues or have suggestions, please open a [GitHub Issue](ht
   Copyright © 2010-2024 Vladimir Agafonkin.  
   Licensed under the **BSD 2-Clause License**.
 
+- The **Weather maps** use **MapLibre GL JS** for the interactive map (BSD-3-Clause, https://maplibre.org/) with vector tiles from **OpenFreeMap** (https://openfreemap.org/), and the Leaflet fallback uses **leaflet-rotate** (GPL-3.0, https://github.com/Raruto/leaflet-rotate) and **@maplibre/maplibre-gl-leaflet** (ISC). These libraries are loaded at run time from unpkg.com. The wind layer reads **Open-Meteo** open-data files with the Open-Meteo file reader (GPL-2.0-only, https://github.com/open-meteo/typescript-omfiles), which is included in `components/vendor/`.
+
 - Map tiles are provided by **OpenStreetMap**:  
   https://www.openstreetmap.org/copyright
 
@@ -383,6 +365,44 @@ NOAA/NWS data and products are in the public domain and are not subject to copyr
  [Photon](https://photon.komoot.io/) is a project run by ©  [komoot GmbH](https://www.komoot.com/)
 
 
+
+## 🔒 Privacy
+
+Advanced Weather Widget has no accounts, no analytics, no telemetry and no tracking, and it has no server of its own. Everything it sends goes directly from your computer to the public service needed for the feature you use. Like any web request, each of these services can see your IP address and is governed by its own privacy policy.
+
+### Why location data is needed
+A weather provider cannot give you weather data without knowing where you want it for, so, like every other weather app or widget, this widget has to send your coordinates (or a place that is turned into coordinates) to the provider you choose. Your IP address is visible to every service you contact, as with any internet connection, and nobody can avoid that. This cannot be turned off: without a location and an internet connection there is no weather data.
+
+If you are not comfortable with this, please do not install this widget, or any other weather widget or app. If you want to share less, you can pick your location by hand (for example a nearby town instead of your exact address).
+
+### What is sent, and to whom
+| Feature | Service | Data sent |
+|---|---|---|
+| Weather and history | The provider you select (Open-Meteo, MET Norway, BBC Weather, OpenWeatherMap, WeatherAPI, Pirate Weather, Tomorrow.io, Visual Crossing, StormGlass, Weatherbit, QWeather, AEMET) | Your coordinates, plus your API key where the provider needs one. |
+| Location search | [Photon](https://photon.komoot.io) (OpenStreetMap data) | The text you type, or coordinates you pick on the map |
+| Place names, alert country | [Nominatim](https://nominatim.openstreetmap.org) (OpenStreetMap) | Your coordinates |
+| Weather alerts | [FOSS Public Alert Server](https://alerts.kde.org) (default, can be self-hosted), LibreWXR, MeteoAlarm or NOAA NWS, depending on your setting | FOSS: a small area around your coordinates. LibreWXR: your exact coordinates |
+| Weather maps | LibreWXR, RainViewer, OpenFreeMap, OpenStreetMap, Open-Meteo and, if you use your key for that layer, OpenWeatherMap | The map area you are viewing (tile requests); your key for OpenWeatherMap layers |
+| Map libraries | [unpkg.com](https://unpkg.com) (CDN for Leaflet and MapLibre) | A normal file request, so unpkg sees your IP address; no personal data is added |
+| Connection check | `networkcheck.kde.org`, `nmcheck.gnome.org` | Nothing but the request itself, and only after a failed refresh |
+
+The weather map and the location map picker load their open-source map libraries (Leaflet and MapLibre, fixed versions) from the unpkg.com CDN when the map opens. This is code that runs inside the widget's embedded browser view, so the widget relies on unpkg.com being trustworthy.
+
+### Automatic location
+If you enable **Automatically detect location**, the widget asks your system's location service (GeoClue2) first and then any other Qt Positioning source. Only if both fail does it use an IP-based lookup ([ipwho.is](https://ipwho.is), over HTTPS), which sends only your IP address, as every web request does. To avoid any IP-based lookup, you can enter your location manually.
+
+### What is stored on your computer
+- Your settings, **including any API keys you enter**, in your Plasma configuration. They are stored as plain text, like all KDE Plasma widget settings.
+- Some provider APIs require the key in the request URL, so the key is also sent to that provider as part of the web address. Use keys that are meant for personal use and revoke them if they leak.
+- The weather map keeps a browser cache of map tiles and wind data in its own storage (named `advanced-weather-widget-map`; with QtWebEngine 6.9 or later the HTTP cache is limited to 150 MB, older versions keep it in memory only).
+- Debug mode is off by default. When on, it writes to the system log only. API keys are never printed and key parameters are removed from logged URLs, but the log does show your location (name and coordinates) and settings, so check it before posting it publicly.
+
+### What the widget does not do
+It does not collect personal data, use tracking cookies, access your camera, microphone or contacts, read your personal files, or send anything to the developer. The only file it writes outside its own settings is the optional GPU workaround script described under [Prerequisites](#-weather-maps), and the only other file outside its own folder that it reads is the notification sound (the bundled default or one you choose).
+
+The widget is open source, so you can verify all of the above in the code.
+
+---
 
 ## ❤️ Support the project
 

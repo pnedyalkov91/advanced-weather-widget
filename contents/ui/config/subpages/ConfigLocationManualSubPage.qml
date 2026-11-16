@@ -27,6 +27,7 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import "../../js/debug.js" as Dbg
+import "../../js/bbcLocator.js" as BbcLocator
 
 Item {
     id: manualSubPageRoot
@@ -197,7 +198,7 @@ Item {
             };
         if (p === "bbc")
             return {
-                url: "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + lat + "&longitude=" + lon + "&format=json"
+                url: BbcLocator.locatorUrl(lat, lon)
             };
         if (p === "openWeather") {
             var ow = (cfg.owApiKey || "").trim();

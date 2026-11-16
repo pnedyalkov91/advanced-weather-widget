@@ -25,6 +25,7 @@ import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.plasma.components as PlasmaComponents
 import "tabs"
 import "../js/debug.js" as Dbg
+import "../js/bbcLocator.js" as BbcLocator
 
 KCM.AbstractKCM {
     id: root
@@ -379,7 +380,7 @@ KCM.AbstractKCM {
             url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
         } else if (provider === "bbc") {
             // BBC has no key; verify by resolving the nearest location id.
-            url = "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&format=json";
+            url = BbcLocator.locatorUrl(lat, lon);
         } else if (provider === "qWeather") {
             var qwKey = (cfg_qwApiKey || "").trim();
             if (!qwKey) {

@@ -22,6 +22,7 @@ import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import "../js/debug.js" as Dbg
+import "../js/bbcLocator.js" as BbcLocator
 
 KCM.SimpleKCM {
     id: root
@@ -512,7 +513,7 @@ KCM.SimpleKCM {
         } else if (provider === "metno") {
             url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
         } else if (provider === "bbc") {
-            url = "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&format=json";
+            url = BbcLocator.locatorUrl(lat, lon);
         } else if (provider === "qWeather") {
             var qwKey = (Plasmoid.configuration.qwApiKey || "").trim();
             if (!qwKey) {
@@ -870,7 +871,7 @@ KCM.SimpleKCM {
     // ── 3-tier auto-detection ───────────────────────────────────────────
     // Tier 1: GeoClue2 explicitly
     // Tier 2: Any available Qt Positioning plugin
-    // Tier 3: IP geolocation (ip-api.com → reallyfreegeoip.org)
+    // Tier 3: IP geolocation (ipwho.is, HTTPS)
     // Which tier is active: 0 = idle, 1 = geoclue2, 2 = generic, 3 = IP
     property int _cfgLocationTier: 0
     // GeoClue2 / Qt Positioning can report several fixes for one detection; only the first is used.
@@ -1035,45 +1036,11 @@ KCM.SimpleKCM {
 
     // Tier 3 - IP-based geolocation
     function _cfgIpGeolocate() {
-        Dbg.log("Config/Location", "Tier 3: trying ip-api.com…");
+        Dbg.log("Config/Location", "Tier 3: trying ipwho.is…");
         var req = Dbg.xhr("Config/Location", "_cfgIpGeolocate");
         _cfgIpGeoTimer._activeReq = req;
         _cfgIpGeoTimer.restart();
-        req.open("GET", "http://ip-api.com/json/?fields=status,lat,lon,city,regionName,country,countryCode");
-        req.onreadystatechange = function () {
-            if (req.readyState !== XMLHttpRequest.DONE)
-                return;
-            if (req.status === 200) {
-                try {
-                    var data = JSON.parse(req.responseText);
-                    var lat = parseFloat(data.lat);
-                    var lon = parseFloat(data.lon);
-                    if (data.status === "success" && !isNaN(lat) && !isNaN(lon)) {
-                        _cfgIpGeoTimer.stop();
-                        _cfgIpGeoTimer._activeReq = null;
-                        _cfgLocationTier = 0;
-                        Dbg.log("Config/Location", "Tier 3 (ip-api.com): position acquired");
-                        _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"), {
-                            name: _ipLocationName(data.city, data.regionName, data.country),
-                            countryCode: data.countryCode || ""
-                        });
-                        return;
-                    }
-                } catch (e) {
-                    Dbg.warn("Config/Location", "ip-api.com parse error:", e);
-                }
-            }
-            _cfgIpGeolocateFallback();
-        };
-        req.send();
-    }
-
-    function _cfgIpGeolocateFallback() {
-        Dbg.log("Config/Location", "Tier 3 fallback: trying reallyfreegeoip.org…");
-        var req = Dbg.xhr("Config/Location", "_cfgIpGeolocateFallback");
-        _cfgIpGeoTimer._activeReq = req;
-        _cfgIpGeoTimer.restart();
-        req.open("GET", "https://reallyfreegeoip.org/json/");
+        req.open("GET", "https://ipwho.is/");
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
@@ -1084,17 +1051,17 @@ KCM.SimpleKCM {
                     var data = JSON.parse(req.responseText);
                     var lat = parseFloat(data.latitude);
                     var lon = parseFloat(data.longitude);
-                    if (!isNaN(lat) && !isNaN(lon)) {
+                    if (data.success === true && !isNaN(lat) && !isNaN(lon)) {
                         _cfgLocationTier = 0;
-                        Dbg.log("Config/Location", "Tier 3 (reallyfreegeoip): position acquired");
+                        Dbg.log("Config/Location", "Tier 3 (ipwho.is): position acquired");
                         _cfgHandlePosition(lat, lon, NaN, i18n("IP geolocation"), {
-                            name: _ipLocationName(data.city, data.region_name, data.country_name),
+                            name: _ipLocationName(data.city, data.region, data.country),
                             countryCode: data.country_code || ""
                         });
                         return;
                     }
                 } catch (e) {
-                    Dbg.warn("Config/Location", "reallyfreegeoip parse error:", e);
+                    Dbg.warn("Config/Location", "ipwho.is parse error:", e);
                 }
             }
             _cfgLocationTier = 0;

@@ -1103,7 +1103,7 @@ PlasmoidItem {
     //
     // Tier 1: GeoClue2 explicitly (PositionSource name: "geoclue2")
     // Tier 2: Any available Qt Positioning plugin (PositionSource, no name)
-    // Tier 3: IP-based geolocation (ip-api.com → reallyfreegeoip.org)
+    // Tier 3: IP-based geolocation (ipwho.is, HTTPS)
     //
     // Active whenever the user has chosen "Automatically detect location".
     // On every position update it:
@@ -1272,49 +1272,14 @@ PlasmoidItem {
         }
     }
 
-    // Tier 3 - IP-based geolocation
+    // Tier 3 - IP-based geolocation. HTTPS only: the free ip-api.com endpoint is
+    // plain HTTP, so it is not used (anyone on the network could read or forge it).
     function _ipGeolocate() {
-        Dbg.log("Location", "Tier 3: trying ip-api.com…");
-        var req = Dbg.xhr("Location", "IP geolocation: ip-api.com");
+        Dbg.log("Location", "Tier 3: trying ipwho.is…");
+        var req = Dbg.xhr("Location", "IP geolocation: ipwho.is");
         _ipGeoTimer._activeReq = req;
         _ipGeoTimer.restart();
-
-        req.open("GET", "http://ip-api.com/json/?fields=status,lat,lon,city,regionName,country,countryCode");
-        req.onreadystatechange = function () {
-            if (req.readyState !== XMLHttpRequest.DONE)
-                return;
-            if (req.status === 200) {
-                try {
-                    var data = JSON.parse(req.responseText);
-                    var lat = parseFloat(data.lat);
-                    var lon = parseFloat(data.lon);
-                    if (data.status === "success" && !isNaN(lat) && !isNaN(lon)) {
-                        _ipGeoTimer.stop();
-                        _ipGeoTimer._activeReq = null;
-                        _locationTier = 0;
-                        Dbg.log("Location", "Tier 3 (ip-api.com): position acquired");
-                        _applyAutoPosition(lat, lon, NaN, {
-                            name: _ipLocationName(data.city, data.regionName, data.country),
-                            countryCode: data.countryCode || ""
-                        });
-                        return;
-                    }
-                } catch (e) {
-                    Dbg.warn("Location", "ip-api.com parse error:", e);
-                }
-            }
-            // Fallback to reallyfreegeoip.org
-            _ipGeolocateFallback();
-        };
-        req.send();
-    }
-
-    function _ipGeolocateFallback() {
-        Dbg.log("Location", "Tier 3 fallback: trying reallyfreegeoip.org…");
-        var req = Dbg.xhr("Location", "IP geolocation: reallyfreegeoip.org");
-        _ipGeoTimer._activeReq = req;
-        _ipGeoTimer.restart();
-        req.open("GET", "https://reallyfreegeoip.org/json/");
+        req.open("GET", "https://ipwho.is/");
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
@@ -1325,17 +1290,17 @@ PlasmoidItem {
                     var data = JSON.parse(req.responseText);
                     var lat = parseFloat(data.latitude);
                     var lon = parseFloat(data.longitude);
-                    if (!isNaN(lat) && !isNaN(lon)) {
+                    if (data.success === true && !isNaN(lat) && !isNaN(lon)) {
                         _locationTier = 0;
-                        Dbg.log("Location", "Tier 3 (reallyfreegeoip.org): position acquired");
+                        Dbg.log("Location", "Tier 3 (ipwho.is): position acquired");
                         _applyAutoPosition(lat, lon, NaN, {
-                            name: _ipLocationName(data.city, data.region_name, data.country_name),
+                            name: _ipLocationName(data.city, data.region, data.country),
                             countryCode: data.country_code || ""
                         });
                         return;
                     }
                 } catch (e) {
-                    Dbg.warn("Location", "reallyfreegeoip parse error:", e);
+                    Dbg.warn("Location", "ipwho.is parse error:", e);
                 }
             }
             _locationTier = 0;
