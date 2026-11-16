@@ -875,6 +875,17 @@ window.animMeasure = function () {
     playing, layers ({ id: on }), models (short names of the models
     drawn: the global one, then the finer ones in view) } for the QML bar. */
 
+/** How far each layer switched on is read: { id: { done, total } }, the
+    radar and the satellite by their images (the loading box of the QML bar). */
+function animProgress() {
+  var out = anim.group.progress();
+  ['radar', 'satellite'].forEach(function (k) {
+    var p = animOverlays && animOverlays[k] && animOverlays[k].progress();
+    if (p && p.total) out[k] = p;
+  });
+  return out;
+}
+
 window.animState = function () {
   if (!anim) return null;
   var g = anim.group, layers = {};
@@ -885,6 +896,7 @@ window.animState = function () {
     time: anim.player.index >= 0 ? g.timeAt(anim.player.index) : null,
     fromFile: anim.player.index >= 0 && g.isFile(anim.player.index),
     ready: g.times.map(function (_, i) { return g.ready(i); }), failed: g.failed(), layers: layers,
+    progress: animProgress(),
     radar: animOverlayState('radar'), satellite: animOverlayState('satellite'),
     models: WidgetModels.labels(_windOpen ? _windOpen.model : 'ecmwf_ifs025', animFinesDrawn()),
     loop: animLoop, windLevel: animWindLevel,
@@ -959,6 +971,17 @@ window.animSetDateBox = function (left, bottom, w, h, r) {
   s.setProperty('--aww-date-w', px(w));
   s.setProperty('--aww-date-h', px(h));
   s.setProperty('--aww-date-r', px(r));
+};
+/** Where the widget's loading box lies over the map (px), as the date,
+    and how much it shows (0..1, it fades in and out). */
+window.animSetLoadBox = function (left, bottom, w, h, r, o) {
+  var s = document.documentElement.style, px = function (v) { return Math.max(0, +v || 0) + 'px'; };
+  s.setProperty('--aww-load-left', px(left));
+  s.setProperty('--aww-load-bottom', px(bottom));
+  s.setProperty('--aww-load-w', px(w));
+  s.setProperty('--aww-load-h', px(h));
+  s.setProperty('--aww-load-r', px(r));
+  s.setProperty('--aww-load-o', String(Math.max(0, Math.min(1, +o || 0))));
 };
 window.animSetLegendTop = function (px) {
   document.documentElement.style.setProperty('--aww-legend-top', Math.max(0, +px || 0) + 'px');

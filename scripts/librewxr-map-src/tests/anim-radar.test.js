@@ -452,3 +452,15 @@ test('radarTime: with lightning, the step of now shows the last observed image',
   assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: null }), nowStep);
   assert.equal(R.radarTime(nowStep, { lightning: true, nowStep: null, lastPast: last }), nowStep);
 });
+
+test('Overlay.progress: null off; on, the images whose tiles are in, out of all', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  assert.equal(o.progress(), null);
+  zoomedAdapter(a);
+  o.setOn(true);
+  a.made.forEach((h) => { a.loaded[h.layerId] = false; });
+  assert.deepEqual(o.progress(), { done: 0, total: 3 });
+  a.loaded[a.made[0].layerId] = true;
+  a.loaded[a.made[2].layerId] = true;
+  assert.deepEqual(o.progress(), { done: 2, total: 3 });
+});

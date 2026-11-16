@@ -644,6 +644,16 @@ Rectangle {
                                 delay: Kirigami.Units.toolTipDelay
                             }
                         }
+                        // The box of the layers still loading, at the bottom left of the map.
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Loading of the layers")
+                            checked: panel.map.loadBoxOn
+                            onToggled: {
+                                panel.map.setLoadBox(checked);
+                                checked = Qt.binding(function () { return panel.map.loadBoxOn; });
+                            }
+                        }
                         SliderSetting {
                             title: i18n("Panel opacity")
                             valueText: i18n("%1 %", Math.round(value))

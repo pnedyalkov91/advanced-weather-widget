@@ -227,6 +227,19 @@ var WidgetAnimRadar = (function () {
     return false;
   };
 
+  /** How far its images are: { done, total }, done those whose tiles are
+      in for the map as it is; null off. */
+  Overlay.prototype.progress = function () {
+    if (!this.on) return null;
+    var self = this, done = 0;
+    this.frames.forEach(function (f) {
+      var e = self.layers[f.path];
+      if (!e) return;
+      if (self.adapter.frameLoaded ? self.adapter.frameLoaded(e.handle) : e.ready) done++;
+    });
+    return { done: done, total: this.frames.length };
+  };
+
   Overlay.prototype._drop = function (path) {
     var e = this.layers[path];
     if (!e) return;

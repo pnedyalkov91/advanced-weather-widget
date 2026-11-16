@@ -267,6 +267,8 @@
     <!-- Weather Map: opacity (%) of the layer column and the time bar over the map, and the blur (px) of the map under them -->
     <entry name="weatherMapPanelOpacity" type="Int"><default>40</default><min>0</min><max>100</max></entry>
     <entry name="weatherMapPanelBlur"   type="Int"><default>18</default><min>0</min><max>40</max></entry>
+    <!-- Weather Map: the box of the layers still loading, at the bottom left -->
+    <entry name="weatherMapLoadBox"     type="Bool"><default>true</default></entry>
     <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the clean style) -->
     <entry name="weatherMapControlStyle" type="String"><default>plasma</default></entry>
     <!-- Weather Map: icons of the layers and of the radar menu: "weathermap" (its own drawings) | "symbolic" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" -->

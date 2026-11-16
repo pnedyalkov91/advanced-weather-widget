@@ -112,6 +112,8 @@ Item {
     readonly property bool mapLinesOn: Plasmoid.configuration.librewxrMapLines !== false
     // The stars, the Sun and the Moon around the globe (one setting of the column).
     readonly property bool globeSkyOn: Plasmoid.configuration.librewxrGlobeSky !== false
+    // The box of the layers still loading (LoadBox), at the bottom left.
+    readonly property bool loadBoxOn: Plasmoid.configuration.weatherMapLoadBox !== false
     readonly property int tempOpacity: Plasmoid.configuration.librewxrTempOpacity >= 0 ? Plasmoid.configuration.librewxrTempOpacity : 45
     readonly property real tempStep: Plasmoid.configuration.librewxrTempStep
     // The widget's temperature unit, which the bands and the legend follow.
@@ -466,6 +468,7 @@ Item {
         Plasmoid.configuration.librewxrMapLines = on;
         call("setMapLines", on);
     }
+    function setLoadBox(on) { Plasmoid.configuration.weatherMapLoadBox = on; }
     function setGlobeSky(on) {
         Plasmoid.configuration.librewxrGlobeSky = on;
         call("setGlobeSky", on);
@@ -1071,6 +1074,9 @@ Item {
     // The page blurs the map under the date, as under the column and the bar.
     readonly property var dateRect: dateBox.visible ? [dateLeft, dateBottom, dateBox.width * overlayScale, dateBox.height * overlayScale, dateBox.radius * overlayScale] : [0, 0, 0, 0, 0]
     onDateRectChanged: if (started) call("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4])
+    // The same under the loading box, which fades in and out.
+    readonly property var loadRect: loadBox.visible ? [loadBox.x, loadBox.parent.height - loadBox.y - loadBox.height, loadBox.width * overlayScale, loadBox.height * overlayScale, loadBox.radius * overlayScale, loadBox.opacity] : [0, 0, 0, 0, 0, 0]
+    onLoadRectChanged: if (started) call("animSetLoadBox", loadRect[0], loadRect[1], loadRect[2], loadRect[3], loadRect[4], loadRect[5])
     // Full screen: what lies over the map (the page's buttons and legends,
     // the date, the badges, the column's head) stands further from the
     // screen's edges, and is drawn larger.
@@ -1090,7 +1096,7 @@ Item {
             code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
             code.push(jsCall("animSetLegend", l, false));
-        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4]), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
+        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4]), jsCall("animSetLoadBox", loadRect[0], loadRect[1], loadRect[2], loadRect[3], loadRect[4], loadRect[5]), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
@@ -1709,6 +1715,29 @@ Item {
                         visible: modelsHover.hovered
                         delay: Kirigami.Units.toolTipDelay
                     }
+                }
+
+                // The layers still loading, over the count of the pictures:
+                // their names while the map leaves room, the icons alone else.
+                LoadBox {
+                    id: loadBox
+                    map: radarRoot
+                    progress: {
+                        var p = radarRoot.animState && radarRoot.animState.progress, o = {};
+                        if (!p || !radarRoot.loadBoxOn)
+                            return o;
+                        for (var id in p)
+                            if (radarRoot.layerOn(id))
+                                o[id] = p[id];
+                        return o;
+                    }
+                    compact: parent.width - layerPanel.width < 520
+                    anchors.left: parent.left
+                    anchors.bottom: countBadge.visible ? countBadge.top : modelsBadge.top
+                    anchors.leftMargin: 10 + radarRoot.edgeX
+                    anchors.bottomMargin: 6 + (countBadge.visible ? countBadge.height : modelsBadge.height) * (radarRoot.overlayScale - 1)
+                    scale: radarRoot.overlayScale
+                    transformOrigin: Item.BottomLeft
                 }
 
                 // The cross while Ctrl is held, set by Qt at once. Only over

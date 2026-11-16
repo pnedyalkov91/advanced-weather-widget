@@ -1302,3 +1302,28 @@ test('Frames: newRun is false when latest.json cannot be read', async () => {
   ok = false;
   assert.equal(await f.newRun(), false);
 });
+
+test('Frames.progress: pictures in, failed ones counted as over, out of the range', async () => {
+  global.WidgetOpenData = require('../glue-wind-open.js');
+  const loader = {
+    base: 'b/', model: 'm',
+    fetch: async () => ({ ok: true, json: async () => ({ reference_time: '2026-11-07T00:00:00Z' }) }),
+    _readVars: async (f) => {
+      if (new Date(f.validMs).toISOString() === '2026-11-07T06:00:00.000Z') throw new Error('gone');
+      return { data: [new Float32Array(12).fill(1)], ny: 3, nx: 4 };
+    },
+  };
+  const f = new A.Frames(loader, { now: () => at('2026-11-07T03:00:00Z'), pastH: 3, futureH: 3 });
+  assert.deepEqual(f.progress(), { done: 0, total: 3 });
+  await f.load();
+  assert.deepEqual(f.progress(), { done: 3, total: 3 });
+  assert.equal(f.failed.filter(Boolean).length, 1);
+});
+
+test('Group.progress: each layer by its id, from its pictures', () => {
+  const g = new A.Group([0, 1, 2], 0);
+  const frames = (p) => ({ progress: () => p, ready: () => true, failed: [], isFile: () => true });
+  g.add('temperature', frames({ done: 3, total: 3 }), {});
+  g.add('wind', frames({ done: 1, total: 3 }), {});
+  assert.deepEqual(g.progress(), { temperature: { done: 3, total: 3 }, wind: { done: 1, total: 3 } });
+});

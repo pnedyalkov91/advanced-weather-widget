@@ -415,3 +415,7 @@ body.lv-anim #aww-blur-bottom { left: 0; right: 0; bottom: 0; height: var(--aww-
 body.lv-anim #aww-blur-date {
   left: var(--aww-date-left, 0px); bottom: var(--aww-date-bottom, 0px); width: var(--aww-date-w, 0px); height: var(--aww-date-h, 0px);
   border-radius: var(--aww-date-r, 0px); }
+/* Under the widget's loading box, over the date (animSetLoadBox). */
+body.lv-anim #aww-blur-load {
+  left: var(--aww-load-left, 0px); bottom: var(--aww-load-bottom, 0px); width: var(--aww-load-w, 0px); height: var(--aww-load-h, 0px);
+  border-radius: var(--aww-load-r, 0px); opacity: var(--aww-load-o, 0); }

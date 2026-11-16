@@ -573,6 +573,16 @@ var WidgetAnim = (function () {
 
   Frames.prototype.ready = function (i) { return !!this.packed[i]; };
 
+  /** How far the reading is: { done, total } pictures of the range, a
+      failed one counted as over (nothing more comes for it); all of them
+      once every read is over. */
+  Frames.prototype.progress = function () {
+    var total = this.times.length, done = 0;
+    if (this.done) return { done: total, total: total };
+    for (var i = 0; i < total; i++) if (this.packed[i] || this.failed[i]) done++;
+    return { done: done, total: total };
+  };
+
   var UNPACKED_KEPT = 3;        // frames kept in full: the two being mixed, and the one that comes next
 
   /** Frame i in full (4 bytes a point and field), unpacked once and kept
@@ -841,6 +851,13 @@ var WidgetAnim = (function () {
   Group.prototype.ready = function (i) { return this._every(function (t) { return t.frames.ready(i); }); };
   Group.prototype.isFile = function (pos) { return this._every(function (t) { return t.frames.isFile(pos); }); };
   Group.prototype.timeAt = function (pos) { return Frames.prototype.timeAt.call(this, pos); };
+
+  /** { id: { done, total } } of each layer, see Frames.progress. */
+  Group.prototype.progress = function () {
+    var out = {};
+    this.tracks.forEach(function (t) { if (t.frames.progress) out[t.id] = t.frames.progress(); });
+    return out;
+  };
 
   /** Frames that failed in any layer. */
   Group.prototype.failed = function () {
