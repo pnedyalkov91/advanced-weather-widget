@@ -762,6 +762,21 @@ window.animToggle = function () {
   return anim.player.playing;
 };
 window.animShow = function (i) { if (anim) anim.player.seek(i); };
+/** Back to now: the step of now, or with lightning and the radar on the
+    last observed radar image (WidgetAnimRadar.nowTime), paused. */
+window.animShowNow = function () {
+  if (!anim) return;
+  var g = anim.group;
+  if (g.nowIndex < 0) return;
+  var ms = WidgetAnimRadar.nowTime({
+    lightning: animRadarOpts.lightning,
+    radar: !!(animOverlays && animOverlays.radar.on),
+    nowStep: g.timeAt(g.nowIndex),
+    lastPast: WidgetAnimRadar.lastPast(animCatalogData)
+  });
+  anim.player.play(false);
+  anim.player.seek(g.posAt(ms));
+};
 // Paused steps: one hour (dir 1 or -1), or to the next frame from its file.
 window.animStep = function (dir) { if (anim) anim.player.step(dir, anim.stepH); };
 window.animStepFile = function (dir) { if (anim) anim.player.stepFile(dir); };
@@ -1071,14 +1086,7 @@ function animOverlayTime(ms) {
   animOverlayMs = ms;
   if (!animOverlays) return;
   animOverlays.satellite.show(ms);
-  // On the files' steps, with lightning, the step of now shows the last
-  // observed radar image: the only ones LibreWXR draws lightning on.
-  var g = anim && anim.stepH >= WidgetAnim.STEP_H ? anim.group : null;
-  animOverlays.radar.show(WidgetAnimRadar.radarTime(ms, {
-    lightning: animRadarOpts.lightning,
-    nowStep: g && g.nowIndex >= 0 ? g.timeAt(g.nowIndex) : null,
-    lastPast: WidgetAnimRadar.lastPast(animCatalogData)
-  }));
+  animOverlays.radar.show(ms);
 }
 
 /** Whether the radar and satellite images of time ms are in for the map

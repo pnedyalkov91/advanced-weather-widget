@@ -378,14 +378,14 @@ var WidgetAnimRadar = (function () {
     return past && past.length ? past[past.length - 1].time * 1000 : null;
   }
 
-  /** The time whose image the radar shows at time ms. LibreWXR draws the
-      lightning only on the observed images of the last half hour, and the
-      step of now (on the hour, every 3 h) is mostly older: with lightning
-      on, that step shows the last observed image. o: { lightning, nowStep,
-      lastPast }. */
-  function radarTime(ms, o) {
-    if (o.lightning && o.nowStep != null && o.lastPast != null && ms === o.nowStep) return o.lastPast;
-    return ms;
+  /** The time "now" goes to (the back to now button, the 0 key). LibreWXR
+      draws the lightning only on the observed images of the last half
+      hour, and the step of now (on the hour, every 3 h) is mostly a
+      nowcast one: with lightning and the radar on, now is the last
+      observed image. o: { lightning, radar, nowStep, lastPast }. */
+  function nowTime(o) {
+    if (o.lightning && o.radar && o.lastPast != null) return o.lastPast;
+    return o.nowStep;
   }
 
   /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
@@ -419,7 +419,7 @@ var WidgetAnimRadar = (function () {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
     framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
-    lastPast: lastPast, radarTime: radarTime
+    lastPast: lastPast, nowTime: nowTime
   };
 })();
 

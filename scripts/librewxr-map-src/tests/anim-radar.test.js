@@ -444,14 +444,13 @@ test('lastPast: the last observed radar image, never the nowcast', () => {
   assert.equal(R.lastPast(null), null);
 });
 
-test('radarTime: with lightning, the step of now shows the last observed image', () => {
+test('nowTime: with lightning and the radar on, now is the last observed image', () => {
   const nowStep = Date.parse('2026-11-12T12:00:00Z'), last = Date.parse('2026-11-12T13:10:00Z');
-  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: last }), last);
-  // Any other step, lightning off, or no image: the time as it is.
-  assert.equal(R.radarTime(nowStep - 3 * H, { lightning: true, nowStep, lastPast: last }), nowStep - 3 * H);
-  assert.equal(R.radarTime(nowStep, { lightning: false, nowStep, lastPast: last }), nowStep);
-  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: null }), nowStep);
-  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep: null, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: last }), last);
+  // Lightning off, the radar off, or no image: the step of now.
+  assert.equal(R.nowTime({ lightning: false, radar: true, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: true, radar: false, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: null }), nowStep);
 });
 
 test('Overlay.progress: null off; on, the images whose tiles are in, out of all', () => {

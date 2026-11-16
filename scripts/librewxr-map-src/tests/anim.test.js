@@ -1327,3 +1327,12 @@ test('Group.progress: each layer by its id, from its pictures', () => {
   g.add('wind', frames({ done: 1, total: 3 }), {});
   assert.deepEqual(g.progress(), { temperature: { done: 3, total: 3 }, wind: { done: 1, total: 3 } });
 });
+
+test('Group.posAt: the position of a time between the frames, held to the range', () => {
+  const g = new A.Group([0, 3 * H, 6 * H], 1);
+  assert.equal(g.posAt(3 * H), 1);
+  assert.equal(g.posAt(4 * H), 1 + 1 / 3);
+  assert.equal(g.timeAt(g.posAt(5.5 * H)), 5.5 * H);
+  assert.equal(g.posAt(-H), 0);
+  assert.equal(g.posAt(9 * H), 2);
+});

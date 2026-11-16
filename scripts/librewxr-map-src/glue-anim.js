@@ -851,6 +851,14 @@ var WidgetAnim = (function () {
   Group.prototype.ready = function (i) { return this._every(function (t) { return t.frames.ready(i); }); };
   Group.prototype.isFile = function (pos) { return this._every(function (t) { return t.frames.isFile(pos); }); };
   Group.prototype.timeAt = function (pos) { return Frames.prototype.timeAt.call(this, pos); };
+  /** The position of time ms between the frames, held to the range. */
+  Group.prototype.posAt = function (ms) {
+    var t = this.times, n = t.length;
+    if (!n || ms <= t[0]) return 0;
+    if (ms >= t[n - 1]) return n - 1;
+    for (var i = 0; i + 1 < n; i++) if (ms < t[i + 1]) return i + (ms - t[i]) / (t[i + 1] - t[i]);
+    return n - 1;
+  };
 
   /** { id: { done, total } } of each layer, see Frames.progress. */
   Group.prototype.progress = function () {

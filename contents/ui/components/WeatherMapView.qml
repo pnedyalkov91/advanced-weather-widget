@@ -1333,9 +1333,14 @@ Item {
     function zoomBy(d) {
         call("animZoom", d);
     }
-    function keyNow() {
+    // Back to now: the step of now, or the last observed radar image with
+    // lightning on (window.animShowNow).
+    function showNow() {
         if (count > 0)
-            showIndex(nowIndex);
+            call("animShowNow");
+    }
+    function keyNow() {
+        showNow();
     }
     // ── Full screen ──────────────────────────────────────────────────────
     // The whole tab (map, column, time bar, help, keys) moves into a window
