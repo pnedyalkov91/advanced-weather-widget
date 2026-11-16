@@ -726,15 +726,15 @@ ColumnLayout {
                     .replace(/[\s.\/\-,]*y+/, "");                  // year in the middle
                 return f.trim() !== "" ? f : fmt;
             }
-            /** The axis labels follow Appearance > Misc > Date format as it is set (a preset or a
-             *  custom pattern). Only the two "Region default" choices, which have no pattern of
-             *  their own, are shown as day and month. */
+            /** The axis labels follow Settings > Misc > Date and Time exactly as the rest of the Simple
+             *  view does (the day squares use the same call), whatever the choice is, "Region default"
+             *  included. Only when that gives nothing is the region's day and month shown. */
             function _date(ds, entry) {
                 if (!weatherRoot || !ds)
                     return "--";
-                var fmt = weatherRoot.dateFormatSetting;
-                if (fmt !== "locale-long" && fmt !== "locale-short" && fmt)
-                    return weatherRoot.formatIsoDate(ds, true);
+                var t = weatherRoot.formatIsoDate(ds, true);
+                if (t)
+                    return t;
                 var p = ds.substring(0, 10).split("-");
                 if (p.length !== 3)
                     return "--";
@@ -749,7 +749,9 @@ ColumnLayout {
                     var parts = ds.split("-");
                     name = parts.length === 3 ? Qt.locale().dayName(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), Locale.LongFormat) : "";
                 }
-                return name + ", " + weatherRoot.formatIsoDate(ds, true);
+                // the weather condition follows the date
+                var cond = entry && entry.code !== undefined && entry.code !== null ? weatherRoot.weatherCodeToText(entry.code) : "";
+                return name + ", " + weatherRoot.formatIsoDate(ds, true) + (cond ? " · " + cond : "");
             }
         }
 
