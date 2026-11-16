@@ -487,6 +487,14 @@ Item {
         if (save)
             Plasmoid.configuration.librewxrNightLights = v;
     }
+    // How many points the lights get: those of a cell of full light, 1 to 6.
+    property real nightLightsDensity: Plasmoid.configuration.librewxrNightLightsDensity
+    function setNightLightsDensity(v, save) {
+        nightLightsDensity = v;
+        call("setNightLightsDensity", v);
+        if (save)
+            Plasmoid.configuration.librewxrNightLightsDensity = v;
+    }
 
     // The palettes of the wind and the temperature, those of the Radar
     // settings: [id, name], the id being what the setting holds ("" for the
@@ -1138,7 +1146,7 @@ Item {
             ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
             ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
             ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
-            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["rim", rimGlow],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow],
             ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
             ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
             ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],

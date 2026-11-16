@@ -238,6 +238,7 @@
     <!-- Brightness of the lights of the towns on the night side (MapLibre page), percent; 0 for none -->
     <entry name="librewxrRimGlow"       type="Int"><default>60</default><min>0</min><max>100</max></entry>
     <entry name="librewxrNightLights"   type="Int"><default>70</default><min>0</min><max>100</max></entry>
+    <entry name="librewxrNightLightsDensity" type="Double"><default>3</default><min>1</min><max>6</max></entry>
     <!-- Temperature palette in use: empty for the vivid one, "builtin:muted",
          "builtin:bluered", or the name of a palette made in the settings -->
     <entry name="librewxrTempPalette"   type="String"><default></default></entry>

@@ -616,6 +616,19 @@ Rectangle {
                             value: panel.map.nightLights
                             onMoved: function (v, done) { panel.map.setNightLights(Math.round(v), done); }
                         }
+                        // How many points the lights get, from as many as in the
+                        // picture (x1) to six times as many in the towns.
+                        SliderSetting {
+                            title: i18n("Night lights density")
+                            valueText: i18nc("night lights density, as a multiple", "×%1", Number(value).toLocaleString(Qt.locale(), "f", value % 1 ? 1 : 0))
+                            enabled: panel.map.dayNight && panel.map.nightLights > 0
+                            opacity: enabled ? 1 : 0.5
+                            from: 1
+                            to: 6
+                            stepSize: 0.5
+                            value: panel.map.nightLightsDensity
+                            onMoved: function (v, done) { panel.map.setNightLightsDensity(v, done); }
+                        }
                         MapSwitch {
                             own: panel.map.ownControls
                             text: i18n("Dark map")

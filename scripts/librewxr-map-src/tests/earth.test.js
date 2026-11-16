@@ -408,67 +408,98 @@ test('night lights: the shader works the Sun out as placeVector does, with the n
 });
 
 // The lights file as make_night_lights.py packs it.
-function packLights(w, h, pts) {
-  const out = [...Buffer.from('AWN1')], u16 = (n) => out.push(n & 255, n >> 8);
+function packLights(w, h, pts, floorV = 10, power = 1.2) {
+  const out = [...Buffer.from('AWN2')], u16 = (n) => out.push(n & 255, n >> 8);
   u16(w); u16(h); out.push(pts.length & 255, (pts.length >> 8) & 255, (pts.length >> 16) & 255, pts.length >>> 24);
+  out.push(floorV, Math.round(power * 100));
   const vi = (n) => { while (n >= 128) { out.push((n & 127) | 128); n = Math.floor(n / 128); } out.push(n); };
   let lr = 0, lc = 0;
   for (const [r, c, v] of pts) { if (r !== lr) lc = 0; vi(r - lr); vi(c - lc); out.push(v); lr = r; lc = c; }
   return new Uint8Array(out).buffer;
 }
 
-test('decodeNightLights: the points of the file, each in its cell of the grid', () => {
+/** Longitude and latitude of the point at k of the vertices v. */
+function lonLat(v, k) {
+  const lon = v[3 * k] * 360 - 180;
+  const lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * v[3 * k + 1]))) * 180 / Math.PI;
+  return [lon, lat];
+}
+
+test('decodeNightLights: the lit cells of the file and the points a brightness gets', () => {
   // A 360 x 180 grid: one degree a cell from 90N and 180W.
-  const pts = [[0, 5, 30], [0, 300, 255], [90, 180, 120], [179, 359, 11]];
-  const d = E.decodeNightLights(packLights(360, 180, pts));
+  const cells = [[0, 5, 30], [0, 300, 255], [90, 180, 120], [179, 359, 11]];
+  const d = E.decodeNightLights(packLights(360, 180, cells));
   assert.equal(d.count, 4);
-  pts.forEach(([r, c, v], i) => {
-    const lon0 = c - 180, lat1 = 90 - r;
-    assert.ok(d.lon[i] >= lon0 && d.lon[i] <= lon0 + 1, 'lon of ' + i + ': ' + d.lon[i]);
-    assert.ok(d.lat[i] <= lat1 && d.lat[i] >= lat1 - 1, 'lat of ' + i + ': ' + d.lat[i]);
-    assert.equal(d.value[i], v);
+  cells.forEach(([r, c, v], i) => {
+    assert.equal(d.row[i], r); assert.equal(d.col[i], c); assert.equal(d.value[i], v);
   });
-  // Spread inside their cells, the same way every time.
-  assert.notEqual(d.lon[2] - 0, 0.5);
-  assert.deepEqual(Array.from(E.decodeNightLights(packLights(360, 180, pts)).lon), Array.from(d.lon));
-  assert.throws(() => E.decodeNightLights(new Uint8Array([65, 87, 76, 49, 0, 0]).buffer), /not a night lights file/);
+  assert.equal(d.chance[255], 1, 'full light: one point at density 1');
+  assert.equal(d.chance[10], 0, 'the floor: none');
+  near(d.chance[132], Math.pow(122 / 245, 1.2), 1e-6);
+  assert.throws(() => E.decodeNightLights(new Uint8Array([65, 87, 78, 49, 0, 0]).buffer), /not a night lights file/);
 });
 
-test('nightLightsVertices: Mercator x, y and the brightness, three floats a point, for the chip', () => {
-  const d = { count: 3, lon: Float32Array.of(0, -180, 90), lat: Float32Array.of(0, 85.0511, -89), value: Uint8Array.of(255, 0, 51) };
-  const v = E.nightLightsVertices(d);
-  assert.equal(v.length, 9);
-  near(v[0], 0.5, 1e-6, 'x at 0'); near(v[1], 0.5, 1e-6, 'y at 0'); near(v[2], 1, 1e-6, 'full');
-  near(v[3], 0, 1e-6, 'x at 180W'); near(v[4], 0, 1e-4, 'y at the edge of the map');
-  near(v[6], 0.75, 1e-6, 'x at 90E'); assert.ok(v[7] <= 1, 'near the pole: kept on the map'); near(v[8], 0.2, 1e-6);
+test('nightLightsVertices: Mercator x, y and the brightness of points spread in their cells, as many as the density says', () => {
+  // Full light: density points a cell, all in it.
+  const d = E.decodeNightLights(packLights(360, 180, [[0, 5, 255], [90, 180, 255], [179, 359, 255]]));
+  const v = E.nightLightsVertices(d, 4);
+  assert.equal(v.length, 3 * 12);
+  for (let k = 0; k < 12; k++) {
+    const [lon, lat] = lonLat(v, k), cell = [[0, 5], [90, 180], [179, 359]][Math.floor(k / 4)];
+    assert.ok(lon >= cell[1] - 180 && lon <= cell[1] - 179, 'lon of ' + k + ': ' + lon);
+    if (cell[0] === 90) assert.ok(lat <= 0 && lat >= -1, 'lat of ' + k + ': ' + lat);
+    else assert.ok(Math.abs(lat) <= 85.0512, 'kept on the map near the pole: ' + lat);
+    near(v[3 * k + 2], 1, 1e-6, 'full');
+  }
+  assert.notEqual(v[0], v[3], 'not all in one place');
+  assert.deepEqual(Array.from(E.nightLightsVertices(d, 4)), Array.from(v), 'the same every time');
+  // A dim cell: a point now and then, more with more density; more density keeps those of less.
+  const dim = [];
+  for (let c = 0; c < 360; c++) dim.push([60, c, 60]);
+  const dd = E.decodeNightLights(packLights(360, 180, dim)), expect = 360 * dd.chance[60];
+  const lo = E.nightLightsVertices(dd, 1), hi = E.nightLightsVertices(dd, 3);
+  assert.ok(Math.abs(lo.length / 3 - expect) < 0.3 * expect + 3, 'density 1: ' + lo.length / 3 + ' for ' + expect);
+  assert.ok(Math.abs(hi.length / 3 - 3 * expect) < 0.3 * 3 * expect + 3, 'density 3: ' + hi.length / 3 + ' for ' + 3 * expect);
+  const his = new Set();
+  for (let k = 0; k < hi.length; k += 3) his.add(hi[k] + ',' + hi[k + 1]);
+  for (let k = 0; k < lo.length; k += 3) assert.ok(his.has(lo[k] + ',' + lo[k + 1]), 'point ' + k / 3 + ' of density 1 kept');
 });
 
 test('nightLightsLook: small points far out, a little larger closer in, never past 4 px; as bright in all as the picture', () => {
-  let last = { size: 0, gain: 0 };
-  for (let z = 0; z <= 10; z += 0.5) {
-    const k = E.nightLightsLook(z);
-    assert.ok(k.size >= last.size && k.gain >= last.gain, 'grows with the zoom at ' + z);
-    assert.ok(k.size >= 1.5 && k.size <= 4, 'size at ' + z + ': ' + k.size);
-    assert.ok(k.gain > 0 && k.gain <= 1, 'gain at ' + z + ': ' + k.gain);
-    last = k;
+  for (const D of [1, 3, 6]) {
+    let last = { size: 0, gain: 0 };
+    for (let z = 0; z <= 10; z += 0.5) {
+      const k = E.nightLightsLook(z, D);
+      assert.ok(k.size >= last.size && k.gain >= last.gain, 'grows with the zoom at ' + z);
+      assert.ok(k.size >= 1.5 && k.size <= 4, 'size at ' + z + ': ' + k.size);
+      assert.ok(k.gain > 0 && k.gain <= 1, 'gain at ' + z + ': ' + k.gain);
+      last = k;
+    }
+    // Far out, many points share a pixel: all of a cell give what it would.
+    const z = 2, cell = 512 * Math.pow(2, z) / E.NIGHT_LIGHTS.cols, k = E.nightLightsLook(z, D);
+    near(D * k.size * k.size * k.gain, E.NIGHT_LIGHTS.boost * cell * cell, 1e-9, 'the light of a cell at density ' + D);
   }
-  // Far out, many points share a pixel: each gives what its cell would.
-  const z = 2, cell = 512 * Math.pow(2, z) / E.NIGHT_LIGHTS.cols, k = E.nightLightsLook(z);
-  near(k.size * k.size * k.gain, E.NIGHT_LIGHTS.boost * cell * cell, 1e-9, 'the light of a cell');
-  assert.equal(E.nightLightsLook(9).gain, 1, 'close in: each point at full light');
+  assert.equal(E.nightLightsLook(9, 3).gain, 1, 'close in: each point at full light');
+  assert.equal(E.nightLightsLook(2).gain, E.nightLightsLook(2, E.NIGHT_LIGHTS.density[2]).gain, 'the default density');
 });
 
 test('the widget file holds the lights of the towns of the whole Earth', () => {
-  const buf = require('node:fs').readFileSync(require('node:path').join(__dirname, '../../../contents/ui/components/vendor/night-lights.bin'));
+  const fs = require('node:fs'), zlib = require('node:zlib');
+  const buf = zlib.gunzipSync(fs.readFileSync(require('node:path').join(__dirname, '../../../contents/ui/components/vendor/night-lights.bin.gz')));
   const d = E.decodeNightLights(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
-  assert.ok(d.count > 150000 && d.count < 400000, 'points: ' + d.count);
+  assert.ok(d.count > 600000 && d.count < 1200000, 'cells: ' + d.count);
+  const v = E.nightLightsVertices(d, 1);
+  assert.ok(v.length / 3 > 150000 && v.length / 3 < 400000, 'points at density 1: ' + v.length / 3);
   let paris = 0, atlantic = 0;
-  for (let i = 0; i < d.count; i++) {
-    if (Math.abs(d.lat[i] - 48.86) < 0.15 && Math.abs(d.lon[i] - 2.35) < 0.2) paris++;
-    if (d.lat[i] > 25 && d.lat[i] < 35 && d.lon[i] > -45 && d.lon[i] < -35) atlantic++;
+  for (let k = 0; k < v.length / 3; k++) {
+    const [lon, lat] = lonLat(v, k);
+    if (Math.abs(lat - 48.86) < 0.15 && Math.abs(lon - 2.35) < 0.2) paris++;
+    if (lat > 25 && lat < 35 && lon > -45 && lon < -35) atlantic++;
   }
   assert.ok(paris > 30, 'Paris: ' + paris);
   assert.ok(atlantic < 5, 'mid-Atlantic: ' + atlantic);
+  const [lo, hi] = E.NIGHT_LIGHTS.density;
+  assert.ok(lo >= 1 && hi <= 15 && E.NIGHT_LIGHTS.density[2] >= lo && E.NIGHT_LIGHTS.density[2] <= hi);
 });
 
 test('viewWidthKm: the ground across the map, from its width in px, the zoom and the latitude', () => {

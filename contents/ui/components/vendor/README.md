@@ -29,8 +29,10 @@ color map, `lroc_color_poles_1k.jpg`), public domain
 
 # Night lights
 
-`night-lights.bin`: the lights of the Earth at night as some 240 000
-points, for the towns lit on the night side of the map. Made by
+`night-lights.bin.gz`: the lights of the Earth at night as the 920 000
+lit cells of a 3 km grid with their brightness, from which the map draws
+its points (more or fewer with the density setting) for the towns lit on
+the night side. Made by
 `scripts/make_night_lights.py` from NASA Earth Observatory's Black Marble
 2016, grey, 3 km (`BlackMarble_2016_3km_gray.jpg`, 13500 x 6750, Suomi NPP
 VIIRS), public domain

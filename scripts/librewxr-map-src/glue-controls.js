@@ -314,6 +314,10 @@ window.setRimGlow = function (percent) {
 window.setNightLights = function (percent) {
   if (_widgetAdapter.setNightLights) _widgetAdapter.setNightLights(percent);
 };
+// How many points the lights get: those of a cell of full light.
+window.setNightLightsDensity = function (density) {
+  if (_widgetAdapter.setNightLightsDensity) _widgetAdapter.setNightLightsDensity(density);
+};
 
 if (TEMP_ON) window.setTemp(true);
 
