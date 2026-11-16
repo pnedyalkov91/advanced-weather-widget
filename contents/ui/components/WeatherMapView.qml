@@ -398,6 +398,7 @@ Item {
     property int nowIndex: 0          // the frame of now
     property var frameBounds: null    // { lo, hi }: the positions the play keeps to (a source's range with a forecast layer), or null
     property var layersOn: ({})       // { id: on } as the page has them, radar and satellite too
+    property var loadProgress: ({})   // { id: { done, total } } of the layers being read (LoadBox)
     /** radarRoot[name] = value, unless it holds the same already; whether it changed. */
     function _keep(name, value) {
         if (JSON.stringify(radarRoot[name]) === JSON.stringify(value))
@@ -1268,6 +1269,7 @@ Item {
             radarRoot._keep("frameReady", st.ready);
             radarRoot._keep("frameFailed", st.failed);
             radarRoot._keep("frameBounds", st.bounds || null);
+            radarRoot._keep("loadProgress", st.progress || {});
             radarRoot.nowIndex = st.now;
             var on = Object.assign({ radar: !!(st.radar && st.radar.on), satellite: !!(st.satellite && st.satellite.on) }, st.layers);
             // A colored layer switched on switches the others off in the
@@ -1734,8 +1736,8 @@ Item {
                     id: loadBox
                     map: radarRoot
                     progress: {
-                        var p = radarRoot.animState && radarRoot.animState.progress, o = {};
-                        if (!p || !radarRoot.loadBoxOn)
+                        var p = radarRoot.loadProgress, o = {};
+                        if (!radarRoot.loadBoxOn)
                             return o;
                         for (var id in p)
                             if (radarRoot.layerOn(id))

@@ -208,15 +208,16 @@ var WidgetEarth = (function () {
       var la = Math.max(-MERC_LAT, Math.min(MERC_LAT, 90 - r / d.rows * 180)) * RAD;
       edge[r] = (1 - Math.log(Math.tan(Math.PI / 4 + la / 2)) / Math.PI) / 2;
     }
-    function points(i) {
-      var e = D * d.chance[d.value[i]], n = Math.floor(e);
-      return hash01(16 * i) < e - n ? n + 1 : n;
+    // The points of each cell, worked out once for both passes (at most
+    // 15, so a byte).
+    var counts = new Uint8Array(d.count), total = 0, i, j;
+    for (i = 0; i < d.count; i++) {
+      var e = D * d.chance[d.value[i]], m = Math.floor(e);
+      total += counts[i] = hash01(16 * i) < e - m ? m + 1 : m;
     }
-    var total = 0, i, j;
-    for (i = 0; i < d.count; i++) total += points(i);
     var out = new Float32Array(total * 3), k = 0;
     for (i = 0; i < d.count; i++) {
-      var n = points(i), rr = d.row[i], cc = d.col[i], v = d.value[i] / 255;
+      var n = counts[i], rr = d.row[i], cc = d.col[i], v = d.value[i] / 255;
       for (j = 0; j < n; j++) {
         var key = 3 * (16 * i + j);
         out[k++] = (cc + hash01(key + 1)) / d.cols;

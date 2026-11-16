@@ -454,16 +454,20 @@ function animFramesFor(id, reuse, times, nowIndex, onFrame) {
     store: animStore, pruneH: ANIM_KEEP_H, unpackLater: true,
     onFrame: onFrame || null
   });
-  frames.fines = [];   // none unless the layer takes them (a field taken over may hold some)
-  if (animFineField(id) && animFineOn(id)) {
-    if (animFineAuto) animFineModels = animPickFines();
-    frames.fines = animFineModels.map(function (model) {
-      var old = reuse && reuse.fines ? reuse.fines.filter(function (f) { return f.fileModel === model; })[0] : null;
-      return animMakeFine(id, model, frames, old || animFineKeep.take(id + '|' + model));
-    });
-  }
+  // None unless the layer takes them (a field taken over may hold some).
+  frames.fines = animFinesOf(id).map(function (model) {
+    var old = reuse && reuse.fines ? reuse.fines.filter(function (f) { return f.fileModel === model; })[0] : null;
+    return animMakeFine(id, model, frames, old || animFineKeep.take(id + '|' + model));
+  });
   if (reuse) reuse.stop();
   return frames;
+}
+
+/** The finer models layer id takes for the view, finest first. */
+function animFinesOf(id) {
+  if (!animFineField(id) || !animFineOn(id)) return [];
+  if (animFineAuto) animFineModels = animPickFines();
+  return animFineModels;
 }
 
 /** Pictures of layer id for the range of the animation, those of `reuse`
@@ -495,13 +499,17 @@ function animTrack(id, layer, reuse, onShow) {
 
 /** A finer model's edge weights are in: it fades in over the picture
     shown; paused, that picture is drawn again until it is in full. */
+// One loop for every model whose weights come in, each pushing its end.
+var animFineFadeEnd = 0, animFineFading = false;
 function animFineFadeIn() {
-  var end = Date.now() + WidgetAnim.WEIGHTS_FADE_MS + 50;
+  animFineFadeEnd = Date.now() + WidgetAnim.WEIGHTS_FADE_MS + 50;
+  if (animFineFading) return;
+  animFineFading = true;
   (function again() {
-    if (!anim) return;
+    if (!anim || Date.now() >= animFineFadeEnd) { animFineFading = false; return; }
     var p = anim.player;
     if (!p.playing && p.index >= 0 && p.target === null) p.seek(p.index);
-    if (Date.now() < end) requestAnimationFrame(again);
+    requestAnimationFrame(again);
   })();
 }
 
@@ -680,6 +688,14 @@ function animPreload(job, fresh) {
     if (anim.group.track(id)) { next(); return; }
     var key = animKey(id), old = anim.switcher.takeParked(key);
     if (old && fresh) { old.stop(); old = null; }
+    // Read already for these times and these finer models: kept as it is
+    // (no latest.json, store sorting or new Frames on every range change).
+    if (old && old.done && (old.fines || []).every(function (f) { return f.done; }) && animSameList(old.times, ft.times)
+        && animSameList((old.fines || []).map(function (f) { return f.fileModel; }), animFinesOf(id))) {
+      anim.switcher.park(key, old);
+      next();
+      return;
+    }
     var frames = animFramesFor(id, old, ft.times, ft.now, null);
     // Parked at once: switched on meanwhile, it is taken over as it stands.
     anim.switcher.park(key, frames);
@@ -689,6 +705,12 @@ function animPreload(job, fresh) {
       next();
     });
   })();
+}
+
+function animSameList(a, b) {
+  if (a.length !== b.length) return false;
+  for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
 }
 
 /** Switch layer id of the animation on or off. Off, it fades out and its
