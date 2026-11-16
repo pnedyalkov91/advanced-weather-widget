@@ -96,10 +96,12 @@ var WidgetEarth = (function () {
   }
 
   /** The color (premultiplied, 0..1) the chip gives the place at x, y in
-      Mercator (0..1) with the uniforms u. Line for line what NIGHT_FS does. */
-  function shadeFrom(u, x, y) {
+      Mercator (0..1) with the uniforms u, and pole on the globe's polar
+      caps (v_pole, 0 elsewhere). Line for line what NIGHT_FS does. */
+  function shadeFrom(u, x, y, pole) {
     var lon = ((x - Math.floor(x)) * 2 - 1) * Math.PI;
     var lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * y)));
+    if (pole) lat += (Math.sign(lat) * Math.PI / 2 - lat) * Math.abs(pole);
     var s = Math.max(-1, Math.min(1, Math.sin(lat) * u.sun[0] + Math.cos(lat) * u.sun[1] * Math.cos(lon - u.sun[2])));
     var h = Math.asin(s) * DEG, a;
     if (h < 0) {
@@ -116,6 +118,7 @@ var WidgetEarth = (function () {
     '#version 300 es',
     'precision highp float;',
     'in vec2 v_merc;',
+    'in float v_pole;',
     'out vec4 fragColor;',
     'const float PI = 3.141592653589793;',
     'uniform vec3 u_sun;',
@@ -123,6 +126,8 @@ var WidgetEarth = (function () {
     'void main() {',
     '  float lon = (fract(v_merc.x) * 2.0 - 1.0) * PI;',
     '  float lat = atan(sinh(PI * (1.0 - 2.0 * v_merc.y)));',
+    // On the globe's polar caps, from the edge to the pole (fragLat).
+    '  lat = mix(lat, sign(lat) * PI / 2.0, abs(v_pole));',
     '  float s = clamp(sin(lat) * u_sun.x + cos(lat) * u_sun.y * cos(lon - u_sun.z), -1.0, 1.0);',
     '  float h = degrees(asin(s));',
     '  if (h < 0.0) {',

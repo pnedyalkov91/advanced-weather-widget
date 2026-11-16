@@ -133,3 +133,64 @@ test('a shader that does not build: the tiles draw the file from then on', async
   assert.equal(adapter.tiles, 2);
   assert.equal(layer._gpuOn, false);
 });
+
+// The polar caps on the globe: past 85.05 degrees the mesh has one row of
+// each side whose far end MapLibre puts at the pole (raw = +-32768), with
+// v_merc still at the edge. v_pole (0 at the edge, +-1 at the pole) gives
+// the shaders the real latitude there.
+const mercY = (lat) => (1 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / Math.PI) / 2;
+const EDGE = 85.0511;
+
+test('meshVertices: a row past each edge, at the edge in Mercator and flagged for the pole', () => {
+  const v = GL.meshVertices(), cols = GL.MESH_X + 1, rows = v.length / 3 / cols;
+  assert.equal(rows, GL.MESH_Y + 3);
+  for (let i = 0; i < cols; i++) {
+    const top = i * 3, bottom = ((rows - 1) * cols + i) * 3;
+    assert.equal(v[top + 2], -1, 'north row flagged');
+    assert.equal(v[bottom + 2], 1, 'south row flagged');
+    near(v[top + 1], mercY(EDGE), 1e-6, 'north row at the edge (flat: nothing drawn)');
+    near(v[bottom + 1], mercY(-EDGE), 1e-6, 'south row at the edge');
+  }
+  for (let k = cols * 3; k < (rows - 1) * cols * 3; k += 3) assert.equal(v[k + 2], 0, 'the body is not flagged');
+});
+
+test('fragLat: the latitude of Mercator in the body, from the edge to the pole in the caps', () => {
+  for (const lat of [-80, -45, 0, 12.5, 60, 85]) near(GL.fragLat(mercY(lat), 0), lat, 1e-9, 'body ' + lat);
+  near(GL.fragLat(mercY(EDGE), 0), EDGE, 1e-4, 'north edge');
+  near(GL.fragLat(mercY(EDGE), -1), 90, 1e-9, 'north pole');
+  near(GL.fragLat(mercY(-EDGE), 1), -90, 1e-9, 'south pole');
+  near(GL.fragLat(mercY(EDGE), -0.5), (EDGE + 90) / 2, 1e-4, 'half way north');
+  near(GL.fragLat(mercY(-EDGE), 0.5), -(EDGE + 90) / 2, 1e-4, 'half way south');
+});
+
+test('fragLat: one row is enough, the caps\' flat triangles follow the latitude within a hundredth of a degree', () => {
+  // A cap triangle as the chip draws it: two points of the edge, one
+  // column apart, and the pole; a fragment at weights a, b, c is the point
+  // on that flat triangle, seen from the center of the Earth.
+  const toXYZ = (lat, lon) => {
+    const f = lat * Math.PI / 180, l = lon * Math.PI / 180;
+    return [Math.cos(f) * Math.cos(l), Math.cos(f) * Math.sin(l), Math.sin(f)];
+  };
+  const dLon = 360 / GL.MESH_X;
+  for (const south of [false, true]) {
+    const s = south ? -1 : 1, e1 = toXYZ(s * EDGE, 0), e2 = toXYZ(s * EDGE, dLon), p = [0, 0, s];
+    let worst = 0;
+    for (let ia = 0; ia <= 20; ia++) {
+      for (let ib = 0; ia + ib <= 20; ib++) {
+        const a = ia / 20, b = ib / 20, c = 1 - a - b;
+        const q = [0, 1, 2].map((k) => a * e1[k] + b * e2[k] + c * p[k]);
+        const real = Math.atan2(q[2], Math.hypot(q[0], q[1])) * 180 / Math.PI;
+        const got = GL.fragLat(mercY(s * EDGE), s * -c);
+        worst = Math.max(worst, Math.abs(real - got));
+      }
+    }
+    assert.ok(worst < 0.01, (south ? 'south' : 'north') + ' cap, worst ' + worst);
+  }
+});
+
+test('the shaders read the latitude of the caps', () => {
+  assert.match(GL.FS_HEAD, /in float v_pole;/);
+  assert.match(GL.FS_HEAD, /lat = fragLat\(\);/, 'gridUv: every layer of the chip');
+  assert.match(GL.VS_MAIN, /v_pole = a_pos\.z;/);
+  assert.match(GL.VS_MAIN, /projectTile\(v_merc, raw\)/);
+});

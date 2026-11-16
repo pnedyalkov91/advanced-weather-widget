@@ -549,3 +549,20 @@ test('night lights: white with a touch of yellow, as the shader draws them', () 
   assert.ok(b >= 0.75 && b < g - 0.05, 'a touch of yellow: ' + b);
   assert.ok(E.NIGHT_LIGHTS_FS.includes('vec3(' + E.NIGHT_LIGHTS.color.map(E.glslFloat).join(', ') + ')'), 'in the shader');
 });
+
+test('shadeFrom: on the globe\'s polar caps (pole), the Sun seen from the real latitude', () => {
+  const merc = (lat) => (1 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / Math.PI) / 2;
+  const edge = merc(85.0511), u = E.shadeUniforms({ lat: -3, lon: 0 }, 0.6, 0);
+  // At the north pole the Sun is 3 degrees down, whatever the longitude.
+  const atPole = E.shadeFrom(u, 0.1, edge, -1);
+  E.shadeFrom(u, 0.6, edge, -1).forEach((c, k) => assert.ok(Math.abs(c - atPole[k]) < 1e-12, 'one color at the pole'));
+  assert.ok(Math.abs(atPole[3] - (1 - Math.exp(u.ln[0] * Math.min(1, 3 / 18)))) < 1e-9, 'night 3 degrees deep');
+  // Without the flag, the edge's colors as before.
+  assert.notDeepEqual([...E.shadeFrom(u, 0.1, edge)], [...atPole]);
+  assert.deepEqual([...E.shadeFrom(u, 0.1, edge, 0)], [...E.shadeFrom(u, 0.1, edge)]);
+});
+
+test('NIGHT_FS: the night reads the latitude of the caps', () => {
+  assert.match(E.NIGHT_FS, /in float v_pole;/);
+  assert.match(E.NIGHT_FS, /abs\(v_pole\)/);
+});
