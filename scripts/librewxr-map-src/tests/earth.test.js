@@ -486,6 +486,13 @@ test('nightLightsLook: small points far out, a little larger closer in, never pa
   const far = E.nightLightsLook(1.3, 3);
   assert.ok(far.keep < 0.2 && far.gain * 255 * 0.7 > 10, JSON.stringify(far));
   assert.equal(E.nightLightsLook(9, 3).keep, 1, 'close in: all of them');
+  // The globe turned north: MapLibre lowers the zoom, the globe keeps its
+  // size on screen, and so do the lights.
+  const z45 = 1.45, z75 = z45 + Math.log2(Math.cos(75 * Math.PI / 180) / Math.cos(45 * Math.PI / 180));
+  const a = E.nightLightsLook(z45, 3, 45), b = E.nightLightsLook(z75, 3, 75);
+  near(a.size, b.size, 1e-9); near(a.gain * a.keep, b.gain * b.keep, 1e-9, 'the same light');
+  assert.deepEqual(E.nightLightsLook(2, 3, null), E.nightLightsLook(2, 3), 'the flat map as before');
+  near(E.nightLightsLook(2, 3, 0).keep, E.nightLightsLook(2, 3).keep, 1e-12, 'a globe on the equator as the flat map');
   assert.equal(E.nightLightsLook(9, 3).gain, 1, 'close in: each point at full light');
   assert.equal(E.nightLightsLook(2).gain, E.nightLightsLook(2, E.NIGHT_LIGHTS.density[2]).gain, 'the default density');
 });

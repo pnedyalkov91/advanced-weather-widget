@@ -290,7 +290,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         }
         var sd = args.shaderData, d = args.defaultProjectionData, pr = this.program(gl, sd);
         if (!pr) { this.failed = true; return; }
-        var u = pr.loc, look = WidgetEarth.nightLightsLook(map.getZoom(), lightsDensity), dpr = window.devicePixelRatio || 1;
+        var u = pr.loc, look = WidgetEarth.nightLightsLook(map.getZoom(), lightsDensity, sd.variantName === 'globe' ? map.getCenter().lat : null), dpr = window.devicePixelRatio || 1;
         gl.useProgram(pr.p);
         gl.uniformMatrix4fv(u.u_projection_matrix, false, d.mainMatrix);
         if (u.u_projection_fallback_matrix) gl.uniformMatrix4fv(u.u_projection_fallback_matrix, false, d.fallbackMatrix);

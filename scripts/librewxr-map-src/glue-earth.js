@@ -222,17 +222,22 @@ var WidgetEarth = (function () {
     return out;
   }
 
-  /** The points at zoom z and `density`: their size in CSS px (1.5 far
+  /** The points at zoom z and `density`, on a globe whose middle is at
+      latitude globeLat (null on the flat map): their size in CSS px (1.5 far
       out, a little larger than their cell closer in, 4 at most), the share
       of them drawn (`keep`, 0..1) and how much of their light each gives
       (far out, where many share a pixel, together what their cell would
       give, `boost` times, whatever the density; full once they stand
       apart). Never less than `minGain` a point: the screen's 256 levels
       would round fainter ones to nothing, so far out fewer points are
-      drawn, each brighter. */
-  function nightLightsLook(z, density) {
+      drawn, each brighter. MapLibre's globe keeps its size on screen as
+      its middle goes north while the zoom goes down (the globe is
+      512 * 2^z / cos(globeLat) px around): its cells are as large as
+      that says. */
+  function nightLightsLook(z, density, globeLat) {
     var L = NIGHT_LIGHTS, D = density > 0 ? density : L.density[2];
-    var cell = 512 * Math.pow(2, z) / L.cols;
+    var around = globeLat == null ? 1 : 1 / Math.max(0.05, Math.cos(Math.min(85, Math.abs(globeLat)) * RAD));
+    var cell = 512 * Math.pow(2, z) * around / L.cols;
     var size = Math.max(1.5, Math.min(4, cell * 1.2));
     var gain = Math.min(1, L.boost * cell * cell / (size * size * D));
     var keep = Math.min(1, gain / L.minGain);
