@@ -1196,7 +1196,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       var entry = {
         sourceId: 'lv-src-' + id,
         layerId: (anim ? 'lv-anim-' : '') + (kind === 'satellite' ? 'lv-layer-sat-' : 'lv-layer-radar-') + id,
-        kind: kind, url: url, maxZoom: maxZoom, opacity: 0, anim: anim,
+        // Past the data's own resolution the map stretches the last level.
+        kind: kind, url: url, opacity: 0, anim: anim,
+        maxZoom: typeof WidgetAnimRadar !== 'undefined' ? WidgetAnimRadar.nativeZoom(url, maxZoom) : maxZoom,
         tileSize: opts && opts.tileSize === 512 ? 512 : 256
       };
       frameRegistry.push(entry);

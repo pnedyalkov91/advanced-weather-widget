@@ -601,3 +601,19 @@ test('Overlay: a nowcast image made again with each new run, and once observed; 
   o.setFrames(cat([0, 600, 1200], [1800, 2400]));
   assert.equal(a.made.length, 7);
 });
+
+test('nativeZoom: radar and satellite tiles stop where a file pixel gets finer than the data', () => {
+  const base = 'http://localhost:8099/v2/radar/1763400000/';
+  // 256 files: level 9 at most, 512 files one level less (same pixel on the ground).
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp', 12), 9);
+  assert.equal(R.nativeZoom(base + '512/{z}/{x}/{y}/2/1_1.webp', 12), 8);
+  assert.equal(R.nativeZoom('http://localhost:8099/v2/satellite/1763400000/256/{z}/{x}/{y}/0/0_0.webp', 12), 9);
+  // Never above the map's own last level.
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp', 7), 7);
+  // Lightning, arrows or cells are drawn at a fixed size on each level: no cap.
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?lightning=bolts', 12), 12);
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?arrows=dark&cells=light', 12), 12);
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?cells=', 12), 9);
+  // An address of another shape keeps the map's level.
+  assert.equal(R.nativeZoom('https://example.org/tiles/{z}/{x}/{y}.png', 12), 12);
+});

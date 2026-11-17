@@ -77,6 +77,28 @@ var WidgetAnimRadar = (function () {
     return q.length ? url + '?' + q.join('&') : url;
   }
 
+  /* The finest grids behind the radar are 0.5 to 1 km (MRMS CONUS 500 m,
+     OPERA and DPC 1 km, docs/coverage.md in LibreWXR); the satellite is
+     coarser. A 256 file at level 9 has pixels of 300 m at the equator,
+     215 m at 45°: two or more per cell of the finest grid. Deeper levels
+     only stretch the same cells, so the map stretches the level 9 file
+     itself and asks the server for nothing. A 512 file has the same pixel
+     one level up. */
+  var NATIVE_ZOOM_256 = 9;
+  var SIZE_IN_URL = /\/(256|512)\/\{z\}\//;
+  // Drawn at a fixed size on each level: stretched they would grow and blur.
+  var FIXED_SIZE_MARKS = /[?&](arrows|cells|lightning)=[^&]/;
+
+  /** The last level of tiles worth asking for the frame at url, on a map
+      that goes up to mapMax: NATIVE_ZOOM_256 for 256 files, one less for
+      512 ones, mapMax when the tiles carry lightning, arrows or cells or
+      the address is of another shape. */
+  function nativeZoom(url, mapMax) {
+    var m = SIZE_IN_URL.exec(url);
+    if (!m || FIXED_SIZE_MARKS.test(url)) return mapMax;
+    return Math.min(mapMax, NATIVE_ZOOM_256 - (m[1] === '512' ? 1 : 0));
+  }
+
   /** The tiles for the size chosen ('auto', '256' or '512') at device
       pixel ratio dpr: size, the files' pixels, and grid, the size MapLibre
       lays them on. Files of 512 on a 512 grid take a quarter of the
@@ -469,7 +491,7 @@ var WidgetAnimRadar = (function () {
 
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
-    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
+    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, nativeZoom: nativeZoom, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
     lastPast: lastPast, nowTime: nowTime
   };
