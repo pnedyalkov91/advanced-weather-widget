@@ -92,7 +92,7 @@ function fakeAdapter() {
   };
   a.onLayerReady = (h, cb) => { (a.waiting[h.layerId] = a.waiting[h.layerId] || []).push(cb); };
   a.ready = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb()); };
-  // Settled without its tiles (a tile error, or 25 s without them).
+  // Settled on a tile error.
   a.fail = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb(false)); };
   a.setFrameOpacity = (h, v) => { a.opacity[h.layerId] = v; };
   a.destroyFrameLayer = (h) => { a.gone.push(h.layerId); delete a.opacity[h.layerId]; };
@@ -373,13 +373,19 @@ test('Overlay: after a zoom, an image without its tiles waits for them, the one 
 });
 
 test('Overlay: an image whose tiles failed (no network yet after a sleep) is made again when asked again', () => {
-  const { a, o } = overlay(radar.slice(0, 3));
+  const clock = { t: 0 };
+  const { a, o } = overlay(radar.slice(0, 3), { now: () => clock.t });
   o.setOn(true);
   o.show(T0 * 1000);
   const first = a.made[0];
   a.fail(first);
   assert.deepEqual(a.shown(), [first.layerId], 'put all the same: the play never hangs on it');
-  // Asked again while on the map (back to now, the cursor left on it).
+  // Asked again at once: not yet, a failing server is not hammered.
+  const n0 = a.made.length;
+  o.show(T0 * 1000 + MIN);
+  assert.equal(a.made.length, n0);
+  // A few seconds later (back to now, the cursor left on it): made again.
+  clock.t = 5000;
   o.show(T0 * 1000 + 2 * MIN);
   assert.ok(a.gone.includes(first.layerId), 'the empty layer goes');
   const again = a.made[a.made.length - 1];
@@ -388,8 +394,31 @@ test('Overlay: an image whose tiles failed (no network yet after a sleep) is mad
   assert.deepEqual(a.shown(), [again.layerId]);
   // In now: asked again, nothing is made.
   const n = a.made.length;
+  clock.t = 60000;
   o.show(T0 * 1000);
   assert.equal(a.made.length, n);
+});
+
+test('Overlay: an image failing again and again is tried three times, then again at the next catalog', () => {
+  const clock = { t: 0 };
+  const { a, o } = overlay(radar.slice(0, 3), { now: () => clock.t });
+  o.setOn(true);
+  const last = () => a.made[a.made.length - 1];
+  o.show(T0 * 1000);
+  a.fail(a.made[0]);
+  for (let k = 0; k < 2; k++) {
+    clock.t += 10000;
+    o.show(T0 * 1000);
+    a.fail(last());
+  }
+  const n = a.made.length;
+  assert.equal(n, 5, 'three tries of image 0, and images 1 and 2');
+  clock.t += 10000;
+  o.show(T0 * 1000);
+  assert.equal(a.made.length, n, 'given up: the play does not ask for it on every pass');
+  o.setFrames(radar.slice(0, 3));
+  assert.equal(a.made.length, n + 1, 'a new catalog: one more chance');
+  assert.equal(last().url, 'u' + radar[0].time);
 });
 
 test('Overlay: a new catalog makes the failed images again, the image shown kept', () => {

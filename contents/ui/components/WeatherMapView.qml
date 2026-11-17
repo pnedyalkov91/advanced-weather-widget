@@ -914,10 +914,11 @@ Item {
     // ending before now (the satellite alone) would ask for it all along.
     property real _rolledMs: 0
     /** The range rolled on if now has left its frame and nothing plays;
-        force: at once, not 5 minutes after the last roll. */
+        force (back to now, which pauses): at once, playing or not, not
+        5 minutes after the last roll. */
     function _rollIfStale(force) {
         var st = animState;
-        if (!st || st.playing || (!force && Date.now() - _rolledMs <= 300000))
+        if (!st || (!force && (st.playing || Date.now() - _rolledMs <= 300000)))
             return false;
         if (!ConfigUtils.timeLineStale(st.times, st.now, Date.now()))
             return false;
@@ -1362,7 +1363,10 @@ Item {
     function showNow() {
         if (count <= 0)
             return;
-        // The time line first brought to the clock if it is behind.
+        // The time line first brought to the clock if it is behind
+        // (animShowNow pauses: the play stopped first, on the old range).
+        if (animState && animState.playing && ConfigUtils.timeLineStale(animState.times, animState.now, Date.now()))
+            call("animPlay", false);
         _rollIfStale(true);
         call("animShowNow");
     }
@@ -1385,15 +1389,42 @@ Item {
                 return;
             Dbg.log("Weather Map", "back from a sleep: radar read again");
             radarRoot.call("animWake");
+            var st = radarRoot.animState;
+            wakeRollTimer.radarLast = st && st.radar ? st.radar.last : null;
+            wakeRollTimer.tries = 0;
             wakeRollTimer.restart();
         }
     }
+    // The time line rolled on once the new catalog is in (a range of the
+    // radar or satellite ends on its last image), or after a minute. The
+    // state is read here: the popup may be closed, its reading stopped.
     Timer {
         id: wakeRollTimer
+        property var radarLast: null
+        property int tries: 0
         interval: 4000
+        repeat: true
         onTriggered: {
-            if (radarRoot.started && !(radarRoot.animState && radarRoot.animState.playing))
+            if (!radarRoot.started) {
+                stop();
+                return;
+            }
+            var last = ++tries >= 15;
+            webView.runJavaScript("JSON.stringify(window.animState())", function (s) {
+                if (!wakeRollTimer.running)
+                    return;
+                var st = null;
+                try {
+                    st = s ? JSON.parse(s) : null;
+                } catch (e) {}
+                var fresh = !!st && !!st.radar && st.radar.last !== wakeRollTimer.radarLast;
+                if (!last && radarRoot.rangeKind && !fresh)
+                    return;
+                wakeRollTimer.stop();
+                if (st)
+                    radarRoot.animState = st;
                 radarRoot._rollRange();
+            });
         }
     }
     // ── Full screen ──────────────────────────────────────────────────────

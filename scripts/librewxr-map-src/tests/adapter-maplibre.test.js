@@ -186,6 +186,21 @@ test('a frame layer destroyed while loading settles at once, not 25 s later', as
   assert.equal(calls, 1);
 });
 
+test('onLayerReady says whether the tiles came: true loaded, false on a tile error', () => {
+  const { adapter, map } = loadAdapter();
+  const good = adapter.createFrameLayer('https://radar/a/{z}/{x}/{y}.webp', 'radar');
+  const bad = adapter.createFrameLayer('https://radar/b/{z}/{x}/{y}.webp', 'radar');
+  const got = {};
+  adapter.onLayerReady(good, (ok) => { got.good = ok; });
+  adapter.onLayerReady(bad, (ok) => { got.bad = ok; });
+  map.loadedSources[good.sourceId] = true;
+  map.fire('sourcedata', { sourceId: good.sourceId });
+  const warn = console.warn;
+  console.warn = () => {};
+  try { map.fire('error', { sourceId: bad.sourceId, error: { message: 'Failed to fetch' } }); } finally { console.warn = warn; }
+  assert.deepEqual(got, { good: true, bad: false });
+});
+
 test('a frame layer that loads settles once, on its source data', async () => {
   const { adapter, map } = loadAdapter();
   const handle = adapter.createFrameLayer('https://radar/{z}/{x}/{y}.webp', 'radar');
@@ -926,39 +941,79 @@ test('frameLoaded: a frame held back during a move has no tiles at the new scale
   assert.equal(adapter.frameLoaded(h[0]), true, 'the frame on screen keeps loading');
 });
 
-test('frameCounted: a held frame counts as in only where it was in before (same zoom, same area)', () => {
+function countedMap() {
   const { adapter, map } = loadAdapter();
-  let zoom = 5, bounds = [0, 40, 10, 50];
-  map.getZoom = () => zoom;
-  map.getBounds = () => ({ getWest: () => bounds[0], getSouth: () => bounds[1], getEast: () => bounds[2], getNorth: () => bounds[3] });
+  const v = { zoom: 5, bounds: [0, 40, 10, 50] };
+  map.getZoom = () => v.zoom;
+  map.getBounds = () => ({ getWest: () => v.bounds[0], getSouth: () => v.bounds[1], getEast: () => v.bounds[2], getNorth: () => v.bounds[3] });
+  return { adapter, map, v };
+}
+
+test('frameCounted: a held frame counts as in only where it was in before (same zoom, same area)', () => {
+  const { adapter, map, v } = countedMap();
   const h = sixFrames(adapter);
   h.forEach((x, i) => { map.loadedSources[x.sourceId] = i !== 4; });
+  map.fire('render');
   // Read by the bar while the map stands: what is in is noted.
   h.forEach((x) => adapter.frameCounted(x));
   // A zoom never seen: every held frame has to come, nothing counts.
   map.fire('movestart');
-  zoom = 6.2; bounds = [3, 43, 7, 47];
+  v.zoom = 6.2; v.bounds = [3, 43, 7, 47];
   assert.equal(adapter.frameCounted(h[3]), false, 'a new scale: a real download');
   // Back to the zoom seen, within the area seen: from the cache, counted.
-  zoom = 5.1; bounds = [1, 41, 9, 49];
+  v.zoom = 5.1; v.bounds = [1, 41, 9, 49];
   assert.equal(adapter.frameCounted(h[3]), true);
   assert.equal(adapter.frameCounted(h[4]), false, 'it was still loading there');
   // Same zoom, out of the area seen: its tiles have to come.
-  bounds = [8, 41, 16, 49];
+  v.bounds = [8, 41, 16, 49];
   assert.equal(adapter.frameCounted(h[3]), false);
-  // Back on the map and loaded there: noted, counted from then on.
+  // Back on the map and loaded there once drawn: noted, counted from then on.
   map.fire('moveend');
   map.fire('idle'); map.fire('idle'); map.fire('idle');
+  map.fire('render');
   map.loadedSources[h[3].sourceId] = true;
   assert.equal(adapter.frameCounted(h[3]), true);
   map.fire('movestart');
   assert.equal(adapter.frameCounted(h[3]), true);
-  // On the map again where it was in: a moment of reloading (tiles redrawn
-  // as the others come back) does not make the bar go down and up.
+  // On the map again where it was in: a moment of reloading does not make
+  // the bar go down and up.
   map.fire('moveend');
   map.fire('idle'); map.fire('idle'); map.fire('idle');
   map.loadedSources[h[3].sourceId] = false;
   assert.equal(adapter.frameCounted(h[3]), true);
+});
+
+test('frameCounted: a frame back on the map is not noted before it has been drawn (its tiles asked for)', () => {
+  const { adapter, map, v } = countedMap();
+  const h = sixFrames(adapter);
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  // Made, not drawn yet: MapLibre says loaded with no tile asked for.
+  assert.equal(adapter.frameCounted(h[3]), false);
+  map.fire('render');
+  assert.equal(adapter.frameCounted(h[3]), true);
+  map.fire('movestart');
+  v.zoom = 7; v.bounds = [4, 44, 6, 46];
+  map.fire('moveend');
+  map.fire('idle'); map.fire('idle'); map.fire('idle');
+  // Shown again at the new zoom, before the map drew it: still "loaded".
+  assert.equal(adapter.frameCounted(h[3]), false, 'not taken as in at a zoom never drawn');
+  map.loadedSources[h[3].sourceId] = false;
+  map.fire('render');
+  assert.equal(adapter.frameCounted(h[3]), false);
+  map.loadedSources[h[3].sourceId] = true;
+  assert.equal(adapter.frameCounted(h[3]), true);
+});
+
+test('frameCounted: past the tiles\' last zoom the same tiles serve, counted as seen', () => {
+  const { adapter, map, v } = countedMap();
+  const h = sixFrames(adapter);           // maxZoom 12, a 256 grid: tiles of zoom map + 1
+  h.forEach((x) => { map.loadedSources[x.sourceId] = true; });
+  v.zoom = 11.2; v.bounds = [5, 45, 5.2, 45.2];
+  map.fire('render');
+  adapter.frameCounted(h[3]);
+  map.fire('movestart');
+  v.zoom = 12.4; v.bounds = [5.05, 45.05, 5.1, 45.1];
+  assert.equal(adapter.frameCounted(h[3]), true, 'overzoomed: no new tile');
 });
 
 test('a held frame waited for settles only once drawn again and loaded', () => {

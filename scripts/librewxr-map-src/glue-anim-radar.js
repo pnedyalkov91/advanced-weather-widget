@@ -161,6 +161,10 @@ var WidgetAnimRadar = (function () {
     this.level = 1;             // the fade, 0..1, times the opacity
     this._fadeIn = false;       // the next image put fades in (just switched on)
     this._leaving = false;      // fading out, its layers go at the end
+    // Images whose tiles failed: tried again RETRY_TRIES times at most,
+    // RETRY_MS apart, when asked for; a new catalog gives them one more.
+    this._clock = opts.now || function () { return Date.now(); };
+    this._tries = {};           // keyOf(image) -> failed reads in a row
     var self = this;
     this._fade = new Fade(function (v) { self._setLevel(v); }, { ms: this.fadeMs, now: opts.now, raf: opts.raf, from: 1 });
   }
@@ -205,11 +209,11 @@ var WidgetAnimRadar = (function () {
   };
 
   /** Wait for the tiles of image path (once at a time), then show it if
-      it is still the one asked for. Settled without them (ok false: a tile
-      error, the network not back yet after a sleep), it shows all the same
-      so the play goes on, and is made again the next time it is asked for
-      (show) or a catalog comes (setFrames): the map never asks again for a
-      tile that failed. */
+      it is still the one asked for. Settled on a tile error (ok false: the
+      network not back yet after a sleep), it shows all the same so the
+      play goes on, and is made again when asked for later (show, a few
+      tries) or when a catalog comes (setFrames): the map never asks again
+      for a tile that failed. */
   Overlay.prototype._await = function (path) {
     var self = this, entry = this.layers[path];
     if (!entry || entry.waiting) return;
@@ -219,8 +223,21 @@ var WidgetAnimRadar = (function () {
       entry.waiting = false;
       entry.ready = true;
       entry.failed = ok === false;
+      if (entry.failed) {
+        entry.failedAt = self._clock();
+        self._tries[path] = (self._tries[path] || 0) + 1;
+      } else {
+        delete self._tries[path];
+      }
       if (self.wanted === path) self._put(path);
     });
+  };
+
+  var RETRY_TRIES = 3, RETRY_MS = 5000;
+  /** Whether image path failed and may be made again now. */
+  Overlay.prototype._retry = function (path) {
+    var e = this.layers[path];
+    return !!e && !!e.failed && (this._tries[path] || 0) < RETRY_TRIES && this._clock() - e.failedAt >= RETRY_MS;
   };
 
   /** Whether image path has its tiles for the map as it is now: one
@@ -296,7 +313,11 @@ var WidgetAnimRadar = (function () {
     var keep = {}, self = this;
     this.frames = (frames || []).slice();
     this.frames.forEach(function (f) { keep[keyOf(f)] = true; });
-    Object.keys(this.layers).forEach(function (p) { if (!keep[p] || self.layers[p].failed) self._drop(p); });
+    Object.keys(this.layers).forEach(function (p) {
+      if (keep[p] && !self.layers[p].failed) return;
+      self._drop(p);
+      delete self._tries[p];
+    });
     if (this.on) this.frames.forEach(function (f) { self._make(f); });
     if (this.time !== null) this.show(this.time);
   };
@@ -376,7 +397,7 @@ var WidgetAnimRadar = (function () {
     var f = this.frames[i];
     var key = keyOf(f);
     this.wanted = key;
-    if (this.layers[key] && this.layers[key].failed) this._drop(key);
+    if (this._retry(key)) this._drop(key);
     if (this.shown === key) return;
     this._make(f);
     // Not in for the map as it is (a zoom): the image before stays meanwhile.

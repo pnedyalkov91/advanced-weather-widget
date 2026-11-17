@@ -558,6 +558,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   }
 
   function addFrameEntry(entry) {
+    entry.shownAt = renderSeq;
     if (!map.getSource(entry.sourceId)) {
       map.addSource(entry.sourceId, { type: 'raster', tiles: frameTiles(entry.url), tileSize: entry.tileSize, maxzoom: entry.maxZoom });
     }
@@ -618,6 +619,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // The animation's own radar and satellite images (anim) stay out of setFramesHidden.
   function frameVisibility(e) { return e.held || (framesHidden && !e.anim) ? 'none' : 'visible'; }
   function holdFrame(e, held) {
+    if (!held && e.held) e.shownAt = renderSeq;
     e.held = held;
     if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
     // Drawn again with every tile already cached, no source data may
@@ -627,25 +629,31 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     }
   }
   function entryOf(handle) { return frameById.get(handle.layerId) || null; }
-  /** The view as the loading bar keys it: the tiles' zoom and the area. */
-  function viewNow() {
+  // Frames drawn since: a frame added or shown again has no tile asked for
+  // until the map draws it, and MapLibre calls such a source loaded.
+  var renderSeq = 0;
+  /** The view as the loading bar keys it for frame e: the zoom of its
+      tiles (a 256 grid takes those of the map's zoom + 1; past the last
+      zoom the same tiles serve) and the area. */
+  function viewNow(e) {
     var b = map.getBounds ? map.getBounds() : null;
+    var z = Math.round(map.getZoom()) + (e.tileSize === 256 ? 1 : 0);
     return {
-      z: Math.round(map.getZoom()),
+      z: e.maxZoom != null ? Math.min(z, e.maxZoom) : z,
       box: b ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] : null
     };
   }
   var SEEN_PER_ZOOM = 4;       // areas kept per zoom and frame
   /** A frame in at the view now: noted (frameCounted). */
   function noteSeen(e) {
-    var v = viewNow(), seen = e.seen = e.seen || {}, list = seen[v.z] = seen[v.z] || [];
+    var v = viewNow(e), seen = e.seen = e.seen || {}, list = seen[v.z] = seen[v.z] || [];
     if (list.some(function (b) { return covers(b, v.box); })) return;
     list.push(v.box);
     if (list.length > SEEN_PER_ZOOM) list.shift();
   }
   /** Whether the frame was in at this zoom over the area now. */
   function seenHere(e) {
-    var v = viewNow(), list = e.seen && e.seen[v.z];
+    var v = viewNow(e), list = e.seen && e.seen[v.z];
     return !!list && list.some(function (b) { return covers(b, v.box); });
   }
   function covers(b, box) {
@@ -1158,6 +1166,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.on('move', drawSpaceSoon);
       map.on('resize', drawSpaceSoon);
       map.on('render', checkPrepared);
+      map.on('render', function () { renderSeq++; });
       map.on('styledata', restack);
       return map;
     },
@@ -1201,7 +1210,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     onLayerReady: function (handle, cb) {
       var done = false, waiter = null;
-      // ok false: settled without its tiles (an error, or the time out).
+      // ok false: settled on a tile error. The time out is not one: a slow
+      // server may still bring the tiles, made again they would start over.
       function finish(ok) {
         if (done) return;
         done = true;
@@ -1233,7 +1243,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       (pendingCheck[handle.sourceId] = pendingCheck[handle.sourceId] || []).push(check);
       waiter = setTimeout(function () {
         console.warn('[librewxr] frame layer not settled after 25 s: ' + handle.sourceId);
-        finish(false);
+        finish(true);
       }, 25000);
       check();
     },
@@ -1253,7 +1263,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     frameCounted: function (handle) {
       var e = entryOf(handle);
       if (!e) return false;
-      if (!e.held && this.frameLoaded(handle)) {
+      if (!e.held && renderSeq > e.shownAt && this.frameLoaded(handle)) {
         noteSeen(e);
         return true;
       }
