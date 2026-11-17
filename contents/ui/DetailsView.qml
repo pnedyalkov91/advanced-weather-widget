@@ -32,6 +32,14 @@ import "js/moonpath.js" as MoonPath
 import "js/sunpath.js" as SunPath
 import "js/windCompass.js" as WindCompass
 import "js/pressureGauge.js" as PressureGauge
+import "js/feelsLikeGauge.js" as FeelsLikeGauge
+import "js/humidityGauge.js" as HumidityGauge
+import "js/dewPointGauge.js" as DewPointGauge
+import "js/visibilityGauge.js" as VisibilityGauge
+import "js/precipGauge.js" as PrecipGauge
+import "js/precipSumGauge.js" as PrecipSumGauge
+import "js/uvGauge.js" as UvGauge
+import "js/snowGauge.js" as SnowGauge
 import "js/suncalc.js" as SC
 import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
@@ -266,6 +274,195 @@ Item {
     property bool _pollenExpanded: false
     property bool _swExpanded: false
     property bool _dtExpanded: false
+
+    // ── Expandable gauge cards (cards mode only) ─────────────────────────
+    // Feels like, humidity, dew point, visibility, precipitation, precipitation
+    // sum, UV index and snow cover. Collapsed = the regular compact row (plus a
+    // chevron); expanded = a Canvas gauge drawn by js/<name>Gauge.js, in the
+    // same style as the pressure card. All default to collapsed.
+    readonly property var _gaugeIds: ["feelslike", "humidity", "dewpoint", "visibility", "preciprate", "precipsum", "uvindex", "snowcover"]
+    // id -> bool. Always replaced as a whole object so bindings re-evaluate.
+    property var _gaugeExpanded: ({})
+    function _isGaugeId(id) {
+        return _gaugeIds.indexOf(id) >= 0;
+    }
+    function _setGaugeExpanded(id, on) {
+        var m = {};
+        for (var k in _gaugeExpanded)
+            m[k] = _gaugeExpanded[k];
+        m[id] = on;
+        _gaugeExpanded = m;
+    }
+
+    /** Metric the gauge shows (metric units; the JS converts for display). */
+    function _gaugeValue(id) {
+        var w = weatherRoot;
+        if (!w)
+            return NaN;
+        switch (id) {
+        case "feelslike":
+            return w.apparentC;
+        case "humidity":
+            return w.humidityPercent;
+        case "dewpoint":
+            return w.dewPointC;
+        case "visibility":
+            return w.visibilityKm;
+        case "preciprate":
+            return w.precipMmh;
+        case "precipsum":
+            return w.precipSumMm;
+        case "uvindex":
+            return w.uvIndex;
+        case "snowcover":
+            return w.snowDepthCm;
+        }
+        return NaN;
+    }
+    /** Secondary metric: air temperature (feels like / dew point), today's peak (UV). */
+    function _gaugeValue2(id) {
+        var w = weatherRoot;
+        if (!w)
+            return NaN;
+        switch (id) {
+        case "feelslike":
+        case "dewpoint":
+            return w.temperatureC;
+        case "uvindex":
+            {
+                var d = w.dailyData;
+                // isNaN(null) is false, so null must be rejected explicitly
+                if (d && d.length > 0 && d[0].uvMax !== undefined && d[0].uvMax !== null && !isNaN(d[0].uvMax))
+                    return d[0].uvMax;
+                return NaN;
+            }
+        }
+        return NaN;
+    }
+    /** {key, color} of the band the value falls in. */
+    function _gaugeInfo(id, v) {
+        switch (id) {
+        case "feelslike":
+            return FeelsLikeGauge.info(v, isDark);
+        case "humidity":
+            return HumidityGauge.info(v, isDark);
+        case "dewpoint":
+            return DewPointGauge.info(v, isDark);
+        case "visibility":
+            return VisibilityGauge.info(v, isDark);
+        case "preciprate":
+            return PrecipGauge.info(v, isDark);
+        case "precipsum":
+            return PrecipSumGauge.info(v, isDark);
+        case "uvindex":
+            return UvGauge.info(v, isDark);
+        case "snowcover":
+            return SnowGauge.info(v, isDark);
+        }
+        return {
+            key: "",
+            color: root.accentFor(id)
+        };
+    }
+    function _gaugeDraw(id, ctx, w, h, p) {
+        switch (id) {
+        case "feelslike":
+            FeelsLikeGauge.draw(ctx, w, h, p);
+            break;
+        case "humidity":
+            HumidityGauge.draw(ctx, w, h, p);
+            break;
+        case "dewpoint":
+            DewPointGauge.draw(ctx, w, h, p);
+            break;
+        case "visibility":
+            VisibilityGauge.draw(ctx, w, h, p);
+            break;
+        case "preciprate":
+            PrecipGauge.draw(ctx, w, h, p);
+            break;
+        case "precipsum":
+            PrecipSumGauge.draw(ctx, w, h, p);
+            break;
+        case "uvindex":
+            UvGauge.draw(ctx, w, h, p);
+            break;
+        case "snowcover":
+            SnowGauge.draw(ctx, w, h, p);
+            break;
+        }
+    }
+    /** Band key -> translated label. Literal i18n() calls so xgettext finds them. */
+    function _gaugeBandText(id, key) {
+        if (!key)
+            return "";
+        switch (key) {
+        case "dry":
+            return i18n("Dry");
+        case "comfortable":
+            return i18n("Comfortable");
+        case "humid":
+            return i18n("Humid");
+        case "veryhumid":
+            return i18n("Very humid");
+        case "oppressive":
+            return i18n("Oppressive");
+        case "fog":
+            return i18n("Fog");
+        case "poor":
+            return i18n("Poor");
+        case "moderate":
+            return i18n("Moderate");
+        case "good":
+            return i18n("Good");
+        case "excellent":
+            return i18n("Excellent");
+        case "none":
+            return id === "snowcover" ? i18n("No snow") : i18n("None");
+        case "light":
+            return i18n("Light");
+        case "heavy":
+            return i18n("Heavy");
+        case "extreme":
+            return i18n("Extreme");
+        case "low":
+            return i18n("Low");
+        case "high":
+            return i18n("High");
+        case "veryhigh":
+            return i18n("Very high");
+        case "deep":
+            return i18n("Deep");
+        case "verydeep":
+            return i18n("Very deep");
+        case "freezing":
+            return i18n("Freezing");
+        case "cold":
+            return i18n("Cold");
+        case "cool":
+            return i18n("Cool");
+        case "warm":
+            return i18n("Warm");
+        case "hot":
+            return i18n("Hot");
+        case "extremeheat":
+            return i18n("Extreme heat");
+        }
+        return "";
+    }
+    /** Optional small line under the band label. */
+    function _gaugeSubText(id) {
+        var w = weatherRoot;
+        if (!w)
+            return "";
+        if (id === "feelslike" || id === "dewpoint")
+            return isNaN(w.temperatureC) ? "" : i18n("Air %1", w.tempValue(w.temperatureC));
+        if (id === "uvindex") {
+            var pk = _gaugeValue2("uvindex");
+            return isNaN(pk) ? "" : i18n("Peak %1", (Math.round(pk * 10) / 10).toString());
+        }
+        return "";
+    }
     property int _currentAlertIndex: 0
 
     readonly property int regularCardHeight: Plasmoid.configuration.widgetCardsHeightAuto ? 30 : (Plasmoid.configuration.widgetCardsHeight || 30)
@@ -716,7 +913,7 @@ Item {
                             required property string modelData   // the detail ID
 
                             // Card height
-                            readonly property bool isExpandedCard: card.modelData === "suntimes" || card.modelData === "moonphase" || (card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 1) || card.modelData === "airquality" || card.modelData === "pollen" || card.modelData === "spaceweather" || (card.modelData === "datetime" && !root.isList) || ((card.modelData === "wind" || card.modelData === "pressure") && !root.isList)
+                            readonly property bool isExpandedCard: card.modelData === "suntimes" || card.modelData === "moonphase" || (card.modelData === "alerts" && weatherRoot && weatherRoot.weatherAlerts && weatherRoot.weatherAlerts.length > 1) || card.modelData === "airquality" || card.modelData === "pollen" || card.modelData === "spaceweather" || (card.modelData === "datetime" && !root.isList) || ((card.modelData === "wind" || card.modelData === "pressure") && !root.isList) || (!root.isList && root._isGaugeId(card.modelData))
                             // suntimes and moonphase: height scales with card width
                             // so the arc grows when the widget is stretched.
                             readonly property int autoHeight: {
@@ -737,6 +934,8 @@ Item {
                                 if (card.modelData === "suntimes" || card.modelData === "moonphase" || card.modelData === "datetime")
                                     return arcLikeHeight;
                                 if (card.modelData === "wind" || card.modelData === "pressure")
+                                    return arcLikeHeight;
+                                if (root._isGaugeId(card.modelData) && !root.isList)
                                     return arcLikeHeight;
                                 if (isExpandedCard)
                                     return 80;
@@ -768,6 +967,8 @@ Item {
                                     return root._swExpanded;
                                 if (card.modelData === "datetime")
                                     return root._dtExpanded;
+                                if (root._isGaugeId(card.modelData))
+                                    return root._gaugeExpanded[card.modelData] === true;
                                 return true;
                             }
                             Layout.preferredHeight: root.isList ? (card.isExpandedCard ? 44 : 38) : (card.isExpandedCard ? (card._isArcExpanded ? autoHeight : root.regularCardHeight) : (Plasmoid.configuration.widgetCardsHeightAuto ? autoHeight : Plasmoid.configuration.widgetCardsHeight))
@@ -1185,6 +1386,112 @@ Item {
                                             opacity: 0.6
                                             font: root.weatherRoot ? root.weatherRoot.wf(10, false) : Qt.font({})
                                         }
+                                    }
+                                }
+                            }
+
+                            // ── Expandable gauges (cards mode) ────────────────────
+                            // Feels like / humidity / dew point / visibility / precipitation /
+                            // precipitation sum / UV index / snow cover. One Loader, built only
+                            // for these card types (see the pressure note above). Collapsed it
+                            // looks like the regular row plus a chevron; expanded it hosts the
+                            // shared ExpandedGauge, drawn by js/<name>Gauge.js.
+                            Loader {
+                                anchors.fill: parent
+                                active: !root.isList && root._isGaugeId(card.modelData)
+                                sourceComponent: Item {
+                                    id: gaugeCard
+                                    anchors.fill: parent
+                                    clip: true
+
+                                    readonly property string gid: card.modelData
+                                    readonly property real gv: root._gaugeValue(gid)
+                                    readonly property real gv2: root._gaugeValue2(gid)
+                                    readonly property var ginfo: root._gaugeInfo(gid, gv)
+                                    readonly property bool gImperial: root.weatherRoot ? root.weatherRoot._isImperial() : false
+                                    readonly property string gTempUnit: root.weatherRoot ? root.weatherRoot._tempUnit() : "C"
+
+                                    // Collapsed header: same as a regular row + chevron
+                                    RowLayout {
+                                        id: gaugeHeader
+                                        visible: !card._isArcExpanded
+                                        anchors.top: parent.top
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.leftMargin: 10
+                                        anchors.rightMargin: 10
+                                        height: card._isArcExpanded ? 0 : root.regularCardHeight
+                                        spacing: 8
+
+                                        WeatherIcon {
+                                            iconInfo: root.showIconFor(gaugeCard.gid) ? root.resolveIcon(gaugeCard.gid) : null
+                                            iconSize: root.iconSize
+                                            iconColor: root.iconColorFor(root.accentFor(gaugeCard.gid))
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Label {
+                                            text: root.labelFor(gaugeCard.gid) + ":"
+                                            color: root.themeTextColor
+                                            opacity: 0.55
+                                            font: root.weatherRoot ? root.weatherRoot.wf(11, false) : Qt.font({})
+                                            elide: Text.ElideRight
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Item {
+                                            Layout.fillWidth: true
+                                        }
+                                        Label {
+                                            text: root._detailValue(gaugeCard.gid)
+                                            color: root.valueColor
+                                            font: root.weatherRoot ? root.weatherRoot.wf(13, true) : Qt.font({
+                                                bold: true
+                                            })
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Kirigami.Icon {
+                                            source: "arrow-down"
+                                            implicitWidth: 14
+                                            implicitHeight: 14
+                                            opacity: 0.45
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                    }
+                                    MouseArea {
+                                        visible: !card._isArcExpanded
+                                        anchors.top: gaugeHeader.top
+                                        anchors.left: gaugeHeader.left
+                                        anchors.right: gaugeHeader.right
+                                        height: gaugeHeader.height
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root._setGaugeExpanded(gaugeCard.gid, true)
+                                    }
+
+                                    // Expanded: dial + overlay + collapse button
+                                    ExpandedGauge {
+                                        visible: card._isArcExpanded
+                                        anchors.fill: parent
+                                        weatherRoot: root.weatherRoot
+                                        iconInfo: root.showIconFor(gaugeCard.gid) ? root.resolveIcon(gaugeCard.gid) : null
+                                        iconSize: root.iconSize
+                                        iconColor: root.iconColorFor(gaugeCard.ginfo.color)
+                                        valueText: root._detailValue(gaugeCard.gid)
+                                        valueColor: root.valueColor
+                                        bandText: root._gaugeBandText(gaugeCard.gid, gaugeCard.ginfo.key)
+                                        bandColor: gaugeCard.ginfo.color
+                                        subText: root._gaugeSubText(gaugeCard.gid)
+                                        subColor: root.themeTextColor
+                                        paintKey: gaugeCard.gid + "|" + gaugeCard.gv + "|" + gaugeCard.gv2 + "|" + root.isDark + "|" + gaugeCard.gImperial + "|" + gaugeCard.gTempUnit + "|" + root.themeTextColor
+                                        onDraw: function (ctx, w, h) {
+                                            root._gaugeDraw(gaugeCard.gid, ctx, w, h, {
+                                                v: gaugeCard.gv,
+                                                v2: gaugeCard.gv2,
+                                                isDark: root.isDark,
+                                                text: String(root.themeTextColor),
+                                                imperial: gaugeCard.gImperial,
+                                                tempUnit: gaugeCard.gTempUnit
+                                            });
+                                        }
+                                        onCollapseRequested: root._setGaugeExpanded(gaugeCard.gid, false)
                                     }
                                 }
                             }
