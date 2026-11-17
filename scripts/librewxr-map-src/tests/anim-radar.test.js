@@ -539,6 +539,17 @@ test('Overlay.progress: null off; on, the images whose tiles are in, out of all'
   assert.deepEqual(o.progress(), { done: 2, total: 3 });
 });
 
+test('Overlay.progress: counted as the map says for the loading bar (frameCounted) when it can', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  a.counted = {};
+  a.frameCounted = (h) => a.counted[h.layerId] !== false;
+  o.setOn(true);
+  a.made.forEach((h) => { a.loaded[h.layerId] = false; });
+  a.counted[a.made[1].layerId] = false;
+  assert.deepEqual(o.progress(), { done: 2, total: 3 }, 'held back in a move, loaded before: not a download');
+});
+
 test('framesOf: the nowcast images carry the run they come from (the last observed image)', () => {
   const c = { radar: { past: [{ time: 100, path: '/p/100' }, { time: 700, path: '/p/700' }], nowcast: [{ time: 1300, path: '/p/1300' }] } };
   const f = R.framesOf(c, 'radar');

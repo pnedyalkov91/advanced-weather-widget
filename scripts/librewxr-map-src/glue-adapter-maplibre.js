@@ -618,6 +618,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // The animation's own radar and satellite images (anim) stay out of setFramesHidden.
   function frameVisibility(e) { return e.held || (framesHidden && !e.anim) ? 'none' : 'visible'; }
   function holdFrame(e, held) {
+    // Its state when held back, for the loading bar (frameCounted): a
+    // second move before it came back keeps the one from before the first.
+    if (held && !e.held) e.loadedBefore = !!map.getSource(e.sourceId) && map.isSourceLoaded(e.sourceId);
     e.held = held;
     if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
     // Drawn again with every tile already cached, no source data may
@@ -1216,6 +1219,17 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         zoom that came while it was held back). */
     frameLoaded: function (handle) {
       return !!map && !!map.getLayer(handle.layerId) && frameReadyNow(handle);
+    },
+
+    /** Whether a frame counts as in for the loading bar: a held one by its
+        state before the move. It comes back after it from the map's cache
+        when its tiles are there, and counts as loading only then if they
+        are not; counted by frameLoaded, the bar fell at every move and
+        climbed back two frames at a time, as if all were read again. */
+    frameCounted: function (handle) {
+      var e = entryOf(handle);
+      if (e && e.held) return !!e.loadedBefore;
+      return this.frameLoaded(handle);
     },
 
     setFrameOpacity: function (handle, v) {

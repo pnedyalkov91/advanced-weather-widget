@@ -926,6 +926,25 @@ test('frameLoaded: a frame held back during a move has no tiles at the new scale
   assert.equal(adapter.frameLoaded(h[0]), true, 'the frame on screen keeps loading');
 });
 
+test('frameCounted: the loading bar counts a held frame by its state before the move', () => {
+  const { adapter, map } = loadAdapter();
+  const h = sixFrames(adapter);
+  h.forEach((x, i) => { map.loadedSources[x.sourceId] = i !== 4; });
+  map.fire('movestart');
+  assert.equal(adapter.frameCounted(h[3]), true, 'loaded before: not a download, it comes back from the cache');
+  assert.equal(adapter.frameCounted(h[4]), false, 'still loading before the move');
+  // A second move before it came back: the state from before the first one stays.
+  map.loadedSources[h[3].sourceId] = false;
+  map.fire('movestart');
+  assert.equal(adapter.frameCounted(h[3]), true);
+  // Back on the map, its tiles really asked for: its own state again.
+  map.fire('moveend');
+  map.fire('idle'); map.fire('idle'); map.fire('idle');
+  assert.equal(adapter.frameCounted(h[3]), false);
+  map.loadedSources[h[3].sourceId] = true;
+  assert.equal(adapter.frameCounted(h[3]), true);
+});
+
 test('a held frame waited for settles only once drawn again and loaded', () => {
   const { adapter, map } = loadAdapter();
   const h = sixFrames(adapter);

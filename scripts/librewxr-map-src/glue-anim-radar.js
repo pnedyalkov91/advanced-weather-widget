@@ -245,14 +245,17 @@ var WidgetAnimRadar = (function () {
   };
 
   /** How far its images are: { done, total }, done those whose tiles are
-      in for the map as it is; null off. */
+      in for the map as it is (frameCounted: those held back in a move by
+      their state before it); null off. */
   Overlay.prototype.progress = function () {
     if (!this.on) return null;
-    var self = this, done = 0;
+    var self = this, a = this.adapter, done = 0;
+    var counted = a.frameCounted ? function (h) { return a.frameCounted(h); }
+      : a.frameLoaded ? function (h) { return a.frameLoaded(h); } : null;
     this.frames.forEach(function (f) {
       var e = self.layers[keyOf(f)];
       if (!e) return;
-      if (self.adapter.frameLoaded ? self.adapter.frameLoaded(e.handle) : e.ready) done++;
+      if (counted ? counted(e.handle) : e.ready) done++;
     });
     return { done: done, total: this.frames.length };
   };
