@@ -610,10 +610,17 @@ test('nativeZoom: radar and satellite tiles stop where a file pixel gets finer t
   assert.equal(R.nativeZoom('http://localhost:8099/v2/satellite/1763400000/256/{z}/{x}/{y}/0/0_0.webp', 12), 9);
   // Never above the map's own last level.
   assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp', 7), 7);
-  // Lightning, arrows or cells are drawn at a fixed size on each level: no cap.
-  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?lightning=bolts', 12), 12);
-  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?arrows=dark&cells=light', 12), 12);
-  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?cells=', 12), 9);
+  // Lightning, arrows and cells are stretched with the rest (tried for now).
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?lightning=bolts', 12), 9);
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?arrows=dark&cells=light', 12), 9);
   // An address of another shape keeps the map's level.
   assert.equal(R.nativeZoom('https://example.org/tiles/{z}/{x}/{y}.png', 12), 12);
+});
+
+test('sharpEdges: a radar tile without smoothing keeps its cells square when stretched', () => {
+  const base = 'http://localhost:8099/v2/radar/1763400000/256/{z}/{x}/{y}/';
+  assert.equal(R.sharpEdges(base + '2/0_1.webp', 'radar'), true);
+  assert.equal(R.sharpEdges(base + '2/0_0.png?lightning=bolts', 'radar'), true);
+  assert.equal(R.sharpEdges(base + '2/1_1.webp', 'radar'), false);
+  assert.equal(R.sharpEdges('http://localhost:8099/v2/satellite/1763400000/256/{z}/{x}/{y}/0/0_0.webp', 'satellite'), false);
 });

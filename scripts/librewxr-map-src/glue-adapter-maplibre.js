@@ -571,7 +571,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       paint: {
         'raster-opacity': entry.opacity,
         'raster-opacity-transition': { duration: 0, delay: 0 },
-        'raster-fade-duration': 0
+        'raster-fade-duration': 0,
+        'raster-resampling': entry.sharp ? 'nearest' : 'linear'
       }
     });
   }
@@ -1199,6 +1200,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         // Past the data's own resolution the map stretches the last level.
         kind: kind, url: url, opacity: 0, anim: anim,
         maxZoom: typeof WidgetAnimRadar !== 'undefined' ? WidgetAnimRadar.nativeZoom(url, maxZoom) : maxZoom,
+        sharp: typeof WidgetAnimRadar !== 'undefined' && WidgetAnimRadar.sharpEdges(url, kind),
         tileSize: opts && opts.tileSize === 512 ? 512 : 256
       };
       frameRegistry.push(entry);

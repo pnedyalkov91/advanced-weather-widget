@@ -86,17 +86,23 @@ var WidgetAnimRadar = (function () {
      one level up. */
   var NATIVE_ZOOM_256 = 9;
   var SIZE_IN_URL = /\/(256|512)\/\{z\}\//;
-  // Drawn at a fixed size on each level: stretched they would grow and blur.
-  var FIXED_SIZE_MARKS = /[?&](arrows|cells|lightning)=[^&]/;
 
   /** The last level of tiles worth asking for the frame at url, on a map
       that goes up to mapMax: NATIVE_ZOOM_256 for 256 files, one less for
-      512 ones, mapMax when the tiles carry lightning, arrows or cells or
-      the address is of another shape. */
+      512 ones, mapMax when the address is of another shape. Lightning,
+      arrows and storm cells are drawn in the tile at a fixed size: past
+      that level they grow with the rest (on trial). */
   function nativeZoom(url, mapMax) {
     var m = SIZE_IN_URL.exec(url);
-    if (!m || FIXED_SIZE_MARKS.test(url)) return mapMax;
+    if (!m) return mapMax;
     return Math.min(mapMax, NATIVE_ZOOM_256 - (m[1] === '512' ? 1 : 0));
+  }
+
+  var UNSMOOTHED = /\/\d+\/0_[01]\.(png|webp)(\?|$)/;
+  /** Whether the frame at url is a radar tile drawn without smoothing:
+      its cells are squares, kept sharp when the map stretches them. */
+  function sharpEdges(url, kind) {
+    return kind !== 'satellite' && UNSMOOTHED.test(url);
   }
 
   /** The tiles for the size chosen ('auto', '256' or '512') at device
@@ -491,7 +497,7 @@ var WidgetAnimRadar = (function () {
 
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
-    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, nativeZoom: nativeZoom, tileSizes: tileSizes, slowFactor: slowFactor,
+    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, nativeZoom: nativeZoom, sharpEdges: sharpEdges, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
     lastPast: lastPast, nowTime: nowTime
   };
