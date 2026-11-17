@@ -1175,7 +1175,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     onLayerReady: function (handle, cb) {
       var done = false, waiter = null;
-      function finish() {
+      // ok false: settled without its tiles (an error, or the time out).
+      function finish(ok) {
         if (done) return;
         done = true;
         map.off('sourcedata', onData);
@@ -1185,9 +1186,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         if (list) list.splice(list.indexOf(finish), 1);
         var checks = pendingCheck[handle.sourceId];
         if (checks) checks.splice(checks.indexOf(check), 1);
-        cb();
+        cb(ok !== false);
       }
-      function check() { if (frameReadyNow(handle)) finish(); }
+      function check() { if (frameReadyNow(handle)) finish(true); }
       function onData(e) {
         if (e.sourceId === handle.sourceId) check();
       }
@@ -1195,7 +1196,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       function onError(e) {
         if (e.sourceId === handle.sourceId || (e.error && e.error.sourceId === handle.sourceId)) {
           console.warn('[librewxr] map tile/source error:', e.error ? (e.error.message || e.error) : e);
-          finish();
+          finish(false);
         }
       }
       map.on('sourcedata', onData);
@@ -1206,7 +1207,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       (pendingCheck[handle.sourceId] = pendingCheck[handle.sourceId] || []).push(check);
       waiter = setTimeout(function () {
         console.warn('[librewxr] frame layer not settled after 25 s: ' + handle.sourceId);
-        finish();
+        finish(false);
       }, 25000);
       check();
     },

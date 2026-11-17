@@ -205,15 +205,20 @@ var WidgetAnimRadar = (function () {
   };
 
   /** Wait for the tiles of image path (once at a time), then show it if
-      it is still the one asked for. */
+      it is still the one asked for. Settled without them (ok false: a tile
+      error, the network not back yet after a sleep), it shows all the same
+      so the play goes on, and is made again the next time it is asked for
+      (show) or a catalog comes (setFrames): the map never asks again for a
+      tile that failed. */
   Overlay.prototype._await = function (path) {
     var self = this, entry = this.layers[path];
     if (!entry || entry.waiting) return;
     entry.waiting = true;
-    this.adapter.onLayerReady(entry.handle, function () {
+    this.adapter.onLayerReady(entry.handle, function (ok) {
       if (self.layers[path] !== entry) return;
       entry.waiting = false;
       entry.ready = true;
+      entry.failed = ok === false;
       if (self.wanted === path) self._put(path);
     });
   };
@@ -288,7 +293,7 @@ var WidgetAnimRadar = (function () {
     var keep = {}, self = this;
     this.frames = (frames || []).slice();
     this.frames.forEach(function (f) { keep[keyOf(f)] = true; });
-    Object.keys(this.layers).forEach(function (p) { if (!keep[p]) self._drop(p); });
+    Object.keys(this.layers).forEach(function (p) { if (!keep[p] || self.layers[p].failed) self._drop(p); });
     if (this.on) this.frames.forEach(function (f) { self._make(f); });
     if (this.time !== null) this.show(this.time);
   };
@@ -368,6 +373,7 @@ var WidgetAnimRadar = (function () {
     var f = this.frames[i];
     var key = keyOf(f);
     this.wanted = key;
+    if (this.layers[key] && this.layers[key].failed) this._drop(key);
     if (this.shown === key) return;
     this._make(f);
     // Not in for the map as it is (a zoom): the image before stays meanwhile.
