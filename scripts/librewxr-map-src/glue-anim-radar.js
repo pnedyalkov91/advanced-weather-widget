@@ -161,6 +161,10 @@ var WidgetAnimRadar = (function () {
     this.level = 1;             // the fade, 0..1, times the opacity
     this._fadeIn = false;       // the next image put fades in (just switched on)
     this._leaving = false;      // fading out, its layers go at the end
+    // Images whose tiles failed: tried again RETRY_TRIES times at most,
+    // RETRY_MS apart, when asked for; a new catalog gives them one more.
+    this._clock = opts.now || function () { return Date.now(); };
+    this._tries = {};           // keyOf(image) -> failed reads in a row
     var self = this;
     this._fade = new Fade(function (v) { self._setLevel(v); }, { ms: this.fadeMs, now: opts.now, raf: opts.raf, from: 1 });
   }
@@ -205,17 +209,35 @@ var WidgetAnimRadar = (function () {
   };
 
   /** Wait for the tiles of image path (once at a time), then show it if
-      it is still the one asked for. */
+      it is still the one asked for. Settled on a tile error (ok false: the
+      network not back yet after a sleep), it shows all the same so the
+      play goes on, and is made again when asked for later (show, a few
+      tries) or when a catalog comes (setFrames): the map never asks again
+      for a tile that failed. */
   Overlay.prototype._await = function (path) {
     var self = this, entry = this.layers[path];
     if (!entry || entry.waiting) return;
     entry.waiting = true;
-    this.adapter.onLayerReady(entry.handle, function () {
+    this.adapter.onLayerReady(entry.handle, function (ok) {
       if (self.layers[path] !== entry) return;
       entry.waiting = false;
       entry.ready = true;
+      entry.failed = ok === false;
+      if (entry.failed) {
+        entry.failedAt = self._clock();
+        self._tries[path] = (self._tries[path] || 0) + 1;
+      } else {
+        delete self._tries[path];
+      }
       if (self.wanted === path) self._put(path);
     });
+  };
+
+  var RETRY_TRIES = 3, RETRY_MS = 5000;
+  /** Whether image path failed and may be made again now. */
+  Overlay.prototype._retry = function (path) {
+    var e = this.layers[path];
+    return !!e && !!e.failed && (this._tries[path] || 0) < RETRY_TRIES && this._clock() - e.failedAt >= RETRY_MS;
   };
 
   /** Whether image path has its tiles for the map as it is now: one
@@ -240,14 +262,17 @@ var WidgetAnimRadar = (function () {
   };
 
   /** How far its images are: { done, total }, done those whose tiles are
-      in for the map as it is; null off. */
+      in for the map as it is (frameCounted: those held back in a move by
+      their state before it); null off. */
   Overlay.prototype.progress = function () {
     if (!this.on) return null;
-    var self = this, done = 0;
+    var self = this, a = this.adapter, done = 0;
+    var counted = a.frameCounted ? function (h) { return a.frameCounted(h); }
+      : a.frameLoaded ? function (h) { return a.frameLoaded(h); } : null;
     this.frames.forEach(function (f) {
       var e = self.layers[keyOf(f)];
       if (!e) return;
-      if (self.adapter.frameLoaded ? self.adapter.frameLoaded(e.handle) : e.ready) done++;
+      if (counted ? counted(e.handle) : e.ready) done++;
     });
     return { done: done, total: this.frames.length };
   };
@@ -288,7 +313,11 @@ var WidgetAnimRadar = (function () {
     var keep = {}, self = this;
     this.frames = (frames || []).slice();
     this.frames.forEach(function (f) { keep[keyOf(f)] = true; });
-    Object.keys(this.layers).forEach(function (p) { if (!keep[p]) self._drop(p); });
+    Object.keys(this.layers).forEach(function (p) {
+      if (keep[p] && !self.layers[p].failed) return;
+      self._drop(p);
+      delete self._tries[p];
+    });
     if (this.on) this.frames.forEach(function (f) { self._make(f); });
     if (this.time !== null) this.show(this.time);
   };
@@ -368,6 +397,7 @@ var WidgetAnimRadar = (function () {
     var f = this.frames[i];
     var key = keyOf(f);
     this.wanted = key;
+    if (this._retry(key)) this._drop(key);
     if (this.shown === key) return;
     this._make(f);
     // Not in for the map as it is (a zoom): the image before stays meanwhile.
@@ -396,16 +426,26 @@ var WidgetAnimRadar = (function () {
       keeps it to itself. To spare a second copy over HTTP, the page's
       WebSocket is wrapped before the viewer opens it: every weather-maps
       snapshot or update on it goes to onCatalog too. Returns { open }:
-      whether such a socket is open now (the page polls only when not). */
+      whether such a socket is open now (the page polls only when not), and
+      drop: after a sleep a socket can look open and get nothing more, its
+      connection gone without a close; drop closes it (the viewer opens a
+      new one) and stops counting it at once. */
   function watchPush(win, onCatalog) {
-    var Native = win.WebSocket, opened = 0;
-    if (!Native) return { open: function () { return false; } };
+    var Native = win.WebSocket, opened = 0, live = [];
+    if (!Native) return { open: function () { return false; }, drop: function () {} };
     function Watched(url, protocols) {
       var socket = protocols === undefined ? new Native(url) : new Native(url, protocols);
       if (!/\/v2\/ws(\?|$)/.test(String(url))) return socket;
       var isOpen = false;
-      socket.addEventListener('open', function () { isOpen = true; opened++; });
-      socket.addEventListener('close', function () { if (isOpen) { isOpen = false; opened--; } });
+      function gone() {
+        if (!isOpen) return false;
+        isOpen = false;
+        opened--;
+        live = live.filter(function (l) { return l.socket !== socket; });
+        return true;
+      }
+      socket.addEventListener('open', function () { isOpen = true; opened++; live.push({ socket: socket, gone: gone }); });
+      socket.addEventListener('close', gone);
       socket.addEventListener('message', function (event) {
         var msg;
         try { msg = JSON.parse(event.data); } catch (err) { return; }
@@ -416,7 +456,15 @@ var WidgetAnimRadar = (function () {
     Watched.prototype = Native.prototype;
     ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach(function (k) { if (k in Native) Watched[k] = Native[k]; });
     win.WebSocket = Watched;
-    return { open: function () { return opened > 0; } };
+    return {
+      open: function () { return opened > 0; },
+      drop: function () {
+        live.slice().forEach(function (l) {
+          if (!l.gone()) return;
+          try { l.socket.close(); } catch (err) { /* already closed */ }
+        });
+      }
+    };
   }
 
   return {

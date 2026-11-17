@@ -92,6 +92,8 @@ function fakeAdapter() {
   };
   a.onLayerReady = (h, cb) => { (a.waiting[h.layerId] = a.waiting[h.layerId] || []).push(cb); };
   a.ready = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb()); };
+  // Settled on a tile error.
+  a.fail = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb(false)); };
   a.setFrameOpacity = (h, v) => { a.opacity[h.layerId] = v; };
   a.destroyFrameLayer = (h) => { a.gone.push(h.layerId); delete a.opacity[h.layerId]; };
   a.raise = () => {};
@@ -370,6 +372,69 @@ test('Overlay: after a zoom, an image without its tiles waits for them, the one 
   assert.equal(o.loadedAt(T0 * 1000 + 12 * MIN), true);
 });
 
+test('Overlay: an image whose tiles failed (no network yet after a sleep) is made again when asked again', () => {
+  const clock = { t: 0 };
+  const { a, o } = overlay(radar.slice(0, 3), { now: () => clock.t });
+  o.setOn(true);
+  o.show(T0 * 1000);
+  const first = a.made[0];
+  a.fail(first);
+  assert.deepEqual(a.shown(), [first.layerId], 'put all the same: the play never hangs on it');
+  // Asked again at once: not yet, a failing server is not hammered.
+  const n0 = a.made.length;
+  o.show(T0 * 1000 + MIN);
+  assert.equal(a.made.length, n0);
+  // A few seconds later (back to now, the cursor left on it): made again.
+  clock.t = 5000;
+  o.show(T0 * 1000 + 2 * MIN);
+  assert.ok(a.gone.includes(first.layerId), 'the empty layer goes');
+  const again = a.made[a.made.length - 1];
+  assert.equal(again.url, first.url);
+  a.ready(again);
+  assert.deepEqual(a.shown(), [again.layerId]);
+  // In now: asked again, nothing is made.
+  const n = a.made.length;
+  clock.t = 60000;
+  o.show(T0 * 1000);
+  assert.equal(a.made.length, n);
+});
+
+test('Overlay: an image failing again and again is tried three times, then again at the next catalog', () => {
+  const clock = { t: 0 };
+  const { a, o } = overlay(radar.slice(0, 3), { now: () => clock.t });
+  o.setOn(true);
+  const last = () => a.made[a.made.length - 1];
+  o.show(T0 * 1000);
+  a.fail(a.made[0]);
+  for (let k = 0; k < 2; k++) {
+    clock.t += 10000;
+    o.show(T0 * 1000);
+    a.fail(last());
+  }
+  const n = a.made.length;
+  assert.equal(n, 5, 'three tries of image 0, and images 1 and 2');
+  clock.t += 10000;
+  o.show(T0 * 1000);
+  assert.equal(a.made.length, n, 'given up: the play does not ask for it on every pass');
+  o.setFrames(radar.slice(0, 3));
+  assert.equal(a.made.length, n + 1, 'a new catalog: one more chance');
+  assert.equal(last().url, 'u' + radar[0].time);
+});
+
+test('Overlay: a new catalog makes the failed images again, the image shown kept', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  o.setOn(true);
+  o.show(T0 * 1000 + 12 * MIN);
+  a.ready(a.made[1]);
+  a.fail(a.made[2]);
+  const n = a.made.length;
+  o.setFrames(radar.slice(0, 4));
+  assert.ok(a.gone.includes(a.made[2].layerId));
+  const urls = a.made.slice(n).map((h) => h.url);
+  assert.deepEqual(urls.sort(), ['u' + radar[2].time, 'u' + radar[3].time].sort());
+  assert.deepEqual(a.shown(), [a.made[1].layerId], 'the image shown, fine, stays');
+});
+
 test('Overlay: loadedAt is true out of the range or off, so the play never waits there', () => {
   const { a, o } = overlay(radar.slice(0, 3));
   zoomedAdapter(a);
@@ -447,7 +512,32 @@ test('watchPush: other sockets and a socket that never opened are left alone', (
 });
 
 test('watchPush: no WebSocket in the page, never open', () => {
-  assert.equal(R.watchPush({}, () => {}).open(), false);
+  const push = R.watchPush({}, () => {});
+  assert.equal(push.open(), false);
+  push.drop();
+});
+
+test('watchPush.drop: an open socket (dead after a sleep) is closed and no longer counts', () => {
+  const win = { WebSocket: fakeSocketClass() };
+  win.WebSocket.prototype.close = function () { this.closed = (this.closed || 0) + 1; };
+  const push = R.watchPush(win, () => {});
+  const s = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  const never = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  s.fire('open');
+  assert.equal(push.open(), true);
+  push.drop();
+  assert.equal(push.open(), false, 'the page polls again at once');
+  assert.equal(s.closed, 1, 'closed, so the viewer opens a new one');
+  assert.equal(never.closed, undefined, 'a socket never opened is left to itself');
+  // Its close event, late, counts nothing twice; a new socket counts again.
+  s.fire('close');
+  assert.equal(push.open(), false);
+  const again = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  again.fire('open');
+  assert.equal(push.open(), true);
+  push.drop();
+  push.drop();
+  assert.equal(again.closed, 1);
 });
 
 test('lastPast: the last observed radar image, never the nowcast', () => {
@@ -476,6 +566,17 @@ test('Overlay.progress: null off; on, the images whose tiles are in, out of all'
   a.loaded[a.made[0].layerId] = true;
   a.loaded[a.made[2].layerId] = true;
   assert.deepEqual(o.progress(), { done: 2, total: 3 });
+});
+
+test('Overlay.progress: counted as the map says for the loading bar (frameCounted) when it can', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  a.counted = {};
+  a.frameCounted = (h) => a.counted[h.layerId] !== false;
+  o.setOn(true);
+  a.made.forEach((h) => { a.loaded[h.layerId] = false; });
+  a.counted[a.made[1].layerId] = false;
+  assert.deepEqual(o.progress(), { done: 2, total: 3 }, 'held back in a move, loaded before: not a download');
 });
 
 test('framesOf: the nowcast images carry the run they come from (the last observed image)', () => {

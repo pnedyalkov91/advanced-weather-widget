@@ -913,6 +913,18 @@ Item {
     // (the map left open for hours): at most every 5 minutes, a source
     // ending before now (the satellite alone) would ask for it all along.
     property real _rolledMs: 0
+    /** The range rolled on if now has left its frame and nothing plays;
+        force (back to now, which pauses): at once, playing or not, not
+        5 minutes after the last roll. */
+    function _rollIfStale(force) {
+        var st = animState;
+        if (!st || (!force && (st.playing || Date.now() - _rolledMs <= 300000)))
+            return false;
+        if (!ConfigUtils.timeLineStale(st.times, st.now, Date.now()))
+            return false;
+        _rollRange();
+        return true;
+    }
     function _rollRange() {
         _rolledMs = Date.now();
         Dbg.log("Weather Map", "time line moved on to now");
@@ -1259,8 +1271,14 @@ Item {
         repeat: true
         running: radarRoot.started && radarRoot.shown
         onTriggered: webView.runJavaScript("JSON.stringify(window.animState())", function (s) {
-            if (!s || s === radarRoot._stateText)
+            if (!s)
                 return;
+            // Paused with everything loaded the text stays the same, also
+            // when the clock has moved on (after a sleep): looked at anyway.
+            if (s === radarRoot._stateText) {
+                radarRoot._rollIfStale(false);
+                return;
+            }
             var st = JSON.parse(s);
             if (!st)
                 return;
@@ -1277,8 +1295,7 @@ Item {
             if (radarRoot._keep("layersOn", on) && !radarRoot.solo)
                 radarRoot._saveLayers("", false);
             radarRoot.animState = st;
-            if (!st.playing && Date.now() - radarRoot._rolledMs > 300000 && ConfigUtils.timeLineStale(st.times, st.now, Date.now()))
-                radarRoot._rollRange();
+            radarRoot._rollIfStale(false);
             if (st.time !== null) {
                 radarRoot.shownTime = st.time;
                 radarRoot.shownNow = st.times[st.now];
@@ -1344,11 +1361,71 @@ Item {
     // Back to now: the step of now, or the last observed radar image with
     // lightning on (window.animShowNow).
     function showNow() {
-        if (count > 0)
-            call("animShowNow");
+        if (count <= 0)
+            return;
+        // The time line first brought to the clock if it is behind
+        // (animShowNow pauses: the play stopped first, on the old range).
+        if (animState && animState.playing && ConfigUtils.timeLineStale(animState.times, animState.now, Date.now()))
+            call("animPlay", false);
+        _rollIfStale(true);
+        call("animShowNow");
     }
     function keyNow() {
         showNow();
+    }
+    // Back from a sleep: QML timers stand still while the computer sleeps
+    // and the clock does not, so a tick much later than asked is a wake.
+    // The page drops its socket that may be dead and reads the radar again;
+    // the time line comes to now a moment later, once the images are known.
+    Timer {
+        property real last: Date.now()
+        interval: 30000
+        repeat: true
+        running: true
+        onTriggered: {
+            var t = Date.now(), woke = t - last > 5 * 60e3;
+            last = t;
+            if (!woke || !radarRoot.started)
+                return;
+            Dbg.log("Weather Map", "back from a sleep: radar read again");
+            radarRoot.call("animWake");
+            var st = radarRoot.animState;
+            wakeRollTimer.radarLast = st && st.radar ? st.radar.last : null;
+            wakeRollTimer.tries = 0;
+            wakeRollTimer.restart();
+        }
+    }
+    // The time line rolled on once the new catalog is in (a range of the
+    // radar or satellite ends on its last image), or after a minute. The
+    // state is read here: the popup may be closed, its reading stopped.
+    Timer {
+        id: wakeRollTimer
+        property var radarLast: null
+        property int tries: 0
+        interval: 4000
+        repeat: true
+        onTriggered: {
+            if (!radarRoot.started) {
+                stop();
+                return;
+            }
+            var last = ++tries >= 15;
+            webView.runJavaScript("JSON.stringify(window.animState())", function (s) {
+                if (!wakeRollTimer.running)
+                    return;
+                var st = null;
+                try {
+                    st = s ? JSON.parse(s) : null;
+                } catch (e) {}
+                var fresh = !!st && !!st.radar && st.radar.last !== wakeRollTimer.radarLast;
+                if (!last && radarRoot.rangeKind && !fresh)
+                    return;
+                wakeRollTimer.stop();
+                if (st)
+                    radarRoot.animState = st;
+                radarRoot._rollRange();
+            });
+        }
     }
     // ── Full screen ──────────────────────────────────────────────────────
     // The whole tab (map, column, time bar, help, keys) moves into a window

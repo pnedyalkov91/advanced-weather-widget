@@ -878,6 +878,9 @@ window.animShowNow = function () {
   });
   anim.player.play(false);
   anim.player.seek(g.posAt(ms));
+  // An old catalog (a socket gone quiet): read again, the radar and
+  // satellite follow when it comes.
+  if (animOverlays && Date.now() - animCatalogAt > ANIM_CATALOG_MS) animCatalog();
 };
 // Paused steps: one hour (dir 1 or -1), or to the next frame from its file.
 window.animStep = function (dir) { if (anim) anim.player.step(dir, anim.stepH); };
@@ -1120,6 +1123,7 @@ var animRadarOpts = {
 };
 var animOverlays = null;       // { radar, satellite } (WidgetAnimRadar.Overlay)
 var animCatalogData = null;
+var animCatalogAt = 0;         // when animCatalogData came (ms)
 var animCatalogTimer = null;
 var ANIM_CATALOG_MS = 5 * 60e3;
 
@@ -1166,12 +1170,39 @@ function animOverlaysStop() {
   _widgetAdapter.setLines('radar', false);
 }
 
+/** Read the catalog; resolves to whether it came. */
 function animCatalog() {
   return fetch(API_BASE + '/public/weather-maps.json', { cache: 'no-store' }).then(function (r) {
     if (!r.ok) throw new Error('catalog ' + r.status);
     return r.json();
-  }).then(animCatalogTake).catch(function (err) { console.warn('[anim] radar catalog: ' + err); });
+  }).then(function (c) {
+    animCatalogTake(c);
+    return true;
+  }).catch(function (err) {
+    console.warn('[anim] radar catalog: ' + err);
+    return false;
+  });
 }
+
+/** Back from a sleep (the widget saw its clock jump): the socket that
+    pushed the catalog may be dead without knowing it. It is dropped (the
+    viewer opens a new one, the poll covers the meantime) and the catalog
+    read now, again every WAKE_RETRY_MS for a minute while it fails: the
+    network often comes back a few seconds after the computer. */
+var WAKE_TRIES = 12, WAKE_RETRY_MS = 5000;
+var animWakeTimer = null;
+window.animWake = function () {
+  if (animPush) animPush.drop();
+  if (animWakeTimer) { clearTimeout(animWakeTimer); animWakeTimer = null; }
+  if (!animOverlays) return;
+  var tries = 0;
+  (function read() {
+    animWakeTimer = null;
+    animCatalog().then(function (ok) {
+      if (!ok && ++tries < WAKE_TRIES) animWakeTimer = setTimeout(read, WAKE_RETRY_MS);
+    });
+  })();
+};
 
 /** The catalog while a socket pushes it, else null: the hidden page reads
     it to follow the radar (shell-maplibre.html), as this module is not global. */
@@ -1182,6 +1213,7 @@ window.animPushedCatalog = function () {
 /** A catalog, fetched or pushed: the radar's and satellite's images. */
 function animCatalogTake(c) {
   animCatalogData = c;
+  animCatalogAt = Date.now();
   if (!animOverlays) return;
   animOverlays.radar.setFrames(WidgetAnimRadar.framesOf(c, 'radar'));
   animOverlays.satellite.setFrames(WidgetAnimRadar.framesOf(c, 'satellite'));
