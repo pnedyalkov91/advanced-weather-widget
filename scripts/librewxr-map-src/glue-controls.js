@@ -638,7 +638,10 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
   // Other steps (a forecast layer on or off): the cursor keeps its time.
   var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now, oldStepH !== anim.stepH) : ft.now;
   anim.player.index = -1;
-  anim.player.show(anim.player._clamp(keep));
+  var pos = anim.player._clamp(keep);
+  // Its pictures not read yet (an empty cache), the player waits: the
+  // radar and satellite, read apart, show their image of that time now.
+  if (!anim.player.show(pos)) animOverlayTime(anim.group.timeAt(pos));
   animPreloadSoon(!!fresh);
 }
 
@@ -1155,6 +1158,8 @@ function animOverlaysStart() {
       satellite: new WidgetAnimRadar.Overlay(_widgetAdapter, { kind: 'satellite', gapMs: WidgetAnimRadar.SAT_GAP, until: animSatUntil, opacity: 0.6, fadeMs: 400, url: animOverlayUrl('satellite'), tileSize: animTileOpts().grid })
     };
   }
+  // The time given before they were made (animLoad comes first).
+  if (animOverlayMs != null) animOverlayTime(animOverlayMs);
   if (animCatalogData) animCatalogTake(animCatalogData);
   else animCatalog();
   // Polled only while no socket pushes it (an older server, or a socket down).
