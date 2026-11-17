@@ -618,9 +618,6 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // The animation's own radar and satellite images (anim) stay out of setFramesHidden.
   function frameVisibility(e) { return e.held || (framesHidden && !e.anim) ? 'none' : 'visible'; }
   function holdFrame(e, held) {
-    // Its state when held back, for the loading bar (frameCounted): a
-    // second move before it came back keeps the one from before the first.
-    if (held && !e.held) e.loadedBefore = !!map.getSource(e.sourceId) && map.isSourceLoaded(e.sourceId);
     e.held = held;
     if (map.getLayer(e.layerId)) map.setLayoutProperty(e.layerId, 'visibility', frameVisibility(e));
     // Drawn again with every tile already cached, no source data may
@@ -630,6 +627,32 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     }
   }
   function entryOf(handle) { return frameById.get(handle.layerId) || null; }
+  /** The view as the loading bar keys it: the tiles' zoom and the area. */
+  function viewNow() {
+    var b = map.getBounds ? map.getBounds() : null;
+    return {
+      z: Math.round(map.getZoom()),
+      box: b ? [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] : null
+    };
+  }
+  var SEEN_PER_ZOOM = 4;       // areas kept per zoom and frame
+  /** A frame in at the view now: noted (frameCounted). */
+  function noteSeen(e) {
+    var v = viewNow(), seen = e.seen = e.seen || {}, list = seen[v.z] = seen[v.z] || [];
+    if (list.some(function (b) { return covers(b, v.box); })) return;
+    list.push(v.box);
+    if (list.length > SEEN_PER_ZOOM) list.shift();
+  }
+  /** Whether the frame was in at this zoom over the area now. */
+  function seenHere(e) {
+    var v = viewNow(), list = e.seen && e.seen[v.z];
+    return !!list && list.some(function (b) { return covers(b, v.box); });
+  }
+  function covers(b, box) {
+    if (!b || !box) return !b && !box;
+    var eps = 1e-6;
+    return box[0] >= b[0] - eps && box[1] >= b[1] - eps && box[2] <= b[2] + eps && box[3] <= b[3] + eps;
+  }
   /** Whether a frame has its tiles for the map as it is: a held one's
       loaded state is from before the move, its tiles at the new scale are not asked for. */
   function frameReadyNow(handle) {
@@ -1221,15 +1244,20 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       return !!map && !!map.getLayer(handle.layerId) && frameReadyNow(handle);
     },
 
-    /** Whether a frame counts as in for the loading bar: a held one by its
-        state before the move. It comes back after it from the map's cache
-        when its tiles are there, and counts as loading only then if they
-        are not; counted by frameLoaded, the bar fell at every move and
-        climbed back two frames at a time, as if all were read again. */
+    /** Whether a frame counts as in for the loading bar: in now, or seen
+        in before at this zoom over this area, its tiles then in the map's
+        cache. Counted by frameLoaded, the bar fell at every move (the
+        hidden frames held back) and went up and down while they came back
+        two at a time, as if all were read again; now it goes down only for
+        tiles that have to come (a zoom or an area not seen), then up. */
     frameCounted: function (handle) {
       var e = entryOf(handle);
-      if (e && e.held) return !!e.loadedBefore;
-      return this.frameLoaded(handle);
+      if (!e) return false;
+      if (!e.held && this.frameLoaded(handle)) {
+        noteSeen(e);
+        return true;
+      }
+      return seenHere(e);
     },
 
     setFrameOpacity: function (handle, v) {

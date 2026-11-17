@@ -926,22 +926,38 @@ test('frameLoaded: a frame held back during a move has no tiles at the new scale
   assert.equal(adapter.frameLoaded(h[0]), true, 'the frame on screen keeps loading');
 });
 
-test('frameCounted: the loading bar counts a held frame by its state before the move', () => {
+test('frameCounted: a held frame counts as in only where it was in before (same zoom, same area)', () => {
   const { adapter, map } = loadAdapter();
+  let zoom = 5, bounds = [0, 40, 10, 50];
+  map.getZoom = () => zoom;
+  map.getBounds = () => ({ getWest: () => bounds[0], getSouth: () => bounds[1], getEast: () => bounds[2], getNorth: () => bounds[3] });
   const h = sixFrames(adapter);
   h.forEach((x, i) => { map.loadedSources[x.sourceId] = i !== 4; });
+  // Read by the bar while the map stands: what is in is noted.
+  h.forEach((x) => adapter.frameCounted(x));
+  // A zoom never seen: every held frame has to come, nothing counts.
   map.fire('movestart');
-  assert.equal(adapter.frameCounted(h[3]), true, 'loaded before: not a download, it comes back from the cache');
-  assert.equal(adapter.frameCounted(h[4]), false, 'still loading before the move');
-  // A second move before it came back: the state from before the first one stays.
-  map.loadedSources[h[3].sourceId] = false;
-  map.fire('movestart');
+  zoom = 6.2; bounds = [3, 43, 7, 47];
+  assert.equal(adapter.frameCounted(h[3]), false, 'a new scale: a real download');
+  // Back to the zoom seen, within the area seen: from the cache, counted.
+  zoom = 5.1; bounds = [1, 41, 9, 49];
   assert.equal(adapter.frameCounted(h[3]), true);
-  // Back on the map, its tiles really asked for: its own state again.
+  assert.equal(adapter.frameCounted(h[4]), false, 'it was still loading there');
+  // Same zoom, out of the area seen: its tiles have to come.
+  bounds = [8, 41, 16, 49];
+  assert.equal(adapter.frameCounted(h[3]), false);
+  // Back on the map and loaded there: noted, counted from then on.
   map.fire('moveend');
   map.fire('idle'); map.fire('idle'); map.fire('idle');
-  assert.equal(adapter.frameCounted(h[3]), false);
   map.loadedSources[h[3].sourceId] = true;
+  assert.equal(adapter.frameCounted(h[3]), true);
+  map.fire('movestart');
+  assert.equal(adapter.frameCounted(h[3]), true);
+  // On the map again where it was in: a moment of reloading (tiles redrawn
+  // as the others come back) does not make the bar go down and up.
+  map.fire('moveend');
+  map.fire('idle'); map.fire('idle'); map.fire('idle');
+  map.loadedSources[h[3].sourceId] = false;
   assert.equal(adapter.frameCounted(h[3]), true);
 });
 
