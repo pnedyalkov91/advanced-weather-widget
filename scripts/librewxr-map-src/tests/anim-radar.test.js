@@ -607,6 +607,25 @@ test('Overlay.progress: counted as the map says for the loading bar (frameCounte
   assert.deepEqual(o.progress(), { done: 0, total: 1 });
 });
 
+test('Overlay.progress: the tiles of the image asked for when the map tells them (frameTileCount)', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  a.tiles = {};
+  a.frameTileCount = (h) => a.tiles[h.layerId] || null;
+  o.setOn(true);
+  a.made.forEach((h) => { a.loaded[h.layerId] = false; });
+  o.show(T0 * 1000 + 12 * MIN);
+  const id = a.made[1].layerId;
+  assert.deepEqual(o.progress(), { done: 0, total: 1 }, 'no tile known yet: one step');
+  a.tiles[id] = { done: 0, total: 0 };
+  assert.deepEqual(o.progress(), { done: 0, total: 1 }, 'an empty list: one step');
+  a.tiles[id] = { done: 7, total: 20 };
+  assert.deepEqual(o.progress(), { done: 7, total: 20 });
+  a.tiles[id] = { done: 19, total: 20 };
+  a.loaded[id] = true;
+  assert.deepEqual(o.progress(), { done: 20, total: 20 }, 'drawn: full, whatever a tile still does');
+});
+
 test('Overlay.loadedAt: the next images are asked for ahead, so a play finds them drawn', () => {
   const { a, o } = overlay(radar.slice(0, 5));
   zoomedAdapter(a);

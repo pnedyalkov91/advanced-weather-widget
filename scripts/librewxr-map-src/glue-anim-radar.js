@@ -303,6 +303,9 @@ var WidgetAnimRadar = (function () {
     if (!e) return { done: 0, total: 0 };
     var counted = a.frameCounted ? a.frameCounted(e.handle)
       : a.frameLoaded ? a.frameLoaded(e.handle) : e.ready;
+    // Its tiles when the map tells them; one step until it knows any.
+    var t = a.frameTileCount ? a.frameTileCount(e.handle) : null;
+    if (t && t.total > 0) return { done: counted ? t.total : Math.min(t.done, t.total), total: t.total };
     return { done: counted ? 1 : 0, total: 1 };
   };
 

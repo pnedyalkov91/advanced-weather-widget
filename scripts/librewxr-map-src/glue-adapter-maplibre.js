@@ -1304,6 +1304,21 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       return e ? { urls: frameTiles(e.url), maxZoom: e.maxZoom, tileSize: e.tileSize } : null;
     },
 
+    /** { done, total } tiles of a frame in view (loaded or failed = done),
+        for the loading bar; null when the map does not tell. Reads
+        MapLibre 6's inner tile list: no public call gives it. */
+    frameTileCount: function (handle) {
+      var e = entryOf(handle);
+      var tm = e && map && map.style && map.style.tileManagers && map.style.tileManagers[e.sourceId];
+      var inView = tm && tm._inViewTiles;
+      if (!inView || typeof inView.getAllTiles !== 'function') return null;
+      var tiles = inView.getAllTiles(), done = 0;
+      for (var i = 0; i < tiles.length; i++) {
+        if (tiles[i].state === 'loaded' || tiles[i].state === 'errored') done++;
+      }
+      return { done: done, total: tiles.length };
+    },
+
     /** The view for the reading ahead: its area and the tile level of a
         grid of tileSize, as MapLibre picks it (rounded). */
     prefetchView: function (tileSize) {
