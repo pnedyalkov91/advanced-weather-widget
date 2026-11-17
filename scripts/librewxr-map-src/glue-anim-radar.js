@@ -232,8 +232,9 @@ var WidgetAnimRadar = (function () {
   Overlay.prototype._make = function (frame) {
     var path = keyOf(frame);
     if (this.layers[path]) return;
+    // Made held back by the map (no tile asked for): waited for, and so
+    // drawn, only once asked for (show, loadedAt and the images ahead).
     this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true, tileSize: this.tileSize }), ready: false, waiting: false };
-    this._await(path);
   };
 
   /** Wait for the tiles of image path (once at a time), then show it if
@@ -277,12 +278,14 @@ var WidgetAnimRadar = (function () {
   };
 
   /** Whether the image of time ms can show at once (true off or out of
-      the range); when not, its tiles are asked for. The play waits on it. */
+      the range); when not, its tiles are asked for. The play waits on it.
+      The next images are asked for ahead (_ahead). */
   Overlay.prototype.loadedAt = function (ms) {
     if (!this.on) return true;
     var i = frameAt(this.frames, ms, this.gapMs, this._until());
     if (i < 0) return true;
     var path = keyOf(this.frames[i]);
+    this._ahead(i);
     if (this._loaded(path)) return true;
     this._make(this.frames[i]);
     this._await(path);
@@ -294,15 +297,41 @@ var WidgetAnimRadar = (function () {
       their state before it); null off. */
   Overlay.prototype.progress = function () {
     if (!this.on) return null;
-    var self = this, a = this.adapter, done = 0;
-    var counted = a.frameCounted ? function (h) { return a.frameCounted(h); }
-      : a.frameLoaded ? function (h) { return a.frameLoaded(h); } : null;
-    this.frames.forEach(function (f) {
-      var e = self.layers[keyOf(f)];
+    // The image asked for only: the others are read ahead out of sight
+    // (glue-prefetch.js) and the bar does not wait for them.
+    var a = this.adapter, e = this.wanted ? this.layers[this.wanted] : null;
+    if (!e) return { done: 0, total: 0 };
+    var counted = a.frameCounted ? a.frameCounted(e.handle)
+      : a.frameLoaded ? a.frameLoaded(e.handle) : e.ready;
+    return { done: counted ? 1 : 0, total: 1 };
+  };
+
+  /** Each image switched on for the reading ahead: { url (its tile
+      address), handle, shown (the one asked for), shortLived (the last
+      observed image and the nowcast: the server keeps them 5 min) }. */
+  Overlay.prototype.prefetchFrames = function () {
+    if (!this.on) return [];
+    var self = this, lastPast = -1;
+    this.frames.forEach(function (f, i) { if (f.run == null) lastPast = i; });
+    var out = [];
+    this.frames.forEach(function (f, i) {
+      var key = keyOf(f), e = self.layers[key];
       if (!e) return;
-      if (counted ? counted(e.handle) : e.ready) done++;
+      out.push({ url: self.url(f), handle: e.handle, shown: key === (self.wanted || self.shown), shortLived: f.run != null || i === lastPast });
     });
-    return { done: done, total: this.frames.length };
+    return out;
+  };
+
+  var AHEAD = 2;               // images asked for ahead of the one shown
+  /** The AHEAD images after index i asked for (made visible, their tiles
+      drawn from the cache), so a play or a step finds them ready. */
+  Overlay.prototype._ahead = function (i) {
+    for (var k = 1; k <= AHEAD && i + k < this.frames.length; k++) {
+      var path = keyOf(this.frames[i + k]);
+      if (this._loaded(path)) continue;
+      this._make(this.frames[i + k]);
+      this._await(path);
+    }
   };
 
   Overlay.prototype._drop = function (path) {

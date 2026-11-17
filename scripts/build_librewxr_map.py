@@ -42,6 +42,7 @@ GLUE_TEMP_LAYER_TOKEN = "/*@__WIDGET_GLUE_TEMP_LAYER__*/"
 GLUE_TEMP_GL_TOKEN = "/*@__WIDGET_GLUE_TEMP_GL__*/"
 GLUE_ANIM_TOKEN = "/*@__WIDGET_GLUE_ANIM__*/"
 GLUE_ANIM_RADAR_TOKEN = "/*@__WIDGET_GLUE_ANIM_RADAR__*/"
+GLUE_PREFETCH_TOKEN = "/*@__WIDGET_GLUE_PREFETCH__*/"
 GLUE_EARTH_TOKEN = "/*@__WIDGET_GLUE_EARTH__*/"
 GLUE_PREPARE_TOKEN = "/*@__WIDGET_GLUE_PREPARE__*/"
 # The layers of the animation beyond temperature and wind, after the
@@ -84,6 +85,7 @@ PAGES = [
         ("glue-temp-gl.js", GLUE_TEMP_GL_TOKEN),
         ("glue-anim.js", GLUE_ANIM_TOKEN),
         ("glue-anim-radar.js", GLUE_ANIM_RADAR_TOKEN),
+        ("glue-prefetch.js", GLUE_PREFETCH_TOKEN),
         ("glue-earth.js", GLUE_EARTH_TOKEN),
         ("glue-controls.js", GLUE_CONTROLS_TOKEN),
         ("glue-fields.js", GLUE_FIELDS_TOKEN),

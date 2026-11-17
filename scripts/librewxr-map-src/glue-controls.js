@@ -1217,6 +1217,7 @@ function animCatalogTake(c) {
   if (!animOverlays) return;
   animOverlays.radar.setFrames(WidgetAnimRadar.framesOf(c, 'radar'));
   animOverlays.satellite.setFrames(WidgetAnimRadar.framesOf(c, 'satellite'));
+  animPrefetchSoon();
 }
 
 /** The time of the picture shown: the radar and satellite follow. */
@@ -1268,13 +1269,68 @@ window.animSetRadar = function (on) {
   if (!animOverlays) return;
   animOverlays.radar.setOn(on);
   _widgetAdapter.setLines('radar', !!on);
+  animPrefetchSoon();
 };
 /** The satellite over the animation; the coasts and borders come over it. */
 window.animSetSatellite = function (on) {
   if (!animOverlays) return;
   animOverlays.satellite.setOn(on);
   _widgetAdapter.setLines('satellite', !!on);
+  animPrefetchSoon();
 };
+
+// === RADAR AND SATELLITE TILES READ AHEAD (glue-prefetch.js) ===
+// Only the image shown loads on the map. Once it is drawn, the tiles of the
+// other images, of a ring around the view and of the levels in and out are
+// read into the browser's cache, PREFETCH_PARALLEL at a time; a move stops
+// the reading, its end starts it again from the new view.
+var PREFETCH_PARALLEL = 3;
+var PREFETCH_MAX_VIEW = 150;   // tiles in view past which nothing is read ahead (the globe far out)
+var animPrefetchQ = null, animPrefetchHooked = false, animPrefetchTimer = null;
+
+function animPrefetchSoon() {
+  if (typeof WidgetPrefetch === 'undefined' || !animOverlays || !_widgetAdapter.prefetchView) return;
+  if (!animPrefetchQ) {
+    animPrefetchQ = new WidgetPrefetch.Queue(function (url, signal) {
+      return fetch(url, { signal: signal, priority: 'low' }).then(function (r) {
+        if (!r.ok) throw new Error('tile ' + r.status);
+        return r.arrayBuffer();
+      });
+    }, PREFETCH_PARALLEL);
+  }
+  if (!animPrefetchHooked) {
+    animPrefetchHooked = true;
+    _widgetAdapter.onMoveStart(function () { clearTimeout(animPrefetchTimer); animPrefetchQ.stop(); });
+    _widgetAdapter.onSettled(animPrefetchSoon);
+  }
+  animPrefetchQ.stop();
+  clearTimeout(animPrefetchTimer);
+  // The image shown first: the reading waits for the map to be drawn.
+  animPrefetchTimer = setTimeout(function () { _widgetAdapter.whenIdle(animPrefetchRun); }, 300);
+}
+
+function animPrefetchRun() {
+  if (!animOverlays || !animPrefetchQ) return;
+  var list = [];
+  ['radar', 'satellite'].forEach(function (k) {
+    var o = animOverlays[k];
+    if (!o.on) return;
+    var frames = o.prefetchFrames().map(function (f) {
+      var i = _widgetAdapter.prefetchInfo(f.handle);
+      return i && { urls: i.urls, maxZoom: i.maxZoom, tileSize: i.tileSize, shown: f.shown, shortLived: f.shortLived };
+    }).filter(Boolean);
+    if (!frames.length) return;
+    var view = _widgetAdapter.prefetchView(frames[0].tileSize);
+    if (!view || WidgetPrefetch.tilesFor(view.box, Math.min(view.z, frames[0].maxZoom), 0).length > PREFETCH_MAX_VIEW) return;
+    list = list.concat(WidgetPrefetch.plan({ box: view.box, z: view.z, frames: frames }));
+  });
+  if (!list.length) return;
+  var t0 = Date.now();
+  console.log('[librewxr] reading ahead: ' + list.length + ' tiles');
+  animPrefetchQ.run(list).then(function () {
+    console.log('[librewxr] reading ahead over in ' + Math.round((Date.now() - t0) / 1000) + ' s');
+  });
+}
 
 /** The color schemes of the radar, [[id, name]], from the catalog. */
 window.animRadarSchemes = function () {
@@ -1304,6 +1360,7 @@ window.animSetRadarOption = function (key, value) {
   var grid = animTileOpts().grid;
   animOverlays.radar.setUrl(animOverlayUrl('radar'), grid);
   if (key === 'format' || key === 'tileSize') animOverlays.satellite.setUrl(animOverlayUrl('satellite'), grid);
+  animPrefetchSoon();
   // Lightning moves the radar of the step of now to its last image, or back.
   if (key === 'lightning' && animOverlayMs != null) animOverlayTime(animOverlayMs);
 };

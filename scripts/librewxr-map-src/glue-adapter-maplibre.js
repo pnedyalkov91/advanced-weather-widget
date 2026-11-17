@@ -683,8 +683,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var next = function () {
       if (job !== revealJob) return;
       var n = 0;
+      // The animation's images stay held: only those waited for come back.
       for (i = 0; i < frameRegistry.length && n < REVEAL_BATCH; i++) {
-        if (frameRegistry[i].held) { holdFrame(frameRegistry[i], false); n++; }
+        if (frameRegistry[i].held && !frameRegistry[i].anim) { holdFrame(frameRegistry[i], false); n++; }
       }
       if (n) map.once('idle', next);
     };
@@ -1201,7 +1202,11 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         kind: kind, url: url, opacity: 0, anim: anim,
         maxZoom: typeof WidgetAnimRadar !== 'undefined' ? WidgetAnimRadar.nativeZoom(url, maxZoom) : maxZoom,
         sharp: typeof WidgetAnimRadar !== 'undefined' && WidgetAnimRadar.sharpEdges(url, kind),
-        tileSize: opts && opts.tileSize === 512 ? 512 : 256
+        tileSize: opts && opts.tileSize === 512 ? 512 : 256,
+        // An image of the animation asks for no tile until the viewer waits
+        // for it (onLayerReady): the others are read ahead into the cache
+        // (glue-prefetch.js).
+        held: anim
       };
       frameRegistry.push(entry);
       frameById.set(entry.layerId, entry);
@@ -1280,6 +1285,45 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (map.getLayer(handle.layerId)) map.setPaintProperty(handle.layerId, 'raster-opacity', v);
       if (e && v > 0 && e.held) holdFrame(e, false);
       else if (e && moving && !(v > 0)) holdFrame(e, true);
+      // An image of the animation off the map asks for nothing more, its
+      // tiles kept in the cache for its next turn. Not at once: a fade in
+      // starts from 0 (400 ms).
+      else if (e && e.anim && !(v > 0)) {
+        setTimeout(function () {
+          if (!frameById.has(e.layerId) || e.opacity > 0 || e.held) return;
+          if (pendingCheck[e.sourceId] && pendingCheck[e.sourceId].length) return;
+          holdFrame(e, true);
+        }, 1000);
+      }
+    },
+
+    /** What the reading ahead needs of a frame: its tile addresses (the
+        hosts MapLibre spreads them on), its last level and its grid. */
+    prefetchInfo: function (handle) {
+      var e = entryOf(handle);
+      return e ? { urls: frameTiles(e.url), maxZoom: e.maxZoom, tileSize: e.tileSize } : null;
+    },
+
+    /** The view for the reading ahead: its area and the tile level of a
+        grid of tileSize, as MapLibre picks it (rounded). */
+    prefetchView: function (tileSize) {
+      if (!map) return null;
+      var b = map.getBounds();
+      return {
+        box: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()],
+        z: Math.max(0, Math.round(map.getZoom()) + (tileSize === 256 ? 1 : 0))
+      };
+    },
+
+    /** cb at each move's start, and once the map is drawn after its end. */
+    onMoveStart: function (cb) { map.on('movestart', cb); },
+    onSettled: function (cb) { map.on('moveend', function () { map.once('idle', cb); }); },
+    /** cb once the map is drawn with everything it asked for. */
+    whenIdle: function (cb) {
+      if (!map) return;
+      // Already idle, the map fires nothing more until it draws again.
+      if (!moving && map.loaded() && map.areTilesLoaded()) cb();
+      else map.once('idle', cb);
     },
 
     destroyFrameLayer: function (handle) {

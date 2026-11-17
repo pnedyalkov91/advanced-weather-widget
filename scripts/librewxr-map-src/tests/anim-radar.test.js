@@ -90,8 +90,13 @@ function fakeAdapter() {
     a.opacity[h.layerId] = 0;
     return h;
   };
-  a.onLayerReady = (h, cb) => { (a.waiting[h.layerId] = a.waiting[h.layerId] || []).push(cb); };
-  a.ready = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb()); };
+  // As the map's: a layer whose tiles are in answers at once.
+  a.settled = {};
+  a.onLayerReady = (h, cb) => {
+    if (a.settled[h.layerId] && !(a.loaded && a.loaded[h.layerId] === false)) { cb(); return; }
+    (a.waiting[h.layerId] = a.waiting[h.layerId] || []).push(cb);
+  };
+  a.ready = (h) => { a.settled[h.layerId] = true; const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb()); };
   // Settled on a tile error.
   a.fail = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb(false)); };
   a.setFrameOpacity = (h, v) => { a.opacity[h.layerId] = v; };
@@ -425,6 +430,7 @@ test('Overlay: a new catalog makes the failed images again, the image shown kept
   const { a, o } = overlay(radar.slice(0, 3));
   o.setOn(true);
   o.show(T0 * 1000 + 12 * MIN);
+  o.loadedAt(T0 * 1000 + 12 * MIN);   // image 2 asked for ahead, as in a play
   a.ready(a.made[1]);
   a.fail(a.made[2]);
   const n = a.made.length;
@@ -556,16 +562,20 @@ test('nowTime: with lightning and the radar on, now is the last observed image',
   assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: null }), nowStep);
 });
 
-test('Overlay.progress: null off; on, the images whose tiles are in, out of all', () => {
+test('Overlay.progress: null off; on, the image asked for only, the others read ahead out of sight', () => {
   const { a, o } = overlay(radar.slice(0, 3));
   assert.equal(o.progress(), null);
   zoomedAdapter(a);
   o.setOn(true);
+  assert.deepEqual(o.progress(), { done: 0, total: 0 }, 'nothing asked for: no bar');
   a.made.forEach((h) => { a.loaded[h.layerId] = false; });
-  assert.deepEqual(o.progress(), { done: 0, total: 3 });
+  o.show(T0 * 1000 + 12 * MIN);
+  assert.deepEqual(o.progress(), { done: 0, total: 1 });
+  a.loaded[a.made[1].layerId] = true;
+  assert.deepEqual(o.progress(), { done: 1, total: 1 });
   a.loaded[a.made[0].layerId] = true;
   a.loaded[a.made[2].layerId] = true;
-  assert.deepEqual(o.progress(), { done: 2, total: 3 });
+  assert.deepEqual(o.progress(), { done: 1, total: 1 });
 });
 
 test('Overlay.progress: counted as the map says for the loading bar (frameCounted) when it can', () => {
@@ -575,8 +585,34 @@ test('Overlay.progress: counted as the map says for the loading bar (frameCounte
   a.frameCounted = (h) => a.counted[h.layerId] !== false;
   o.setOn(true);
   a.made.forEach((h) => { a.loaded[h.layerId] = false; });
-  a.counted[a.made[1].layerId] = false;
-  assert.deepEqual(o.progress(), { done: 2, total: 3 }, 'held back in a move, loaded before: not a download');
+  o.show(T0 * 1000);
+  assert.deepEqual(o.progress(), { done: 1, total: 1 }, 'held back in a move, loaded before: not a download');
+  a.counted[a.made[0].layerId] = false;
+  assert.deepEqual(o.progress(), { done: 0, total: 1 });
+});
+
+test('Overlay.loadedAt: the next images are asked for ahead, so a play finds them drawn', () => {
+  const { a, o } = overlay(radar.slice(0, 5));
+  zoomedAdapter(a);
+  o.setOn(true);
+  a.made.forEach((h) => { a.ready(h); a.loaded[h.layerId] = false; });
+  o.loadedAt(T0 * 1000 + 10 * MIN);
+  const asked = a.made.filter((h) => (a.waiting[h.layerId] || []).length).map((h) => h.layerId);
+  assert.deepEqual(asked, [a.made[1].layerId, a.made[2].layerId, a.made[3].layerId]);
+});
+
+test('Overlay.prefetchFrames: each image with its address, the one asked for marked, the short-lived ones too', () => {
+  const frames = R.framesOf({ radar: { past: radar.slice(0, 3), nowcast: radar.slice(3, 5) } }, 'radar');
+  const { o } = overlay(frames);
+  assert.deepEqual(o.prefetchFrames(), [], 'off: nothing');
+  o.setOn(true);
+  o.show(T0 * 1000 + 10 * MIN);
+  const p = o.prefetchFrames();
+  assert.deepEqual(p.map((f) => f.url), frames.map((f) => 'u' + f.time));
+  assert.deepEqual(p.map((f) => f.shown), [false, true, false, false, false]);
+  // The last observed image and the nowcast change within minutes.
+  assert.deepEqual(p.map((f) => f.shortLived), [false, false, true, true, true]);
+  assert.ok(p.every((f) => f.handle));
 });
 
 test('framesOf: the nowcast images carry the run they come from (the last observed image)', () => {
