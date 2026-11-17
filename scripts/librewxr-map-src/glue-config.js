@@ -89,6 +89,8 @@ var GLOW_INIT = PARAMS.get('glow');
 var NIGHTDEPTH_INIT = PARAMS.get('nightdepth');
 // Brightness of the lights of the towns at night, in percent (0 for none).
 var LIGHTS_INIT = PARAMS.get('lights');
+// Points of the lights of the towns: those a cell of full light gets.
+var LIGHTS_DENSITY_INIT = PARAMS.get('lightsdensity');
 var RIM_INIT = PARAMS.get('rim');
 // What the map prepares while hidden: 'none', 'first' (the latest image) or
 // 'all' (the whole animation).

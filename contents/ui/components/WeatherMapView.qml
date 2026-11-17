@@ -87,6 +87,11 @@ Item {
     readonly property bool prepareLayers: started && !shown && Plasmoid.configuration.radarKeepLoaded === true
         && Plasmoid.configuration.weatherMapPrepareLayers === true
     onPrepareLayersChanged: call("animSetPrepare", prepareLayers)
+    // With it, the layers switched off are read ahead too, as soon as the
+    // map starts, so switching one on shows it at once (window.animSetPreload).
+    readonly property var preloadIds: Plasmoid.configuration.weatherMapPrepareLayers === true
+        ? animLayerIds.filter(function (id) { return layerEnabled(id); }) : []
+    onPreloadIdsChanged: if (started) call("animSetPreload", preloadIds)
     // The wind palette in use, in the page's form: 8 "max:rrggbb" (max in
     // m/s, "inf" for the last level). Empty for the default palette, and for
     // an entry that does not read: the page then uses the default one.
@@ -112,6 +117,8 @@ Item {
     readonly property bool mapLinesOn: Plasmoid.configuration.librewxrMapLines !== false
     // The stars, the Sun and the Moon around the globe (one setting of the column).
     readonly property bool globeSkyOn: Plasmoid.configuration.librewxrGlobeSky !== false
+    // The box of the layers still loading (LoadBox), at the bottom left.
+    readonly property bool loadBoxOn: Plasmoid.configuration.weatherMapLoadBox !== false
     readonly property int tempOpacity: Plasmoid.configuration.librewxrTempOpacity >= 0 ? Plasmoid.configuration.librewxrTempOpacity : 45
     readonly property real tempStep: Plasmoid.configuration.librewxrTempStep
     // The widget's temperature unit, which the bands and the legend follow.
@@ -391,6 +398,7 @@ Item {
     property int nowIndex: 0          // the frame of now
     property var frameBounds: null    // { lo, hi }: the positions the play keeps to (a source's range with a forecast layer), or null
     property var layersOn: ({})       // { id: on } as the page has them, radar and satellite too
+    property var loadProgress: ({})   // { id: { done, total } } of the layers being read (LoadBox)
     /** radarRoot[name] = value, unless it holds the same already; whether it changed. */
     function _keep(name, value) {
         if (JSON.stringify(radarRoot[name]) === JSON.stringify(value))
@@ -466,6 +474,7 @@ Item {
         Plasmoid.configuration.librewxrMapLines = on;
         call("setMapLines", on);
     }
+    function setLoadBox(on) { Plasmoid.configuration.weatherMapLoadBox = on; }
     function setGlobeSky(on) {
         Plasmoid.configuration.librewxrGlobeSky = on;
         call("setGlobeSky", on);
@@ -486,6 +495,14 @@ Item {
         call("setNightLights", v);
         if (save)
             Plasmoid.configuration.librewxrNightLights = v;
+    }
+    // How many points the lights get: those of a cell of full light, 1 to 6.
+    property real nightLightsDensity: Plasmoid.configuration.librewxrNightLightsDensity
+    function setNightLightsDensity(v, save) {
+        nightLightsDensity = v;
+        call("setNightLightsDensity", v);
+        if (save)
+            Plasmoid.configuration.librewxrNightLightsDensity = v;
     }
 
     // The palettes of the wind and the temperature, those of the Radar
@@ -508,6 +525,17 @@ Item {
     readonly property var tempStepChoices: [[0, i18n("Smooth")], [2, "2 °"], [2.5, Number(2.5).toLocaleString(Qt.locale(), "f", 1) + " °"], [5, "5 °"], [10, "10 °"]]
     function setTempStep(v) {
         Plasmoid.configuration.librewxrTempStep = v;   // the page follows (onTempStepChanged)
+    }
+
+    // The layers drawn with the global model alone (their "Regional models" option off).
+    readonly property var regionalOff: jsonOf(Plasmoid.configuration.weatherMapRegionalOff, [])
+    function regionalOn(id) { return regionalOff.indexOf(id) < 0; }
+    function setRegional(id, on) {
+        var off = regionalOff.filter(function (x) { return x !== id; });
+        if (!on)
+            off.push(id);
+        Plasmoid.configuration.weatherMapRegionalOff = JSON.stringify(off);
+        call("animSetRegional", off);
     }
 
     // The wind's height.
@@ -789,7 +817,8 @@ Item {
     // pictures of the right pollutant are the first read.
     function _layerChoices() {
         return jsCall("precipSetKinds", precipKinds) + jsCall("cloudSetLevels", cloudLevels)
-            + jsCall("aqSetPollutant", pollutant) + jsCall("isoSetOptions", isobars);
+            + jsCall("aqSetPollutant", pollutant) + jsCall("isoSetOptions", isobars)
+            + jsCall("animSetRegional", regionalOff);
     }
 
     // The opacity of each layer, in percent: the temperature's is the
@@ -992,6 +1021,12 @@ Item {
             Plasmoid.configuration.weatherMapLayerOrder = JSON.stringify(ord ? ord.split(",") : []);
             return;
         }
+        // "regional-wind:off", "regional-temperature:on": a layer's "Regional models" option.
+        if (what.indexOf("regional-") === 0) {
+            var rg = what.slice(9).split(":");
+            setRegional(rg[0], rg[1] === "on");
+            return;
+        }
         // "palette-temp:builtin:bluered", "palette-wind:": a palette picked in the options.
         if (what.indexOf("palette-") === 0) {
             var pid = what.slice(what.indexOf(":") + 1);
@@ -1045,6 +1080,9 @@ Item {
     // The page blurs the map under the date, as under the column and the bar.
     readonly property var dateRect: dateBox.visible ? [dateLeft, dateBottom, dateBox.width * overlayScale, dateBox.height * overlayScale, dateBox.radius * overlayScale] : [0, 0, 0, 0, 0]
     onDateRectChanged: if (started) call("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4])
+    // The same under the loading box, which fades in and out.
+    readonly property var loadRect: loadBox.visible ? [loadBox.x, loadBox.parent.height - loadBox.y - loadBox.height, loadBox.width * overlayScale, loadBox.height * overlayScale, loadBox.radius * overlayScale, loadBox.opacity] : [0, 0, 0, 0, 0, 0]
+    onLoadRectChanged: if (started) call("animSetLoadBox", loadRect[0], loadRect[1], loadRect[2], loadRect[3], loadRect[4], loadRect[5])
     // Full screen: what lies over the map (the page's buttons and legends,
     // the date, the badges, the column's head) stands further from the
     // screen's edges, and is drawn larger.
@@ -1064,10 +1102,11 @@ Item {
             code.push(jsCall("animSetOpacity", id, opacities[id]));
         for (var l in legendsHidden)
             code.push(jsCall("animSetLegend", l, false));
-        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4]), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
+        code.push(jsCall("animSetRightInset", panelInset(panelFolded)), jsCall("animSetBottomInset", bottomInset), jsCall("animSetPanelBlur", panelBlur), jsCall("animSetLegendTop", legendTop), jsCall("animSetDateBox", dateRect[0], dateRect[1], dateRect[2], dateRect[3], dateRect[4]), jsCall("animSetLoadBox", loadRect[0], loadRect[1], loadRect[2], loadRect[3], loadRect[4], loadRect[5]), jsCall("animSetEdges", edgeX, edgeTop, overlayScale));
         if (Plasmoid.configuration.weatherMapLightning === true)
             code.push(jsCall("animSetRadarOption", "lightning", true));
         code.push(jsCall("animSetRadar", !!layersSaved.radar), jsCall("animSetSatellite", !!layersSaved.satellite && layerEnabled("satellite")));
+        code.push(jsCall("animSetPreload", preloadIds));
         js(code.join(""));
     }
 
@@ -1120,7 +1159,7 @@ Item {
             ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
             ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
             ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
-            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["rim", rimGlow],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow],
             ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
             ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
             ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],
@@ -1230,6 +1269,7 @@ Item {
             radarRoot._keep("frameReady", st.ready);
             radarRoot._keep("frameFailed", st.failed);
             radarRoot._keep("frameBounds", st.bounds || null);
+            radarRoot._keep("loadProgress", st.progress || {});
             radarRoot.nowIndex = st.now;
             var on = Object.assign({ radar: !!(st.radar && st.radar.on), satellite: !!(st.satellite && st.satellite.on) }, st.layers);
             // A colored layer switched on switches the others off in the
@@ -1301,9 +1341,14 @@ Item {
     function zoomBy(d) {
         call("animZoom", d);
     }
-    function keyNow() {
+    // Back to now: the step of now, or the last observed radar image with
+    // lightning on (window.animShowNow).
+    function showNow() {
         if (count > 0)
-            showIndex(nowIndex);
+            call("animShowNow");
+    }
+    function keyNow() {
+        showNow();
     }
     // ── Full screen ──────────────────────────────────────────────────────
     // The whole tab (map, column, time bar, help, keys) moves into a window
@@ -1683,6 +1728,29 @@ Item {
                         visible: modelsHover.hovered
                         delay: Kirigami.Units.toolTipDelay
                     }
+                }
+
+                // The layers still loading, over the count of the pictures:
+                // their names while the map leaves room, the icons alone else.
+                LoadBox {
+                    id: loadBox
+                    map: radarRoot
+                    progress: {
+                        var p = radarRoot.loadProgress, o = {};
+                        if (!radarRoot.loadBoxOn)
+                            return o;
+                        for (var id in p)
+                            if (radarRoot.layerOn(id))
+                                o[id] = p[id];
+                        return o;
+                    }
+                    compact: parent.width - layerPanel.width < 520
+                    anchors.left: parent.left
+                    anchors.bottom: countBadge.visible ? countBadge.top : modelsBadge.top
+                    anchors.leftMargin: 10 + radarRoot.edgeX
+                    anchors.bottomMargin: 6 + (countBadge.visible ? countBadge.height : modelsBadge.height) * (radarRoot.overlayScale - 1)
+                    scale: radarRoot.overlayScale
+                    transformOrigin: Item.BottomLeft
                 }
 
                 // The cross while Ctrl is held, set by Qt at once. Only over

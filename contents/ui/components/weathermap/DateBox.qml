@@ -144,7 +144,7 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 enabled: box.map.count > 0
-                onClicked: box.map.showIndex(box.map.nowIndex)
+                onClicked: box.map.showNow()
             }
             PlasmaComponents.ToolTip {
                 text: i18n("Back to now") + " (0)"

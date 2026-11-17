@@ -24,7 +24,8 @@ const sat = Array.from({ length: 12 }, (_, i) => ({ time: T0 - 11 * 3600 + i * 3
 
 test('framesOf: the past radar then the nowcast, the satellite infrared', () => {
   const cat = { radar: { past: radar.slice(0, 12), nowcast: radar.slice(12) }, satellite: { infrared: sat } };
-  assert.deepEqual(R.framesOf(cat, 'radar'), radar);
+  const run = radar[11].time;
+  assert.deepEqual(R.framesOf(cat, 'radar'), radar.slice(0, 12).concat(radar.slice(12).map((f) => Object.assign({}, f, { run }))));
   assert.deepEqual(R.framesOf(cat, 'satellite'), sat);
   assert.deepEqual(R.framesOf({ radar: { past: radar } }, 'satellite'), []);
   assert.deepEqual(R.framesOf(null, 'radar'), []);
@@ -65,6 +66,19 @@ test('slowFactor: the radar steps of 10 min take a third of a 3 h step each', ()
   assert.equal(R.slowFactor(range.end, range), 1);
   assert.equal(R.slowFactor(range.start - 1, range), 1);
   assert.equal(R.slowFactor(range.start, null), 1);
+});
+
+test('slowFactor: an image of the radar or satellite lasts a third of a step whatever the time line\'s step', () => {
+  const range = R.rangeOf(radar, 10 * MIN);
+  // 3 h steps (a forecast layer on): as before.
+  assert.equal(R.slowFactor(range.start, range, 3), 6);
+  assert.equal(R.slowFactor(range.end, range, 3), 1);
+  // The radar alone, a step of 10 min: one image a third of a step.
+  assert.equal(R.slowFactor(range.start, range, 1 / 6), 1 / 3);
+  // Radar and satellite alone, a step of 1 h: 6 radar images, 2 steps.
+  assert.equal(R.slowFactor(range.start, range, 1), 2);
+  // The satellite alone (hourly), a step of 1 h: a third of a step.
+  assert.equal(R.slowFactor(range.start, null, 1), 1 / 3);
 });
 
 // An adapter as glue-adapter-maplibre.js gives it, layers ready on demand.
@@ -443,12 +457,46 @@ test('lastPast: the last observed radar image, never the nowcast', () => {
   assert.equal(R.lastPast(null), null);
 });
 
-test('radarTime: with lightning, the step of now shows the last observed image', () => {
+test('nowTime: with lightning and the radar on, now is the last observed image', () => {
   const nowStep = Date.parse('2026-11-12T12:00:00Z'), last = Date.parse('2026-11-12T13:10:00Z');
-  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: last }), last);
-  // Any other step, lightning off, or no image: the time as it is.
-  assert.equal(R.radarTime(nowStep - 3 * H, { lightning: true, nowStep, lastPast: last }), nowStep - 3 * H);
-  assert.equal(R.radarTime(nowStep, { lightning: false, nowStep, lastPast: last }), nowStep);
-  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep, lastPast: null }), nowStep);
-  assert.equal(R.radarTime(nowStep, { lightning: true, nowStep: null, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: last }), last);
+  // Lightning off, the radar off, or no image: the step of now.
+  assert.equal(R.nowTime({ lightning: false, radar: true, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: true, radar: false, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: null }), nowStep);
+});
+
+test('Overlay.progress: null off; on, the images whose tiles are in, out of all', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  assert.equal(o.progress(), null);
+  zoomedAdapter(a);
+  o.setOn(true);
+  a.made.forEach((h) => { a.loaded[h.layerId] = false; });
+  assert.deepEqual(o.progress(), { done: 0, total: 3 });
+  a.loaded[a.made[0].layerId] = true;
+  a.loaded[a.made[2].layerId] = true;
+  assert.deepEqual(o.progress(), { done: 2, total: 3 });
+});
+
+test('framesOf: the nowcast images carry the run they come from (the last observed image)', () => {
+  const c = { radar: { past: [{ time: 100, path: '/p/100' }, { time: 700, path: '/p/700' }], nowcast: [{ time: 1300, path: '/p/1300' }] } };
+  const f = R.framesOf(c, 'radar');
+  assert.equal(f[0].run, undefined);
+  assert.equal(f[2].path, '/p/1300');
+  assert.equal(f[2].run, 700);
+});
+
+test('Overlay: a nowcast image made again with each new run, and once observed; the past kept', () => {
+  const cat = (past, nowcast) => R.framesOf({ radar: { past: past.map((t) => ({ time: t, path: '/p/' + t })), nowcast: nowcast.map((t) => ({ time: t, path: '/p/' + t })) } }, 'radar');
+  const { a, o } = overlay(cat([0, 600], [1200, 1800]));
+  o.setOn(true);
+  const first = a.made.map((h) => h.layerId);
+  assert.equal(a.made.length, 4);
+  // A new run: 1200 observed now, 1800 forecast again from it, 2400 new.
+  o.setFrames(cat([0, 600, 1200], [1800, 2400]));
+  assert.deepEqual(a.gone.sort(), [first[2], first[3]].sort());
+  assert.equal(a.made.length, 7);
+  // The same catalog again: nothing made again.
+  o.setFrames(cat([0, 600, 1200], [1800, 2400]));
+  assert.equal(a.made.length, 7);
 });

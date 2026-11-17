@@ -81,13 +81,21 @@ WidgetTemp.TempLayerGL = (function () {
     '#version 300 es',
     'precision highp float;',
     'in vec2 v_merc;',
+    'in float v_pole;',
     'out vec4 fragColor;',
     'const float PI = 3.141592653589793;',
     'uniform vec2 u_size;',
+    // Latitude of the fragment (fragLat in JavaScript): Mercator's in the
+    // body; on the globe's polar caps, where v_merc stays at the edge,
+    // from the edge (v_pole 0) to the pole (v_pole +-1).
+    'float fragLat() {',
+    '  float lat = degrees(atan(sinh(PI * (1.0 - 2.0 * v_merc.y))));',
+    '  return mix(lat, sign(lat) * 90.0, abs(v_pole));',
+    '}',
     // lat/lon of the fragment, and where it falls in a grid of u_size from 90N/180W
     'vec2 gridUv(out float lat) {',
     '  float lon = fract(v_merc.x) * 360.0 - 180.0;',
-    '  lat = degrees(atan(sinh(PI * (1.0 - 2.0 * v_merc.y))));',
+    '  lat = fragLat();',
     '  return vec2((lon + 180.0) / 360.0 * (u_size.x - 1.0) + 0.5, (90.0 - lat) / 180.0 * (u_size.y - 1.0) + 0.5) / u_size;',
     '}'
   ].join('\n') + '\n';
@@ -169,13 +177,75 @@ WidgetTemp.TempLayerGL = (function () {
     '    vec2 duv = vec2((ax - u_rect.x) / (u_rect.z - u_rect.x), (v_merc.y - u_rect.y) / (u_rect.w - u_rect.y));',
     '    if (duv.x >= 0.0 && duv.x <= 1.0 && duv.y >= 0.0 && duv.y <= 1.0) {',
     '      float zp = texture(u_dem, duv).r;',
-    '      if (zp > -1000.0) t += 0.0065 * (zs - max(0.0, zp));',
+    // On the polar caps the height read is the edge's, stretched: it
+    // fades out on the way to the pole.
+    '      if (zp > -1000.0) t += 0.0065 * (zs - max(0.0, zp)) * (1.0 - abs(v_pole));',
     '    }',
     '  }',
     '  float i = clamp(floor((t - u_lutMin) / u_lutStep + 0.5), 0.0, u_lutSize - 1.0);',
     '  fragColor = vec4(texelFetch(u_lut, ivec2(int(i), 0), 0).rgb * u_opacity, u_opacity);',
     '}'
   ]).join('\n');
+
+  /** The mesh: x, y in Mercator (0..1) and the pole flag. The rows past
+      the edges stay at the edge in Mercator: on the globe MapLibre puts
+      them at the poles (raw = +-32768, as its own tiles do), flat they
+      are not drawn. */
+  function meshVertices() {
+    var v = new Float32Array((MESH_X + 1) * (MESH_Y + 3) * 3), n = 0;
+    for (var j = -1; j <= MESH_Y + 1; j++) {
+      var jj = Math.max(0, Math.min(MESH_Y, j));
+      var y = mercY(MERC_MAX_LAT) + (mercY(-MERC_MAX_LAT) - mercY(MERC_MAX_LAT)) * jj / MESH_Y;
+      for (var i = 0; i <= MESH_X; i++) {
+        v[n++] = i / MESH_X; v[n++] = y; v[n++] = j < 0 ? -1 : j > MESH_Y ? 1 : 0;
+      }
+    }
+    return v;
+  }
+
+  /** The latitude a fragment shader gets (fragLat in FS_HEAD), in degrees,
+      from Mercator y and v_pole. On a cap the chip draws flat triangles
+      from the edge to the pole, and the interpolated v_pole follows the
+      latitude within a thousandth of a degree; the longitude, still the
+      columns', is off by less than a column near the pole, a few km. */
+  function fragLat(y, pole) {
+    var lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) / DEG;
+    return lat + (Math.sign(lat) * 90 - lat) * Math.abs(pole);
+  }
+
+  // The vertex shader after MapLibre's prelude: v_pole is the pole flag,
+  // interpolated across the caps' rows (0 everywhere in the body).
+  var VS_MAIN = [
+    'in vec3 a_pos;',
+    'uniform float u_shift;',
+    'out vec2 v_merc;',
+    'out float v_pole;',
+    'void main() {',
+    '  v_merc = vec2(a_pos.x + u_shift, a_pos.y);',
+    '  v_pole = a_pos.z;',
+    '  vec2 raw = vec2(0.0, a_pos.z < -0.5 ? -32768.0 : (a_pos.z > 0.5 ? 32767.0 : 0.0));',
+    '  gl_Position = projectTile(v_merc, raw);',
+    '}'
+  ].join('\n');
+
+  // The globe's polar caps in depth only (GLLayer.depthOnly): the nearest
+  // depth on the caps' rows (v_pole not 0), nothing on the body. MapLibre
+  // draws its raster layers with a depth test, each nearer than the one
+  // under it, and fills their caps with the row of pixels at 85 degrees
+  // stretched to the pole: a layer of this shader right over the base map
+  // keeps the rasters over it (radar, satellite, tiles) out of the caps.
+  // The chip's own layers draw without the depth test and fill them.
+  var CAPS_FS = [
+    '#version 300 es',
+    'precision highp float;',
+    'in float v_pole;',
+    'out vec4 fragColor;',
+    'void main() {',
+    '  if (abs(v_pole) < 1e-6) discard;',
+    '  gl_FragDepth = 0.0;',
+    '  fragColor = vec4(0.0);',
+    '}'
+  ].join('\n');
 
   /** A custom layer drawing one mesh over the world, Mercator 0..1, fine
       enough to follow the globe, with a row on each side reaching the
@@ -200,31 +270,23 @@ WidgetTemp.TempLayerGL = (function () {
     this.failed = false;
     this.onFail = null;
     this.timings = null;
+    this.depthOnly = false;           // the depth alone, on the globe (CAPS_FS)
   }
   function note(list, ms) { list.push(ms); if (list.length > 40) list.shift(); }
   var FLAT_SHIFTS = [-1, 0, 1], GLOBE_SHIFTS = [0];
   GLLayer.prototype = {
     onAdd: function (map, gl) {
       this.map = map;
-      // x, y in Mercator (0..1) and the pole flag: the rows past the edges
-      // reach the poles on the globe (as MapLibre's own tiles do) with the
-      // colors of the edge; flat they are not drawn.
-      var v = [];
-      for (var j = -1; j <= MESH_Y + 1; j++) {
-        var jj = Math.max(0, Math.min(MESH_Y, j));
-        var y = mercY(MERC_MAX_LAT) + (mercY(-MERC_MAX_LAT) - mercY(MERC_MAX_LAT)) * jj / MESH_Y;
-        for (var i = 0; i <= MESH_X; i++) v.push(i / MESH_X, y, j < 0 ? -1 : j > MESH_Y ? 1 : 0);
-      }
       var idx = [];
-      for (j = 0; j < MESH_Y + 2; j++) {
-        for (i = 0; i < MESH_X; i++) {
+      for (var j = 0; j < MESH_Y + 2; j++) {
+        for (var i = 0; i < MESH_X; i++) {
           var k = j * (MESH_X + 1) + i;
           idx.push(k, k + 1, k + MESH_X + 1, k + 1, k + MESH_X + 2, k + MESH_X + 1);
         }
       }
       this.vbo = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, meshVertices(), gl.STATIC_DRAW);
       this.ibo = gl.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), gl.STATIC_DRAW);
@@ -248,13 +310,7 @@ WidgetTemp.TempLayerGL = (function () {
         once; null when it does not build. */
     program: function (gl, sd) {
       if (sd.variantName in this.programs) return this.programs[sd.variantName];
-      var vs = '#version 300 es\n' + sd.vertexShaderPrelude + '\n' + sd.define + '\n' +
-        'in vec3 a_pos;\nuniform float u_shift;\nout vec2 v_merc;\n' +
-        'void main() {\n' +
-        '  v_merc = vec2(a_pos.x + u_shift, a_pos.y);\n' +
-        '  vec2 raw = vec2(0.0, a_pos.z < -0.5 ? -32768.0 : (a_pos.z > 0.5 ? 32767.0 : 0.0));\n' +
-        '  gl_Position = projectTile(v_merc, raw);\n' +
-        '}';
+      var vs = '#version 300 es\n' + sd.vertexShaderPrelude + '\n' + sd.define + '\n' + VS_MAIN;
       var ok = true, self = this;
       function sh(type, src) {
         var s = gl.createShader(type);
@@ -336,6 +392,8 @@ WidgetTemp.TempLayerGL = (function () {
         if (this.onFail) this.onFail();
         return;
       }
+      // Flat, the caps' rows are not drawn: nothing to keep out.
+      if (this.depthOnly && sd.variantName !== 'globe') return;
       var u = pr.loc;
       this.frame++;
       gl.useProgram(pr.p);
@@ -345,9 +403,17 @@ WidgetTemp.TempLayerGL = (function () {
       if (u.u_projection_tile_mercator_coords) gl.uniform4fv(u.u_projection_tile_mercator_coords, d.tileMercatorCoords);
       if (u.u_projection_clipping_plane) gl.uniform4fv(u.u_projection_clipping_plane, d.clippingPlane);
       if (u.u_projection_transition) gl.uniform1f(u.u_projection_transition, d.projectionTransition);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      gl.disable(gl.DEPTH_TEST);
+      if (this.depthOnly) {
+        gl.disable(gl.BLEND);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.ALWAYS);
+        gl.depthMask(true);
+        gl.colorMask(false, false, false, false);
+      } else {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.disable(gl.DEPTH_TEST);
+      }
       gl.disable(gl.STENCIL_TEST);
       gl.disable(gl.CULL_FACE);
       gl.bindVertexArray(pr.vao);
@@ -358,6 +424,7 @@ WidgetTemp.TempLayerGL = (function () {
         gl.drawElements(gl.TRIANGLES, this.count, gl.UNSIGNED_INT, 0);
       }
       gl.bindVertexArray(null);
+      if (this.depthOnly) gl.colorMask(true, true, true, true);
       this._sweep(gl);
       if (this.timings) note(this.timings.render, performance.now() - t0);
     }
@@ -591,6 +658,12 @@ WidgetTemp.TempLayerGL = (function () {
   TempLayerGL.clean = clean;
   TempLayerGL.GLLayer = GLLayer;
   TempLayerGL.FS_HEAD = FS_HEAD;
+  TempLayerGL.CAPS_FS = CAPS_FS;
+  TempLayerGL.VS_MAIN = VS_MAIN;
+  TempLayerGL.MESH_X = MESH_X;
+  TempLayerGL.MESH_Y = MESH_Y;
+  TempLayerGL.meshVertices = meshVertices;
+  TempLayerGL.fragLat = fragLat;
   TempLayerGL.rgba = rgba;
   return TempLayerGL;
 })();

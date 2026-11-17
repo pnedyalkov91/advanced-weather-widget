@@ -16,6 +16,10 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
   var SLICE_MS = 4;           // longest slice of table building per frame
   var REVEAL_MS = 250;        // fade in of the wind after a change of projection
   var FILE_RES = 0.25;        // degrees of the files given in manual mode
+  // Around the pole a node's neighbours lie on meridians far apart: past
+  // this spread (degrees) the table's slopes mean nothing, and the node is
+  // left out (a few px of calm right at the pole).
+  var POLE_SPREAD = 90;
 
   // Nested grids: every zoom of a band samples the same points (the map
   // zooms in fractions), and a finer grid holds the points of a coarser one.
@@ -155,9 +159,11 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       }
     },
 
-    /** Whether the grid given is on screen: false while the table of the
-        projection is being built. */
-    settled: function () { return !this._building; },
+    /** Always: the animation never waits for the wind. While the table and
+        the particles are built (300 to 900 ms) the canvas is clear, and the
+        particles follow whatever grid is given last; waiting stopped the
+        radar for that long when the wind was switched on, then it jumped. */
+    settled: function () { return true; },
 
     /** The wind drawn at lat/lon, { speed (m/s), dir (from, degrees) }, or
         null where none is drawn. */
@@ -227,6 +233,9 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       // and gives up; a restart may begin a new build at once.
       this._job++;
       this._building = false;
+      // An abandoned build never ends its warm-up: draw on the shown canvas again.
+      this._warmCtx = null;
+      this._warming = false;
       this._showOpacity();
       if (this._timer) { clearTimeout(this._timer); this._timer = null; }
       if (this._fetchTimer) { clearTimeout(this._fetchTimer); this._fetchTimer = null; }
@@ -389,27 +398,56 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
       this._spd = new Float32Array(this._n);
       for (var i = 0; i < this._n; i++) this._spawn(i, true);
       // The first frames at once, so the first frame shown has full trails.
+      // Drawn off the GPU, then copied once: on the shown canvas (clear
+      // while building, so never composited) these frames piled up in the
+      // GPU queue and Chromium held the page 50 to 75 ms, several times.
       var n = WindField.warmUpFrames(this.options.fade);
+      var soft = n ? this._softContext() : null;
       this._warming = true;
+      this._warmCtx = soft;
       for (var f = 0; f < n; f++) { this._frame(); yield; }
+      this._warmCtx = null;
       this._warming = false;
+      if (soft && this._ctx) {
+        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.drawImage(soft.canvas, 0, 0);
+      }
+    },
+
+    /** A clear canvas of the shown one's size, rasterized by the CPU
+        (willReadFrequently), or null where there is no DOM. */
+    _softContext: function () {
+      try {
+        var c = this._soft || (this._soft = document.createElement('canvas'));
+        var w = this._canvas.width, h = this._canvas.height;
+        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+        var ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.clearRect(0, 0, w, h);
+        return ctx;
+      } catch (e) { return null; }
     },
 
     _buildTable: function* () {
       var map = this._map, cols = Math.ceil(this._w / CELL) + 1, rows = Math.ceil(this._h / CELL) + 1, N = cols * rows;
       var t = {
-        cols: cols, rows: rows, area: 0,
+        cols: cols, rows: rows, area: 0, globe: false,
         lon: new Float64Array(N), lat: new Float64Array(N), ok: new Uint8Array(N), okJ: new Uint8Array(N),
         a11: new Float32Array(N), a12: new Float32Array(N), a21: new Float32Array(N), a22: new Float32Array(N)
       };
       var tr = map._camera && map._camera.transform ? map._camera.transform : map.transform;
       var i, j, k, count = 0;
+      // On the globe up to the poles (the open-data files reach them);
+      // flat, the world ends at Mercator's edge, and past it unproject
+      // gives places that are not on the map.
+      var proj = map.getProjection ? map.getProjection() : null;
+      t.globe = !!(proj && proj.type === 'globe');
+      var maxLat = t.globe ? 90 : 85;
       // A yield every 8 nodes: on a slow CPU one node costs about 1 ms.
       for (j = 0; j < rows; j++) {
         for (i = 0; i < cols; i++) {
           if (++count % 8 === 0) yield;
           var x = i * CELL, y = j * CELL, ll = map.unproject([x, y]);
-          if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > 85) continue;
+          if (!ll || !isFinite(ll.lat) || Math.abs(ll.lat) > maxLat) continue;
           var p = map.project(ll);
           // Off the globe, unproject lands elsewhere; behind it, it is hidden.
           if (Math.abs(p.x - x) > 0.5 || Math.abs(p.y - y) > 0.5) continue;
@@ -430,8 +468,10 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
           if (iL === iR || jU === jD) continue;
           var kL = j * cols + iL, kR = j * cols + iR, kU = jU * cols + i, kD = jD * cols + i;
           var dx = (iR - iL) * CELL, dy = (jD - jU) * CELL;
-          var lx = wrap180(t.lon[kR] - t.lon[kL]) / dx, ax = (t.lat[kR] - t.lat[kL]) / dx;
-          var ly = wrap180(t.lon[kD] - t.lon[kU]) / dy, ay = (t.lat[kD] - t.lat[kU]) / dy;
+          var sx = wrap180(t.lon[kR] - t.lon[kL]), sy = wrap180(t.lon[kD] - t.lon[kU]);
+          if (Math.abs(sx) > POLE_SPREAD || Math.abs(sy) > POLE_SPREAD) continue;
+          var lx = sx / dx, ax = (t.lat[kR] - t.lat[kL]) / dx;
+          var ly = sy / dy, ay = (t.lat[kD] - t.lat[kU]) / dy;
           var det = lx * ay - ly * ax;
           if (!(Math.abs(det) > 1e-14)) continue;
           t.a11[k] = ay / det; t.a12[k] = -ly / det; t.a21[k] = -ax / det; t.a22[k] = lx / det;
@@ -470,7 +510,7 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
     _frame: function () {
       var grid = this._grid();
       if (!grid || !this._table) return;
-      var t0 = performance.now(), ctx = this._ctx, dpr = this._dpr, o = this.options, t = this._table, cols = t.cols;
+      var t0 = performance.now(), ctx = this._warmCtx || this._ctx, dpr = this._dpr, o = this.options, t = this._table, cols = t.cols;
       this._fadeTrails(ctx, o.fade);
       var map = this._map, glZoom = map.getZoom(), z = glZoom + 1;
       var pxPerDeg = 512 * Math.pow(2, glZoom) / 360 / Math.cos(map.getCenter().lat * DEG);
@@ -497,10 +537,24 @@ WidgetWind.createTableWindLayer = function (maplibregl) {
         var uv = WindField.sampleChain(grid, lat, lon, tw, hP, sigma, o.level);
         if (!uv) { this._spawn(i, false); continue; }
         var sv = WindField.screenVelocity(uv.u, uv.v, this._velOpts);
-        var dlon = sv.dx / (pxPerDeg * Math.max(0.05, Math.cos(lat * DEG))), dlat = -sv.dy / pxPerDeg;
-        // The nearest node's matrix: cells are CELL px wide, smooth enough.
-        var a = tx < 0.5 ? (ty < 0.5 ? k : k + cols) : (ty < 0.5 ? k + 1 : k + cols + 1);
-        var vx = t.a11[a] * dlon + t.a12[a] * dlat, vy = t.a21[a] * dlon + t.a22[a] * dlat;
+        // Degrees of longitude per second grow toward the pole as the
+        // meridians close in; the table's matrix shrinks them back to px.
+        var dlon = sv.dx / (pxPerDeg * Math.max(1e-3, Math.cos(lat * DEG))), dlat = -sv.dy / pxPerDeg;
+        var vx, vy;
+        if (t.globe) {
+          // The matrix between the cell's four nodes: near the pole it
+          // changes by a lot within a cell (as 1 / the distance to it).
+          var k1 = k + 1, k2 = k + cols, k3 = k + cols + 1;
+          var m11 = w00 * t.a11[k] + w10 * t.a11[k1] + w01 * t.a11[k2] + w11 * t.a11[k3];
+          var m12 = w00 * t.a12[k] + w10 * t.a12[k1] + w01 * t.a12[k2] + w11 * t.a12[k3];
+          var m21 = w00 * t.a21[k] + w10 * t.a21[k1] + w01 * t.a21[k2] + w11 * t.a21[k3];
+          var m22 = w00 * t.a22[k] + w10 * t.a22[k1] + w01 * t.a22[k2] + w11 * t.a22[k3];
+          vx = m11 * dlon + m12 * dlat; vy = m21 * dlon + m22 * dlat;
+        } else {
+          // Flat, the nearest node's matrix: cells are CELL px wide, smooth enough.
+          var a = tx < 0.5 ? (ty < 0.5 ? k : k + cols) : (ty < 0.5 ? k + 1 : k + cols + 1);
+          vx = t.a11[a] * dlon + t.a12[a] * dlat; vy = t.a21[a] * dlon + t.a22[a] * dlat;
+        }
         var nx = x + vx * dt, ny = y + vy * dt;
         spd[pxCount++] = Math.sqrt(vx * vx + vy * vy);
         var b = WindField.paletteBand(sv.speed, palette);

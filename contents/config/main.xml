@@ -238,6 +238,7 @@
     <!-- Brightness of the lights of the towns on the night side (MapLibre page), percent; 0 for none -->
     <entry name="librewxrRimGlow"       type="Int"><default>60</default><min>0</min><max>100</max></entry>
     <entry name="librewxrNightLights"   type="Int"><default>70</default><min>0</min><max>100</max></entry>
+    <entry name="librewxrNightLightsDensity" type="Double"><default>3</default><min>1</min><max>6</max></entry>
     <!-- Temperature palette in use: empty for the vivid one, "builtin:muted",
          "builtin:bluered", or the name of a palette made in the settings -->
     <entry name="librewxrTempPalette"   type="String"><default></default></entry>
@@ -266,6 +267,8 @@
     <!-- Weather Map: opacity (%) of the layer column and the time bar over the map, and the blur (px) of the map under them -->
     <entry name="weatherMapPanelOpacity" type="Int"><default>40</default><min>0</min><max>100</max></entry>
     <entry name="weatherMapPanelBlur"   type="Int"><default>18</default><min>0</min><max>40</max></entry>
+    <!-- Weather Map: the box of the layers still loading, at the bottom left -->
+    <entry name="weatherMapLoadBox"     type="Bool"><default>true</default></entry>
     <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the clean style) -->
     <entry name="weatherMapControlStyle" type="String"><default>plasma</default></entry>
     <!-- Weather Map: icons of the layers and of the radar menu: "weathermap" (its own drawings) | "symbolic" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" -->
@@ -312,6 +315,9 @@
          they come out, so the map opens on them at once. Off by default: it
          downloads even if the map is never opened. -->
     <entry name="weatherMapPrepareLayers" type="Bool"><default>false</default></entry>
+    <!-- Weather Map: the layers drawn with the global model alone, their
+         "Regional models" option off (wind, temperature), JSON list of ids -->
+    <entry name="weatherMapRegionalOff" type="String"><default>[]</default></entry>
     <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
          the background after startup and keep them loaded, so the popup opens
          instantly. Off by default (uses extra memory for the whole session). -->

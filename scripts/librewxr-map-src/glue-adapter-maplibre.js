@@ -158,8 +158,33 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (src) src.setTiles(shadeTiles());
     else if (map.getLayer('lv-night') && map.triggerRepaint) map.triggerRepaint();
   }
+  // The globe's polar caps kept clear of the raster layers (MapLibre
+  // stretches the row of pixels at 85 degrees of each up to the pole: rain
+  // on it came out as a wedge pointing at the pole). A layer of the chip
+  // right over the base map writes the nearest depth there; the rasters
+  // over it fail their depth test in the caps (WidgetTemp.TempLayerGL.CAPS_FS).
+  var caps = { layer: null, failed: false };
+  function addCapsLayer() {
+    if (caps.failed || map.getLayer('lv-caps')) return;
+    var GLLayer = nightClass();
+    if (!GLLayer) return;
+    if (!caps.layer) {
+      caps.layer = new GLLayer('lv-caps', WidgetTemp.TempLayerGL.CAPS_FS, function () { return true; });
+      caps.layer.depthOnly = true;
+      // Called while the map draws: the caps go back to MapLibre's way.
+      caps.layer.onFail = function () {
+        caps.failed = true;
+        caps.layer = null;
+        setTimeout(function () {
+          if (map && map.getLayer('lv-caps')) map.removeLayer('lv-caps');
+        }, 0);
+      };
+    }
+    addLayer(caps.layer);
+  }
   // The shade the setting asks for; after a style swap too.
   function addSunLayers() {
+    addCapsLayer();
     if (!dayNight) {
       if (map.getLayer('lv-night')) map.removeLayer('lv-night');
       if (map.getSource('lv-night')) map.removeSource('lv-night');
@@ -179,16 +204,34 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     applyLights();
   }
 
-  // The lights of the towns on the night side: some 240 000 points from
-  // NASA's Black Marble (vendor/night-lights.bin, WidgetEarth), each lit by
-  // the chip as the Sun goes down where it stands, sharp at every zoom.
+  // The lights of the towns on the night side: points drawn from the lit
+  // cells of NASA's Black Marble (vendor/night-lights.bin.gz, WidgetEarth),
+  // some 240 000 for each step of the widget's density, each lit by the
+  // chip as the Sun goes down where it stands, sharp at every zoom.
   // A layer of MapLibre's own (type custom) right over the night, for the
   // day and night only, as bright as the widget's slider says (percent, 0
   // for none).
-  var LIGHTS_URL = 'vendor/night-lights.bin';
+  var LIGHTS_URL = 'vendor/night-lights.bin.gz';
   var nightLights = percent(typeof LIGHTS_INIT === 'undefined' ? null : LIGHTS_INIT);
   if (nightLights === null) nightLights = 70;
-  var lights = { layer: null, vertices: null, loading: false, sun: [0, 0, 1] };
+  var lightsDensity = lightsDensityOf(typeof LIGHTS_DENSITY_INIT === 'undefined' ? null : LIGHTS_DENSITY_INIT);
+  if (lightsDensity === null) lightsDensity = WidgetEarth.NIGHT_LIGHTS.density[2];
+  var lights = { layer: null, cells: null, vertices: null, loading: false, rebuild: 0, sun: [0, 0, 1] };
+  // The points a cell of full light gets, within the bounds, or null.
+  function lightsDensityOf(value) {
+    var d = parseFloat(value), b = WidgetEarth.NIGHT_LIGHTS.density;
+    return isFinite(d) ? Math.max(b[0], Math.min(b[1], d)) : null;
+  }
+  // The points again for the density, once a frame at most while the
+  // slider moves.
+  function rebuildLights() {
+    if (!lights.cells || lights.rebuild) return;
+    lights.rebuild = requestAnimationFrame(function () {
+      lights.rebuild = 0;
+      lights.vertices = WidgetEarth.nightLightsVertices(lights.cells, lightsDensity);
+      if (map && map.triggerRepaint) map.triggerRepaint();
+    });
+  }
   function applyLights() {
     if (!dayNight || !(nightLights > 0)) {
       if (map.getLayer('lv-lights')) map.removeLayer('lv-lights');
@@ -206,6 +249,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       renderingMode: '2d',
       programs: {},
       vbo: null,
+      uploaded: null,
       count: 0,
       failed: false,
       onAdd: function () {},
@@ -218,6 +262,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         this.programs = {};
         if (this.vbo) gl.deleteBuffer(this.vbo);
         this.vbo = null;
+        this.uploaded = null;
       },
       // The program for MapLibre's projection variant (flat or globe), made once.
       program: function (gl, sd) {
@@ -260,15 +305,17 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       render: function (gl, args) {
         var fade = lightsFade();
         if (this.failed || !lights.vertices || !(nightLights > 0) || !(fade > 0)) return;
-        if (!this.vbo) {
-          this.vbo = gl.createBuffer();
+        if (!this.vbo) this.vbo = gl.createBuffer();
+        // New points (first time, or a new density): to the chip again.
+        if (this.uploaded !== lights.vertices) {
           gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
           gl.bufferData(gl.ARRAY_BUFFER, lights.vertices, gl.STATIC_DRAW);
+          this.uploaded = lights.vertices;
           this.count = lights.vertices.length / 3;
         }
         var sd = args.shaderData, d = args.defaultProjectionData, pr = this.program(gl, sd);
         if (!pr) { this.failed = true; return; }
-        var u = pr.loc, look = WidgetEarth.nightLightsLook(map.getZoom()), dpr = window.devicePixelRatio || 1;
+        var u = pr.loc, look = WidgetEarth.nightLightsLook(map.getZoom(), lightsDensity, sd.variantName === 'globe' ? map.getCenter().lat : null), dpr = window.devicePixelRatio || 1;
         gl.useProgram(pr.p);
         gl.uniformMatrix4fv(u.u_projection_matrix, false, d.mainMatrix);
         if (u.u_projection_fallback_matrix) gl.uniformMatrix4fv(u.u_projection_fallback_matrix, false, d.fallbackMatrix);
@@ -279,6 +326,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         gl.uniform1f(u.u_opacity, nightLights / 100);
         gl.uniform1f(u.u_size, look.size * dpr);
         gl.uniform1f(u.u_gain, look.gain * fade);
+        gl.uniform1f(u.u_keep, look.keep);
         // Added to what is under them: lights glow, and many in one place glow more.
         gl.enable(gl.BLEND);
         gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE);
@@ -301,14 +349,21 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function lightsFade() {
     return WidgetEarth.nightLightsFade(WidgetEarth.viewWidthKm(map.getContainer().clientWidth, map.getZoom(), map.getCenter().lat));
   }
-  // Read once, the first time the lights are on.
+  // Read once, the first time the lights are on; the file is gzipped.
   function loadLights() {
-    if (lights.vertices || lights.loading || typeof fetch !== 'function') return;
+    if (lights.cells || lights.loading || typeof fetch !== 'function') return;
     lights.loading = true;
-    fetch(LIGHTS_URL).then(function (r) { return r.arrayBuffer(); }).then(function (buf) {
-      lights.vertices = WidgetEarth.nightLightsVertices(WidgetEarth.decodeNightLights(buf));
+    fetch(LIGHTS_URL).then(function (r) { return r.arrayBuffer(); }).then(gunzip).then(function (buf) {
+      lights.cells = WidgetEarth.decodeNightLights(buf);
+      lights.vertices = WidgetEarth.nightLightsVertices(lights.cells, lightsDensity);
       if (map && map.triggerRepaint) map.triggerRepaint();
     }).catch(function (e) { lights.loading = false; console.warn('night lights: ' + e); });
+  }
+  // The bytes of a gzip file, undone (left as they are if not gzipped).
+  function gunzip(buf) {
+    var b = new Uint8Array(buf, 0, 2);
+    if (b[0] !== 0x1f || b[1] !== 0x8b) return buf;
+    return new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
   }
 
   // The temperature (glue-temp-layer.js): raster tiles the layer draws,
@@ -942,6 +997,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   }
   /** [group, rank inside the group] of a layer id; null for one not stacked. */
   function stackGroup(id) {
+    if (id === 'lv-caps') return ['night', -1];
     if (id === 'lv-night') return ['night', 0];
     if (id === 'lv-lights') return ['night', 1];
     if (id === LINES_HALO) return ['lines', 0];
@@ -1353,9 +1409,17 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (styleReady && !swapInProgress) applyLights();
     },
 
+    /** How many points the lights get: those of a cell of full light. */
+    setNightLightsDensity: function (value) {
+      var d = lightsDensityOf(value);
+      if (d === null || d === lightsDensity) return;
+      lightsDensity = d;
+      rebuildLights();
+    },
+
     /** The lights' setting and Sun (test bench). */
     nightLightsState: function () {
-      return { percent: nightLights, sun: lights.sun.slice(), shown: !!(map && map.getLayer('lv-lights')), loaded: !!lights.vertices, points: lights.vertices ? lights.vertices.length / 3 : 0, fade: map ? lightsFade() : 1 };
+      return { percent: nightLights, density: lightsDensity, sun: lights.sun.slice(), shown: !!(map && map.getLayer('lv-lights')), loaded: !!lights.vertices, points: lights.vertices ? lights.vertices.length / 3 : 0, fade: map ? lightsFade() : 1 };
     },
 
     /** Show the temperature tiles drawn by provider(z, x, y, signal) ->

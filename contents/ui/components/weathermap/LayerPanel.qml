@@ -127,6 +127,11 @@ Rectangle {
             }
         }
     }
+    // An option on or off: a switch with its name.
+    component OptSwitch: MapSwitch {
+        own: panel.map.ownControls
+        Layout.fillWidth: true
+    }
     // A setting with a few values: its name, then the values side by side,
     // the one taken highlighted. When both do not fit in room (the width of
     // the menu), the values go on the line under the name.
@@ -611,6 +616,19 @@ Rectangle {
                             value: panel.map.nightLights
                             onMoved: function (v, done) { panel.map.setNightLights(Math.round(v), done); }
                         }
+                        // How many points the lights get, from as many as in the
+                        // picture (x1) to six times as many in the towns.
+                        SliderSetting {
+                            title: i18n("Night lights density")
+                            valueText: i18nc("night lights density, as a multiple", "×%1", Number(value).toLocaleString(Qt.locale(), "f", value % 1 ? 1 : 0))
+                            enabled: panel.map.dayNight && panel.map.nightLights > 0
+                            opacity: enabled ? 1 : 0.5
+                            from: 1
+                            to: 6
+                            stepSize: 0.5
+                            value: panel.map.nightLightsDensity
+                            onMoved: function (v, done) { panel.map.setNightLightsDensity(v, done); }
+                        }
                         MapSwitch {
                             own: panel.map.ownControls
                             text: i18n("Dark map")
@@ -624,6 +642,16 @@ Rectangle {
                                 text: panel.map.darkMapLocked ? i18n("Not available: the selected base map already has a fixed light or dark style.") : i18n("Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme.")
                                 visible: parent.hovered
                                 delay: Kirigami.Units.toolTipDelay
+                            }
+                        }
+                        // The box of the layers still loading, at the bottom left of the map.
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Loading of the layers")
+                            checked: panel.map.loadBoxOn
+                            onToggled: {
+                                panel.map.setLoadBox(checked);
+                                checked = Qt.binding(function () { return panel.map.loadBoxOn; });
                             }
                         }
                         SliderSetting {
@@ -805,6 +833,16 @@ Rectangle {
                     value: panel.map.windLineWidth
                     onMoved: function (v, done) { panel.map.setWindLineWidth(Math.round(v * 10) / 10, done); }
                 }
+                OptSwitch {
+                    // At 700 hPa only the global model is drawn.
+                    enabled: panel.map.windLevel === "10m"
+                    text: i18n("Regional models")
+                    checked: panel.map.regionalOn("wind")
+                    onToggled: {
+                        panel.map.setRegional("wind", checked);
+                        checked = Qt.binding(function () { return panel.map.regionalOn("wind"); });
+                    }
+                }
             }
             MapLayerRow {
                 id: tempRow
@@ -823,6 +861,14 @@ Rectangle {
                     choices: panel.map.tempPaletteChoices
                     current: panel.map.tempPaletteId
                     onPicked: function (v) { panel.map.setTempPaletteId(v); }
+                }
+                OptSwitch {
+                    text: i18n("Regional models")
+                    checked: panel.map.regionalOn("temperature")
+                    onToggled: {
+                        panel.map.setRegional("temperature", checked);
+                        checked = Qt.binding(function () { return panel.map.regionalOn("temperature"); });
+                    }
                 }
             }
             MapLayerRow {

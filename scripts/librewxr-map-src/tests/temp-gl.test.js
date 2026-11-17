@@ -133,3 +133,125 @@ test('a shader that does not build: the tiles draw the file from then on', async
   assert.equal(adapter.tiles, 2);
   assert.equal(layer._gpuOn, false);
 });
+
+// The polar caps on the globe: past 85.05 degrees the mesh has one row of
+// each side whose far end MapLibre puts at the pole (raw = +-32768), with
+// v_merc still at the edge. v_pole (0 at the edge, +-1 at the pole) gives
+// the shaders the real latitude there.
+const mercY = (lat) => (1 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / Math.PI) / 2;
+const EDGE = 85.0511;
+
+test('meshVertices: a row past each edge, at the edge in Mercator and flagged for the pole', () => {
+  const v = GL.meshVertices(), cols = GL.MESH_X + 1, rows = v.length / 3 / cols;
+  assert.equal(rows, GL.MESH_Y + 3);
+  for (let i = 0; i < cols; i++) {
+    const top = i * 3, bottom = ((rows - 1) * cols + i) * 3;
+    assert.equal(v[top + 2], -1, 'north row flagged');
+    assert.equal(v[bottom + 2], 1, 'south row flagged');
+    near(v[top + 1], mercY(EDGE), 1e-6, 'north row at the edge (flat: nothing drawn)');
+    near(v[bottom + 1], mercY(-EDGE), 1e-6, 'south row at the edge');
+  }
+  for (let k = cols * 3; k < (rows - 1) * cols * 3; k += 3) assert.equal(v[k + 2], 0, 'the body is not flagged');
+});
+
+test('fragLat: the latitude of Mercator in the body, from the edge to the pole in the caps', () => {
+  for (const lat of [-80, -45, 0, 12.5, 60, 85]) near(GL.fragLat(mercY(lat), 0), lat, 1e-9, 'body ' + lat);
+  near(GL.fragLat(mercY(EDGE), 0), EDGE, 1e-4, 'north edge');
+  near(GL.fragLat(mercY(EDGE), -1), 90, 1e-9, 'north pole');
+  near(GL.fragLat(mercY(-EDGE), 1), -90, 1e-9, 'south pole');
+  near(GL.fragLat(mercY(EDGE), -0.5), (EDGE + 90) / 2, 1e-4, 'half way north');
+  near(GL.fragLat(mercY(-EDGE), 0.5), -(EDGE + 90) / 2, 1e-4, 'half way south');
+});
+
+test('fragLat: one row is enough, the caps\' flat triangles follow the latitude within a hundredth of a degree', () => {
+  // A cap triangle as the chip draws it: two points of the edge, one
+  // column apart, and the pole; a fragment at weights a, b, c is the point
+  // on that flat triangle, seen from the center of the Earth.
+  const toXYZ = (lat, lon) => {
+    const f = lat * Math.PI / 180, l = lon * Math.PI / 180;
+    return [Math.cos(f) * Math.cos(l), Math.cos(f) * Math.sin(l), Math.sin(f)];
+  };
+  const dLon = 360 / GL.MESH_X;
+  for (const south of [false, true]) {
+    const s = south ? -1 : 1, e1 = toXYZ(s * EDGE, 0), e2 = toXYZ(s * EDGE, dLon), p = [0, 0, s];
+    let worst = 0;
+    for (let ia = 0; ia <= 20; ia++) {
+      for (let ib = 0; ia + ib <= 20; ib++) {
+        const a = ia / 20, b = ib / 20, c = 1 - a - b;
+        const q = [0, 1, 2].map((k) => a * e1[k] + b * e2[k] + c * p[k]);
+        const real = Math.atan2(q[2], Math.hypot(q[0], q[1])) * 180 / Math.PI;
+        const got = GL.fragLat(mercY(s * EDGE), s * -c);
+        worst = Math.max(worst, Math.abs(real - got));
+      }
+    }
+    assert.ok(worst < 0.01, (south ? 'south' : 'north') + ' cap, worst ' + worst);
+  }
+});
+
+test('the shaders read the latitude of the caps', () => {
+  assert.match(GL.FS_HEAD, /in float v_pole;/);
+  assert.match(GL.FS_HEAD, /lat = fragLat\(\);/, 'gridUv: every layer of the chip');
+  assert.match(GL.VS_MAIN, /v_pole = a_pos\.z;/);
+  assert.match(GL.VS_MAIN, /projectTile\(v_merc, raw\)/);
+});
+
+/** A WebGL2 stand-in that notes the calls; every program builds. */
+function fakeWebGL() {
+  const calls = [];
+  const gl = new Proxy({}, {
+    get(_, k) {
+      if (k === 'calls') return calls;
+      if (typeof k === 'string' && /^[A-Z_0-9]+$/.test(k)) return k;
+      if (k === 'getShaderParameter' || k === 'getProgramParameter') return (o, p) => (p === 'ACTIVE_UNIFORMS' ? 0 : true);
+      if (k === 'getAttribLocation') return () => 0;
+      return (...a) => { calls.push([k, ...a]); return {}; };
+    }
+  });
+  return gl;
+}
+const args = (variant) => ({
+  shaderData: { variantName: variant, vertexShaderPrelude: '', define: '' },
+  defaultProjectionData: { mainMatrix: [], fallbackMatrix: [], tileMercatorCoords: [], clippingPlane: [], projectionTransition: 0 }
+});
+
+test('the caps\' shader writes the nearest depth on the caps, nothing in the body', () => {
+  assert.match(GL.CAPS_FS, /in float v_pole;/);
+  assert.match(GL.CAPS_FS, /discard/);
+  assert.match(GL.CAPS_FS, /gl_FragDepth = 0\.0;/);
+});
+
+test('GLLayer, depth only: on the globe the depth written, no color, the colors back after', () => {
+  const l = new GL.GLLayer('lv-caps', GL.CAPS_FS, () => true), gl = fakeWebGL();
+  l.depthOnly = true;
+  l.onAdd(null, gl);
+  l.render(gl, args('globe'));
+  const names = gl.calls.map((c) => c[0] + (c[1] !== undefined ? ':' + c.slice(1).join(',') : ''));
+  const at = (n) => names.indexOf(n);
+  assert.ok(at('enable:DEPTH_TEST') >= 0, names.join(' '));
+  assert.ok(at('depthFunc:ALWAYS') >= 0);
+  assert.ok(at('depthMask:true') >= 0);
+  assert.ok(at('colorMask:false,false,false,false') >= 0);
+  const draw = names.findIndex((n) => n.startsWith('drawElements'));
+  assert.ok(draw > at('colorMask:false,false,false,false'));
+  assert.ok(at('colorMask:true,true,true,true') > draw, 'colors back');
+  assert.equal(at('enable:BLEND'), -1, 'no blending: nothing drawn in color');
+});
+
+test('GLLayer, depth only: nothing on the flat map, whose caps are not drawn', () => {
+  const l = new GL.GLLayer('lv-caps', GL.CAPS_FS, () => true), gl = fakeWebGL();
+  l.depthOnly = true;
+  l.onAdd(null, gl);
+  l.render(gl, args('mercator'));
+  assert.ok(!gl.calls.some((c) => c[0] === 'drawElements'));
+  assert.ok(!gl.calls.some((c) => c[0] === 'colorMask'));
+});
+
+test('GLLayer, in color as before: blending on, the depth test off', () => {
+  const l = new GL.GLLayer('lv-x', GL.FS_HEAD + 'void main() {}', () => true), gl = fakeWebGL();
+  l.onAdd(null, gl);
+  l.render(gl, args('globe'));
+  const names = gl.calls.map((c) => c[0] + ':' + c.slice(1).join(','));
+  assert.ok(names.includes('enable:BLEND'));
+  assert.ok(names.includes('disable:DEPTH_TEST'));
+  assert.ok(!names.some((n) => n.startsWith('colorMask')));
+});

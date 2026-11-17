@@ -19,7 +19,7 @@ function flushRaf() {
   for (let i = 0; i < 10000 && rafQueue.length; i++) rafQueue.shift()();
 }
 global.Path2D = class { moveTo() {} lineTo() {} };
-const ctx = { clearRect() {}, fillRect() {}, stroke() {} };
+const ctx = { clearRect() {}, fillRect() {}, stroke() {}, drawImage() {} };
 global.window = { devicePixelRatio: 1 };
 global.document = {
   hidden: false,
@@ -143,7 +143,7 @@ test('table layer, manual: only the grids it is given, at the time they say, not
     const grid = WidgetOpenData.toGrid(new Float32Array(12).fill(5), new Float32Array(12), 3, 4, 3600e3, '10m');
     grid.at = 1800;
     layer.showFile(grid);
-    assert.equal(layer.settled(), false);         // the table is being built
+    assert.equal(layer.settled(), true);          // built while the animation plays on: nothing shown yet to wait for
     flushRaf();
     assert.equal(layer.isDrawing(), true);
     assert.equal(layer.settled(), true);
@@ -238,4 +238,98 @@ test('table layer: its opacity times the fade is the canvas opacity', () => {
   assert.equal(layer._canvas.style.opacity, '0.3');
   assert.equal(layer.getOpacity(), 0.6);
   layer.remove();
+});
+
+// The globe turned to the north pole, as an azimuthal map: 240 x 240 px,
+// the pole in the middle, 20 px per degree of latitude, so 84 N at the
+// sides; longitude 0 points down the screen.
+function polarMap() {
+  const m = fakeMap(), cx = 120, cy = 120, s = 20;
+  m.unproject = ([x, y]) => {
+    const dx = x - cx, dy = y - cy;
+    return { lng: Math.atan2(dx, dy) * 180 / Math.PI, lat: 90 - Math.hypot(dx, dy) / s };
+  };
+  m.project = (ll) => {
+    const r = (90 - ll.lat) * s, l = ll.lng * Math.PI / 180;
+    return { x: cx + r * Math.sin(l), y: cy + r * Math.cos(l) };
+  };
+  m.getContainer = () => ({ clientWidth: 240, clientHeight: 240 });
+  m.getBounds = () => ({ getWest: () => -180, getEast: () => 180, getSouth: () => 84, getNorth: () => 90 });
+  m.getCenter = () => ({ lng: 0, lat: 85 });
+  m.getProjection = () => ({ type: 'globe' });
+  return m;
+}
+
+/** A uniform wind from the east (u = -5) over the whole world, poles included. */
+function polarGrid() {
+  const g = WidgetOpenData.toGrid(new Float32Array(12).fill(-5), new Float32Array(12), 3, 4, 3600e3, '10m');
+  g.at = 3600;
+  return g;
+}
+
+function drawnOn(map) {
+  const Layer = WidgetWind.createTableWindLayer({});
+  const layer = new Layer(source, null, {}, { manual: true });
+  layer.addTo(map);
+  layer.settle();
+  layer.showFile(polarGrid());
+  flushRaf();
+  return layer;
+}
+
+test('table layer, globe: the wind reaches the polar caps, all but a few px around the pole', () => {
+  const layer = drawnOn(polarMap());
+  try {
+    const t = layer._table, cols = t.cols;
+    let past85 = 0;
+    for (let k = 0; k < t.ok.length; k++) {
+      if (!t.okJ[k]) continue;
+      if (t.lat[k] > 85) past85++;
+      const x = (k % cols) * 12 - 120, y = Math.floor(k / cols) * 12 - 120;
+      assert.ok(Math.hypot(x, y) >= 12 - 1e-9, 'no node right at the pole, where longitude has no meaning');
+    }
+    assert.ok(past85 > 100, 'nodes past 85 degrees: ' + past85);
+    assert.equal(layer.isDrawing(), true);
+  } finally {
+    layer.remove();
+  }
+});
+
+test('table layer, flat: nothing past 85 degrees, where the flat map has no world', () => {
+  const map = fakeMap();
+  map.unproject = ([x, y]) => ({ lng: x / 10 - 15, lat: 88 - y / 15 });
+  map.project = (ll) => ({ x: (ll.lng + 15) * 10, y: (88 - ll.lat) * 15 });
+  map.getProjection = () => ({ type: 'mercator' });
+  const layer = drawnOn(map);
+  try {
+    const t = layer._table;
+    for (let k = 0; k < t.ok.length; k++) if (t.ok[k]) assert.ok(t.lat[k] <= 85, 'node at ' + t.lat[k]);
+  } finally {
+    layer.remove();
+  }
+});
+
+test('table layer, globe: an east wind runs around the pole at one speed, near it as farther out', () => {
+  const layer = drawnOn(polarMap());
+  try {
+    // One particle on the meridian 0 at 86 N, then at 88.5 N: one frame each.
+    const step = (lat) => {
+      layer._px.fill(NaN);
+      layer._age.fill(0);
+      const x0 = 120, y0 = 120 + (90 - lat) * 20;
+      layer._px[0] = x0; layer._py[0] = y0;
+      layer._frame();
+      return { dx: layer._px[0] - x0, dy: layer._py[0] - y0, r0: y0 - 120, x: layer._px[0], y: layer._py[0] };
+    };
+    const far = step(86), near = step(88.5);
+    const v = (s) => Math.hypot(s.dx, s.dy);
+    assert.ok(v(far) > 0 && v(near) > 0);
+    assert.ok(Math.abs(v(near) / v(far) - 1) < 0.1, 'same speed on screen: ' + v(near) + ' vs ' + v(far));
+    // From the east, along the circle of latitude (screen x), not toward the pole.
+    for (const s of [far, near]) {
+      assert.ok(Math.abs(s.dy) < 0.2 * Math.abs(s.dx), 'along the circle: ' + s.dx + ', ' + s.dy);
+    }
+  } finally {
+    layer.remove();
+  }
 });

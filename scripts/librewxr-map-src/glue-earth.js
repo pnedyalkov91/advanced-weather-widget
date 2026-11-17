@@ -96,10 +96,12 @@ var WidgetEarth = (function () {
   }
 
   /** The color (premultiplied, 0..1) the chip gives the place at x, y in
-      Mercator (0..1) with the uniforms u. Line for line what NIGHT_FS does. */
-  function shadeFrom(u, x, y) {
+      Mercator (0..1) with the uniforms u, and pole on the globe's polar
+      caps (v_pole, 0 elsewhere). Line for line what NIGHT_FS does. */
+  function shadeFrom(u, x, y, pole) {
     var lon = ((x - Math.floor(x)) * 2 - 1) * Math.PI;
     var lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * y)));
+    if (pole) lat += (Math.sign(lat) * Math.PI / 2 - lat) * Math.abs(pole);
     var s = Math.max(-1, Math.min(1, Math.sin(lat) * u.sun[0] + Math.cos(lat) * u.sun[1] * Math.cos(lon - u.sun[2])));
     var h = Math.asin(s) * DEG, a;
     if (h < 0) {
@@ -116,6 +118,7 @@ var WidgetEarth = (function () {
     '#version 300 es',
     'precision highp float;',
     'in vec2 v_merc;',
+    'in float v_pole;',
     'out vec4 fragColor;',
     'const float PI = 3.141592653589793;',
     'uniform vec3 u_sun;',
@@ -123,6 +126,8 @@ var WidgetEarth = (function () {
     'void main() {',
     '  float lon = (fract(v_merc.x) * 2.0 - 1.0) * PI;',
     '  float lat = atan(sinh(PI * (1.0 - 2.0 * v_merc.y)));',
+    // On the globe's polar caps, from the edge to the pole (fragLat).
+    '  lat = mix(lat, sign(lat) * PI / 2.0, abs(v_pole));',
     '  float s = clamp(sin(lat) * u_sun.x + cos(lat) * u_sun.y * cos(lon - u_sun.z), -1.0, 1.0);',
     '  float h = degrees(asin(s));',
     '  if (h < 0.0) {',
@@ -134,15 +139,16 @@ var WidgetEarth = (function () {
   ].join('\n');
 
   /** The lights of the towns on the night side, as points
-      (vendor/night-lights.bin, made by scripts/make_night_lights.py from
+      (vendor/night-lights.bin.gz, made by scripts/make_night_lights.py from
       NASA's Black Marble 2016, 3 km, a grid of `cols` columns): off while
       the Sun is above `on` degrees, full once it is below `full` (the sky
       dark), the dusk between; the picture's faint lights brought up
       (`gamma`) above its `floor`. Far out, `boost` times as bright as the
       picture. Gone as the map closes in: all of them while it spans
       fadeKm[1] km or more (a whole country), none from fadeKm[0] (half
-      of France). */
-  var NIGHT_LIGHTS = { on: -2, full: -10, gamma: 0.55, floor: 0.02, color: [1, 0.96, 0.82], cols: 13500, boost: 2, fadeKm: [500, 1000] };
+      of France). `density`: the points a cell of full light gets, from
+      density[0] to density[1], density[2] unless the widget says. */
+  var NIGHT_LIGHTS = { on: -2, full: -10, gamma: 0.55, floor: 0.02, color: [1, 0.96, 0.82], cols: 13500, boost: 2, fadeKm: [500, 1000], density: [1, 6, 3], minGain: 0.1 };
 
   /** How bright a light of value v (0..1, the picture's) shows with the
       Sun h degrees above the horizon, 0..1. Line for line what the vertex
@@ -161,60 +167,96 @@ var WidgetEarth = (function () {
     return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
   }
 
-  /** The points of the lights file: { cols, rows, count, lon, lat,
-      value }, each point somewhere in its cell of the grid (from 90N and
-      180W), spread there the same way every time so no grid shows close
-      in. */
+  /** The lit cells of the lights file (gzip already undone): { cols,
+      rows, count, row, col, value, chance }, chance being the points a
+      cell of each brightness (0..255) gets at density 1, from the file's
+      floor and power. */
   function decodeNightLights(buffer) {
     var b = new Uint8Array(buffer);
-    if (b.length < 12 || String.fromCharCode(b[0], b[1], b[2], b[3]) !== 'AWN1') throw new Error('not a night lights file');
-    var cols = b[4] | b[5] << 8, rows = b[6] | b[7] << 8, count = (b[8] | b[9] << 8 | b[10] << 16 | b[11] << 24) >>> 0, pos = 12;
+    if (b.length < 14 || String.fromCharCode(b[0], b[1], b[2], b[3]) !== 'AWN2') throw new Error('not a night lights file');
+    var cols = b[4] | b[5] << 8, rows = b[6] | b[7] << 8, count = (b[8] | b[9] << 8 | b[10] << 16 | b[11] << 24) >>> 0;
+    var floorV = b[12], power = b[13] / 100, pos = 14;
     function varint() {
       var v = 0, shift = 1, c;
       do { c = b[pos++]; v += (c & 0x7f) * shift; shift *= 128; } while (c & 0x80);
       return v;
     }
-    var lon = new Float32Array(count), lat = new Float32Array(count), value = new Uint8Array(count), r = 0, c = 0;
+    var row = new Uint16Array(count), col = new Uint16Array(count), value = new Uint8Array(count), r = 0, c = 0;
     for (var i = 0; i < count; i++) {
       var dr = varint();
       if (dr) c = 0;
       r += dr;
       c += varint();
-      value[i] = b[pos++];
-      lon[i] = (c + hash01(2 * i + 1)) / cols * 360 - 180;
-      lat[i] = 90 - (r + hash01(2 * i + 2)) / rows * 180;
+      row[i] = r; col[i] = c; value[i] = b[pos++];
     }
-    return { cols: cols, rows: rows, count: count, lon: lon, lat: lat, value: value };
+    var chance = new Float32Array(256);
+    for (var v = floorV + 1; v < 256; v++) chance[v] = Math.pow((v - floorV) / (255 - floorV), power);
+    return { cols: cols, rows: rows, count: count, row: row, col: col, value: value, chance: chance };
   }
 
   var MERC_LAT = 85.0511;
-  /** Mercator x, y (0..1, as MapLibre's) and the brightness (0..1) of each
-      point, three floats a point; past 85 degrees on the map's edge. */
-  function nightLightsVertices(d) {
-    var out = new Float32Array(d.count * 3);
-    for (var i = 0; i < d.count; i++) {
-      var la = Math.max(-MERC_LAT, Math.min(MERC_LAT, d.lat[i])) * RAD;
-      out[3 * i] = (d.lon[i] + 180) / 360;
-      out[3 * i + 1] = (1 - Math.log(Math.tan(Math.PI / 4 + la / 2)) / Math.PI) / 2;
-      out[3 * i + 2] = d.value[i] / 255;
+  /** The points of the lit cells d at `density`: Mercator x, y (0..1, as
+      MapLibre's) and the brightness (0..1) of each, three floats a point.
+      A cell gets density * chance points on average, each somewhere in the
+      cell; the same ones every time, and more density only adds points.
+      Past 85 degrees on the map's edge. */
+  function nightLightsVertices(d, density) {
+    var D = Math.min(15, Math.max(0, density > 0 ? density : NIGHT_LIGHTS.density[2]));
+    // Mercator y of the top of each row of the grid.
+    var edge = new Float64Array(d.rows + 1);
+    for (var r = 0; r <= d.rows; r++) {
+      var la = Math.max(-MERC_LAT, Math.min(MERC_LAT, 90 - r / d.rows * 180)) * RAD;
+      edge[r] = (1 - Math.log(Math.tan(Math.PI / 4 + la / 2)) / Math.PI) / 2;
+    }
+    // The points of each cell, worked out once for both passes (at most
+    // 15, so a byte).
+    var counts = new Uint8Array(d.count), total = 0, i, j;
+    for (i = 0; i < d.count; i++) {
+      var e = D * d.chance[d.value[i]], m = Math.floor(e);
+      total += counts[i] = hash01(16 * i) < e - m ? m + 1 : m;
+    }
+    var out = new Float32Array(total * 3), k = 0;
+    for (i = 0; i < d.count; i++) {
+      var n = counts[i], rr = d.row[i], cc = d.col[i], v = d.value[i] / 255;
+      for (j = 0; j < n; j++) {
+        var key = 3 * (16 * i + j);
+        out[k++] = (cc + hash01(key + 1)) / d.cols;
+        out[k++] = edge[rr] + hash01(key + 2) * (edge[rr + 1] - edge[rr]);
+        out[k++] = v;
+      }
     }
     return out;
   }
 
-  /** The points at zoom z: their size in CSS px (1.5 far out, a little
-      larger than their cell closer in, 4 at most) and how much of their
-      light each gives (far out, where many share a pixel, what its cell
-      would give, `boost` times; full once they stand apart). */
-  function nightLightsLook(z) {
-    var cell = 512 * Math.pow(2, z) / NIGHT_LIGHTS.cols;
+  /** The points at zoom z and `density`, on a globe whose middle is at
+      latitude globeLat (null on the flat map): their size in CSS px (1.5 far
+      out, a little larger than their cell closer in, 4 at most), the share
+      of them drawn (`keep`, 0..1) and how much of their light each gives
+      (far out, where many share a pixel, together what their cell would
+      give, `boost` times, whatever the density; full once they stand
+      apart). Never less than `minGain` a point: the screen's 256 levels
+      would round fainter ones to nothing, so far out fewer points are
+      drawn, each brighter. MapLibre's globe keeps its size on screen as
+      its middle goes north while the zoom goes down (the globe is
+      512 * 2^z / cos(globeLat) px around): its cells are as large as
+      that says. */
+  function nightLightsLook(z, density, globeLat) {
+    var L = NIGHT_LIGHTS, D = density > 0 ? density : L.density[2];
+    var around = globeLat == null ? 1 : 1 / Math.cos(Math.min(MERC_LAT, Math.abs(globeLat)) * RAD);
+    var cell = 512 * Math.pow(2, z) * around / L.cols;
     var size = Math.max(1.5, Math.min(4, cell * 1.2));
-    return { size: size, gain: Math.min(1, NIGHT_LIGHTS.boost * cell * cell / (size * size)) };
+    var gain = Math.min(1, L.boost * cell * cell / (size * size * D));
+    var keep = Math.min(1, gain / L.minGain);
+    return { size: size, gain: gain / keep, keep: keep };
   }
 
   /** The ground across a map widthPx wide at zoom z, its middle at
-      latitude lat, in km (MapLibre's 512 px tiles). */
+      latitude lat, in km (MapLibre's 512 px tiles). The globe's middle
+      goes up to the pole, but MapLibre sizes it as if at 85 degrees past
+      them: so does this, or the ground would shrink to nothing there. */
   function viewWidthKm(widthPx, z, lat) {
-    return widthPx * 40075.0167 * Math.cos(lat * RAD) / (512 * Math.pow(2, z));
+    var la = Math.min(MERC_LAT, Math.abs(lat));
+    return widthPx * 40075.0167 * Math.cos(la * RAD) / (512 * Math.pow(2, z));
   }
 
   /** How much of the lights shows on a map viewKm across, 0..1. */
@@ -240,8 +282,15 @@ var WidgetEarth = (function () {
       'uniform float u_opacity;',
       'uniform float u_size;',
       'uniform float u_gain;',
+      'uniform float u_keep;',
       'out float v_a;',
       'void main() {',
+      // The share of the points drawn far out, the same ones every time.
+      '  uint n = uint(gl_VertexID);',
+      '  n = (n ^ (n >> 16u)) * 0x45d9f3bu;',
+      '  n = (n ^ (n >> 16u)) * 0x45d9f3bu;',
+      '  n = n ^ (n >> 16u);',
+      '  float kept = float(n) / 4294967296.0 < u_keep ? 1.0 : 0.0;',
       '  float lat = atan(sinh(LV_PI * (1.0 - 2.0 * a_pos.y)));',
       '  float lon = (a_pos.x - 0.5) * 2.0 * LV_PI;',
       '  vec3 p = vec3(sin(lon) * cos(lat), sin(lat), cos(lon) * cos(lat));',
@@ -249,7 +298,7 @@ var WidgetEarth = (function () {
       '  float t = clamp((' + glslFloat(L.on) + ' - h) / (' + glslFloat(L.on) + ' - (' + glslFloat(L.full) + ')), 0.0, 1.0);',
       '  float dusk = t * t * (3.0 - 2.0 * t);',
       '  float b = pow(max(a_pos.z - ' + glslFloat(L.floor) + ', 0.0) / (1.0 - ' + glslFloat(L.floor) + '), ' + glslFloat(L.gamma) + ');',
-      '  v_a = b * dusk * u_opacity * u_gain;',
+      '  v_a = b * dusk * u_opacity * u_gain * kept;',
       '  gl_Position = projectTile(vec2(a_pos.x + u_shift, a_pos.y), vec2(0.0));',
       '  gl_PointSize = u_size;',
       // Off: out of the picture, nothing to draw.

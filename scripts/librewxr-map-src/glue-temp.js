@@ -196,10 +196,20 @@ var WidgetTemp = (function () {
       jitter (points, one per point, optional) pushes the start of the
       blend that far in: see edgeNoise. */
   function edgeWeights(values, rows, cols, feather, jitter) {
+    var steps = edgeWeightsSteps(values, rows, cols, feather, jitter), r;
+    do { r = steps.next(); } while (!r.done);
+    return r.value;
+  }
+
+  /** edgeWeights in pieces: a yield every few rows, the weights as the
+      generator's value. The page works them out between two pictures. */
+  function* edgeWeightsSteps(values, rows, cols, feather, jitter) {
     var n = rows * cols, d = new Float32Array(n), BIG = 1e9, D = Math.SQRT2, r, c, k;
+    var EVERY = 8;   // rows a piece
     for (k = 0; k < n; k++) {
       r = Math.floor(k / cols); c = k - r * cols;
       d[k] = !isFinite(values[k]) ? -1 : (r === 0 || c === 0 || r === rows - 1 || c === cols - 1 ? 0 : BIG);
+      if (c === cols - 1 && r % (EVERY * 4) === 0) yield;
     }
     function at(i) { return d[i] < 0 ? 0 : d[i]; }
     function relax(k, i, step) { var v = at(i) + step; if (v < d[k]) d[k] = v; }
@@ -209,6 +219,7 @@ var WidgetTemp = (function () {
         if (d[k] <= 0) continue;
         relax(k, k - 1, 1); relax(k, k - cols, 1); relax(k, k - cols - 1, D); relax(k, k - cols + 1, D);
       }
+      if (r % EVERY === 0) yield;
     }
     for (r = rows - 2; r > 0; r--) {
       for (c = cols - 2; c > 0; c--) {
@@ -216,9 +227,13 @@ var WidgetTemp = (function () {
         if (d[k] <= 0) continue;
         relax(k, k + 1, 1); relax(k, k + cols, 1); relax(k, k + cols + 1, D); relax(k, k + cols - 1, D);
       }
+      if (r % EVERY === 0) yield;
     }
     var w = new Float32Array(n);
-    for (k = 0; k < n; k++) w[k] = d[k] < 0 ? NaN : Math.max(0, Math.min(1, (d[k] - (jitter ? jitter[k] : 0)) / feather));
+    for (k = 0; k < n; k++) {
+      w[k] = d[k] < 0 ? NaN : Math.max(0, Math.min(1, (d[k] - (jitter ? jitter[k] : 0)) / feather));
+      if (k % (cols * EVERY * 4) === 0) yield;
+    }
     return w;
   }
 
@@ -248,7 +263,7 @@ var WidgetTemp = (function () {
 
   return {
     LAPSE: LAPSE, correct: correct, sampleScalar: sampleScalar, scalarCell: scalarCell, cellValue: cellValue,
-    edgeWeights: edgeWeights, edgeNoise: edgeNoise,
+    edgeWeights: edgeWeights, edgeWeightsSteps: edgeWeightsSteps, edgeNoise: edgeNoise,
     DEFAULT_STOPS: DEFAULT_STOPS, LUT_MIN: LUT_MIN, LUT_STEP: LUT_STEP, LUT_SIZE: LUT_SIZE,
     parsePalette: parsePalette, paletteFromParam: paletteFromParam, formatPalette: formatPalette, colorAt: colorAt,
     bandCenterC: bandCenterC, lutIndex: lutIndex, buildLut: buildLut, legendTicks: legendTicks,

@@ -34,13 +34,21 @@ var WidgetAnimRadar = (function () {
 
   /** The images of kind ('radar' or 'satellite') in a catalog
       (weather-maps.json): the past radar then its nowcast, or the infrared
-      satellite. */
+      satellite. A nowcast image keeps its address while LibreWXR works it
+      out again from each new observed one, and once it is observed: it
+      carries run, the time of the last observed image it comes from. */
   function framesOf(catalog, kind) {
     if (!catalog) return [];
     if (kind === 'satellite') return (catalog.satellite && catalog.satellite.infrared || []).slice();
-    var r = catalog.radar || {};
-    return (r.past || []).concat(r.nowcast || []);
+    var r = catalog.radar || {}, past = r.past || [];
+    var run = past.length ? past[past.length - 1].time : null;
+    return past.concat((r.nowcast || []).map(function (f) { return Object.assign({}, f, { run: run }); }));
   }
+
+  /** What an image's layer is known by: its address, and the run of a
+      nowcast one, so that a new run or the observed image makes it again
+      (the tiles of the old one stay in its layer otherwise). */
+  function keyOf(f) { return f.run != null ? f.path + '#' + f.run : f.path; }
 
   /** { start, end } in ms: from the first image to one gap past the last,
       or to untilMs when later; null without images. */
@@ -79,10 +87,14 @@ var WidgetAnimRadar = (function () {
     return { size: size, grid: size === 512 && dpr < 1.5 ? 512 : 256 };
   }
 
-  /** How many times slower the animation goes at ms: RADAR_SLOW in the
-      radar's range, 1 elsewhere. */
-  function slowFactor(ms, range) {
-    return range && ms >= range.start && ms < range.end ? RADAR_SLOW : 1;
+  /** How many times slower the animation goes at ms, on a time line of
+      stepH hours a step (3 when left out): an image of the radar (10 min)
+      or of the satellite (1 h) lasts a third of a step whatever stepH, so
+      a forecast layer switched on or off keeps the same pace. RADAR_SLOW
+      in the radar's range and 1 elsewhere on steps of 3 h. */
+  function slowFactor(ms, range, stepH) {
+    var k = (stepH == null ? 3 : stepH) / 3;
+    return (range && ms >= range.start && ms < range.end ? RADAR_SLOW : 1) * k;
   }
 
   /* The step buttons over a forecast animation. sources: { start, end,
@@ -140,7 +152,7 @@ var WidgetAnimRadar = (function () {
     this.tileSize = opts.tileSize || 256;   // the grid of its tiles (tileSizes)
     this.frames = [];
     this.on = false;
-    this.layers = {};           // path -> { handle, ready }
+    this.layers = {};           // keyOf(image) -> { handle, ready }
     this.wanted = null;         // path of the image of the time asked for
     this.shown = null;          // path of the image on the map
     this.time = null;           // the last time asked for (ms)
@@ -181,12 +193,12 @@ var WidgetAnimRadar = (function () {
   /** The time of the image on the map (ms), null when none is. */
   Overlay.prototype.shownTime = function () {
     var path = this.shown || (this.stale ? this.stalePath : null);
-    for (var i = 0; i < this.frames.length; i++) if (this.frames[i].path === path) return this.frames[i].time * 1000;
+    for (var i = 0; i < this.frames.length; i++) if (keyOf(this.frames[i]) === path) return this.frames[i].time * 1000;
     return null;
   };
 
   Overlay.prototype._make = function (frame) {
-    var path = frame.path;
+    var path = keyOf(frame);
     if (this.layers[path]) return;
     this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true, tileSize: this.tileSize }), ready: false, waiting: false };
     this._await(path);
@@ -220,11 +232,24 @@ var WidgetAnimRadar = (function () {
     if (!this.on) return true;
     var i = frameAt(this.frames, ms, this.gapMs, this._until());
     if (i < 0) return true;
-    var path = this.frames[i].path;
+    var path = keyOf(this.frames[i]);
     if (this._loaded(path)) return true;
     this._make(this.frames[i]);
     this._await(path);
     return false;
+  };
+
+  /** How far its images are: { done, total }, done those whose tiles are
+      in for the map as it is; null off. */
+  Overlay.prototype.progress = function () {
+    if (!this.on) return null;
+    var self = this, done = 0;
+    this.frames.forEach(function (f) {
+      var e = self.layers[keyOf(f)];
+      if (!e) return;
+      if (self.adapter.frameLoaded ? self.adapter.frameLoaded(e.handle) : e.ready) done++;
+    });
+    return { done: done, total: this.frames.length };
   };
 
   Overlay.prototype._drop = function (path) {
@@ -262,7 +287,7 @@ var WidgetAnimRadar = (function () {
   Overlay.prototype.setFrames = function (frames) {
     var keep = {}, self = this;
     this.frames = (frames || []).slice();
-    this.frames.forEach(function (f) { keep[f.path] = true; });
+    this.frames.forEach(function (f) { keep[keyOf(f)] = true; });
     Object.keys(this.layers).forEach(function (p) { if (!keep[p]) self._drop(p); });
     if (this.on) this.frames.forEach(function (f) { self._make(f); });
     if (this.time !== null) this.show(this.time);
@@ -341,12 +366,13 @@ var WidgetAnimRadar = (function () {
     // Out of the range: the image that comes in later just shows, as in a play.
     if (i < 0) { this._fadeIn = false; this.wanted = null; this._put(null); return; }
     var f = this.frames[i];
-    this.wanted = f.path;
-    if (this.shown === f.path) return;
+    var key = keyOf(f);
+    this.wanted = key;
+    if (this.shown === key) return;
     this._make(f);
     // Not in for the map as it is (a zoom): the image before stays meanwhile.
-    if (this._loaded(f.path)) this._put(f.path);
-    else this._await(f.path);
+    if (this._loaded(key)) this._put(key);
+    else this._await(key);
   };
 
   /** The time of the last observed radar image of a catalog (ms; the
@@ -356,14 +382,14 @@ var WidgetAnimRadar = (function () {
     return past && past.length ? past[past.length - 1].time * 1000 : null;
   }
 
-  /** The time whose image the radar shows at time ms. LibreWXR draws the
-      lightning only on the observed images of the last half hour, and the
-      step of now (on the hour, every 3 h) is mostly older: with lightning
-      on, that step shows the last observed image. o: { lightning, nowStep,
-      lastPast }. */
-  function radarTime(ms, o) {
-    if (o.lightning && o.nowStep != null && o.lastPast != null && ms === o.nowStep) return o.lastPast;
-    return ms;
+  /** The time "now" goes to (the back to now button, the 0 key). LibreWXR
+      draws the lightning only on the observed images of the last half
+      hour, and the step of now (on the hour, every 3 h) is mostly a
+      nowcast one: with lightning and the radar on, now is the last
+      observed image. o: { lightning, radar, nowStep, lastPast }. */
+  function nowTime(o) {
+    if (o.lightning && o.radar && o.lastPast != null) return o.lastPast;
+    return o.nowStep;
   }
 
   /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
@@ -395,9 +421,9 @@ var WidgetAnimRadar = (function () {
 
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
-    framesOf: framesOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
+    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
-    lastPast: lastPast, radarTime: radarTime
+    lastPast: lastPast, nowTime: nowTime
   };
 })();
 
