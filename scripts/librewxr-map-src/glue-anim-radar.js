@@ -292,6 +292,14 @@ var WidgetAnimRadar = (function () {
     return false;
   };
 
+  /** Whether the image of time ms can show at once (true off or out of
+      the range), without asking for anything. */
+  Overlay.prototype.isIn = function (ms) {
+    if (!this.on) return true;
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
+    return i < 0 || this._loaded(keyOf(this.frames[i]));
+  };
+
   /** How far its images are: { done, total }, done those whose tiles are
       in for the map as it is (frameCounted: those held back in a move by
       their state before it); null off. */

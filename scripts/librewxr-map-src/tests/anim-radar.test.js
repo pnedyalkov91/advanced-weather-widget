@@ -695,3 +695,16 @@ test('sharpEdges: a radar tile without smoothing keeps its cells square when str
   assert.equal(R.sharpEdges(base + '2/1_1.webp', 'radar'), false);
   assert.equal(R.sharpEdges('http://localhost:8099/v2/satellite/1763400000/256/{z}/{x}/{y}/0/0_0.webp', 'satellite'), false);
 });
+
+test('Overlay.isIn: true off or out of the range; on, whether the image is in, asking for nothing', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  assert.equal(o.isIn(T0 * 1000), true, 'off');
+  o.setOn(true);
+  const made = a.made.length;
+  assert.equal(o.isIn(T0 * 1000 + 10 * MIN), false);
+  assert.equal(a.made.length, made, 'nothing made');
+  o.show(T0 * 1000 + 10 * MIN);
+  a.made.forEach((h) => { a.ready(h); a.loaded[h.layerId] = true; });
+  assert.equal(o.isIn(T0 * 1000 + 10 * MIN), true);
+});

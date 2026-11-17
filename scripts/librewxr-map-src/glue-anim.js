@@ -1240,15 +1240,14 @@ var WidgetAnim = (function () {
     // radar or satellite inside the files' steps that cover it).
     this.bounds = null;
     // (ms) -> whether the radar or satellite image of that time is in for
-    // the map as it is; the play waits for it (HOLD_MS at most), the time
-    // spent waiting not counted.
+    // the map as it is, its tiles asked for when not. The play does not
+    // wait: with still images only (stops) it goes to the next image in
+    // (isIn, the same question without asking), else it just goes on.
     this.canShow = opts.canShow || null;
-    this._heldAt = null;        // last tick of a wait
-    this._heldSince = null;     // when the wait began
+    this.isIn = opts.isIn || null;
     this._wanted = null;        // a position shown before its frame was read
   }
 
-  var HOLD_MS = 3000;
 
   /** The first and last positions the play may show. */
   Player.prototype._lo = function () { return this.bounds ? this.bounds.lo : 0; };
@@ -1446,8 +1445,6 @@ var WidgetAnim = (function () {
       // A frame missing on the way: straight to the next one read.
       if (now - this.shownAt >= this.stepMs) this.show(j);
     } else if (now >= this.dueAt) {
-      // Waiting for an image: that time does not move the play on.
-      if (this._heldAt !== null) { this.shownAt += now - this._heldAt; this._heldAt = now; }
       var f = this.slow ? this.slow(this.frames.timeAt(this.index)) : 1;
       if (!(f > 0)) f = 1;
       var end = Math.min(j, last);
@@ -1460,11 +1457,15 @@ var WidgetAnim = (function () {
         if (now - this.shownAt < this.stepMs * (stops.holdSteps || 1 / 3)) return;
         to = this._nextStop(this.index, end, stops);
       }
-      if (this.canShow && !this.canShow(this.frames.timeAt(to))) {
-        if (this._heldSince === null) { this._heldSince = now; this._heldAt = now; }
-        if (now - this._heldSince < HOLD_MS) return;
+      if (this.canShow && !this.canShow(this.frames.timeAt(to)) && stops && this.isIn) {
+        // Its radar or satellite image not in (asked for by canShow): the
+        // next image that is, up to the next frame; none, this one all the
+        // same (the image before stays on the map meanwhile). No wait.
+        for (var k = to; k < end - 1e-6;) {
+          k = this._nextStop(k, end, stops);
+          if (this.isIn(this.frames.timeAt(k))) { to = k; break; }
+        }
       }
-      this._heldAt = this._heldSince = null;
       this.show(to);
     }
   };

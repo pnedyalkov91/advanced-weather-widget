@@ -790,6 +790,9 @@ window.animStart = function (pastH, futureH, layers) {
   anim.player.slow = animSlow;
   anim.player.stops = animStops;
   anim.player.canShow = animOverlaysLoaded;
+  anim.player.isIn = function (ms) {
+    return !animOverlays || (animOverlays.radar.isIn(ms) && animOverlays.satellite.isIn(ms));
+  };
   anim.player.loop = animLoop;
   // The sky around the globe at the time of the picture shown.
   anim.player.onShown = function (pos) {
