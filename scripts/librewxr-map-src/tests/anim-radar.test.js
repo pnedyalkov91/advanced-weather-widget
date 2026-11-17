@@ -553,13 +553,29 @@ test('lastPast: the last observed radar image, never the nowcast', () => {
   assert.equal(R.lastPast(null), null);
 });
 
-test('nowTime: with lightning and the radar on, now is the last observed image', () => {
+test('nowTime: with the radar on, now is its last observed image', () => {
   const nowStep = Date.parse('2026-11-12T12:00:00Z'), last = Date.parse('2026-11-12T13:10:00Z');
   assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: last }), last);
-  // Lightning off, the radar off, or no image: the step of now.
-  assert.equal(R.nowTime({ lightning: false, radar: true, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: false, radar: true, nowStep, lastPast: last }), last);
+  // The radar off, or no image: the step of now.
   assert.equal(R.nowTime({ lightning: true, radar: false, nowStep, lastPast: last }), nowStep);
   assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: null }), nowStep);
+});
+
+test('pastToCover: the hours back grow by whole steps until the range holds the last observed image', () => {
+  const H = 3600e3;
+  // 17:57 Paris (16:57 UTC): the step of now is 18:00 UTC, the last observed image 16:50 UTC.
+  const now = Date.parse('2026-11-17T16:57:00Z'), last = Date.parse('2026-11-17T16:50:00Z');
+  assert.equal(R.pastToCover(0, 3, now, last), 3);
+  // Already in: unchanged.
+  assert.equal(R.pastToCover(24, 3, now, last), 24);
+  // Step of now before the image (15:00 UTC at 16:20): nothing to add.
+  assert.equal(R.pastToCover(0, 3, Date.parse('2026-11-17T16:20:00Z'), Date.parse('2026-11-17T16:10:00Z')), 0);
+  // No image, or the radar's own 10-min steps: unchanged.
+  assert.equal(R.pastToCover(0, 3, now, null), 0);
+  assert.equal(R.pastToCover(0, 1 / 6, now, last), 0);
+  // An image far back (an old catalog) never takes more than 6 h.
+  assert.equal(R.pastToCover(0, 3, now, now - 20 * H), 6);
 });
 
 test('Overlay.progress: null off; on, the image asked for only, the others read ahead out of sight', () => {

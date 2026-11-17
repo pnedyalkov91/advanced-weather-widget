@@ -1358,8 +1358,8 @@ Item {
     function zoomBy(d) {
         call("animZoom", d);
     }
-    // Back to now: the step of now, or the last observed radar image with
-    // lightning on (window.animShowNow).
+    // Back to now: the step of now, or with the radar on its last observed
+    // image (window.animShowNow).
     function showNow() {
         if (count <= 0)
             return;

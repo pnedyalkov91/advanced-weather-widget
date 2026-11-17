@@ -469,14 +469,28 @@ var WidgetAnimRadar = (function () {
     return past && past.length ? past[past.length - 1].time * 1000 : null;
   }
 
-  /** The time "now" goes to (the back to now button, the 0 key). LibreWXR
-      draws the lightning only on the observed images of the last half
-      hour, and the step of now (on the hour, every 3 h) is mostly a
-      nowcast one: with lightning and the radar on, now is the last
-      observed image. o: { lightning, radar, nowStep, lastPast }. */
+  /** The time "now" goes to (the opening, the back to now button, the 0
+      key). The step of now is the 3-hour step nearest the clock, up to
+      1 h 30 ahead, often past the radar's last image: with the radar on,
+      now is its last observed image. o: { radar, nowStep, lastPast }. */
   function nowTime(o) {
-    if (o.lightning && o.radar && o.lastPast != null) return o.lastPast;
+    if (o.radar && o.lastPast != null) return o.lastPast;
     return o.nowStep;
+  }
+
+  var COVER_MAX_H = 6;         // hours added back at most (an old catalog)
+  /** The hours back for a range around the step of now (WidgetAnim.
+      frameTimes: steps of stepH hours, pastH back) so that it holds
+      lastPastMs, the radar's last observed image: pastH plus whole steps,
+      COVER_MAX_H at most. Unchanged without an image or on steps under
+      3 h (the radar's or satellite's own range). */
+  function pastToCover(pastH, stepH, nowMs, lastPastMs) {
+    if (lastPastMs == null || !(stepH >= 3)) return pastH;
+    var step = stepH * 3600e3, mid = Math.round(nowMs / step) * step;
+    var first = mid - Math.round(pastH * 3600e3 / step) * step;
+    if (lastPastMs >= first) return pastH;
+    var k = Math.ceil((first - lastPastMs) / step);
+    return pastH + Math.min(k * stepH, COVER_MAX_H);
   }
 
   /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
@@ -528,7 +542,7 @@ var WidgetAnimRadar = (function () {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
     framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, nativeZoom: nativeZoom, sharpEdges: sharpEdges, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
-    lastPast: lastPast, nowTime: nowTime
+    lastPast: lastPast, nowTime: nowTime, pastToCover: pastToCover
   };
 })();
 

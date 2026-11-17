@@ -616,7 +616,12 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
   // A range of the radar or satellite stays when a forecast layer comes:
   // then on the files' steps that cover it.
   anim.span = span || null;
-  var ft = animTimes(anim.stepH, span, pastH, futureH);
+  // The radar on: the range reaches back to its last observed image, where
+  // the time line opens (WidgetAnimRadar.nowTime); the step of now, up to
+  // 1 h 30 ahead, is often past its last image.
+  var radarLast = span ? null : animRadarLastPast();
+  var coverH = WidgetAnimRadar.pastToCover(pastH, anim.stepH, anim.nowMs, radarLast);
+  var ft = animTimes(anim.stepH, span, coverH, futureH);
   anim.group = anim.player.frames = anim.player.layer = new WidgetAnim.Group(ft.times, ft.now);
   // On the files' steps, the play keeps to the range itself: its forecast
   // layers are only added to it.
@@ -624,7 +629,7 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
   anim.group.onTime = animOverlayTime;
   // The API's hours count from the present hour, the frames from the
   // nearest 3-hour step: one step more each way covers them.
-  anim.api.setHours(pastH + WidgetAnim.STEP_H, futureH + WidgetAnim.STEP_H);
+  anim.api.setHours(coverH + WidgetAnim.STEP_H, futureH + WidgetAnim.STEP_H);
   // fresh (a new run is out): nothing taken over from memory, every
   // picture read again, from the store when its run has not changed.
   if (old) old.tracks.forEach(function (t) {
@@ -637,6 +642,8 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
   });
   // Other steps (a forecast layer on or off): the cursor keeps its time.
   var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now, oldStepH !== anim.stepH) : ft.now;
+  if (keep === ft.now && radarLast != null) keep = anim.group.posAt(radarLast);
+  anim.radarNowSet = radarLast != null;
   anim.player.index = -1;
   anim.player.show(anim.player._clamp(keep));
   animPreloadSoon(!!fresh);
@@ -864,14 +871,35 @@ window.animToggle = function () {
   return anim.player.playing;
 };
 window.animShow = function (i) { if (anim) anim.player.seek(i); };
-/** Back to now: the step of now, or with lightning and the radar on the
-    last observed radar image (WidgetAnimRadar.nowTime), paused. */
+/** The radar's last observed image (ms) while it is on and its images known, else null. */
+function animRadarLastPast() {
+  return animOverlays && animOverlays.radar.on ? WidgetAnimRadar.lastPast(animCatalogData) : null;
+}
+
+/** The radar's images known or the radar switched on after the range was
+    set: the range reaches back to its last observed image if it does not
+    yet (a new range), and a time line still at the step of now goes to
+    that image, once. */
+function animRadarNow() {
+  if (!anim || !anim.group || anim.span) return;
+  var last = animRadarLastPast();
+  if (last == null) return;
+  var g = anim.group;
+  if (g.times.length && g.times[0] > last) {
+    animLoad(anim.pastH, anim.futureH, anim.stepH);
+    return;
+  }
+  if (!anim.radarNowSet && !anim.player.playing && anim.player.index === g.nowIndex) anim.player.seek(g.posAt(last));
+  anim.radarNowSet = true;
+}
+
+/** Back to now: the step of now, or with the radar on its last observed
+    image (WidgetAnimRadar.nowTime), paused. */
 window.animShowNow = function () {
   if (!anim) return;
   var g = anim.group;
   if (g.nowIndex < 0) return;
   var ms = WidgetAnimRadar.nowTime({
-    lightning: animRadarOpts.lightning,
     radar: !!(animOverlays && animOverlays.radar.on),
     nowStep: g.timeAt(g.nowIndex),
     lastPast: WidgetAnimRadar.lastPast(animCatalogData)
@@ -1217,6 +1245,7 @@ function animCatalogTake(c) {
   if (!animOverlays) return;
   animOverlays.radar.setFrames(WidgetAnimRadar.framesOf(c, 'radar'));
   animOverlays.satellite.setFrames(WidgetAnimRadar.framesOf(c, 'satellite'));
+  animRadarNow();
   animPrefetchSoon();
 }
 
@@ -1269,6 +1298,7 @@ window.animSetRadar = function (on) {
   if (!animOverlays) return;
   animOverlays.radar.setOn(on);
   _widgetAdapter.setLines('radar', !!on);
+  if (on) animRadarNow();
   animPrefetchSoon();
 };
 /** The satellite over the animation; the coasts and borders come over it. */
