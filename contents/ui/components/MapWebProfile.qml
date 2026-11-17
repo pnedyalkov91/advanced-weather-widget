@@ -7,7 +7,9 @@ import QtWebEngine
 // default profile, whose storage lives in memory only.
 WebEngineProfilePrototype {
     storageName: "advanced-weather-widget-map"
-    // Left to Chromium, the disk cache grew past 700 MB in two days, almost
-    // all of it radar tiles stale within hours; the oldest entries go first.
-    httpCacheMaximumSize: 150 * 1024 * 1024
+    // The radar's tiles are read ahead into this cache (glue-prefetch.js):
+    // about 215 MB for the whole radar range over one area, the ring and
+    // the levels in and out counted. 1 GB keeps several areas; the oldest
+    // entries, those of images gone from the range, go first.
+    httpCacheMaximumSize: 1024 * 1024 * 1024
 }

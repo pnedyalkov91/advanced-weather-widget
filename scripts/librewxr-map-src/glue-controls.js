@@ -1339,9 +1339,13 @@ function animPrefetchSoon() {
   }
   if (!animPrefetchHooked) {
     animPrefetchHooked = true;
+    // The popup opened: read ahead from its view; closed: stop.
+    document.addEventListener('visibilitychange', animPrefetchSoon);
     _widgetAdapter.onMoveStart(function () { clearTimeout(animPrefetchTimer); animPrefetchQ.stop(); });
     _widgetAdapter.onSettled(animPrefetchSoon);
   }
+  // Not behind a closed popup: no one looks, and the map has no size.
+  if (document.visibilityState === 'hidden') { clearTimeout(animPrefetchTimer); animPrefetchQ.stop(); return; }
   animPrefetchQ.stop();
   clearTimeout(animPrefetchTimer);
   // The image shown first: the reading waits for the map to be drawn.
@@ -1349,7 +1353,7 @@ function animPrefetchSoon() {
 }
 
 function animPrefetchRun() {
-  if (!animOverlays || !animPrefetchQ) return;
+  if (!animOverlays || !animPrefetchQ || document.visibilityState === 'hidden') return;
   var list = [];
   ['radar', 'satellite'].forEach(function (k) {
     var o = animOverlays[k];
