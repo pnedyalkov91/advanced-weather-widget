@@ -478,9 +478,14 @@ function animTrack(id, layer, reuse, onShow) {
     var t = anim && anim.group.track(id);
     if (!t || t.frames !== frames) return;
     var p = anim.player;
-    // The picture of now goes up as soon as every layer has it; a layer
-    // switched on while paused joins the others once its picture is in.
-    if (p.index < 0) { if (i === anim.group.nowIndex && anim.group.ready(i)) p.show(i); }
+    // The position asked for before its pictures were read (the radar's
+    // last observed image, between two steps), else the picture of now,
+    // goes up as soon as every layer has it; a layer switched on while
+    // paused joins the others once its picture is in.
+    if (p.index < 0) {
+      var w = p._wanted != null ? p._wanted : anim.group.nowIndex;
+      if (i === Math.floor(w) || i === Math.ceil(w)) p.show(w);
+    }
     else if (!p.playing && (i === Math.floor(p.index) || i === Math.ceil(p.index))) p.seek(p.index);
   });
   var fines = frames.fines;
@@ -644,6 +649,10 @@ function animLoad(pastH, futureH, stepH, span, fresh) {
   var keep = old ? WidgetAnim.keptIndex(old.times, old.nowIndex, anim.player.index, ft.times, ft.now, oldStepH !== anim.stepH) : ft.now;
   if (keep === ft.now && radarLast != null) keep = anim.group.posAt(radarLast);
   anim.radarNowSet = radarLast != null;
+  // A seek still waiting for the player's tick is a position on the old
+  // range: on the new one it would land elsewhere (a layer switched on at
+  // the start asked for 0, the old range's 19:00, then 16:00 on the new).
+  anim.player.target = null;
   anim.player.index = -1;
   anim.player.show(anim.player._clamp(keep));
   animPreloadSoon(!!fresh);
