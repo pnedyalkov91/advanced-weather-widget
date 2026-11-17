@@ -396,16 +396,26 @@ var WidgetAnimRadar = (function () {
       keeps it to itself. To spare a second copy over HTTP, the page's
       WebSocket is wrapped before the viewer opens it: every weather-maps
       snapshot or update on it goes to onCatalog too. Returns { open }:
-      whether such a socket is open now (the page polls only when not). */
+      whether such a socket is open now (the page polls only when not), and
+      drop: after a sleep a socket can look open and get nothing more, its
+      connection gone without a close; drop closes it (the viewer opens a
+      new one) and stops counting it at once. */
   function watchPush(win, onCatalog) {
-    var Native = win.WebSocket, opened = 0;
-    if (!Native) return { open: function () { return false; } };
+    var Native = win.WebSocket, opened = 0, live = [];
+    if (!Native) return { open: function () { return false; }, drop: function () {} };
     function Watched(url, protocols) {
       var socket = protocols === undefined ? new Native(url) : new Native(url, protocols);
       if (!/\/v2\/ws(\?|$)/.test(String(url))) return socket;
       var isOpen = false;
-      socket.addEventListener('open', function () { isOpen = true; opened++; });
-      socket.addEventListener('close', function () { if (isOpen) { isOpen = false; opened--; } });
+      function gone() {
+        if (!isOpen) return false;
+        isOpen = false;
+        opened--;
+        live = live.filter(function (l) { return l.socket !== socket; });
+        return true;
+      }
+      socket.addEventListener('open', function () { isOpen = true; opened++; live.push({ socket: socket, gone: gone }); });
+      socket.addEventListener('close', gone);
       socket.addEventListener('message', function (event) {
         var msg;
         try { msg = JSON.parse(event.data); } catch (err) { return; }
@@ -416,7 +426,15 @@ var WidgetAnimRadar = (function () {
     Watched.prototype = Native.prototype;
     ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach(function (k) { if (k in Native) Watched[k] = Native[k]; });
     win.WebSocket = Watched;
-    return { open: function () { return opened > 0; } };
+    return {
+      open: function () { return opened > 0; },
+      drop: function () {
+        live.slice().forEach(function (l) {
+          if (!l.gone()) return;
+          try { l.socket.close(); } catch (err) { /* already closed */ }
+        });
+      }
+    };
   }
 
   return {

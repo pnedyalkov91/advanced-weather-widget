@@ -447,7 +447,32 @@ test('watchPush: other sockets and a socket that never opened are left alone', (
 });
 
 test('watchPush: no WebSocket in the page, never open', () => {
-  assert.equal(R.watchPush({}, () => {}).open(), false);
+  const push = R.watchPush({}, () => {});
+  assert.equal(push.open(), false);
+  push.drop();
+});
+
+test('watchPush.drop: an open socket (dead after a sleep) is closed and no longer counts', () => {
+  const win = { WebSocket: fakeSocketClass() };
+  win.WebSocket.prototype.close = function () { this.closed = (this.closed || 0) + 1; };
+  const push = R.watchPush(win, () => {});
+  const s = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  const never = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  s.fire('open');
+  assert.equal(push.open(), true);
+  push.drop();
+  assert.equal(push.open(), false, 'the page polls again at once');
+  assert.equal(s.closed, 1, 'closed, so the viewer opens a new one');
+  assert.equal(never.closed, undefined, 'a socket never opened is left to itself');
+  // Its close event, late, counts nothing twice; a new socket counts again.
+  s.fire('close');
+  assert.equal(push.open(), false);
+  const again = new win.WebSocket('wss://api.example/v2/ws?topics=weather-maps');
+  again.fire('open');
+  assert.equal(push.open(), true);
+  push.drop();
+  push.drop();
+  assert.equal(again.closed, 1);
 });
 
 test('lastPast: the last observed radar image, never the nowcast', () => {
