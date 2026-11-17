@@ -11,5 +11,8 @@ WebEngineProfilePrototype {
     // about 215 MB for the whole radar range over one area, the ring and
     // the levels in and out counted. 1 GB keeps several areas; the oldest
     // entries, those of images gone from the range, go first.
+    // WeatherMapView sets it from weatherMapCacheMB when it loads this file.
+    // Never changed afterwards: written on the live profile (Qt 6.10), any
+    // new size emptied the cache and broke the open page's requests.
     httpCacheMaximumSize: 1024 * 1024 * 1024
 }

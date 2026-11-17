@@ -726,6 +726,132 @@ GridLayout {
         onActivated: radarTab.configRoot.cfg_weatherMapIconTheme = themes[currentIndex]
     }
 
+    // ── Map cache: the tiles the map keeps on disk (its web profile's HTTP
+    // cache, see MapWebProfile.qml), LibreWXR only.
+    readonly property bool cacheShown: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
+    readonly property var cacheSizes: [250, 500, 1024, 2048]
+    readonly property real cacheMaxBytes: radarTab.configRoot.cfg_weatherMapCacheMB * 1048576
+    /** "" | "asked" (sent, no answer yet) | "done" (the map emptied it) |
+        "waiting" (no map to empty it yet: done when it next opens) */
+    property string cacheClearState: ""
+    property string _cacheClearSent: ""
+    readonly property string _cacheClearDone: Plasmoid.configuration.weatherMapCacheClearDone || ""
+    on_CacheClearDoneChanged: {
+        if (radarTab._cacheClearSent !== "" && radarTab._cacheClearDone === radarTab._cacheClearSent) {
+            radarTab.cacheClearState = "done";
+            radarTab.configRoot.readMapCacheUsed();
+        }
+    }
+    // Read once the page is built: a command sent while the settings are
+    // still being created is lost by the data source.
+    function readCacheUsed() {
+        if (radarTab.visible && radarTab.cacheShown)
+            radarTab.configRoot.readMapCacheUsed();
+    }
+    onVisibleChanged: Qt.callLater(radarTab.readCacheUsed)
+    onCacheShownChanged: Qt.callLater(radarTab.readCacheUsed)
+    Component.onCompleted: Qt.callLater(radarTab.readCacheUsed)
+
+    function sizeText(bytes) {
+        var mb = bytes / 1048576;
+        if (mb >= 1024)
+            return i18nc("size on disk", "%1 GB", Number(mb / 1024).toLocaleString(Qt.locale(), "f", mb % 1024 ? 1 : 0));
+        return i18nc("size on disk", "%1 MB", Math.round(mb));
+    }
+
+    // The map empties the cache: only it holds the profile. The request
+    // is written at once, without waiting for Apply.
+    function clearCache() {
+        var at = new Date().toISOString();
+        radarTab._cacheClearSent = at;
+        radarTab.cacheClearState = "asked";
+        Plasmoid.configuration.weatherMapCacheClearAt = at;
+        cacheClearWait.restart();
+    }
+    Timer {
+        id: cacheClearWait
+        interval: 2000
+        onTriggered: {
+            if (radarTab.cacheClearState !== "asked")
+                return;
+            radarTab.cacheClearState = "waiting";
+            radarTab.configRoot.readMapCacheUsed();
+        }
+    }
+
+    Kirigami.Heading {
+        Layout.columnSpan: radarTab.columns
+        Layout.topMargin: Kirigami.Units.largeSpacing
+        visible: radarTab.cacheShown
+        level: 4
+        text: i18n("Map Cache")
+    }
+
+    Label {
+        text: i18n("Maximum size:")
+        visible: radarTab.cacheShown
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+        Layout.topMargin: radarTab.columns === 2 ? Kirigami.Units.smallSpacing : 0
+    }
+    ColumnLayout {
+        visible: radarTab.cacheShown
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.smallSpacing
+        ComboBox {
+            Layout.preferredWidth: 200
+            model: radarTab.cacheSizes.map(function (mb) {
+                return radarTab.sizeText(mb * 1048576);
+            })
+            currentIndex: Math.max(0, radarTab.cacheSizes.indexOf(radarTab.configRoot.cfg_weatherMapCacheMB))
+            onActivated: radarTab.configRoot.cfg_weatherMapCacheMB = radarTab.cacheSizes[currentIndex]
+        }
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            text: i18n("Map tiles already seen stay on disk, so they are not downloaded a second time. A new size applies the next time Plasma starts.")
+        }
+    }
+
+    Label {
+        text: i18n("Used:")
+        visible: radarTab.cacheShown
+        wrapMode: Text.Wrap
+        Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+    }
+    RowLayout {
+        visible: radarTab.cacheShown
+        Layout.fillWidth: true
+        spacing: Kirigami.Units.largeSpacing
+        Label {
+            text: radarTab.configRoot.mapCacheUsedBytes < 0 ? i18n("Checking…") : i18nc("cache space used, of its maximum size", "%1 of %2", radarTab.sizeText(radarTab.configRoot.mapCacheUsedBytes), radarTab.sizeText(radarTab.cacheMaxBytes))
+        }
+        Button {
+            icon.name: "edit-clear-all"
+            text: i18n("Clear Cache")
+            enabled: radarTab.cacheClearState !== "asked"
+            onClicked: radarTab.clearCache()
+        }
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            visible: text !== ""
+            text: radarTab.cacheClearState === "asked" ? i18n("Clearing…") : radarTab.cacheClearState === "done" ? i18n("Cache cleared.") : radarTab.cacheClearState === "waiting" ? i18n("The cache will be cleared the next time the map opens.") : ""
+        }
+    }
+
+    Kirigami.InlineMessage {
+        Layout.columnSpan: radarTab.columns
+        Layout.fillWidth: true
+        visible: radarTab.cacheShown && radarTab.configRoot.mapCacheUsedBytes >= 0.95 * radarTab.cacheMaxBytes
+        type: Kirigami.MessageType.Information
+        text: i18n("The cache is full: the oldest images make room for the new ones. If the map downloads areas it has already shown again, choose a larger size.")
+    }
+
     TempPaletteDialog {
         id: tempPaletteDialog
         unit: radarTab.tempUnit

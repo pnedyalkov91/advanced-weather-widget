@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://gnu.org>.
  */
 
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -68,6 +69,7 @@ KCM.AbstractKCM {
     property bool cfg_radarGpuWorkaround: false
     property bool cfg_radarKeepLoaded: false
     property bool cfg_weatherMapPrepareLayers: false
+    property int cfg_weatherMapCacheMB: 1024
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
     property bool cfg_alertsLanguageNative: true
@@ -141,6 +143,24 @@ KCM.AbstractKCM {
     // checkStatus() round trip, since it can't change during a session.
     property int radarGpuSystemdState: 0
 
+    // ── Weather map cache (ConfigRadarTab) ──────────────────────────────
+    /** The map profile's storage folder: QtWebEngine's default cachePath for
+        its storageName, in this process's cache location (plasmashell's). */
+    readonly property string mapCachePath: decodeURIComponent(StandardPaths.writableLocation(StandardPaths.CacheLocation).toString().replace(/^file:\/\//, "")) + "/QtWebEngine/advanced-weather-widget-map"
+    /** Bytes the cache takes on disk, -1 until read. */
+    property real mapCacheUsedBytes: -1
+    property bool _mapCacheReading: false
+    // Always the same command text: the data source keeps one entry per
+    // name, and names that change each time made plasmashell freeze.
+    readonly property string _mapCacheDuCommand: "du -sb '" + mapCachePath.replace(/'/g, "'\\''") + "' 2>/dev/null || echo 0"
+    function readMapCacheUsed() {
+        Dbg.log("Config/General", "reading the map cache size; a read already running:", root._mapCacheReading);
+        if (root._mapCacheReading)
+            return;
+        root._mapCacheReading = true;
+        radarGpuWorkaroundExec.connectSource(root._mapCacheDuCommand);
+    }
+
     /** Exposed so ConfigRadarTab.qml (a separate file/scope) can call apply()/checkStatus()/logout() */
     property alias radarGpuWorkaroundExec: radarGpuWorkaroundExec
 
@@ -198,7 +218,12 @@ KCM.AbstractKCM {
         }
         onNewData: function (sourceName, data) {
             var out = (data["stdout"] || "").toString().trim();
-            if (sourceName.indexOf("if grep -qs") === 0) {
+            if (sourceName === root._mapCacheDuCommand) {
+                var used = parseInt(out, 10);
+                root.mapCacheUsedBytes = isNaN(used) ? 0 : used;
+                root._mapCacheReading = false;
+                Dbg.log("Config/General", "map cache on disk:", root.mapCacheUsedBytes, "bytes in", root.mapCachePath);
+            } else if (sourceName.indexOf("if grep -qs") === 0) {
                 root._radarGpuScriptPresent = out.indexOf("SCRIPT:PRESENT") !== -1;
                 Dbg.log("Config/General", "radar GPU workaround script on disk:", root._radarGpuScriptPresent ? "present, contains the expected export line" : "missing, or doesn't match the expected export line", "(" + root._radarGpuScriptPath + ")");
                 root._evaluateGpuStatus();
