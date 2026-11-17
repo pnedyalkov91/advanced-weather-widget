@@ -262,18 +262,53 @@ Item {
         }
     }
 
+    // ── Persisted expand / collapse state ────────────────────────────────
+    // This view is destroyed whenever the popup unloads it (and on every
+    // plasmashell restart), so the open/closed state of the expandable cards
+    // lives in Plasmoid.configuration.detailsExpandedCards: a JSON map
+    // { cardId: bool }. A card with no entry keeps its default below.
+    function _loadExpanded(id, def) {
+        try {
+            var m = JSON.parse(Plasmoid.configuration.detailsExpandedCards || "{}");
+            if (m && typeof m[id] === "boolean")
+                return m[id];
+        } catch (e) {}
+        return def;
+    }
+    function _saveExpanded(id, on) {
+        var m = {};
+        try {
+            m = JSON.parse(Plasmoid.configuration.detailsExpandedCards || "{}") || {};
+        } catch (e) {
+            m = {};
+        }
+        if (m[id] === on)
+            return;
+        m[id] = on;
+        Plasmoid.configuration.detailsExpandedCards = JSON.stringify(m);
+    }
+
     // Collapse state for the two arc cards.
-    property bool _sunExpanded: true
-    property bool _moonExpanded: true
+    property bool _sunExpanded: _loadExpanded("suntimes", true)
+    property bool _moonExpanded: _loadExpanded("moonphase", true)
     // Wind compass / pressure gauge default to collapsed (opt-in expansion) so
     // adding the feature doesn't change every user's existing card layout.
-    property bool _windExpanded: false
-    property bool _pressureExpanded: false
-    property bool _alertsExpanded: false
-    property bool _aqiExpanded: false
-    property bool _pollenExpanded: false
-    property bool _swExpanded: false
-    property bool _dtExpanded: false
+    property bool _windExpanded: _loadExpanded("wind", false)
+    property bool _pressureExpanded: _loadExpanded("pressure", false)
+    property bool _alertsExpanded: _loadExpanded("alerts", false)
+    property bool _aqiExpanded: _loadExpanded("airquality", false)
+    property bool _pollenExpanded: _loadExpanded("pollen", false)
+    property bool _swExpanded: _loadExpanded("spaceweather", false)
+    property bool _dtExpanded: _loadExpanded("datetime", false)
+    on_SunExpandedChanged: _saveExpanded("suntimes", _sunExpanded)
+    on_MoonExpandedChanged: _saveExpanded("moonphase", _moonExpanded)
+    on_WindExpandedChanged: _saveExpanded("wind", _windExpanded)
+    on_PressureExpandedChanged: _saveExpanded("pressure", _pressureExpanded)
+    on_AlertsExpandedChanged: _saveExpanded("alerts", _alertsExpanded)
+    on_AqiExpandedChanged: _saveExpanded("airquality", _aqiExpanded)
+    on_PollenExpandedChanged: _saveExpanded("pollen", _pollenExpanded)
+    on_SwExpandedChanged: _saveExpanded("spaceweather", _swExpanded)
+    on_DtExpandedChanged: _saveExpanded("datetime", _dtExpanded)
 
     // ── Expandable gauge cards (cards mode only) ─────────────────────────
     // Feels like, humidity, dew point, visibility, precipitation, precipitation
@@ -281,17 +316,21 @@ Item {
     // chevron); expanded = a Canvas gauge drawn by js/<name>Gauge.js, in the
     // same style as the pressure card. All default to collapsed.
     readonly property var _gaugeIds: ["feelslike", "humidity", "dewpoint", "visibility", "preciprate", "precipsum", "uvindex", "snowcover"]
-    // id -> bool. Always replaced as a whole object so bindings re-evaluate.
-    property var _gaugeExpanded: ({})
+    // id -> bool, read straight from the persisted map (see _saveExpanded above),
+    // so a click re-evaluates every binding that reads it.
+    readonly property var _gaugeExpanded: {
+        try {
+            var m = JSON.parse(Plasmoid.configuration.detailsExpandedCards || "{}");
+            return (m && typeof m === "object") ? m : {};
+        } catch (e) {
+            return {};
+        }
+    }
     function _isGaugeId(id) {
         return _gaugeIds.indexOf(id) >= 0;
     }
     function _setGaugeExpanded(id, on) {
-        var m = {};
-        for (var k in _gaugeExpanded)
-            m[k] = _gaugeExpanded[k];
-        m[id] = on;
-        _gaugeExpanded = m;
+        _saveExpanded(id, on);
     }
 
     /** Metric the gauge shows (metric units; the JS converts for display). */
