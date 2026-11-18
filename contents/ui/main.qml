@@ -174,6 +174,7 @@ PlasmoidItem {
             _wdStamp = weatherService._updateTimestampMs > 0 ? weatherService._updateTimestampMs : Date.now();
             _wdProvider = weatherService._updateProvider || "";
             syncLost = false;
+            _recordPressure(weatherDataStaged.pressureHpa, _wdStamp);
             _scheduleCacheSave("weather");
         }
     }
@@ -223,6 +224,49 @@ PlasmoidItem {
     property bool _dirtyWeather: false
     property bool _dirtyHourly: false
     property bool _dirtyPast: false
+    property bool _dirtyPressure: false
+
+    // ── Pressure history: the barometric tendency ──────────────────────────
+    // Not every provider sends past pressures, so the widget keeps its own: every fresh answer adds
+    // the current pressure (at most one sample per 10 min, the last 12 h, for this place only).
+    // The Details tab turns them into the change over the last 3 hours (rising / steady / falling).
+    // Saved with the other caches; format { lat, lon, s: [[ms, hPa], ...] } oldest first.
+    property var _pressureHistObj: null
+    property var pressureSamples: []
+    readonly property real _pressureKeepMs: 12 * 3600 * 1000
+    readonly property real _pressureMinGapMs: 10 * 60 * 1000
+    function _pressureHistLoad() {
+        try {
+            var s = Plasmoid.configuration.pressureHistoryCache || "";
+            var c = s ? _cacheDecode(s) : null;
+            if (c && c.s && c.s.length > 0 && _sameLocation(c.lat, c.lon)) {
+                _pressureHistObj = c;
+                pressureSamples = c.s.slice();
+            }
+        } catch (e) {}
+    }
+    function _recordPressure(hpa, ts) {
+        if (typeof hpa !== "number" || !isFinite(hpa) || hpa < 800 || hpa > 1100 || !hasSelectedTown)
+            return;
+        var c = _pressureHistObj;
+        if (!c || !c.s || !_sameLocation(c.lat, c.lon)) {
+            c = {
+                lat: _locLat(),
+                lon: _locLon(),
+                s: []
+            };
+            _pressureHistObj = c;
+        }
+        var now = ts > 0 ? ts : Date.now();
+        var s = c.s;
+        if (s.length > 0 && now - s[s.length - 1][0] < _pressureMinGapMs)
+            return;
+        s.push([now, Math.round(hpa * 10) / 10]);
+        while (s.length > 0 && now - s[0][0] > _pressureKeepMs)
+            s.shift();
+        pressureSamples = s.slice();
+        _scheduleCacheSave("pressure");
+    }
     property string _hourlyReqDate: ""
     property bool _hourlyApplying: false
 
@@ -273,6 +317,8 @@ PlasmoidItem {
             _dirtyHourly = true;
         else if (kind === "past")
             _dirtyPast = true;
+        else if (kind === "pressure")
+            _dirtyPressure = true;
         _cacheSaveTimer.restart();
     }
     function _flushCaches() {
@@ -296,6 +342,10 @@ PlasmoidItem {
             if (_dirtyPast && _pastHoursObj) {
                 _dirtyPast = false;
                 Plasmoid.configuration.pastHoursCache = _cacheEncode(_pastHoursObj);
+            }
+            if (_dirtyPressure && _pressureHistObj) {
+                _dirtyPressure = false;
+                Plasmoid.configuration.pressureHistoryCache = _cacheEncode(_pressureHistObj);
             }
         } catch (e) {}
     }
@@ -4313,6 +4363,7 @@ PlasmoidItem {
         _updateHasSelectedTown();
         Dbg.mark("Startup", "saved location read", hasSelectedTown ? "\"" + _activeLocName + "\" (" + _activeLocLat + ", " + _activeLocLon + "), tz=" + (_activeLocTz || "auto") + ", country=" + (_activeLocCC || "?") : "none selected yet");
         _restoreWeatherCache();   // the last known weather at once, replaced by the first refresh
+        _pressureHistLoad();      // earlier pressure readings, for the tendency
         Dbg.log("Startup", "first refresh scheduled in 600 ms (debounce)");
         refreshDebounce.restart();
         // Timer items can stay silent for the first ~2-2.5 s after plasmashell starts (see the "Stall"
