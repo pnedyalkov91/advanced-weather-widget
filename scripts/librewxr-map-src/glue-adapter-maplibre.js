@@ -412,21 +412,22 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // color layer to another they stay as they are, tiles and all.
   var homeMarker = null;      // the widget's place
   var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
-  // Under the dark lines, a sharp white edge as wide as the line on each
-  // side: they still show where the map is dark, the night side above all.
+  // Under the dark lines, a thin light halo: they still show where the map
+  // is dark, the night side above all. Its margin, 0.5 px each side, stays
+  // the same when the user widens the lines.
   var LINES_HALO = 'lv-lines-halo';
   var LINES_WIDTH = [0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8];
-  var LINES_HALO_TIMES = 3;
+  var LINES_HALO_MARGIN = 1;
   /** The user's factor on the whole width curve, 0.5 to 3 (1 as drawn). */
   function linesScaleOf(v) {
     var f = parseFloat(v);
     return isFinite(f) && f > 0 ? Math.max(0.5, Math.min(3, f)) : 1;
   }
   var linesScale = linesScaleOf(typeof LINES_WIDTH_INIT === 'undefined' ? null : LINES_WIDTH_INIT);
-  /** The width curve, times n (1 for the line itself). */
-  function linesWidth(n) {
+  /** The width curve of the line, plus margin px (0 for the line itself). */
+  function linesWidth(margin) {
     var e = ['interpolate', ['linear'], ['zoom']];
-    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], LINES_WIDTH[i + 1] * n * linesScale);
+    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], LINES_WIDTH[i + 1] * linesScale + margin);
     return e;
   }
   var linesOwners = {}, linesData = null, linesLoading = false;
@@ -462,7 +463,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       addLayer({
         id: LINES_HALO, type: 'line', source: LINES_SOURCE,
         layout: { 'line-join': 'round', visibility: 'visible' },
-        paint: { 'line-color': 'rgba(255, 255, 255, 0.6)', 'line-width': linesWidth(LINES_HALO_TIMES) }
+        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(LINES_HALO_MARGIN), 'line-blur': 1 }
       });
     } else map.setLayoutProperty(LINES_HALO, 'visibility', 'visible');
     if (map.getLayer(LINES_LAYER)) {
@@ -476,7 +477,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
         'line-color': 'rgba(20, 20, 20, 0.6)',
         // Thicker far out: on the whole globe (zoom ~1) a hairline is lost
         // in the colors. Thinnest around zoom 4, then wider again close in.
-        'line-width': linesWidth(1)
+        'line-width': linesWidth(0)
       }
     });
   }
@@ -1583,8 +1584,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     setLinesWidth: function (f) {
       linesScale = linesScaleOf(f);
       if (!map) return;
-      if (map.getLayer(LINES_HALO)) map.setPaintProperty(LINES_HALO, 'line-width', linesWidth(LINES_HALO_TIMES));
-      if (map.getLayer(LINES_LAYER)) map.setPaintProperty(LINES_LAYER, 'line-width', linesWidth(1));
+      if (map.getLayer(LINES_HALO)) map.setPaintProperty(LINES_HALO, 'line-width', linesWidth(LINES_HALO_MARGIN));
+      if (map.getLayer(LINES_LAYER)) map.setPaintProperty(LINES_LAYER, 'line-width', linesWidth(0));
     },
     /** The layer a weather layer of id goes right under, to be at its
         place in the stack (map.addLayer(layer, beforeFor(layer.id))). */
