@@ -174,7 +174,26 @@
     <entry name="widgetMinHeightMode" type="String"><default>auto</default></entry>
     <entry name="widgetMinHeight"     type="Int"><default>750</default><min>200</min><max>2000</max></entry>
     <entry name="widgetDefaultTab" type="String"><default>details</default></entry>
-    <entry name="widgetVisibleTabs" type="String"><default>both</default></entry>
+
+    <!-- Visible popup tabs: semicolon-separated list of details;forecast;radar;history
+         ("none" = all hidden). The legacy values "both" (= all tabs) and a single
+         tab id ("details", "forecast", ...) are still understood. -->
+    <entry name="widgetVisibleTabs" type="String"><default>details;forecast;radar;history</default></entry>
+
+    <!-- Widget tabs layout -->
+    <entry name="widgetTabsPosition" type="String">
+      <default>top</default>
+     </entry>
+      <entry name="widgetTabOrder" type="String">
+      <default>details;forecast;radar;history</default>
+     </entry>
+
+    <!-- History tab (Open-Meteo archive): last chosen period. historyPeriod is one of
+         yesterday|last7|last30|last90|thisMonth|lastMonth|thisYear|single|custom;
+         the two dates (YYYY-MM-DD) are only used by "single" and "custom". -->
+    <entry name="historyPeriod"    type="String"><default>last30</default></entry>
+    <entry name="historyStartDate" type="String"><default></default></entry>
+    <entry name="historyEndDate"   type="String"><default></default></entry>
     <entry name="widgetLayoutMode"      type="String"><default>advanced</default></entry>
     <entry name="widgetSimpleDetailsOrder" type="String"><default>humidity;pressure;preciprate;precipsum</default></entry>
     <entry name="widgetSimpleDetailsItemIcons" type="String"><default>humidity=1;pressure=1;preciprate=1;precipsum=1</default></entry>
@@ -182,15 +201,14 @@
     <entry name="radarProvider"         type="String"><default>librewxr</default></entry>
     <entry name="radarLayer"            type="String"><default>librewxr</default></entry>
     <entry name="radarZoom"             type="Int"><default>9</default><min>3</min><max>18</max></entry>
+
     <!-- Base map tiles under both radar maps. "auto" lets each map decide:
          LibreWXR follows its own light/dark theme, RainViewer uses standard
          OpenStreetMap. Any other value is an id from providers/mapProviders.js
          and applies to both maps. -->
     <entry name="mapBackground"         type="String"><default>auto</default></entry>
-    <entry name="librewxrLayer"         type="String"><default>radar</default></entry>
     <entry name="librewxrColorScheme"   type="Int"><default>10</default><min>0</min><max>12</max></entry>
     <entry name="librewxrArrows"        type="Bool"><default>false</default></entry>
-    <entry name="librewxrWind"          type="Bool"><default>false</default></entry>
     <!-- Wind level for the animated particles: "10m" (surface) or "700hPa" (aloft) -->
     <entry name="librewxrWindLevel"     type="String"><default>10m</default></entry>
     <!-- Frame-rate budget of the wind animation: "economy" (8-10 fps),
@@ -199,6 +217,39 @@
     <entry name="librewxrWindQuality"   type="String"><default>balanced</default></entry>
     <!-- Width of the wind particles, in CSS pixels -->
     <entry name="librewxrWindLineWidth" type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
+    <!-- Radar map projection: "flat" (Web Mercator) or "globe"; switched from the globe button on the map -->
+    <entry name="librewxrProjection"    type="String"><default>flat</default></entry>
+    <!-- Day and night shaded on the radar map; switched from the day and night button on the map -->
+    <entry name="librewxrDayNight"      type="Bool"><default>true</default></entry>
+    <!-- Glow of the globe's atmosphere, percent of full strength; set in the Radar settings -->
+    <entry name="librewxrGlow"          type="Int"><default>30</default><min>0</min><max>100</max></entry>
+    <!-- Darkness of the deep night on the radar map, percent of black; set in the Radar settings -->
+    <entry name="librewxrNightDepth"    type="Int"><default>40</default><min>10</min><max>80</max></entry>
+    <!-- Wind particle density: 1 = one particle per 300 CSS px^2 -->
+    <entry name="librewxrWindDensity"   type="Double"><default>1</default><min>0.5</min><max>2</max></entry>
+    <!-- Wind palettes made in the settings: JSON [{ "name", "levels": [{ "max" (m/s), "color" }] x 8 }] -->
+    <entry name="librewxrWindPalettes"  type="String"><default>[]</default></entry>
+    <!-- Name of the wind palette in use; empty for the default one -->
+    <entry name="librewxrWindPalette"   type="String"><default></default></entry>
+    <!-- Coasts and borders drawn over the temperature (MapLibre page), switched in the map's Options -->
+    <entry name="librewxrMapLines"      type="Bool"><default>true</default></entry>
+    <!-- Their width, a factor on the one drawn by default (0.5 to 3) -->
+    <entry name="librewxrMapLinesWidth" type="Double"><default>1</default><min>0.5</min><max>3</max></entry>
+    <!-- The Sun and the Moon drawn around the globe (MapLibre page), switched in the map's settings -->
+    <entry name="librewxrGlobeSky"      type="Bool"><default>true</default></entry>
+    <!-- Brightness of the lights of the towns on the night side (MapLibre page), percent; 0 for none -->
+    <entry name="librewxrRimGlow"       type="Int"><default>60</default><min>0</min><max>100</max></entry>
+    <entry name="librewxrNightLights"   type="Int"><default>70</default><min>0</min><max>100</max></entry>
+    <entry name="librewxrNightLightsDensity" type="Double"><default>3</default><min>1</min><max>6</max></entry>
+    <!-- Temperature palette in use: empty for the vivid one, "builtin:muted",
+         "builtin:bluered", or the name of a palette made in the settings -->
+    <entry name="librewxrTempPalette"   type="String"><default></default></entry>
+    <!-- Temperature palettes made in the settings: JSON [{ "name", "stops": [{ "t" (°C), "color" }] }] -->
+    <entry name="librewxrTempPalettes"  type="String"><default>[]</default></entry>
+    <!-- Opacity of the temperature, percent; also set on its line of the Weather Map -->
+    <entry name="librewxrTempOpacity"   type="Int"><default>45</default><min>0</min><max>100</max></entry>
+    <!-- Width of the temperature bands in the widget's unit: 0 (smooth), 2, 2.5, 5 or 10 -->
+    <entry name="librewxrTempStep"      type="Double"><default>5</default></entry>
     <entry name="librewxrTheme"         type="String"><default>auto</default></entry>
     <entry name="librewxrUrl"           type="String"><default>https://api.librewxr.net</default></entry>
     <entry name="librewxrCells"         type="String"><default></default></entry>
@@ -207,16 +258,91 @@
     <entry name="librewxrSnow"          type="Bool"><default>true</default></entry>
     <entry name="librewxrFormat"        type="String"><default>webp</default></entry>
     <entry name="librewxrTileSize"      type="String"><default>auto</default></entry>
-    <!-- Whether the "Options" panel (smoothing/snow mask/format/tile size) is expanded -->
-    <entry name="librewxrOptionsExpanded" type="Bool"><default>false</default></entry>
+    <!-- Weather Map tab: the layers switched on, JSON { "id": true|false } -->
+    <entry name="weatherMapLayers"      type="String"><default>{"radar":true,"satellite":true,"wind":true,"temperature":true}</default></entry>
+    <!-- Weather Map: the opacity of each layer but the temperature (librewxrTempOpacity), JSON { "id": percent } -->
+    <entry name="weatherMapOpacities"   type="String"><default>{}</default></entry>
+    <!-- Weather Map: the color legends hidden, JSON { "id": true } -->
+    <entry name="weatherMapLegendsHidden" type="String"><default>{}</default></entry>
+    <!-- Weather Map: the layer column folded to its icons -->
+    <entry name="weatherMapPanelFolded" type="Bool"><default>false</default></entry>
+    <!-- Weather Map: opacity (%) of the layer column and the time bar over the map, and the blur (px) of the map under them -->
+    <entry name="weatherMapPanelOpacity" type="Int"><default>40</default><min>0</min><max>100</max></entry>
+    <entry name="weatherMapPanelBlur"   type="Int"><default>18</default><min>0</min><max>40</max></entry>
+    <!-- Weather Map: the box of the layers still loading, at the bottom left -->
+    <entry name="weatherMapLoadBox"     type="Bool"><default>true</default></entry>
+    <!-- Weather Map: how its buttons, sliders and choices are drawn: "plasma" (the Plasma theme) or "custom" (the clean style) -->
+    <entry name="weatherMapControlStyle" type="String"><default>plasma</default></entry>
+    <!-- Weather Map: icons of the layers and of the radar menu: "weathermap" (its own drawings) | "symbolic" | "flat-color" | "3d-oxygen" | "meteocons" | "kde" -->
+    <entry name="weatherMapIconTheme"   type="String"><default>weathermap</default></entry>
+    <!-- Weather Map: pictures per second at most: 4, 8 or 15 -->
+    <entry name="weatherMapFps"         type="Int"><default>8</default><min>4</min><max>15</max></entry>
+    <!-- Weather Map: resolution while playing: 1 (full), 2 (half) or 4 (quarter) -->
+    <entry name="weatherMapResolution"  type="Int"><default>1</default><min>1</min><max>4</max></entry>
+    <!-- Weather Map: hours shown before and after now -->
+    <entry name="weatherMapPastHours"   type="Int"><default>24</default><min>0</min><max>192</max></entry>
+    <entry name="weatherMapFutureHours" type="Int"><default>48</default><min>12</min><max>144</max></entry>
+    <entry name="weatherMapRangeKind"   type="String"><default></default></entry>
+    <!-- Weather Map: speed, x1 to x3 -->
+    <entry name="weatherMapSpeed"       type="Int"><default>1</default><min>1</min><max>3</max></entry>
+    <!-- Weather Map: back to the first picture after the last one, or stop there -->
+    <entry name="weatherMapLoop"        type="Bool"><default>true</default></entry>
+    <!-- Weather Map: the pictures worked out between those of the files, or real images only (lighter) -->
+    <entry name="weatherMapInterpolate" type="Bool"><default>true</default></entry>
+    <!-- Weather Map: lightning strikes over the radar -->
+    <entry name="weatherMapLightning"   type="Bool"><default>false</default></entry>
+    <!-- Weather Map: the kinds of precipitation shown, JSON list of ids; empty for all -->
+    <entry name="weatherMapPrecipKinds" type="String"><default></default></entry>
+    <!-- Weather Map: the cloud levels shown, JSON list of ids (high, mid, low); empty for all -->
+    <entry name="weatherMapCloudLevels" type="String"><default></default></entry>
+    <!-- Weather Map: the pollutant of the air quality layer (pm2_5, pm10, ozone, nitrogen_dioxide, sulphur_dioxide, dust, aerosol_optical_depth, uv_index) -->
+    <!-- Weather Map: the layers taken out of the column (the radar always stays), JSON list of ids -->
+    <entry name="weatherMapDisabledLayers" type="String"><default>[]</default></entry>
+    <!-- Weather Map: the stack of the layers on the map and in the column, JSON list of ids top first; empty for the default one -->
+    <entry name="weatherMapLayerOrder" type="String"><default>[]</default></entry>
+    <entry name="weatherMapPollutant"   type="String"><default>pm2_5</default></entry>
+    <!-- Weather Map: the isobars' settings, JSON {width: 0.6|1|2, step: 2|4|8 hPa, labels, marks, textSize: 11|13|16 px, color: "#rrggbb" or "" for the theme's}; empty for the defaults -->
+    <entry name="weatherMapIsobars"     type="String"><default>{}</default></entry>
     <!-- Workaround for a plasmashell crash (SIGSEGV in Mesa, triggered when the
          Radar tab first paints) seen on hybrid-GPU (NVIDIA PRIME) Wayland sessions -->
     <entry name="radarGpuWorkaround"    type="Bool"><default>false</default></entry>
-    <!-- Build the Radar tab in the background after startup and keep it
-         loaded, popup closed or not, so it opens at once. Off by default: it
-         starts QtWebEngine with Plasma and keeps its memory for the whole
-         session. -->
+    <!-- "Prepare the radar in advance": build the Radar tab in the background
+         after startup and keep it loaded, popup closed or not; the hidden
+         page prepares the latest radar image and the whole animation, so it
+         opens at once. Off by default: it starts QtWebEngine with Plasma and
+         keeps its memory for the whole session. -->
     <entry name="radarKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- With radarKeepLoaded: the hidden Weather Maps page also follows the
+         new runs of its forecast layers' models and reads their pictures as
+         they come out, so the map opens on them at once. Off by default: it
+         downloads even if the map is never opened. -->
+    <entry name="weatherMapPrepareLayers" type="Bool"><default>false</default></entry>
+    <!-- Weather Map: the layers drawn with the global model alone, their
+         "Regional models" option off (wind, temperature), JSON list of ids -->
+    <entry name="weatherMapRegionalOff" type="String"><default>[]</default></entry>
+    <!-- Weather Map: the most its web profile's HTTP cache keeps on disk, in MB
+         (250 | 500 | 1024 | 2048). Read when the profile is made: a new size
+         applies at the next Plasma start. -->
+    <entry name="weatherMapCacheMB"     type="Int"><default>1024</default></entry>
+    <!-- The size the map's profile was made with in this Plasma session, in
+         MB; 0 until the map is made (main.qml sets it back at start) -->
+    <entry name="weatherMapCacheActiveMB" type="Int"><default>0</default></entry>
+    <!-- Weather Map: a request to empty that cache, the time it was asked
+         (ISO text), written by the settings at once; the map empties the
+         cache and writes the same text into weatherMapCacheClearDone. -->
+    <entry name="weatherMapCacheClearAt"   type="String"><default></default></entry>
+    <entry name="weatherMapCacheClearDone" type="String"><default></default></entry>
+    <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
+         the background after startup and keep them loaded, so the popup opens
+         instantly. Off by default (uses extra memory for the whole session). -->
+    <entry name="popupKeepLoaded"       type="Bool"><default>false</default></entry>
+    <!-- Internal caches (JSON): last weather, hourly rows, today's past
+         hours and the recent pressure readings (for the tendency). Restored at startup so the widget shows data before the first
+         network answer. Written by main.qml; not user settings. -->
+    <entry name="weatherCache"          type="String"><default></default></entry>
+    <entry name="hourlyCache"           type="String"><default></default></entry>
+    <entry name="pastHoursCache"        type="String"><default></default></entry>
+    <entry name="pressureHistoryCache"  type="String"><default></default></entry>
 
     <!-- ── Widget - details view ──────────────────────────────────────── -->
     <entry name="widgetDetailsOrder"    type="String"><default>humidity;pressure;wind;dewpoint;visibility;precipsum;moonphase;suntimes;preciprate;uvindex;airquality;pollen;spaceweather;alerts;datetime;snowcover</default></entry>
@@ -229,6 +355,14 @@
     <entry name="widgetCardsHeight"     type="Int"><default>44</default><min>30</min><max>120</max></entry>
     <entry name="widgetExpandedCardsHeightAuto" type="Bool"><default>false</default></entry>
     <entry name="widgetExpandedCardsHeight"     type="Int"><default>200</default><min>120</min><max>500</max></entry>
+    <!-- Animate the scenes drawn in the expanded Details gauge cards (rain, snow, waves,
+         aurora, ...). Off = the scenes are drawn static. Set in Settings > Widget > Details. -->
+    <entry name="detailsAnimations"     type="Bool"><default>false</default></entry>
+    <!-- Internal: which expandable Details cards are open, JSON map { "cardId": true|false }
+         (sun/moon/wind/pressure/alerts/air quality/pollen/space weather/date-time and the
+         gauge cards). A card without an entry uses its built-in default. Written by
+         DetailsView.qml when a card is expanded or collapsed; not a user setting. -->
+    <entry name="detailsExpandedCards"          type="String"><default>{}</default></entry>
     <!-- Expanded view items visibility (comma-separated) -->
     <entry name="aqiExpandedItems"          type="String"><default>pm2_5,pm10,no2,o3,so2,co</default></entry>
     <entry name="pollenExpandedItems"       type="String"><default>alder,birch,grass,mugwort,olive,ragweed</default></entry>
@@ -273,16 +407,38 @@
     <entry name="dualTempInTooltip"  type="Bool"><default>true</default></entry>
     <entry name="dualTempSwapOrder"  type="Bool"><default>false</default></entry>
 
-    <!-- ── Widget - header date/time ─────────────────────────────────── -->
+    <!-- ── Widget - header ────────────────────────────────────────────── -->
+    <entry name="headerShowLocation"       type="Bool"><default>true</default></entry>
+    <entry name="headerShowSwitchLocation" type="Bool"><default>true</default></entry>
+    <entry name="headerShowPinButton"      type="Bool"><default>true</default></entry>
+    <entry name="headerShowDetectButton"   type="Bool"><default>true</default></entry>
+    <entry name="headerShowRefreshButton"  type="Bool"><default>true</default></entry>
     <entry name="headerShowDateTime" type="Bool"><default>false</default></entry>
     <entry name="headerDateFormat"   type="String"><default>locale-long</default></entry>
     <entry name="headerTimeFormat"   type="String"><default>locale</default></entry>
+    <!-- Global date / time format (Settings > Misc > Date and Time). Used by the panel,
+         tooltip, header and every tab. Empty = not chosen yet: the older header-only
+         headerDateFormat / headerTimeFormat values are used instead. -->
+    <entry name="displayDateFormat"  type="String"><default></default></entry>
+    <entry name="displayTimeFormat"  type="String"><default></default></entry>
 
     <!-- ── Widget - simple mode options ──────────────────────────────── -->
     <entry name="simpleShowForecast"     type="Bool"><default>true</default></entry>
     <entry name="simpleShowSunriseSunset" type="Bool"><default>true</default></entry>
     <entry name="simpleShowForecastCompass" type="Bool"><default>true</default></entry>
     <entry name="simpleShowStatsChips"   type="Bool"><default>true</default></entry>
+    <!-- How the Simple widget draws its forecast: "rows" = Standard (a square for each day),
+         "graphs" = the temperature graph with weather icons and the precipitation strip.
+         Separate from forecastLayout, which belongs to the Advanced mode. -->
+    <entry name="simpleForecastLayout"   type="String"><default>rows</default></entry>
+    <!-- Simple mode, forecast layout "Graphs": the details shown for the day under the pointer
+         (the Advanced mode's "Compact" graph style). Own switches, all on by default, so they
+         do not change the Advanced mode's forecastShow* settings. -->
+    <entry name="simpleForecastShowWind"       type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowPressure"   type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowKpIndex"    type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowUvIndex"    type="Bool"><default>true</default></entry>
+    <entry name="simpleForecastShowVisibility" type="Bool"><default>true</default></entry>
 
     <!-- ── Widget - forecast ──────────────────────────────────────────── -->
     <entry name="forecastLayout"      type="String"><default>rows</default></entry>
@@ -302,8 +458,33 @@
     <entry name="forecastShowUvIndex"    type="Bool"><default>false</default></entry>
     <entry name="forecastShowPrecipSum"  type="Bool"><default>false</default></entry>
     <entry name="forecastShowVisibility" type="Bool"><default>false</default></entry>
+    <!-- The temperature graph (token "temp": its lines, weather icons and precipitation strip) is
+         one of the graphs of the "Graphs" layouts: it can be switched off and moved like the
+         others. A saved order without "temp" keeps it on top. -->
+    <entry name="forecastShowTemp"       type="Bool"><default>true</default></entry>
+    <entry name="forecastGraphOrder"       type="String"><default>temp;precip;wind;pressure;kp;uv;vis</default></entry>
+    <entry name="forecastHourlyGraphOrder" type="String"><default>temp;precip;wind;pressure;kp;uv;vis</default></entry>
+    <!-- Own colors of the graphs, "key=#rrggbb;key=#rrggbb" (keys: wind, pressure, kp, uv,
+         precip, vis; the temperature graph: temphigh and templow (daily), temp and precipprob
+         (hourly: the temperature line and the precipitation bars)).
+         A graph that is not listed keeps its built-in color. -->
+    <entry name="forecastGraphColors"       type="String"><default></default></entry>
+    <entry name="forecastHourlyGraphColors" type="String"><default></default></entry>
+    <!-- How the "Graphs" layouts arrange their graphs:
+           separate = one graph for each detail that is switched on; the pointer is shared: pointing
+                      at a day / hour shows its value in every graph at once
+           compact  = ONE graph (temperature, weather icons, precipitation); hovering a day / hour
+                      shows all the other details in a card
+         (any other value, e.g. an older "linked", counts as "separate") -->
+    <entry name="forecastGraphsMode"       type="String"><default>separate</default></entry>
+    <entry name="forecastHourlyGraphsMode" type="String"><default>separate</default></entry>
+    <!-- Whether to show data-point dots on the daily and hourly "Graphs" layouts. When enabled,
+         every day / hour gets a dot, however close together the points are. -->
+    <entry name="forecastGraphDots"       type="Bool"><default>false</default></entry>
+    <entry name="forecastHourlyGraphDots" type="Bool"><default>false</default></entry>
 
     <!-- ── Widget - hourly forecast extra stats ──────────────────────── -->
+    <entry name="forecastHourlyShowTemp"       type="Bool"><default>true</default></entry>
     <entry name="forecastHourlyShowPrecipProb" type="Bool"><default>true</default></entry>
     <entry name="forecastHourlyShowWind"       type="Bool"><default>true</default></entry>
     <entry name="forecastHourlyShowPressure"   type="Bool"><default>false</default></entry>
@@ -350,6 +531,14 @@
     <!-- Base URL of the FOSS Public Alert Server (self-hostable; default is
          KDE's public instance). -->
     <entry name="fossAlertUrl"   type="String"><default>https://alerts.kde.org</default></entry>
+    <!-- Alert language. true = use the alert's native/official language (the
+         non-English CAP <info> block, the long-standing behaviour). false = use
+         the per-location choice stored in alertsLanguageByLocation. -->
+    <entry name="alertsLanguageNative"     type="Bool"><default>true</default></entry>
+    <!-- JSON map "lat,lon" (4 decimals) -> language code ("de", "fr", ...).
+         A location without an entry uses its native language. Only read while
+         alertsLanguageNative is false. -->
+    <entry name="alertsLanguageByLocation" type="String"><default>{}</default></entry>
 
     <!-- ── Notifications ─────────────────────────────────────────────── -->
     <entry name="alertNotificationsEnabled" type="Bool"><default>true</default></entry>
@@ -416,6 +605,14 @@
     <entry name="scrollboxLines"         type="Int"><default>2</default><min>1</min><max>6</max></entry>
     <entry name="scrollboxItems"         type="String"><default>Humidity;Wind;Pressure;Dew Point;Visibility</default></entry>
     <entry name="panelWidth"             type="Int"><default>0</default></entry>
+
+     
+        <entry name="debugMode" type="Bool">
+            <label>Verbose debug logging</label>
+            <default>false</default>
+        </entry>
+ 
+
 
   </group>
 </kcfg>

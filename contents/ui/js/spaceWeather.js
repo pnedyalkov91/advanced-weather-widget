@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,8 +12,9 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
+
 
 /**
  * spaceWeather.js - NOAA Space Weather Prediction Center helpers
@@ -26,7 +27,7 @@
  *   NOAA scales: https://services.swpc.noaa.gov/products/noaa-scales.json
  *   Solar wind: https://services.swpc.noaa.gov/products/summary/solar-wind-speed.json
  *   Bz        : https://services.swpc.noaa.gov/products/summary/solar-wind-mag-field.json
- *   X-ray flux: https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json
+ *   X-ray flux: https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json
  */
 
 .pragma library

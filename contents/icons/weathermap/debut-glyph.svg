@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2026 rcspam
+  SPDX-License-Identifier: GPL-2.0-or-later
+-->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 30 28">
+  <defs>
+    <style>
+      .cls-1{fill:none;stroke:#fcfcfc;stroke-width:1.2;stroke-miterlimit:10}
+      .cls-2{fill:none;stroke:#fcfcfc;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+  <title>debut-glyph.svg</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M10.751 13.476 L18.671 9.06 C18.938 8.912 19.266 9.104 19.266 9.409 L19.282 18.269 C19.283 18.575 18.954 18.769 18.687 18.619 L10.751 14.175 C10.478 14.022 10.478 13.629 10.751 13.476 Z" class="cls-1"/>
+    <line x1="8.998" y1="9.009" x2="8.998" y2="18.671" class="cls-2"/>
+  </g>
+</svg>

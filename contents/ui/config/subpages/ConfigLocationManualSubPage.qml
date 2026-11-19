@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -26,6 +26,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import "../../js/debug.js" as Dbg
+import "../../js/bbcLocator.js" as BbcLocator
 
 Item {
     id: manualSubPageRoot
@@ -196,7 +198,7 @@ Item {
             };
         if (p === "bbc")
             return {
-                url: "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + lat + "&longitude=" + lon + "&format=json"
+                url: BbcLocator.locatorUrl(lat, lon)
             };
         if (p === "openWeather") {
             var ow = (cfg.owApiKey || "").trim();
@@ -313,7 +315,7 @@ Item {
             }
             _setResult(p, 1, i18n("Testing…"));
 
-            var req = new XMLHttpRequest();
+            var req = Dbg.xhr("Config/Location", "runTest");
             req.open("GET", info.url);
             if (p === "metno")
                 req.setRequestHeader("User-Agent", "AdvancedWeatherWidget/1.0 github.com/pnedyalkov91/advanced-weather-widget");

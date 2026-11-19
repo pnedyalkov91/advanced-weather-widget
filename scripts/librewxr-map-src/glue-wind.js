@@ -30,6 +30,9 @@ var WidgetWind = (function () {
     '700hPa': ['wind_speed_700hPa', 'wind_direction_700hPa']
   };
   var DEFAULT_LEVEL = '10m';
+  // The 2 m temperature rides along in the same request, for the temperature
+  // layer (glue-temp-layer.js): one more variable, no other call.
+  var TEMP_VAR = 'temperature_2m';
 
   /* === WindField: pure math, no DOM === */
   var WindField = {
@@ -43,6 +46,25 @@ var WidgetWind = (function () {
       var a = dirDeg * DEG;
       return { u: -speed * Math.sin(a), v: -speed * Math.cos(a) };
     },
+
+    /** The other way: speed (m/s) and the direction it comes from (degrees). */
+    fromUV: function (u, v) {
+      var speed = Math.sqrt(u * u + v * v);
+      if (!(speed > 0)) return { speed: 0, dir: 0 };
+      return { speed: speed, dir: (Math.atan2(-u, -v) / DEG + 360) % 360 };
+    },
+
+    /** A speed (m/s) in the widget's unit, written as the widget writes it
+        (weather.js formatWindValue): km/h whole, the others to 0.1. */
+    speedText: function (ms, unit) {
+      if (unit === 'ms') return ms.toFixed(1);
+      if (unit === 'kn') return (ms * 3.6 * 0.539957).toFixed(1);
+      if (unit === 'mph') return (ms * 3.6 * 0.621371).toFixed(1);
+      return String(Math.round(ms * 3.6));
+    },
+
+    /** Which of the eight compass points (0 N, 1 NE ... 7 NW) a direction is. */
+    compassIndex: function (dir) { return Math.round(((dir % 360) + 360) % 360 / 45) % 8; },
 
     /** Grid spec for a viewport: the bounds widened by `margin` on each side,
         covered by grid points on a lattice fixed to the Earth. Meridians sit
@@ -67,7 +89,13 @@ var WidgetWind = (function () {
       // the box outward adds at most one point on each side.
       var stepFor = function (span, period) {
         var n = Math.max(minN, Math.min(maxN, Math.round(span * KM_PER_DEG / targetKm)));
-        return period / Math.max(1, Math.floor(period / (span / (n - 2))));
+        var div = Math.max(1, Math.floor(period / (span / (n - 2))));
+        // Optional power-of-two steps: every zoom of a band then shares the
+        // same points, and a finer band holds all the points of a coarser
+        // one. 'round' snaps to the nearest power: never more than 1.4 times
+        // coarser than the free step, up to about 17 points per side.
+        if (WindField.pow2Steps) div = Math.pow(2, (WindField.pow2Steps === 'round' ? Math.round : Math.floor)(Math.log2(div)));
+        return period / div;
       };
       // Past a full turn (zoomed out on several copies of the world), one
       // turn is enough: sample() finds every longitude on it.
@@ -112,7 +140,13 @@ var WidgetWind = (function () {
       if (!cached.spec.lonStep) return true;
       if (nowMs - cached.fetchedAt > ttlMs) return true;
       if (cached.world) return !WindField.sameLattice(WindField.gridSpec(view.bounds), cached.spec);
-      if (Math.abs(view.zoom - cached.zoom) >= 1) return true;
+      if (WindField.pow2Steps) {
+        // Nested lattices: the question is whether the grid is fine enough
+        // for this view, whatever the zoom it came from. A map that zooms
+        // in fractions would otherwise keep a grid up to a whole level too coarse.
+        var want = WindField.gridSpec(view.bounds), eps = 1e-9;
+        if (want.lonStep < cached.spec.lonStep - eps || want.latStep < cached.spec.latStep - eps) return true;
+      } else if (Math.abs(view.zoom - cached.zoom) >= 1) return true;
       var b = view.bounds, s = cached.spec;
       if (b.south < s.south || b.north > s.north) return true;
       if (s.east - s.west >= 360) return false;   // a full turn: every longitude has a copy inside
@@ -181,8 +215,20 @@ var WidgetWind = (function () {
         }
         levels[name] = { u: u, v: v };
       }
+      var temp = null;
+      if (points[0].hourly[TEMP_VAR]) {
+        temp = [];
+        for (var th = 0; th < hours; th++) {
+          var row = new Float32Array(count);
+          for (var tq = 0; tq < count; tq++) {
+            var tv = (points[tq].hourly[TEMP_VAR] || [])[th];
+            row[tq] = tv == null ? NaN : tv;
+          }
+          temp.push(row);
+        }
+      }
       var base = levels[DEFAULT_LEVEL] || { u: [], v: [] };
-      return { lats: spec.lats, lons: spec.lons, elev: elev, times: times, u: base.u, v: base.v, levels: levels };
+      return { lats: spec.lats, lons: spec.lons, elev: elev, times: times, u: base.u, v: base.v, levels: levels, temp: temp };
     },
 
     /** Hour index containing nowSec and the fraction toward the next hour. */
@@ -241,6 +287,31 @@ var WidgetWind = (function () {
       return { u: u / wsum, v: v / wsum };
     },
 
+    /** As sample(), with the finer regional models a grid of the animation
+        brings (grid.fines, finest first: { desc, u, v, uB, vB, mix,
+        weights, fade }, on their own grids, see WidgetGrids) blended over
+        it by their edge weight and fade, the coarsest first. The relief
+        weighting (hP, sigma) is the global grid's. */
+    sampleChain: function (grid, lat, lon, tw, hP, sigma, level) {
+      var uv = this.sample(grid, lat, lon, tw, hP, sigma, level), fines = grid.fines;
+      if (!fines || !fines.length) return uv;
+      for (var k = fines.length - 1; k >= 0; k--) {
+        var f = fines[k], c = WidgetGrids.cell(f.desc, lat, lon);
+        if (!c) continue;
+        var w = WidgetGrids.valueAt(f.weights, c) * (f.fade == null ? 1 : f.fade);
+        if (!(w > 0)) continue;
+        var u = WidgetGrids.valueAt(f.u, c), v = WidgetGrids.valueAt(f.v, c);
+        if (f.uB && f.mix > 0) {
+          u += (WidgetGrids.valueAt(f.uB, c) - u) * f.mix;
+          v += (WidgetGrids.valueAt(f.vB, c) - v) * f.mix;
+        }
+        if (!isFinite(u) || !isFinite(v)) continue;
+        if (!uv) { if (w >= 1) uv = { u: u, v: v }; continue; }
+        uv = { u: uv.u + (u - uv.u) * w, v: uv.v + (v - uv.v) * w };
+      }
+      return uv;
+    },
+
     /** Screen velocity (px/s): k px/s per m/s, clamped so calm air still
         drifts and storms stay readable. Screen y points down. */
     screenVelocity: function (u, v, opts) {
@@ -272,6 +343,78 @@ var WidgetWind = (function () {
     lineWidth: function (w) {
       if (!(w > 0)) return 1;
       return Math.max(0.5, Math.min(2, w));
+    },
+
+    /** false (steps from the view size alone), true (power of two, rounded
+        down) or 'round' (nearest power of two). Set by the page. */
+    pow2Steps: false,
+
+    /** The default wind palette: the Beaufort scale grouped in 8 bands,
+        upper bounds in m/s (km/h / 3.6, to 3 decimals like the URL form),
+        the last one open. */
+    DEFAULT_PALETTE: [[5, '#ffffff'], [12, '#2ecc40'], [20, '#7fdbff'], [38, '#1e64ff'],
+      [50, '#ffdc00'], [75, '#ff851b'], [118, '#ff2020'], [Infinity, '#8a5cff']]
+      .map(function (b) { return { max: b[0] === Infinity ? Infinity : +(b[0] / 3.6).toFixed(3), color: b[1] }; }),
+
+    /** Opacity of each band: calm winds faint, strong winds solid. */
+    BAND_ALPHA: [0.5, 0.85, 0.9, 0.95, 0.95, 1, 1, 1],
+
+    /** A palette from its URL form, 8 "max:rrggbb" pairs separated by
+        commas, max in m/s and "inf" for the last band. null when the count,
+        the order of the thresholds or a color is wrong. */
+    parsePalette: function (s) {
+      var parts = String(s == null ? '' : s).split(',');
+      if (parts.length !== 8) return null;
+      var out = [], prev = -1;
+      for (var i = 0; i < parts.length; i++) {
+        var m = /^\s*(inf|\d+(?:\.\d+)?):#?([0-9a-fA-F]{6})\s*$/.exec(parts[i]);
+        if (!m) return null;
+        var max = m[1] === 'inf' ? Infinity : parseFloat(m[1]);
+        if (!(max > prev) || (max === Infinity) !== (i === parts.length - 1)) return null;
+        out.push({ max: max, color: '#' + m[2].toLowerCase() });
+        prev = max;
+      }
+      return out;
+    },
+
+    /** The URL form of a palette (see parsePalette), thresholds to 3 decimals. */
+    formatPalette: function (p) {
+      return p.map(function (b) {
+        return (b.max === Infinity ? 'inf' : String(+b.max.toFixed(3))) + ':' + b.color.replace('#', '');
+      }).join(',');
+    },
+
+    /** Band of a wind speed (m/s): the first whose upper bound it does not exceed. */
+    paletteBand: function (speed, p) {
+      for (var i = 0; i < p.length - 1; i++) if (speed <= p[i].max) return i;
+      return p.length - 1;
+    },
+
+    /** Stroke color of a band. White would vanish on a light map: there it
+        takes the map's dark ink instead. */
+    bandColor: function (p, band, theme) {
+      var c = p[band].color;
+      return theme === 'light' && c === '#ffffff' ? '#1a237e' : c;
+    },
+
+    /** Particles for a canvas area (CSS px^2): one per 300 px^2 at density
+        1, within 200..maxP. */
+    particleCount: function (area, density, maxP) {
+      return Math.max(200, Math.min(maxP, Math.round(area * density / 300)));
+    },
+
+    /** Cap on the particles for a density: 5000 per unit, so a full screen
+        map (about 9800 asked at density 1) still follows the density
+        setting. Measured full screen: 5000 cost about 65 % of a core,
+        10000 about 80 %. */
+    maxParticles: function (density) {
+      return Math.round(5000 * (density > 0 ? density : 1));
+    },
+
+    /** Whether the API grid for a view is finer than a file of resolution
+        fileRes (degrees): only then does the API add detail. */
+    wantApi: function (spec, fileRes) {
+      return spec.lonStep < fileRes - 1e-9;
     },
 
     /** Frames to draw at once when the particles start over, so their trails
@@ -345,6 +488,12 @@ var WidgetWind = (function () {
     this.now = opts.now || function () { return Date.now(); };
     this.apiBase = opts.apiBase || 'https://api.open-meteo.com/v1/forecast';
     this.ttlMs = opts.ttlMs || 60 * 60 * 1000;
+    // Hours before and after now in each grid: a few for the live map, the
+    // whole range for the animation (one request then serves every picture).
+    this.pastH = opts.pastH || 2;
+    this.futureH = opts.futureH || 4;
+    // The animation draws far views from the files: no world grid there.
+    this.useWorld = opts.world !== false;
     // Retry delay after a failure: backoffMs, doubled at each further failure
     // up to maxBackoffMs, reset by the next success. A 429 (quota) or a
     // network blip must not freeze the layer on a stale box for long.
@@ -377,16 +526,27 @@ var WidgetWind = (function () {
     this.blockedUntil = 0;
     this.inflight = null;
   }
-  WindSource.STORAGE_KEY = 'awwWind:grids';
+  WindSource.STORAGE_KEY = 'awwWind:grids2';
+  WindSource.PREV_STORAGE_KEY = 'awwWind:grids';   // grids kept without the temperature
   WindSource.OLD_STORAGE_KEY = 'awwWind:last';   // a single grid, before the lattice
 
   WindSource.prototype.url = function (spec) {
     var pl = WindField.pointLists(spec);
     var vars = [];
     for (var name in LEVELS) vars = vars.concat(LEVELS[name]);
+    vars.push(TEMP_VAR);
     return this.apiBase + '?latitude=' + pl.latitude + '&longitude=' + pl.longitude +
       '&hourly=' + vars.join(',') + '&wind_speed_unit=ms&timeformat=unixtime' +
-      '&past_hours=2&forecast_hours=4';
+      '&past_hours=' + this.pastH + '&forecast_hours=' + this.futureH;
+  };
+
+  /** Other hours in each grid: the grids kept no longer cover them, so they go. */
+  WindSource.prototype.setHours = function (pastH, futureH) {
+    if (pastH === this.pastH && futureH === this.futureH) return;
+    this.pastH = pastH;
+    this.futureH = futureH;
+    this.entries = [];
+    this.world = null;
   };
 
   /** Bring the grids back from storage once per page, dropping those past
@@ -401,7 +561,10 @@ var WidgetWind = (function () {
       return e;
     };
     try {
-      if (this.storage.removeItem) this.storage.removeItem(WindSource.OLD_STORAGE_KEY);
+      if (this.storage.removeItem) {
+        this.storage.removeItem(WindSource.OLD_STORAGE_KEY);
+        this.storage.removeItem(WindSource.PREV_STORAGE_KEY);
+      }
       var raw = this.storage.getItem(WindSource.STORAGE_KEY);
       if (!raw) return;
       var saved = JSON.parse(raw);
@@ -467,6 +630,7 @@ var WidgetWind = (function () {
       own. Resolves with the world grid, or null. */
   WindSource.prototype.ensureWorld = function () {
     var self = this;
+    if (!this.useWorld) return Promise.resolve(null);
     this.restore();
     var now = this.now();
     if (this.world && now - this.world.fetchedAt <= this.ttlMs) return Promise.resolve(this.world);
@@ -512,12 +676,15 @@ var WidgetWind = (function () {
     this.ensureWorld();
     if (now < this.blockedUntil) return Promise.resolve(this.best(view));
     if (this.inflight) return this.inflight;
-    var t0 = now;
+    var t0 = now, hours = this.pastH + '/' + this.futureH;
     this.inflight = this._get(spec).then(function (entry) {
       entry.zoom = view.zoom;
-      self.entries.unshift(entry);
-      if (self.entries.length > self.maxEntries) self.entries.length = self.maxEntries;
-      self.persist();
+      // Not kept when the hours changed meanwhile (setHours).
+      if (hours === self.pastH + '/' + self.futureH) {
+        self.entries.unshift(entry);
+        if (self.entries.length > self.maxEntries) self.entries.length = self.maxEntries;
+        self.persist();
+      }
       self.inflight = null;
       self.failures = 0;
       self.blockedUntil = self.now() + self.minIntervalMs;
@@ -561,9 +728,29 @@ var WidgetWind = (function () {
     this.template = opts.template || 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
     this.loadTile = opts.loadTile || defaultLoadTile;
     this.maxTiles = opts.maxTiles || 16;
+    // Tiles kept at most, the least recently asked for dropped first: the
+    // temperature layer asks for tiles at every zoom.
+    this.maxKept = opts.maxKept || Infinity;
     this.tiles = {};     // 'z/x/y' -> Float32Array(65536)
+    this.count = 0;      // tiles held
     this.pending = {};   // 'z/x/y' -> Promise
+    this.used = new Map();   // keys, least recently asked for first
   }
+
+  DemTiles.prototype._touch = function (key) {
+    this.used.delete(key);
+    this.used.set(key, true);
+  };
+
+  DemTiles.prototype._evict = function () {
+    var keys = this.used.keys();
+    while (this.count > this.maxKept) {
+      var next = keys.next();
+      if (next.done) break;
+      this.used.delete(next.value);
+      if (this.tiles[next.value]) { delete this.tiles[next.value]; this.count--; }
+    }
+  };
 
   /** Tile index range covering a spec at zoom z. Latitudes are kept inside
       Web Mercator: a grid reaching a pole (the world grid) has no finite y. */
@@ -586,25 +773,35 @@ var WidgetWind = (function () {
     var self = this;
     var r = this._range(spec, z);
     if ((r.x1 - r.x0 + 1) * (r.y1 - r.y0 + 1) > this.maxTiles) return Promise.resolve();
-    var keys = this.tileKeysFor(spec, z);
-    var waits = [];
-    keys.forEach(function (key) {
-      if (self.tiles[key]) return;
-      if (!self.pending[key]) {
-        var parts = key.split('/');
-        var url = self.template.replace('{z}', parts[0]).replace('{x}', parts[1]).replace('{y}', parts[2]);
-        self.pending[key] = self.loadTile(url).then(function (data) {
-          self.tiles[key] = data;
-          delete self.pending[key];
-        }).catch(function (err) {
-          delete self.pending[key];
-          if (typeof console !== 'undefined') console.warn('[wind] ' + err);
-        });
-      }
-      waits.push(self.pending[key]);
-    });
-    return Promise.all(waits);
+    return Promise.all(this.tileKeysFor(spec, z).map(function (key) { return self._load(key); }));
   };
+
+  /** Load one tile, once; resolves when it is in, or failed (a warning). */
+  DemTiles.prototype._load = function (key) {
+    var self = this;
+    this._touch(key);
+    if (this.tiles[key]) return Promise.resolve();
+    if (!this.pending[key]) {
+      var parts = key.split('/');
+      var url = this.template.replace('{z}', parts[0]).replace('{x}', parts[1]).replace('{y}', parts[2]);
+      this.pending[key] = this.loadTile(url).then(function (data) {
+        if (!self.tiles[key]) self.count++;
+        self.tiles[key] = data;
+        delete self.pending[key];
+        self._evict();
+      }).catch(function (err) {
+        delete self.pending[key];
+        if (typeof console !== 'undefined') console.warn('[wind] ' + err);
+      });
+    }
+    return this.pending[key];
+  };
+
+  /** Load the tile z/x/y itself (the temperature draws tile by tile). */
+  DemTiles.prototype.ensureTile = function (z, x, y) { return this._load(z + '/' + x + '/' + y); };
+
+  /** Elevations of the tile z/x/y, 256 rows of 256 from the north-west; null while missing. */
+  DemTiles.prototype.tileData = function (z, x, y) { return this.tiles[z + '/' + x + '/' + y] || null; };
 
   /** Elevation (m) at a world pixel of zoom z, NaN while the tile is missing. */
   DemTiles.prototype.elevationAtWorld = function (x, y, z) {
@@ -615,9 +812,117 @@ var WidgetWind = (function () {
     return t[py * 256 + px];
   };
 
+  /* === What both wind layers share (the Leaflet one below, the MapLibre
+     one of glue-wind-table.js): their settings, their cadence, the fading
+     of the trails, the particles stroked by band of color, the frame
+     statistics. Each layer has options, _fps, _spd, _loop, _running,
+     _settled and a _reset() of its own. === */
+  var Particles = {
+    /** Frame-rate budget: base cadence and the ceiling the adaptive rate may reach. */
+    setRate: function (fps, maxFps) {
+      this.options.fps = Math.max(4, Math.min(30, fps || 10));
+      this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
+      this._fps = this.options.fps;
+    },
+
+    /** Particle width from the settings; the next frame draws with it. */
+    setLineWidth: function (w) { this.options.lineWidth = WindField.lineWidth(w); },
+
+    /** Map theme ('dark' | 'light'): white bands turn dark on a light map. */
+    setTheme: function (theme) { this.options.theme = theme; },
+
+    /** Wind palette from the settings (null: the default); the next frame uses it. */
+    setPalette: function (palette) { this.options.palette = palette || WindField.DEFAULT_PALETTE; },
+
+    /** Whether particles are on screen, for the widget's fade-in. */
+    isDrawing: function () { return !!this._running; },
+
+    /** The map has its final size: start drawing. Right after a page
+        load the widget recalibrates the viewport (window.fixViewport);
+        particles drawn before that land in a provisional frame and start
+        over a moment later, which looks like a scramble. Called by
+        fixViewport, or after settleMs when nothing calls it. */
+    settle: function () {
+      if (this._settleTimer) { clearTimeout(this._settleTimer); this._settleTimer = null; }
+      if (this._settled) return;
+      this._settled = true;
+      this._reset();
+    },
+
+    // One frame every 1000/fps ms: a timer, then a single rAF to draw. Never
+    // a free-running rAF loop (it alone costs ~9 % of a core in QtWebEngine).
+    _schedule: function () {
+      var self = this, loop = this._loop || 0;
+      this._timer = setTimeout(function () {
+        self._timer = null;
+        if (!self._running || self._loop !== loop) return;
+        requestAnimationFrame(function () {
+          if (!self._running || self._loop !== loop) return;
+          self._frame();
+          self._schedule();
+        });
+      }, 1000 / this._fps);
+    },
+
+    /** The trails fade: alpha of the last frame kept. */
+    _fadeTrails: function (ctx, alpha) {
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.fillStyle = 'rgba(0,0,0,' + alpha + ')';
+      ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
+    },
+
+    /** One path per band of the palette, for the segments of a frame. */
+    _paths: function () { return this.options.palette.map(function () { return new Path2D(); }); },
+
+    /** The segments of a frame stroked, each band in its color and
+        opacity. Adaptive cadence: strong winds would jump several px per
+        frame at 10 fps, so the rate rises until the fast particles step
+        about stepPx, never above maxFps. Tuned on the fast ones
+        (cadenceFraction of the count speeds in _spd) rather than the mean:
+        zoomed out, calm air fills most of the view and kept the base rate
+        while the storms jumped. Smoothed so the rate does not flicker. */
+    _stroke: function (ctx, paths, dpr, count) {
+      var o = this.options;
+      ctx.lineWidth = o.lineWidth * dpr;
+      ctx.lineCap = 'round';
+      for (var b = 0; b < paths.length; b++) {
+        ctx.strokeStyle = WindField.bandColor(o.palette, b, o.theme);
+        ctx.globalAlpha = WindField.BAND_ALPHA[b];
+        ctx.stroke(paths[b]);
+      }
+      ctx.globalAlpha = 1;
+      if (count) {
+        var want = WindField.targetFps(WindField.cadenceSpeed(this._spd, count, o.cadenceFraction), o.fps, o.maxFps, o.stepPx);
+        this._fps = this._fps * 0.8 + want * 0.2;
+      }
+    },
+
+    // Frame statistics (frames drawn, JS ms per frame) logged every 10 s so
+    // the real cadence and cost can be read from the console.
+    _stat: function (jsMs) {
+      var now = Date.now();
+      if (!this._statT0) { this._statT0 = now; this._statFrames = 0; this._statMs = 0; }
+      this._statFrames++;
+      this._statMs += jsMs;
+      if (now - this._statT0 >= 10000) {
+        var secs = (now - this._statT0) / 1000;
+        console.log('[wind] ' + (this._statFrames / secs).toFixed(1) + ' fps, ' +
+          (this._statMs / this._statFrames).toFixed(2) + ' ms JS per frame, ' + this._n + ' particles');
+        this._statT0 = now; this._statFrames = 0; this._statMs = 0;
+      }
+    }
+  };
+
+  /** proto with the methods of Particles it does not have itself. */
+  function withParticles(proto) {
+    for (var k in Particles) if (!(k in proto)) proto[k] = Particles[k];
+    return proto;
+  }
+
   /* === Leaflet layer: canvas particles driven by the grid === */
   function createWindLayer(L) {
-    return L.Layer.extend({
+    return L.Layer.extend(withParticles({
       options: {
         pane: 'lv-wind-pane',
         fps: 10,             // base cadence; raised up to maxFps when particles move fast
@@ -629,11 +934,11 @@ var WidgetWind = (function () {
         sigma: 250,          // m: elevation similarity scale for the weighting
         fade: 0.90,          // alpha kept per frame (trail length)
         maxAge: 60,          // frames before a particle respawns
-        density: 300,        // CSS px^2 per particle
-        minParticles: 200,
+        density: 1,          // from the settings: 1 = one particle per 300 CSS px^2
         maxParticles: 800,
         lineWidth: 1,        // CSS px, set from the widget settings
-        color: '#ffffff',
+        palette: null,       // wind palette (WindField.parsePalette); null = the default
+        theme: 'dark',       // map theme: white bands turn dark on a light map
         speedScale: 3,       // px/s per m/s
         minPx: 2,
         maxPx: 60,
@@ -645,6 +950,7 @@ var WidgetWind = (function () {
       initialize: function (source, dem, options) {
         L.setOptions(this, options);
         this.options.lineWidth = WindField.lineWidth(this.options.lineWidth);
+        this.options.palette = this.options.palette || WindField.DEFAULT_PALETTE;
         this._source = source;
         this._dem = dem;
         this._active = true;
@@ -699,33 +1005,10 @@ var WidgetWind = (function () {
         else this._stop(true);
       },
 
-      setColor: function (color) { this.options.color = color; },
-
-      /** The map has its final size: start drawing. Right after a page
-          load the widget recalibrates the viewport (window.fixViewport);
-          particles drawn before that land in a provisional frame and start
-          over a moment later, which looks like a scramble. Called by
-          fixViewport, or after settleMs when nothing calls it. */
-      settle: function () {
-        if (this._settleTimer) { clearTimeout(this._settleTimer); this._settleTimer = null; }
-        if (this._settled) return;
-        this._settled = true;
-        this._reset();
-      },
-
-      /** Whether particles are on screen, for the widget's fade-in. */
-      isDrawing: function () { return !!this._running; },
-
-      /** Frame-rate budget: base cadence and the ceiling the adaptive rate may reach. */
-      setRate: function (fps, maxFps) {
-        this.options.fps = Math.max(4, Math.min(30, fps || 10));
-        this.options.maxFps = Math.max(this.options.fps, Math.min(30, maxFps || this.options.fps));
-        this._fps = this.options.fps;
-      },
-
-      /** Particle width from the settings; the next frame draws with it. */
-      setLineWidth: function (w) {
-        this.options.lineWidth = WindField.lineWidth(w);
+      /** Particle density from the settings: the particles start over with the new count. */
+      setDensity: function (density) {
+        this.options.density = density > 0 ? density : 1;
+        if (this._px) this._spawnAll();
       },
 
       /** Switch the wind level; the grid already holds every level, so this
@@ -851,8 +1134,7 @@ var WidgetWind = (function () {
       },
 
       _spawnAll: function () {
-        var count = Math.round(this._w * this._h / this.options.density);
-        count = Math.max(this.options.minParticles, Math.min(this.options.maxParticles, count));
+        var count = WindField.particleCount(this._w * this._h, this.options.density, this.options.maxParticles);
         this._n = count;
         this._px = new Float32Array(count);
         this._py = new Float32Array(count);
@@ -887,53 +1169,11 @@ var WidgetWind = (function () {
         this._warming = false;
       },
 
-      // One frame every 1000/fps ms: a timer, then a single rAF to draw. Never
-      // a free-running rAF loop (it alone costs ~9 % of a core in QtWebEngine).
-      _schedule: function () {
-        var self = this, loop = this._loop || 0;
-        this._timer = setTimeout(function () {
-          self._timer = null;
-          if (!self._running || self._loop !== loop) return;
-          requestAnimationFrame(function () {
-            if (!self._running || self._loop !== loop) return;
-            self._frame();
-            self._schedule();
-          });
-        }, 1000 / this._fps);
-      },
-
-      // Adaptive cadence: strong winds would jump several px per frame at
-      // 10 fps, so raise the rate until the fast particles step about stepPx,
-      // never above maxFps. Tuned on the fast ones (cadenceFraction) rather
-      // than the mean: zoomed out, calm air fills most of the view and kept
-      // the base rate while the storms jumped. Smoothed so the rate does not
-      // flicker.
-      _adaptFps: function (pxPerSec) {
-        var want = WindField.targetFps(pxPerSec, this.options.fps, this.options.maxFps, this.options.stepPx);
-        this._fps = this._fps * 0.8 + want * 0.2;
-      },
-
-      // Frame statistics (frames drawn, JS ms per frame) logged every 10 s so
-      // the real cadence and cost can be read from the console.
-      _stat: function (jsMs) {
-        var now = Date.now();
-        if (!this._statT0) { this._statT0 = now; this._statFrames = 0; this._statMs = 0; }
-        this._statFrames++;
-        this._statMs += jsMs;
-        if (now - this._statT0 >= 10000) {
-          var secs = (now - this._statT0) / 1000;
-          console.log('[wind] ' + (this._statFrames / secs).toFixed(1) + ' fps, ' +
-            (this._statMs / this._statFrames).toFixed(2) + ' ms JS per frame, ' + this._n + ' particles');
-          this._statT0 = now; this._statFrames = 0; this._statMs = 0;
-        }
-      },
-
       _frame: function () {
         var entry = this._entry;
         if (!entry || !entry.grid || !this._ctx) return;
         var t0 = performance.now();
         var grid = entry.grid, ctx = this._ctx, dpr = this._dpr;
-        var W = this._canvas.width, H = this._canvas.height;
         var tw = WindField.timeWeights(grid.times, Date.now() / 1000);
         var dt = 1 / this._fps;
         // Keep the trail the same length in seconds whatever the cadence.
@@ -945,12 +1185,9 @@ var WidgetWind = (function () {
         var frame = this._view, z = this._zoom, ds = this._demScale, dz = this._demZoom;
         var maxAge = this.options.maxAge, w = this._w, h = this._h;
 
-        ctx.globalCompositeOperation = 'destination-in';
-        ctx.fillStyle = 'rgba(0,0,0,' + fade + ')';
-        ctx.fillRect(0, 0, W, H);
-        ctx.globalCompositeOperation = 'source-over';
+        this._fadeTrails(ctx, fade);
 
-        var paths = [new Path2D(), new Path2D(), new Path2D()];   // calm, moderate, strong
+        var palette = this.options.palette, paths = this._paths();
         for (var i = 0; i < this._n; i++) {
           if (++this._age[i] > maxAge) { this._spawn(i, false); continue; }
           var x = this._px[i], y = this._py[i];
@@ -964,25 +1201,19 @@ var WidgetWind = (function () {
           spd[pxCount++] = Math.sqrt(vel.dx * vel.dx + vel.dy * vel.dy);
           var nx = x + vel.dx * dt, ny = y + vel.dy * dt;
           if (nx < 0 || nx >= w || ny < 0 || ny >= h) { this._spawn(i, false); continue; }
-          var k = sv.speed < 2 ? 0 : (sv.speed < 6 ? 1 : 2);
+          var k = WindField.paletteBand(sv.speed, palette);
           paths[k].moveTo(x * dpr, y * dpr);
           paths[k].lineTo(nx * dpr, ny * dpr);
           this._px[i] = nx;
           this._py[i] = ny;
         }
-        ctx.strokeStyle = this.options.color;
-        ctx.lineWidth = this.options.lineWidth * dpr;
-        ctx.lineCap = 'round';
-        var alphas = [0.35, 0.6, 0.9];
-        for (var b = 0; b < 3; b++) { ctx.globalAlpha = alphas[b]; ctx.stroke(paths[b]); }
-        ctx.globalAlpha = 1;
-        if (pxCount) this._adaptFps(WindField.cadenceSpeed(spd, pxCount, this.options.cadenceFraction));
+        this._stroke(ctx, paths, dpr, pxCount);
         if (!this._warming) this._stat(performance.now() - t0);
       }
-    });
+    }));
   }
 
-  return { WindField: WindField, WindSource: WindSource, DemTiles: DemTiles, createWindLayer: createWindLayer };
+  return { WindField: WindField, WindSource: WindSource, DemTiles: DemTiles, createWindLayer: createWindLayer, withParticles: withParticles };
 })();
 
 if (typeof module !== 'undefined' && module.exports) { module.exports = WidgetWind; }

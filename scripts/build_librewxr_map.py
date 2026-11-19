@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Rebuild contents/ui/components/librewxr-map.html from the vendored widget
-glue fragments and the LibreWXR checkout sources.
+"""Rebuild the radar map pages of contents/ui/components/ from the vendored
+widget glue fragments and the LibreWXR checkout sources: librewxr-map.html
+(MapLibre, flat or globe) and librewxr-map-leaflet.html (Leaflet, where the
+first one hands over when there is no WebGL).
 
 Usage:
     python3 scripts/build_librewxr_map.py [--librewxr /path/to/LibreWXR]
@@ -21,7 +23,7 @@ import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-OUT_PATH = os.path.join(REPO_ROOT, "contents", "ui", "components", "librewxr-map.html")
+OUT_DIR = os.path.join(REPO_ROOT, "contents", "ui", "components")
 LOCAL_SRC_DIR = os.path.join(SCRIPT_DIR, "librewxr-map-src")
 
 CSS_TOKEN = "/*__VIEWER_CSS__*/"
@@ -31,6 +33,27 @@ GLUE_CONFIG_TOKEN = "/*@__WIDGET_GLUE_CONFIG__*/"
 GLUE_ADAPTER_TOKEN = "/*@__WIDGET_GLUE_ADAPTER__*/"
 GLUE_WIND_TOKEN = "/*@__WIDGET_GLUE_WIND__*/"
 GLUE_CONTROLS_TOKEN = "/*@__WIDGET_GLUE_CONTROLS__*/"
+GLUE_GRIDS_TOKEN = "/*@__WIDGET_GLUE_GRIDS__*/"
+GLUE_MODELS_TOKEN = "/*@__WIDGET_GLUE_MODELS__*/"
+GLUE_WIND_OPEN_TOKEN = "/*@__WIDGET_GLUE_WIND_OPEN__*/"
+GLUE_WIND_TABLE_TOKEN = "/*@__WIDGET_GLUE_WIND_TABLE__*/"
+GLUE_TEMP_TOKEN = "/*@__WIDGET_GLUE_TEMP__*/"
+GLUE_TEMP_LAYER_TOKEN = "/*@__WIDGET_GLUE_TEMP_LAYER__*/"
+GLUE_TEMP_GL_TOKEN = "/*@__WIDGET_GLUE_TEMP_GL__*/"
+GLUE_ANIM_TOKEN = "/*@__WIDGET_GLUE_ANIM__*/"
+GLUE_ANIM_RADAR_TOKEN = "/*@__WIDGET_GLUE_ANIM_RADAR__*/"
+GLUE_PREFETCH_TOKEN = "/*@__WIDGET_GLUE_PREFETCH__*/"
+GLUE_EARTH_TOKEN = "/*@__WIDGET_GLUE_EARTH__*/"
+GLUE_PREPARE_TOKEN = "/*@__WIDGET_GLUE_PREPARE__*/"
+# The layers of the animation beyond temperature and wind, after the
+# controls in the page's module: each reaches ANIM_LAYERS, anim and the
+# adapter, and the later ones borrow the pressure's GL layer.
+GLUE_FIELDS_TOKEN = "/*@__WIDGET_GLUE_FIELDS__*/"
+GLUE_PRESSURE_TOKEN = "/*@__WIDGET_GLUE_PRESSURE__*/"
+GLUE_AIRQUALITY_TOKEN = "/*@__WIDGET_GLUE_AIRQUALITY__*/"
+GLUE_PRECIP_TOKEN = "/*@__WIDGET_GLUE_PRECIP__*/"
+GLUE_CLOUDS_TOKEN = "/*@__WIDGET_GLUE_CLOUDS__*/"
+GLUE_HUMIDITY_TOKEN = "/*@__WIDGET_GLUE_HUMIDITY__*/"
 
 # Vendored in this repository under scripts/librewxr-map-src/. shell.html is
 # the assembly base and carries no token of its own; the remaining fragments
@@ -42,6 +65,37 @@ LOCAL_SOURCES = [
     ("glue-adapter.js", GLUE_ADAPTER_TOKEN),
     ("glue-wind.js", GLUE_WIND_TOKEN),
     ("glue-controls.js", GLUE_CONTROLS_TOKEN),
+]
+
+# The pages built: output name, shell, then the fragments substituted at
+# their tokens. The Leaflet page keeps the original LOCAL_SOURCES list.
+PAGES = [
+    ("librewxr-map.html", "shell-maplibre.html", [
+        ("overrides.css", OVERRIDES_TOKEN),
+        ("glue-config.js", GLUE_CONFIG_TOKEN),
+        ("glue-prepare.js", GLUE_PREPARE_TOKEN),
+        ("glue-adapter-maplibre.js", GLUE_ADAPTER_TOKEN),
+        ("glue-wind.js", GLUE_WIND_TOKEN),
+        ("glue-grids.js", GLUE_GRIDS_TOKEN),
+        ("glue-models.js", GLUE_MODELS_TOKEN),
+        ("glue-wind-open.js", GLUE_WIND_OPEN_TOKEN),
+        ("glue-wind-table.js", GLUE_WIND_TABLE_TOKEN),
+        ("glue-temp.js", GLUE_TEMP_TOKEN),
+        ("glue-temp-layer.js", GLUE_TEMP_LAYER_TOKEN),
+        ("glue-temp-gl.js", GLUE_TEMP_GL_TOKEN),
+        ("glue-anim.js", GLUE_ANIM_TOKEN),
+        ("glue-anim-radar.js", GLUE_ANIM_RADAR_TOKEN),
+        ("glue-prefetch.js", GLUE_PREFETCH_TOKEN),
+        ("glue-earth.js", GLUE_EARTH_TOKEN),
+        ("glue-controls.js", GLUE_CONTROLS_TOKEN),
+        ("glue-fields.js", GLUE_FIELDS_TOKEN),
+        ("glue-pressure.js", GLUE_PRESSURE_TOKEN),
+        ("glue-airquality.js", GLUE_AIRQUALITY_TOKEN),
+        ("glue-precip.js", GLUE_PRECIP_TOKEN),
+        ("glue-clouds.js", GLUE_CLOUDS_TOKEN),
+        ("glue-humidity.js", GLUE_HUMIDITY_TOKEN),
+    ]),
+    ("librewxr-map-leaflet.html", "shell.html", LOCAL_SOURCES[1:]),
 ]
 
 # Relative to the LibreWXR checkout root.
@@ -89,7 +143,7 @@ def read_file(path):
         return fh.read()
 
 
-def build_page(librewxr_dir):
+def build_page(librewxr_dir, shell_name="shell.html", fragments=None):
     """Assemble the self-contained radar map page from the vendored glue
     fragments and the LibreWXR checkout sources.
 
@@ -98,13 +152,13 @@ def build_page(librewxr_dir):
     GENERATED header and the build marker exactly like LibreWXR's
     examples/src/build.py does.
     """
-    shell_path = os.path.join(LOCAL_SRC_DIR, "shell.html")
+    shell_path = os.path.join(LOCAL_SRC_DIR, shell_name)
     if not os.path.isfile(shell_path):
         raise SystemExit(
-            "error: missing vendored source file 'shell.html' in scripts/librewxr-map-src"
+            "error: missing vendored source file %r in scripts/librewxr-map-src" % shell_name
         )
     shell = read_file(shell_path)
-    for filename, token in LOCAL_SOURCES[1:]:
+    for filename, token in (LOCAL_SOURCES[1:] if fragments is None else fragments):
         path = os.path.join(LOCAL_SRC_DIR, filename)
         if not os.path.isfile(path):
             raise SystemExit(
@@ -130,7 +184,7 @@ def build_page(librewxr_dir):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Rebuild contents/ui/components/librewxr-map.html from the vendored widget glue fragments and the LibreWXR checkout sources."
+        description="Rebuild the radar map pages of contents/ui/components/ from the vendored widget glue fragments and the LibreWXR checkout sources."
     )
     parser.add_argument(
         "--librewxr",
@@ -152,13 +206,15 @@ def main():
             "error: LibreWXR checkout not found - tried: %s" % ", ".join(tried)
         )
 
-    page = build_page(librewxr_dir)
-    with open(OUT_PATH, "w", encoding="utf-8") as fh:
-        fh.write(page)
-    print(
-        "wrote contents/ui/components/librewxr-map.html (%d bytes) from %s"
-        % (os.path.getsize(OUT_PATH), librewxr_dir)
-    )
+    for out_name, shell_name, fragments in PAGES:
+        out_path = os.path.join(OUT_DIR, out_name)
+        page = build_page(librewxr_dir, shell_name, fragments)
+        with open(out_path, "w", encoding="utf-8") as fh:
+            fh.write(page)
+        print(
+            "wrote contents/ui/components/%s (%d bytes) from %s"
+            % (out_name, os.path.getsize(out_path), librewxr_dir)
+        )
     return 0
 
 

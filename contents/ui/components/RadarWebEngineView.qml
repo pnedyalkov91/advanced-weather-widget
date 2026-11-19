@@ -21,6 +21,7 @@ import QtWebEngine
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import "../providers/mapProviders.js" as MapProvidersJS
+import "../js/debug.js" as Dbg
 
 Item {
     id: radarRoot
@@ -41,7 +42,7 @@ Item {
         for (var i = 0; i < layers.length; i++) {
             if (layers[i].id === v) return v;
         }
-        console.warn("[Advanced Weather Widget Radar/WebEngine] radarLayer config has unrecognized value:", v, "- falling back to rainviewer");
+        Dbg.warn("Radar/WebEngine", "radarLayer config has unrecognized value:", v, "- falling back to rainviewer");
         return "rainviewer";
     }
     readonly property int    initialZoom: Plasmoid.configuration.radarZoom || 9
@@ -66,23 +67,49 @@ Item {
 
     function _pushApiToPage() {
         if (!webViewPageReady || !rainviewerApiJson) return;
-        webView.runJavaScript("window.applyRainviewerApi && window.applyRainviewerApi(" + JSON.stringify(rainviewerApiJson) + ");");
+        webView.runJavaScript("window.applyRainviewerApi && window.applyRainviewerApi(" + JSON.stringify(rainviewerApiJson) + "," + JSON.stringify(_frameLabels(rainviewerApiJson)) + ");");
+    }
+
+    // The time shown for each radar frame follows Settings → Misc → Date and
+    // Time. Qt formats it here (the page cannot read Qt date patterns); the
+    // page looks the text up by frame timestamp and falls back to its own
+    // formatting for a timestamp it was not given.
+    function _frameLabels(jsonText) {
+        var out = {};
+        if (!weatherRoot || !jsonText)
+            return out;
+        try {
+            var radar = JSON.parse(jsonText).radar || {};
+            var frames = (radar.past || []).concat(radar.nowcast || []);
+            for (var i = 0; i < frames.length; i++) {
+                var d = new Date(frames[i].time * 1000);
+                out[frames[i].time] = weatherRoot.formatDateObj(d, false) + ", " + weatherRoot.formatTimeObj(d);
+            }
+        } catch (e) {}
+        return out;
+    }
+
+    // Changing the format re-labels the frames without rebuilding the map.
+    readonly property string _formatKey: weatherRoot ? (weatherRoot.dateFormatSetting + "|" + weatherRoot.timeFormatSetting) : ""
+    on_FormatKeyChanged: {
+        if (webViewPageReady && rainviewerApiJson)
+            webView.runJavaScript("window.setTimeLabels && window.setTimeLabels(" + JSON.stringify(_frameLabels(rainviewerApiJson)) + ");");
     }
 
     function _fetchRainviewerApi() {
-        var xhr = new XMLHttpRequest();
+        var xhr = Dbg.xhr("Radar/WebEngine", "RainViewer API (host-side)");
         xhr.open("GET", "https://api.rainviewer.com/public/weather-maps.json", true);
         xhr.onreadystatechange = function() {
             if (xhr.readyState !== XMLHttpRequest.DONE) return;
             if (xhr.status === 200) {
-                console.log("[Advanced Weather Widget Radar/WebEngine] host-side RainViewer API fetch OK; length=", xhr.responseText.length);
+                Dbg.log("Radar/WebEngine", "host-side RainViewer API fetch OK; length=", xhr.responseText.length);
                 radarRoot.rainviewerApiJson = xhr.responseText;
             } else {
-                console.warn("[Advanced Weather Widget Radar/WebEngine] host-side RainViewer API fetch failed; status=", xhr.status);
+                Dbg.warn("Radar/WebEngine", "host-side RainViewer API fetch failed; status=", xhr.status);
             }
         };
         xhr.onerror = function() {
-            console.warn("[Advanced Weather Widget Radar/WebEngine] host-side RainViewer API fetch network error");
+            Dbg.warn("Radar/WebEngine", "host-side RainViewer API fetch network error");
         };
         xhr.send();
     }
@@ -108,7 +135,7 @@ Item {
     implicitHeight: 380
 
     Component.onCompleted: {
-        console.log("[Advanced Weather Widget Radar/WebEngine] component completed; lat=", lat,
+        Dbg.log("Radar/WebEngine", "component completed; lat=", lat,
                     "lon=", lon, "layer=", activeLayer,
                     "zoom=", initialZoom, "owmKeyPresent=", owmKey.length > 0,
                     "qt=", Qt.version, "platform=", Qt.platform.os);
@@ -274,6 +301,7 @@ var RADAR_OPACITY = 0.6;\
 var OWM_OPACITY  = 1.00;\
 var ANIM_DELAY = 500;\
 var API_URL = "https://api.rainviewer.com/public/weather-maps.json";\
+var TIME_LABELS = {};\
 \
 var map = L.map("map", { zoomControl: true, attributionControl: true })\
            .setView([LAT, LON], INIT_ZOOM);\
@@ -322,6 +350,7 @@ function wrapPos(p, wrap) {\
 }\
 \
 function fmtTime(ts) {\
+    if (TIME_LABELS[ts]) return TIME_LABELS[ts];\
     var d = new Date(ts * 1000);\
     var dd = d.getDate();\
     var mm = d.getMonth() + 1;\
@@ -481,7 +510,8 @@ function loadApi() {\
  * kill the in-page XHR above (e.g. the opaque origin QtWebEngine sometimes\
  * assigns to pages created via loadHtml()). radarRoot fetches\
  * weather-maps.json itself and calls this once it has the data. */\
-window.applyRainviewerApi = function(jsonText) {\
+window.applyRainviewerApi = function(jsonText, labels) {\
+    if (labels) TIME_LABELS = labels;\
     cachedApiJson = jsonText;\
     if (ACTIVE_LAYER !== "rainviewer") return;\
     try {\
@@ -490,6 +520,11 @@ window.applyRainviewerApi = function(jsonText) {\
     } catch(e) {\
         console.error("[radar] applyRainviewerApi parse failed: " + e);\
     }\
+};\
+\
+window.setTimeLabels = function(labels) {\
+    TIME_LABELS = labels || {};\
+    if (mapFrames.length > 0) updateUI();\
 };\
 \
 var TITLE_PLAY  = ' + titlePlay  + ';\
@@ -743,7 +778,7 @@ loadApi();\
 
             Component.onCompleted: {
                 var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom, radarRoot.mapBackground);
-                console.log("[Advanced Weather Widget Radar/WebEngine] WebEngineView completed; calling loadHtml, htmlLength=", html.length);
+                Dbg.log("Radar/WebEngine", "WebEngineView completed; calling loadHtml, htmlLength=", html.length);
                 radarRoot.webViewPageReady = false;
                 webView.loadHtml(html, "https://rainviewer.com/");
             }
@@ -752,13 +787,18 @@ loadApi();\
             // XHR failures, Leaflet errors, etc.) in Plasma's own log output -
             // otherwise failures inside the sandboxed page are invisible.
             onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
-                console.log("[Advanced Weather Widget Radar/WebEngine][page console]", message, "(line", lineNumber + ")");
+                // level: 0 info, 1 warning, 2 error - problems inside the page are
+                // always worth seeing, ordinary page chatter only in debug mode
+                if (level >= 1)
+                    Dbg.warn("Radar/WebEngine page console", message, "(line", lineNumber + ")");
+                else
+                    Dbg.log("Radar/WebEngine page console", message, "(line", lineNumber + ")");
             }
 
             onLoadingChanged: function(loadRequest) {
-                console.log("[Advanced Weather Widget Radar/WebEngine] loading changed:",
+                Dbg.log("Radar/WebEngine", "loading changed:",
                             "status=", loadRequest.status,
-                            "url=", loadRequest.url,
+                            "url=", Dbg.shortUrl(loadRequest.url),
                             "errorCode=", loadRequest.errorCode,
                             "error=", loadRequest.errorString);
                 if (loadRequest.status === WebEngineView.LoadSucceededStatus) {
@@ -767,7 +807,7 @@ loadApi();\
             }
 
             onRenderProcessTerminated: function(terminationStatus, exitCode) {
-                console.warn("[Advanced Weather Widget Radar/WebEngine] render process terminated:",
+                Dbg.warn("Radar/WebEngine", "render process terminated:",
                              "status=", terminationStatus, "exitCode=", exitCode);
             }
 
@@ -793,14 +833,14 @@ loadApi();\
                 target: radarRoot
                 function onLatChanged() {
                     var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom, radarRoot.mapBackground);
-                    console.log("[Advanced Weather Widget Radar/WebEngine] latitude changed; reloading html, lat=", radarRoot.lat, "lon=", radarRoot.lon);
+                    Dbg.log("Radar/WebEngine", "latitude changed; reloading html, lat=", radarRoot.lat, "lon=", radarRoot.lon);
                     radarRoot.webViewPageReady = false;
                     radarRoot._fetchRainviewerApi();
                     webView.loadHtml(html, "https://rainviewer.com/");
                 }
                 function onLonChanged() {
                     var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom, radarRoot.mapBackground);
-                    console.log("[Advanced Weather Widget Radar/WebEngine] longitude changed; reloading html, lat=", radarRoot.lat, "lon=", radarRoot.lon);
+                    Dbg.log("Radar/WebEngine", "longitude changed; reloading html, lat=", radarRoot.lat, "lon=", radarRoot.lon);
                     radarRoot.webViewPageReady = false;
                     radarRoot._fetchRainviewerApi();
                     webView.loadHtml(html, "https://rainviewer.com/");
@@ -812,7 +852,7 @@ loadApi();\
                         radarRoot._backgroundFromMap = false;
                         return;
                     }
-                    console.log("[Advanced Weather Widget Radar/WebEngine] map background changed; background=", radarRoot.mapBackground);
+                    Dbg.log("Radar/WebEngine", "map background changed; background=", radarRoot.mapBackground);
                     webView.runJavaScript("window.setBackground(" + JSON.stringify(radarRoot.mapBackground) + ");");
                 }
             }
@@ -845,7 +885,7 @@ loadApi();\
             function labelsFor(layer) {
                 var pu = precipUnit, wu = windUnit, pu2 = pressUnit, tu = tempUnit;
                 var imp = isImperial;
-                console.log("[Advanced Weather Widget Radar/WebEngine] generating labels for layer:", layer);
+                Dbg.log("Radar/WebEngine", "generating labels for layer:", layer);
                 if (layer === "rainviewer")        return [i18n("None"), i18n("Light"), i18n("Mod"), i18n("Heavy"), i18n("Storm")];
                 if (layer === "precipitation_new") return imp ? ["0","0.04","0.4","5.5 " + i18n("in/h")] : ["0","1","25","100 " + i18n("mm/h")];
                 if (layer === "clouds_new")        return ["0%","40%","60%","80%","100%"];
@@ -914,7 +954,7 @@ loadApi();\
 
     function reload() {
         var html = radarRoot._buildHtml(radarRoot.lat, radarRoot.lon, radarRoot.owmKey, radarRoot.activeLayer, radarRoot.initialZoom, radarRoot.mapBackground);
-        console.log("[Advanced Weather Widget Radar/WebEngine] reload; htmlLength=", html.length,
+        Dbg.log("Radar/WebEngine", "reload; htmlLength=", html.length,
                     "lat=", radarRoot.lat, "lon=", radarRoot.lon,
                     "layer=", radarRoot.activeLayer);
         radarRoot.webViewPageReady = false;

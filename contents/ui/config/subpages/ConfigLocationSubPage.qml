@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -23,6 +23,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import "../../js/debug.js" as Dbg
 
 ColumnLayout {
     id: searchSubPageRoot
@@ -38,28 +39,43 @@ ColumnLayout {
 
     // ── Current-location metadata (fetched from Open-Meteo) ────────────
     property real currentTemperature: NaN
-    property int  currentWeatherCode: -1
+    property int currentWeatherCode: -1
     property string currentTemperatureUnit: "°C"
     property bool currentInfoBusy: false
-    property int  _currentInfoGen: 0
+    property int _currentInfoGen: 0
 
     function _weatherCodeDescription(code) {
         // WMO weather interpretation codes (Open-Meteo)
-        if (code === 0)  return i18n("Clear sky");
-        if (code === 1)  return i18n("Mainly clear");
-        if (code === 2)  return i18n("Partly cloudy");
-        if (code === 3)  return i18n("Overcast");
-        if (code === 45 || code === 48) return i18n("Fog");
-        if (code === 51 || code === 53 || code === 55) return i18n("Drizzle");
-        if (code === 56 || code === 57) return i18n("Freezing drizzle");
-        if (code === 61 || code === 63 || code === 65) return i18n("Rain");
-        if (code === 66 || code === 67) return i18n("Freezing rain");
-        if (code === 71 || code === 73 || code === 75) return i18n("Snow");
-        if (code === 77) return i18n("Snow grains");
-        if (code === 80 || code === 81 || code === 82) return i18n("Rain showers");
-        if (code === 85 || code === 86) return i18n("Snow showers");
-        if (code === 95) return i18n("Thunderstorm");
-        if (code === 96 || code === 99) return i18n("Thunderstorm with hail");
+        if (code === 0)
+            return i18n("Clear sky");
+        if (code === 1)
+            return i18n("Mainly clear");
+        if (code === 2)
+            return i18n("Partly cloudy");
+        if (code === 3)
+            return i18n("Overcast");
+        if (code === 45 || code === 48)
+            return i18n("Fog");
+        if (code === 51 || code === 53 || code === 55)
+            return i18n("Drizzle");
+        if (code === 56 || code === 57)
+            return i18n("Freezing drizzle");
+        if (code === 61 || code === 63 || code === 65)
+            return i18n("Rain");
+        if (code === 66 || code === 67)
+            return i18n("Freezing rain");
+        if (code === 71 || code === 73 || code === 75)
+            return i18n("Snow");
+        if (code === 77)
+            return i18n("Snow grains");
+        if (code === 80 || code === 81 || code === 82)
+            return i18n("Rain showers");
+        if (code === 85 || code === 86)
+            return i18n("Snow showers");
+        if (code === 95)
+            return i18n("Thunderstorm");
+        if (code === 96 || code === 99)
+            return i18n("Thunderstorm with hail");
         return "";
     }
 
@@ -67,8 +83,7 @@ ColumnLayout {
         try {
             var lat = configRoot.cfg_latitude;
             var lon = configRoot.cfg_longitude;
-            if (!configRoot.cfg_locationName || configRoot.cfg_locationName.length === 0
-                || (lat === 0 && lon === 0)) {
+            if (!configRoot.cfg_locationName || configRoot.cfg_locationName.length === 0 || (lat === 0 && lon === 0)) {
                 currentTemperature = NaN;
                 currentWeatherCode = -1;
                 currentInfoBusy = false;
@@ -76,13 +91,13 @@ ColumnLayout {
             }
             currentInfoBusy = true;
             var myGen = ++_currentInfoGen;
-            var req = new XMLHttpRequest();
-            req.open("GET", "https://api.open-meteo.com/v1/forecast?latitude="
-                + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon)
-                + "&current=temperature_2m,weather_code&timezone=auto");
-            req.onreadystatechange = function() {
-                if (req.readyState !== XMLHttpRequest.DONE) return;
-                if (myGen !== _currentInfoGen) return;
+            var req = Dbg.xhr("Config/Location", "_fetchCurrentInfo");
+            req.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m,weather_code&timezone=auto");
+            req.onreadystatechange = function () {
+                if (req.readyState !== XMLHttpRequest.DONE)
+                    return;
+                if (myGen !== _currentInfoGen)
+                    return;
                 currentInfoBusy = false;
                 if (req.status === 200) {
                     try {
@@ -137,8 +152,7 @@ ColumnLayout {
     // Re-run the Open-Meteo lookup whenever the active location changes.
     // Using a derived property + its own change handler avoids Connections
     // on configRoot (which caused initialisation issues in some Qt 6 builds).
-    readonly property string activeLocKey:
-        "" + configRoot.cfg_latitude + "|" + configRoot.cfg_longitude + "|" + (configRoot.cfg_locationName || "")
+    readonly property string activeLocKey: "" + configRoot.cfg_latitude + "|" + configRoot.cfg_longitude + "|" + (configRoot.cfg_locationName || "")
     onActiveLocKeyChanged: Qt.callLater(_fetchCurrentInfo)
 
     Component.onCompleted: Qt.callLater(_fetchCurrentInfo)
@@ -165,17 +179,17 @@ ColumnLayout {
         // Without it Photon uses the Accept-Language header of the request, which here
         // follows the system locale and gives English names.
         var url = "https://photon.komoot.io/api?q=" + encodeURIComponent(q) + "&limit=15&lang=default";
-        console.warn("[LocationSearch] #" + requestId + " Photon GET " + url);
-        var req = new XMLHttpRequest();
+        Dbg.log("Location search", "#" + requestId + " Photon GET " + url);
+        var req = Dbg.xhr("Config/Location", "performSearch");
         req.open("GET", url);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
                 return;
             if (requestId !== searchRequestId) {
-                console.warn("[LocationSearch] #" + requestId + " Photon reply ignored (stale), HTTP " + req.status);
+                Dbg.warn("Location search", "#" + requestId + " Photon reply ignored (stale), HTTP " + req.status);
                 return;
             }
-            console.warn("[LocationSearch] #" + requestId + " Photon HTTP " + req.status + " " + req.statusText);
+            Dbg.warn("Location search", "#" + requestId + " Photon HTTP " + req.status + " " + req.statusText);
             var collected = [];
             if (req.status === 200) {
                 try {
@@ -187,7 +201,7 @@ ColumnLayout {
                     });
                     if (places.length === 0)
                         places = feats;
-                    console.warn("[LocationSearch] #" + requestId + " Photon returned " + feats.length + " item(s), kept " + places.length);
+                    Dbg.log("Location search", "#" + requestId + " Photon returned " + feats.length + " item(s), kept " + places.length);
                     places.forEach(function (f) {
                         var pr = f.properties || {};
                         var c = f.geometry && f.geometry.coordinates;   // GeoJSON order: [lon, lat]
@@ -207,7 +221,7 @@ ColumnLayout {
                                 parts.push(part);
                         });
                         var title = parts.join(", ");
-                        console.warn("[LocationSearch] #" + requestId + " Photon item: " + title);
+                        Dbg.log("Location search", "#" + requestId + " Photon item: " + title);
                         collected.push({
                             name: pName,
                             admin1: pState,
@@ -224,10 +238,10 @@ ColumnLayout {
                         });
                     });
                 } catch (e) {
-                    console.warn("[LocationSearch] #" + requestId + " Photon parse error: " + e);
+                    Dbg.warn("Location search", "#" + requestId + " Photon parse error: " + e);
                 }
             } else {
-                console.warn("[LocationSearch] #" + requestId + " Photon body: " + String(req.responseText).substring(0, 400));
+                Dbg.log("Location search", "#" + requestId + " Photon body: " + String(req.responseText).substring(0, 400));
             }
             var dedup = {}, finalList = [];
             for (var i = 0; i < collected.length; ++i) {
@@ -298,8 +312,7 @@ ColumnLayout {
             border.width: 1
             implicitHeight: currentInfoCol.implicitHeight + 12
 
-            readonly property bool hasLocation:
-                configRoot.cfg_locationName && configRoot.cfg_locationName.length > 0
+            readonly property bool hasLocation: configRoot.cfg_locationName && configRoot.cfg_locationName.length > 0
 
             visible: hasLocation
 
@@ -326,9 +339,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
                         font.bold: true
-                        text: i18n("Location:") + " " + (currentInfoCard.hasLocation
-                            ? configRoot.cfg_locationName
-                            : i18n("None"))
+                        text: i18n("Location:") + " " + (currentInfoCard.hasLocation ? configRoot.cfg_locationName : i18n("None"))
                     }
                     BusyIndicator {
                         visible: searchSubPageRoot.currentInfoBusy
@@ -467,9 +478,12 @@ ColumnLayout {
                             var locs;
                             try {
                                 locs = JSON.parse(configRoot.cfg_savedLocations || "[]");
-                                if (!Array.isArray(locs)) locs = [];
-                            } catch (e) { locs = []; }
-                            var isDup = locs.some(function(l) {
+                                if (!Array.isArray(locs))
+                                    locs = [];
+                            } catch (e) {
+                                locs = [];
+                            }
+                            var isDup = locs.some(function (l) {
                                 return Math.abs(l.lat - entryLat) < 0.01 && Math.abs(l.lon - entryLon) < 0.01;
                             });
 
@@ -535,7 +549,8 @@ ColumnLayout {
             type: Kirigami.MessageType.Warning
             text: configRoot.duplicateWarning
             showCloseButton: true
-            onVisibleChanged: if (!visible) configRoot.duplicateWarning = ""
+            onVisibleChanged: if (!visible)
+                configRoot.duplicateWarning = ""
         }
 
         Kirigami.InlineMessage {
@@ -556,9 +571,7 @@ ColumnLayout {
             Layout.fillWidth: true
             visible: true
             type: Kirigami.MessageType.Information
-            text: i18n("Location search by %1 · Map data © %2",
-                       "<a href=\"https://photon.komoot.io\">Photon</a>",
-                       "<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a>")
+            text: i18n("Location search by %1 · Map data © %2", "<a href=\"https://photon.komoot.io\">Photon</a>", "<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a>")
             onLinkActivated: link => Qt.openUrlExternally(link)
         }
     }

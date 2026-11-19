@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -52,63 +52,212 @@ QtObject {
     /** Current-weather fetch for provider `p` (mirrors the old _tryProvider tail). */
     function fetchCurrent(p, service, chain, idx) {
         switch (p) {
-        case "aemet":          AemetJS.fetchCurrent(service, W, chain, idx, AemetMunicipiosData); return;
-        case "pirateWeather":  PirateWeatherJS.fetchCurrent(service, W, chain, idx); return;
-        case "visualCrossing": VisualCrossingJS.fetchCurrent(service, W, chain, idx); return;
-        case "tomorrowIo":     TomorrowIoJS.fetchCurrent(service, W, chain, idx); return;
-        case "stormGlass":     StormGlassJS.fetchCurrent(service, W, chain, idx); return;
-        case "weatherbit":     WeatherbitJS.fetchCurrent(service, W, chain, idx); return;
-        case "qWeather":       QWeatherJS.fetchCurrent(service, W, chain, idx); return;
-        case "openWeather":    OpenWeatherJS.fetchCurrent(service, W, chain, idx); return;
-        case "weatherApi":     WeatherApiJS.fetchCurrent(service, W, chain, idx); return;
-        case "metno":          MetNoJS.fetchCurrent(service, W, chain, idx); return;
-        case "bbc":            BbcWeatherJS.fetchCurrent(service, W, chain, idx); return;
-        default:               OpenMeteoJS.fetchCurrent(service, chain, idx); return; // default = Open-Meteo
+        case "aemet":
+            AemetJS.fetchCurrent(service, W, chain, idx, AemetMunicipiosData);
+            return;
+        case "pirateWeather":
+            PirateWeatherJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "visualCrossing":
+            VisualCrossingJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "tomorrowIo":
+            TomorrowIoJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "stormGlass":
+            StormGlassJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "weatherbit":
+            WeatherbitJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "qWeather":
+            QWeatherJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "openWeather":
+            OpenWeatherJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "weatherApi":
+            WeatherApiJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "metno":
+            MetNoJS.fetchCurrent(service, W, chain, idx);
+            return;
+        case "bbc":
+            BbcWeatherJS.fetchCurrent(service, W, chain, idx);
+            return;
+        default:
+            OpenMeteoJS.fetchCurrent(service, chain, idx);
+            return; // default = Open-Meteo
         }
     }
 
     /** Sequential hourly fetch for provider `ap`. Returns true if handled. */
     function fetchHourly(ap, service, dateStr) {
         switch (ap) {
-        case "openMeteo":      OpenMeteoJS.fetchHourly(service, dateStr); return true;
-        case "aemet":          AemetJS.fetchHourly(service, W, dateStr, AemetMunicipiosData); return true;
-        case "pirateWeather":  PirateWeatherJS.fetchHourly(service, W, dateStr); return true;
-        case "openWeather":    OpenWeatherJS.fetchHourly(service, W, dateStr); return true;
-        case "weatherApi":     WeatherApiJS.fetchHourly(service, W, dateStr); return true;
-        case "metno":          MetNoJS.fetchHourly(service, W, dateStr); return true;
-        case "bbc":            BbcWeatherJS.fetchHourly(service, W, dateStr); return true;
-        case "visualCrossing": VisualCrossingJS.fetchHourly(service, W, dateStr); return true;
-        case "tomorrowIo":     TomorrowIoJS.fetchHourly(service, W, dateStr); return true;
-        case "stormGlass":     StormGlassJS.fetchHourly(service, W, dateStr); return true;
-        case "weatherbit":     WeatherbitJS.fetchHourly(service, W, dateStr); return true;
-        case "qWeather":       QWeatherJS.fetchHourly(service, W, dateStr); return true;
-        default:               return false;
+        case "openMeteo":
+            OpenMeteoJS.fetchHourly(service, dateStr);
+            return true;
+        case "aemet":
+            AemetJS.fetchHourly(service, W, dateStr, AemetMunicipiosData);
+            return true;
+        case "pirateWeather":
+            PirateWeatherJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "openWeather":
+            OpenWeatherJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "weatherApi":
+            WeatherApiJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "metno":
+            MetNoJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "bbc":
+            BbcWeatherJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "visualCrossing":
+            VisualCrossingJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "tomorrowIo":
+            TomorrowIoJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "stormGlass":
+            StormGlassJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "weatherbit":
+            WeatherbitJS.fetchHourly(service, W, dateStr);
+            return true;
+        case "qWeather":
+            QWeatherJS.fetchHourly(service, W, dateStr);
+            return true;
+        default:
+            return false;
         }
     }
 
     /** Parallel-safe hourly fetch for providers that support it. Returns true
      *  if handled (result delivered via callback), false to let the caller use
      *  its inline path. Needed by BBC and AEMET, whose id/municipio
-     *  resolution is an async step that lives in-module. */
+     *  resolution is an async step that lives in-module, and by Open-Meteo,
+     *  which shares its request with the Forecast tab's hourly fetch. */
+    /** Hours of every day firstDate..lastDate in ONE request. callback({ dateStr: [hours] }) - {} on
+     *  failure. Returns false (and never calls back) for a provider without an hourly endpoint.
+     *  Every provider's hourly answer already holds many days (Open-Meteo: the range asked for; met.no, Pirate
+     *  Weather, Tomorrow.io, StormGlass, Weatherbit, QWeather, OpenWeather, WeatherAPI, BBC, AEMET: their whole
+     *  window; Visual Crossing: the range asked for), so one request serves every day of the Forecast tab. */
+    function hasHourlyAll(ap) {
+        return ["openMeteo", "metno", "openWeather", "weatherApi", "pirateWeather", "visualCrossing", "tomorrowIo", "stormGlass", "weatherbit", "qWeather", "bbc", "aemet"].indexOf(ap) >= 0;
+    }
+    function fetchHourlyAll(ap, service, firstDate, lastDate, callback) {
+        switch (ap) {
+        case "openMeteo":
+            OpenMeteoJS.fetchHourlyAll(service, firstDate, lastDate, callback);
+            return true;
+        case "aemet":
+            AemetJS.fetchHourlyAll(service, W, firstDate, lastDate, callback, AemetMunicipiosData);
+            return true;
+        case "pirateWeather":
+            PirateWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "openWeather":
+            OpenWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "weatherApi":
+            WeatherApiJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "metno":
+            MetNoJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "bbc":
+            BbcWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "visualCrossing":
+            VisualCrossingJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "tomorrowIo":
+            TomorrowIoJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "stormGlass":
+            StormGlassJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "weatherbit":
+            WeatherbitJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        case "qWeather":
+            QWeatherJS.fetchHourlyAll(service, W, firstDate, lastDate, callback);
+            return true;
+        default:
+            return false;
+        }
+    }
+
     function fetchHourlyDirect(ap, service, dateStr, callback) {
-        if (ap === "bbc") { BbcWeatherJS.fetchHourlyDirect(service, W, dateStr, callback); return true; }
-        if (ap === "aemet") { AemetJS.fetchHourlyDirect(service, W, dateStr, callback, AemetMunicipiosData); return true; }
+        if (ap === "openMeteo") {
+            // callback(arr, true): the second argument says the answer is the complete one the
+            // Forecast tab would ask for itself (see main.qml fetchHourlyForDateDirect)
+            OpenMeteoJS.fetchHourlyDirect(service, dateStr, function (arr) {
+                callback(arr, arr && arr.length > 0);
+            });
+            return true;
+        }
+        if (ap === "bbc") {
+            BbcWeatherJS.fetchHourlyDirect(service, W, dateStr, callback);
+            return true;
+        }
+        if (ap === "aemet") {
+            AemetJS.fetchHourlyDirect(service, W, dateStr, callback, AemetMunicipiosData);
+            return true;
+        }
+        if (ap === "tomorrowIo") {
+            // one day out of the forecast answer every other Tomorrow.io fetch shares (25 requests an hour)
+            TomorrowIoJS.fetchHourlyAll(service, W, dateStr, dateStr, function (map) {
+                callback(map[dateStr] || []);
+            });
+            return true;
+        }
+        if (ap === "weatherbit") {
+            // one day out of the hourly answer every other Weatherbit fetch shares (about 50 calls a day)
+            WeatherbitJS.fetchHourlyAll(service, W, dateStr, dateStr, function (map) {
+                callback(map[dateStr] || []);
+            });
+            return true;
+        }
+        if (ap === "stormGlass") {
+            // one day out of the answer every other StormGlass fetch shares (10 requests a day)
+            StormGlassJS.fetchHourlyAll(service, W, dateStr, dateStr, function (map) {
+                callback(map[dateStr] || []);
+            });
+            return true;
+        }
         return false;
     }
 
-    function fetchAlerts(service)         { AlertsJS.fetchAlerts(service); }
-    function fetchAlertsLibreWxr(service) { LibreWxrAlertsJS.fetchAlerts(service); }
-    function fetchAlertsFoss(service)      { FossAlertsJS.fetchAlerts(service); }
-    function fetchSpaceWeather(service) { SpaceWeatherJS.fetchSpaceWeather(service); }
-    function recomputeAuroraForLocation(service) { SpaceWeatherJS.recomputeAuroraForLocation(service); }
+    function fetchAlerts(service) {
+        AlertsJS.fetchAlerts(service);
+    }
+    function fetchAlertsLibreWxr(service) {
+        LibreWxrAlertsJS.fetchAlerts(service);
+    }
+    function fetchAlertsFoss(service) {
+        FossAlertsJS.fetchAlerts(service);
+    }
+    function fetchSpaceWeather(service) {
+        SpaceWeatherJS.fetchSpaceWeather(service);
+    }
+    function recomputeAuroraForLocation(service) {
+        SpaceWeatherJS.recomputeAuroraForLocation(service);
+    }
 
     /** Native air-quality fetch for providers that support it. Returns true if
      *  handled (a native request is in flight), false if this provider has no
      *  native AQI support and the caller should go straight to Open-Meteo. */
     function fetchAirQuality(p, service) {
         switch (p) {
-        case "pirateWeather": PirateWeatherJS.fetchAirQuality(service, W); return true;
-        default:              return false;
+        case "pirateWeather":
+            PirateWeatherJS.fetchAirQuality(service, W);
+            return true;
+        default:
+            return false;
         }
     }
 }

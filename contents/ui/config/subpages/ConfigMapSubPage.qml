@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -23,6 +23,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import "../../js/debug.js" as Dbg
 
 ColumnLayout {
     id: mapSubPageRoot
@@ -56,9 +57,12 @@ ColumnLayout {
         var locs;
         try {
             locs = JSON.parse(configRoot.cfg_savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { locs = []; }
-        var isDup = locs.some(function(l) {
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            locs = [];
+        }
+        var isDup = locs.some(function (l) {
             return Math.abs(l.lat - selectedLat) < 0.01 && Math.abs(l.lon - selectedLon) < 0.01;
         });
 
@@ -66,17 +70,20 @@ ColumnLayout {
         configRoot.cfg_autoDetectLocation = false;
         configRoot.cfg_latitude = selectedLat;
         configRoot.cfg_longitude = selectedLon;
-        if (selectedName.length > 0) configRoot.cfg_locationName = selectedName;
-        if (selectedAltitude !== 0) configRoot.cfg_altitude = selectedAltitude;
-        if (selectedTimezone.length > 0) configRoot.cfg_timezone = selectedTimezone;
-        if (selectedCountryCode.length > 0) configRoot.cfg_countryCode = selectedCountryCode;
+        if (selectedName.length > 0)
+            configRoot.cfg_locationName = selectedName;
+        if (selectedAltitude !== 0)
+            configRoot.cfg_altitude = selectedAltitude;
+        if (selectedTimezone.length > 0)
+            configRoot.cfg_timezone = selectedTimezone;
+        if (selectedCountryCode.length > 0)
+            configRoot.cfg_countryCode = selectedCountryCode;
         configRoot.verifyProviderLocation(selectedLat, selectedLon);
 
         if (!isDup) {
             configRoot.duplicateWarning = "";
             // Store pending - saved on KCM Apply via save() in configLocation.qml
-            var entryName = selectedName.length > 0
-                ? selectedName : (selectedLat.toFixed(4) + "°, " + selectedLon.toFixed(4) + "°");
+            var entryName = selectedName.length > 0 ? selectedName : (selectedLat.toFixed(4) + "°, " + selectedLon.toFixed(4) + "°");
             configRoot._pendingEntry = {
                 name: entryName,
                 lat: selectedLat,
@@ -157,16 +164,16 @@ ColumnLayout {
             if (preset.countryCode && preset.countryCode.length > 0)
                 selectedCountryCode = preset.countryCode;
         } else {
-            var revReq = new XMLHttpRequest();
+            var revReq = Dbg.xhr("Config/Map", "_lookupLocation");
             var revUrl = "https://photon.komoot.io/reverse?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon) + "&radius=20&limit=1&lang=default";
-            console.warn("[LocationSearch] Map Photon reverse GET " + revUrl);
+            Dbg.log("Location search", "Map Photon reverse GET " + revUrl);
             revReq.open("GET", revUrl);
             revReq.onreadystatechange = function () {
                 if (revReq.readyState !== XMLHttpRequest.DONE)
                     return;
                 if (reqId !== _reqId)
                     return;
-                console.warn("[LocationSearch] Map Photon reverse HTTP " + revReq.status + " " + revReq.statusText);
+                Dbg.warn("Location search", "Map Photon reverse HTTP " + revReq.status + " " + revReq.statusText);
                 if (revReq.status === 200) {
                     try {
                         var feats = JSON.parse(revReq.responseText).features || [];
@@ -176,13 +183,13 @@ ColumnLayout {
                             var cc = (pr.countrycode || "").toUpperCase();
                             if (cc.length > 0)
                                 selectedCountryCode = cc;
-                            console.warn("[LocationSearch] Map Photon reverse name: " + selectedName);
+                            Dbg.log("Location search", "Map Photon reverse name: " + selectedName);
                         }
                     } catch (e) {
-                        console.warn("[MapSubPage] Photon reverse parse error:", e);
+                        Dbg.warn("Config/Map", "Photon reverse parse error:", e);
                     }
                 } else {
-                    console.warn("[LocationSearch] Map Photon reverse body: " + String(revReq.responseText).substring(0, 300));
+                    Dbg.log("Location search", "Map Photon reverse body: " + String(revReq.responseText).substring(0, 300));
                 }
                 _checkDone();
             };
@@ -190,7 +197,7 @@ ColumnLayout {
         }
 
         // 2) Elevation + timezone via Open-Meteo
-        var metaReq = new XMLHttpRequest();
+        var metaReq = Dbg.xhr("Config/Map", "_lookupLocation");
         metaReq.open("GET", "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&current=temperature_2m,weather_code&timezone=auto");
         metaReq.onreadystatechange = function () {
             if (metaReq.readyState !== XMLHttpRequest.DONE)
@@ -244,8 +251,8 @@ ColumnLayout {
         _mapSearchResults = [];
         var reqId = ++_mapSearchReqId;
         var url = "https://photon.komoot.io/api?q=" + encodeURIComponent(q) + "&limit=8&lang=default";
-        console.warn("[LocationSearch] Map Photon GET " + url);
-        var req = new XMLHttpRequest();
+        Dbg.log("Location search", "Map Photon GET " + url);
+        var req = Dbg.xhr("Config/Map", "_performMapSearch");
         req.open("GET", url);
         req.onreadystatechange = function () {
             if (req.readyState !== XMLHttpRequest.DONE)
@@ -253,9 +260,9 @@ ColumnLayout {
             if (reqId !== _mapSearchReqId)
                 return;
             _mapSearchBusy = false;
-            console.warn("[LocationSearch] Map Photon HTTP " + req.status + " " + req.statusText);
+            Dbg.warn("Location search", "Map Photon HTTP " + req.status + " " + req.statusText);
             if (req.status !== 200) {
-                console.warn("[LocationSearch] Map Photon body: " + String(req.responseText).substring(0, 300));
+                Dbg.log("Location search", "Map Photon body: " + String(req.responseText).substring(0, 300));
                 return;
             }
             try {
@@ -277,10 +284,10 @@ ColumnLayout {
                         countryCode: (pr.countrycode || "").toUpperCase()
                     });
                 });
-                console.warn("[LocationSearch] Map Photon returned " + feats.length + " item(s), listed " + items.length);
+                Dbg.log("Location search", "Map Photon returned " + feats.length + " item(s), listed " + items.length);
                 _mapSearchResults = items;
             } catch (e) {
-                console.warn("[MapSubPage] Photon search parse error:", e);
+                Dbg.warn("Config/Map", "Photon search parse error:", e);
                 _mapSearchResults = [];
             }
         };
@@ -395,7 +402,8 @@ ColumnLayout {
         type: Kirigami.MessageType.Warning
         text: configRoot.duplicateWarning
         showCloseButton: true
-        onVisibleChanged: if (!visible) configRoot.duplicateWarning = ""
+        onVisibleChanged: if (!visible)
+            configRoot.duplicateWarning = ""
     }
 
     // ── Search results list ──────────────────────────────────────────
@@ -469,9 +477,7 @@ ColumnLayout {
     Rectangle {
         Layout.fillWidth: true
         implicitHeight: infoPanelLayout.implicitHeight + 16
-        color: Kirigami.Theme.backgroundColor !== undefined
-            ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95)
-            : Qt.rgba(0, 0, 0, 0.95)
+        color: Kirigami.Theme.backgroundColor !== undefined ? Qt.rgba(Kirigami.Theme.backgroundColor.r, Kirigami.Theme.backgroundColor.g, Kirigami.Theme.backgroundColor.b, 0.95) : Qt.rgba(0, 0, 0, 0.95)
         border.color: Qt.rgba(0.5, 0.5, 0.5, 0.4)
         border.width: 1
         visible: !isNaN(mapSubPageRoot.selectedLat)

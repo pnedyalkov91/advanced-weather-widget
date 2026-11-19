@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -31,6 +31,7 @@ import "js/weather.js" as W
 import "js/iconResolver.js" as IconResolver
 import "js/configUtils.js" as ConfigUtils
 import "components"
+import "js/debug.js" as Dbg
 
 Rectangle {
     id: fullView
@@ -51,11 +52,12 @@ Rectangle {
     // auto/manual/simple/advanced/tray logic.
     readonly property bool _hasLocation: weatherRoot && weatherRoot.hasSelectedTown
     readonly property bool _isRadarTab: _hasLocation && activeTab === 2 && showRadarTab
+    readonly property bool _isHistoryTab: _hasLocation && activeTab === 3 && showHistoryTab
     readonly property bool isSimpleMode: (Plasmoid.configuration.widgetLayoutMode || "advanced") === "simple"
-    Layout.preferredWidth:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
-    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
-    width:  _hasLocation ? (isSimpleMode ? 800 : 540) : 280
-    height: _hasLocation ? (isSimpleMode ? 550 : (_isRadarTab ? 680 : 550)) : 220
+    Layout.preferredWidth: _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    Layout.preferredHeight: _hasLocation ? (isSimpleMode ? 550 : ((_isRadarTab || _isHistoryTab) ? 680 : 550)) : 220
+    width: _hasLocation ? (isSimpleMode ? 800 : 540) : 280
+    height: _hasLocation ? (isSimpleMode ? 550 : ((_isRadarTab || _isHistoryTab) ? 680 : 550)) : 220
     clip: true
 
     // Maximum height: 90% of screen height, but no more than 40 grid units
@@ -71,11 +73,7 @@ Rectangle {
     /** Resolve a condition icon, handling the "custom" theme with per-condition overrides.
      *  Delegates to ConfigUtils.resolveCustomConditionIcon() - single source of truth. */
     function resolveConditionIcon(code, isNight, iconSize) {
-        return ConfigUtils.resolveCustomConditionIcon(
-            code, isNight, iconSize, fullView.iconsBaseDir,
-            fullView.conditionIconTheme,
-            Plasmoid.configuration.widgetConditionCustomIcons || "",
-            W.weatherCodeToIcon, IconResolver.resolveCondition);
+        return ConfigUtils.resolveCustomConditionIcon(code, isNight, iconSize, fullView.iconsBaseDir, fullView.conditionIconTheme, Plasmoid.configuration.widgetConditionCustomIcons || "", W.weatherCodeToIcon, IconResolver.resolveCondition);
     }
 
     // Always transparent - Plasma draws the background via backgroundHints
@@ -87,42 +85,138 @@ Rectangle {
 
     // Header summary cached once per weatherData change - avoids N separate Label
     // bindings each subscribing to individual weatherRoot accessor properties.
-    readonly property string _fvTemp:       weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
-    readonly property string _fvCondition:  weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
-    readonly property string _fvFeelsLike:  weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
-    readonly property string _fvHigh:       (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
-    readonly property string _fvLow:        (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
-    readonly property var    _fvCondIcon:   weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
+    readonly property string _fvTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
+    readonly property string _fvCondition: weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
+    readonly property string _fvFeelsLike: weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
+    readonly property string _fvHigh: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
+    readonly property string _fvLow: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
+    readonly property var _fvCondIcon: weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
 
-    // Per-tab visibility flags (both visible by default)
+    // Per-tab visibility flags (all visible by default).
+    // widgetVisibleTabs is a semicolon-separated list ("details;forecast;radar;history").
+    // Legacy values are still understood: "both" = all tabs, "none" = no tabs,
+    // and a single tab id ("details", "forecast", ...) = just that tab.
     readonly property string visibleTabs: Plasmoid.configuration.widgetVisibleTabs || "both"
-    readonly property bool showDetailsTab:  visibleTabs === "both" || visibleTabs === "details"
-    readonly property bool showForecastTab: visibleTabs === "both" || visibleTabs === "forecast"
-    readonly property bool showRadarTab:    (Plasmoid.configuration.radarEnabled !== false) && (visibleTabs === "both" || visibleTabs === "radar")
-    readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab
+    readonly property var _visibleTabList: {
+        var v = visibleTabs;
+        if (v === "both")
+            return ["details", "forecast", "radar", "history"];
+        if (v === "none")
+            return [];
+        return v.split(";").map(function (t) {
+            return t.trim();
+        });
+    }
+    readonly property bool showDetailsTab: _visibleTabList.indexOf("details") >= 0
+    readonly property bool showForecastTab: _visibleTabList.indexOf("forecast") >= 0
+    readonly property bool showRadarTab: (Plasmoid.configuration.radarEnabled !== false) && _visibleTabList.indexOf("radar") >= 0
+    readonly property bool showHistoryTab: _visibleTabList.indexOf("history") >= 0
+    readonly property bool showAnyTab: showDetailsTab || showForecastTab || showRadarTab || showHistoryTab
+
+    // ── Tab bar order and position (Widget > General > Tabs & Header Behavior) ──
+    // widgetTabOrder is a semicolon-separated list of ALL tab ids in the order the
+    // tab bar shows them ("details;forecast;radar;history"). It only reorders the
+    // BUTTONS: the StackLayout below keeps its fixed children order (index ==
+    // logicalIdx), so activeTab still means 0 = Details ... 3 = History.
+    // Unknown ids are dropped and missing ones appended in the default order, so
+    // an empty or partial value still gives a complete list.
+    readonly property var _tabLogicalIdx: ({
+            "details": 0,
+            "forecast": 1,
+            "radar": 2,
+            "history": 3
+        })
+    readonly property var _tabOrder: {
+        var all = ["details", "forecast", "radar", "history"];
+        var raw = String(Plasmoid.configuration.widgetTabOrder || "").split(";");
+        var out = [];
+        for (var i = 0; i < raw.length; ++i) {
+            var k = raw[i].trim();
+            if (all.indexOf(k) >= 0 && out.indexOf(k) < 0)
+                out.push(k);
+        }
+        for (var j = 0; j < all.length; ++j)
+            if (out.indexOf(all[j]) < 0)
+                out.push(all[j]);
+        return out;
+    }
+    // The visible tabs, in that order: [{label, logicalIdx}]
+    readonly property var _tabBarModel: {
+        var shown = [showDetailsTab, showForecastTab, showRadarTab, showHistoryTab];
+        // LibreWXR's map plays the weather's layers: the Weather Map.
+        var mapLabel = (Plasmoid.configuration.radarProvider || "rainviewer") === "librewxr" ? i18n("Weather Maps") : i18n("Radar");
+        var labels = [i18n("Details"), i18n("Forecast"), mapLabel, i18n("History")];
+        var tabs = [];
+        for (var i = 0; i < _tabOrder.length; ++i) {
+            var idx = _tabLogicalIdx[_tabOrder[i]];
+            if (shown[idx])
+                tabs.push({
+                    label: labels[idx],
+                    logicalIdx: idx
+                });
+        }
+        return tabs;
+    }
+    // The bar is only worth showing when there is something to switch between.
+    readonly property bool _showTabBar: !isSimpleMode && _tabBarModel.length > 1
+    // "top" (default) or "bottom"; anything else reads as "top".
+    readonly property bool _tabsAtBottom: (Plasmoid.configuration.widgetTabsPosition || "top") === "bottom"
 
     // Resolve the default tab, falling back if the preferred tab is hidden.
-    // Returns 0 = Details, 1 = Forecast, 2 = Radar
+    // Returns 0 = Details, 1 = Forecast, 2 = Radar, 3 = History
     function _resolvedDefaultTab() {
+        var shown = [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab, fullView.showHistoryTab];
         var want = 0;
         var pref = Plasmoid.configuration.widgetDefaultTab || "details";
-        if (pref === "forecast") want = 1;
-        else if (pref === "radar") want = 2;
-        if (want === 0 && !fullView.showDetailsTab)  want = fullView.showForecastTab ? 1 : (fullView.showRadarTab ? 2 : 0);
-        if (want === 1 && !fullView.showForecastTab) want = fullView.showDetailsTab  ? 0 : (fullView.showRadarTab ? 2 : 0);
-        if (want === 2 && !fullView.showRadarTab)    want = fullView.showDetailsTab  ? 0 : (fullView.showForecastTab ? 1 : 0);
-        return want;
+        if (pref === "forecast")
+            want = 1;
+        else if (pref === "radar")
+            want = 2;
+        else if (pref === "history")
+            want = 3;
+        if (shown[want])
+            return want;
+        // The preferred tab is hidden: first visible tab in the tab bar's order.
+        if (fullView._tabBarModel.length > 0)
+            return fullView._tabBarModel[0].logicalIdx;
+        return 0;
     }
+
+    // ── Header element visibility (Widget > General > Header) ─────────────
+    // Each element can be switched off in the settings; the existing
+    // placement rules (tray / desktop / saved locations) still apply on top.
+    readonly property bool _hasMultipleLocations: {
+        try {
+            var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
+            return Array.isArray(locs) && locs.length > 1;
+        } catch (e) {
+            return false;
+        }
+    }
+    readonly property bool _hdrShowLocation: Plasmoid.configuration.headerShowLocation !== false
+    readonly property bool _hdrShowDateTime: Plasmoid.configuration.headerShowDateTime === true
+    readonly property bool _hdrShowSwitcher: Plasmoid.configuration.headerShowSwitchLocation !== false && _hasMultipleLocations
+    readonly property bool _hdrShowPin: Plasmoid.configuration.headerShowPinButton !== false && !inSystemTray && Plasmoid.formFactor !== 0
+    readonly property bool _hdrShowDetect: Plasmoid.configuration.headerShowDetectButton !== false && !inSystemTray
+    readonly property bool _hdrShowRefresh: Plasmoid.configuration.headerShowRefreshButton !== false && !inSystemTray
+    readonly property bool _hdrShowUpdating: !inSystemTray && !!weatherRoot && weatherRoot.loading === true
+    readonly property bool _headerHasContent: _hdrShowLocation || _hdrShowDateTime || _hdrShowSwitcher || _hdrShowPin || _hdrShowDetect || _hdrShowRefresh || _hdrShowUpdating
 
     // Whether not-currently-shown tabs stay instantiated. True while the
     // popup is open and always on the desktop (Planar), which has no popup.
-    readonly property bool _keepHiddenTabs: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
+    readonly property bool _keepHiddenTabsOpen: (weatherRoot && weatherRoot.expanded === true) || Plasmoid.formFactor === 0
+
+    // "Keep the popup ready" (opt-in): Details, Forecast and History are built in the background
+    // once main.qml says startup is over, and stay built when the popup is closed - the popup then
+    // opens at once, at the cost of the memory those tabs use.
+    readonly property bool _keepPopupLoaded: !!weatherRoot && weatherRoot.popupKeepLoaded === true && _hasLocation && !isSimpleMode
+    readonly property bool _preloadPopup: _keepPopupLoaded && weatherRoot.radarBackgroundReady === true
+    readonly property bool _keepHiddenTabs: _keepHiddenTabsOpen || _keepPopupLoaded
 
     // "Keep the radar loaded": the Radar tab is built in the background once
     // main.qml says startup is over, and is never unloaded afterwards,
     // popup closed or not.
-    readonly property bool _keepRadarLoaded: !!weatherRoot && weatherRoot.radarKeepLoaded === true
-        && _hasLocation && showRadarTab && !isSimpleMode
+    readonly property bool _keepRadarLoaded: !!weatherRoot && weatherRoot.radarKeepLoaded === true && _hasLocation && showRadarTab && !isSimpleMode
     readonly property bool _preloadRadar: _keepRadarLoaded && weatherRoot.radarBackgroundReady === true
 
     // Reset to the configured default tab every time the popup opens
@@ -136,7 +230,7 @@ Rectangle {
         function onExpandedChanged() {
             if (weatherRoot.expanded) {
                 fullView.activeTab = fullView._resolvedDefaultTab();
-                Qt.callLater(function() {
+                Qt.callLater(function () {
                     // Re-activate when reopening directly onto an already-built
                     // Forecast tab (ForecastView.onVisibleChanged covers the
                     // first build, but not a reopen where it stays visible).
@@ -147,6 +241,9 @@ Rectangle {
                     // it only if it has gone stale.
                     if (fullView.activeTab === 2 && radarLoader.item)
                         radarLoader.item.reloadIfStale();
+                    // Same for History: pick up a new day / location.
+                    if (fullView.activeTab === 3 && historyLoader.item)
+                        historyLoader.item.reloadIfStale();
                 });
             }
         }
@@ -165,14 +262,21 @@ Rectangle {
         var locs;
         try {
             locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-            if (!Array.isArray(locs)) locs = [];
-        } catch (e) { return; }
+            if (!Array.isArray(locs))
+                locs = [];
+        } catch (e) {
+            return;
+        }
 
         var starred = null;
         for (var i = 0; i < locs.length; i++) {
-            if (locs[i].starred) { starred = locs[i]; break; }
+            if (locs[i].starred) {
+                starred = locs[i];
+                break;
+            }
         }
-        if (!starred) return;
+        if (!starred)
+            return;
 
         var curLat = Plasmoid.configuration.latitude || 0;
         var curLon = Plasmoid.configuration.longitude || 0;
@@ -192,7 +296,10 @@ Rectangle {
         onTriggered: fullView._restoreDefaultLocation()
     }
 
-    Component.onCompleted: _startupRestoreTimer.start()
+    Component.onCompleted: {
+        Dbg.mark("Popup", "popup content (FullView) created", "the Details/Forecast/History pages are being built; this is GUI-thread work");
+        _startupRestoreTimer.start();
+    }
 
     // ── Catch-all background ────────────────────────────────────────────
     // Swallows clicks (including right-clicks) on any gap not covered by an
@@ -262,8 +369,10 @@ Rectangle {
         visible: weatherRoot && weatherRoot.hasSelectedTown
 
         // ── Header: location pin + name + switcher + detect + refresh ────────────
+        // Every element can be switched off in Widget > General > Header.
         RowLayout {
             Layout.fillWidth: true
+            visible: fullView._headerHasContent
             spacing: 4
 
             Kirigami.Icon {
@@ -271,9 +380,12 @@ Rectangle {
                 width: 13
                 height: 13
                 Layout.alignment: Qt.AlignVCenter
+                visible: fullView._hdrShowLocation
             }
 
             Label {
+                id: headerLocationLabel
+                visible: fullView._hdrShowLocation
                 Layout.fillWidth: !headerDateTimeLabel.visible
                 text: weatherRoot ? (weatherRoot._activeLocName, weatherRoot._locName()) : (Plasmoid.configuration.locationName || "")
                 // #2
@@ -287,30 +399,14 @@ Rectangle {
             Label {
                 id: headerDateTimeLabel
                 Layout.fillWidth: true
-                visible: Plasmoid.configuration.headerShowDateTime === true
+                visible: fullView._hdrShowDateTime
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 color: Kirigami.Theme.textColor
                 opacity: 1
                 font: weatherRoot ? weatherRoot.wf(10, false) : Qt.font({})
 
-                readonly property string _dateFmt: Plasmoid.configuration.headerDateFormat || "locale-long"
-                readonly property string _timeFmt: Plasmoid.configuration.headerTimeFormat || "locale"
-
-                function _formatDate(now) {
-                    var fmt = _dateFmt;
-                    if (fmt === "locale-long")  return now.toLocaleDateString(Qt.locale(), Locale.LongFormat);
-                    if (fmt === "locale-short") return now.toLocaleDateString(Qt.locale(), Locale.ShortFormat);
-                    if (fmt === "")             return "";
-                    return Qt.formatDate(now, fmt);
-                }
-
-                function _formatTime(now) {
-                    var fmt = _timeFmt;
-                    if (fmt === "locale") return now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat);
-                    if (fmt === "")       return "";
-                    return Qt.formatTime(now, fmt);
-                }
+                // Format comes from Settings → Misc → Date and Time (weatherRoot.formatDateTimeNow).
 
                 Timer {
                     id: _dtTimer
@@ -318,14 +414,15 @@ Rectangle {
                     repeat: true
                     running: headerDateTimeLabel.visible
                     triggeredOnStart: true
-                    onTriggered: {
-                        var now = new Date();
-                        var dateStr = headerDateTimeLabel._formatDate(now);
-                        var timeStr = headerDateTimeLabel._formatTime(now);
-                        var sep = (dateStr.length > 0 && timeStr.length > 0) ? "  " : "";
-                        headerDateTimeLabel.text = dateStr + sep + timeStr;
-                    }
+                    onTriggered: headerDateTimeLabel.text = fullView.weatherRoot ? fullView.weatherRoot.formatDateTimeNow(false) : ""
                 }
+            }
+
+            // Spacer: keeps the buttons right-aligned when neither the location
+            // name nor the date/time label is there to take up the free width.
+            Item {
+                Layout.fillWidth: true
+                visible: !headerLocationLabel.visible && !headerDateTimeLabel.visible
             }
 
             // ── Location switcher dropdown ────────────────────────────────
@@ -336,12 +433,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 20
                 height: 20
-                visible: {
-                    try {
-                        var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
-                        return Array.isArray(locs) && locs.length > 1;
-                    } catch (e) { return false; }
-                }
+                visible: fullView._hdrShowSwitcher
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Switch location")
                 onClicked: locationMenu.open()
@@ -357,7 +449,9 @@ Rectangle {
                             try {
                                 var locs = JSON.parse(Plasmoid.configuration.savedLocations || "[]");
                                 return Array.isArray(locs) ? locs : [];
-                            } catch (e) { return []; }
+                            } catch (e) {
+                                return [];
+                            }
                         }
                         delegate: MenuItem {
                             required property var modelData
@@ -388,7 +482,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 26
                 height: 26
-                visible: !fullView.inSystemTray && Plasmoid.formFactor !== 0  // hide on desktop (Planar) and in tray (Plasma's own pin is in native header)
+                visible: fullView._hdrShowPin  // never on desktop (Planar) or in tray (Plasma's own pin is in native header)
                 ToolTip.visible: hovered
                 ToolTip.text: checked ? i18n("Unpin widget") : i18n("Keep widget open")
                 onToggled: {
@@ -402,7 +496,7 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 22
                 height: 22
-                visible: !fullView.inSystemTray
+                visible: fullView._hdrShowDetect
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Detect / change location…")
                 onClicked: if (weatherRoot)
@@ -410,7 +504,7 @@ Rectangle {
             }
 
             Label {
-                visible: !fullView.inSystemTray && weatherRoot && weatherRoot.loading
+                visible: fullView._hdrShowUpdating
                 text: i18n("Updating…")
                 // #2
                 color: Kirigami.Theme.textColor
@@ -425,23 +519,26 @@ Rectangle {
                 display: AbstractButton.IconOnly
                 width: 26
                 height: 26
-                visible: !fullView.inSystemTray
+                visible: fullView._hdrShowRefresh
                 ToolTip.visible: hovered
                 ToolTip.text: i18n("Refresh")
                 onClicked: {
                     if (weatherRoot)
-                        weatherRoot.refreshWeather(true)
+                        weatherRoot.refreshWeather(true);
                     // On the Radar tab, also flush and reload the radar tiles so the
                     // Refresh button is consistent across all tabs.
                     if (fullView.activeTab === 2 && radarLoader.item)
-                        radarLoader.item.reload()
+                        radarLoader.item.reload();
+                    // ...and the History tab refetches its archive data.
+                    if (fullView.activeTab === 3 && historyLoader.item)
+                        historyLoader.item.reload();
                 }
             }
         }
 
         Item {
             Layout.preferredHeight: 8
-            visible: !fullView.isSimpleMode
+            visible: !fullView.isSimpleMode && fullView._headerHasContent
         }
 
         // ── Simple mode ───────────────────────────────────────────────
@@ -554,68 +651,75 @@ Rectangle {
             }
         }
 
-
         Item {
             Layout.preferredHeight: fullView.showAnyTab ? 12 : 0
             visible: !fullView.isSimpleMode
         }
 
-        // ── Tab bar - shown when more than one tab is enabled ──────────
-        Rectangle {
+        // ── Tab bar, top slot ─────────────────────────────────────────
+        // The bar itself is defined once (tabBarComponent below) and shown in
+        // this slot or in the bottom slot, depending on Widget > General >
+        // Tabs & Header Behavior > Tabs position. Only one slot is ever active.
+        Loader {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
-            radius: 17
-            visible: !fullView.isSimpleMode && [fullView.showDetailsTab, fullView.showForecastTab, fullView.showRadarTab].filter(Boolean).length > 1
-            // #2: tab bar background adapts to theme
-            color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
+            active: fullView._showTabBar && !fullView._tabsAtBottom
+            visible: active
+            sourceComponent: tabBarComponent
+        }
 
-            RowLayout {
-                anchors {
-                    fill: parent
-                    margins: 3
-                }
-                spacing: 0
+        // The tab bar: shown when more than one tab is enabled, in the order
+        // of fullView._tabBarModel.
+        Component {
+            id: tabBarComponent
+            Rectangle {
+                anchors.fill: parent
+                radius: 17
+                // #2: tab bar background adapts to theme
+                color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.07)
 
-                Repeater {
-                    model: {
-                        var tabs = [];
-                        if (fullView.showDetailsTab)  tabs.push({ label: i18n("Details"),  logicalIdx: 0 });
-                        if (fullView.showForecastTab) tabs.push({ label: i18n("Forecast"), logicalIdx: 1 });
-                        if (fullView.showRadarTab)    tabs.push({ label: i18n("Radar"),    logicalIdx: 2 });
-                        return tabs;
+                RowLayout {
+                    anchors {
+                        fill: parent
+                        margins: 3
                     }
-                    delegate: Rectangle {
-                        required property var modelData
-                        required property int index
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        radius: 14
-                        readonly property bool isActive: fullView.activeTab === modelData.logicalIdx
-                        color: isActive ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.17) : "transparent"
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 140
-                            }
-                        }
-                        Label {
-                            anchors.centerIn: parent
-                            text: parent.modelData.label
-                            // #2
-                            color: Kirigami.Theme.textColor
-                            opacity: parent.isActive ? 1.0 : 0.42
-                            font: weatherRoot ? weatherRoot.wf(11, parent.isActive) : Qt.font({
-                                bold: parent.isActive
-                            })
-                            Behavior on opacity {
-                                NumberAnimation {
+                    spacing: 0
+
+                    Repeater {
+                        model: fullView._tabBarModel
+                        delegate: Rectangle {
+                            required property var modelData
+                            required property int index
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            radius: 14
+                            readonly property bool isActive: fullView.activeTab === modelData.logicalIdx
+                            color: isActive ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.17) : "transparent"
+                            Behavior on color {
+                                ColorAnimation {
                                     duration: 140
                                 }
                             }
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: fullView.activeTab = modelData.logicalIdx
+                            Label {
+                                anchors.centerIn: parent
+                                text: parent.modelData.label
+                                // #2
+                                color: Kirigami.Theme.textColor
+                                opacity: parent.isActive ? 1.0 : 0.42
+                                font: weatherRoot ? weatherRoot.wf(11, parent.isActive) : Qt.font({
+                                    bold: parent.isActive
+                                })
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 140
+                                    }
+                                }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: fullView.activeTab = modelData.logicalIdx
+                            }
                         }
                     }
                 }
@@ -651,6 +755,10 @@ Rectangle {
                 // state and fetch the hourly data twice.
                 if (currentIndex === 2 && radarLoader.item)
                     radarLoader.item.reloadIfStale();
+                // A History tab that is still alive may be showing an old day
+                // or another location; a fresh one loads itself on creation.
+                if (currentIndex === 3 && historyLoader.item)
+                    historyLoader.item.reloadIfStale();
             }
 
             // ── Details tab ───────────────────────────────────────────
@@ -665,7 +773,7 @@ Rectangle {
                     // there is no popup): hidden tabs unload on close, so the
                     // expose-time PlasmaTheme sync storm on reopen only covers
                     // one tab's items instead of every tab ever visited.
-                    active: detailsTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: detailsTab.StackLayout.isCurrentItem || fullView._preloadPopup || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: DetailsView {
                         weatherRoot: fullView.weatherRoot
                     }
@@ -685,7 +793,7 @@ Rectangle {
                     id: forecastLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: forecastTab.StackLayout.isCurrentItem || (item !== null && fullView._keepHiddenTabs)
+                    active: forecastTab.StackLayout.isCurrentItem || fullView._preloadPopup || (item !== null && fullView._keepHiddenTabs)
                     sourceComponent: ScrollView {
                         id: forecastScrollView
                         clip: true
@@ -722,8 +830,7 @@ Rectangle {
                     id: radarLoader
                     anchors.fill: parent
                     asynchronous: true
-                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar
-                        || (item !== null && (fullView._keepHiddenTabs || fullView._keepRadarLoaded))
+                    active: radarTab.StackLayout.isCurrentItem || fullView._preloadRadar || (item !== null && (fullView._keepHiddenTabsOpen || fullView._keepRadarLoaded))
                     sourceComponent: RadarView {
                         weatherRoot: fullView.weatherRoot
                         keepLoaded: fullView._keepRadarLoaded
@@ -732,6 +839,31 @@ Rectangle {
                 BusyIndicator {
                     anchors.centerIn: parent
                     running: radarLoader.status === Loader.Loading
+                    visible: running
+                }
+            }
+
+            // ── History tab ───────────────────────────────────────────
+            // Open-Meteo archive data for the active location. Index 3 -
+            // keep this the LAST child: StackLayout index == logicalIdx.
+            Item {
+                id: historyTab
+                // The view scrolls internally, so give it the room the popup has
+                // (popup height minus the hero/tab-bar chrome above and the footer below).
+                implicitHeight: Math.max(300, fullView.height - 260)
+                Loader {
+                    id: historyLoader
+                    anchors.fill: parent
+                    asynchronous: true
+                    active: historyTab.StackLayout.isCurrentItem || (fullView._preloadPopup && fullView.showHistoryTab) || (item !== null && fullView._keepHiddenTabs)
+                    sourceComponent: HistoryView {
+                        weatherRoot: fullView.weatherRoot
+                        resolveConditionIconFn: fullView.resolveConditionIcon
+                    }
+                }
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: historyLoader.status === Loader.Loading
                     visible: running
                 }
             }
@@ -752,10 +884,14 @@ Rectangle {
                     else
                         t += " · " + i18n("Radar:") + " <a href='https://www.rainviewer.com/'>Rain Viewer</a>";
                 }
+                if (fullView._isHistoryTab)
+                    t += " · " + i18n("History:") + " <a href='https://open-meteo.com/'>Open-Meteo.com</a>";
                 return t;
             }
             textFormat: Text.RichText
-            onLinkActivated: function(link) { Qt.openUrlExternally(link) }
+            onLinkActivated: function (link) {
+                Qt.openUrlExternally(link);
+            }
             // #2
             color: Kirigami.Theme.textColor
             font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
@@ -764,6 +900,20 @@ Rectangle {
             HoverHandler {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
             }
+        }
+
+        // ── Tab bar, bottom slot ──────────────────────────────────────
+        // Last item of the popup, below the footer (see the top slot above).
+        Item {
+            Layout.preferredHeight: 8
+            visible: fullView._showTabBar && fullView._tabsAtBottom
+        }
+        Loader {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 34
+            active: fullView._showTabBar && fullView._tabsAtBottom
+            visible: active
+            sourceComponent: tabBarComponent
         }
     }
 }

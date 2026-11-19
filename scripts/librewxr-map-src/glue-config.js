@@ -65,6 +65,36 @@ function resolveBg(id, theme) {
   return bgEntry(id) || FALLBACK_BG[theme] || FALLBACK_BG.dark;
 }
 
+// WebGL: MapLibre needs it (the vector base maps, the whole MapLibre page).
+var webglOk = null;
+function hasWebGL() {
+  if (webglOk !== null) return webglOk;
+  if (PARAMS.get('webgl') === '0') return (webglOk = false);   // test knob
+  try {
+    var c = document.createElement('canvas');
+    webglOk = !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch (e) {
+    webglOk = false;
+  }
+  return webglOk;
+}
+
+// Map projection on the MapLibre page: 'flat' (Web Mercator) or 'globe'.
+var PROJECTION_INIT = PARAMS.get('proj') === 'globe' ? 'globe' : 'flat';
+// Day and night on the MapLibre page; on unless the widget says no.
+var DAYNIGHT_INIT = PARAMS.get('night') !== '0';
+// Glow of the globe's atmosphere, in percent; the adapter reads and bounds it.
+var GLOW_INIT = PARAMS.get('glow');
+// Darkness of the deep night, in percent of black; the adapter reads and bounds it.
+var NIGHTDEPTH_INIT = PARAMS.get('nightdepth');
+// Brightness of the lights of the towns at night, in percent (0 for none).
+var LIGHTS_INIT = PARAMS.get('lights');
+// Points of the lights of the towns: those a cell of full light gets.
+var LIGHTS_DENSITY_INIT = PARAMS.get('lightsdensity');
+var RIM_INIT = PARAMS.get('rim');
+// What the map prepares while hidden: 'none', 'first' (the latest image) or
+// 'all' (the whole animation).
+var PREPARE_MODE = /^(first|all)$/.test(PARAMS.get('prepare')) ? PARAMS.get('prepare') : 'none';
 var ARROWS_ON = PARAMS.get('arrows') === '1';
 var ACTIVE_LAYER = PARAMS.get('layer') || 'radar';   // 'radar' | 'satellite' | 'both'
 var CELLS_INIT = PARAMS.get('cells') || '';
@@ -97,5 +127,29 @@ var WIND_ON = PARAMS.get('wind') === '1';
 var WIND_FPS = Math.max(4, Math.min(30, paramNum('windfps', 10)));
 var WIND_MAX_FPS = Math.max(WIND_FPS, Math.min(30, paramNum('windmaxfps', 20)));
 var WIND_LINE_WIDTH = paramNum('windwidth', 1);   // CSS px, clamped by the layer
+var WIND_DENSITY = paramNum('winddensity', 1);   // particle density factor, 1 = one per 300 px2
+var WIND_PALETTE_PARAM = PARAMS.get('windpalette') || '';   // 8 "max:rrggbb", empty: the default palette
 var WIND_RELIEF = PARAMS.get('windrelief') !== '0';
 var WIND_LEVEL = PARAMS.get('windlevel') === '700hPa' ? '700hPa' : '10m';
+// Test knobs, never set by the widget: another base for the Open-Meteo API
+// (a caching proxy, so tests spare the quota) and for the open-data files.
+var WIND_API_BASE = PARAMS.get('omapi') || '';
+var WIND_FILES_BASE = PARAMS.get('omfiles') || '';
+
+// Temperature layer (glue-temp-layer.js, MapLibre page only): on/off, the
+// palette ("t:rrggbb" with t in °C; empty: the vivid one), the opacity in
+// percent, the band width (0: smooth) and the unit of the bands and legend.
+var TEMP_ON = PARAMS.get('temp') === '1';
+// Coasts and borders over the color layers; on unless the widget says no.
+var LINES_INIT = PARAMS.get('lines') !== '0';
+// Their width, a factor (0.5 to 3) on the one drawn by default.
+var LINES_WIDTH_INIT = PARAMS.get('lineswidth');
+// The Sun and the Moon around the globe, from the widget's settings.
+var SKY_INIT = PARAMS.get('sky') !== '0';
+var TEMP_PALETTE_PARAM = PARAMS.get('temppalette') || '';
+var TEMP_OPACITY = PARAMS.get('tempopacity');
+var TEMP_STEP = PARAMS.get('tempstep');
+var TEMP_UNIT = PARAMS.get('tempunit') === 'F' ? 'F' : 'C';
+// The widget's wind unit, for the readout under the pointer (Ctrl).
+var WIND_UNIT = ['kmh', 'ms', 'kn', 'mph'].indexOf(PARAMS.get('windunit')) >= 0 ? PARAMS.get('windunit') : 'kmh';
+

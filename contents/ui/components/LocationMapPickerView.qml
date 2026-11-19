@@ -24,6 +24,7 @@ import QtQuick
 import QtWebEngine
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
+import "../js/debug.js" as Dbg
 
 Item {
     id: pickerRoot
@@ -94,7 +95,7 @@ Item {
                     webView.runJavaScript(q[i]);
                 viewportFixTimer.restart();
             } else if (req.status === WebEngineView.LoadFailedStatus) {
-                console.warn("[MapSubPage] map page failed to load:", req.errorString);
+                Dbg.warn("Config/Map", "map page failed to load:", req.errorString);
                 pickerRoot.loadFailed();
             }
         }
@@ -108,7 +109,7 @@ Item {
         }
 
         onRenderProcessTerminated: function (terminationStatus, exitCode) {
-            console.warn("[MapSubPage] render process terminated:", terminationStatus, exitCode);
+            Dbg.warn("Config/Map", "render process terminated:", terminationStatus, exitCode);
         }
 
         onTitleChanged: {
@@ -119,7 +120,7 @@ Item {
                 if (!isNaN(la) && !isNaN(lo))
                     pickerRoot.mapClicked(la, lo);
             } else if (title.indexOf("error:") === 0) {
-                console.warn("[MapSubPage] map page reported", title);
+                Dbg.warn("Config/Map", "map page reported", title);
                 pickerRoot.loadFailed();
             }
         }

@@ -283,3 +283,77 @@ test('DemTiles: a grid reaching the poles is clamped to Mercator, and skipped wh
   await dem.ensure(WindField.gridSpec(WindField.WORLD), 9);
   assert.equal(loaded.length, 0);
 });
+
+test('url: one request for the wind and the temperature', () => {
+  const url = new WindSource({ fetch: () => {}, storage: null }).url(WindField.gridSpec(view.bounds));
+  const hourly = url.split('hourly=')[1].split('&')[0].split(',');
+  assert.equal(hourly.filter((v) => v === 'temperature_2m').length, 1);
+  for (const v of ['wind_speed_10m', 'wind_direction_10m', 'wind_speed_700hPa', 'wind_direction_700hPa']) assert.ok(hourly.includes(v), v);
+});
+
+test('restore: drops the grids kept before the temperature', async () => {
+  const storage = fakeStorage();
+  const a = new WindSource({ fetch: fakeFetch([]), storage, now: () => 1000, minIntervalMs: 0 });
+  await a.ensure(view);
+  const kept = storage.getItem(WindSource.STORAGE_KEY);
+  storage.map.clear();
+  storage.setItem('awwWind:grids', kept);   // where the grids were kept before the temperature
+  const b = new WindSource({ fetch: fakeFetch([]), storage, now: () => 2000 });
+  assert.equal(b.best(view), null);
+  assert.equal(storage.getItem('awwWind:grids'), null);
+});
+
+test('DemTiles maxKept: the oldest tiles go first', async () => {
+  const dem = new DemTiles({ maxKept: 2, loadTile: () => Promise.resolve(new Float32Array(65536)) });
+  const tile = (x) => ({ west: -180 + (x + 0.2) * 360 / 1024, east: -180 + (x + 0.8) * 360 / 1024, south: 48.01, north: 48.03 });
+  await dem.ensure(tile(530), 10);
+  await dem.ensure(tile(531), 10);
+  await dem.ensure(tile(532), 10);
+  assert.deepEqual(Object.keys(dem.tiles).sort(), ['10/531/355', '10/532/355']);
+});
+
+test('DemTiles ensureTile: one tile by its own key, loaded once, then read whole', async () => {
+  const loaded = [];
+  const dem = new DemTiles({ loadTile: (url) => { loaded.push(url); return Promise.resolve(new Float32Array(65536).fill(7)); } });
+  assert.equal(dem.tileData(2, 3, 1), null);
+  await dem.ensureTile(2, 3, 1);
+  await dem.ensureTile(2, 3, 1);
+  assert.deepEqual(loaded.map((u) => u.split('terrarium/')[1]), ['2/3/1.png']);
+  assert.equal(dem.tileData(2, 3, 1)[123], 7);
+});
+
+test('DemTiles ensureTile: a tile that fails resolves all the same, and stays missing', async () => {
+  const dem = new DemTiles({ loadTile: () => Promise.reject(new Error('404')) });
+  const warn = console.warn;
+  console.warn = () => {};
+  try { await dem.ensureTile(2, 4, 1); } finally { console.warn = warn; }
+  assert.equal(dem.tileData(2, 4, 1), null);
+});
+
+test('WindSource for the animation: the hours asked for, no world grid', async () => {
+  const urls = [];
+  const fetch = (u) => { urls.push(u); return Promise.resolve({ ok: true, json: () => Promise.resolve([]) }); };
+  const src = new WindSource({ fetch, storage: null, pastH: 27, futureH: 51, world: false });
+  assert.match(src.url(WindField.gridSpec({ west: 6, south: 45, east: 7, north: 46 })), /past_hours=27&forecast_hours=51/);
+  assert.equal(await src.ensureWorld(), null);
+  assert.equal(urls.length, 0);
+  src.entries = [{ spec: {}, fetchedAt: 0 }];
+  src.setHours(27, 51);
+  assert.equal(src.entries.length, 1);              // same hours: the grids stay
+  src.setHours(51, 51);
+  assert.equal(src.entries.length, 0);              // other hours: they no longer cover the range
+  assert.match(src.url(WindField.gridSpec({ west: 6, south: 45, east: 7, north: 46 })), /past_hours=51&/);
+});
+
+test('DemTiles: past maxKept, the tile asked for least recently goes first', async () => {
+  const { DemTiles } = require('../glue-wind.js');
+  const dem = new DemTiles({ maxKept: 2, loadTile: (url) => Promise.resolve(url) });
+  await dem.ensureTile(9, 1, 1);
+  await dem.ensureTile(9, 2, 2);
+  await dem.ensureTile(9, 1, 1);           // asked again: now the most recent
+  await dem.ensureTile(9, 3, 3);
+  assert.ok(dem.tileData(9, 1, 1), '9/1/1 kept');
+  assert.equal(dem.tileData(9, 2, 2), null);
+  assert.ok(dem.tileData(9, 3, 3), '9/3/3 kept');
+  assert.equal(dem.count, 2);
+});

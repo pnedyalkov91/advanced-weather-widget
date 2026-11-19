@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -20,7 +20,7 @@
  *
  * The tile definitions live in providers/mapProviders.js; the labels live here
  * because that is what the gettext extraction and the two radar views share.
- * Both RadarWebEngineView and RadarWebEngineViewLibreWXR instantiate this and
+ * Both RadarWebEngineView and WeatherMapView instantiate this and
  * hand the resulting list to their Leaflet page.
  */
 import QtQuick
@@ -39,17 +39,17 @@ QtObject {
     property string attributionSuffix: ""
 
     readonly property var labels: ({
-        "auto": i18n("Automatic"),
-        "osm-standard": i18n("OpenStreetMap (standard)"),
-        "osm-dark": i18n("OpenStreetMap (dark)"),
-        "osm-humanitarian": i18n("Humanitarian (HOT)"),
-        "cyclosm": i18n("CyclOSM (cycling)"),
-        "opentopomap": i18n("OpenTopoMap (topographic)"),
-        "openfreemap-positron": i18n("OpenFreeMap Positron (light)"),
-        "openfreemap-liberty": i18n("OpenFreeMap Liberty (light)"),
-        "openfreemap-fiord": i18n("OpenFreeMap Fiord (dark)"),
-        "openfreemap-dark": i18n("OpenFreeMap Dark")
-    })
+            "auto": i18n("Automatic"),
+            "osm-standard": i18n("OpenStreetMap (standard)"),
+            "osm-dark": i18n("OpenStreetMap (dark)"),
+            "osm-humanitarian": i18n("Humanitarian (HOT)"),
+            "cyclosm": i18n("CyclOSM (cycling)"),
+            "opentopomap": i18n("OpenTopoMap (topographic)"),
+            "openfreemap-positron": i18n("OpenFreeMap Positron (light)"),
+            "openfreemap-liberty": i18n("OpenFreeMap Liberty (light)"),
+            "openfreemap-fiord": i18n("OpenFreeMap Fiord (dark)"),
+            "openfreemap-dark": i18n("OpenFreeMap Dark")
+        })
 
     /** Choices plus their resolved tile data, ready to inject into a page. */
     readonly property var list: {

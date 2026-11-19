@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 import QtQuick
@@ -24,10 +24,17 @@ import org.kde.plasma.plasmoid
 import org.kde.kcmutils as KCM
 import org.kde.kirigami as Kirigami
 import org.kde.iconthemes as KIconThemes
+import "../js/debug.js" as Dbg
 
 KCM.AbstractKCM {
     id: root
     Kirigami.ColumnView.fillWidth: true
+
+    // Debug mode (Settings -> Misc -> Debug). This dialog runs in its own QML
+    // engine, so js/debug.js has to be told separately from the applet itself.
+    QtObject {
+        Component.onCompleted: Dbg.setEnabled(Plasmoid.configuration.debugMode === true, "settings dialog")
+    }
 
     FontLoader {
         id: wiFont
@@ -1550,12 +1557,22 @@ KCM.AbstractKCM {
     property bool cfg_forecastAutoOpen: true
     property bool cfg_forecastExpandAll: false
     property bool cfg_forecastShowPastHours: false
+    property bool cfg_forecastShowTemp: true
     property bool cfg_forecastShowWind: true
     property bool cfg_forecastShowPressure: false
     property bool cfg_forecastShowKpIndex: false
     property bool cfg_forecastShowUvIndex: false
     property bool cfg_forecastShowPrecipSum: false
     property bool cfg_forecastShowVisibility: false
+    property string cfg_forecastGraphOrder: "temp;wind;pressure;kp;uv;precip;vis"
+    property string cfg_forecastHourlyGraphOrder: "temp;wind;pressure;kp;uv;precip;vis"
+    property string cfg_forecastGraphColors: ""          // "wind=#66bb6a;uv=#ffb300": own colors of the daily graphs
+    property string cfg_forecastHourlyGraphColors: ""    // the same for the hourly graphs
+    property string cfg_forecastGraphsMode: "separate"       // daily "Graphs" layout: "separate" | "compact"
+    property string cfg_forecastHourlyGraphsMode: "separate" // the same for the hourly graphs
+    property bool cfg_forecastGraphDots: false               // show data-point dots on daily graphs
+    property bool cfg_forecastHourlyGraphDots: false         // show data-point dots on hourly graphs
+    property bool cfg_forecastHourlyShowTemp: true
     property bool cfg_forecastHourlyShowPrecipProb: true
     property bool cfg_forecastHourlyShowWind: true
     property bool cfg_forecastHourlyShowPressure: false
@@ -1571,6 +1588,7 @@ KCM.AbstractKCM {
     property string cfg_widgetDetailsItemIcons: "feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;alerts=1;snowcover=1"
     property string cfg_widgetDetailsCustomIcons: ""
     property string cfg_widgetDetailsLayout: "cards2"  // "cards2" | "list"
+    property bool cfg_detailsAnimations: false          // animated scenes in the expanded Details cards
     property string cfg_widgetSunTimesMode: "both"   // "both" | "sunrise" | "sunset" | "upcoming"
     property string cfg_widgetMoonMode: "full"        // "full" | "upcoming" | "times"
     property int cfg_widgetIconSize: 16
@@ -1582,15 +1600,38 @@ KCM.AbstractKCM {
     property string cfg_widgetLayoutMode: "advanced"  // "advanced" | "simple"
     property string cfg_widgetSimpleDetailsOrder: "humidity;pressure;preciprate;precipsum"
     property string cfg_widgetSimpleDetailsItemIcons: "humidity=1;pressure=1;preciprate=1;precipsum=1"
+    property bool cfg_headerShowLocation: true
+    property bool cfg_headerShowSwitchLocation: true
+    property bool cfg_headerShowPinButton: true
+    property bool cfg_headerShowDetectButton: true
+    property bool cfg_headerShowRefreshButton: true
     property bool cfg_headerShowDateTime: false
     property string cfg_headerDateFormat: "locale-long"
     property string cfg_headerTimeFormat: "locale"
+    property string cfg_displayDateFormat: ""
+    property string cfg_displayTimeFormat: ""
     property bool cfg_simpleShowForecast: true
     property bool cfg_simpleShowSunriseSunset: true
     property bool cfg_simpleShowForecastCompass: true
     property bool cfg_simpleShowStatsChips: true
-    property string cfg_widgetDefaultTab: "details"  // "details" | "forecast"
-    property string cfg_widgetVisibleTabs: "both"      // "both" | "details" | "forecast" | "none"
+    property string cfg_simpleForecastLayout: "rows"  // Simple mode forecast: "rows" (Standard) | "graphs"
+    // Simple mode, "Graphs" layout: the details shown under the pointer (all on by default)
+    property bool cfg_simpleForecastShowWind: true
+    property bool cfg_simpleForecastShowPressure: true
+    property bool cfg_simpleForecastShowKpIndex: true
+    property bool cfg_simpleForecastShowUvIndex: true
+    property bool cfg_simpleForecastShowVisibility: true
+    property string cfg_widgetDefaultTab: "details"  // "details" | "forecast" | "radar" | "history"
+    // Semicolon-separated tab ids ("details;forecast;radar;history"), "none" = all hidden.
+    // Legacy values "both" (= all) and a single tab id are still understood.
+    property string cfg_widgetVisibleTabs: "details;forecast;radar;history"
+    // Where the tab bar sits in the widget: "top" | "bottom"
+    property string cfg_widgetTabsPosition: "top"
+    // Keep Details / Forecast / History built in the background so the popup opens at once.
+    property bool cfg_popupKeepLoaded: false
+    // Order of ALL tab ids in the tab bar (drag-and-drop list in Widget > General).
+    // Only the order matters here; which tabs are shown is cfg_widgetVisibleTabs.
+    property string cfg_widgetTabOrder: "details;forecast;radar;history"
     property int cfg_widgetWidth: 0       // 0 = default 540 px
     property int cfg_widgetHeight: 0       // 0 = default 500 px
     property string cfg_widgetMinWidthMode: "auto"   // "auto" = 750, "manual" = user-set
@@ -1671,6 +1712,10 @@ KCM.AbstractKCM {
     property bool cfg_aqiShowUs: false
     property bool cfg_aqiShowEu: false
     property bool cfg_aqiShowCa: false
+
+    // Debug mode (Misc tab -> Debug), applied live so this dialog's own traces start/stop at once.
+    property bool cfg_debugMode: false
+    onCfg_debugModeChanged: Dbg.setEnabled(cfg_debugMode, "toggled in this dialog")
 
     // ── Font config aliases ───────────────────────────────────────────────
     property bool cfg_useSystemFont: true

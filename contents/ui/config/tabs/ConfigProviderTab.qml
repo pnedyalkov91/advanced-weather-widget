@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
 /**
@@ -513,6 +513,15 @@ GridLayout {
 
     // Invisible filler row: it lets the second column take ALL spare width, so the
     // label column keeps its width when rows are shown or hidden.
-    Item { visible: providerTab.columns === 2; implicitWidth: 0; implicitHeight: 0 }
-    Item { visible: providerTab.columns === 2; Layout.fillWidth: true; implicitWidth: 0; implicitHeight: 0 }
+    Item {
+        visible: providerTab.columns === 2
+        implicitWidth: 0
+        implicitHeight: 0
+    }
+    Item {
+        visible: providerTab.columns === 2
+        Layout.fillWidth: true
+        implicitWidth: 0
+        implicitHeight: 0
+    }
 }

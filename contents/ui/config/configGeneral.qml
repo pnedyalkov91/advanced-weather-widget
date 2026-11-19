@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,9 +12,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
 
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -24,10 +25,18 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.plasma.components as PlasmaComponents
 import "tabs"
+import "../js/debug.js" as Dbg
+import "../js/bbcLocator.js" as BbcLocator
 
 KCM.AbstractKCM {
     id: root
     Kirigami.ColumnView.fillWidth: true
+
+    // Debug mode (Settings -> Misc -> Debug). This dialog runs in its own QML
+    // engine, so js/debug.js has to be told separately from the applet itself.
+    QtObject {
+        Component.onCompleted: Dbg.setEnabled(Plasmoid.configuration.debugMode === true, "settings dialog")
+    }
 
     // ── Config properties ─────────────────────────────────────────────────
     property string cfg_weatherProvider: "adaptive"
@@ -44,15 +53,30 @@ KCM.AbstractKCM {
     property string cfg_qwApiKey: ""
     property string cfg_qwApiHost: ""
     property string cfg_aemetApiKey: ""
+    // No longer shown in the UI (the Visible tabs setting on the Appearance page decides);
+    // kept bound so the KCM does not lose the stored value.
     property bool cfg_radarEnabled: true
     property string cfg_radarProvider: "rainviewer"
     property string cfg_librewxrUrl: "https://api.librewxr.net"
     property string cfg_librewxrWindQuality: "balanced"
-    property real cfg_librewxrWindLineWidth: 1
+    property int cfg_librewxrNightDepth: 40
+    property int cfg_librewxrGlow: 30
+    property string cfg_librewxrWindPalettes: "[]"
+    property string cfg_librewxrWindPalette: ""
+    property string cfg_librewxrTempPalettes: "[]"
+    property string cfg_librewxrTempPalette: ""
+    property int cfg_librewxrTempOpacity: 45
+    property real cfg_librewxrTempStep: 5
+    property string cfg_weatherMapControlStyle: "plasma"
+    property string cfg_weatherMapIconTheme: "weathermap"
     property bool cfg_radarGpuWorkaround: false
     property bool cfg_radarKeepLoaded: false
+    property bool cfg_weatherMapPrepareLayers: false
+    property int cfg_weatherMapCacheMB: 1024
     property string cfg_alertsProvider: "native"
     property string cfg_fossAlertUrl: "https://alerts.kde.org"
+    property bool cfg_alertsLanguageNative: true
+    property string cfg_alertsLanguageByLocation: "{}"
     property bool cfg_autoRefresh: true
     property int cfg_refreshIntervalMinutes: 15
 
@@ -74,6 +98,26 @@ KCM.AbstractKCM {
     readonly property bool isQWeather: cfg_weatherProvider === "qWeather"
     readonly property bool isAemet: cfg_weatherProvider === "aemet"
     readonly property bool needsKeyUi: isOpenWeather || isWeatherApi || isPirateWeather || isVisualCrossing || isTomorrowIo || isStormGlass || isWeatherbit || isQWeather || isAemet
+
+    // Whether the Weather Maps / Radar tab is shown in the widget. That is decided
+    // in Appearance -> Widget -> General -> Visible tabs (widgetVisibleTabs: a
+    // semicolon-separated list of tab ids; the legacy "both" means all tabs and
+    // "none" means all hidden - same reading as ConfigWidgetTab.visibleTabList()).
+    // Read from the saved configuration instead of declaring a cfg_widgetVisibleTabs
+    // copy here: this page is a separate KCM, so a declared copy would go stale and
+    // could write an old value back over the Appearance page's choice on Apply.
+    // The flip-side is that a switch changed on the Appearance page shows up here
+    // once it has been applied.
+    readonly property bool radarTabVisible: {
+        var v = Plasmoid.configuration.widgetVisibleTabs || "both";
+        if (v === "both")
+            return true;
+        if (v === "none")
+            return false;
+        return v.split(";").map(function (t) {
+            return t.trim();
+        }).indexOf("radar") >= 0;
+    }
 
     // Owned by the Location page (not part of this tab set), but declared
     // here too so this page can force it off for AEMET below - kcfg entries
@@ -122,6 +166,24 @@ KCM.AbstractKCM {
     // checkStatus() round trip, since it can't change during a session.
     property int radarGpuSystemdState: 0
 
+    // ── Weather map cache (ConfigRadarTab) ──────────────────────────────
+    /** The map profile's storage folder: QtWebEngine's default cachePath for
+        its storageName, in this process's cache location (plasmashell's). */
+    readonly property string mapCachePath: decodeURIComponent(StandardPaths.writableLocation(StandardPaths.CacheLocation).toString().replace(/^file:\/\//, "")) + "/QtWebEngine/advanced-weather-widget-map"
+    /** Bytes the cache takes on disk, -1 until read. */
+    property real mapCacheUsedBytes: -1
+    property bool _mapCacheReading: false
+    // Always the same command text: the data source keeps one entry per
+    // name, and names that change each time made plasmashell freeze.
+    readonly property string _mapCacheDuCommand: "du -sb '" + mapCachePath.replace(/'/g, "'\\''") + "' 2>/dev/null || echo 0"
+    function readMapCacheUsed() {
+        Dbg.log("Config/General", "reading the map cache size; a read already running:", root._mapCacheReading);
+        if (root._mapCacheReading)
+            return;
+        root._mapCacheReading = true;
+        radarGpuWorkaroundExec.connectSource(root._mapCacheDuCommand);
+    }
+
     /** Exposed so ConfigRadarTab.qml (a separate file/scope) can call apply()/checkStatus()/logout() */
     property alias radarGpuWorkaroundExec: radarGpuWorkaroundExec
 
@@ -150,7 +212,7 @@ KCM.AbstractKCM {
                 root.radarGpuTestState = 0;
                 root.radarGpuTestMessage = "";
             }
-            console.log("[Advanced Weather Widget Config] radar GPU workaround status:", root.radarGpuTestMessage || "(off, nothing lingering)");
+            Dbg.log("Config/General", "radar GPU workaround status:", root.radarGpuTestMessage || "(off, nothing lingering)");
             return;
         }
 
@@ -164,7 +226,7 @@ KCM.AbstractKCM {
             root.radarGpuTestState = 4;
             root.radarGpuTestMessage = i18n("The workaround script wasn't found on disk. Try toggling the option off and on again.");
         }
-        console.log("[Advanced Weather Widget Config] radar GPU workaround status:", root.radarGpuTestMessage);
+        Dbg.log("Config/General", "radar GPU workaround status:", root.radarGpuTestMessage);
     }
 
     Plasma5Support.DataSource {
@@ -179,24 +241,29 @@ KCM.AbstractKCM {
         }
         onNewData: function (sourceName, data) {
             var out = (data["stdout"] || "").toString().trim();
-            if (sourceName.indexOf("if grep -qs") === 0) {
+            if (sourceName === root._mapCacheDuCommand) {
+                var used = parseInt(out, 10);
+                root.mapCacheUsedBytes = isNaN(used) ? 0 : used;
+                root._mapCacheReading = false;
+                Dbg.log("Config/General", "map cache on disk:", root.mapCacheUsedBytes, "bytes in", root.mapCachePath);
+            } else if (sourceName.indexOf("if grep -qs") === 0) {
                 root._radarGpuScriptPresent = out.indexOf("SCRIPT:PRESENT") !== -1;
-                console.log("[Advanced Weather Widget Config] radar GPU workaround script on disk:", root._radarGpuScriptPresent ? "present, contains the expected export line" : "missing, or doesn't match the expected export line", "(" + root._radarGpuScriptPath + ")");
+                Dbg.log("Config/General", "radar GPU workaround script on disk:", root._radarGpuScriptPresent ? "present, contains the expected export line" : "missing, or doesn't match the expected export line", "(" + root._radarGpuScriptPath + ")");
                 root._evaluateGpuStatus();
             } else if (sourceName.indexOf("if [ \"$QTWEBENGINE_CHROMIUM_FLAGS\"") === 0) {
                 root._radarGpuLiveActive = out.indexOf("LIVE:ACTIVE") !== -1;
-                console.log("[Advanced Weather Widget Config] QTWEBENGINE_CHROMIUM_FLAGS in this session:", root._radarGpuLiveActive ? "\"--disable-gpu-compositing\" - workaround is active" : "not set to the workaround value - not active in this session yet");
+                Dbg.log("Config/General", "QTWEBENGINE_CHROMIUM_FLAGS in this session:", root._radarGpuLiveActive ? "\"--disable-gpu-compositing\" - workaround is active" : "not set to the workaround value - not active in this session yet");
                 root._evaluateGpuStatus();
             } else if (sourceName.indexOf("if [ -d /run/systemd/system ]") === 0) {
                 root.radarGpuSystemdState = out.indexOf("SYSTEMD:YES") !== -1 ? 1 : 2;
-                console.log("[Advanced Weather Widget Config] systemd-managed session:", root.radarGpuSystemdState === 1 ? "yes" : "no (or systemctl unavailable)");
+                Dbg.log("Config/General", "systemd-managed session:", root.radarGpuSystemdState === 1 ? "yes" : "no (or systemctl unavailable)");
                 // Refresh in case a status was already showing the
                 // generic/unknown wording while this was still in flight.
                 root._evaluateGpuStatus();
             } else if (data["exit code"] !== 0) {
-                console.warn("[Advanced Weather Widget Config] radar GPU workaround command failed:", sourceName, "stderr=", data["stderr"]);
+                Dbg.warn("Config/General", "radar GPU workaround command failed:", sourceName, "stderr=", data["stderr"]);
             } else {
-                console.log("[Advanced Weather Widget Config] radar GPU workaround command OK:", sourceName);
+                Dbg.log("Config/General", "radar GPU workaround command OK:", sourceName);
             }
             disconnectSource(sourceName);
         }
@@ -233,7 +300,7 @@ KCM.AbstractKCM {
             root.radarGpuTestMessage = i18n("Checking…");
             root._radarGpuScriptPresent = undefined;
             root._radarGpuLiveActive = undefined;
-            console.log("[Advanced Weather Widget Config] checking radar GPU workaround status: script path =", root._radarGpuScriptPath, ", expected export = QTWEBENGINE_CHROMIUM_FLAGS=\"--disable-gpu-compositing\"");
+            Dbg.log("Config/General", "checking radar GPU workaround status: script path =", root._radarGpuScriptPath, ", expected export = QTWEBENGINE_CHROMIUM_FLAGS=\"--disable-gpu-compositing\"");
             connectSource("if grep -qs 'QTWEBENGINE_CHROMIUM_FLAGS=\"--disable-gpu-compositing\"' " + root._radarGpuScriptPath + "; then echo SCRIPT:PRESENT; else echo SCRIPT:MISSING; fi");
             connectSource("if [ \"$QTWEBENGINE_CHROMIUM_FLAGS\" = \"--disable-gpu-compositing\" ]; then echo LIVE:ACTIVE; else echo LIVE:INACTIVE; fi");
         }
@@ -284,7 +351,7 @@ KCM.AbstractKCM {
         locationCheckState = 1;
         locationCheckMessage = i18n("Checking location availability…");
 
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Config/General", "verifyProviderLocation");
         var url;
         if (provider === "openWeather") {
             var owKey = (cfg_owApiKey || "").trim();
@@ -322,12 +389,11 @@ KCM.AbstractKCM {
             }
             url = "https://api.tomorrow.io/v4/weather/realtime?location=" + lat + "," + lon + "&units=metric&apikey=" + encodeURIComponent(tioKey);
         } else if (provider === "stormGlass") {
-            var sgKey = (cfg_sgApiKey || "").trim();
-            if (!sgKey) {
-                locationCheckState = 0;
-                return;
-            }
-            url = "https://api.stormglass.io/v2/weather/point?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lon) + "&params=airTemperature";
+            // No location probe: every request counts against StormGlass' 10 a day on the free plan,
+            // and its point endpoint accepts any coordinates. The "Test API key" button (an explicit
+            // click) and the first refresh still tell the person if the key or place does not work.
+            locationCheckState = 0;
+            return;
         } else if (provider === "weatherbit") {
             var wbKey = (cfg_wbApiKey || "").trim();
             if (!wbKey) {
@@ -339,7 +405,7 @@ KCM.AbstractKCM {
             url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lon);
         } else if (provider === "bbc") {
             // BBC has no key; verify by resolving the nearest location id.
-            url = "https://locator-service.api.bbci.co.uk/locations?api_key=AGbFAKx58hyjQScCXIYrxuEwJh2W2cmv&stack=aws&locale=en&filter=international&place-types=settlement%2Cairport%2Cdistrict&order=importance&latitude=" + encodeURIComponent(lat) + "&longitude=" + encodeURIComponent(lon) + "&format=json";
+            url = BbcLocator.locatorUrl(lat, lon);
         } else if (provider === "qWeather") {
             var qwKey = (cfg_qwApiKey || "").trim();
             if (!qwKey) {
@@ -460,7 +526,7 @@ KCM.AbstractKCM {
         apiTestState = 1;
         apiTestMessage = i18n("Testing connection…");
 
-        var req = new XMLHttpRequest();
+        var req = Dbg.xhr("Config/General", "testApiKey");
         var url;
         var useAuthHeader = false;
         if (root.isOpenWeather) {
@@ -619,7 +685,8 @@ KCM.AbstractKCM {
         }
         PlasmaComponents.TabButton {
             icon.name: "weather-showers-scattered"
-            text: i18n("Radar")
+            // Named like the popup's tab: LibreWXR plays the weather maps.
+            text: root.cfg_radarProvider === "librewxr" ? i18n("Weather Maps") : i18n("Radar")
         }
         PlasmaComponents.TabButton {
             icon.name: "dialog-warning"
@@ -643,9 +710,29 @@ KCM.AbstractKCM {
             }
 
             // TAB 1 - RADAR
-            ConfigRadarTab {
+            ColumnLayout {
                 visible: tabBar.currentIndex === 1
-                configRoot: root
+                Layout.fillWidth: true
+                // The InlineMessage is a SIBLING of ConfigRadarTab, not a descendant:
+                // enabled: false cascades to every descendant of an item and a child
+                // cannot opt back out, so the notice has to live outside the disabled
+                // subtree to stay fully legible (same pattern as the Panel tab in
+                // configAppearance.qml).
+                spacing: Kirigami.Units.smallSpacing
+                Kirigami.InlineMessage {
+                    Layout.fillWidth: true
+                    visible: !root.radarTabVisible
+                    type: Kirigami.MessageType.Information
+                    text: i18n("Weather Maps / Radar is turned off, so these settings are read-only. Turn it on in Appearance \u203A Widget \u203A General \u203A Visible tabs.")
+                    showCloseButton: false
+                }
+                ConfigRadarTab {
+                    Layout.fillWidth: true
+                    configRoot: root
+                    // Read-only while the tab is hidden in the widget: enabled: false
+                    // cascades to every control inside the grid.
+                    enabled: root.radarTabVisible
+                }
             }
 
             // TAB 2 - WEATHER ALERTS

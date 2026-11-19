@@ -1,5 +1,5 @@
 /*
- * Copyright 2026  Petar Nedyalkov
+ * Copyright 2026 Petar Nedyalkov
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,8 +12,9 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://gnu.org>.
  */
+
 
 /**
  * js/spaceWeather.js - NOAA SWPC data fetcher
@@ -24,6 +25,8 @@
  * All helper logic lives in js/spaceWeather.js (.pragma library);
  * this file is non-pragma so it can use Qt / XMLHttpRequest.
  */
+
+.import "../js/debug.js" as Dbg
 
 // Helper copied inline (cannot import .pragma from non-pragma)
 // Thresholds at n − 1/3 to match NOAA's thirds rounding (see js/spaceWeather.js).
@@ -219,8 +222,10 @@ function fetchSpaceWeather(service) {
         function() { state.bz = NaN; _tryAssemble(); }
     );
 
-    // ── 4) X-ray flux (GOES primary, 1-day, latest entry) ────────────────
-    _get("https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json",
+    // ── 4) X-ray flux (GOES primary, latest entry) ───────────────────────
+    // Only the LAST long-channel reading is used, so the 6-hour file (same fields, about 160 KB) is enough;
+    // the 1-day file is about four times as big (640 KB) and was the bulk of every refresh's download.
+    _get("https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json",
         function(text) {
             try {
                 var arr = JSON.parse(text);
@@ -315,7 +320,7 @@ function recomputeAuroraForLocation(service) {
 // ── Internal HTTP helper ──────────────────────────────────────────────────────
 
 function _get(url, onSuccess, onError) {
-    var req = new XMLHttpRequest();
+    var req = Dbg.xhr("Space Weather", "_get");
     req.open("GET", url);
     req.setRequestHeader("User-Agent",
         "AdvancedWeatherWidget/1.0 (KDE Plasma plasmoid)");

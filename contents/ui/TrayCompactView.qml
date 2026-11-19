@@ -18,6 +18,7 @@ Item {
     readonly property string _trayTemp: weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC, "panel") : "--"
     readonly property bool _hasTemp: weatherRoot
         && weatherRoot.hasSelectedTown
+        && weatherRoot.syncLost !== true
         && !isNaN(weatherRoot.temperatureC)
 
     // Weather icon
@@ -25,7 +26,8 @@ Item {
         id: trayIcon
         anchors.fill: parent
         source: {
-            if (!weatherRoot || weatherRoot.weatherCode < 0)
+            // syncLost: the last synchronisation failed, the values are not current
+            if (!weatherRoot || weatherRoot.weatherCode < 0 || weatherRoot.syncLost === true)
                 return "weather-none-available";
             var style = Plasmoid.configuration.traySimpleIconStyle || "symbolic";
             var isNight = weatherRoot.isNightTime();

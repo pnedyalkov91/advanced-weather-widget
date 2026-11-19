@@ -1,0 +1,560 @@
+/*
+ * Copyright 2026 rcspam
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ */
+
+// ==========================================================================
+// Glue script 2h: the radar and satellite images of LibreWXR over the
+// animation. The catalog lists them: radar every 10 min from about 2 h back
+// to 1 h ahead (the nowcast), satellite every hour over the past 12 h. When
+// the time of the animation falls in a source's range, its image of that
+// time shows over the other layers; out of it, nothing. Each source has its
+// own layers, made through the map adapter as the viewer makes its own
+// (preloaded hidden, shown once their tiles are in), but kept visible while
+// the viewer's are hidden for the animation. Loadable under Node for tests.
+// ==========================================================================
+var WidgetAnimRadar = (function () {
+  'use strict';
+  // The linear fade of the other layers (glue-anim.js): a global in the page, required under Node.
+  var Fade = (typeof WidgetAnim !== 'undefined' ? WidgetAnim : require('./glue-anim.js')).Fade;
+
+  var MIN = 60e3;
+  var RADAR_GAP = 10 * MIN;     // radar images every 10 min
+  var SAT_GAP = 60 * MIN;       // satellite every hour
+  // In the radar's range the animation goes this many times slower: each
+  // radar image of 10 min gets a third of the time of a step of 3 h (half
+  // a second at 1x, as the radar plays them on its own).
+  var RADAR_SLOW = 6;
+
+  /** The images of kind ('radar' or 'satellite') in a catalog
+      (weather-maps.json): the past radar then its nowcast, or the infrared
+      satellite. A nowcast image keeps its address while LibreWXR works it
+      out again from each new observed one, and once it is observed: it
+      carries run, the time of the last observed image it comes from. */
+  function framesOf(catalog, kind) {
+    if (!catalog) return [];
+    if (kind === 'satellite') return (catalog.satellite && catalog.satellite.infrared || []).slice();
+    var r = catalog.radar || {}, past = r.past || [];
+    var run = past.length ? past[past.length - 1].time : null;
+    return past.concat((r.nowcast || []).map(function (f) { return Object.assign({}, f, { run: run }); }));
+  }
+
+  /** What an image's layer is known by: its address, and the run of a
+      nowcast one, so that a new run or the observed image makes it again
+      (the tiles of the old one stay in its layer otherwise). */
+  function keyOf(f) { return f.run != null ? f.path + '#' + f.run : f.path; }
+
+  /** { start, end } in ms: from the first image to one gap past the last,
+      or to untilMs when later; null without images. */
+  function rangeOf(frames, gapMs, untilMs) {
+    if (!frames || !frames.length) return null;
+    return { start: frames[0].time * 1000, end: Math.max(frames[frames.length - 1].time * 1000 + gapMs, untilMs || 0) };
+  }
+
+  /** The index of the latest image at or before ms, -1 out of the range. */
+  function frameAt(frames, ms, gapMs, untilMs) {
+    var r = rangeOf(frames, gapMs, untilMs);
+    if (!r || ms < r.start || ms >= r.end) return -1;
+    for (var i = frames.length - 1; i >= 0; i--) if (frames[i].time * 1000 <= ms) return i;
+    return -1;
+  }
+
+  /** The tile address of an image, as the viewer builds it: o holds size,
+      color, smooth, snow, format, arrows, cells and lightning. */
+  function tileUrl(base, frame, kind, o) {
+    if (kind === 'satellite') return base + frame.path + '/' + o.size + '/{z}/{x}/{y}/0/0_0.' + o.format;
+    var url = base + frame.path + '/' + o.size + '/{z}/{x}/{y}/' + o.color + '/' + (o.smooth ? 1 : 0) + '_' + (o.snow ? 1 : 0) + '.' + o.format;
+    var q = [];
+    if (o.arrows) q.push('arrows=' + o.arrows);
+    if (o.cells) q.push('cells=' + o.cells);
+    if (o.lightning) q.push('lightning=' + o.lightning);
+    return q.length ? url + '?' + q.join('&') : url;
+  }
+
+  /* The finest grids behind the radar are 0.5 to 1 km (MRMS CONUS 500 m,
+     OPERA and DPC 1 km, docs/coverage.md in LibreWXR); the satellite is
+     coarser. A 256 file at level 9 has pixels of 300 m at the equator,
+     215 m at 45°: two or more per cell of the finest grid. Deeper levels
+     only stretch the same cells, so the map stretches the level 9 file
+     itself and asks the server for nothing. A 512 file has the same pixel
+     one level up. */
+  var NATIVE_ZOOM_256 = 9;
+  var SIZE_IN_URL = /\/(256|512)\/\{z\}\//;
+
+  /** The last level of tiles worth asking for the frame at url, on a map
+      that goes up to mapMax: NATIVE_ZOOM_256 for 256 files, one less for
+      512 ones, mapMax when the address is of another shape. Lightning,
+      arrows and storm cells are drawn in the tile at a fixed size: past
+      that level they grow with the rest (on trial). */
+  function nativeZoom(url, mapMax) {
+    var m = SIZE_IN_URL.exec(url);
+    if (!m) return mapMax;
+    return Math.min(mapMax, NATIVE_ZOOM_256 - (m[1] === '512' ? 1 : 0));
+  }
+
+  var UNSMOOTHED = /\/\d+\/0_[01]\.(png|webp)(\?|$)/;
+  /** Whether the frame at url is a radar tile drawn without smoothing:
+      its cells are squares, kept sharp when the map stretches them. */
+  function sharpEdges(url, kind) {
+    return kind !== 'satellite' && UNSMOOTHED.test(url);
+  }
+
+  /** The tiles for the size chosen ('auto', '256' or '512') at device
+      pixel ratio dpr: size, the files' pixels, and grid, the size MapLibre
+      lays them on. Files of 512 on a 512 grid take a quarter of the
+      requests of 256 ones, for the same pixels on screen; on HiDPI (1.5
+      and more) 'auto' and '512' keep files of 512 on a 256 grid, sharper. */
+  function tileSizes(choice, dpr) {
+    var size = choice === 'auto' ? 512 : parseInt(choice, 10) === 512 ? 512 : 256;
+    return { size: size, grid: size === 512 && dpr < 1.5 ? 512 : 256 };
+  }
+
+  /** How many times slower the animation goes at ms, on a time line of
+      stepH hours a step (3 when left out): an image of the radar (10 min)
+      or of the satellite (1 h) lasts a third of a step whatever stepH, so
+      a forecast layer switched on or off keeps the same pace. RADAR_SLOW
+      in the radar's range and 1 elsewhere on steps of 3 h. */
+  function slowFactor(ms, range, stepH) {
+    var k = (stepH == null ? 3 : stepH) / 3;
+    return (range && ms >= range.start && ms < range.end ? RADAR_SLOW : 1) * k;
+  }
+
+  /* The step buttons over a forecast animation. sources: { start, end,
+     last, gap } in ms of the radar and the satellite switched on, finer
+     than the files' step. Where the time is in one (just before it going
+     back), the button steps on its images; elsewhere it keeps the files'
+     step but stops on the first or the last image of a source on the way. */
+  function _inside(src, t, dir) {
+    var x = dir > 0 ? t : t - 1;
+    return x >= src.start && x < src.end;
+  }
+  function _finest(t, dir, sources) {
+    var best = null;
+    (sources || []).forEach(function (src) {
+      if (_inside(src, t, dir) && (!best || src.gap < best.gap)) best = src;
+    });
+    return best;
+  }
+  /** The step in hours of the button going dir at time t (baseH elsewhere). */
+  function stepHours(t, dir, baseH, sources) {
+    var src = _finest(t, dir, sources);
+    return src && src.gap < baseH * 3600e3 ? src.gap / 3600e3 : baseH;
+  }
+  /** The time the button going dir from t lands on; baseTarget: the files' step. */
+  function stepTime(t, dir, baseTarget, sources) {
+    var src = _finest(t, dir, sources), eps = 1e-9, to = baseTarget;
+    if (src) {
+      var k = (t - src.start) / src.gap;
+      k = dir > 0 ? Math.floor(k + eps) + 1 : Math.ceil(k - eps) - 1;
+      to = Math.min(src.start + k * src.gap, src.end);
+    }
+    // A finer source on the way: stop on its first (or last) image.
+    (sources || []).forEach(function (s) {
+      if (src && s.gap >= src.gap) return;
+      if (dir > 0 && s.start > t && s.start < to) to = s.start;
+      if (dir < 0 && s.last !== null && s.last < t && s.last > to) to = s.last;
+    });
+    return to;
+  }
+
+  /* The images of one source over the animation. opts: kind, gapMs,
+     opacity (0..1), url(frame) -> its tile address, fadeMs: switched on,
+     its first image fades in, switched off it fades out before its layers
+     go, as the other layers do (0: at once; now and raf for tests). adapter: the map's
+     (createFrameLayer, onLayerReady, setFrameOpacity, destroyFrameLayer). */
+  function Overlay(adapter, opts) {
+    this.adapter = adapter;
+    this.kind = opts.kind;
+    this.gapMs = opts.gapMs;
+    // () -> ms the last image stays on until, when later than one gap past
+    // it (the satellite's, an hour late, until the end of the radar).
+    this.until = opts.until || null;
+    this.opacity = opts.opacity == null ? 0.8 : opts.opacity;
+    this.url = opts.url;
+    this.tileSize = opts.tileSize || 256;   // the grid of its tiles (tileSizes)
+    this.frames = [];
+    this.on = false;
+    this.layers = {};           // keyOf(image) -> { handle, ready }
+    this.wanted = null;         // path of the image of the time asked for
+    this.shown = null;          // path of the image on the map
+    this.time = null;           // the last time asked for (ms)
+    this.stale = null;          // the image shown before new tile options, kept until its new one is in
+    this.fadeMs = opts.fadeMs || 0;
+    this.level = 1;             // the fade, 0..1, times the opacity
+    this._fadeIn = false;       // the next image put fades in (just switched on)
+    this._leaving = false;      // fading out, its layers go at the end
+    // Images whose tiles failed: tried again RETRY_TRIES times at most,
+    // RETRY_MS apart, when asked for; a new catalog gives them one more.
+    this._clock = opts.now || function () { return Date.now(); };
+    this._tries = {};           // keyOf(image) -> failed reads in a row
+    var self = this;
+    this._fade = new Fade(function (v) { self._setLevel(v); }, { ms: this.fadeMs, now: opts.now, raf: opts.raf, from: 1 });
+  }
+
+  /** The opacity of the image shown, the fade counted. */
+  Overlay.prototype._op = function () { return this.opacity * this.level; };
+
+  Overlay.prototype._setLevel = function (v) {
+    this.level = v;
+    if (this.stale) this.adapter.setFrameOpacity(this.stale, this._op());
+    if (this.shown && this.layers[this.shown]) this.adapter.setFrameOpacity(this.layers[this.shown].handle, this._op());
+  };
+
+  /** The fade from where it is to target in fadeMs (linear), then done(). */
+  Overlay.prototype._fadeTo = function (target, done) { this._fade.to(target, done); };
+
+  /** The fade at v at once, nothing drawn yet. */
+  Overlay.prototype._jump = function (v) {
+    this._fade.value = v;
+    this.level = v;
+  };
+
+  /** The time of the last image (ms), null without images. */
+  Overlay.prototype.lastTime = function () {
+    return this.frames.length ? this.frames[this.frames.length - 1].time * 1000 : null;
+  };
+  Overlay.prototype._until = function () { return this.until ? this.until() : null; };
+  Overlay.prototype.range = function () { return rangeOf(this.frames, this.gapMs, this._until()); };
+
+  /** The time of the image on the map (ms), null when none is. */
+  Overlay.prototype.shownTime = function () {
+    var path = this.shown || (this.stale ? this.stalePath : null);
+    for (var i = 0; i < this.frames.length; i++) if (keyOf(this.frames[i]) === path) return this.frames[i].time * 1000;
+    return null;
+  };
+
+  Overlay.prototype._make = function (frame) {
+    var path = keyOf(frame);
+    if (this.layers[path]) return;
+    // Made held back by the map (no tile asked for): waited for, and so
+    // drawn, only once asked for (show, loadedAt and the images ahead).
+    this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true, tileSize: this.tileSize }), ready: false, waiting: false };
+  };
+
+  /** Wait for the tiles of image path (once at a time), then show it if
+      it is still the one asked for. Settled on a tile error (ok false: the
+      network not back yet after a sleep), it shows all the same so the
+      play goes on, and is made again when asked for later (show, a few
+      tries) or when a catalog comes (setFrames): the map never asks again
+      for a tile that failed. */
+  Overlay.prototype._await = function (path) {
+    var self = this, entry = this.layers[path];
+    if (!entry || entry.waiting) return;
+    entry.waiting = true;
+    this.adapter.onLayerReady(entry.handle, function (ok) {
+      if (self.layers[path] !== entry) return;
+      entry.waiting = false;
+      entry.ready = true;
+      entry.failed = ok === false;
+      if (entry.failed) {
+        entry.failedAt = self._clock();
+        self._tries[path] = (self._tries[path] || 0) + 1;
+      } else {
+        delete self._tries[path];
+      }
+      if (self.wanted === path) self._put(path);
+    });
+  };
+
+  var RETRY_TRIES = 3, RETRY_MS = 5000;
+  /** Whether image path failed and may be made again now. */
+  Overlay.prototype._retry = function (path) {
+    var e = this.layers[path];
+    return !!e && !!e.failed && (this._tries[path] || 0) < RETRY_TRIES && this._clock() - e.failedAt >= RETRY_MS;
+  };
+
+  /** Whether image path has its tiles for the map as it is now: one
+      settled before a zoom has none at the new scale yet. */
+  Overlay.prototype._loaded = function (path) {
+    var e = this.layers[path];
+    if (!e || !e.ready || e.waiting) return false;
+    return !this.adapter.frameLoaded || this.adapter.frameLoaded(e.handle);
+  };
+
+  /** Whether the image of time ms can show at once (true off or out of
+      the range); when not, its tiles are asked for. The play waits on it.
+      The next images are asked for ahead (_ahead). */
+  Overlay.prototype.loadedAt = function (ms) {
+    if (!this.on) return true;
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
+    if (i < 0) return true;
+    var path = keyOf(this.frames[i]);
+    this._ahead(i);
+    if (this._loaded(path)) return true;
+    this._make(this.frames[i]);
+    this._await(path);
+    return false;
+  };
+
+  /** Whether the image of time ms can show at once (true off or out of
+      the range), without asking for anything. */
+  Overlay.prototype.isIn = function (ms) {
+    if (!this.on) return true;
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
+    return i < 0 || this._loaded(keyOf(this.frames[i]));
+  };
+
+  /** How far its images are: { done, total }, done those whose tiles are
+      in for the map as it is (frameCounted: those held back in a move by
+      their state before it); null off. */
+  Overlay.prototype.progress = function () {
+    if (!this.on) return null;
+    // The image asked for only: the others are read ahead out of sight
+    // (glue-prefetch.js) and the bar does not wait for them.
+    var a = this.adapter, e = this.wanted ? this.layers[this.wanted] : null;
+    if (!e) return { done: 0, total: 0 };
+    var counted = a.frameCounted ? a.frameCounted(e.handle)
+      : a.frameLoaded ? a.frameLoaded(e.handle) : e.ready;
+    // Its tiles when the map tells them; one step until it knows any.
+    var t = a.frameTileCount ? a.frameTileCount(e.handle) : null;
+    if (t && t.total > 0) return { done: counted ? t.total : Math.min(t.done, t.total), total: t.total };
+    return { done: counted ? 1 : 0, total: 1 };
+  };
+
+  /** Each image switched on for the reading ahead: { url (its tile
+      address), handle, shown (the one asked for), shortLived (the last
+      observed image and the nowcast: the server keeps them 5 min) }. */
+  Overlay.prototype.prefetchFrames = function () {
+    if (!this.on) return [];
+    var self = this, lastPast = -1;
+    this.frames.forEach(function (f, i) { if (f.run == null) lastPast = i; });
+    var out = [];
+    this.frames.forEach(function (f, i) {
+      var key = keyOf(f), e = self.layers[key];
+      if (!e) return;
+      out.push({ url: self.url(f), handle: e.handle, shown: key === (self.wanted || self.shown), shortLived: f.run != null || i === lastPast });
+    });
+    return out;
+  };
+
+  var AHEAD = 2;               // images asked for ahead of the one shown
+  /** The AHEAD images after index i asked for (made visible, their tiles
+      drawn from the cache), so a play or a step finds them ready. */
+  Overlay.prototype._ahead = function (i) {
+    for (var k = 1; k <= AHEAD && i + k < this.frames.length; k++) {
+      var path = keyOf(this.frames[i + k]);
+      if (this._loaded(path)) continue;
+      this._make(this.frames[i + k]);
+      this._await(path);
+    }
+  };
+
+  Overlay.prototype._drop = function (path) {
+    var e = this.layers[path];
+    if (!e) return;
+    delete this.layers[path];
+    this.adapter.destroyFrameLayer(e.handle);
+    if (this.shown === path) this.shown = null;
+  };
+
+  Overlay.prototype._dropStale = function () {
+    if (this.stale) this.adapter.destroyFrameLayer(this.stale);
+    this.stale = null;
+  };
+
+  /** Image path on the map, the one before off. */
+  Overlay.prototype._put = function (path) {
+    var e = path ? this.layers[path] : null;
+    if (this.shown && this.shown !== path && this.layers[this.shown]) this.adapter.setFrameOpacity(this.layers[this.shown].handle, 0);
+    this.shown = e ? path : null;
+    if (e && this._fadeIn) {
+      // The first image since switched on: from nothing.
+      this._fadeIn = false;
+      this._jump(0);
+      this._fadeTo(1);
+    }
+    if (e) {
+      this.adapter.setFrameOpacity(e.handle, this._op());
+      if (this.adapter.raise) this.adapter.raise(e.handle);
+    }
+    this._dropStale();
+  };
+
+  /** New images (a new catalog): the layers of those still listed stay. */
+  Overlay.prototype.setFrames = function (frames) {
+    var keep = {}, self = this;
+    this.frames = (frames || []).slice();
+    this.frames.forEach(function (f) { keep[keyOf(f)] = true; });
+    Object.keys(this.layers).forEach(function (p) {
+      if (keep[p] && !self.layers[p].failed) return;
+      self._drop(p);
+      delete self._tries[p];
+    });
+    if (this.on) this.frames.forEach(function (f) { self._make(f); });
+    if (this.time !== null) this.show(this.time);
+  };
+
+  /** Other tiles (color, smoothing, arrows, lightning, size...): every
+      layer made again, on grid tileSize when given, the image of the time
+      shown first. That image stays on the map until its new one is in (no
+      blink), the hidden ones go now. */
+  Overlay.prototype.setUrl = function (url, tileSize) {
+    this.url = url;
+    if (tileSize) this.tileSize = tileSize;
+    var self = this, kept = this.shown && this.layers[this.shown];
+    if (kept) {
+      this._dropStale();
+      this.stale = kept.handle;
+      this.stalePath = this.shown;
+      delete this.layers[this.shown];
+      this.shown = null;
+    }
+    Object.keys(this.layers).forEach(function (p) { self._drop(p); });
+    if (this.on) {
+      var i = this.time === null ? -1 : frameAt(this.frames, this.time, this.gapMs, this._until());
+      if (i >= 0) this._make(this.frames[i]);
+      this.frames.forEach(function (f) { self._make(f); });
+    }
+    if (this.time !== null) this.show(this.time);
+  };
+
+  /** On: every image preloaded hidden, that of the time shown once in.
+      Off: every layer goes. */
+  Overlay.prototype.setOn = function (on) {
+    on = !!on;
+    if (on === this.on) return;
+    this.on = on;
+    var self = this;
+    if (on) {
+      if (this._leaving) {
+        // Back while fading out: from where it is, its layers kept.
+        this._leaving = false;
+        this._fadeTo(1);
+      } else if (this.fadeMs > 0) {
+        this._fadeIn = true;
+      }
+      this.frames.forEach(function (f) { self._make(f); });
+      if (this.time !== null) this.show(this.time);
+    } else {
+      this.wanted = null;
+      this._fadeIn = false;
+      var drop = function () {
+        self._leaving = false;
+        if (self.on) return;
+        Object.keys(self.layers).forEach(function (p) { self._drop(p); });
+        self._dropStale();
+        self._jump(1);
+      };
+      if (this.fadeMs > 0 && (this.shown || this.stale)) {
+        this._leaving = true;
+        this._fadeTo(0, drop);
+      } else {
+        drop();
+      }
+    }
+  };
+
+  Overlay.prototype.setOpacity = function (v) {
+    this.opacity = v;
+    this._setLevel(this.level);
+  };
+
+  /** The image of time ms, once its tiles are in; none out of the range. */
+  Overlay.prototype.show = function (ms) {
+    this.time = ms;
+    if (!this.on) return;
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
+    // Out of the range: the image that comes in later just shows, as in a play.
+    if (i < 0) { this._fadeIn = false; this.wanted = null; this._put(null); return; }
+    var f = this.frames[i];
+    var key = keyOf(f);
+    this.wanted = key;
+    if (this._retry(key)) this._drop(key);
+    if (this.shown === key) return;
+    this._make(f);
+    // Not in for the map as it is (a zoom): the image before stays meanwhile.
+    if (this._loaded(key)) this._put(key);
+    else this._await(key);
+  };
+
+  /** The time of the last observed radar image of a catalog (ms; the
+      nowcast left out), null when none. */
+  function lastPast(catalog) {
+    var past = catalog && catalog.radar && catalog.radar.past;
+    return past && past.length ? past[past.length - 1].time * 1000 : null;
+  }
+
+  /** The time "now" goes to (the opening, the back to now button, the 0
+      key). The step of now is the 3-hour step nearest the clock, up to
+      1 h 30 ahead, often past the radar's last image: with the radar on,
+      now is its last observed image. o: { radar, nowStep, lastPast }. */
+  function nowTime(o) {
+    if (o.radar && o.lastPast != null) return o.lastPast;
+    return o.nowStep;
+  }
+
+  var COVER_MAX_H = 6;         // hours added back at most (an old catalog)
+  /** The hours back for a range around the step of now (WidgetAnim.
+      frameTimes: steps of stepH hours, pastH back) so that it holds
+      lastPastMs, the radar's last observed image: pastH plus whole steps,
+      COVER_MAX_H at most. Unchanged without an image or on steps under
+      3 h (the radar's or satellite's own range). */
+  function pastToCover(pastH, stepH, nowMs, lastPastMs) {
+    if (lastPastMs == null || !(stepH >= 3)) return pastH;
+    var step = stepH * 3600e3, mid = Math.round(nowMs / step) * step;
+    var first = mid - Math.round(pastH * 3600e3 / step) * step;
+    if (lastPastMs >= first) return pastH;
+    var k = Math.ceil((first - lastPastMs) / step);
+    return pastH + Math.min(k * stepH, COVER_MAX_H);
+  }
+
+  /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
+      keeps it to itself. To spare a second copy over HTTP, the page's
+      WebSocket is wrapped before the viewer opens it: every weather-maps
+      snapshot or update on it goes to onCatalog too. Returns { open }:
+      whether such a socket is open now (the page polls only when not), and
+      drop: after a sleep a socket can look open and get nothing more, its
+      connection gone without a close; drop closes it (the viewer opens a
+      new one) and stops counting it at once. */
+  function watchPush(win, onCatalog) {
+    var Native = win.WebSocket, opened = 0, live = [];
+    if (!Native) return { open: function () { return false; }, drop: function () {} };
+    function Watched(url, protocols) {
+      var socket = protocols === undefined ? new Native(url) : new Native(url, protocols);
+      if (!/\/v2\/ws(\?|$)/.test(String(url))) return socket;
+      var isOpen = false;
+      function gone() {
+        if (!isOpen) return false;
+        isOpen = false;
+        opened--;
+        live = live.filter(function (l) { return l.socket !== socket; });
+        return true;
+      }
+      socket.addEventListener('open', function () { isOpen = true; opened++; live.push({ socket: socket, gone: gone }); });
+      socket.addEventListener('close', gone);
+      socket.addEventListener('message', function (event) {
+        var msg;
+        try { msg = JSON.parse(event.data); } catch (err) { return; }
+        if (msg && (msg.type === 'snapshot' || msg.type === 'update') && msg.topic === 'weather-maps') onCatalog(msg.data);
+      });
+      return socket;
+    }
+    Watched.prototype = Native.prototype;
+    ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach(function (k) { if (k in Native) Watched[k] = Native[k]; });
+    win.WebSocket = Watched;
+    return {
+      open: function () { return opened > 0; },
+      drop: function () {
+        live.slice().forEach(function (l) {
+          if (!l.gone()) return;
+          try { l.socket.close(); } catch (err) { /* already closed */ }
+        });
+      }
+    };
+  }
+
+  return {
+    RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
+    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, nativeZoom: nativeZoom, sharpEdges: sharpEdges, tileSizes: tileSizes, slowFactor: slowFactor,
+    stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
+    lastPast: lastPast, nowTime: nowTime, pastToCover: pastToCover
+  };
+})();
+
+if (typeof module !== 'undefined' && module.exports) { module.exports = WidgetAnimRadar; }
