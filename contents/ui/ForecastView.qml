@@ -316,6 +316,8 @@ Item {
     readonly property int _forecastTempColumnWidth: _forecastDualTemp ? (_forecastShowTempUnit ? 178 : 132) : (_forecastShowTempUnit ? 82 : 58)
 
     // ── Hourly forecast extra stats ─────────────────────────────────
+
+    readonly property bool _hourlyShowWindDir: Plasmoid.configuration.forecastHourlyShowWindDir === true
     readonly property bool _hourlyShowPrecipProb: Plasmoid.configuration.forecastHourlyShowPrecipProb !== false
     readonly property bool _hourlyShowWind: Plasmoid.configuration.forecastHourlyShowWind !== false
     readonly property bool _hourlyShowPressure: Plasmoid.configuration.forecastHourlyShowPressure === true
@@ -1067,6 +1069,7 @@ Item {
                     active: forecastRoot.dailyGraphs
                     chartSource: forecastRoot._chartSource
                     glyphFont: forecastRoot._wiFontFamily
+                    dotsEnabled: Plasmoid.configuration.forecastGraphDots
                     view: dailyAdapter
                     days: forecastRoot._dailyChartDays
                     metrics: forecastRoot._dailyMetrics
@@ -1843,6 +1846,7 @@ Item {
                                 opacity: ready ? 1 : 0
                                 chartSource: forecastRoot._chartSource
                                 glyphFont: forecastRoot._wiFontFamily
+                                dotsEnabled: Plasmoid.configuration.forecastHourlyGraphDots
                                 view: hourlyAdapter
                                 days: graphsRoot._data.items
                                 metrics: graphsRoot._metrics

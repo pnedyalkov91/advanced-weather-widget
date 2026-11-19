@@ -1570,6 +1570,8 @@ KCM.AbstractKCM {
     property string cfg_forecastHourlyGraphColors: ""    // the same for the hourly graphs
     property string cfg_forecastGraphsMode: "separate"       // daily "Graphs" layout: "separate" | "compact"
     property string cfg_forecastHourlyGraphsMode: "separate" // the same for the hourly graphs
+    property bool cfg_forecastGraphDots: false               // show data-point dots on daily graphs
+    property bool cfg_forecastHourlyGraphDots: false         // show data-point dots on hourly graphs
     property bool cfg_forecastHourlyShowTemp: true
     property bool cfg_forecastHourlyShowPrecipProb: true
     property bool cfg_forecastHourlyShowWind: true

@@ -62,6 +62,8 @@ ColumnLayout {
         /** The KCM root that owns the cfg_* properties */
         required property var cfgRoot
         required property string modeProp
+        /** Name of the cfg_* bool property of the "dots for every day / hour" switch ("" = no switch) */
+        property string dotsProp: ""
         /** true: the hourly forecast (the hint says "hour" instead of "day") */
         required property bool hourly
         spacing: Kirigami.Units.smallSpacing
@@ -100,6 +102,21 @@ ColumnLayout {
                     return gm.hourly ? i18n("One compact graph; point at an hour to see all the other details") : i18n("One compact graph; point at a day to see all the other details");
                 return gm.hourly ? i18n("A graph for each detail; point at an hour to see its value in all of them") : i18n("A graph for each detail; point at a day to see its value in all of them");
             }
+        }
+        // Show or hide data-point dots on the lines.
+        Switch {
+            visible: gm.dotsProp.length > 0
+            text: gm.hourly ? i18n("Show dots for every hour") : i18n("Show dots for every day")
+            checked: gm.cfgRoot[gm.dotsProp] === true
+            onToggled: gm.cfgRoot[gm.dotsProp] = checked
+        }
+        Label {
+            visible: gm.dotsProp.length > 0
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            opacity: 0.7
+            font: Kirigami.Theme.smallFont
+            text: i18n("Off: no data-point dots are shown.")
         }
     }
 
@@ -2159,6 +2176,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
                 modeProp: "cfg_forecastGraphsMode"
+                dotsProp: "cfg_forecastGraphDots"
                 hourly: false
             }
             Label {
@@ -2324,6 +2342,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 cfgRoot: widgetTab.configRoot
                 modeProp: "cfg_forecastHourlyGraphsMode"
+                dotsProp: "cfg_forecastHourlyGraphDots"
                 hourly: true
             }
             Label {

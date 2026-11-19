@@ -35,6 +35,8 @@
  *                 first graph only, the lines through all of them)
  *   glyphFont     font family of the glyphs a metric draws instead of dots (`metric.glyph(i, entry)`:
  *                 the wind arrow); also used for them in the combined graph's card
+ *   dotsEnabled   false: no data-point dots; true: a dot for every day / hour on every graph
+ *                 (the caller binds the daily or the hourly setting)
  *   outerFlickable  the page's Flickable, the wheel falls through to it
  *   outerScroll   function(wheelEvent): scrolls the page (used when a graph is not zoomed)
  * Output
@@ -73,6 +75,8 @@ ColumnLayout {
     property var outerScroll: null
     /** Font family of the glyphs the metrics draw (see `glyph` of a metric) */
     property string glyphFont: ""
+    /** Whether data-point dots are shown; when enabled, every entry gets a dot. */
+    property bool dotsEnabled: false
     /** Plot height of a metric graph */
     property real metricPlotH: Kirigami.Units.gridUnit * 3.5
 
@@ -321,6 +325,12 @@ ColumnLayout {
         });
         it.glyphFont = Qt.binding(function () {
             return stack.glyphFont;
+        });
+        it.dotsEnabled = Qt.binding(function () {
+            return stack.dotsEnabled;
+        });
+        it.forceDots = Qt.binding(function () {
+            return stack.dotsEnabled;
         });
         it.daySelected.connect(function (i) {
             stack.daySelected(i);

@@ -478,6 +478,10 @@
          (any other value, e.g. an older "linked", counts as "separate") -->
     <entry name="forecastGraphsMode"       type="String"><default>separate</default></entry>
     <entry name="forecastHourlyGraphsMode" type="String"><default>separate</default></entry>
+    <!-- Whether to show data-point dots on the daily and hourly "Graphs" layouts. When enabled,
+         every day / hour gets a dot, however close together the points are. -->
+    <entry name="forecastGraphDots"       type="Bool"><default>false</default></entry>
+    <entry name="forecastHourlyGraphDots" type="Bool"><default>false</default></entry>
 
     <!-- ── Widget - hourly forecast extra stats ──────────────────────── -->
     <entry name="forecastHourlyShowTemp"       type="Bool"><default>true</default></entry>

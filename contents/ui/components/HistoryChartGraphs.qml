@@ -149,6 +149,11 @@ ColumnLayout {
      *  after the value in its hover badge), in the colour of the series; "" or null: the plain dot */
     property var glyphAt: null
     property string glyphFont: ""
+    /** Whether data-point dots are drawn at all. */
+    property bool dotsEnabled: true
+    /** true: every entry gets a dot on the line, however close together the entries are
+     *  (false: the dots are left out when they would be too close to read as dots) */
+    property bool forceDots: false
     /** Width of the left gutter the axis labels need (what `minPlotX` is compared with). */
     readonly property real naturalPlotX: area.naturalX
     /** An entry was clicked (only when `selectable`). */
@@ -971,7 +976,7 @@ ColumnLayout {
                 // close together for them to read as dots. With `glyphAt` an entry's
                 // dot is a glyph (the wind arrow).
                 readonly property real dotSize: Kirigami.Units.gridUnit * 0.4
-                readonly property bool showDots: area.step >= dotSize * 2.4
+                readonly property bool showDots: root.dotsEnabled && (root.forceDots || area.step >= dotSize * 2.4)
                 // a glyph (the wind arrow) is wider than a dot: when the entries are close together only
                 // every few of them get one
                 readonly property real glyphSize: Kirigami.Units.gridUnit * 1.5
