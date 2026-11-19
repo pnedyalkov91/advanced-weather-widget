@@ -29,6 +29,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var YELLOW = "#ffc107";
 var ORANGE = "#ff8c00";
@@ -81,7 +82,7 @@ function _scene(ctx, g, type, col, text) {
             x = left + rng() * span * 0.4;
             len = 50 + rng() * 70;
             ctx.beginPath();
-            GC.wavePath(ctx, x, Math.min(right, x + len), y, 2.4, 0.07, rng() * 6, false);
+            GC.wavePath(ctx, x, Math.min(right, x + len), y, 2.4, 0.07, rng() * 6 + GA.T() * 2.5, false);
             ctx.strokeStyle = GC.rgba(col, 0.20 + rng() * 0.22);
             ctx.stroke();
         }
@@ -111,6 +112,7 @@ function _scene(ctx, g, type, col, text) {
             var fs = 2.4 + rng() * 2.6;
             al = 0.30 + rng() * 0.30;
             if (i >= n) continue;
+            pt.y = top + GA.wrap(pt.y - top + GA.T() * 14, g.r - 14);
             GC.snowflakePath(ctx, pt.x, pt.y, fs);
             ctx.lineWidth = 1; ctx.strokeStyle = GC.rgba(col, al); ctx.stroke();
         }
@@ -135,7 +137,7 @@ function _scene(ctx, g, type, col, text) {
         for (i = 0; i < 5; i++) {
             y = g.baseY - (g.r - 16) * (0.15 + 0.17 * i);
             ctx.beginPath();
-            GC.wavePath(ctx, left, right, y, 2.2, 0.024 + 0.003 * i, i * 1.3, false);
+            GC.wavePath(ctx, left, right, y, 2.2, 0.024 + 0.003 * i, i * 1.3 + GA.T() * 0.5, false);
             ctx.lineWidth = 6 + (i % 2) * 3;
             ctx.strokeStyle = GC.rgba(col, 0.10 + 0.04 * (i % 2));
             ctx.stroke();
@@ -152,7 +154,7 @@ function _scene(ctx, g, type, col, text) {
         ctx.fillStyle = GC.rgba(col, 0.40); ctx.fill();
         ctx.lineWidth = 1.6;
         for (i = 0; i < 16; i++) {
-            var a = i * GC.PI / 8;
+            var a = i * GC.PI / 8 + GA.T() * 0.3;
             ctx.beginPath();
             ctx.moveTo(sx + Math.cos(a) * g.r * 0.22, sy + Math.sin(a) * g.r * 0.22);
             ctx.lineTo(sx + Math.cos(a) * g.r * (i % 2 ? 0.34 : 0.42), sy + Math.sin(a) * g.r * (i % 2 ? 0.34 : 0.42));
@@ -163,11 +165,11 @@ function _scene(ctx, g, type, col, text) {
         for (i = 0; i < 4; i++) {
             y = g.baseY - (g.r - 16) * (type === 7 ? 0.14 + 0.13 * i : 0.10 + 0.07 * i);
             ctx.beginPath();
-            GC.wavePath(ctx, left, right, y, 3.5 + i, 0.030 + 0.004 * i, i * 1.4, false);
+            GC.wavePath(ctx, left, right, y, 3.5 + i, 0.030 + 0.004 * i, i * 1.4 + GA.T() * 0.8, false);
             ctx.lineTo(right, g.baseY + 4); ctx.lineTo(left, g.baseY + 4); ctx.closePath();
             ctx.fillStyle = GC.rgba(col, 0.07 + 0.015 * i); ctx.fill();
             ctx.beginPath();
-            GC.wavePath(ctx, left, right, y, 3.5 + i, 0.030 + 0.004 * i, i * 1.4, false);
+            GC.wavePath(ctx, left, right, y, 3.5 + i, 0.030 + 0.004 * i, i * 1.4 + GA.T() * 0.8, false);
             ctx.lineWidth = 1.2; ctx.strokeStyle = GC.rgba(col, 0.28); ctx.stroke();
         }
     } else if (type === 8) {
@@ -191,6 +193,7 @@ function _scene(ctx, g, type, col, text) {
         for (i = 0; i < 18; i++) {
             pt = GC.randomInDisc(rng, g, g.r - 14);
             len = 7 + rng() * 8;
+            pt.y = top + GA.wrap(pt.y - top + GA.T() * 70, g.r - 14);
             ctx.beginPath(); ctx.moveTo(pt.x, pt.y); ctx.lineTo(pt.x - len * 0.35, pt.y + len);
             ctx.strokeStyle = GC.rgba(col, 0.28 + rng() * 0.22); ctx.stroke();
         }
@@ -272,14 +275,17 @@ function _clearScene(ctx, g, col, text) {
 }
 
 function _drawClear(ctx, cw, ch, p, g) {
-    GC.clipDisc(ctx, g, 6);
-    var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    glow.addColorStop(0, GC.rgba(GREEN, 0.16));
-    glow.addColorStop(1, GC.rgba(GREEN, 0));
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, cw, ch);
-    _clearScene(ctx, g, GREEN, p.text);
-    ctx.restore();
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        glow.addColorStop(0, GC.rgba(GREEN, 0.16));
+        glow.addColorStop(1, GC.rgba(GREEN, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, cw, ch);
+        _clearScene(ctx, g, GREEN, p.text);
+        ctx.restore();
+    }
+    if (!GA.dial()) return;
 
     // dial: a green "no warning" zone in front of the three warning levels, marker in it
     var lb = p.labels || [];
@@ -323,14 +329,17 @@ function draw(ctx, cw, ch, p) {
     var t = has ? (level - 0.5) / 3 : NaN;
 
     // ── Scene ────────────────────────────────────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    glow.addColorStop(0, GC.rgba(col, has ? 0.16 : 0.05));
-    glow.addColorStop(1, GC.rgba(col, 0));
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, cw, ch);
-    _scene(ctx, g, p.type || 0, col, p.text);
-    ctx.restore();
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        glow.addColorStop(0, GC.rgba(col, has ? 0.16 : 0.05));
+        glow.addColorStop(1, GC.rgba(col, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, cw, ch);
+        _scene(ctx, g, p.type || 0, col, p.text);
+        ctx.restore();
+    }
+    if (!GA.dial()) return;
 
     // ── Dial: three warning levels ───────────────────────────────────────
     var lb = p.labels || [];

@@ -27,6 +27,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var TREES = ["alder", "birch", "olive", "hazel", "oak", "cypress", "plane", "pine", "poplar", "elm"];
 
@@ -89,75 +90,81 @@ function draw(ctx, cw, ch, p) {
     var dens = has ? 0.12 + 0.88 * t : 0;
 
     // ── Scene ────────────────────────────────────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    glow.addColorStop(0, GC.rgba(col, has ? 0.16 : 0.04));
-    glow.addColorStop(1, GC.rgba(col, 0));
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        glow.addColorStop(0, GC.rgba(col, has ? 0.16 : 0.04));
+        glow.addColorStop(1, GC.rgba(col, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, cw, ch);
 
-    var i, pt, k;
-    // vegetation along the baseline
-    var base = g.baseY;
-    var left = g.cx - g.r, span = 2 * g.r;
-    ctx.lineCap = "round";
-    if (kind === "grass") {
-        ctx.lineWidth = 1.4;
-        for (i = 0; i < 34; i++) {
-            var bx = left + 6 + (span - 12) * (i / 33) + (rng() - 0.5) * 4;
-            var bh = 7 + rng() * 11 + 10 * dens;
-            var sw = (rng() - 0.5) * 10;
-            ctx.beginPath(); ctx.moveTo(bx, base + 2);
-            ctx.quadraticCurveTo(bx + sw * 0.3, base - bh * 0.5, bx + sw, base - bh);
-            ctx.strokeStyle = GC.rgba(col, 0.20 + rng() * 0.18); ctx.stroke();
-        }
-    } else if (kind === "tree") {
-        for (i = 0; i < 16; i++) {
-            pt = { x: left + 10 + (span - 20) * rng(), y: base - 3 - rng() * (10 + 14 * dens) };
-            _leaf(ctx, pt.x, pt.y, 4 + rng() * 3, (rng() - 0.5) * 2.4, col, 0.16 + rng() * 0.16);
-        }
-    } else {
-        ctx.lineWidth = 1.2;
-        for (i = 0; i < 12; i++) {
-            var wx = left + 12 + (span - 24) * rng();
-            var wh = 8 + rng() * 10 + 8 * dens;
-            ctx.beginPath(); ctx.moveTo(wx, base + 2); ctx.lineTo(wx, base - wh);
-            ctx.strokeStyle = GC.rgba(col, 0.20 + rng() * 0.14); ctx.stroke();
-            for (k = 0; k < 3; k++) {
-                var sy = base - wh * (0.45 + 0.25 * k);
-                ctx.beginPath();
-                ctx.moveTo(wx, sy); ctx.lineTo(wx - 3, sy - 3);
-                ctx.moveTo(wx, sy); ctx.lineTo(wx + 3, sy - 3);
-                ctx.stroke();
+        var i, pt, k;
+        // vegetation along the baseline
+        var base = g.baseY;
+        var left = g.cx - g.r, span = 2 * g.r;
+        ctx.lineCap = "round";
+        if (kind === "grass") {
+            ctx.lineWidth = 1.4;
+            for (i = 0; i < 34; i++) {
+                var bx = left + 6 + (span - 12) * (i / 33) + (rng() - 0.5) * 4;
+                var bh = 7 + rng() * 11 + 10 * dens;
+                var sw = (rng() - 0.5) * 10;
+                ctx.beginPath(); ctx.moveTo(bx, base + 2);
+                ctx.quadraticCurveTo(bx + sw * 0.3, base - bh * 0.5, bx + sw + GA.osc(1.5, i * 0.6, 3), base - bh);
+                ctx.strokeStyle = GC.rgba(col, 0.20 + rng() * 0.18); ctx.stroke();
+            }
+        } else if (kind === "tree") {
+            for (i = 0; i < 16; i++) {
+                pt = { x: left + 10 + (span - 20) * rng(), y: base - 3 - rng() * (10 + 14 * dens) };
+                _leaf(ctx, pt.x, pt.y, 4 + rng() * 3, (rng() - 0.5) * 2.4, col, 0.16 + rng() * 0.16);
+            }
+        } else {
+            ctx.lineWidth = 1.2;
+            for (i = 0; i < 12; i++) {
+                var wx = left + 12 + (span - 24) * rng();
+                var wh = 8 + rng() * 10 + 8 * dens;
+                ctx.beginPath(); ctx.moveTo(wx, base + 2); ctx.lineTo(wx, base - wh);
+                ctx.strokeStyle = GC.rgba(col, 0.20 + rng() * 0.14); ctx.stroke();
+                for (k = 0; k < 3; k++) {
+                    var sy = base - wh * (0.45 + 0.25 * k);
+                    ctx.beginPath();
+                    ctx.moveTo(wx, sy); ctx.lineTo(wx - 3, sy - 3);
+                    ctx.moveTo(wx, sy); ctx.lineTo(wx + 3, sy - 3);
+                    ctx.stroke();
+                }
             }
         }
+        // pollen cloud
+        var n = Math.round(3 + 15 * dens);
+        for (i = 0; i < 18; i++) {
+            pt = GC.randomInDisc(rng, g, g.r - 16);
+            var gr = 1.6 + rng() * 1.8;
+            var al = 0.30 + rng() * 0.28;
+            if (i >= n) continue;
+            // grains drift on the air
+            pt.x += GA.osc(0.8, i * 2.3, 6); pt.y += GA.osc(0.6, i * 1.4, 5);
+            // keep grains above the vegetation
+            if (pt.y > base - 20) pt.y = base - 20 - rng() * 20;
+            _grain(ctx, pt.x, pt.y, gr, col, al);
+        }
+        ctx.restore();
     }
-    // pollen cloud
-    var n = Math.round(3 + 15 * dens);
-    for (i = 0; i < 18; i++) {
-        pt = GC.randomInDisc(rng, g, g.r - 16);
-        var gr = 1.6 + rng() * 1.8;
-        var al = 0.30 + rng() * 0.28;
-        if (i >= n) continue;
-        // keep grains above the vegetation
-        if (pt.y > base - 20) pt.y = base - 20 - rng() * 20;
-        _grain(ctx, pt.x, pt.y, gr, col, al);
-    }
-    ctx.restore();
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var bands = [];
-    if (p.zones && p.zones.length > 0) {
-        for (i = 0; i < p.zones.length; i++)
-            bands.push({ from: p.zones[i].from, to: p.zones[i].to, color: p.zones[i].color });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var bands = [];
+        if (p.zones && p.zones.length > 0) {
+            for (i = 0; i < p.zones.length; i++)
+                bands.push({ from: p.zones[i].from, to: p.zones[i].to, color: p.zones[i].color });
+        }
+        GC.drawDial(ctx, g, {
+            bands: bands,
+            bandAlpha: p.isDark ? 0.34 : 0.42,
+            t: has ? t : NaN,
+            colorAt: function (tt) { return _zoneColor(p.zones, tt, col); },
+            ticks: p.ticks || [],
+            text: p.text
+        });
+        if (has) GC.drawDot(ctx, g, t, col, p.isDark, 6.5);
     }
-    GC.drawDial(ctx, g, {
-        bands: bands,
-        bandAlpha: p.isDark ? 0.34 : 0.42,
-        t: has ? t : NaN,
-        colorAt: function (tt) { return _zoneColor(p.zones, tt, col); },
-        ticks: p.ticks || [],
-        text: p.text
-    });
-    if (has) GC.drawDot(ctx, g, t, col, p.isDark, 6.5);
 }

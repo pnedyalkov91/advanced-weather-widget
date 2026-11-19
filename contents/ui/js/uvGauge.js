@@ -25,6 +25,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var MAXUV = 12;
 
@@ -112,73 +113,77 @@ function draw(ctx, cw, ch, p) {
     var cur = has ? _dialColorAt(p.v, vivid) : vivid.low;
 
     // ── Scene: sunburst fanning out from the dial centre ─────────────────
-    GC.clipDisc(ctx, g, 6);
-    var tint = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    tint.addColorStop(0, GC.rgba(cur, has ? 0.13 : 0.04));
-    tint.addColorStop(1, GC.rgba(cur, 0));
-    ctx.fillStyle = tint;
-    ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var tint = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        tint.addColorStop(0, GC.rgba(cur, has ? 0.13 : 0.04));
+        tint.addColorStop(1, GC.rgba(cur, 0));
+        ctx.fillStyle = tint;
+        ctx.fillRect(0, 0, cw, ch);
 
-    var rays = 17;
-    var intensity = has ? 0.04 + 0.07 * t : 0.03;
-    for (var i = 0; i < rays; i++) {
-        var a = GC.PI + (i + 0.5) * GC.PI / rays;
-        var half = 0.045;
-        ctx.beginPath();
-        ctx.moveTo(g.cx, g.baseY);
-        ctx.lineTo(g.cx + Math.cos(a - half) * g.r, g.baseY + Math.sin(a - half) * g.r);
-        ctx.lineTo(g.cx + Math.cos(a + half) * g.r, g.baseY + Math.sin(a + half) * g.r);
-        ctx.closePath();
-        ctx.fillStyle = GC.rgba(cur, (i % 2 === 0) ? intensity * 1.4 : intensity * 0.7);
-        ctx.fill();
-    }
-    ctx.restore();
-
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var ticks = [
-        { t: 0, label: "0" },
-        { t: _t(2), label: "2" },
-        { t: _t(5), label: "5" },
-        { t: _t(7), label: "7" },
-        { t: _t(10), label: "10" },
-        { t: 1, label: "12" }
-    ];
-    GC.drawDial(ctx, g, {
-        bands: [
-            { from: 0, to: _t(2), color: vivid.low },
-            { from: _t(2), to: _t(5), color: vivid.mod },
-            { from: _t(5), to: _t(7), color: vivid.high },
-            { from: _t(7), to: _t(10), color: vivid.very },
-            { from: _t(10), to: 1, color: vivid.ext }
-        ],
-        t: has ? t : NaN,
-        colorAt: function (tt) { return _dialColorAt(tt * MAXUV, vivid); },
-        ticks: ticks,
-        text: p.text
-    });
-
-    // ── Today's peak ─────────────────────────────────────────────────────
-    if (GC.isNum(p.v2) && p.v2 > 0 && (!has || Math.abs(p.v2 - p.v) >= 0.3)) {
-        var tp = _t(p.v2);
-        var a0 = GC.pointAt(g, tp, g.r - 9);
-        var a1 = GC.pointAt(g, tp, g.r + 9);
-        ctx.beginPath();
-        ctx.moveTo(a0.x, a0.y);
-        ctx.lineTo(a1.x, a1.y);
-        ctx.lineWidth = 3.2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = p.isDark ? "rgba(20,20,20,0.85)" : "rgba(255,255,255,0.95)";
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(a0.x, a0.y);
-        ctx.lineTo(a1.x, a1.y);
-        ctx.lineWidth = 1.6;
-        ctx.strokeStyle = GC.rgba(p.text, 0.9);
-        ctx.stroke();
+        var rays = 17;
+        var intensity = (has ? 0.04 + 0.07 * t : 0.03) * (0.7 + 0.6 * GA.pulse(3.5));
+        for (var i = 0; i < rays; i++) {
+            var a = GC.PI + (i + 0.5) * GC.PI / rays + GA.osc(0.7, 0, 0.04);
+            var half = 0.045;
+            ctx.beginPath();
+            ctx.moveTo(g.cx, g.baseY);
+            ctx.lineTo(g.cx + Math.cos(a - half) * g.r, g.baseY + Math.sin(a - half) * g.r);
+            ctx.lineTo(g.cx + Math.cos(a + half) * g.r, g.baseY + Math.sin(a + half) * g.r);
+            ctx.closePath();
+            ctx.fillStyle = GC.rgba(cur, (i % 2 === 0) ? intensity * 1.4 : intensity * 0.7);
+            ctx.fill();
+        }
+        ctx.restore();
     }
 
-    if (has) {
-        var m = GC.pointAt(g, t, g.r);
-        _sun(ctx, m.x, m.y, cur, p.isDark);
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var ticks = [
+            { t: 0, label: "0" },
+            { t: _t(2), label: "2" },
+            { t: _t(5), label: "5" },
+            { t: _t(7), label: "7" },
+            { t: _t(10), label: "10" },
+            { t: 1, label: "12" }
+        ];
+        GC.drawDial(ctx, g, {
+            bands: [
+                { from: 0, to: _t(2), color: vivid.low },
+                { from: _t(2), to: _t(5), color: vivid.mod },
+                { from: _t(5), to: _t(7), color: vivid.high },
+                { from: _t(7), to: _t(10), color: vivid.very },
+                { from: _t(10), to: 1, color: vivid.ext }
+            ],
+            t: has ? t : NaN,
+            colorAt: function (tt) { return _dialColorAt(tt * MAXUV, vivid); },
+            ticks: ticks,
+            text: p.text
+        });
+
+        // ── Today's peak ─────────────────────────────────────────────────────
+        if (GC.isNum(p.v2) && p.v2 > 0 && (!has || Math.abs(p.v2 - p.v) >= 0.3)) {
+            var tp = _t(p.v2);
+            var a0 = GC.pointAt(g, tp, g.r - 9);
+            var a1 = GC.pointAt(g, tp, g.r + 9);
+            ctx.beginPath();
+            ctx.moveTo(a0.x, a0.y);
+            ctx.lineTo(a1.x, a1.y);
+            ctx.lineWidth = 3.2;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = p.isDark ? "rgba(20,20,20,0.85)" : "rgba(255,255,255,0.95)";
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(a0.x, a0.y);
+            ctx.lineTo(a1.x, a1.y);
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = GC.rgba(p.text, 0.9);
+            ctx.stroke();
+        }
+
+        if (has) {
+            var m = GC.pointAt(g, t, g.r);
+            _sun(ctx, m.x, m.y, cur, p.isDark);
+        }
     }
 }

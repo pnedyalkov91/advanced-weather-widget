@@ -2422,6 +2422,31 @@ Item {
                                             return to;
                                         return "";
                                     }
+                                    // "Nov 19, 08:00 \u2013 20:00" (same day) or "Nov 19, 08:00 \u2013 Nov 20, 12:00"
+                                    function alertTimeRange(a) {
+                                        if (!a)
+                                            return "";
+                                        var f = a.onset || a.effective ? new Date(a.onset || a.effective) : null;
+                                        var t = a.expires ? new Date(a.expires) : null;
+                                        if (f && isNaN(f.getTime()))
+                                            f = null;
+                                        if (t && isNaN(t.getTime()))
+                                            t = null;
+                                        var wr = root.weatherRoot;
+                                        function dt(d) {
+                                            return wr ? (wr.formatDateObj(d, true) + ", " + wr.formatTimeObj(d)) : Qt.formatDateTime(d, "MMM d, hh:mm");
+                                        }
+                                        function tm(d) {
+                                            return wr ? wr.formatTimeObj(d) : Qt.formatTime(d, "hh:mm");
+                                        }
+                                        if (f && t)
+                                            return f.toDateString() === t.toDateString() ? (dt(f) + " \u2013 " + tm(t)) : (dt(f) + " \u2013 " + dt(t));
+                                        if (f)
+                                            return dt(f);
+                                        if (t)
+                                            return i18n("Until") + " " + dt(t);
+                                        return "";
+                                    }
                                     function formatAlertDateTime(iso) {
                                         if (!iso)
                                             return "";
@@ -2824,10 +2849,12 @@ Item {
                                         iconColor: root.iconColorFor(alertsCard.clear ? alertsCard.clearColor : alertsCard.curInfo.color)
                                         valueText: alertsCard.clear ? i18n("No active alerts") : (alertsCard.cur ? (alertsCard.cur.displayName || alertsCard.cur.headline || "--") : "--")
                                         valueColor: alertsCard.clear ? root.valueColor : alertsCard.alertColorText(alertsCard.curColor)
-                                        bandText: alertsCard.clear ? i18n("All clear") : (alertsCard.cur ? alertsCard.levelText(alertsCard.curColor) : "")
+                                        bandText: alertsCard.clear ? i18n("All clear") : ""
                                         bandColor: alertsCard.clear ? alertsCard.clearColor : alertsCard.alertColorText(alertsCard.curColor)
-                                        subText: alertsCard.clear ? i18n("No warnings in effect") : (alertsCard.cur ? alertsCard.alertDateRange(alertsCard.cur) : "")
+                                        subText: alertsCard.clear ? i18n("No warnings in effect") : (alertsCard.cur ? alertsCard.alertTimeRange(alertsCard.cur) : "")
                                         subColor: root.themeTextColor
+                                        infoNextToValue: true
+                                        overlayMaxWidth: 240
                                         pageCount: alertsCard.pages.length
                                         pageIndex: alertsCard.safePage
                                         onPreviousRequested: alertsCard.page = alertsCard.safePage - 1

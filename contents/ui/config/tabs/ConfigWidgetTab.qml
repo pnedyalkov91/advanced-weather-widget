@@ -1606,7 +1606,36 @@ ColumnLayout {
                 }
             }
 
+            // Cards animation (hidden in list mode or simple mode)
+            Label {
+                text: i18n("Animations:")
+                visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                wrapMode: Text.Wrap
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 14
+                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                Layout.topMargin: _form2.columns === 1 ? Kirigami.Units.smallSpacing * 2 : 0
+            }
+            RowLayout {
+                spacing: Kirigami.Units.largeSpacing
+                Switch {
+                    id: detailsAnimSwitch
+                    visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                    checked: widgetTab.configRoot.cfg_detailsAnimations
+                    onToggled: widgetTab.configRoot.cfg_detailsAnimations = checked
+                }
+                Label {
+                    visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"
+                    text: detailsAnimSwitch.checked ? i18n("Animate the scenes of the expanded cards") : i18n("Static scenes")
+                    opacity: 0.8
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: detailsAnimSwitch.toggle()
+                    }
+                }
+            }
+
             // Cards height (hidden in list mode or simple mode)
+
             Label {
                 text: i18n("Cards height:")
                 visible: widgetTab.configRoot.cfg_widgetLayoutMode !== "simple" && widgetTab.configRoot.cfg_widgetDetailsLayout !== "list"

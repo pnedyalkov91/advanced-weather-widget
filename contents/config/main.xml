@@ -355,6 +355,9 @@
     <entry name="widgetCardsHeight"     type="Int"><default>44</default><min>30</min><max>120</max></entry>
     <entry name="widgetExpandedCardsHeightAuto" type="Bool"><default>false</default></entry>
     <entry name="widgetExpandedCardsHeight"     type="Int"><default>200</default><min>120</min><max>500</max></entry>
+    <!-- Animate the scenes drawn in the expanded Details gauge cards (rain, snow, waves,
+         aurora, ...). Off = the scenes are drawn static. Set in Settings > Widget > Details. -->
+    <entry name="detailsAnimations"     type="Bool"><default>false</default></entry>
     <!-- Internal: which expandable Details cards are open, JSON map { "cardId": true|false }
          (sun/moon/wind/pressure/alerts/air quality/pollen/space weather/date-time and the
          gauge cards). A card without an entry uses its built-in default. Written by

@@ -27,6 +27,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 .import "pressureGauge.js" as PG
 
 var LO = 970;
@@ -108,47 +109,51 @@ function draw(ctx, cw, ch, p) {
     var cur = colorAt(has ? p.v : 1013, p.isDark);
 
     // ── Scene: glow, isobars, L / H ──────────────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    glow.addColorStop(0, GC.rgba(cur, has ? 0.18 : 0.05));
-    glow.addColorStop(0.75, GC.rgba(cur, has ? 0.05 : 0.02));
-    glow.addColorStop(1, GC.rgba(cur, 0));
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        glow.addColorStop(0, GC.rgba(cur, has ? 0.18 : 0.05));
+        glow.addColorStop(0.75, GC.rgba(cur, has ? 0.05 : 0.02));
+        glow.addColorStop(1, GC.rgba(cur, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, cw, ch);
 
-    // calm (high) -> nearly straight lines; stormy (low) -> choppy ones
-    var calm = GC.clamp01((t - 0.15) / 0.7);
-    var amp = 4.6 - 4.0 * calm;
-    var x0 = g.cx - g.r, x1 = g.cx + g.r;
-    ctx.lineWidth = 1.2;
-    ctx.lineCap = "round";
-    for (var i = 0; i < 5; i++) {
-        var yy = g.baseY - (g.r - 14) * (0.17 + 0.165 * i);
-        ctx.beginPath();
-        GC.wavePath(ctx, x0, x1, yy, amp, 0.030 + 0.004 * i, 1.3 * i, false);
-        ctx.strokeStyle = GC.rgba(cur, 0.12 + 0.05 * (i % 2));
-        ctx.stroke();
+        // calm (high) -> nearly straight lines; stormy (low) -> choppy ones
+        var calm = GC.clamp01((t - 0.15) / 0.7);
+        var amp = 4.6 - 4.0 * calm;
+        var x0 = g.cx - g.r, x1 = g.cx + g.r;
+        ctx.lineWidth = 1.2;
+        ctx.lineCap = "round";
+        for (var i = 0; i < 5; i++) {
+            var yy = g.baseY - (g.r - 14) * (0.17 + 0.165 * i);
+            ctx.beginPath();
+            GC.wavePath(ctx, x0, x1, yy, amp, 0.030 + 0.004 * i, 1.3 * i + GA.T() * (0.4 + 1.6 * (1 - calm)), false);
+            ctx.strokeStyle = GC.rgba(cur, 0.12 + 0.05 * (i % 2));
+            ctx.stroke();
+        }
+        var lPos = GC.pointAt(g, 0.15, g.r - 40), hPos = GC.pointAt(g, 0.85, g.r - 40);
+        var lowA = has && p.v < 1000 ? 0.26 : 0.10, highA = has && p.v > 1025 ? 0.26 : 0.10;
+        GC.label(ctx, "L", lPos.x, lPos.y, 24, p.text, lowA, true, "center", "middle");
+        GC.label(ctx, "H", hPos.x, hPos.y, 24, p.text, highA, true, "center", "middle");
+        ctx.restore();
     }
-    var lPos = GC.pointAt(g, 0.15, g.r - 40), hPos = GC.pointAt(g, 0.85, g.r - 40);
-    var lowA = has && p.v < 1000 ? 0.26 : 0.10, highA = has && p.v > 1025 ? 0.26 : 0.10;
-    GC.label(ctx, "L", lPos.x, lPos.y, 24, p.text, lowA, true, "center", "middle");
-    GC.label(ctx, "H", hPos.x, hPos.y, 24, p.text, highA, true, "center", "middle");
-    ctx.restore();
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var ticks = [];
-    for (var k = 0; k < TICKS.length; k++) {
-        var lbl = (p.labels && p.labels[k] !== undefined) ? p.labels[k] : String(TICKS[k]);
-        ticks.push({ t: _t(TICKS[k]), label: lbl, major: TICKS[k] === 1013 });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var ticks = [];
+        for (var k = 0; k < TICKS.length; k++) {
+            var lbl = (p.labels && p.labels[k] !== undefined) ? p.labels[k] : String(TICKS[k]);
+            ticks.push({ t: _t(TICKS[k]), label: lbl, major: TICKS[k] === 1013 });
+        }
+        GC.drawDial(ctx, g, {
+            ghostAt: function (tt) { return colorAt(LO + tt * (HI - LO), p.isDark); },
+            bandAlpha: 0.32,
+            t: has ? t : NaN,
+            colorAt: function (tt) { return colorAt(LO + tt * (HI - LO), p.isDark); },
+            ticks: ticks,
+            text: p.text
+        });
+        if (has && GC.isNum(p.prev)) _drawTendency(ctx, g, p, t);
+        if (has) GC.drawDot(ctx, g, t, cur, p.isDark, 6.5);
     }
-    GC.drawDial(ctx, g, {
-        ghostAt: function (tt) { return colorAt(LO + tt * (HI - LO), p.isDark); },
-        bandAlpha: 0.32,
-        t: has ? t : NaN,
-        colorAt: function (tt) { return colorAt(LO + tt * (HI - LO), p.isDark); },
-        ticks: ticks,
-        text: p.text
-    });
-    if (has && GC.isNum(p.prev)) _drawTendency(ctx, g, p, t);
-    if (has) GC.drawDot(ctx, g, t, cur, p.isDark, 6.5);
 }

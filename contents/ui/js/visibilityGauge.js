@@ -25,6 +25,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var MAXKM = 30;
 
@@ -80,42 +81,47 @@ function draw(ctx, cw, ch, p) {
     var haze = has ? GC.clamp01(1 - Math.sqrt(GC.clamp01(p.v / 12))) : 0.2;
 
     // ── Scene: hills fading into haze ────────────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var hillCol = p.isDark ? "#9fb6d4" : "#4a6283";
-    var fade = 1 - 0.75 * haze;
-    _ridge(ctx, g, 0.52, 7, 0.030, 0.4, GC.rgba(hillCol, 0.07 * fade));
-    _ridge(ctx, g, 0.36, 9, 0.024, 2.1, GC.rgba(hillCol, 0.11 * fade));
-    _ridge(ctx, g, 0.20, 8, 0.036, 4.3, GC.rgba(hillCol, 0.17 * fade));
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var hillCol = p.isDark ? "#9fb6d4" : "#4a6283";
+        var fade = 1 - 0.75 * haze;
+        _ridge(ctx, g, 0.52, 7, 0.030, 0.4, GC.rgba(hillCol, 0.07 * fade));
+        _ridge(ctx, g, 0.36, 9, 0.024, 2.1, GC.rgba(hillCol, 0.11 * fade));
+        _ridge(ctx, g, 0.20, 8, 0.036, 4.3, GC.rgba(hillCol, 0.17 * fade));
 
-    var veilCol = p.isDark ? "#c9d3e0" : "#8896aa";
-    var veil = ctx.createLinearGradient(0, g.baseY - g.r, 0, g.baseY);
-    veil.addColorStop(0, GC.rgba(veilCol, 0.04 + 0.10 * haze));
-    veil.addColorStop(1, GC.rgba(veilCol, 0.08 + 0.34 * haze));
-    ctx.fillStyle = veil;
-    ctx.fillRect(0, 0, cw, ch);
-    ctx.restore();
+        var veilCol = p.isDark ? "#c9d3e0" : "#8896aa";
+        var veil = ctx.createLinearGradient(0, g.baseY - g.r, 0, g.baseY);
+        var hz = GC.clamp01(haze + (GA.pulse(7) - 0.5) * 0.14);   // the haze slowly breathes
+        veil.addColorStop(0, GC.rgba(veilCol, 0.04 + 0.10 * hz));
+        veil.addColorStop(1, GC.rgba(veilCol, 0.08 + 0.34 * hz));
+        ctx.fillStyle = veil;
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.restore();
+    }
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var kmTicks = [1, 5, 10, 20];
-    var ticks = [{ t: 0, label: "0" }];
-    for (var i = 0; i < kmTicks.length; i++)
-        ticks.push({ t: _t(kmTicks[i]), label: GC.fmt(GC.kmToDisp(kmTicks[i], p.imperial), 0) });
-    ticks.push({ t: 1, label: GC.fmt(GC.kmToDisp(MAXKM, p.imperial), 0) });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var kmTicks = [1, 5, 10, 20];
+        var ticks = [{ t: 0, label: "0" }];
+        for (var i = 0; i < kmTicks.length; i++)
+            ticks.push({ t: _t(kmTicks[i]), label: GC.fmt(GC.kmToDisp(kmTicks[i], p.imperial), 0) });
+        ticks.push({ t: 1, label: GC.fmt(GC.kmToDisp(MAXKM, p.imperial), 0) });
 
-    GC.drawDial(ctx, g, {
-        bands: [
-            { from: 0, to: _t(1), color: pal.fog },
-            { from: _t(1), to: _t(4), color: pal.poor },
-            { from: _t(4), to: _t(10), color: pal.mod },
-            { from: _t(10), to: _t(20), color: pal.good },
-            { from: _t(20), to: 1, color: pal.exc }
-        ],
-        t: has ? t : NaN,
-        colorAt: function (tt) { return colorAt(tt * tt * MAXKM, p.isDark); },
-        ticks: ticks,
-        text: p.text
-    });
+        GC.drawDial(ctx, g, {
+            bands: [
+                { from: 0, to: _t(1), color: pal.fog },
+                { from: _t(1), to: _t(4), color: pal.poor },
+                { from: _t(4), to: _t(10), color: pal.mod },
+                { from: _t(10), to: _t(20), color: pal.good },
+                { from: _t(20), to: 1, color: pal.exc }
+            ],
+            t: has ? t : NaN,
+            colorAt: function (tt) { return colorAt(tt * tt * MAXKM, p.isDark); },
+            ticks: ticks,
+            text: p.text
+        });
 
-    if (has)
-        GC.drawDot(ctx, g, t, cur, p.isDark, 6);
+        if (has)
+            GC.drawDot(ctx, g, t, cur, p.isDark, 6);
+    }
 }

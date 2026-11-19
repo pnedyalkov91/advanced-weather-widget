@@ -46,6 +46,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.plasmoid
+// NOTE: adjust this path if ExpandedGauge.qml does not live next to ui/js/
+import "../js/gaugeAnim.js" as GA
 
 Item {
     id: gauge
@@ -79,6 +82,11 @@ Item {
     property string infoTitle: ""
     property string infoText: ""
     property int infoWidth: 380
+    /** true: the info icon sits right after the value text (the title) instead of the top-left corner. */
+    property bool infoNextToValue: false
+
+    /** Widest the centred overlay may get (dial layout). Long texts wrap instead of being cut. */
+    property int overlayMaxWidth: 190
 
     /** Any string that changes whenever the drawing has to be redone. */
     property string paintKey: ""
@@ -90,8 +98,92 @@ Item {
     readonly property bool _side: layoutMode === "side"
     readonly property bool _paged: pageCount > 1
 
-    onPaintKeyChanged: canvas.requestPaint()
+    /** Scene animations (Settings -> Widget -> Details -> Animations). */
+    readonly property bool animated: Plasmoid.configuration.detailsAnimations === true
 
+    /** Frame interval of the scene while animating (ms). ~15 fps is plenty for ambient motion. */
+    property int animInterval: 66
+
+    // ── When may the scene move? ──────────────────────────────────────────
+    // Only while somebody can actually see it (same idea as BareWeather's
+    // `popupActive: planar || expanded`). A closed popup keeps its items "visible"
+    // in QML, so a panel widget has to ask the popup state; on the desktop or in a
+    // window the widget is always shown.
+    // NOTE: in Plasma 6 `expanded` is a property of the PlasmoidItem root (here
+    // weatherRoot), NOT of the attached `Plasmoid` object - FullView.qml does the same.
+    property bool animDebug: false   // set true to log why the scene is (not) moving
+    readonly property bool _popupShown: {
+        var ff = Plasmoid.formFactor;
+        var inPanel = ff === PlasmaCore.Types.Horizontal || ff === PlasmaCore.Types.Vertical;
+        if (!inPanel)
+            return true;
+        // unknown state => assume shown, never freeze the scene by mistake
+        return gauge.weatherRoot && gauge.weatherRoot.expanded !== undefined ? gauge.weatherRoot.expanded === true : true;
+    }
+    // ...and only while the card is inside the scrolled area of the Details tab.
+    // This is polled (2x a second, only while animating) instead of being driven by
+    // geometry signals: the card moves when cards above it expand or collapse, which
+    // none of its own signals report. Unknown = visible, so it can never leave the
+    // scene frozen by mistake.
+    property Item _flick: null
+    property bool _inView: true
+    readonly property bool _animating: animated && _popupShown && visible && width > 0 && height > 0 && _inView
+
+    function _findFlickable() {
+        var p = gauge.parent;
+        while (p) {
+            if (p.contentY !== undefined && p.contentHeight !== undefined)
+                return p;
+            p = p.parent;
+        }
+        return null;
+    }
+    function _updateInView() {
+        if (!_flick)
+            _flick = _findFlickable();
+        if (!_flick || !(_flick.height > 0) || !(gauge.height > 0)) {
+            _inView = true;
+            return;
+        }
+        var top = gauge.mapToItem(_flick, 0, 0).y;
+        _inView = top < _flick.height && top + gauge.height > 0;
+    }
+    on_AnimatingChanged: if (animDebug)
+        console.log("ExpandedGauge animating=" + _animating + " animated=" + animated + " popup=" + _popupShown
+                    + " visible=" + visible + " size=" + width + "x" + height + " inView=" + _inView)
+
+    Timer {
+        running: gauge.animated && gauge._popupShown && gauge.visible
+        interval: 500
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: gauge._updateInView()
+    }
+    Connections {
+        target: gauge._flick
+        ignoreUnknownSignals: true
+        function onContentYChanged() { gauge._updateInView(); }
+    }
+
+    onPaintKeyChanged: {
+        canvas.requestPaint();
+        dialCanvas.requestPaint();
+    }
+    onAnimatedChanged: {
+        canvas.requestPaint();
+        dialCanvas.requestPaint();
+    }
+
+    // Repaints only the moving scene, and only while it is really on screen.
+    Timer {
+        running: gauge._animating
+        interval: gauge.animInterval
+        repeat: true
+        onTriggered: canvas.requestPaint()
+    }
+
+    // Layer 1: the scene. With animations off it draws the whole gauge (scene + dial)
+    // once per change, exactly like before. With animations on it draws the scene only.
     Canvas {
         id: canvas
         anchors.top: parent.top
@@ -106,7 +198,30 @@ Item {
             requestPaint()
         onPaint: {
             var ctx2d = getContext("2d");
+            GA.setEnabled(gauge.animated);
+            GA.setLayer(gauge.animated ? "scene" : "all");
             gauge.draw(ctx2d, width, height);
+            GA.setLayer("all");
+        }
+    }
+
+    // Layer 2 (animations on only): the dial, ticks, labels and markers. They never move,
+    // so this canvas is painted when the data or the size changes - not every frame.
+    Canvas {
+        id: dialCanvas
+        visible: gauge.animated
+        anchors.fill: canvas
+        antialiasing: true
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        onVisibleChanged: if (visible)
+            requestPaint()
+        onPaint: {
+            var ctx2d = getContext("2d");
+            GA.setEnabled(true);
+            GA.setLayer("dial");
+            gauge.draw(ctx2d, width, height);
+            GA.setLayer("all");
         }
     }
 
@@ -134,10 +249,9 @@ Item {
     // Info icon + tooltip (top-left)
     PlasmaCore.ToolTipArea {
         visible: gauge.infoText.length > 0 || gauge.infoTitle.length > 0
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.topMargin: 6
-        anchors.leftMargin: 8
+        // top-left corner, or on the placeholder right after the value text
+        x: gauge.infoNextToValue ? overlay.x + valueRow.x + infoSlot.x - 3 : 8
+        y: gauge.infoNextToValue ? overlay.y + valueRow.y + infoSlot.y - 3 : 6
         width: 24
         height: 24
         z: 2
@@ -176,7 +290,7 @@ Item {
     Column {
         id: overlay
         spacing: 2
-        width: gauge._side ? Math.max(40, canvas.width * 0.42 - 12) : Math.max(40, Math.min(gauge.width * 0.5, 190))
+        width: gauge._side ? Math.max(40, canvas.width * 0.42 - 12) : Math.max(40, Math.min(gauge.width * 0.5, gauge.overlayMaxWidth))
         x: gauge._side ? Math.round(canvas.width * 0.58) : Math.round((canvas.width - width) / 2)
         y: gauge._side ? Math.round(canvas.y + (canvas.height - height) / 2) : Math.round(canvas.y + canvas.height - height - canvas.height * 0.18)
 
@@ -186,23 +300,41 @@ Item {
             iconSize: gauge.iconSize
             iconColor: gauge.iconColor
         }
-        Label {
+        // value (the title): wraps onto more lines instead of being elided; with
+        // infoNextToValue an empty slot after it carries the info icon
+        Row {
+            id: valueRow
             anchors.horizontalCenter: parent.horizontalCenter
-            width: Math.min(implicitWidth, parent.width)
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            text: gauge.valueText
-            color: gauge.valueColor
-            font: gauge.weatherRoot ? gauge.weatherRoot.wf(15, true) : Qt.font({
-                bold: true
-            })
+            spacing: 4
+            Label {
+                id: valueLabel
+                width: Math.min(valueMetrics.width + 1, overlay.width - (gauge.infoNextToValue && gauge.infoText.length > 0 ? 22 : 0))
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                text: gauge.valueText
+                color: gauge.valueColor
+                font: gauge.weatherRoot ? gauge.weatherRoot.wf(15, true) : Qt.font({
+                    bold: true
+                })
+                TextMetrics {
+                    id: valueMetrics
+                    text: gauge.valueText
+                    font: valueLabel.font
+                }
+            }
+            Item {
+                id: infoSlot
+                visible: gauge.infoNextToValue && (gauge.infoText.length > 0 || gauge.infoTitle.length > 0)
+                width: visible ? 18 : 0
+                height: 18
+            }
         }
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
             visible: gauge.bandText.length > 0
-            width: Math.min(implicitWidth, parent.width)
+            width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
+            wrapMode: Text.Wrap
             text: gauge.bandText
             color: gauge.bandColor
             font: gauge.weatherRoot ? gauge.weatherRoot.wf(10, true) : Qt.font({
@@ -212,9 +344,9 @@ Item {
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
             visible: gauge.subText.length > 0
-            width: Math.min(implicitWidth, parent.width)
+            width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
+            wrapMode: Text.Wrap
             text: gauge.subText
             color: gauge.subColor
             opacity: 0.6

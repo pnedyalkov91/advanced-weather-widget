@@ -25,6 +25,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var MAXMM = 50;
 
@@ -68,14 +69,14 @@ function draw(ctx, cw, ch, p) {
     var cur = has ? colorAt(p.v, p.isDark) : pal.light;
 
     // ── Scene: water filling the dial ────────────────────────────────────
-    if (any) {
+    if (GA.scene() && any) {
         GC.clipDisc(ctx, g, 5);
         var level = g.baseY - (g.r - 10) * t;
         var x0 = g.cx - g.r, x1 = g.cx + g.r;
 
         // back wave
         ctx.beginPath();
-        GC.wavePath(ctx, x0, x1, level - 2, 2.4, 0.050, 1.9, false);
+        GC.wavePath(ctx, x0, x1, level - 2, 2.4, 0.050, 1.9 - GA.T() * 1.6, false);
         ctx.lineTo(x1, g.baseY + 4);
         ctx.lineTo(x0, g.baseY + 4);
         ctx.closePath();
@@ -87,7 +88,7 @@ function draw(ctx, cw, ch, p) {
         grad.addColorStop(0, GC.rgba(cur, 0.40));
         grad.addColorStop(1, GC.rgba(cur, 0.12));
         ctx.beginPath();
-        GC.wavePath(ctx, x0, x1, level, 2.6, 0.062, 0.3, false);
+        GC.wavePath(ctx, x0, x1, level, 2.6, 0.062, 0.3 + GA.T() * 2.2, false);
         ctx.lineTo(x1, g.baseY + 4);
         ctx.lineTo(x0, g.baseY + 4);
         ctx.closePath();
@@ -96,7 +97,7 @@ function draw(ctx, cw, ch, p) {
 
         // surface highlight
         ctx.beginPath();
-        GC.wavePath(ctx, x0, x1, level, 2.6, 0.062, 0.3, false);
+        GC.wavePath(ctx, x0, x1, level, 2.6, 0.062, 0.3 + GA.T() * 2.2, false);
         ctx.lineWidth = 1.4;
         ctx.lineJoin = "round";
         ctx.strokeStyle = GC.rgba(cur, 0.65);
@@ -106,7 +107,8 @@ function draw(ctx, cw, ch, p) {
         var rng = GC.makeRng(5);
         for (var i = 0; i < 9; i++) {
             var bx = x0 + rng() * (x1 - x0);
-            var by = level + 6 + rng() * Math.max(1, g.baseY - level - 8);
+            var bH = Math.max(1, g.baseY - level - 8);
+            var by = level + 6 + GA.wrap(rng() * bH - GA.T() * 12, bH);   // bubbles rise
             var br = 1 + rng() * 2;
             if (by > g.baseY - 3) continue;
             ctx.beginPath();
@@ -118,26 +120,28 @@ function draw(ctx, cw, ch, p) {
         ctx.restore();
     }
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var mmTicks = [1, 5, 15, 30];
-    var ticks = [{ t: 0, label: "0" }];
-    for (var k = 0; k < mmTicks.length; k++)
-        ticks.push({ t: _t(mmTicks[k]), label: GC.fmt(GC.mmToDisp(mmTicks[k], p.imperial), p.imperial ? 2 : 0) });
-    ticks.push({ t: 1, label: GC.fmt(GC.mmToDisp(MAXMM, p.imperial), p.imperial ? 1 : 0) });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var mmTicks = [1, 5, 15, 30];
+        var ticks = [{ t: 0, label: "0" }];
+        for (var k = 0; k < mmTicks.length; k++)
+            ticks.push({ t: _t(mmTicks[k]), label: GC.fmt(GC.mmToDisp(mmTicks[k], p.imperial), p.imperial ? 2 : 0) });
+        ticks.push({ t: 1, label: GC.fmt(GC.mmToDisp(MAXMM, p.imperial), p.imperial ? 1 : 0) });
 
-    GC.drawDial(ctx, g, {
-        bands: [
-            { from: 0, to: _t(5), color: pal.light },
-            { from: _t(5), to: _t(15), color: pal.mod },
-            { from: _t(15), to: _t(30), color: pal.heavy },
-            { from: _t(30), to: 1, color: pal.ext }
-        ],
-        t: any ? t : NaN,
-        colorAt: function (tt) { return colorAt(tt * tt * MAXMM, p.isDark); },
-        ticks: ticks,
-        text: p.text
-    });
+        GC.drawDial(ctx, g, {
+            bands: [
+                { from: 0, to: _t(5), color: pal.light },
+                { from: _t(5), to: _t(15), color: pal.mod },
+                { from: _t(15), to: _t(30), color: pal.heavy },
+                { from: _t(30), to: 1, color: pal.ext }
+            ],
+            t: any ? t : NaN,
+            colorAt: function (tt) { return colorAt(tt * tt * MAXMM, p.isDark); },
+            ticks: ticks,
+            text: p.text
+        });
 
-    if (has)
-        GC.drawDot(ctx, g, any ? t : 0, cur, p.isDark, 6);
+        if (has)
+            GC.drawDot(ctx, g, any ? t : 0, cur, p.isDark, 6);
+    }
 }

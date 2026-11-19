@@ -26,6 +26,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var MIN = -10;
 var MAX = 26;
@@ -72,52 +73,56 @@ function draw(ctx, cw, ch, p) {
     var sat = (has && hasAir) ? GC.clamp01(1 - (p.v2 - p.v) / 8) : 0;
 
     // ── Scene: layers of mist, thicker as the spread shrinks ─────────────
-    GC.clipDisc(ctx, g, 6);
-    var haze = ctx.createLinearGradient(0, g.baseY - g.r, 0, g.baseY);
-    haze.addColorStop(0, GC.rgba(cur, 0));
-    haze.addColorStop(1, GC.rgba(cur, 0.06 + 0.20 * sat));
-    ctx.fillStyle = haze;
-    ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var haze = ctx.createLinearGradient(0, g.baseY - g.r, 0, g.baseY);
+        haze.addColorStop(0, GC.rgba(cur, 0));
+        haze.addColorStop(1, GC.rgba(cur, 0.06 + 0.20 * sat));
+        ctx.fillStyle = haze;
+        ctx.fillRect(0, 0, cw, ch);
 
-    var mistCol = p.isDark ? "#dfe9f5" : "#6b7f99";
-    for (var i = 0; i < 5; i++) {
-        var y = g.baseY - 12 - i * (g.r - 30) / 5;
-        ctx.beginPath();
-        GC.wavePath(ctx, g.cx - g.r, g.cx + g.r, y, 2.6, 0.045 + i * 0.011, i * 1.7, false);
-        ctx.lineWidth = 3 + (i % 2);
-        ctx.lineCap = "round";
-        ctx.strokeStyle = GC.rgba(mistCol, (0.05 + 0.15 * sat) * (1 - i * 0.14));
-        ctx.stroke();
+        var mistCol = p.isDark ? "#dfe9f5" : "#6b7f99";
+        for (var i = 0; i < 5; i++) {
+            var y = g.baseY - 12 - i * (g.r - 30) / 5;
+            ctx.beginPath();
+            GC.wavePath(ctx, g.cx - g.r, g.cx + g.r, y, 2.6, 0.045 + i * 0.011, i * 1.7 + GA.T() * (0.6 + 0.15 * i), false);
+            ctx.lineWidth = 3 + (i % 2);
+            ctx.lineCap = "round";
+            ctx.strokeStyle = GC.rgba(mistCol, (0.05 + 0.15 * sat) * (1 - i * 0.14));
+            ctx.stroke();
+        }
+        ctx.restore();
     }
-    ctx.restore();
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var ticks = [];
-    var vals = [-10, 0, 10, 20, 26];
-    for (var k = 0; k < vals.length; k++)
-        ticks.push({ t: _t(vals[k]), label: GC.fmt(GC.cToDisp(vals[k], p.tempUnit), 0) });
-    ticks[0].t = 0;
-    ticks[4].t = 1;
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var ticks = [];
+        var vals = [-10, 0, 10, 20, 26];
+        for (var k = 0; k < vals.length; k++)
+            ticks.push({ t: _t(vals[k]), label: GC.fmt(GC.cToDisp(vals[k], p.tempUnit), 0) });
+        ticks[0].t = 0;
+        ticks[4].t = 1;
 
-    GC.drawDial(ctx, g, {
-        bands: [
-            { from: 0, to: _t(10), color: pal.dry },
-            { from: _t(10), to: _t(16), color: pal.comfy },
-            { from: _t(16), to: _t(21), color: pal.humid },
-            { from: _t(21), to: 1, color: pal.opp }
-        ],
-        t: has ? t : NaN,
-        colorAt: function (tt) { return colorAt(MIN + tt * (MAX - MIN), p.isDark); },
-        ticks: ticks,
-        text: p.text
-    });
+        GC.drawDial(ctx, g, {
+            bands: [
+                { from: 0, to: _t(10), color: pal.dry },
+                { from: _t(10), to: _t(16), color: pal.comfy },
+                { from: _t(16), to: _t(21), color: pal.humid },
+                { from: _t(21), to: 1, color: pal.opp }
+            ],
+            t: has ? t : NaN,
+            colorAt: function (tt) { return colorAt(MIN + tt * (MAX - MIN), p.isDark); },
+            ticks: ticks,
+            text: p.text
+        });
 
-    // ── Spread bracket + markers ─────────────────────────────────────────
-    if (has && hasAir) {
-        var tAir = _t(p.v2);
-        GC.drawBracket(ctx, g, t, tAir, cur, 0.65);
-        GC.drawRing(ctx, g, tAir, p.text, p.isDark, 5);
+        // ── Spread bracket + markers ─────────────────────────────────────────
+        if (has && hasAir) {
+            var tAir = _t(p.v2);
+            GC.drawBracket(ctx, g, t, tAir, cur, 0.65);
+            GC.drawRing(ctx, g, tAir, p.text, p.isDark, 5);
+        }
+        if (has)
+            GC.drawDot(ctx, g, t, cur, p.isDark, 6.5);
     }
-    if (has)
-        GC.drawDot(ctx, g, t, cur, p.isDark, 6.5);
 }

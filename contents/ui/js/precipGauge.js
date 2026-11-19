@@ -25,6 +25,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var MAXMM = 50;
 
@@ -68,53 +69,60 @@ function draw(ctx, cw, ch, p) {
     var cur = has ? colorAt(p.v, p.isDark) : pal.light;
 
     // ── Scene: rain streaks ──────────────────────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    if (wet) {
-        var tint = ctx.createLinearGradient(0, g.baseY - g.r, 0, g.baseY);
-        tint.addColorStop(0, GC.rgba(cur, 0.10 + 0.10 * t));
-        tint.addColorStop(1, GC.rgba(cur, 0.02));
-        ctx.fillStyle = tint;
-        ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        if (wet) {
+            var tint = ctx.createLinearGradient(0, g.baseY - g.r, 0, g.baseY);
+            tint.addColorStop(0, GC.rgba(cur, 0.10 + 0.10 * t));
+            tint.addColorStop(1, GC.rgba(cur, 0.02));
+            ctx.fillStyle = tint;
+            ctx.fillRect(0, 0, cw, ch);
+        }
+        var rng = GC.makeRng(23);
+        var n = wet ? Math.round(5 + 36 * t) : 0;
+        ctx.lineCap = "round";
+        for (var i = 0; i < 44; i++) {
+            var pos = GC.randomInDisc(rng, g, g.r - 8);
+            var len = 6 + rng() * 6 + 5 * t;
+            var alpha = 0.16 + rng() * 0.20;
+            if (i >= n) continue;
+            // rain falls; each streak wraps back to the top of the dial
+            var fallTop = g.baseY - (g.r - 8), fallSpan = g.r - 8;
+            pos.y = fallTop + GA.wrap(pos.y - fallTop + GA.T() * (50 + 40 * t) * (0.7 + (i % 4) * 0.2), fallSpan);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(pos.x - len * 0.28, pos.y + len);
+            ctx.lineWidth = 1.1 + 1.2 * t;
+            ctx.strokeStyle = GC.rgba(cur, alpha);
+            ctx.stroke();
+        }
+        ctx.restore();
     }
-    var rng = GC.makeRng(23);
-    var n = wet ? Math.round(5 + 36 * t) : 0;
-    ctx.lineCap = "round";
-    for (var i = 0; i < 44; i++) {
-        var pos = GC.randomInDisc(rng, g, g.r - 8);
-        var len = 6 + rng() * 6 + 5 * t;
-        var alpha = 0.16 + rng() * 0.20;
-        if (i >= n) continue;
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-        ctx.lineTo(pos.x - len * 0.28, pos.y + len);
-        ctx.lineWidth = 1.1 + 1.2 * t;
-        ctx.strokeStyle = GC.rgba(cur, alpha);
-        ctx.stroke();
-    }
-    ctx.restore();
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var mmTicks = [1, 5, 10, 25];
-    var ticks = [{ t: 0, label: "0" }];
-    for (var k = 0; k < mmTicks.length; k++)
-        ticks.push({ t: _t(mmTicks[k]), label: GC.fmt(GC.mmToDisp(mmTicks[k], p.imperial), p.imperial ? 2 : 0) });
-    ticks.push({ t: 1, label: GC.fmt(GC.mmToDisp(MAXMM, p.imperial), p.imperial ? 1 : 0) });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var mmTicks = [1, 5, 10, 25];
+        var ticks = [{ t: 0, label: "0" }];
+        for (var k = 0; k < mmTicks.length; k++)
+            ticks.push({ t: _t(mmTicks[k]), label: GC.fmt(GC.mmToDisp(mmTicks[k], p.imperial), p.imperial ? 2 : 0) });
+        ticks.push({ t: 1, label: GC.fmt(GC.mmToDisp(MAXMM, p.imperial), p.imperial ? 1 : 0) });
 
-    GC.drawDial(ctx, g, {
-        bands: [
-            { from: 0, to: _t(2.5), color: pal.light },
-            { from: _t(2.5), to: _t(7.6), color: pal.mod },
-            { from: _t(7.6), to: _t(25), color: pal.heavy },
-            { from: _t(25), to: 1, color: pal.ext }
-        ],
-        t: wet ? t : NaN,
-        colorAt: function (tt) { return colorAt(tt * tt * MAXMM, p.isDark); },
-        ticks: ticks,
-        text: p.text
-    });
+        GC.drawDial(ctx, g, {
+            bands: [
+                { from: 0, to: _t(2.5), color: pal.light },
+                { from: _t(2.5), to: _t(7.6), color: pal.mod },
+                { from: _t(7.6), to: _t(25), color: pal.heavy },
+                { from: _t(25), to: 1, color: pal.ext }
+            ],
+            t: wet ? t : NaN,
+            colorAt: function (tt) { return colorAt(tt * tt * MAXMM, p.isDark); },
+            ticks: ticks,
+            text: p.text
+        });
 
-    if (has) {
-        // a dry reading still gets a marker, parked at the start of the dial
-        GC.drawDot(ctx, g, wet ? t : 0, cur, p.isDark, 6);
+        if (has) {
+            // a dry reading still gets a marker, parked at the start of the dial
+            GC.drawDot(ctx, g, wet ? t : 0, cur, p.isDark, 6);
+        }
     }
 }

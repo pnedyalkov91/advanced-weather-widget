@@ -25,6 +25,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 function _pal(isDark) {
     return isDark
@@ -63,61 +64,69 @@ function draw(ctx, cw, ch, p) {
     var cur = has ? colorAt(p.v, p.isDark) : pal.comfy;
 
     // ── Scene: soft tint + vapour droplets ───────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var tint = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    tint.addColorStop(0, GC.rgba(cur, has ? 0.14 : 0.05));
-    tint.addColorStop(1, GC.rgba(cur, 0));
-    ctx.fillStyle = tint;
-    ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var tint = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        tint.addColorStop(0, GC.rgba(cur, has ? 0.14 : 0.05));
+        tint.addColorStop(1, GC.rgba(cur, 0));
+        ctx.fillStyle = tint;
+        ctx.fillRect(0, 0, cw, ch);
 
-    var rng = GC.makeRng(11);
-    var n = has ? Math.round(5 + 27 * t) : 0;
-    for (var i = 0; i < 32; i++) {
-        // always consume the same random numbers so droplets stay put as the value changes
-        var pos = GC.randomInDisc(rng, g, g.r - 20);
-        var size = 2 + rng() * 3.4;
-        var alpha = 0.10 + rng() * 0.16;
-        if (i >= n) continue;
-        ctx.fillStyle = GC.rgba(cur, alpha);
-        GC.dropletPath(ctx, pos.x, pos.y, size);
-        ctx.fill();
+        var rng = GC.makeRng(11);
+        var n = has ? Math.round(5 + 27 * t) : 0;
+        for (var i = 0; i < 32; i++) {
+            // always consume the same random numbers so droplets stay put as the value changes
+            var pos = GC.randomInDisc(rng, g, g.r - 20);
+            var size = 2 + rng() * 3.4;
+            var alpha = 0.10 + rng() * 0.16;
+            if (i >= n) continue;
+            // vapour droplets float and fade in and out
+            pos.x += GA.osc(0.7, i, 3);
+            pos.y += GA.osc(0.9, i * 1.7, 4);
+            alpha *= 0.7 + 0.6 * GA.pulse(4, i);
+            ctx.fillStyle = GC.rgba(cur, alpha);
+            GC.dropletPath(ctx, pos.x, pos.y, size);
+            ctx.fill();
+        }
+        ctx.restore();
     }
-    ctx.restore();
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    GC.drawDial(ctx, g, {
-        bands: [
-            { from: 0.00, to: 0.30, color: pal.dry },
-            { from: 0.30, to: 0.60, color: pal.comfy },
-            { from: 0.60, to: 0.75, color: pal.humid },
-            { from: 0.75, to: 1.00, color: pal.very }
-        ],
-        t: has ? t : NaN,
-        colorAt: function (tt) { return colorAt(tt * 100, p.isDark); },
-        ticks: [
-            { t: 0.00, label: "0" },
-            { t: 0.30, label: "30" },
-            { t: 0.60, label: "60" },
-            { t: 0.75 },
-            { t: 1.00, label: "100" }
-        ],
-        text: p.text
-    });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        GC.drawDial(ctx, g, {
+            bands: [
+                { from: 0.00, to: 0.30, color: pal.dry },
+                { from: 0.30, to: 0.60, color: pal.comfy },
+                { from: 0.60, to: 0.75, color: pal.humid },
+                { from: 0.75, to: 1.00, color: pal.very }
+            ],
+            t: has ? t : NaN,
+            colorAt: function (tt) { return colorAt(tt * 100, p.isDark); },
+            ticks: [
+                { t: 0.00, label: "0" },
+                { t: 0.30, label: "30" },
+                { t: 0.60, label: "60" },
+                { t: 0.75 },
+                { t: 1.00, label: "100" }
+            ],
+            text: p.text
+        });
 
-    // ── Teardrop marker ──────────────────────────────────────────────────
-    if (has) {
-        var m = GC.pointAt(g, t, g.r);
-        GC.dropletPath(ctx, m.x, m.y - 1, 7.5);
-        ctx.fillStyle = cur;
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.lineJoin = "round";
-        ctx.strokeStyle = p.isDark ? "rgba(20,20,20,0.85)" : "rgba(255,255,255,0.95)";
-        ctx.stroke();
-        // small highlight
-        ctx.beginPath();
-        ctx.arc(m.x - 2.2, m.y + 0.4, 1.6, 0, 2 * GC.PI);
-        ctx.fillStyle = "rgba(255,255,255,0.55)";
-        ctx.fill();
+        // ── Teardrop marker ──────────────────────────────────────────────────
+        if (has) {
+            var m = GC.pointAt(g, t, g.r);
+            GC.dropletPath(ctx, m.x, m.y - 1, 7.5);
+            ctx.fillStyle = cur;
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = p.isDark ? "rgba(20,20,20,0.85)" : "rgba(255,255,255,0.95)";
+            ctx.stroke();
+            // small highlight
+            ctx.beginPath();
+            ctx.arc(m.x - 2.2, m.y + 0.4, 1.6, 0, 2 * GC.PI);
+            ctx.fillStyle = "rgba(255,255,255,0.55)";
+            ctx.fill();
+        }
     }
 }

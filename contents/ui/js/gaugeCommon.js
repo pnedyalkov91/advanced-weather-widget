@@ -32,6 +32,7 @@
  *   .import "gaugeCommon.js" as GC
  */
 .pragma library
+.import "gaugeAnim.js" as GA
 
 var PI = Math.PI;
 
@@ -369,7 +370,9 @@ function snowflakePath(ctx, x, y, s) {
 
 /** Adds a sine-sum wave line from x0 to x1 to the current path (no moveTo for the first point if `cont`). */
 function wavePath(ctx, x0, x1, y, amp, k, ph, cont) {
-    for (var x = x0; x <= x1; x += 3) {
+    // a little coarser while animating: fewer lineTo calls per frame, still smooth at this scale
+    var step = GA.isEnabled() ? 5 : 3;
+    for (var x = x0; x <= x1; x += step) {
         var yy = y + amp * Math.sin(k * x + ph) + amp * 0.45 * Math.sin(k * 2.3 * x + ph * 1.7);
         if (x === x0 && !cont) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
     }

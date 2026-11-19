@@ -27,6 +27,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 var MIN = -25;
 var MAX = 45;
@@ -72,47 +73,51 @@ function draw(ctx, cw, ch, p) {
     var cur = has ? colorAt(p.v, p.isDark) : colorAt(15, p.isDark);
 
     // ── Scene: temperature glow + concentric rings ───────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    glow.addColorStop(0, GC.rgba(cur, has ? 0.20 : 0.05));
-    glow.addColorStop(0.7, GC.rgba(cur, has ? 0.06 : 0.02));
-    glow.addColorStop(1, GC.rgba(cur, 0));
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, cw, ch);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        glow.addColorStop(0, GC.rgba(cur, has ? 0.14 + 0.12 * GA.pulse(4) : 0.05));   // pulsing glow
+        glow.addColorStop(0.7, GC.rgba(cur, has ? 0.06 : 0.02));
+        glow.addColorStop(1, GC.rgba(cur, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, cw, ch);
 
-    ctx.lineWidth = 1;
-    for (var i = 1; i <= 3; i++) {
-        var rr = g.r - 18 - i * 22;
-        if (rr < 10) break;
-        ctx.beginPath();
-        ctx.arc(g.cx, g.baseY, rr, GC.PI, 2 * GC.PI, false);
-        ctx.strokeStyle = GC.rgba(p.text, 0.07);
-        ctx.stroke();
+        ctx.lineWidth = 1;
+        for (var i = 1; i <= 3; i++) {
+            var rr = g.r - 18 - i * 22;
+            if (rr < 10) break;
+            ctx.beginPath();
+            ctx.arc(g.cx, g.baseY, rr, GC.PI, 2 * GC.PI, false);
+            ctx.strokeStyle = GC.rgba(p.text, 0.07);
+            ctx.stroke();
+        }
+        ctx.restore();
     }
-    ctx.restore();
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var vals = [-20, -10, 0, 10, 20, 30, 40];
-    var ticks = [];
-    for (var k = 0; k < vals.length; k++)
-        ticks.push({ t: _t(vals[k]), label: GC.fmt(GC.cToDisp(vals[k], p.tempUnit), 0), major: vals[k] === 0 });
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var vals = [-20, -10, 0, 10, 20, 30, 40];
+        var ticks = [];
+        for (var k = 0; k < vals.length; k++)
+            ticks.push({ t: _t(vals[k]), label: GC.fmt(GC.cToDisp(vals[k], p.tempUnit), 0), major: vals[k] === 0 });
 
-    // the scale is one continuous cold-to-hot sweep (dimmed), the progress arc brightens it up to the reading
-    GC.drawDial(ctx, g, {
-        ghostAt: function (tt) { return colorAt(MIN + tt * (MAX - MIN), p.isDark); },
-        bandAlpha: 0.32,
-        t: has ? t : NaN,
-        colorAt: function (tt) { return colorAt(MIN + tt * (MAX - MIN), p.isDark); },
-        ticks: ticks,
-        text: p.text
-    });
+        // the scale is one continuous cold-to-hot sweep (dimmed), the progress arc brightens it up to the reading
+        GC.drawDial(ctx, g, {
+            ghostAt: function (tt) { return colorAt(MIN + tt * (MAX - MIN), p.isDark); },
+            bandAlpha: 0.32,
+            t: has ? t : NaN,
+            colorAt: function (tt) { return colorAt(MIN + tt * (MAX - MIN), p.isDark); },
+            ticks: ticks,
+            text: p.text
+        });
 
-    // ── Real vs. perceived ───────────────────────────────────────────────
-    if (has && hasAir) {
-        var tAir = _t(p.v2);
-        GC.drawBracket(ctx, g, t, tAir, cur, 0.65);
-        GC.drawRing(ctx, g, tAir, p.text, p.isDark, 5);
+        // ── Real vs. perceived ───────────────────────────────────────────────
+        if (has && hasAir) {
+            var tAir = _t(p.v2);
+            GC.drawBracket(ctx, g, t, tAir, cur, 0.65);
+            GC.drawRing(ctx, g, tAir, p.text, p.isDark, 5);
+        }
+        if (has)
+            GC.drawDot(ctx, g, t, cur, p.isDark, 6.5);
     }
-    if (has)
-        GC.drawDot(ctx, g, t, cur, p.isDark, 6.5);
 }

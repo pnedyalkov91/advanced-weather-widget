@@ -1586,6 +1586,7 @@ KCM.AbstractKCM {
     property string cfg_widgetDetailsItemIcons: "feelslike=1;humidity=1;pressure=1;wind=1;suntimes=1;dewpoint=1;visibility=1;moonphase=1;preciprate=1;uvindex=1;airquality=1;pollen=1;alerts=1;snowcover=1"
     property string cfg_widgetDetailsCustomIcons: ""
     property string cfg_widgetDetailsLayout: "cards2"  // "cards2" | "list"
+    property bool cfg_detailsAnimations: false          // animated scenes in the expanded Details cards
     property string cfg_widgetSunTimesMode: "both"   // "both" | "sunrise" | "sunset" | "upcoming"
     property string cfg_widgetMoonMode: "full"        // "full" | "upcoming" | "times"
     property int cfg_widgetIconSize: 16

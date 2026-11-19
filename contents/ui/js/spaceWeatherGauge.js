@@ -31,6 +31,7 @@
  */
 .pragma library
 .import "gaugeCommon.js" as GC
+.import "gaugeAnim.js" as GA
 
 /**
  * p = { kind: "gscale" | "kp" | "solarwind" | "aurora" | "bz" | "xray",
@@ -44,7 +45,7 @@ function _stars(ctx, g, rng, text, n) {
         var pt = GC.randomInDisc(rng, g, g.r - 8);
         var r = 0.5 + rng() * 0.9;
         ctx.beginPath(); ctx.arc(pt.x, pt.y, r, 0, 2 * GC.PI);
-        ctx.fillStyle = GC.rgba(text, 0.10 + rng() * 0.20);
+        ctx.fillStyle = GC.rgba(text, 0.10 + rng() * 0.20 + GA.osc(1.5, i * 2.3, 0.06));
         ctx.fill();
     }
 }
@@ -61,7 +62,7 @@ function _fieldArcs(ctx, g, col, dens, rng) {
         for (var k = 0; k <= steps; k++) {
             var u = k / steps;
             var a = GC.PI + u * GC.PI;
-            var rr = rad + Math.sin(u * GC.PI * (6 + i) + i * 1.7) * amp * Math.sin(u * GC.PI);
+            var rr = rad + Math.sin(u * GC.PI * (6 + i) + i * 1.7 + GA.T() * (0.8 + 0.2 * i)) * amp * Math.sin(u * GC.PI);
             var x = g.cx + Math.cos(a) * rr, y = g.baseY + Math.sin(a) * rr;
             if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
@@ -90,7 +91,7 @@ function _solarWind(ctx, g, col, dens, rng) {
     var n = Math.round(6 + 22 * dens);
     for (var i = 0; i < 28; i++) {
         var y = g.baseY - 8 - rng() * (g.r - 22);
-        var x = g.cx - g.r + 10 + rng() * (g.r * 1.7);
+        var x = g.cx - g.r + 10 + GA.wrap(rng() * (g.r * 1.7) + GA.T() * (30 + 50 * dens), g.r * 1.7);
         var len = 8 + rng() * (10 + 26 * dens);
         var al = 0.20 + rng() * 0.30;
         if (i >= n) continue;
@@ -104,7 +105,7 @@ function _solarWind(ctx, g, col, dens, rng) {
 
 function _aurora(ctx, g, col, dens, rng) {
     // vertical curtains: each a column of fading strokes with a wavy base line
-    var n = 64;
+    var n = GA.isEnabled() ? 40 : 64;   // fewer gradient columns per frame while animating
     var left = g.cx - g.r * 0.9, span = g.r * 1.8;
     var hmax = (g.r - 18) * (0.22 + 0.62 * dens);
     ctx.lineCap = "round";
@@ -112,7 +113,7 @@ function _aurora(ctx, g, col, dens, rng) {
         var u = i / (n - 1);
         var x = left + span * u;
         var base = g.baseY - 10 - 6 * Math.sin(u * 9 + 0.6) - 4 * Math.sin(u * 17);
-        var h = hmax * (0.35 + 0.65 * Math.sin(u * GC.PI)) * (0.72 + 0.28 * Math.sin(u * 11 + 0.8));
+        var h = hmax * (0.35 + 0.65 * Math.sin(u * GC.PI)) * (0.72 + 0.28 * Math.sin(u * 11 + 0.8 + GA.T() * 0.9));
         var grad = ctx.createLinearGradient(x, base, x, base - h);
         grad.addColorStop(0, GC.rgba(col, 0.32));
         grad.addColorStop(1, GC.rgba(col, 0));
@@ -186,37 +187,41 @@ function draw(ctx, cw, ch, p) {
     var dens = has ? 0.12 + 0.88 * t : 0;
 
     // ── Scene ────────────────────────────────────────────────────────────
-    GC.clipDisc(ctx, g, 6);
-    var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
-    glow.addColorStop(0, GC.rgba(col, has ? 0.14 : 0.04));
-    glow.addColorStop(1, GC.rgba(col, 0));
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, cw, ch);
-    _stars(ctx, g, rng, p.text, 26);
+    if (GA.scene()) {
+        GC.clipDisc(ctx, g, 6);
+        var glow = ctx.createRadialGradient(g.cx, g.baseY, 0, g.cx, g.baseY, g.r);
+        glow.addColorStop(0, GC.rgba(col, has ? 0.14 : 0.04));
+        glow.addColorStop(1, GC.rgba(col, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, cw, ch);
+        _stars(ctx, g, rng, p.text, 26);
 
-    if (p.kind === "solarwind") _solarWind(ctx, g, col, dens, rng);
-    else if (p.kind === "aurora") _aurora(ctx, g, col, dens, rng);
-    else if (p.kind === "bz") _bz(ctx, g, col, p.south === true, dens);
-    else if (p.kind === "xray") _xray(ctx, g, col, dens, rng);
-    else _fieldArcs(ctx, g, col, dens, rng);
-    ctx.restore();
+        if (p.kind === "solarwind") _solarWind(ctx, g, col, dens, rng);
+        else if (p.kind === "aurora") _aurora(ctx, g, col, dens, rng);
+        else if (p.kind === "bz") _bz(ctx, g, col, p.south === true, dens);
+        else if (p.kind === "xray") _xray(ctx, g, col, dens, rng);
+        else _fieldArcs(ctx, g, col, dens, rng);
+        ctx.restore();
+    }
 
-    // ── Dial ─────────────────────────────────────────────────────────────
-    var bands = [];
-    var zones = p.zones || [];
-    for (var i = 0; i < zones.length; i++)
-        bands.push({ from: zones[i].from, to: zones[i].to, color: zones[i].color });
-    GC.drawDial(ctx, g, {
-        bands: bands,
-        bandAlpha: p.isDark ? 0.34 : 0.42,
-        t: has ? t : NaN,
-        colorAt: function (tt) {
-            for (var j = 0; j < zones.length; j++)
-                if (tt <= zones[j].to) return zones[j].color;
-            return zones.length ? zones[zones.length - 1].color : col;
-        },
-        ticks: p.ticks || [],
-        text: p.text
-    });
-    if (has) GC.drawDot(ctx, g, t, col, p.isDark, 6.5);
+    if (GA.dial()) {
+        // ── Dial ─────────────────────────────────────────────────────────────
+        var bands = [];
+        var zones = p.zones || [];
+        for (var i = 0; i < zones.length; i++)
+            bands.push({ from: zones[i].from, to: zones[i].to, color: zones[i].color });
+        GC.drawDial(ctx, g, {
+            bands: bands,
+            bandAlpha: p.isDark ? 0.34 : 0.42,
+            t: has ? t : NaN,
+            colorAt: function (tt) {
+                for (var j = 0; j < zones.length; j++)
+                    if (tt <= zones[j].to) return zones[j].color;
+                return zones.length ? zones[zones.length - 1].color : col;
+            },
+            ticks: p.ticks || [],
+            text: p.text
+        });
+        if (has) GC.drawDot(ctx, g, t, col, p.isDark, 6.5);
+    }
 }
