@@ -1,3 +1,4 @@
+import QtCore
 import QtWebEngine
 
 // The radar map's own storage (QtWebEngine 6.9 and later): the wind kept from
@@ -7,6 +8,11 @@ import QtWebEngine
 // default profile, whose storage lives in memory only.
 WebEngineProfilePrototype {
     storageName: "advanced-weather-widget-map"
+    // Everything the map keeps (IndexedDB, local storage...) goes next to
+    // the HTTP cache, in plasmashell's cache folder. By default it lands in
+    // ~/.local/share, where file indexers like Baloo may pick up every tile
+    // written. configGeneral.qml's mapCachePath points at this same folder.
+    persistentStoragePath: decodeURIComponent(StandardPaths.writableLocation(StandardPaths.CacheLocation).toString().replace(/^file:\/\//, "")) + "/QtWebEngine/advanced-weather-widget-map"
     // The radar's tiles are read ahead into this cache (glue-prefetch.js):
     // about 215 MB for the whole radar range over one area, the ring and
     // the levels in and out counted. 1 GB keeps several areas; the oldest
