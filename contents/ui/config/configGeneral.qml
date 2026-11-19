@@ -689,7 +689,7 @@ KCM.AbstractKCM {
             text: root.cfg_radarProvider === "librewxr" ? i18n("Weather Maps") : i18n("Radar")
         }
         PlasmaComponents.TabButton {
-            icon.name: "task-attention"
+            icon.name: "dialog-warning"
             text: i18n("Weather Alerts")
         }
     }
