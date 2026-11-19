@@ -412,14 +412,22 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // color layer to another they stay as they are, tiles and all.
   var homeMarker = null;      // the widget's place
   var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
-  // Under the dark lines, a light edge: they still show where the map is
-  // dark, the night side above all, now that the night turns with the
-  // time bar.
+  // Under the dark lines, a thin light halo: they still show where the map
+  // is dark, the night side above all. Its margin, 0.5 px each side, stays
+  // the same when the user widens the lines.
   var LINES_HALO = 'lv-lines-halo';
   var LINES_WIDTH = [0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8];
-  function linesWidth(extra) {
+  var LINES_HALO_MARGIN = 1;
+  /** The user's factor on the whole width curve, 0.5 to 3 (1 as drawn). */
+  function linesScaleOf(v) {
+    var f = parseFloat(v);
+    return isFinite(f) && f > 0 ? Math.max(0.5, Math.min(3, f)) : 1;
+  }
+  var linesScale = linesScaleOf(typeof LINES_WIDTH_INIT === 'undefined' ? null : LINES_WIDTH_INIT);
+  /** The width curve of the line, plus margin px (0 for the line itself). */
+  function linesWidth(margin) {
     var e = ['interpolate', ['linear'], ['zoom']];
-    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], LINES_WIDTH[i + 1] + extra);
+    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], LINES_WIDTH[i + 1] * linesScale + margin);
     return e;
   }
   var linesOwners = {}, linesData = null, linesLoading = false;
@@ -455,7 +463,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       addLayer({
         id: LINES_HALO, type: 'line', source: LINES_SOURCE,
         layout: { 'line-join': 'round', visibility: 'visible' },
-        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(1.6), 'line-blur': 1 }
+        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(LINES_HALO_MARGIN), 'line-blur': 1 }
       });
     } else map.setLayoutProperty(LINES_HALO, 'visibility', 'visible');
     if (map.getLayer(LINES_LAYER)) {
@@ -571,7 +579,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       paint: {
         'raster-opacity': entry.opacity,
         'raster-opacity-transition': { duration: 0, delay: 0 },
-        'raster-fade-duration': 0
+        'raster-fade-duration': 0,
+        'raster-resampling': entry.sharp ? 'nearest' : 'linear'
       }
     });
   }
@@ -682,8 +691,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     var next = function () {
       if (job !== revealJob) return;
       var n = 0;
+      // The animation's images stay held: only those waited for come back.
       for (i = 0; i < frameRegistry.length && n < REVEAL_BATCH; i++) {
-        if (frameRegistry[i].held) { holdFrame(frameRegistry[i], false); n++; }
+        if (frameRegistry[i].held && !frameRegistry[i].anim) { holdFrame(frameRegistry[i], false); n++; }
       }
       if (n) map.once('idle', next);
     };
@@ -1196,8 +1206,15 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       var entry = {
         sourceId: 'lv-src-' + id,
         layerId: (anim ? 'lv-anim-' : '') + (kind === 'satellite' ? 'lv-layer-sat-' : 'lv-layer-radar-') + id,
-        kind: kind, url: url, maxZoom: maxZoom, opacity: 0, anim: anim,
-        tileSize: opts && opts.tileSize === 512 ? 512 : 256
+        // Past the data's own resolution the map stretches the last level.
+        kind: kind, url: url, opacity: 0, anim: anim,
+        maxZoom: typeof WidgetAnimRadar !== 'undefined' ? WidgetAnimRadar.nativeZoom(url, maxZoom) : maxZoom,
+        sharp: typeof WidgetAnimRadar !== 'undefined' && WidgetAnimRadar.sharpEdges(url, kind),
+        tileSize: opts && opts.tileSize === 512 ? 512 : 256,
+        // An image of the animation asks for no tile until the viewer waits
+        // for it (onLayerReady): the others are read ahead into the cache
+        // (glue-prefetch.js).
+        held: anim
       };
       frameRegistry.push(entry);
       frameById.set(entry.layerId, entry);
@@ -1276,6 +1293,60 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (map.getLayer(handle.layerId)) map.setPaintProperty(handle.layerId, 'raster-opacity', v);
       if (e && v > 0 && e.held) holdFrame(e, false);
       else if (e && moving && !(v > 0)) holdFrame(e, true);
+      // An image of the animation off the map asks for nothing more, its
+      // tiles kept in the cache for its next turn. Not at once: a fade in
+      // starts from 0 (400 ms).
+      else if (e && e.anim && !(v > 0)) {
+        setTimeout(function () {
+          if (!frameById.has(e.layerId) || e.opacity > 0 || e.held) return;
+          if (pendingCheck[e.sourceId] && pendingCheck[e.sourceId].length) return;
+          holdFrame(e, true);
+        }, 1000);
+      }
+    },
+
+    /** What the reading ahead needs of a frame: its tile addresses (the
+        hosts MapLibre spreads them on), its last level and its grid. */
+    prefetchInfo: function (handle) {
+      var e = entryOf(handle);
+      return e ? { urls: frameTiles(e.url), maxZoom: e.maxZoom, tileSize: e.tileSize } : null;
+    },
+
+    /** { done, total } tiles of a frame in view (loaded or failed = done),
+        for the loading bar; null when the map does not tell. Reads
+        MapLibre 6's inner tile list: no public call gives it. */
+    frameTileCount: function (handle) {
+      var e = entryOf(handle);
+      var tm = e && map && map.style && map.style.tileManagers && map.style.tileManagers[e.sourceId];
+      var inView = tm && tm._inViewTiles;
+      if (!inView || typeof inView.getAllTiles !== 'function') return null;
+      var tiles = inView.getAllTiles(), done = 0;
+      for (var i = 0; i < tiles.length; i++) {
+        if (tiles[i].state === 'loaded' || tiles[i].state === 'errored') done++;
+      }
+      return { done: done, total: tiles.length };
+    },
+
+    /** The view for the reading ahead: its area and the tile level of a
+        grid of tileSize, as MapLibre picks it (rounded). */
+    prefetchView: function (tileSize) {
+      if (!map) return null;
+      var b = map.getBounds();
+      return {
+        box: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()],
+        z: Math.max(0, Math.round(map.getZoom()) + (tileSize === 256 ? 1 : 0))
+      };
+    },
+
+    /** cb at each move's start, and once the map is drawn after its end. */
+    onMoveStart: function (cb) { map.on('movestart', cb); },
+    onSettled: function (cb) { map.on('moveend', function () { map.once('idle', cb); }); },
+    /** cb once the map is drawn with everything it asked for. */
+    whenIdle: function (cb) {
+      if (!map) return;
+      // Already idle, the map fires nothing more until it draws again.
+      if (!moving && map.loaded() && map.areTilesLoaded()) cb();
+      else map.once('idle', cb);
     },
 
     destroyFrameLayer: function (handle) {
@@ -1509,6 +1580,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (!swapInProgress) applyLines();
     },
     getLinesShown: function () { return linesShown; },
+    /** The lines' width, a factor on their own (0.5 to 3). */
+    setLinesWidth: function (f) {
+      linesScale = linesScaleOf(f);
+      if (!map) return;
+      if (map.getLayer(LINES_HALO)) map.setPaintProperty(LINES_HALO, 'line-width', linesWidth(LINES_HALO_MARGIN));
+      if (map.getLayer(LINES_LAYER)) map.setPaintProperty(LINES_LAYER, 'line-width', linesWidth(0));
+    },
     /** The layer a weather layer of id goes right under, to be at its
         place in the stack (map.addLayer(layer, beforeFor(layer.id))). */
     beforeFor: beforeFor,

@@ -90,8 +90,13 @@ function fakeAdapter() {
     a.opacity[h.layerId] = 0;
     return h;
   };
-  a.onLayerReady = (h, cb) => { (a.waiting[h.layerId] = a.waiting[h.layerId] || []).push(cb); };
-  a.ready = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb()); };
+  // As the map's: a layer whose tiles are in answers at once.
+  a.settled = {};
+  a.onLayerReady = (h, cb) => {
+    if (a.settled[h.layerId] && !(a.loaded && a.loaded[h.layerId] === false)) { cb(); return; }
+    (a.waiting[h.layerId] = a.waiting[h.layerId] || []).push(cb);
+  };
+  a.ready = (h) => { a.settled[h.layerId] = true; const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb()); };
   // Settled on a tile error.
   a.fail = (h) => { const w = a.waiting[h.layerId] || []; delete a.waiting[h.layerId]; w.forEach((cb) => cb(false)); };
   a.setFrameOpacity = (h, v) => { a.opacity[h.layerId] = v; };
@@ -425,6 +430,7 @@ test('Overlay: a new catalog makes the failed images again, the image shown kept
   const { a, o } = overlay(radar.slice(0, 3));
   o.setOn(true);
   o.show(T0 * 1000 + 12 * MIN);
+  o.loadedAt(T0 * 1000 + 12 * MIN);   // image 2 asked for ahead, as in a play
   a.ready(a.made[1]);
   a.fail(a.made[2]);
   const n = a.made.length;
@@ -547,25 +553,45 @@ test('lastPast: the last observed radar image, never the nowcast', () => {
   assert.equal(R.lastPast(null), null);
 });
 
-test('nowTime: with lightning and the radar on, now is the last observed image', () => {
+test('nowTime: with the radar on, now is its last observed image', () => {
   const nowStep = Date.parse('2026-11-12T12:00:00Z'), last = Date.parse('2026-11-12T13:10:00Z');
   assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: last }), last);
-  // Lightning off, the radar off, or no image: the step of now.
-  assert.equal(R.nowTime({ lightning: false, radar: true, nowStep, lastPast: last }), nowStep);
+  assert.equal(R.nowTime({ lightning: false, radar: true, nowStep, lastPast: last }), last);
+  // The radar off, or no image: the step of now.
   assert.equal(R.nowTime({ lightning: true, radar: false, nowStep, lastPast: last }), nowStep);
   assert.equal(R.nowTime({ lightning: true, radar: true, nowStep, lastPast: null }), nowStep);
 });
 
-test('Overlay.progress: null off; on, the images whose tiles are in, out of all', () => {
+test('pastToCover: the hours back grow by whole steps until the range holds the last observed image', () => {
+  const H = 3600e3;
+  // 17:57 Paris (16:57 UTC): the step of now is 18:00 UTC, the last observed image 16:50 UTC.
+  const now = Date.parse('2026-11-17T16:57:00Z'), last = Date.parse('2026-11-17T16:50:00Z');
+  assert.equal(R.pastToCover(0, 3, now, last), 3);
+  // Already in: unchanged.
+  assert.equal(R.pastToCover(24, 3, now, last), 24);
+  // Step of now before the image (15:00 UTC at 16:20): nothing to add.
+  assert.equal(R.pastToCover(0, 3, Date.parse('2026-11-17T16:20:00Z'), Date.parse('2026-11-17T16:10:00Z')), 0);
+  // No image, or the radar's own 10-min steps: unchanged.
+  assert.equal(R.pastToCover(0, 3, now, null), 0);
+  assert.equal(R.pastToCover(0, 1 / 6, now, last), 0);
+  // An image far back (an old catalog) never takes more than 6 h.
+  assert.equal(R.pastToCover(0, 3, now, now - 20 * H), 6);
+});
+
+test('Overlay.progress: null off; on, the image asked for only, the others read ahead out of sight', () => {
   const { a, o } = overlay(radar.slice(0, 3));
   assert.equal(o.progress(), null);
   zoomedAdapter(a);
   o.setOn(true);
+  assert.deepEqual(o.progress(), { done: 0, total: 0 }, 'nothing asked for: no bar');
   a.made.forEach((h) => { a.loaded[h.layerId] = false; });
-  assert.deepEqual(o.progress(), { done: 0, total: 3 });
+  o.show(T0 * 1000 + 12 * MIN);
+  assert.deepEqual(o.progress(), { done: 0, total: 1 });
+  a.loaded[a.made[1].layerId] = true;
+  assert.deepEqual(o.progress(), { done: 1, total: 1 });
   a.loaded[a.made[0].layerId] = true;
   a.loaded[a.made[2].layerId] = true;
-  assert.deepEqual(o.progress(), { done: 2, total: 3 });
+  assert.deepEqual(o.progress(), { done: 1, total: 1 });
 });
 
 test('Overlay.progress: counted as the map says for the loading bar (frameCounted) when it can', () => {
@@ -575,8 +601,53 @@ test('Overlay.progress: counted as the map says for the loading bar (frameCounte
   a.frameCounted = (h) => a.counted[h.layerId] !== false;
   o.setOn(true);
   a.made.forEach((h) => { a.loaded[h.layerId] = false; });
-  a.counted[a.made[1].layerId] = false;
-  assert.deepEqual(o.progress(), { done: 2, total: 3 }, 'held back in a move, loaded before: not a download');
+  o.show(T0 * 1000);
+  assert.deepEqual(o.progress(), { done: 1, total: 1 }, 'held back in a move, loaded before: not a download');
+  a.counted[a.made[0].layerId] = false;
+  assert.deepEqual(o.progress(), { done: 0, total: 1 });
+});
+
+test('Overlay.progress: the tiles of the image asked for when the map tells them (frameTileCount)', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  a.tiles = {};
+  a.frameTileCount = (h) => a.tiles[h.layerId] || null;
+  o.setOn(true);
+  a.made.forEach((h) => { a.loaded[h.layerId] = false; });
+  o.show(T0 * 1000 + 12 * MIN);
+  const id = a.made[1].layerId;
+  assert.deepEqual(o.progress(), { done: 0, total: 1 }, 'no tile known yet: one step');
+  a.tiles[id] = { done: 0, total: 0 };
+  assert.deepEqual(o.progress(), { done: 0, total: 1 }, 'an empty list: one step');
+  a.tiles[id] = { done: 7, total: 20 };
+  assert.deepEqual(o.progress(), { done: 7, total: 20 });
+  a.tiles[id] = { done: 19, total: 20 };
+  a.loaded[id] = true;
+  assert.deepEqual(o.progress(), { done: 20, total: 20 }, 'drawn: full, whatever a tile still does');
+});
+
+test('Overlay.loadedAt: the next images are asked for ahead, so a play finds them drawn', () => {
+  const { a, o } = overlay(radar.slice(0, 5));
+  zoomedAdapter(a);
+  o.setOn(true);
+  a.made.forEach((h) => { a.ready(h); a.loaded[h.layerId] = false; });
+  o.loadedAt(T0 * 1000 + 10 * MIN);
+  const asked = a.made.filter((h) => (a.waiting[h.layerId] || []).length).map((h) => h.layerId);
+  assert.deepEqual(asked, [a.made[1].layerId, a.made[2].layerId, a.made[3].layerId]);
+});
+
+test('Overlay.prefetchFrames: each image with its address, the one asked for marked, the short-lived ones too', () => {
+  const frames = R.framesOf({ radar: { past: radar.slice(0, 3), nowcast: radar.slice(3, 5) } }, 'radar');
+  const { o } = overlay(frames);
+  assert.deepEqual(o.prefetchFrames(), [], 'off: nothing');
+  o.setOn(true);
+  o.show(T0 * 1000 + 10 * MIN);
+  const p = o.prefetchFrames();
+  assert.deepEqual(p.map((f) => f.url), frames.map((f) => 'u' + f.time));
+  assert.deepEqual(p.map((f) => f.shown), [false, true, false, false, false]);
+  // The last observed image and the nowcast change within minutes.
+  assert.deepEqual(p.map((f) => f.shortLived), [false, false, true, true, true]);
+  assert.ok(p.every((f) => f.handle));
 });
 
 test('framesOf: the nowcast images carry the run they come from (the last observed image)', () => {
@@ -600,4 +671,40 @@ test('Overlay: a nowcast image made again with each new run, and once observed; 
   // The same catalog again: nothing made again.
   o.setFrames(cat([0, 600, 1200], [1800, 2400]));
   assert.equal(a.made.length, 7);
+});
+
+test('nativeZoom: radar and satellite tiles stop where a file pixel gets finer than the data', () => {
+  const base = 'http://localhost:8099/v2/radar/1763400000/';
+  // 256 files: level 9 at most, 512 files one level less (same pixel on the ground).
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp', 12), 9);
+  assert.equal(R.nativeZoom(base + '512/{z}/{x}/{y}/2/1_1.webp', 12), 8);
+  assert.equal(R.nativeZoom('http://localhost:8099/v2/satellite/1763400000/256/{z}/{x}/{y}/0/0_0.webp', 12), 9);
+  // Never above the map's own last level.
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp', 7), 7);
+  // Lightning, arrows and cells are stretched with the rest (tried for now).
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?lightning=bolts', 12), 9);
+  assert.equal(R.nativeZoom(base + '256/{z}/{x}/{y}/2/1_1.webp?arrows=dark&cells=light', 12), 9);
+  // An address of another shape keeps the map's level.
+  assert.equal(R.nativeZoom('https://example.org/tiles/{z}/{x}/{y}.png', 12), 12);
+});
+
+test('sharpEdges: a radar tile without smoothing keeps its cells square when stretched', () => {
+  const base = 'http://localhost:8099/v2/radar/1763400000/256/{z}/{x}/{y}/';
+  assert.equal(R.sharpEdges(base + '2/0_1.webp', 'radar'), true);
+  assert.equal(R.sharpEdges(base + '2/0_0.png?lightning=bolts', 'radar'), true);
+  assert.equal(R.sharpEdges(base + '2/1_1.webp', 'radar'), false);
+  assert.equal(R.sharpEdges('http://localhost:8099/v2/satellite/1763400000/256/{z}/{x}/{y}/0/0_0.webp', 'satellite'), false);
+});
+
+test('Overlay.isIn: true off or out of the range; on, whether the image is in, asking for nothing', () => {
+  const { a, o } = overlay(radar.slice(0, 3));
+  zoomedAdapter(a);
+  assert.equal(o.isIn(T0 * 1000), true, 'off');
+  o.setOn(true);
+  const made = a.made.length;
+  assert.equal(o.isIn(T0 * 1000 + 10 * MIN), false);
+  assert.equal(a.made.length, made, 'nothing made');
+  o.show(T0 * 1000 + 10 * MIN);
+  a.made.forEach((h) => { a.ready(h); a.loaded[h.layerId] = true; });
+  assert.equal(o.isIn(T0 * 1000 + 10 * MIN), true);
 });

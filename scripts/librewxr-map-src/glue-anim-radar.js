@@ -77,6 +77,34 @@ var WidgetAnimRadar = (function () {
     return q.length ? url + '?' + q.join('&') : url;
   }
 
+  /* The finest grids behind the radar are 0.5 to 1 km (MRMS CONUS 500 m,
+     OPERA and DPC 1 km, docs/coverage.md in LibreWXR); the satellite is
+     coarser. A 256 file at level 9 has pixels of 300 m at the equator,
+     215 m at 45°: two or more per cell of the finest grid. Deeper levels
+     only stretch the same cells, so the map stretches the level 9 file
+     itself and asks the server for nothing. A 512 file has the same pixel
+     one level up. */
+  var NATIVE_ZOOM_256 = 9;
+  var SIZE_IN_URL = /\/(256|512)\/\{z\}\//;
+
+  /** The last level of tiles worth asking for the frame at url, on a map
+      that goes up to mapMax: NATIVE_ZOOM_256 for 256 files, one less for
+      512 ones, mapMax when the address is of another shape. Lightning,
+      arrows and storm cells are drawn in the tile at a fixed size: past
+      that level they grow with the rest (on trial). */
+  function nativeZoom(url, mapMax) {
+    var m = SIZE_IN_URL.exec(url);
+    if (!m) return mapMax;
+    return Math.min(mapMax, NATIVE_ZOOM_256 - (m[1] === '512' ? 1 : 0));
+  }
+
+  var UNSMOOTHED = /\/\d+\/0_[01]\.(png|webp)(\?|$)/;
+  /** Whether the frame at url is a radar tile drawn without smoothing:
+      its cells are squares, kept sharp when the map stretches them. */
+  function sharpEdges(url, kind) {
+    return kind !== 'satellite' && UNSMOOTHED.test(url);
+  }
+
   /** The tiles for the size chosen ('auto', '256' or '512') at device
       pixel ratio dpr: size, the files' pixels, and grid, the size MapLibre
       lays them on. Files of 512 on a 512 grid take a quarter of the
@@ -204,8 +232,9 @@ var WidgetAnimRadar = (function () {
   Overlay.prototype._make = function (frame) {
     var path = keyOf(frame);
     if (this.layers[path]) return;
+    // Made held back by the map (no tile asked for): waited for, and so
+    // drawn, only once asked for (show, loadedAt and the images ahead).
     this.layers[path] = { handle: this.adapter.createFrameLayer(this.url(frame), this.kind, { anim: true, tileSize: this.tileSize }), ready: false, waiting: false };
-    this._await(path);
   };
 
   /** Wait for the tiles of image path (once at a time), then show it if
@@ -249,16 +278,26 @@ var WidgetAnimRadar = (function () {
   };
 
   /** Whether the image of time ms can show at once (true off or out of
-      the range); when not, its tiles are asked for. The play waits on it. */
+      the range); when not, its tiles are asked for. The play waits on it.
+      The next images are asked for ahead (_ahead). */
   Overlay.prototype.loadedAt = function (ms) {
     if (!this.on) return true;
     var i = frameAt(this.frames, ms, this.gapMs, this._until());
     if (i < 0) return true;
     var path = keyOf(this.frames[i]);
+    this._ahead(i);
     if (this._loaded(path)) return true;
     this._make(this.frames[i]);
     this._await(path);
     return false;
+  };
+
+  /** Whether the image of time ms can show at once (true off or out of
+      the range), without asking for anything. */
+  Overlay.prototype.isIn = function (ms) {
+    if (!this.on) return true;
+    var i = frameAt(this.frames, ms, this.gapMs, this._until());
+    return i < 0 || this._loaded(keyOf(this.frames[i]));
   };
 
   /** How far its images are: { done, total }, done those whose tiles are
@@ -266,15 +305,44 @@ var WidgetAnimRadar = (function () {
       their state before it); null off. */
   Overlay.prototype.progress = function () {
     if (!this.on) return null;
-    var self = this, a = this.adapter, done = 0;
-    var counted = a.frameCounted ? function (h) { return a.frameCounted(h); }
-      : a.frameLoaded ? function (h) { return a.frameLoaded(h); } : null;
-    this.frames.forEach(function (f) {
-      var e = self.layers[keyOf(f)];
+    // The image asked for only: the others are read ahead out of sight
+    // (glue-prefetch.js) and the bar does not wait for them.
+    var a = this.adapter, e = this.wanted ? this.layers[this.wanted] : null;
+    if (!e) return { done: 0, total: 0 };
+    var counted = a.frameCounted ? a.frameCounted(e.handle)
+      : a.frameLoaded ? a.frameLoaded(e.handle) : e.ready;
+    // Its tiles when the map tells them; one step until it knows any.
+    var t = a.frameTileCount ? a.frameTileCount(e.handle) : null;
+    if (t && t.total > 0) return { done: counted ? t.total : Math.min(t.done, t.total), total: t.total };
+    return { done: counted ? 1 : 0, total: 1 };
+  };
+
+  /** Each image switched on for the reading ahead: { url (its tile
+      address), handle, shown (the one asked for), shortLived (the last
+      observed image and the nowcast: the server keeps them 5 min) }. */
+  Overlay.prototype.prefetchFrames = function () {
+    if (!this.on) return [];
+    var self = this, lastPast = -1;
+    this.frames.forEach(function (f, i) { if (f.run == null) lastPast = i; });
+    var out = [];
+    this.frames.forEach(function (f, i) {
+      var key = keyOf(f), e = self.layers[key];
       if (!e) return;
-      if (counted ? counted(e.handle) : e.ready) done++;
+      out.push({ url: self.url(f), handle: e.handle, shown: key === (self.wanted || self.shown), shortLived: f.run != null || i === lastPast });
     });
-    return { done: done, total: this.frames.length };
+    return out;
+  };
+
+  var AHEAD = 2;               // images asked for ahead of the one shown
+  /** The AHEAD images after index i asked for (made visible, their tiles
+      drawn from the cache), so a play or a step finds them ready. */
+  Overlay.prototype._ahead = function (i) {
+    for (var k = 1; k <= AHEAD && i + k < this.frames.length; k++) {
+      var path = keyOf(this.frames[i + k]);
+      if (this._loaded(path)) continue;
+      this._make(this.frames[i + k]);
+      this._await(path);
+    }
   };
 
   Overlay.prototype._drop = function (path) {
@@ -412,14 +480,28 @@ var WidgetAnimRadar = (function () {
     return past && past.length ? past[past.length - 1].time * 1000 : null;
   }
 
-  /** The time "now" goes to (the back to now button, the 0 key). LibreWXR
-      draws the lightning only on the observed images of the last half
-      hour, and the step of now (on the hour, every 3 h) is mostly a
-      nowcast one: with lightning and the radar on, now is the last
-      observed image. o: { lightning, radar, nowStep, lastPast }. */
+  /** The time "now" goes to (the opening, the back to now button, the 0
+      key). The step of now is the 3-hour step nearest the clock, up to
+      1 h 30 ahead, often past the radar's last image: with the radar on,
+      now is its last observed image. o: { radar, nowStep, lastPast }. */
   function nowTime(o) {
-    if (o.lightning && o.radar && o.lastPast != null) return o.lastPast;
+    if (o.radar && o.lastPast != null) return o.lastPast;
     return o.nowStep;
+  }
+
+  var COVER_MAX_H = 6;         // hours added back at most (an old catalog)
+  /** The hours back for a range around the step of now (WidgetAnim.
+      frameTimes: steps of stepH hours, pastH back) so that it holds
+      lastPastMs, the radar's last observed image: pastH plus whole steps,
+      COVER_MAX_H at most. Unchanged without an image or on steps under
+      3 h (the radar's or satellite's own range). */
+  function pastToCover(pastH, stepH, nowMs, lastPastMs) {
+    if (lastPastMs == null || !(stepH >= 3)) return pastH;
+    var step = stepH * 3600e3, mid = Math.round(nowMs / step) * step;
+    var first = mid - Math.round(pastH * 3600e3 / step) * step;
+    if (lastPastMs >= first) return pastH;
+    var k = Math.ceil((first - lastPastMs) / step);
+    return pastH + Math.min(k * stepH, COVER_MAX_H);
   }
 
   /** The viewer gets the catalog pushed on LibreWXR's socket (/v2/ws) and
@@ -469,9 +551,9 @@ var WidgetAnimRadar = (function () {
 
   return {
     RADAR_GAP: RADAR_GAP, SAT_GAP: SAT_GAP, RADAR_SLOW: RADAR_SLOW,
-    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, tileSizes: tileSizes, slowFactor: slowFactor,
+    framesOf: framesOf, keyOf: keyOf, rangeOf: rangeOf, frameAt: frameAt, tileUrl: tileUrl, nativeZoom: nativeZoom, sharpEdges: sharpEdges, tileSizes: tileSizes, slowFactor: slowFactor,
     stepHours: stepHours, stepTime: stepTime, Overlay: Overlay, watchPush: watchPush,
-    lastPast: lastPast, nowTime: nowTime
+    lastPast: lastPast, nowTime: nowTime, pastToCover: pastToCover
   };
 })();
 

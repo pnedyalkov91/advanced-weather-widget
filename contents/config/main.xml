@@ -233,6 +233,8 @@
     <entry name="librewxrWindPalette"   type="String"><default></default></entry>
     <!-- Coasts and borders drawn over the temperature (MapLibre page), switched in the map's Options -->
     <entry name="librewxrMapLines"      type="Bool"><default>true</default></entry>
+    <!-- Their width, a factor on the one drawn by default (0.5 to 3) -->
+    <entry name="librewxrMapLinesWidth" type="Double"><default>1</default><min>0.5</min><max>3</max></entry>
     <!-- The Sun and the Moon drawn around the globe (MapLibre page), switched in the map's settings -->
     <entry name="librewxrGlobeSky"      type="Bool"><default>true</default></entry>
     <!-- Brightness of the lights of the towns on the night side (MapLibre page), percent; 0 for none -->
@@ -318,6 +320,18 @@
     <!-- Weather Map: the layers drawn with the global model alone, their
          "Regional models" option off (wind, temperature), JSON list of ids -->
     <entry name="weatherMapRegionalOff" type="String"><default>[]</default></entry>
+    <!-- Weather Map: the most its web profile's HTTP cache keeps on disk, in MB
+         (250 | 500 | 1024 | 2048). Read when the profile is made: a new size
+         applies at the next Plasma start. -->
+    <entry name="weatherMapCacheMB"     type="Int"><default>1024</default></entry>
+    <!-- The size the map's profile was made with in this Plasma session, in
+         MB; 0 until the map is made (main.qml sets it back at start) -->
+    <entry name="weatherMapCacheActiveMB" type="Int"><default>0</default></entry>
+    <!-- Weather Map: a request to empty that cache, the time it was asked
+         (ISO text), written by the settings at once; the map empties the
+         cache and writes the same text into weatherMapCacheClearDone. -->
+    <entry name="weatherMapCacheClearAt"   type="String"><default></default></entry>
+    <entry name="weatherMapCacheClearDone" type="String"><default></default></entry>
     <!-- "Keep the popup ready": build the Details / Forecast / History tabs in
          the background after startup and keep them loaded, so the popup opens
          instantly. Off by default (uses extra memory for the whole session). -->

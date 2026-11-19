@@ -1378,30 +1378,44 @@ test('Player.bounds with the loop: a step past an end goes round to the other', 
   assert.deepEqual(shown.slice(-1), [2.5]);
 });
 
-test('Player: waits for the radar image of the next picture, its time not counted, 3 s at most', () => {
-  let ok = false;
-  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, canShow: () => ok });
+test('Player: an image whose radar is not in is jumped over, the play keeps its pace', () => {
+  // Images at 0, 1 h, 2 h, 2.5 h; the radar of 1 h is not in, the one of 2 h is.
+  const stops = [0, 1 * H, 2 * H, 2.5 * H];
+  const inAt = { [1 * H]: false };
+  const asked = [];
+  const { p, shown, clock } = fakePlayer([true, true, true], {
+    stepMs: 3000, endPauseMs: 0, minFrameMs: 50, stops: () => stops,
+    canShow: (ms) => { asked.push(ms); return inAt[ms] !== false; },
+    isIn: (ms) => inAt[ms] !== false,
+  });
+  p.show(0);
+  p.play(true);
+  for (clock.t = 16; clock.t <= 1100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.667], 'straight to the 2 h image, no wait');
+  assert.ok(asked.includes(1 * H), 'the missing image is still asked for');
+  p.play(false);
+});
+
+test('Player: no image in further on, the play goes on all the same', () => {
+  const stops = [0, 1 * H, 2 * H];
+  const { p, shown, clock } = fakePlayer([true, true, true], {
+    stepMs: 3000, endPauseMs: 0, minFrameMs: 50, stops: () => stops,
+    canShow: () => false, isIn: () => false,
+  });
+  p.show(0);
+  p.play(true);
+  for (clock.t = 16; clock.t <= 1100; clock.t += 16) p._tick();
+  assert.deepEqual(shown, [0, 0.333], 'no wait: the image before stays on the map meanwhile');
+  p.play(false);
+});
+
+test('Player: drawn between frames, a radar image not in does not hold the play', () => {
+  const { p, shown, clock } = fakePlayer([true, true, true], { stepMs: 1000, endPauseMs: 0, minFrameMs: 100, canShow: () => false });
   p.show(0);
   p.play(true);
   clock.t = 500;
   p._tick();
-  assert.deepEqual(shown, [0]);                      // the radar image is not in
-  clock.t = 1500;
-  p._tick();
-  assert.deepEqual(shown, [0]);
-  ok = true;
-  clock.t = 1600;
-  p._tick();
-  assert.deepEqual(shown, [0, 0.5]);                 // from where it stopped, not 1.6 frames on
-  ok = false;
-  clock.t = 1800;
-  p._tick();
-  clock.t = 4700;
-  p._tick();
-  assert.equal(shown.length, 2);
-  clock.t = 5000;
-  p._tick();
-  assert.equal(shown.length, 3, 'given up after 3 s');
+  assert.deepEqual(shown, [0, 0.5]);
   p.play(false);
 });
 

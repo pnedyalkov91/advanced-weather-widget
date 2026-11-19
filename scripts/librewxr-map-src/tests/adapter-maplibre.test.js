@@ -731,7 +731,26 @@ test('the lines are thicker on the whole globe, where they are dense and small',
   assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
 });
 
-test('a light edge right under the dark lines, so they still show over the night', async () => {
+test('the lines width: a factor on the whole curve, halo too, drawn lines and new ones', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const at6 = (id) => widthAt(map.getLayer(id).paint['line-width'], 6);
+  adapter.setLinesWidth(2);
+  assert.ok(Math.abs(at6('lv-lines') - 2.4) < 1e-9);
+  // The halo follows the line, its margin stays the same.
+  assert.ok(Math.abs(at6('lv-lines-halo') - 3.4) < 1e-9);
+  // Out of range: kept within 0.5 and 3.
+  adapter.setLinesWidth(10);
+  assert.ok(Math.abs(at6('lv-lines') - 3.6) < 1e-9);
+  // From the page's address at start, before the lines exist.
+  const b = loadAdapter(Object.assign(linesGlobals([]), { LINES_WIDTH_INIT: '1.5' }));
+  b.adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.ok(Math.abs(widthAt(b.map.getLayer('lv-lines').paint['line-width'], 6) - 1.8) < 1e-9);
+});
+
+test('a thin light halo under the dark lines, so they still show over the night', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   adapter.setLines('pressure', true);
   await tick(); await tick();
@@ -740,9 +759,11 @@ test('a light edge right under the dark lines, so they still show over the night
   assert.equal(halo.type, 'line');
   assert.equal(halo.source, 'lv-lines-src', 'the same lines');
   for (const z of [0, 1, 2, 4, 6, 10]) {
-    assert.ok(widthAt(halo.paint['line-width'], z) > widthAt(line.paint['line-width'], z) + 1, 'wider at zoom ' + z);
+    assert.ok(Math.abs(widthAt(halo.paint['line-width'], z) - widthAt(line.paint['line-width'], z) - 1) < 1e-9, '0.5 px each side at zoom ' + z);
   }
   assert.match(halo.paint['line-color'], /^rgba\(2\d\d, 2\d\d, 2\d\d, 0\.\d+\)$/, 'light, see-through');
+  assert.equal(halo.paint['line-blur'], 1, 'soft');
+  assert.match(line.paint['line-color'], /^rgba\(20, 20, 20, /, 'the line stays dark');
   adapter.setLines('pressure', false);
   assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'none', 'hidden with the lines');
   adapter.setLines('pressure', true);

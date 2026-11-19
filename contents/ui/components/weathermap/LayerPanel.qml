@@ -586,6 +586,18 @@ Rectangle {
                                 checked = Qt.binding(function () { return panel.map.mapLinesOn; });
                             }
                         }
+                        // Their width, a factor on the one drawn by default.
+                        SliderSetting {
+                            title: i18n("Coasts and borders width")
+                            valueText: i18nc("coasts and borders width, as a multiple", "×%1", Number(value).toLocaleString(Qt.locale(), "f", value % 1 ? (value * 4 % 2 ? 2 : 1) : 0))
+                            enabled: panel.map.mapLinesOn
+                            opacity: enabled ? 1 : 0.5
+                            from: 0.5
+                            to: 3
+                            stepSize: 0.25
+                            value: panel.map.mapLinesWidth
+                            onMoved: function (v, done) { panel.map.setMapLinesWidth(v, done); }
+                        }
                         // The stars, the Sun and the Moon around the globe, together.
                         MapSwitch {
                             own: panel.map.ownControls

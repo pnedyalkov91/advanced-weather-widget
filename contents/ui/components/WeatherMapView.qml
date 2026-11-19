@@ -303,9 +303,16 @@ Item {
     }
 
     // The map's own storage, see MapWebProfile.qml; no item where it cannot load.
+    // The cache size goes in as an initial property: the prototype's
+    // properties are read once, when its component completes.
     Loader {
         id: mapProfileLoader
-        source: "MapWebProfile.qml"
+        Component.onCompleted: {
+            var mb = [250, 500, 1024, 2048].indexOf(Plasmoid.configuration.weatherMapCacheMB) >= 0 ? Plasmoid.configuration.weatherMapCacheMB : 1024;
+            setSource("MapWebProfile.qml", {
+                httpCacheMaximumSize: mb * 1024 * 1024
+            });
+        }
         onLoaded: radarRoot._applyMapProfile()
     }
 
@@ -322,7 +329,62 @@ Item {
             return;
         webView.profile = p;
         _mapProfileSet = true;
-        Dbg.log("Weather Map", "map profile:", p.storageName);
+        Dbg.log("Weather Map", "map profile:", p.storageName, "cache max MB:", p.httpCacheMaximumSize / 1048576);
+        // The size in force until Plasma restarts, for the settings.
+        Plasmoid.configuration.weatherMapCacheActiveMB = Math.round(p.httpCacheMaximumSize / 1048576);
+        // A request left from the settings is handled before the first page.
+        _clearCacheIfAsked();
+    }
+
+    // Emptying the cache, asked from the settings (weatherMapCacheClearAt).
+    // Only the view that holds the profile can do it: the settings cannot
+    // open a second profile on the same storage. Done once per request,
+    // weatherMapCacheClearDone keeps the last one handled across restarts.
+    readonly property string _cacheClearAsked: Plasmoid.configuration.weatherMapCacheClearAt || ""
+    on_CacheClearAskedChanged: _clearCacheIfAsked()
+    property bool _cacheClearing: false
+    property bool _loadAfterClear: false
+    property string _cacheClearRequest: ""
+    function _clearCacheIfAsked() {
+        var asked = radarRoot._cacheClearAsked;
+        if (!asked || asked === (Plasmoid.configuration.weatherMapCacheClearDone || "") || radarRoot._cacheClearing || !radarRoot._mapProfileSet)
+            return;
+        radarRoot._cacheClearing = true;
+        radarRoot._cacheClearRequest = asked;
+        Dbg.log("Weather Map", "emptying the map cache, asked at", asked, "; page loaded:", radarRoot._lastPageUrl !== "");
+        cacheClearGuard.restart();
+        webView.profile.clearHttpCache();
+    }
+    // Should the end never be signalled, the map must not wait for it.
+    Timer {
+        id: cacheClearGuard
+        interval: 15000
+        onTriggered: {
+            Dbg.warn("Weather Map", "no end signalled for the cache emptying after 15 s");
+            radarRoot._cacheEmptied();
+        }
+    }
+    Connections {
+        target: radarRoot._mapProfileSet ? webView.profile : null
+        function onClearHttpCacheCompleted() {
+            radarRoot._cacheEmptied();
+        }
+    }
+    function _cacheEmptied() {
+        cacheClearGuard.stop();
+        if (!radarRoot._cacheClearing)
+            return;
+        radarRoot._cacheClearing = false;
+        Plasmoid.configuration.weatherMapCacheClearDone = radarRoot._cacheClearRequest;
+        Dbg.log("Weather Map", "map cache emptied");
+        // A page already open keeps tiles in memory that are gone from the
+        // disk: load it again. A first load held back runs now.
+        var reload = radarRoot._lastPageUrl !== "" || radarRoot._loadAfterClear;
+        radarRoot._loadAfterClear = false;
+        if (reload)
+            radarRoot._loadPage("cache emptied");
+        // Asked again while this one ran.
+        radarRoot._clearCacheIfAsked();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -473,6 +535,14 @@ Item {
     function setMapLines(on) {
         Plasmoid.configuration.librewxrMapLines = on;
         call("setMapLines", on);
+    }
+    // Their width, a factor on the one drawn by default (0.5 to 3).
+    property real mapLinesWidth: Plasmoid.configuration.librewxrMapLinesWidth > 0 ? Plasmoid.configuration.librewxrMapLinesWidth : 1
+    function setMapLinesWidth(v, save) {
+        mapLinesWidth = v;
+        call("setMapLinesWidth", v);
+        if (save)
+            Plasmoid.configuration.librewxrMapLinesWidth = v;
     }
     function setLoadBox(on) { Plasmoid.configuration.weatherMapLoadBox = on; }
     function setGlobeSky(on) {
@@ -1171,7 +1241,7 @@ Item {
             ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
             ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
             ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
-            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["lineswidth", mapLinesWidth], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow],
             ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
             ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
             ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],
@@ -1186,6 +1256,13 @@ Item {
     property string _lastPageUrl: ""
 
     function _loadPage(reason) {
+        // No navigation while the cache empties (QtWebEngine's rule): the
+        // load runs when it is done.
+        if (radarRoot._cacheClearing) {
+            radarRoot._loadAfterClear = true;
+            Dbg.log("Weather Map", "page load (" + reason + ") held until the cache is emptied");
+            return;
+        }
         var url = _pageUrl();
         // The coalesced timer only follows changes of the page parameters.
         // Opening the tab also asks for a load (FullView -> reload()) within
@@ -1358,8 +1435,8 @@ Item {
     function zoomBy(d) {
         call("animZoom", d);
     }
-    // Back to now: the step of now, or the last observed radar image with
-    // lightning on (window.animShowNow).
+    // Back to now: the step of now, or with the radar on its last observed
+    // image (window.animShowNow).
     function showNow() {
         if (count <= 0)
             return;
