@@ -731,13 +731,15 @@ test('the lines are thicker on the whole globe, where they are dense and small',
   assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
 });
 
-test('the lines width: a factor on the whole curve, drawn lines and new ones', async () => {
+test('the lines width: a factor on the whole curve, halo too, drawn lines and new ones', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   adapter.setLines('pressure', true);
   await tick(); await tick();
   const at6 = (id) => widthAt(map.getLayer(id).paint['line-width'], 6);
+  const halo6 = at6('lv-lines-halo');
   adapter.setLinesWidth(2);
   assert.ok(Math.abs(at6('lv-lines') - 2.4) < 1e-9);
+  assert.ok(Math.abs(at6('lv-lines-halo') - 2 * halo6) < 1e-9);
   // Out of range: kept within 0.5 and 3.
   adapter.setLinesWidth(10);
   assert.ok(Math.abs(at6('lv-lines') - 3.6) < 1e-9);
@@ -748,19 +750,25 @@ test('the lines width: a factor on the whole curve, drawn lines and new ones', a
   assert.ok(Math.abs(widthAt(b.map.getLayer('lv-lines').paint['line-width'], 6) - 1.8) < 1e-9);
 });
 
-test('white lines, one layer, no edge under them', async () => {
+test('a sharp white edge under the dark lines, as wide as the line on each side', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   adapter.setLines('pressure', true);
   await tick(); await tick();
-  const line = map.getLayer('lv-lines');
-  assert.match(line.paint['line-color'], /^rgba\(255, 255, 255, 0\.\d+\)$/, 'white, see-through');
-  assert.equal(line.paint['line-blur'], undefined, 'sharp');
-  assert.equal(map.getLayer('lv-lines-halo'), undefined);
-  assert.equal(ids(map).filter((id) => /^lv-lines/.test(id)).length, 1);
+  const order = ids(map), halo = map.getLayer('lv-lines-halo'), line = map.getLayer('lv-lines');
+  assert.equal(order.indexOf('lv-lines-halo') + 1, order.indexOf('lv-lines'), 'right under the lines: ' + order.join());
+  assert.equal(halo.type, 'line');
+  assert.equal(halo.source, 'lv-lines-src', 'the same lines');
+  for (const z of [0, 1, 2, 4, 6, 10]) {
+    assert.ok(Math.abs(widthAt(halo.paint['line-width'], z) - 3 * widthAt(line.paint['line-width'], z)) < 1e-9, '3 times the line at zoom ' + z);
+  }
+  assert.match(halo.paint['line-color'], /^rgba\(255, 255, 255, 0\.\d+\)$/, 'white');
+  assert.equal(halo.paint['line-blur'], undefined, 'sharp');
+  assert.match(line.paint['line-color'], /^rgba\(20, 20, 20, /, 'the line stays dark');
   adapter.setLines('pressure', false);
-  assert.equal(map.getLayer('lv-lines').layout.visibility, 'none', 'hidden');
+  assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'none', 'hidden with the lines');
   adapter.setLines('pressure', true);
-  assert.equal(map.getLayer('lv-lines').layout.visibility, 'visible');
+  assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'visible');
+  assert.equal(ids(map).filter((id) => id === 'lv-lines-halo').length, 1, 'made once');
 });
 
 test('a layer that asks for the lines before the style loads gets them once it has', async () => {
@@ -917,7 +925,9 @@ test('a base map change puts the lines back over the temperature', async () => {
   for (const id in map.loadedStyle.sources) map.addSource(id, map.loadedStyle.sources[id]);
   map.fire('style.load');
   const order = ids(map);
-  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 1);
+  // The light edge of the lines, then the lines.
+  assert.equal(order.indexOf('lv-lines-halo'), order.indexOf('lv-temp') + 1);
+  assert.equal(order.indexOf('lv-lines'), order.indexOf('lv-temp') + 2);
   assert.equal(map.getSource('lv-lines-src').data, LINES);
 });
 
@@ -929,7 +939,7 @@ test('lines switched off: none drawn, even wanted; back on, they come back', asy
   assert.equal(linesVisible(map), false);
   adapter.setLinesShown(true);
   assert.ok(linesVisible(map));
-  assert.equal(ids(map).indexOf('lv-lines'), ids(map).indexOf('lv-temp') + 1, 'right over the temperature');
+  assert.equal(ids(map).indexOf('lv-lines'), ids(map).indexOf('lv-temp') + 2, 'over their light edge');
 });
 
 test('the widget can open the page with the lines off, and nothing is fetched', async () => {
