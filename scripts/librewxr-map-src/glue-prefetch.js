@@ -66,7 +66,8 @@ var WidgetPrefetch = (function () {
         2. a ring of one tile around it, the shown image first;
         3. the level in, over the view (past an image's maxZoom the map
            stretches its tiles: nothing to read);
-        4. the level out, over the view and its ring. */
+        4. the level out, over the view and its ring.
+      o.around false: step 1 alone, what the animation needs to play. */
   function plan(o) {
     var out = [], seen = {};
     function add(f, tiles) {
@@ -86,6 +87,7 @@ var WidgetPrefetch = (function () {
       if (f.shown) tilesFor(o.box, levelOf(f, o.z), 0).forEach(function (t) { seen[urlFor(f.urls, t)] = true; });
     });
     o.frames.forEach(function (f) { if (!f.shown) add(f, tilesFor(o.box, levelOf(f, o.z), 0)); });
+    if (o.around === false) return out;
     lasting.forEach(function (f) { add(f, tilesFor(o.box, levelOf(f, o.z), 1)); });
     lasting.forEach(function (f) {
       if (o.z + 1 <= f.maxZoom) add(f, tilesFor(o.box, o.z + 1, 0));

@@ -75,6 +75,18 @@ test('plan: no level in past the last level, nothing twice at the cap', () => {
   assert.equal(new Set(at11).size, at11.length);
 });
 
+test('plan: around false, the view of the other images only', () => {
+  const box = [4.5, 45.5, 5.0, 46.0];
+  const frames = [
+    { urls: tpl('a'), maxZoom: 9, shown: false },
+    { urls: tpl('b'), maxZoom: 9, shown: true },
+    { urls: tpl('n'), maxZoom: 9, shown: false, shortLived: true }
+  ];
+  assert.deepEqual(P.plan({ box, z: 6, frames, around: false }), ['http://h/a/6/32/22', 'http://h/n/6/32/22']);
+  // Left out, it reads around as before.
+  assert.ok(P.plan({ box, z: 6, frames }).includes('http://h/a/6/31/21'));
+});
+
 test('plan: images the server keeps 5 min only get their view, nothing around', () => {
   const box = [4.5, 45.5, 5.0, 46.0];
   const frames = [{ urls: tpl('n'), maxZoom: 9, shown: false, shortLived: true }];

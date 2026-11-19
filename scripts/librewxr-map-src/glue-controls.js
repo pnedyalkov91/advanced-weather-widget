@@ -1326,9 +1326,19 @@ window.animSetSatellite = function (on) {
 // other images, of a ring around the view and of the levels in and out are
 // read into the browser's cache, PREFETCH_PARALLEL at a time; a move stops
 // the reading, its end starts it again from the new view.
+// The ring and the levels in and out serve moves and zooms only: they are
+// read once the user has moved or zoomed the map, not for a map only
+// watched (they were 3 to 5 times the tiles the animation needs).
 var PREFETCH_PARALLEL = 3;
 var PREFETCH_MAX_VIEW = 150;   // tiles in view past which nothing is read ahead (the globe far out)
 var animPrefetchQ = null, animPrefetchHooked = false, animPrefetchTimer = null;
+var animPrefetchAround = false;
+/** The user moved or zoomed the map: read around the view from now on. */
+function animPrefetchUserMoved() {
+  if (animPrefetchAround) return;
+  animPrefetchAround = true;
+  console.log('[librewxr] reading ahead: around the view too, the map was moved');
+}
 
 function animPrefetchSoon() {
   if (typeof WidgetPrefetch === 'undefined' || !animOverlays || !_widgetAdapter.prefetchView) return;
@@ -1344,7 +1354,14 @@ function animPrefetchSoon() {
     animPrefetchHooked = true;
     // The popup opened: read ahead from its view; closed: stop.
     document.addEventListener('visibilitychange', animPrefetchSoon);
-    _widgetAdapter.onMoveStart(function () { clearTimeout(animPrefetchTimer); animPrefetchQ.stop(); });
+    _widgetAdapter.onMoveStart(function (e) {
+      // MapLibre's own handlers (drag, wheel, keys, buttons) give the
+      // event that started the move; the code's moves (a new place, a
+      // resize) give none.
+      if (e && e.originalEvent) animPrefetchUserMoved();
+      clearTimeout(animPrefetchTimer);
+      animPrefetchQ.stop();
+    });
     _widgetAdapter.onSettled(animPrefetchSoon);
   }
   // Not behind a closed popup: no one looks, and the map has no size.
@@ -1368,7 +1385,7 @@ function animPrefetchRun() {
     if (!frames.length) return;
     var view = _widgetAdapter.prefetchView(frames[0].tileSize);
     if (!view || WidgetPrefetch.tilesFor(view.box, Math.min(view.z, frames[0].maxZoom), 0).length > PREFETCH_MAX_VIEW) return;
-    list = list.concat(WidgetPrefetch.plan({ box: view.box, z: view.z, frames: frames }));
+    list = list.concat(WidgetPrefetch.plan({ box: view.box, z: view.z, frames: frames, around: animPrefetchAround }));
   });
   if (!list.length) return;
   var t0 = Date.now();
@@ -1581,7 +1598,9 @@ var ANIM_LAYER_KEYS = { R: 'radar', S: 'satellite', V: 'wind', T: 'temperature',
 // Ctrl and + or -, from the widget: the map zooms as with its buttons.
 window.animZoom = function (d) {
   var m = _widgetAdapter ? _widgetAdapter.getMap() : null;
-  if (m) { if (d > 0) m.zoomIn(); else m.zoomOut(); }
+  if (!m) return;
+  animPrefetchUserMoved();
+  if (d > 0) m.zoomIn(); else m.zoomOut();
 };
 window.animKeyFor = function (e) {
   if (!anim) return null;   // no animation (the Leaflet page): the map keeps its keys
