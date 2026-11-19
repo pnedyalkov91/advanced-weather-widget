@@ -730,7 +730,12 @@ GridLayout {
     // cache, see MapWebProfile.qml), LibreWXR only.
     readonly property bool cacheShown: radarTab.configRoot.cfg_radarEnabled && radarTab.configRoot.cfg_radarProvider === "librewxr"
     readonly property var cacheSizes: [250, 500, 1024, 2048]
-    readonly property real cacheMaxBytes: radarTab.configRoot.cfg_weatherMapCacheMB * 1048576
+    // The size in force: the one the map's profile was made with in this
+    // Plasma session, else (no map yet) the one chosen. The alert and the
+    // space used go by it; a new choice waits for the next Plasma start.
+    readonly property int cacheActiveMB: Plasmoid.configuration.weatherMapCacheActiveMB || 0
+    readonly property real cacheMaxBytes: (radarTab.cacheActiveMB > 0 ? radarTab.cacheActiveMB : radarTab.configRoot.cfg_weatherMapCacheMB) * 1048576
+    readonly property bool cacheSizeWaits: radarTab.cacheActiveMB > 0 && radarTab.cacheActiveMB !== radarTab.configRoot.cfg_weatherMapCacheMB
     /** "" | "asked" (sent, no answer yet) | "done" (the map emptied it) |
         "waiting" (no map to empty it yet: done when it next opens) */
     property string cacheClearState: ""
@@ -812,6 +817,12 @@ GridLayout {
             wrapMode: Text.WordWrap
             opacity: 0.7
             text: i18n("Map tiles already seen stay on disk, so they are not downloaded a second time. A new size applies the next time Plasma starts.")
+        }
+        Label {
+            Layout.fillWidth: true
+            visible: radarTab.cacheSizeWaits
+            wrapMode: Text.WordWrap
+            text: i18nc("the cache size in force until Plasma restarts", "In force until then: %1.", radarTab.sizeText(radarTab.cacheMaxBytes))
         }
     }
 

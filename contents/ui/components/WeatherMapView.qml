@@ -330,6 +330,8 @@ Item {
         webView.profile = p;
         _mapProfileSet = true;
         Dbg.log("Weather Map", "map profile:", p.storageName, "cache max MB:", p.httpCacheMaximumSize / 1048576);
+        // The size in force until Plasma restarts, for the settings.
+        Plasmoid.configuration.weatherMapCacheActiveMB = Math.round(p.httpCacheMaximumSize / 1048576);
         // A request left from the settings is handled before the first page.
         _clearCacheIfAsked();
     }

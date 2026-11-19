@@ -4302,6 +4302,10 @@ PlasmoidItem {
         // FIRST thing: turn debug output on (if enabled) so start-up is traced
         Dbg.mark("Startup", "main.qml root created", "Plasma has built the widget and is now running Component.onCompleted");
         _syncDebugMode("setting 'Debug mode' is on");
+        // No map profile yet in this Plasma session: the settings show the
+        // chosen cache size until the map (made later, its tab opened or
+        // prepared on a timer) writes the size it really has.
+        Plasmoid.configuration.weatherMapCacheActiveMB = 0;
         // Re-check in case the initial property binding ran before
         // containment was fully wired up.
         if (!inTray) {
