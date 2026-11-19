@@ -731,6 +731,25 @@ test('the lines are thicker on the whole globe, where they are dense and small',
   assert.ok(Math.abs(widthAt(width, 10) - 1.8) < 1e-9);
 });
 
+test('the lines width: a factor on the whole curve, halo too, drawn lines and new ones', async () => {
+  const { adapter, map } = loadAdapter(linesGlobals([]));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const at6 = (id) => widthAt(map.getLayer(id).paint['line-width'], 6);
+  const halo6 = at6('lv-lines-halo');
+  adapter.setLinesWidth(2);
+  assert.ok(Math.abs(at6('lv-lines') - 2.4) < 1e-9);
+  assert.ok(Math.abs(at6('lv-lines-halo') - 2 * halo6) < 1e-9);
+  // Out of range: kept within 0.5 and 3.
+  adapter.setLinesWidth(10);
+  assert.ok(Math.abs(at6('lv-lines') - 3.6) < 1e-9);
+  // From the page's address at start, before the lines exist.
+  const b = loadAdapter(Object.assign(linesGlobals([]), { LINES_WIDTH_INIT: '1.5' }));
+  b.adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.ok(Math.abs(widthAt(b.map.getLayer('lv-lines').paint['line-width'], 6) - 1.8) < 1e-9);
+});
+
 test('a light edge right under the dark lines, so they still show over the night', async () => {
   const { adapter, map } = loadAdapter(linesGlobals([]));
   adapter.setLines('pressure', true);

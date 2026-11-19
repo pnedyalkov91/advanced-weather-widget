@@ -301,6 +301,10 @@ window.setLayerOrder = function (order) {
 window.setMapLines = function (on) {
   if (_widgetAdapter.setLinesShown) _widgetAdapter.setLinesShown(!!on);
 };
+// Their width, a factor on the one drawn by default.
+window.setMapLinesWidth = function (f) {
+  if (_widgetAdapter.setLinesWidth) _widgetAdapter.setLinesWidth(f);
+};
 
 // The stars, the Sun and the Moon around the globe, from the widget's setting.
 window.setGlobeSky = function (on) {

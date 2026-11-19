@@ -417,9 +417,16 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // time bar.
   var LINES_HALO = 'lv-lines-halo';
   var LINES_WIDTH = [0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8];
+  var LINES_HALO_EXTRA = 1.6;
+  /** The user's factor on the whole width curve, 0.5 to 3 (1 as drawn). */
+  function linesScaleOf(v) {
+    var f = parseFloat(v);
+    return isFinite(f) && f > 0 ? Math.max(0.5, Math.min(3, f)) : 1;
+  }
+  var linesScale = linesScaleOf(typeof LINES_WIDTH_INIT === 'undefined' ? null : LINES_WIDTH_INIT);
   function linesWidth(extra) {
     var e = ['interpolate', ['linear'], ['zoom']];
-    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], LINES_WIDTH[i + 1] + extra);
+    for (var i = 0; i < LINES_WIDTH.length; i += 2) e.push(LINES_WIDTH[i], (LINES_WIDTH[i + 1] + extra) * linesScale);
     return e;
   }
   var linesOwners = {}, linesData = null, linesLoading = false;
@@ -455,7 +462,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       addLayer({
         id: LINES_HALO, type: 'line', source: LINES_SOURCE,
         layout: { 'line-join': 'round', visibility: 'visible' },
-        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(1.6), 'line-blur': 1 }
+        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(LINES_HALO_EXTRA), 'line-blur': 1 }
       });
     } else map.setLayoutProperty(LINES_HALO, 'visibility', 'visible');
     if (map.getLayer(LINES_LAYER)) {
@@ -1572,6 +1579,13 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (!swapInProgress) applyLines();
     },
     getLinesShown: function () { return linesShown; },
+    /** The lines' width, a factor on their own (0.5 to 3). */
+    setLinesWidth: function (f) {
+      linesScale = linesScaleOf(f);
+      if (!map) return;
+      if (map.getLayer(LINES_HALO)) map.setPaintProperty(LINES_HALO, 'line-width', linesWidth(LINES_HALO_EXTRA));
+      if (map.getLayer(LINES_LAYER)) map.setPaintProperty(LINES_LAYER, 'line-width', linesWidth(0));
+    },
     /** The layer a weather layer of id goes right under, to be at its
         place in the stack (map.addLayer(layer, beforeFor(layer.id))). */
     beforeFor: beforeFor,
