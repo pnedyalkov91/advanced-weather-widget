@@ -2409,7 +2409,7 @@ Item {
                                         var d = new Date(iso);
                                         if (isNaN(d.getTime()))
                                             return "";
-                                        return root.weatherRoot ? root.weatherRoot.formatDateObj(d, true) : Qt.formatDate(d, "MMM d");
+                                        return root.weatherRoot ? root.weatherRoot.formatDateObj(d, false) : Qt.formatDate(d, "MMM d");
                                     }
                                     function alertDateRange(a) {
                                         var from = formatAlertDate(a.onset);
@@ -2422,7 +2422,7 @@ Item {
                                             return to;
                                         return "";
                                     }
-                                    // "Nov 19, 08:00 \u2013 20:00" (same day) or "Nov 19, 08:00 \u2013 Nov 20, 12:00"
+                                    // Uses the selected date and time formats for both endpoints.
                                     function alertTimeRange(a) {
                                         if (!a)
                                             return "";
@@ -2434,7 +2434,7 @@ Item {
                                             t = null;
                                         var wr = root.weatherRoot;
                                         function dt(d) {
-                                            return wr ? (wr.formatDateObj(d, true) + ", " + wr.formatTimeObj(d)) : Qt.formatDateTime(d, "MMM d, hh:mm");
+                                            return wr ? (wr.formatDateObj(d, false) + ", " + wr.formatTimeObj(d)) : Qt.formatDateTime(d, "MMM d, hh:mm");
                                         }
                                         function tm(d) {
                                             return wr ? wr.formatTimeObj(d) : Qt.formatTime(d, "hh:mm");
@@ -2453,7 +2453,7 @@ Item {
                                         var d = new Date(iso);
                                         if (isNaN(d.getTime()))
                                             return "";
-                                        return root.weatherRoot ? (root.weatherRoot.formatDateObj(d, true) + ", " + root.weatherRoot.formatTimeObj(d)) : Qt.formatDateTime(d, "MMM d, hh:mm");
+                                        return root.weatherRoot ? (root.weatherRoot.formatDateObj(d, false) + ", " + root.weatherRoot.formatTimeObj(d)) : Qt.formatDateTime(d, "MMM d, hh:mm");
                                     }
                                     function alertTooltipTitle(a) {
                                         var town = (Plasmoid.configuration.locationName || "").split(",")[0].trim();
