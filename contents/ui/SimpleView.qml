@@ -784,12 +784,12 @@ ColumnLayout {
                         {
                             key: "maxC",
                             color: "#ff6e40",
-                            label: i18n("High")
+                            label: i18nc("@label chart legend", "High")
                         },
                         {
                             key: "minC",
                             color: "#42a5f5",
-                            label: i18n("Low")
+                            label: i18nc("@label chart legend", "Low")
                         }
                     ];
                 });
