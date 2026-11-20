@@ -59,7 +59,7 @@ ColumnLayout {
     readonly property string _svTemp:      weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
     readonly property string _svCond:      weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
     readonly property string _svFeels:     weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
-    readonly property var    _svCondIcon:  weatherRoot ? resolveConditionIconFn(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
+    readonly property var    _svCondIcon:  weatherRoot ? resolveConditionIconFn(weatherRoot.weatherCode, weatherRoot.isNightTime(), 128) : null
     readonly property int    forecastDays: Plasmoid.configuration.forecastDays || 5
     readonly property bool   showToday:    Plasmoid.configuration.forecastShowToday !== false
 
