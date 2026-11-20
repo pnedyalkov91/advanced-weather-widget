@@ -14,7 +14,7 @@
  * icon theme picked for the map (cfg weatherMapIconTheme).
  *
  * "weathermap" keeps the map's own drawings (contents/icons/weathermap/);
- * the bundled themes take a wi-* file of contents/icons/<theme>/<size>/;
+ * the bundled themes take a wi-* file of contents/icons/<theme>/;
  * "kde" takes an icon of the Plasma icon theme.
  *
  * .pragma library - no Qt globals, pure JS.
@@ -37,7 +37,7 @@ var _own = {
     airquality:    { file: "weathermap/qualite-air-glyph.svg", mask: true },
     snow:          { file: "weathermap/radar/neige.svg", mask: false },
     lightning:     { file: "weathermap/radar/eclairs.svg", mask: false },
-    cells:         { file: "flat-color/22/wi-thunderstorm.svg", mask: false },
+    cells:         { file: "flat-color/wi-thunderstorm.svg", mask: false },
     arrows:        { file: "weathermap/radar/fleches-vent.svg", mask: false },
     alerts:        { file: "weathermap/radar/alertes.svg", mask: false }
 };
@@ -101,15 +101,6 @@ var _scale = {
 
 var THEMES = ["weathermap", "symbolic", "flat-color", "3d-oxygen", "meteocons", "kde"];
 
-// Folder size for a drawn size: the smallest one at least as big.
-function _sizeDir(px) {
-    var sizes = [16, 22, 24, 32];
-    for (var i = 0; i < sizes.length; ++i)
-        if (sizes[i] >= px)
-            return sizes[i];
-    return 32;
-}
-
 /**
  * Icon of a map layer or radar option.
  * Returns { source, fallback, mask, scale }: source is a URL or, for "kde", an icon
@@ -118,7 +109,7 @@ function _sizeDir(px) {
  *
  * @param {string} key       - layer or option key (radar, wind, snow, cells…)
  * @param {string} theme     - one of THEMES
- * @param {real}   px        - drawn size
+ * @param {real}   px        - drawn size (unused: the artwork is vector, one file per icon)
  * @param {string} iconsBase - resolved URL of contents/icons/ (ends with "/")
  */
 function resolve(key, theme, px, iconsBase) {
@@ -144,7 +135,7 @@ function resolve(key, theme, px, iconsBase) {
         }
     }
     return {
-        source: iconsBase + theme + "/" + _sizeDir(px) + "/wi-" + stem + ".svg",
+        source: iconsBase + theme + "/wi-" + stem + ".svg",
         fallback: "",
         mask: theme === "symbolic",
         scale: _scale[stem] || 1

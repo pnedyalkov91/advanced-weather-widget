@@ -186,8 +186,7 @@ ColumnLayout {
                                         var th = configRoot.cfg_panelIconTheme;
                                         if (!th || th === "wi-font" || th === "kde" || th === "custom")
                                             return "";
-                                        var sz = configRoot.cfg_panelIconSize || 22;
-                                        var b = configRoot.iconsBase + th + "/" + sz + "/wi-";
+                                        var b = configRoot.iconsBase + th + "/wi-";
                                         var id = model.itemId;
                                         if (id === "temperature" || id === "feelslike")
                                             return b + "thermometer.svg";
@@ -272,8 +271,7 @@ ColumnLayout {
                                             }
                                             if (th === "kde" || th === "wi-font")
                                                 return "weather-sunrise";
-                                            var sz = configRoot.cfg_panelIconSize || 22;
-                                            return configRoot.iconsBase + th + "/" + sz + "/wi-sunrise.svg";
+                                            return configRoot.iconsBase + th + "/wi-sunrise.svg";
                                         }
                                         isMask: configRoot.cfg_panelIconTheme === "symbolic"
                                         color: Kirigami.Theme.textColor
@@ -306,8 +304,7 @@ ColumnLayout {
                                             }
                                             if (th === "kde" || th === "wi-font")
                                                 return "weather-sunset";
-                                            var sz = configRoot.cfg_panelIconSize || 22;
-                                            return configRoot.iconsBase + th + "/" + sz + "/wi-sunset.svg";
+                                            return configRoot.iconsBase + th + "/wi-sunset.svg";
                                         }
                                         isMask: configRoot.cfg_panelIconTheme === "symbolic"
                                         color: Kirigami.Theme.textColor
@@ -342,8 +339,7 @@ ColumnLayout {
                                             }
                                             if (th === "kde" || th === "wi-font")
                                                 return "weather-clear-night";
-                                            var sz = configRoot.cfg_panelIconSize || 22;
-                                            return configRoot.iconsBase + th + "/" + sz + "/wi-moonrise.svg";
+                                            return configRoot.iconsBase + th + "/wi-moonrise.svg";
                                         }
                                         isMask: configRoot.cfg_panelIconTheme === "symbolic"
                                         color: Kirigami.Theme.textColor
@@ -376,8 +372,7 @@ ColumnLayout {
                                             }
                                             if (th === "kde" || th === "wi-font")
                                                 return "weather-clear-night";
-                                            var sz = configRoot.cfg_panelIconSize || 22;
-                                            return configRoot.iconsBase + th + "/" + sz + "/wi-moonset.svg";
+                                            return configRoot.iconsBase + th + "/wi-moonset.svg";
                                         }
                                         isMask: configRoot.cfg_panelIconTheme === "symbolic"
                                         color: Kirigami.Theme.textColor

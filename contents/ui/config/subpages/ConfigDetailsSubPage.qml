@@ -218,7 +218,7 @@ ColumnLayout {
                                         var th = configRoot.cfg_widgetIconTheme;
                                         if (!th || th === "wi-font" || th === "kde")
                                             return "";
-                                        var b = configRoot.iconsBase + th + "/16/wi-";
+                                        var b = configRoot.iconsBase + th + "/wi-";
                                         var id = model.itemId;
                                         if (id === "feelslike" || id === "dewpoint")
                                             return b + "thermometer.svg";

@@ -3262,7 +3262,7 @@ Item {
                                         //         var stem = suntimesCard._isNight ? "sunset" : "sunrise";
                                         //         return root.svgBase.length > 0
                                         //             ? (root.svgBase + stem + ".svg")
-                                        //             : Qt.resolvedUrl("../icons/symbolic/32/wi-" + stem + ".svg");
+                                        //             : Qt.resolvedUrl("../icons/symbolic/wi-" + stem + ".svg");
                                         //     }
                                         //     isMask: true
                                         //     color: root.accentFor("suntimes")

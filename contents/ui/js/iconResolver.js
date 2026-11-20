@@ -25,7 +25,7 @@
  *
  * Resolution priority:
  *   1. KDE system icon (always tried first - works with any Plasma icon theme)
- *   2. Bundled SVG fallback (from contents/icons/<theme>/<size>/wi-<name>.svg)
+ *   2. Bundled SVG fallback (from contents/icons/<theme>/wi-<name>.svg)
  *
  * .pragma library - no Qt globals, pure JS.
  */
@@ -66,7 +66,7 @@ var _kdeIcons = {
 };
 
 // ── Bundled SVG filenames (without "wi-" prefix and ".svg" suffix) ───────────
-// These map to files like: contents/icons/<theme>/<size>/wi-<stem>.svg
+// These map to files like: contents/icons/<theme>/wi-<stem>.svg
 var _svgStems = {
     temperature:  "thermometer",
     feelslike:    "thermometer",
@@ -140,7 +140,9 @@ var _wiGlyphs = {
  * Returns: { type: "kde"|"svg", source: string, kdeFallback: string, isMask: bool }
  *
  * @param {string} itemId     - Logical icon ID (e.g. "humidity", "wind", "sunrise")
- * @param {int}    iconSize   - Desired icon size in px (16, 22, 24, or 32)
+ * @param {int}    iconSize   - Unused, kept so existing callers keep working: the bundled
+ *                              artwork is vector (one SVG per icon, no size folders) and is
+ *                              rasterised by the Image/Kirigami.Icon at the size it is drawn
  * @param {string} iconsBaseDir - Resolved URL to the icons/ folder
  *                                 (e.g. Qt.resolvedUrl("../icons/") from the calling QML)
  * @param {string} svgTheme   - "kde" for KDE-first strategy, or SVG theme subfolder:
@@ -157,7 +159,7 @@ function resolve(itemId, iconSize, iconsBaseDir, svgTheme) {
 
     var svgSource = "";
     if (svgStem.length > 0 && iconsBaseDir) {
-        svgSource = iconsBaseDir + theme + "/" + iconSize + "/wi-" + svgStem + ".svg";
+        svgSource = iconsBaseDir + theme + "/wi-" + svgStem + ".svg";
     }
 
     if (isKde) {
@@ -198,7 +200,7 @@ function resolveCondition(weatherCode, isNight, iconSize, iconsBaseDir, svgTheme
 
     var svgSource = "";
     if (svgStem.length > 0 && iconsBaseDir) {
-        svgSource = iconsBaseDir + theme + "/" + iconSize + "/wi-" + svgStem + ".svg";
+        svgSource = iconsBaseDir + theme + "/wi-" + svgStem + ".svg";
     }
 
     if (isKde) {
@@ -230,7 +232,7 @@ function resolveMoonPhase(moonPhaseSvgStem, iconSize, iconsBaseDir, svgTheme) {
     var isMask = isKde ? false : (theme === "symbolic" || theme === "symbolic-light");
     var svgSource = "";
     if (moonPhaseSvgStem && iconsBaseDir) {
-        svgSource = iconsBaseDir + theme + "/" + iconSize + "/wi-" + moonPhaseSvgStem + ".svg";
+        svgSource = iconsBaseDir + theme + "/wi-" + moonPhaseSvgStem + ".svg";
     }
 
     if (isKde) {
@@ -279,7 +281,7 @@ function resolveWindDirection(windStem, iconSize, iconsBaseDir, svgTheme) {
     if (theme === "meteocons" && windStem && windStem.length > 0 && iconsBaseDir) {
         return {
             type: "svg",
-            source: iconsBaseDir + "meteocons/" + iconSize + "/wi-" + windStem + ".svg",
+            source: iconsBaseDir + "meteocons/wi-" + windStem + ".svg",
             svgFallback: "",
             isMask: false
         };
@@ -313,7 +315,7 @@ function svgStem(itemId) {
  * Builds a full SVG URL for a given stem.
  *
  * Returns "" (never a relative string) when the stem is missing or
- * iconsBaseDir is not a file reference.  A relative "symbolic/32/wi-x.svg" is
+ * iconsBaseDir is not a file reference.  A relative "symbolic/wi-x.svg" is
  * not a file to any consumer - Kirigami.Icon treats it as a theme icon name
  * and Qt then walks every theme directory for it (and for each dash-stripped
  * variant).  The base directory has to be resolved in QML
@@ -327,7 +329,7 @@ function svgUrl(stem, iconSize, iconsBaseDir, svgTheme) {
         return "";
     }
     var theme = _themeDir(svgTheme || "symbolic");
-    return base + theme + "/" + iconSize + "/wi-" + stem + ".svg";
+    return base + theme + "/wi-" + stem + ".svg";
 }
 
 // ── KDE theme names known to be missing ──────────────────────────────────────
