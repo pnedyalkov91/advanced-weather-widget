@@ -261,6 +261,8 @@ Thank you to everyone who has contributed code to this project ❤️
 - **[JoshuaKimsey](https://github.com/JoshuaKimsey)**
 - **[Zhuocheng-Lang](https://github.com/Zhuocheng-Lang)**
 
+Everyone and everything this project builds on is gathered on one page: [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+
 ## 🌐 Translation
 
 Translations are welcome! If you would like to help translate the widget into your language, please follow the instructions below.
