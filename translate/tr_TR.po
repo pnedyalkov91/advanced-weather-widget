@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-19 19:24+0200\n"
+"POT-Creation-Date: 2026-11-20 09:59+0100\n"
 "PO-Revision-Date: 2026-11-08 16:53+0300\n"
 "Last-Translator: herzane <info@herzane.tr>\n"
 "Language-Team: Turkish\n"
@@ -2380,10 +2380,9 @@ msgid "Hide prefix icon"
 msgstr "Önek simgesini gizle"
 
 #: contents/ui/DetailsView.qml:474 contents/ui/DetailsView.qml:599
-#: contents/ui/FullView.qml:618 contents/ui/js/airQuality.js:123
-#: contents/ui/js/pollen.js:45 contents/ui/js/spaceWeather.js:188
-#: contents/ui/js/spaceWeather.js:200 contents/ui/main.qml:1896
-#: contents/ui/main.qml:1937 contents/ui/SimpleView.qml:787
+#: contents/ui/js/airQuality.js:123 contents/ui/js/pollen.js:45
+#: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
+#: contents/ui/main.qml:1896 contents/ui/main.qml:1937
 msgid "High"
 msgstr "En yüksek"
 
@@ -2396,8 +2395,13 @@ msgstr ""
 
 #: contents/ui/components/HistoryChartGraphs.qml:104
 #: contents/ui/components/HistoryChartKQC.qml:77
-#: contents/ui/ForecastView.qml:1097
+#: contents/ui/ForecastView.qml:1097 contents/ui/SimpleView.qml:787
 msgctxt "@label chart legend"
+msgid "High"
+msgstr ""
+
+#: contents/ui/FullView.qml:618
+msgctxt "@label daily maximum temperature"
 msgid "High"
 msgstr ""
 
@@ -3091,10 +3095,9 @@ msgid "Loop: on"
 msgstr ""
 
 #: contents/ui/DetailsView.qml:472 contents/ui/DetailsView.qml:597
-#: contents/ui/FullView.qml:638 contents/ui/js/airQuality.js:121
-#: contents/ui/js/pollen.js:43 contents/ui/js/spaceWeather.js:190
-#: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1892
-#: contents/ui/main.qml:1933 contents/ui/SimpleView.qml:792
+#: contents/ui/js/airQuality.js:121 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:190 contents/ui/js/spaceWeather.js:202
+#: contents/ui/main.qml:1892 contents/ui/main.qml:1933
 msgid "Low"
 msgstr "En düşük"
 
@@ -3107,8 +3110,13 @@ msgstr ""
 
 #: contents/ui/components/HistoryChartGraphs.qml:114
 #: contents/ui/components/HistoryChartKQC.qml:87
-#: contents/ui/ForecastView.qml:1102
+#: contents/ui/ForecastView.qml:1102 contents/ui/SimpleView.qml:792
 msgctxt "@label chart legend"
+msgid "Low"
+msgstr ""
+
+#: contents/ui/FullView.qml:638
+msgctxt "@label daily minimum temperature"
 msgid "Low"
 msgstr ""
 

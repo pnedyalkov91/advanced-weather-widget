@@ -2687,10 +2687,9 @@ msgid "Hide prefix icon"
 msgstr "Pictogram voor tekst verbergen"
 
 #: contents/ui/DetailsView.qml:474 contents/ui/DetailsView.qml:599
-#: contents/ui/FullView.qml:618 contents/ui/js/airQuality.js:123
-#: contents/ui/js/pollen.js:45 contents/ui/js/spaceWeather.js:188
-#: contents/ui/js/spaceWeather.js:200 contents/ui/main.qml:1896
-#: contents/ui/main.qml:1937 contents/ui/SimpleView.qml:787
+#: contents/ui/js/airQuality.js:123 contents/ui/js/pollen.js:45
+#: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
+#: contents/ui/main.qml:1896 contents/ui/main.qml:1937
 msgid "High"
 msgstr "Hoog"
 
@@ -2703,10 +2702,15 @@ msgstr "Hoog"
 
 #: contents/ui/components/HistoryChartGraphs.qml:104
 #: contents/ui/components/HistoryChartKQC.qml:77
-#: contents/ui/ForecastView.qml:1097
+#: contents/ui/ForecastView.qml:1097 contents/ui/SimpleView.qml:787
 msgctxt "@label chart legend"
 msgid "High"
 msgstr "Hoog"
+
+#: contents/ui/FullView.qml:618
+msgctxt "@label daily maximum temperature"
+msgid "High"
+msgstr ""
 
 #: contents/ui/HistoryView.qml:242
 msgid "High %1 · Low %2"
@@ -3465,10 +3469,9 @@ msgid "Loop: on"
 msgstr "Herhalen: aan"
 
 #: contents/ui/DetailsView.qml:472 contents/ui/DetailsView.qml:597
-#: contents/ui/FullView.qml:638 contents/ui/js/airQuality.js:121
-#: contents/ui/js/pollen.js:43 contents/ui/js/spaceWeather.js:190
-#: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1892
-#: contents/ui/main.qml:1933 contents/ui/SimpleView.qml:792
+#: contents/ui/js/airQuality.js:121 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:190 contents/ui/js/spaceWeather.js:202
+#: contents/ui/main.qml:1892 contents/ui/main.qml:1933
 msgid "Low"
 msgstr "Laag"
 
@@ -3481,10 +3484,15 @@ msgstr "Laag"
 
 #: contents/ui/components/HistoryChartGraphs.qml:114
 #: contents/ui/components/HistoryChartKQC.qml:87
-#: contents/ui/ForecastView.qml:1102
+#: contents/ui/ForecastView.qml:1102 contents/ui/SimpleView.qml:792
 msgctxt "@label chart legend"
 msgid "Low"
 msgstr "Laag"
+
+#: contents/ui/FullView.qml:638
+msgctxt "@label daily minimum temperature"
+msgid "Low"
+msgstr ""
 
 #: contents/ui/js/airQuality.js:121
 msgid "Low Risk"

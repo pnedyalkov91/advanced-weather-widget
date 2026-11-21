@@ -615,7 +615,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Label {
                         Layout.alignment: Qt.AlignHCenter
-                        text: i18n("High")
+                        text: i18nc("@label daily maximum temperature", "High")
                         color: Kirigami.Theme.textColor
                         font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                     }
@@ -635,7 +635,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Label {
                         Layout.alignment: Qt.AlignHCenter
-                        text: i18n("Low")
+                        text: i18nc("@label daily minimum temperature", "Low")
                         color: Kirigami.Theme.textColor
                         font: weatherRoot ? weatherRoot.wf(9, false) : Qt.font({})
                     }
