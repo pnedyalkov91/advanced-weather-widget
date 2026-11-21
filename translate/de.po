@@ -1,14 +1,14 @@
 # German translation for Advanced Weather Widget
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# SPDX-FileCopyrightText: 2026 Thomas Bernard <tom-at-github@quantentunnel.de>
+# Thomas Bernard <tom-at-github@quantentunnel.de>, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-11-20 09:59+0100\n"
-"PO-Revision-Date: 2026-11-22 00:32+0100\n"
+"PO-Revision-Date: 2026-11-22 00:53+0100\n"
 "Last-Translator: Thomas Bernard <tom-at-github@quantentunnel.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -6139,9 +6139,8 @@ msgid "Weather Map"
 msgstr "Wetterkarte"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:703
-#, fuzzy
 msgid "Weather Map (Bundled)"
-msgstr "Wetterkarte (gebündelt)"
+msgstr "Weather Map (gebündelt)"
 
 #: contents/ui/config/configGeneral.qml:689
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:735 contents/ui/FullView.qml:147
