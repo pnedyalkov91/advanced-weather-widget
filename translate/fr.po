@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-19 19:24+0200\n"
-"PO-Revision-Date: 2026-08-04 09:53+0200\n"
+"POT-Creation-Date: 2026-11-20 09:59+0100\n"
+"PO-Revision-Date: 2026-11-20 10:00+0100\n"
 "Last-Translator: rcspam\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -35,12 +35,12 @@ msgstr "%1 %2"
 
 #: contents/ui/DetailsView.qml:567
 msgid "%1 %2 / 3 h"
-msgstr ""
+msgstr "%1 %2 / 3 h"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:209
 msgctxt "@item:inlistbox %1 is a language name written in that language"
 msgid "%1 (Default)"
-msgstr ""
+msgstr "%1 (par défaut)"
 
 #: contents/ui/main.qml:2848
 msgid "%1 - Today"
@@ -71,8 +71,8 @@ msgstr "%1 en arrière"
 #: contents/ui/HistoryView.qml:729
 msgid "%1 day has no data yet"
 msgid_plural "%1 days have no data yet"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1 jour n'a pas encore de données"
+msgstr[1] "%1 jours n'ont pas encore de données"
 
 #: contents/ui/components/weathermap/DateBox.qml:46
 #: contents/ui/components/WeatherMapView.qml:821
@@ -112,7 +112,7 @@ msgstr "%1 sur %2"
 
 #: contents/ui/HistoryView.qml:298
 msgid "%1 per day"
-msgstr ""
+msgstr "%1 par jour"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:677
 #: contents/ui/components/weathermap/LayerPanel.qml:841
@@ -122,8 +122,8 @@ msgstr "%1 px"
 #: contents/ui/HistoryView.qml:277
 msgid "%1 snowy day"
 msgid_plural "%1 snowy days"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1 jour de neige"
+msgstr[1] "%1 jours de neige"
 
 #: contents/ui/main.qml:2834
 msgid "%1 there will be %2 with a low of %3 and a high of %4."
@@ -132,8 +132,8 @@ msgstr "%1, le temps sera %2 avec un minimum de %3 et un maximum de %4."
 #: contents/ui/HistoryView.qml:263
 msgid "%1 wet day"
 msgid_plural "%1 wet days"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1 jour de pluie"
+msgstr[1] "%1 jours de pluie"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1033
 msgid "%1. Right-click to copy or paste it, drag it onto another level."
@@ -157,11 +157,11 @@ msgstr "%1 : options"
 
 #: contents/ui/WeatherService.qml:1248
 msgid "%1: request limit reached (HTTP %2) — trying again later"
-msgstr ""
+msgstr "%1 : limite de requêtes atteinte (HTTP %2), nouvel essai plus tard"
 
 #: contents/ui/WeatherService.qml:1248
 msgid "%1: the API key was rejected (HTTP %2)"
-msgstr ""
+msgstr "%1 : la clé API a été refusée (HTTP %2)"
 
 #: contents/ui/DetailsView.qml:4210
 msgid "%1h"
@@ -329,11 +329,11 @@ msgstr "<b>Pourquoi les couches OWM peuvent ne pas correspondre au radar RainVie
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
 msgid "A graph for each detail; point at a day to see its value in all of them"
-msgstr ""
+msgstr "Un graphique par donnée ; survolez un jour pour voir sa valeur dans chacun"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
 msgid "A graph for each detail; point at an hour to see its value in all of them"
-msgstr ""
+msgstr "Un graphique par donnée ; survolez une heure pour voir sa valeur dans chacun"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:153
 msgid "A layer stops where its data stops."
@@ -345,7 +345,7 @@ msgstr "Une palette a de 2 à 12 couleurs."
 
 #: contents/ui/DetailsView.qml:2165
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
-msgstr ""
+msgstr "Un champ orienté vers le sud (Bz négatif) permet au vent solaire de se coupler au champ magnétique terrestre."
 
 #: contents/ui/config/configGeneral.qml:664
 msgid "AEMET - Spain only (Key Required)"
@@ -366,7 +366,7 @@ msgstr "AEMET ne couvre que l'Espagne - cette localisation n'est pas couverte."
 
 #: contents/ui/WeatherService.qml:1203
 msgid "AEMET only covers Spain — choose another weather provider or a location in Spain."
-msgstr ""
+msgstr "AEMET ne couvre que l'Espagne : choisissez un autre fournisseur météo ou un lieu en Espagne."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:440
 msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
@@ -451,7 +451,7 @@ msgstr "Après-midi"
 
 #: contents/ui/DetailsView.qml:611
 msgid "Air %1"
-msgstr ""
+msgstr "Air %1"
 
 #: contents/ui/config/configAppearance.qml:1921
 #: contents/ui/config/configAppearance.qml:2044
@@ -531,7 +531,7 @@ msgstr "La température de l'air à 2 m. Lancez une journée entière : la terre
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:91
 msgid "Albanian"
-msgstr ""
+msgstr "Albanais"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
 #: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
@@ -540,7 +540,7 @@ msgstr "Aulne"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:356
 msgid "Alert Language"
-msgstr ""
+msgstr "Langue des alertes"
 
 #: contents/ui/config/configNotifications.qml:472
 msgid "Alert sound:"
@@ -557,7 +557,7 @@ msgstr "Alertes"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:382
 msgid "Alerts are shown in the language the issuing authority uses for your country."
-msgstr ""
+msgstr "Les alertes s'affichent dans la langue utilisée par l'organisme émetteur pour votre pays."
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:285
 msgid "Alerts provider:"
@@ -585,7 +585,7 @@ msgstr "Tous"
 
 #: contents/ui/DetailsView.qml:2852
 msgid "All clear"
-msgstr ""
+msgstr "Rien à signaler"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2082
 msgid "All days show hourly forecast when opening the tab"
@@ -645,11 +645,11 @@ msgstr "Animer le défilement des lignes"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1645
 msgid "Animate the scenes of the expanded cards"
-msgstr ""
+msgstr "Animer les scènes des cartes dépliées"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1628
 msgid "Animations:"
-msgstr ""
+msgstr "Animations :"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:943
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
@@ -672,7 +672,7 @@ msgstr "Apparence"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:467
 msgid "Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar and History. Where space is tight (forecast and history lists, alerts), \"Region default (long)\" is shown in its short form."
-msgstr ""
+msgstr "S'applique partout : panneau, infobulle, en-tête du widget, Détails, Prévisions, Radar et Historique. Là où la place manque (listes des prévisions et de l'historique, alertes), « Par défaut selon la région (long) » s'affiche sous sa forme courte."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:54
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:39
@@ -698,7 +698,7 @@ msgstr "Appliquer ici uniquement"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:93
 msgid "Arabic"
-msgstr ""
+msgstr "Arabe"
 
 #: contents/ui/config/configLocation.qml:1471
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
@@ -793,7 +793,7 @@ msgstr "Avalanche"
 
 #: contents/ui/HistoryView.qml:240
 msgid "Average"
-msgstr ""
+msgstr "Moyenne"
 
 #: contents/ui/js/airQuality.js:124
 msgid "Avoid strenuous outdoor activities."
@@ -843,7 +843,7 @@ msgstr "Équilibré (10 à 20 images/s)"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:76
 msgid "Basque"
-msgstr ""
+msgstr "Basque"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
 #: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
@@ -871,7 +871,7 @@ msgstr "Flou sous les panneaux"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:86
 msgid "Bosnian"
-msgstr ""
+msgstr "Bosnien"
 
 #: contents/ui/config/configAppearance.qml:1196
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:537
@@ -885,7 +885,7 @@ msgstr "Les deux (lever et coucher de soleil)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1117
 msgid "Bottom"
-msgstr ""
+msgstr "En bas"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:829
 msgid "Bottom Center"
@@ -937,7 +937,7 @@ msgstr "Cache vidé."
 
 #: contents/ui/DetailsView.qml:500
 msgid "Calm"
-msgstr ""
+msgstr "Calme"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:725
 #: contents/ui/config/tabs/ConfigMiscTab.qml:769
@@ -975,7 +975,7 @@ msgstr "Hauteur des cartes :"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:75
 msgid "Catalan"
-msgstr ""
+msgstr "Catalan"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:604
 msgid "Celestial bodies"
@@ -988,27 +988,27 @@ msgstr "Celsius (°C)"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2420
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2429
 msgid "Chance of precip."
-msgstr ""
+msgstr "Proba. de précip."
 
 #: contents/ui/ForecastView.qml:1892
 msgid "Chance of precipitation"
-msgstr ""
+msgstr "Probabilité de précipitations"
 
 #: contents/ui/DetailsView.qml:1456
 msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
-msgstr ""
+msgstr "Variation sur les 3 dernières heures, calculée à partir des relevés collectés par le widget. L'anneau vide sur le cadran indique la pression d'il y a 3 heures."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the color"
-msgstr ""
+msgstr "Changer la couleur"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the color (replaces the colors of the G scale)"
-msgstr ""
+msgstr "Changer la couleur (remplace les couleurs de l'échelle G)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the colors"
-msgstr ""
+msgstr "Changer les couleurs"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:657
 msgid "Changes staged. Click the main Apply button to save."
@@ -1016,7 +1016,7 @@ msgstr "Changements en attente. Cliquer sur le bouton Appliquer principal pour e
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:468
 msgid "Change…"
-msgstr ""
+msgstr "Modifier…"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:242
 msgid "Check Status"
@@ -1071,15 +1071,15 @@ msgstr "Choisir sur la carte"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:382
 msgid "Choose the alert language for each saved location. If an alert is not published in that language, its native language is shown instead."
-msgstr ""
+msgstr "Choisissez la langue des alertes pour chaque lieu enregistré. Si une alerte n'est pas publiée dans cette langue, elle s'affiche dans sa langue d'origine."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:410
 msgid "Choose the color of the graph"
-msgstr ""
+msgstr "Choisir la couleur du graphique"
 
 #: contents/ui/HistoryView.qml:649
 msgid "Choose the day"
-msgstr ""
+msgstr "Choisir le jour"
 
 #: contents/ui/config/configAppearance.qml:1887
 msgid "City / location name"
@@ -1131,7 +1131,7 @@ msgstr "Cliquer sur « Tester sur tous les fournisseurs » pour vérifier si les
 
 #: contents/ui/ForecastView.qml:1033
 msgid "Click a day to show its hourly forecast. Double-click the graph to zoom in"
-msgstr ""
+msgstr "Cliquez sur un jour pour voir ses prévisions horaires. Double-cliquez sur le graphique pour zoomer"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:136
 #: contents/ui/components/weathermap/HelpPanel.qml:141
@@ -1148,11 +1148,11 @@ msgstr "Cliquer pour configurer une localisation"
 
 #: contents/ui/ForecastView.qml:1604
 msgid "Click to hide the hourly forecast"
-msgstr ""
+msgstr "Cliquez pour masquer les prévisions horaires"
 
 #: contents/ui/ForecastView.qml:1604
 msgid "Click to show the hourly forecast"
-msgstr ""
+msgstr "Cliquez pour afficher les prévisions horaires"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:512
 #: contents/ui/components/weathermap/LayerPanel.qml:902
@@ -1180,11 +1180,11 @@ msgstr "Épaisseur des côtes et frontières"
 
 #: contents/ui/DetailsView.qml:484
 msgid "Cold"
-msgstr ""
+msgstr "Froid"
 
 #: contents/ui/HistoryView.qml:254
 msgid "Coldest night"
-msgstr ""
+msgstr "Nuit la plus froide"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:105
 #: contents/ui/components/weathermap/LayerPanel.qml:938
@@ -1218,15 +1218,15 @@ msgstr "Couleurs"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:422
 msgid "Colors - %1"
-msgstr ""
+msgstr "Couleurs - %1"
 
 #: contents/ui/DetailsView.qml:446
 msgid "Comfortable"
-msgstr ""
+msgstr "Agréable"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:77
 msgid "Compact"
-msgstr ""
+msgstr "Compact"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2535
 msgid "Compass in forecast:"
@@ -1306,7 +1306,7 @@ msgstr "Envisager de réduire ou de reporter les activités extérieures intense
 
 #: contents/ui/DetailsView.qml:486
 msgid "Cool"
-msgstr ""
+msgstr "Frais"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:338
 msgid "Coordinates"
@@ -1319,7 +1319,7 @@ msgstr "Copier la couleur"
 
 #: contents/ui/HistoryView.qml:764
 msgid "Could not reach Open-Meteo. Check your connection and try again."
-msgstr ""
+msgstr "Impossible de joindre Open-Meteo. Vérifiez votre connexion et réessayez."
 
 #: contents/ui/config/configNotifications.qml:519
 msgid "Couldn't play that sound file: %1"
@@ -1331,7 +1331,7 @@ msgstr "Les notifications critiques restent affichées même lorsque le mode Ne 
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:85
 msgid "Croatian"
-msgstr ""
+msgstr "Croate"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:178
 msgid "Ctrl + / Ctrl −"
@@ -1374,7 +1374,7 @@ msgstr "Icônes personnalisées par condition"
 
 #: contents/ui/HistoryView.qml:390
 msgid "Custom range…"
-msgstr ""
+msgstr "Période personnalisée…"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:281
 #: contents/ui/config/tabs/ConfigMiscTab.qml:365
@@ -1395,15 +1395,15 @@ msgstr "Paramètres des prévisions quotidiennes"
 
 #: contents/ui/HistoryView.qml:1032
 msgid "Daily details"
-msgstr ""
+msgstr "Détails du jour"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2262
 msgid "Daily graph order:"
-msgstr ""
+msgstr "Ordre des graphiques quotidiens :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2135
 msgid "Daily layout:"
-msgstr ""
+msgstr "Disposition quotidienne :"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:191
 msgid "Dark Sky-compatible API with US alerts. API key required below."
@@ -1423,7 +1423,7 @@ msgstr "Actualisation des données"
 
 #: contents/ui/HistoryView.qml:1243
 msgid "Data is available from %1 until yesterday."
-msgstr ""
+msgstr "Les données sont disponibles du %1 jusqu'à hier."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:165
 msgid "Date"
@@ -1441,16 +1441,16 @@ msgstr "Options de date / heure"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:234
 msgid "Date and Time"
-msgstr ""
+msgstr "Date et heure"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1280
 msgid "Date and time"
-msgstr ""
+msgstr "Date et heure"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:852
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1324
 msgid "Date and time formats are set in Misc → Date and Time."
-msgstr ""
+msgstr "Les formats de date et d'heure se règlent dans Divers → Date et heure."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:239
 msgid "Date format:"
@@ -1482,15 +1482,15 @@ msgstr "Jours"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:794
 msgid "Debug"
-msgstr ""
+msgstr "Débogage"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:798
 msgid "Debug mode:"
-msgstr ""
+msgstr "Mode débogage :"
 
 #: contents/ui/DetailsView.qml:478
 msgid "Deep"
-msgstr ""
+msgstr "Épaisse"
 
 #: contents/ui/components/WeatherMapView.qml:586
 #: contents/ui/config/tabs/ConfigPanelTab.qml:650
@@ -1539,7 +1539,7 @@ msgstr "Description"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:812
 msgid "Detailed log output is on"
-msgstr ""
+msgstr "Journal détaillé activé"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:730
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:762
@@ -1572,7 +1572,7 @@ msgstr "Détecter / changer de localisation…"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1300
 msgid "Detect location"
-msgstr ""
+msgstr "Détecter la position"
 
 #: contents/ui/config/configLocation.qml:1632
 msgid "Detecting…"
@@ -1666,7 +1666,7 @@ msgstr "Télécharger les calques de prévision en arrière-plan"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1178
 msgid "Drag to change the order of the tabs"
-msgstr ""
+msgstr "Glissez pour changer l'ordre des onglets"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:654
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:642
@@ -1679,7 +1679,7 @@ msgstr "Faire glisser pour réorganiser les éléments affichés"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:478
 msgid "Drag to reorder the graphs, or use the edit button to change a color"
-msgstr ""
+msgstr "Glissez pour réordonner les graphiques, ou utilisez le bouton de modification pour changer une couleur"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
 #: contents/ui/main.qml:3377
@@ -1688,7 +1688,7 @@ msgstr "Bruine"
 
 #: contents/ui/DetailsView.qml:444
 msgid "Dry"
-msgstr ""
+msgstr "Sec"
 
 #: contents/ui/components/WeatherMapView.qml:1228
 msgctxt "@label no precipitation at that place"
@@ -1707,7 +1707,7 @@ msgstr "Poussières"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:70
 msgid "Dutch"
-msgstr ""
+msgstr "Néerlandais"
 
 #: contents/ui/components/WeatherMapView.qml:1215
 #: contents/ui/HistoryView.qml:191
@@ -1817,7 +1817,7 @@ msgstr "Fin"
 
 #: contents/ui/HistoryView.qml:668
 msgid "End date"
-msgstr ""
+msgstr "Date de fin"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:406
 msgid "Enter Location"
@@ -1933,7 +1933,7 @@ msgstr "Tempête géomagnétique extrême."
 
 #: contents/ui/DetailsView.qml:492
 msgid "Extreme heat"
-msgstr ""
+msgstr "Chaleur extrême"
 
 #: contents/ui/js/airQuality.js:96
 msgid "Extremely Poor"
@@ -1965,19 +1965,19 @@ msgstr "Correcte"
 
 #: contents/ui/DetailsView.qml:585
 msgid "Falling"
-msgstr ""
+msgstr "En baisse"
 
 #: contents/ui/DetailsView.qml:587
 msgid "Falling quickly"
-msgstr ""
+msgstr "Baisse rapide"
 
 #: contents/ui/DetailsView.qml:583
 msgid "Falling slowly"
-msgstr ""
+msgstr "Baisse lente"
 
 #: contents/ui/DetailsView.qml:589
 msgid "Falling very rapidly"
-msgstr ""
+msgstr "Baisse très rapide"
 
 #: contents/ui/config/configAppearance.qml:1865
 #: contents/ui/config/configAppearance.qml:1967
@@ -1988,7 +1988,7 @@ msgstr "Ressenti"
 
 #: contents/ui/HistoryView.qml:329
 msgid "Feels like"
-msgstr ""
+msgstr "Ressenti"
 
 #: contents/ui/TooltipContent.qml:428
 msgid "Feels like:"
@@ -2012,7 +2012,7 @@ msgstr "Rechercher"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:72
 msgid "Finnish"
-msgstr ""
+msgstr "Finnois"
 
 #: contents/ui/main.qml:3630
 msgid "First Quarter"
@@ -2094,7 +2094,7 @@ msgstr "Jours de prévision :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1976
 msgid "Forecast layout:"
-msgstr ""
+msgstr "Disposition des prévisions :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2519
 msgid "Forecast:"
@@ -2126,7 +2126,7 @@ msgstr "Gratuit et open source. Pas de clé API requise. Recommandé."
 
 #: contents/ui/DetailsView.qml:482
 msgid "Freezing"
-msgstr ""
+msgstr "Glacial"
 
 #: contents/ui/components/WeatherMapView.qml:836
 #: contents/ui/components/WeatherMapView.qml:1226
@@ -2162,11 +2162,11 @@ msgstr "Pluie verglaçante (nuit)"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:67
 msgid "French"
-msgstr ""
+msgstr "Français"
 
 #: contents/ui/DetailsView.qml:510
 msgid "Fresh breeze"
-msgstr ""
+msgstr "Bonne brise"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:882
 msgid "Friday"
@@ -2190,11 +2190,11 @@ msgstr "GPS / GeoClue2 indisponible (installer qt6-qtlocation pour une meilleure
 
 #: contents/ui/DetailsView.qml:516
 msgid "Gale"
-msgstr ""
+msgstr "Coup de vent"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:77
 msgid "Galician"
-msgstr ""
+msgstr "Galicien"
 
 #: contents/config/config.qml:52
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:758
@@ -2204,7 +2204,7 @@ msgstr "Général"
 
 #: contents/ui/DetailsView.qml:506
 msgid "Gentle breeze"
-msgstr ""
+msgstr "Petite brise"
 
 #: contents/ui/config/configLocation.qml:938
 msgid "GeoClue2 unavailable, trying system location…"
@@ -2225,7 +2225,7 @@ msgstr "L'activité géomagnétique devrait être %1 (Kp %2)"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:66
 msgid "German"
-msgstr ""
+msgstr "Allemand"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:940
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
@@ -2257,12 +2257,12 @@ msgstr "Bonne"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2150
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2317
 msgid "Graphs"
-msgstr ""
+msgstr "Graphiques"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2167
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2333
 msgid "Graphs style:"
-msgstr ""
+msgstr "Style des graphiques :"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
 #: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
@@ -2271,7 +2271,7 @@ msgstr "Graminées"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:82
 msgid "Greek"
-msgstr ""
+msgstr "Grec"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
@@ -2288,7 +2288,7 @@ msgstr "Bande gris-bleu"
 
 #: contents/ui/HistoryView.qml:339
 msgid "Gusts"
-msgstr ""
+msgstr "Rafales"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:107
 msgid "H and L at the centers, followed from one picture to the next."
@@ -2304,7 +2304,7 @@ msgstr "Dangereuse"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1269
 msgid "Header:"
-msgstr ""
+msgstr "En-tête :"
 
 #: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
 msgid "Headline"
@@ -2355,7 +2355,7 @@ msgstr "Fort orage avec grêle"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:92
 msgid "Hebrew"
-msgstr ""
+msgstr "Hébreu"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:810
 msgid "Height"
@@ -2377,10 +2377,9 @@ msgid "Hide prefix icon"
 msgstr "Masquer l'icône de préfixe"
 
 #: contents/ui/DetailsView.qml:474 contents/ui/DetailsView.qml:599
-#: contents/ui/FullView.qml:618 contents/ui/js/airQuality.js:123
-#: contents/ui/js/pollen.js:45 contents/ui/js/spaceWeather.js:188
-#: contents/ui/js/spaceWeather.js:200 contents/ui/main.qml:1896
-#: contents/ui/main.qml:1937 contents/ui/SimpleView.qml:787
+#: contents/ui/js/airQuality.js:123 contents/ui/js/pollen.js:45
+#: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
+#: contents/ui/main.qml:1896 contents/ui/main.qml:1937
 msgid "High"
 msgstr "Élevé"
 
@@ -2393,14 +2392,19 @@ msgstr "Hauts"
 
 #: contents/ui/components/HistoryChartGraphs.qml:104
 #: contents/ui/components/HistoryChartKQC.qml:77
-#: contents/ui/ForecastView.qml:1097
+#: contents/ui/ForecastView.qml:1097 contents/ui/SimpleView.qml:787
 msgctxt "@label chart legend"
 msgid "High"
-msgstr ""
+msgstr "Maximum"
+
+#: contents/ui/FullView.qml:618
+msgctxt "@label daily maximum temperature"
+msgid "High"
+msgstr "Maximum"
 
 #: contents/ui/HistoryView.qml:242
 msgid "High %1 · Low %2"
-msgstr ""
+msgstr "Maximum %1 · minimum %2"
 
 #: contents/ui/js/airQuality.js:123
 msgid "High Risk"
@@ -2425,18 +2429,18 @@ msgstr "Fournisseur de données historiques et de prévisions. Clé API requise 
 
 #: contents/ui/HistoryView.qml:1194
 msgid "Historical values are reanalysis data on a roughly 10 km grid, so they can differ from nearby station readings."
-msgstr ""
+msgstr "Les valeurs historiques sont des données de réanalyse sur une grille d'environ 10 km : elles peuvent différer des relevés des stations proches."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:737
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1045
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1091
 #: contents/ui/FullView.qml:148
 msgid "History"
-msgstr ""
+msgstr "Historique"
 
 #: contents/ui/FullView.qml:888
 msgid "History:"
-msgstr ""
+msgstr "Historique :"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:155
 #: contents/ui/components/weathermap/TimeBar.qml:135
@@ -2454,7 +2458,7 @@ msgstr "Horizontal"
 
 #: contents/ui/DetailsView.qml:490
 msgid "Hot"
-msgstr ""
+msgstr "Chaud"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2279
 msgid "Hourly Forecast Settings"
@@ -2462,11 +2466,11 @@ msgstr "Paramètres des prévisions horaires"
 
 #: contents/ui/ForecastView.qml:1659
 msgid "Hourly forecast for %1"
-msgstr ""
+msgstr "Prévisions horaires pour %1"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2473
 msgid "Hourly graph order:"
-msgstr ""
+msgstr "Ordre des graphiques horaires :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2297
 msgid "Hourly layout:"
@@ -2498,7 +2502,7 @@ msgstr "Humanitarian (HOT)"
 
 #: contents/ui/DetailsView.qml:448
 msgid "Humid"
-msgstr ""
+msgstr "Humide"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
 #: contents/ui/components/WeatherMapView.qml:1233
@@ -2516,11 +2520,11 @@ msgstr "Humidité :"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:88
 msgid "Hungarian"
-msgstr ""
+msgstr "Hongrois"
 
 #: contents/ui/DetailsView.qml:524
 msgid "Hurricane"
-msgstr ""
+msgstr "Ouragan"
 
 #: contents/ui/config/configLocation.qml:1057
 msgid "IP geolocation"
@@ -2670,7 +2674,7 @@ msgstr "Réponse invalide de QWeather."
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:78
 msgid "Irish"
-msgstr ""
+msgstr "Irlandais"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:102
 #: contents/ui/components/weathermap/LayerPanel.qml:513
@@ -2682,7 +2686,7 @@ msgstr "Isobares"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:68
 msgid "Italian"
-msgstr ""
+msgstr "Italien"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1209
 msgid "Item spacing:"
@@ -2772,13 +2776,13 @@ msgstr "Indice Kp"
 
 #: contents/ui/ForecastView.qml:694 contents/ui/SimpleView.qml:670
 msgid "Kp index (G scale)"
-msgstr ""
+msgstr "Indice Kp (échelle G)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2029
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2236
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2447
 msgid "Kp index/G"
-msgstr ""
+msgstr "Indice Kp/G"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:486
 #: contents/ui/config/tabs/ConfigPanelTab.qml:579
@@ -2792,15 +2796,15 @@ msgstr "Grande"
 
 #: contents/ui/HistoryView.qml:366
 msgid "Last 30 days"
-msgstr ""
+msgstr "30 derniers jours"
 
 #: contents/ui/HistoryView.qml:362
 msgid "Last 7 days"
-msgstr ""
+msgstr "7 derniers jours"
 
 #: contents/ui/HistoryView.qml:370
 msgid "Last 90 days"
-msgstr ""
+msgstr "90 derniers jours"
 
 #: contents/ui/main.qml:3638
 msgid "Last Quarter"
@@ -2808,7 +2812,7 @@ msgstr "Dernier quartier"
 
 #: contents/ui/HistoryView.qml:378
 msgid "Last month"
-msgstr ""
+msgstr "Mois dernier"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:159
 #: contents/ui/components/weathermap/TimeBar.qml:206
@@ -2874,11 +2878,11 @@ msgstr "Faible"
 
 #: contents/ui/DetailsView.qml:502
 msgid "Light air"
-msgstr ""
+msgstr "Très légère brise"
 
 #: contents/ui/DetailsView.qml:504
 msgid "Light breeze"
-msgstr ""
+msgstr "Légère brise"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:626
 #: contents/ui/main.qml:3375
@@ -3054,6 +3058,9 @@ msgid ""
 "View it with: journalctl --user -f | grep \"Advanced Weather Widget\". \n"
 "Please enable only when you experience issues with the widget."
 msgstr ""
+"Journalise chaque requête API (adresse sans les clés, statut HTTP, durée, taille, contenu reçu), la chaîne de repli entre fournisseurs, les caches, les minuteurs et le temps de chargement complet du widget. Chaque ligne commence par [Advanced Weather Widget - <composant>].\n"
+"Pour le consulter : journalctl --user -f | grep \"Advanced Weather Widget\". \n"
+"À activer uniquement en cas de problème avec le widget."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:548
 msgid "Lon:"
@@ -3088,10 +3095,9 @@ msgid "Loop: on"
 msgstr "Boucle : oui"
 
 #: contents/ui/DetailsView.qml:472 contents/ui/DetailsView.qml:597
-#: contents/ui/FullView.qml:638 contents/ui/js/airQuality.js:121
-#: contents/ui/js/pollen.js:43 contents/ui/js/spaceWeather.js:190
-#: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1892
-#: contents/ui/main.qml:1933 contents/ui/SimpleView.qml:792
+#: contents/ui/js/airQuality.js:121 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:190 contents/ui/js/spaceWeather.js:202
+#: contents/ui/main.qml:1892 contents/ui/main.qml:1933
 msgid "Low"
 msgstr "Faible"
 
@@ -3104,10 +3110,15 @@ msgstr "Bas"
 
 #: contents/ui/components/HistoryChartGraphs.qml:114
 #: contents/ui/components/HistoryChartKQC.qml:87
-#: contents/ui/ForecastView.qml:1102
+#: contents/ui/ForecastView.qml:1102 contents/ui/SimpleView.qml:792
 msgctxt "@label chart legend"
 msgid "Low"
-msgstr ""
+msgstr "Minimum"
+
+#: contents/ui/FullView.qml:638
+msgctxt "@label daily minimum temperature"
+msgid "Low"
+msgstr "Minimum"
 
 #: contents/ui/js/airQuality.js:121
 msgid "Low Risk"
@@ -3119,7 +3130,7 @@ msgstr "Grand froid"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:71
 msgid "Luxembourgish"
-msgstr ""
+msgstr "Luxembourgeois"
 
 #: contents/ui/main.qml:2497
 msgctxt "Alert severity"
@@ -3138,7 +3149,7 @@ msgstr "MODÉRÉE"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:90
 msgid "Macedonian"
-msgstr ""
+msgstr "Macédonien"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:162
 msgid "Magenta band"
@@ -3168,7 +3179,7 @@ msgstr "Principalement dégagé (nuit)"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:81
 msgid "Maltese"
-msgstr ""
+msgstr "Maltais"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:349
 #: contents/ui/config/tabs/ConfigPanelTab.qml:490
@@ -3219,11 +3230,11 @@ msgstr "Taille maximale :"
 #: contents/ui/components/HistoryChartKQC.qml:82
 msgctxt "@label chart legend"
 msgid "Mean"
-msgstr ""
+msgstr "Moyenne"
 
 #: contents/ui/HistoryView.qml:327
 msgid "Mean temperature"
-msgstr ""
+msgstr "Température moyenne"
 
 #: contents/ui/components/WeatherMapView.qml:858
 msgctxt "text size"
@@ -3277,7 +3288,7 @@ msgstr "Largeur minimale :"
 
 #: contents/ui/DetailsView.qml:2183
 msgid "Minor"
-msgstr ""
+msgstr "Mineure"
 
 #: contents/ui/js/spaceWeather.js:96
 msgid "Minor geomagnetic storm."
@@ -3310,7 +3321,7 @@ msgstr "Risque modéré"
 
 #: contents/ui/DetailsView.qml:508
 msgid "Moderate breeze"
-msgstr ""
+msgstr "Jolie brise"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:628
 msgid "Moderate drizzle"
@@ -3498,15 +3509,15 @@ msgstr "NO"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:209
 msgid "Native language of the alert (Default)"
-msgstr ""
+msgstr "Langue d'origine de l'alerte (par défaut)"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:362
 msgid "Native language:"
-msgstr ""
+msgstr "Langue d'origine :"
 
 #: contents/ui/DetailsView.qml:514
 msgid "Near gale"
-msgstr ""
+msgstr "Grand frais"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:521
 msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
@@ -3539,11 +3550,11 @@ msgstr "Nouvelle…"
 
 #: contents/ui/HistoryView.qml:469
 msgid "Next day"
-msgstr ""
+msgstr "Jour suivant"
 
 #: contents/ui/HistoryView.qml:469
 msgid "Next period"
-msgstr ""
+msgstr "Période suivante"
 
 #: contents/ui/DetailsView.qml:3532
 msgid "Night"
@@ -3571,7 +3582,7 @@ msgstr "Non"
 
 #: contents/ui/DetailsView.qml:2850
 msgid "No active alerts"
-msgstr ""
+msgstr "Aucune alerte en cours"
 
 #: contents/ui/components/WeatherMapView.qml:1202
 msgid "No data"
@@ -3579,11 +3590,11 @@ msgstr "Aucune donnée"
 
 #: contents/ui/HistoryView.qml:784
 msgid "No data is available for this period yet. The most recent days can take up to about five days to appear."
-msgstr ""
+msgstr "Pas encore de données pour cette période. Les jours les plus récents peuvent mettre environ cinq jours à apparaître."
 
 #: contents/ui/HistoryView.qml:1097
 msgid "No data yet"
-msgstr ""
+msgstr "Pas encore de données"
 
 #: contents/ui/DetailsView.qml:966
 msgid "No details data"
@@ -3624,11 +3635,11 @@ msgstr "Aucune localisation enregistrée. Enregistrez la localisation actuelle p
 
 #: contents/ui/DetailsView.qml:464
 msgid "No snow"
-msgstr ""
+msgstr "Pas de neige"
 
 #: contents/ui/DetailsView.qml:2854
 msgid "No warnings in effect"
-msgstr ""
+msgstr "Aucune vigilance en cours"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:541
 msgid "No weather stations found for '%1'"
@@ -3730,7 +3741,7 @@ msgstr "Éteintes"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:812
 msgid "Off (warnings and errors are always logged)"
-msgstr ""
+msgstr "Désactivé (les avertissements et erreurs sont toujours journalisés)"
 
 #: contents/ui/config/configGeneral.qml:207
 msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, and your system isn't systemd-managed, so there's no way to clear that live - it stays disabled (including anything you open freshly in this session) until you log out and back in."
@@ -3746,7 +3757,7 @@ msgstr "Désactivé - le script de contournement a été supprimé et ne sera pl
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:119
 msgid "Off: no data-point dots are shown."
-msgstr ""
+msgstr "Désactivé : aucun point de donnée n'est affiché."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:203
 msgid "Official Spanish meteorological agency - Spain locations only! API key required below."
@@ -3759,11 +3770,11 @@ msgstr "Olivier"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 msgid "One compact graph; point at a day to see all the other details"
-msgstr ""
+msgstr "Un seul graphique compact ; survolez un jour pour voir toutes les autres données"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 msgid "One compact graph; point at an hour to see all the other details"
-msgstr ""
+msgstr "Un seul graphique compact ; survolez une heure pour voir toutes les autres données"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:158
 msgid "One step ahead (→)"
@@ -3809,7 +3820,7 @@ msgstr "Open-Meteo (recommandé, gratuit)"
 
 #: contents/ui/HistoryView.qml:766
 msgid "Open-Meteo is rate limiting requests. Please try again in a little while."
-msgstr ""
+msgstr "Open-Meteo limite les requêtes. Réessayez un peu plus tard."
 
 #: contents/ui/components/MapBackgroundChoices.qml:51
 msgid "OpenFreeMap Dark"
@@ -3853,7 +3864,7 @@ msgstr "Ouvre automatiquement les prévisions horaires d'aujourd'hui (ou du proc
 
 #: contents/ui/DetailsView.qml:452
 msgid "Oppressive"
-msgstr ""
+msgstr "Étouffant"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:49
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:365
@@ -3879,7 +3890,7 @@ msgstr "Point orange"
 
 #: contents/ui/DetailsView.qml:2836
 msgid "Orange warning"
-msgstr ""
+msgstr "Vigilance orange"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:134
 #: contents/ui/components/weathermap/LayerPanel.qml:490
@@ -3993,7 +4004,7 @@ msgstr "Pause"
 
 #: contents/ui/DetailsView.qml:614
 msgid "Peak %1"
-msgstr ""
+msgstr "Pic %1"
 
 #: contents/ui/config/configNotifications.qml:619
 msgid "Per alert type:"
@@ -4059,7 +4070,7 @@ msgstr "Joue un son avec la notification pour les alertes de ce niveau. Un inter
 
 #: contents/ui/SimpleView.qml:832
 msgid "Point at a day to see its details. Double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in."
-msgstr ""
+msgstr "Survolez un jour pour voir ses détails. Double-cliquez sur le graphique, ou maintenez Ctrl en tournant la molette, pour zoomer."
 
 #: contents/ui/config/configAppearance.qml:1928
 #: contents/ui/config/configAppearance.qml:2051
@@ -4099,7 +4110,7 @@ msgstr "Cumul de précip."
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2248
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2459
 msgid "Precip sum"
-msgstr ""
+msgstr "Cumul précip."
 
 #: contents/ui/TooltipContent.qml:480
 msgid "Precip. Sum:"
@@ -4121,7 +4132,7 @@ msgstr "Précipitations"
 #: contents/ui/ForecastView.qml:1892
 msgctxt "@label chart legend"
 msgid "Precipitation"
-msgstr ""
+msgstr "Précipitations"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:889
 msgid "Precipitation (rain, snow)"
@@ -4135,7 +4146,7 @@ msgstr "Cumul de précipitations"
 
 #: contents/ui/HistoryView.qml:335
 msgid "Precipitation hours"
-msgstr ""
+msgstr "Heures de précipitations"
 
 #: contents/ui/config/configAppearance.qml:1901
 #: contents/ui/config/configAppearance.qml:2024
@@ -4145,7 +4156,7 @@ msgstr "Intensité des précipitations (mm/h)"
 
 #: contents/ui/ForecastView.qml:725
 msgid "Precipitation sum"
-msgstr ""
+msgstr "Cumul des précipitations"
 
 #: contents/ui/TooltipContent.qml:475
 msgid "Precipitation:"
@@ -4161,7 +4172,7 @@ msgstr "Préparer le radar à l'avance"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:990
 msgid "Prepare widget in advance:"
-msgstr ""
+msgstr "Préparer le widget à l'avance :"
 
 #: contents/ui/components/RadarWebEngineView.qml:160
 #: contents/ui/components/weathermap/HelpPanel.qml:100
@@ -4181,7 +4192,7 @@ msgstr "Pression"
 
 #: contents/ui/DetailsView.qml:1455
 msgid "Pressure tendency"
-msgstr ""
+msgstr "Tendance de la pression"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:635
 #: contents/ui/TooltipContent.qml:463
@@ -4190,7 +4201,7 @@ msgstr "Pression :"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:447
 msgid "Preview:"
-msgstr ""
+msgstr "Aperçu :"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:194
 msgid "Preview: 20°C"
@@ -4198,11 +4209,11 @@ msgstr "Aperçu : 20 °C"
 
 #: contents/ui/HistoryView.qml:468
 msgid "Previous day"
-msgstr ""
+msgstr "Jour précédent"
 
 #: contents/ui/HistoryView.qml:468
 msgid "Previous period"
-msgstr ""
+msgstr "Période précédente"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:171
 msgid "Primary unit shown first (e.g. °C / °F)"
@@ -4375,11 +4386,11 @@ msgstr "Plage"
 
 #: contents/ui/HistoryView.qml:727
 msgid "Range limited to %1 days"
-msgstr ""
+msgstr "Période limitée à %1 jours"
 
 #: contents/ui/HistoryView.qml:1253
 msgid "Range limited to %1 days: if the chosen range is longer, the end date is set automatically (for example, start date %2 gives end date %3)."
-msgstr ""
+msgstr "Période limitée à %1 jours : si la période choisie est plus longue, la date de fin est réglée automatiquement (par exemple, une date de début au %2 donne une date de fin au %3)."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:163
 msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
@@ -4410,7 +4421,7 @@ msgstr "Rouge"
 
 #: contents/ui/DetailsView.qml:2838
 msgid "Red warning"
-msgstr ""
+msgstr "Vigilance rouge"
 
 #: contents/ui/js/airQuality.js:123
 msgid "Reduce or reschedule strenuous outdoor activities, especially if you experience symptoms."
@@ -4520,7 +4531,7 @@ msgstr "Résolution en lecture"
 #: contents/ui/ForecastView.qml:1835 contents/ui/ForecastView.qml:1836
 #: contents/ui/HistoryView.qml:977 contents/ui/HistoryView.qml:978
 msgid "Restore"
-msgstr ""
+msgstr "Restaurer"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:139
 #: contents/ui/components/weathermap/HelpPanel.qml:142
@@ -4533,23 +4544,23 @@ msgstr "Brouillard givrant"
 
 #: contents/ui/DetailsView.qml:577
 msgid "Rising"
-msgstr ""
+msgstr "En hausse"
 
 #: contents/ui/DetailsView.qml:579
 msgid "Rising quickly"
-msgstr ""
+msgstr "Hausse rapide"
 
 #: contents/ui/DetailsView.qml:575
 msgid "Rising slowly"
-msgstr ""
+msgstr "Hausse lente"
 
 #: contents/ui/DetailsView.qml:581
 msgid "Rising very rapidly"
-msgstr ""
+msgstr "Hausse très rapide"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:69
 msgid "Romansh"
-msgstr ""
+msgstr "Romanche"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:92
 msgid "Round values:"
@@ -4610,7 +4621,7 @@ msgstr "Enregistré, mais pas encore actif - déconnectez-vous puis reconnectez-
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:80
 msgid "Scottish Gaelic"
-msgstr ""
+msgstr "Gaélique écossais"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:996
 msgid "Scroll animation:"
@@ -4655,19 +4666,19 @@ msgstr "Unité secondaire affichée en premier (ex. °F / °C)"
 
 #: contents/ui/HistoryView.qml:745
 msgid "Select a location to see its weather history"
-msgstr ""
+msgstr "Choisissez un lieu pour voir son historique météo"
 
 #: contents/ui/HistoryView.qml:1227
 msgid "Select day"
-msgstr ""
+msgstr "Choisir le jour"
 
 #: contents/ui/HistoryView.qml:1227
 msgid "Select end date"
-msgstr ""
+msgstr "Choisir la date de fin"
 
 #: contents/ui/HistoryView.qml:1227
 msgid "Select start date"
-msgstr ""
+msgstr "Choisir la date de début"
 
 #: contents/ui/config/configNotifications.qml:579
 msgid "Sends a single, low-priority heads-up as soon as a future alert is published (e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert notification above still fires separately once it actually becomes active."
@@ -4675,7 +4686,7 @@ msgstr "Envoie un seul avis discret dès qu'une alerte à venir est publiée (pa
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:73
 msgid "Separated"
-msgstr ""
+msgstr "Séparés"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:176
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1143
@@ -4684,7 +4695,7 @@ msgstr "Séparateur :"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:87
 msgid "Serbian"
-msgstr ""
+msgstr "Serbe"
 
 #: contents/ui/js/pollen.js:46
 msgid "Serious risk; avoid outdoor activities."
@@ -4775,15 +4786,15 @@ msgstr "Afficher les deux unités :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:109
 msgid "Show dots for every day"
-msgstr ""
+msgstr "Afficher un point pour chaque jour"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:109
 msgid "Show dots for every hour"
-msgstr ""
+msgstr "Afficher un point pour chaque heure"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2183
 msgid "Show in daily forecast:"
-msgstr ""
+msgstr "Afficher dans les prévisions quotidiennes :"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:429
 msgid "Show in details"
@@ -4791,11 +4802,11 @@ msgstr "Afficher dans les détails"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2005
 msgid "Show in forecast:"
-msgstr ""
+msgstr "Afficher dans les prévisions :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2387
 msgid "Show in hourly forecast:"
-msgstr ""
+msgstr "Afficher dans les prévisions horaires :"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:200
 msgid "Show in:"
@@ -4895,7 +4906,7 @@ msgstr "Paramètres d'affichage du mode simple"
 
 #: contents/ui/HistoryView.qml:386
 msgid "Single day…"
-msgstr ""
+msgstr "Un seul jour…"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:137
 msgid "Single line (all items at once)"
@@ -4937,11 +4948,11 @@ msgstr "Chutes de neige légères"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:89
 msgid "Slovak"
-msgstr ""
+msgstr "Slovaque"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:84
 msgid "Slovenian"
-msgstr ""
+msgstr "Slovène"
 
 #: contents/ui/components/WeatherMapView.qml:858
 msgctxt "text size"
@@ -5034,7 +5045,7 @@ msgstr "Neige/Verglas"
 
 #: contents/ui/HistoryView.qml:275 contents/ui/HistoryView.qml:333
 msgid "Snowfall"
-msgstr ""
+msgstr "Chutes de neige"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
 #: contents/ui/DetailsView.qml:2138
@@ -5067,7 +5078,7 @@ msgstr "Options de météo spatiale"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:74
 msgid "Spanish"
-msgstr ""
+msgstr "Espagnol"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:150
 msgid "Speed"
@@ -5080,7 +5091,7 @@ msgstr "Vitesse x%1"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1988
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2146
 msgid "Standard"
-msgstr ""
+msgstr "Standard"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:187
 msgid "Standard provider. API key required below."
@@ -5088,11 +5099,11 @@ msgstr "Fournisseur standard. Clé API requise ci-dessous."
 
 #: contents/ui/HistoryView.qml:649
 msgid "Start date"
-msgstr ""
+msgstr "Date de début"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1645
 msgid "Static scenes"
-msgstr ""
+msgstr "Scènes fixes"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1883
 msgid "Stats items:"
@@ -5100,7 +5111,7 @@ msgstr "Éléments de statistiques :"
 
 #: contents/ui/DetailsView.qml:573
 msgid "Steady"
-msgstr ""
+msgstr "Stable"
 
 #: contents/ui/components/RadarWebEngineView.qml:191
 #: contents/ui/components/RadarWebEngineView.qml:889
@@ -5131,11 +5142,11 @@ msgstr "Fort"
 
 #: contents/ui/DetailsView.qml:512
 msgid "Strong breeze"
-msgstr ""
+msgstr "Vent frais"
 
 #: contents/ui/DetailsView.qml:518
 msgid "Strong gale"
-msgstr ""
+msgstr "Fort coup de vent"
 
 #: contents/ui/js/spaceWeather.js:94
 msgid "Strong geomagnetic storm."
@@ -5143,11 +5154,11 @@ msgstr "Forte tempête géomagnétique."
 
 #: contents/ui/HistoryView.qml:289
 msgid "Strongest gust"
-msgstr ""
+msgstr "Rafale la plus forte"
 
 #: contents/ui/HistoryView.qml:282
 msgid "Strongest wind"
-msgstr ""
+msgstr "Vent le plus fort"
 
 #: contents/ui/DetailsView.qml:1718
 msgid "Sulfur Dioxide (SO₂)"
@@ -5244,7 +5255,7 @@ msgstr "Coucher de soleil :"
 
 #: contents/ui/HistoryView.qml:296 contents/ui/HistoryView.qml:341
 msgid "Sunshine"
-msgstr ""
+msgstr "Ensoleillement"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:155
 msgid "Swap order:"
@@ -5252,7 +5263,7 @@ msgstr "Inverser l'ordre :"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:73
 msgid "Swedish"
-msgstr ""
+msgstr "Suédois"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:654
 msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
@@ -5307,15 +5318,15 @@ msgstr "Zone de notification › Mode simple › Style d'icône météo"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:974
 msgid "Tabs & Header Behavior"
-msgstr ""
+msgstr "Onglets et en-tête"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1127
 msgid "Tabs order:"
-msgstr ""
+msgstr "Ordre des onglets :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1097
 msgid "Tabs position:"
-msgstr ""
+msgstr "Position des onglets :"
 
 #: contents/ui/components/RadarWebEngineView.qml:158
 #: contents/ui/components/weathermap/HelpPanel.qml:87
@@ -5335,7 +5346,7 @@ msgstr "Couleur de la température"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2408
 msgid "Temperature and chance of precip."
-msgstr ""
+msgstr "Température et proba. de précip."
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:790
 msgid "Temperature badge"
@@ -5360,15 +5371,15 @@ msgstr "Température en premier"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2212
 msgid "Temperature high"
-msgstr ""
+msgstr "Température maximale"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2217
 msgid "Temperature low"
-msgstr ""
+msgstr "Température minimale"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2205
 msgid "Temperature low/high"
-msgstr ""
+msgstr "Température minimale/maximale"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:269
 msgid "Temperature only"
@@ -5393,7 +5404,7 @@ msgstr "Température :"
 
 #: contents/ui/DetailsView.qml:1453
 msgid "Tendency: collecting data"
-msgstr ""
+msgstr "Tendance : collecte des données"
 
 #: contents/ui/config/configNotifications.qml:498
 msgid "Test"
@@ -5430,7 +5441,7 @@ msgstr "La prévision CAMS. Les couleurs suivent l'indice européen de qualité 
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1012
 msgid "The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup."
-msgstr ""
+msgstr "Les onglets Détails, Prévisions et Historique sont construits en arrière-plan après le démarrage et restent prêts quand le widget est fermé : il s'ouvre aussitôt. Cela utilise plus de mémoire pendant toute la session, et l'onglet Historique charge ses données au démarrage."
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:500
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
@@ -5459,7 +5470,7 @@ msgstr "Le cache sera vidé à la prochaine ouverture de la carte."
 #: contents/ui/ForecastView.qml:1128 contents/ui/ForecastView.qml:1916
 #: contents/ui/HistoryView.qml:1026
 msgid "The chart needs the Qt Graphs or the KDE Quick Charts QML module."
-msgstr ""
+msgstr "Le graphique nécessite le module QML Qt Graphs ou KDE Quick Charts."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:145
 msgid "The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. The column lists the layers as they are stacked on the map, the top one first; the order is set with the button left of the settings. The wind always goes over the others."
@@ -5539,7 +5550,7 @@ msgstr "Plus c'est blanc, plus le nuage couvre le ciel. Les trois niveaux coché
 
 #: contents/ui/DetailsView.qml:1456
 msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
-msgstr ""
+msgstr "Le widget collecte les relevés de pression à chaque mise à jour ; il faut environ une heure de relevés pour calculer la tendance."
 
 #: contents/ui/components/weathermap/LayerPanel.qml:529
 msgid "The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only."
@@ -5560,7 +5571,7 @@ msgstr "Thème par défaut"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:390
 msgid "There are no saved locations yet. Save a location on the Location page to choose its alert language."
-msgstr ""
+msgstr "Aucun lieu enregistré pour l'instant. Enregistrez un lieu dans la page Localisation pour choisir la langue de ses alertes."
 
 #: contents/ui/config/configAppearance.qml:2552
 #: contents/ui/config/configAppearance.qml:2593
@@ -5583,11 +5594,11 @@ msgstr "Cette localisation figure déjà dans votre liste enregistrée."
 
 #: contents/ui/HistoryView.qml:374
 msgid "This month"
-msgstr ""
+msgstr "Ce mois-ci"
 
 #: contents/ui/HistoryView.qml:382
 msgid "This year"
-msgstr ""
+msgstr "Cette année"
 
 #: contents/ui/config/configNotifications.qml:84
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:76
@@ -5663,7 +5674,7 @@ msgstr "Fuseau horaire :"
 #: contents/ui/ForecastView.qml:1033 contents/ui/ForecastView.qml:1808
 #: contents/ui/HistoryView.qml:945
 msgid "Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in"
-msgstr ""
+msgstr "Astuce : double-cliquez sur le graphique, ou maintenez Ctrl en tournant la molette, pour zoomer"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1150
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
@@ -5744,7 +5755,7 @@ msgstr "Infobulle :"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1113
 msgid "Top"
-msgstr ""
+msgstr "En haut"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:833
 msgid "Top Center"
@@ -5767,7 +5778,7 @@ msgstr "Total"
 #: contents/ui/components/HistoryChartKQC.qml:1451
 msgctxt "@label rain total shown in the chart"
 msgid "Total: %1"
-msgstr ""
+msgstr "Total : %1"
 
 #: contents/ui/config/configNotifications.qml:553
 msgid "Treat alert notifications as critical"
@@ -5779,11 +5790,11 @@ msgstr "Tronquer (ligne unique)"
 
 #: contents/ui/HistoryView.qml:773
 msgid "Try again"
-msgstr ""
+msgstr "Réessayer"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:83
 msgid "Turkish"
-msgstr ""
+msgstr "Turc"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:784
 msgid "Turn off all three switches above to pick a single standard here instead."
@@ -5883,7 +5894,7 @@ msgstr "Instable"
 
 #: contents/ui/DetailsView.qml:2447
 msgid "Until"
-msgstr ""
+msgstr "Jusqu'au"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:486
 msgid "Upcoming (auto)"
@@ -5950,16 +5961,16 @@ msgstr "Utiliser les valeurs régionales par défaut"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:371
 msgid "Use the alert's native language"
-msgstr ""
+msgstr "Utiliser la langue d'origine de l'alerte"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:463
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:570
 msgid "Use the built-in color"
-msgstr ""
+msgstr "Utiliser la couleur intégrée"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:570
 msgid "Use the built-in colors"
-msgstr ""
+msgstr "Utiliser les couleurs intégrées"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:809
 msgid "Used:"
@@ -6018,15 +6029,15 @@ msgstr "Très mauvaise"
 
 #: contents/ui/DetailsView.qml:480
 msgid "Very deep"
-msgstr ""
+msgstr "Très épaisse"
 
 #: contents/ui/DetailsView.qml:476
 msgid "Very high"
-msgstr ""
+msgstr "Très élevé"
 
 #: contents/ui/DetailsView.qml:450
 msgid "Very humid"
-msgstr ""
+msgstr "Très humide"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:654
 msgid "Violent rain showers"
@@ -6034,7 +6045,7 @@ msgstr "Averses de pluie violentes"
 
 #: contents/ui/DetailsView.qml:522
 msgid "Violent storm"
-msgstr ""
+msgstr "Violente tempête"
 
 #: contents/ui/config/configAppearance.qml:2009
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2039
@@ -6085,15 +6096,15 @@ msgstr "Gibbeuse décroissante"
 
 #: contents/ui/DetailsView.qml:488
 msgid "Warm"
-msgstr ""
+msgstr "Doux"
 
 #: contents/ui/HistoryView.qml:247
 msgid "Warmest day"
-msgstr ""
+msgstr "Jour le plus chaud"
 
 #: contents/ui/DetailsView.qml:2840
 msgid "Warning"
-msgstr ""
+msgstr "Vigilance"
 
 #: contents/ui/main.qml:3628
 msgid "Waxing Crescent"
@@ -6134,11 +6145,11 @@ msgstr "Cartes météo"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1086
 msgid "Weather Maps / Radar"
-msgstr ""
+msgstr "Cartes météo / Radar"
 
 #: contents/ui/config/configGeneral.qml:726
 msgid "Weather Maps / Radar is turned off, so these settings are read-only. Turn it on in Appearance › Widget › General › Visible tabs."
-msgstr ""
+msgstr "L'onglet Cartes météo / Radar est désactivé : ces réglages sont en lecture seule. Activez-le dans Apparence › Widget › Général › Onglets visibles."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:68
 msgid "Weather Provider"
@@ -6165,7 +6176,7 @@ msgstr "Texte des conditions météo"
 
 #: contents/ui/HistoryView.qml:769
 msgid "Weather history is unavailable (HTTP %1)."
-msgstr ""
+msgstr "L'historique météo est indisponible (HTTP %1)."
 
 #: contents/ui/config/configAppearance.qml:1837
 msgid "Weather icon + condition text"
@@ -6233,7 +6244,7 @@ msgstr "Site web"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:79
 msgid "Welsh"
-msgstr ""
+msgstr "Gallois"
 
 #: contents/ui/components/WeatherMapView.qml:836
 #: contents/ui/components/WeatherMapView.qml:1223
@@ -6242,7 +6253,7 @@ msgstr "Neige mouillée"
 
 #: contents/ui/HistoryView.qml:268
 msgid "Wettest day"
-msgstr ""
+msgstr "Jour le plus pluvieux"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:94
 msgid "What falls in the three hours around the time shown, in mm/h. Rain goes from blue to green, yellow, red and magenta as it gets heavier; snow is lilac and violet; the dangerous kinds (ice) have colors of their own. Under 0.05 mm/h nothing is drawn."
@@ -6370,7 +6381,7 @@ msgstr "Jaune"
 
 #: contents/ui/DetailsView.qml:2834
 msgid "Yellow warning"
-msgstr ""
+msgstr "Vigilance jaune"
 
 #: contents/ui/config/configLocation.qml:1352
 msgid "Yes"
@@ -6382,7 +6393,7 @@ msgstr "Oui, la supprimer"
 
 #: contents/ui/HistoryView.qml:358
 msgid "Yesterday"
-msgstr ""
+msgstr "Hier"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:326
 #: contents/ui/config/tabs/ConfigMiscTab.qml:442
@@ -6403,7 +6414,7 @@ msgstr "Zoom avant"
 #: contents/ui/ForecastView.qml:1051 contents/ui/ForecastView.qml:1826
 #: contents/ui/HistoryView.qml:968
 msgid "Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)"
-msgstr ""
+msgstr "Zoom avant (ou double-clic sur le graphique, ou Ctrl + molette)"
 
 #: contents/ui/components/LocationMapPickerView.qml:55
 #: contents/ui/components/WeatherMapView.qml:1211
@@ -6464,8 +6475,8 @@ msgstr "une hausse par rapport à hier"
 #: contents/ui/SimpleView.qml:205
 msgid "and %1 more alert"
 msgid_plural "and %1 more alerts"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "et %1 autre alerte"
+msgstr[1] "et %1 autres alertes"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:203
 msgid "at"
@@ -6474,7 +6485,7 @@ msgstr "à"
 #: contents/ui/HistoryView.qml:305 contents/ui/HistoryView.qml:312
 #: contents/ui/HistoryView.qml:319
 msgid "average"
-msgstr ""
+msgstr "moyenne"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:176
 msgid "back to now."
@@ -6538,7 +6549,7 @@ msgstr "grains/m³"
 
 #: contents/ui/HistoryView.qml:125 contents/ui/HistoryView.qml:335
 msgid "h"
-msgstr ""
+msgstr "h"
 
 #: contents/ui/components/RadarWebEngineView.qml:902
 #: contents/ui/config/tabs/ConfigMiscTab.qml:648 contents/ui/js/weather.js:595
