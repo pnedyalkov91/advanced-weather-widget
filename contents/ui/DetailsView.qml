@@ -1331,6 +1331,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("wind")
                                         layoutMode: "side"
                                         iconInfo: root.showIconFor("wind") ? root.resolveWindIcon() : null
                                         iconSize: root.iconSize
@@ -1443,6 +1444,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("pressure")
                                         iconInfo: root.showIconFor("pressure") ? root.resolveIcon("pressure") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(pressureCard.pinfo.color)
@@ -1552,6 +1554,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor(gaugeCard.gid)
                                         iconInfo: root.showIconFor(gaugeCard.gid) ? root.resolveIcon(gaugeCard.gid) : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(gaugeCard.ginfo.color)
@@ -1727,6 +1730,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("airquality")
                                         iconInfo: root.showIconFor("airquality") ? root.resolveIcon("airquality") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(aqiCard.curBand ? root.bandTextColor(aqiCard.curBand) : root.accentFor("airquality"))
@@ -1922,6 +1926,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("pollen")
                                         iconInfo: root.showIconFor("pollen") ? root.resolveIcon("pollen") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(pollenCard.curBand ? root.bandTextColor(pollenCard.curBand) : root.accentFor("pollen"))
@@ -2193,6 +2198,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("spaceweather")
                                         iconInfo: root.showIconFor("spaceweather") ? root.resolveIcon("spaceweather") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(root.accentFor("spaceweather"))
@@ -2844,6 +2850,7 @@ Item {
                                         visible: alertsCard.open
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("alerts")
                                         iconInfo: root.showIconFor("alerts") ? root.resolveIcon("alerts") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(alertsCard.clear ? alertsCard.clearColor : alertsCard.curInfo.color)

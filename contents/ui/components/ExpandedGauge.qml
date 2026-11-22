@@ -61,6 +61,9 @@ Item {
     property color iconColor: Kirigami.Theme.textColor
     property int iconSize: 16
 
+    /** Card title (Feels Like, Precipitation Sum, ...), shown right after the icon. */
+    property string title: ""
+
     property string valueText: "--"
     property color valueColor: Kirigami.Theme.textColor
     property string bandText: ""
@@ -294,13 +297,36 @@ Item {
         x: gauge._side ? Math.round(canvas.width * 0.58) : Math.round((canvas.width - width) / 2)
         y: gauge._side ? Math.round(canvas.y + (canvas.height - height) / 2) : Math.round(canvas.y + canvas.height - height - canvas.height * 0.18)
 
-        WeatherIcon {
+        // icon + card title, so gauges that look alike can be told apart
+        Row {
+            id: titleRow
             anchors.horizontalCenter: parent.horizontalCenter
-            iconInfo: gauge.iconInfo
-            iconSize: gauge.iconSize
-            iconColor: gauge.iconColor
+            spacing: 5
+            WeatherIcon {
+                id: titleIcon
+                anchors.verticalCenter: parent.verticalCenter
+                iconInfo: gauge.iconInfo
+                iconSize: gauge.iconSize
+                iconColor: gauge.iconColor
+            }
+            Label {
+                id: titleLabel
+                visible: gauge.title.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                width: Math.min(titleMetrics.width + 1, overlay.width - titleIcon.width - titleRow.spacing)
+                wrapMode: Text.Wrap
+                text: gauge.title
+                color: Kirigami.Theme.textColor
+                opacity: 0.65
+                font: gauge.weatherRoot ? gauge.weatherRoot.wf(11, false) : Qt.font({})
+                TextMetrics {
+                    id: titleMetrics
+                    text: gauge.title
+                    font: titleLabel.font
+                }
+            }
         }
-        // value (the title): wraps onto more lines instead of being elided; with
+        // value: wraps onto more lines instead of being elided; with
         // infoNextToValue an empty slot after it carries the info icon
         Row {
             id: valueRow
