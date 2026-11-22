@@ -1226,6 +1226,7 @@ Item {
             "precip_freezing_drizzle": i18n("Freezing drizzle"),
             "precip_ice_pellets": i18n("Ice pellets"),
             "precipDry": i18nc("@label no precipitation at that place", "Dry"),
+            "cloudReadout": i18nc("@label cloud cover at the map pointer", "Clouds: %1"),
             "cloud_total": i18nc("@label total cloud cover", "Total"),
             "cloud_high": i18nc("@item cloud level", "High"),
             "cloud_mid": i18nc("@item cloud level", "Mid"),
