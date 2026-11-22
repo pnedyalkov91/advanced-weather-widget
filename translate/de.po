@@ -1,14 +1,14 @@
 # German translation for Advanced Weather Widget
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Thomas Bernard <tom-at-github@quantentunnel.de>, 2026.
+# Thomas Bernard <tom-at-github@quantentunnel.de>, 2026
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-11-20 09:59+0100\n"
-"PO-Revision-Date: 2026-11-22 00:53+0100\n"
+"PO-Revision-Date: 2026-11-22 06:45+0100\n"
 "Last-Translator: Thomas Bernard <tom-at-github@quantentunnel.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -71,11 +71,10 @@ msgid "%1 back"
 msgstr "%1 zurück"
 
 #: contents/ui/HistoryView.qml:729
-#, fuzzy
 msgid "%1 day has no data yet"
 msgid_plural "%1 days have no data yet"
 msgstr[0] "für %1 Tag liegen noch keine Daten vor"
-msgstr[1] "%1 für diese Tage liegen noch keine Daten vor"
+msgstr[1] "für %1 Tage liegen noch keine Daten vor"
 
 #: contents/ui/components/weathermap/DateBox.qml:46
 #: contents/ui/components/WeatherMapView.qml:821
@@ -1087,7 +1086,7 @@ msgstr "Tag wählen"
 
 #: contents/ui/config/configAppearance.qml:1887
 msgid "City / location name"
-msgstr "Stadt-/Ortsname"
+msgstr "Stadt-/Standortname"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:686
 msgid "Clean style"
@@ -1513,7 +1512,7 @@ msgstr "Standardfarben und -limits"
 
 #: contents/ui/config/configLocation.qml:1936
 msgid "Default location (click to unset)"
-msgstr "Standardort"
+msgstr "Standardstandort (zum Aufheben anklicken)"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:519
 msgid "Default order"
@@ -2261,12 +2260,12 @@ msgstr "Gut"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2150
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2317
 msgid "Graphs"
-msgstr "Graphen"
+msgstr "Diagramme"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2167
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2333
 msgid "Graphs style:"
-msgstr "Graphen-Stil:"
+msgstr "Diagramm-Stil:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
 #: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
@@ -2584,7 +2583,7 @@ msgstr "Ideale Bedingungen für Außenaktivitäten."
 
 #: contents/ui/config/configLocation.qml:1252
 msgid "If this looks correct, apply it. Otherwise, choose your location manually."
-msgstr "Wenn dies korrekt aussieht, übernehmen Sie es. Andernfalls wählen Sie Ihren Standort manuell aus."
+msgstr "Wenn dies korrekt ist, übernehmen Sie es. Andernfalls wählen Sie Ihren Standort manuell aus."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:431
 msgid "If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately."
@@ -2762,7 +2761,7 @@ msgstr "Widget offenhalten"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:171
 msgid "Keys"
-msgstr "Keys"
+msgstr "Tastatursteuerung"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:93
 #: contents/ui/components/weathermap/LayerPanel.qml:893
@@ -3002,7 +3001,7 @@ msgstr "Der Standort „%1“ befindet sich bereits in Ihrer gespeicherten Liste
 
 #: contents/ui/config/configAppearance.qml:1886
 msgid "Location Name"
-msgstr "Ortsname"
+msgstr "Standortname"
 
 #: contents/ui/config/configLocation.qml:791
 #: contents/ui/config/configLocation.qml:862
@@ -3023,7 +3022,7 @@ msgstr "Der Standort ist auf %1 verfügbar."
 #: contents/ui/config/configGeneral.qml:485
 #: contents/ui/config/configLocation.qml:548
 msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
-msgstr "Der Standort ist auf %1 nicht verfügbar (HTTP %2). Versuchen Sie es mit einem anderen Anbieter oder Standort."
+msgstr "Der Standort ist auf %1 nicht verfügbar (HTTP %2). Versuchen Sie es mit einem anderen Anbieter oder anderem Standort."
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:338
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1285
@@ -3774,11 +3773,11 @@ msgstr "Olive"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 msgid "One compact graph; point at a day to see all the other details"
-msgstr "Ein kompakter Graph; auf einen Tag zeigen, um alle Details zu sehen"
+msgstr "Ein kompaktes Diagramm; auf einen Tag zeigen, um alle Details zu sehen"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 msgid "One compact graph; point at an hour to see all the other details"
-msgstr "Ein kompakter Graph; auf eine Stunde zeigen, um alle Details zu sehen"
+msgstr "Ein kompaktes Diagramm; auf eine Stunde zeigen, um alle Details zu sehen"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:158
 msgid "One step ahead (→)"
@@ -4074,7 +4073,7 @@ msgstr "Spielt bei Benachrichtigungen für Warnungen dieses Schweregrads einen T
 
 #: contents/ui/SimpleView.qml:832
 msgid "Point at a day to see its details. Double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in."
-msgstr "Zeigen Sie auf einen Tag, um dessen Details anzuzeigen. Doppelklicken Sie auf das Diagramm oder halten Sie die Strg-Taste gedrückt und drehen Sie das Mausrad, um hineinzuzoomen."
+msgstr "Zeigen Sie auf einen Tag, um dessen Details anzuzeigen. Doppelklicken Sie auf das Diagramm oder halten Sie die Strg-Taste gedrückt und drehen Sie das Mausrad, um hinein zu zoomen."
 
 #: contents/ui/config/configAppearance.qml:1928
 #: contents/ui/config/configAppearance.qml:2051
@@ -5575,7 +5574,7 @@ msgstr "Themenstandard"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:390
 msgid "There are no saved locations yet. Save a location on the Location page to choose its alert language."
-msgstr "Es sind noch keine Standorte gespeichert. Speichere einen Standort auf der Seite „Standorte“, um die Sprache für Benachrichtigungen festzulegen."
+msgstr "Es sind noch keine Standorte gespeichert. Speichern Sie einen Standort auf der Seite „Standorte“, um die Sprache für Benachrichtigungen festzulegen."
 
 #: contents/ui/config/configAppearance.qml:2552
 #: contents/ui/config/configAppearance.qml:2593
@@ -6124,7 +6123,7 @@ msgstr "Wir haben Ihre Koordinaten als <b>%1°, %2°</b> erkannt."
 
 #: contents/ui/config/configLocation.qml:1245
 msgid "We detected your location as: <b>%1</b>."
-msgstr "Wir haben Ihren Standort als <b>%1</b> erkannt."
+msgstr "Ihr Standort wurde als <b>%1</b> erkannt."
 
 #: contents/ui/config/configGeneral.qml:693
 msgid "Weather Alerts"
@@ -6418,7 +6417,7 @@ msgstr "Vergrößern"
 #: contents/ui/ForecastView.qml:1051 contents/ui/ForecastView.qml:1826
 #: contents/ui/HistoryView.qml:968
 msgid "Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)"
-msgstr "Vergrößern (oder Doppelklick auf den Graphen bzw. die Strg-Taste gedrückt halten und das Mausrad drehen)"
+msgstr "Vergrößern (oder Doppelklick auf das Diagramm bzw. die Strg-Taste gedrückt halten und das Mausrad drehen)"
 
 #: contents/ui/components/LocationMapPickerView.qml:55
 #: contents/ui/components/WeatherMapView.qml:1211
