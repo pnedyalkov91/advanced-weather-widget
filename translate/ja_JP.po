@@ -6,11 +6,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
-"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/"
-"issues\n"
-"POT-Creation-Date: 2026-11-20 11:12+0200\n"
+"Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
+"POT-Creation-Date: 2026-11-22 07:49+0200\n"
 "PO-Revision-Date: 2026-11-21 09:07+0200\n"
-"Last-Translator: Petar Nedyalkov <petar.nedyalkov91@gmail.com>\n"
 "Language-Team: English <kde-i18n-doc@kde.org>\n"
 "Language: ja_JP\n"
 "MIME-Version: 1.0\n"
@@ -19,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Lokalize 26.08.3\n"
 
-#: contents/ui/DetailsView.qml:3557 contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
 msgid " until dawn"
 msgstr " 夜明けまで"
 
@@ -143,7 +141,7 @@ msgstr "%1。右クリックでコピーまたは貼り付け、別のレベル�
 msgid "%1. Right-click to copy or paste it."
 msgstr "%1。右クリックでコピーまたは貼り付けできます。"
 
-#: contents/ui/components/WeatherMapView.qml:1847
+#: contents/ui/components/WeatherMapView.qml:1848
 msgid "%1/%2 · %3 fps"
 msgstr "%1/%2 · %3 fps"
 
@@ -163,15 +161,15 @@ msgstr "%1: リクエスト上限に達しました（HTTP %2）— 後でもう
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr "%1: APIキーが拒否されました（HTTP %2）"
 
-#: contents/ui/DetailsView.qml:4210
+#: contents/ui/DetailsView.qml:4217
 msgid "%1h"
 msgstr "%1h"
 
-#: contents/ui/DetailsView.qml:4211
+#: contents/ui/DetailsView.qml:4218
 msgid "%1h %2m"
 msgstr "%1h %2m"
 
-#: contents/ui/DetailsView.qml:4204 contents/ui/DetailsView.qml:4208
+#: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
 msgid "%1m"
 msgstr "%1m"
 
@@ -234,9 +232,7 @@ msgid "2 d"
 msgstr "2日"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:65
-msgid ""
-"2 hours back to 1 hour ahead, every 10 minutes. It stays so when a longer rang"
-"e is set."
+msgid "2 hours back to 1 hour ahead, every 10 minutes. It stays so when a longer range is set."
 msgstr "2時間前から1時間先まで、10分ごと。より長い範囲を設定してもこのままです。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
@@ -249,12 +245,8 @@ msgid "3 d"
 msgstr "3日"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:156
-msgid ""
-"3 hours. In the range of the satellite one hour, in that of the radar 10 minut"
-"es, while they are on: the button shows it. It stops on their first and last i"
-"mage."
-msgstr ""
-"3時間。衛星がオンの間はその範囲で1時間、レーダーがオンの間はその範囲で10分になります（ボタンに表示されます）。それぞれの最初と最後の画像で止まります。"
+msgid "3 hours. In the range of the satellite one hour, in that of the radar 10 minutes, while they are on: the button shows it. It stops on their first and last image."
+msgstr "3時間。衛星がオンの間はその範囲で1時間、レーダーがオンの間はその範囲で10分になります（ボタンに表示されます）。それぞれの最初と最後の画像で止まります。"
 
 #: contents/ui/config/configAppearance.qml:272
 #: contents/ui/config/tabs/ConfigPanelTab.qml:419
@@ -306,30 +298,11 @@ msgstr "<b>見出し:</b> %1"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:220
 msgid ""
-"<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some h"
-"ybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can c"
-"rash the whole Plasma shell the moment it first paints, due to a driver-level "
-"conflict between the two GPUs. This option disables GPU-accelerated compositin"
-"g inside that browser view to avoid it.<br/><br/>Only enable this if you're ac"
-"tually experiencing that crash - it costs some rendering performance on the ra"
-"dar map.<br/><br/><b>This needs a log out and back in to take effect</b>, sinc"
-"e it has to be set before Plasma starts. It also applies to the whole session,"
-" so any other app that embeds a Chromium-based browser view will pick up the s"
-"ame setting. Turning it back off later needs the same log out/in to fully clea"
-"r it too.\n"
-"        <br/><br/>If you enable this option, the following file will be create"
-"d in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaro"
-"und.sh"
+"<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
+"        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 msgstr ""
-"<b>ハイブリッドGPU / NVIDIA PRIME + Waylandクラッシュ回避策</b><br/><br/>Waylandで動作する一部のハイブリ"
-"ッドGPUノートPCでは、レーダータブの埋め込みブラウザビューが最初に描画される瞬間に、2つのGPU間のドライバーレベルの競合によりPlasmaシェル全体が"
-"クラッシュすることがあります。このオプションは、そのブラウザビュー内のGPUアクセラレーション合成を無効化してこれを回避します。<br/><br/>実際にそ"
-"のクラッシュが発生している場合にのみ有効にしてください - レーダーマップの描画パフォーマンスが多少低下します。<br/><br/><b>この設定は、一度ロ"
-"グアウトして再度ログインしないと有効になりません</b>。Plasmaの起動前に設定されている必要があるためです。セッション全体に適用されるため、Chrom"
-"iumベースのブラウザビューを埋め込む他のアプリも同じ設定の影響を受けます。後で無効に戻す場合も、完全に解除するには同様のログアウト / ログインが必要です"
-"。\n"
-"        <br/><br/>このオプションを有効にすると、次のファイルが作成されます: ~/.config/plasma-workspace/env"
-"/advanced-weather-widget-radar-gpu-workaround.sh"
+"<b>ハイブリッドGPU / NVIDIA PRIME + Waylandクラッシュ回避策</b><br/><br/>Waylandで動作する一部のハイブリッドGPUノートPCでは、レーダータブの埋め込みブラウザビューが最初に描画される瞬間に、2つのGPU間のドライバーレベルの競合によりPlasmaシェル全体がクラッシュすることがあります。このオプションは、そのブラウザビュー内のGPUアクセラレーション合成を無効化してこれを回避します。<br/><br/>実際にそのクラッシュが発生している場合にのみ有効にしてください - レーダーマップの描画パフォーマンスが多少低下します。<br/><br/><b>この設定は、一度ログアウトして再度ログインしないと有効になりません</b>。Plasmaの起動前に設定されている必要があるためです。セッション全体に適用されるため、Chromiumベースのブラウザビューを埋め込む他のアプリも同じ設定の影響を受けます。後で無効に戻す場合も、完全に解除するには同様のログアウト / ログインが必要です。\n"
+"        <br/><br/>このオプションを有効にすると、次のファイルが作成されます: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 
 #: contents/ui/main.qml:2517
 msgid "<b>Instruction:</b> %1"
@@ -349,27 +322,15 @@ msgid "<b>Starts:</b> %1"
 msgstr "<b>開始:</b> %1"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1159
-msgid ""
-"<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitatio"
-"n/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numer"
-"ical Weather Prediction) output, not actual radar returns. They represent wher"
-"e the model <i>thinks</i> it is raining based on interpolation between weather"
-" stations and model runs.<br/><br/>RainViewer uses <b>real weather radar compo"
-"sites</b> from radar stations - actual measured reflectivity updated every 2-1"
-"0 minutes. This discrepancy is expected and known."
-msgstr ""
-"<b>OWMのレイヤーがRainViewerレーダーと一致しない理由</b><br/><br/>OWMの降水・雲レイヤーは<b>静的なモデルタイル</b>で"
-"あり、実際のレーダー観測ではなく、平滑化されたNWP（数値予報）の出力を表示します。気象観測所とモデル実行の間の補間に基づいて、モデルが雨が降っていると<i"
-">推定</i>している場所を表しています。<br/><br/>RainViewerはレーダー観測所からの<b>実際の気象レーダー合成画像</b>を使用し、2"
-"〜10分ごとに更新される実際の観測反射強度を表示します。この差異は想定されており、既知の現象です。"
+msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
+msgstr "<b>OWMのレイヤーがRainViewerレーダーと一致しない理由</b><br/><br/>OWMの降水・雲レイヤーは<b>静的なモデルタイル</b>であり、実際のレーダー観測ではなく、平滑化されたNWP（数値予報）の出力を表示します。気象観測所とモデル実行の間の補間に基づいて、モデルが雨が降っていると<i>推定</i>している場所を表しています。<br/><br/>RainViewerはレーダー観測所からの<b>実際の気象レーダー合成画像</b>を使用し、2〜10分ごとに更新される実際の観測反射強度を表示します。この差異は想定されており、既知の現象です。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
 msgid "A graph for each detail; point at a day to see its value in all of them"
 msgstr "各項目をグラフで表示します。日にポインタを合わせると、すべてのグラフでその日の値を確認できます"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
-msgid ""
-"A graph for each detail; point at an hour to see its value in all of them"
+msgid "A graph for each detail; point at an hour to see its value in all of them"
 msgstr "各項目をグラフで表示します。時間にポインタを合わせると、すべてのグラフでその時間の値を確認できます"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:153
@@ -380,10 +341,8 @@ msgstr "レイヤーはデータがある範囲までしか表示されません
 msgid "A palette has 2 to 12 colors."
 msgstr "パレットの色数は2〜12色です。"
 
-#: contents/ui/DetailsView.qml:2165
-msgid ""
-"A southward field (negative Bz) lets the solar wind couple with Earth's magnet"
-"ic field."
+#: contents/ui/DetailsView.qml:2170
+msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr "磁場が南向き（Bzが負）になると、太陽風が地球の磁場と結合しやすくなります。"
 
 #: contents/ui/config/configGeneral.qml:664
@@ -404,44 +363,15 @@ msgid "AEMET only covers Spain - this location has no coverage."
 msgstr "AEMETはスペインのみを対象としています - この位置は対象範囲外です。"
 
 #: contents/ui/WeatherService.qml:1203
-msgid ""
-"AEMET only covers Spain — choose another weather provider or a location in Spa"
-"in."
+msgid "AEMET only covers Spain — choose another weather provider or a location in Spain."
 msgstr "AEMETの対象はスペインのみです。別の気象プロバイダを選ぶか、スペイン国内の位置を選択してください。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:440
-msgid ""
-"AEMET only covers locations in Spain - other locations show \"Failed\" rather "
-"than switching provider (it's intentionally left out of Adaptive Mode too, sin"
-"ce it's the one provider here with its own request limit). There is a limit on"
-" the number of requests to the AEMET API per minute, so don't click the refres"
-"h button too many times, as you may hit the limit and have to wait at least 1 "
-"minute before making another request.A failed request retries automatically on"
-"ce.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow "
-"cover, and a daily accumulated precipitation total - show as \"N/A\" here rath"
-"er than a bug. UV is a daily figure only, not hour-by-hour, and wind can be mi"
-"ssing for days further out where AEMET's own forecast confidence drops off.<br"
-"/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsua"
-"rio'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's p"
-"olicy, changed July 2026) - you'll need to request a new one when that happens"
-".<br/><br/>Please don't refresh too often, as AEMET has a request limit per mi"
-"nute. If you hit it, you'll have to wait at least 1 minute before making anoth"
-"er request."
-msgstr ""
-"AEMETはスペイン国内の位置のみを対象としています - それ以外の位置では、プロバイダを切り替える代わりに「失敗」と表示されます（このリストで唯一、独自の"
-"リクエスト制限を持つプロバイダであるため、アダプティブモードからも意図的に除外されています）。AEMET APIには1分あたりのリクエスト数に制限があるため"
-"、更新ボタンをあまり何度もクリックしないでください。上限に達すると、次のリクエストを行うまでに少なくとも1分待つ必要があります。失敗したリクエストは自動的に"
-"1回再試行されます。<br/><br/>AEMETがまったく公開していない項目（気圧、視界、積雪、日別の累積降水量）は、バグではなくここでは「N/A」と表示"
-"されます。UVは時間ごとではなく日別の値のみで、AEMET自身の予報精度が低下する先の日付では風が欠落することがあります。<br/><br/>無料のキー: "
-"<a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aem"
-"et.es</a>。新しいキーは作成から3か月後に失効します（AEMETの方針、2026年7月変更） - 失効したら新しいキーをリクエストする必要があります"
-"。<br/><br/>AEMETには1分あたりのリクエスト制限があるため、あまり頻繁に更新しないでください。上限に達した場合は、次のリクエストを行うまでに少"
-"なくとも1分待つ必要があります。"
+msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
+msgstr "AEMETはスペイン国内の位置のみを対象としています - それ以外の位置では、プロバイダを切り替える代わりに「失敗」と表示されます（このリストで唯一、独自のリクエスト制限を持つプロバイダであるため、アダプティブモードからも意図的に除外されています）。AEMET APIには1分あたりのリクエスト数に制限があるため、更新ボタンをあまり何度もクリックしないでください。上限に達すると、次のリクエストを行うまでに少なくとも1分待つ必要があります。失敗したリクエストは自動的に1回再試行されます。<br/><br/>AEMETがまったく公開していない項目（気圧、視界、積雪、日別の累積降水量）は、バグではなくここでは「N/A」と表示されます。UVは時間ごとではなく日別の値のみで、AEMET自身の予報精度が低下する先の日付では風が欠落することがあります。<br/><br/>無料のキー: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>。新しいキーは作成から3か月後に失効します（AEMETの方針、2026年7月変更） - 失効したら新しいキーをリクエストする必要があります。<br/><br/>AEMETには1分あたりのリクエスト制限があるため、あまり頻繁に更新しないでください。上限に達した場合は、次のリクエストを行うまでに少なくとも1分待つ必要があります。"
 
 #: contents/ui/ForecastView.qml:1704
-msgid ""
-"AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still av"
-"ailable for this date."
+msgid "AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date."
 msgstr "AEMETは最大48時間の時間別予報を提供します。この日付の日別予報は引き続き利用可能です。"
 
 #: contents/ui/WeatherService.qml:1230
@@ -453,9 +383,7 @@ msgid "AEMET: request limit reached - retrying automatically in a minute."
 msgstr "AEMET: リクエスト上限に達しました - 1分後に自動的に再試行します。"
 
 #: contents/ui/ForecastView.qml:1704
-msgid ""
-"AEMET: request limit reached for the moment. This will retry automatically - p"
-"lease wait a minute."
+msgid "AEMET: request limit reached for the moment. This will retry automatically - please wait a minute."
 msgstr "AEMET: 現在リクエスト上限に達しています。自動的に再試行されます - 1分ほどお待ちください。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:195
@@ -483,14 +411,12 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2165 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "活動中"
 
 #: contents/ui/config/configGeneral.qml:221
-msgid ""
-"Active - GPU compositing is currently disabled for the radar map in this sessi"
-"on."
+msgid "Active - GPU compositing is currently disabled for the radar map in this session."
 msgstr "有効 - このセッションでは、レーダーマップのGPU合成は現在無効になっています。"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:387
@@ -542,9 +468,7 @@ msgid "Air Quality:"
 msgstr "空気質:"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:101
-msgid ""
-"Air pressure brought to sea level, in hPa. Blue and purple: lows (clouds, rain"
-", wind). Orange and red: highs (settled weather, fog in winter)."
+msgid "Air pressure brought to sea level, in hPa. Blue and purple: lows (clouds, rain, wind). Orange and red: highs (settled weather, fog in winter)."
 msgstr "海面更正した気圧（hPa）。青と紫: 低気圧（雲、雨、風）。オレンジと赤: 高気圧（安定した天気、冬は霧）。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:113
@@ -568,9 +492,7 @@ msgid "Air quality is acceptable."
 msgstr "空気質は許容範囲です。"
 
 #: contents/ui/js/airQuality.js:104
-msgid ""
-"Air quality is acceptable; there may be a risk for people unusually sensitive "
-"to air pollution."
+msgid "Air quality is acceptable; there may be a risk for people unusually sensitive to air pollution."
 msgstr "空気質は許容範囲ですが、大気汚染に通常より敏感な人には影響が出る可能性があります。"
 
 #: contents/ui/js/airQuality.js:96
@@ -602,19 +524,15 @@ msgid "Air quality options"
 msgstr "空気質オプション"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:91
-msgid ""
-"Air temperature at 2 m. Play a whole day: the land warms up in the afternoon a"
-"nd cools down at night, the sea hardly changes. A sharp edge that moves is a f"
-"ront."
-msgstr ""
-"高度2 mの気温。1日分を再生すると、陸地は午後に暖まり夜に冷えますが、海はほとんど変わりません。くっきりした境目が移動していれば、それは前線です。"
+msgid "Air temperature at 2 m. Play a whole day: the land warms up in the afternoon and cools down at night, the sea hardly changes. A sharp edge that moves is a front."
+msgstr "高度2 mの気温。1日分を再生すると、陸地は午後に暖まり夜に冷えますが、海はほとんど変わりません。くっきりした境目が移動していれば、それは前線です。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:91
 msgid "Albanian"
 msgstr "アルバニア語"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
-#: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
+#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1943
 msgid "Alder"
 msgstr "ハンノキ"
 
@@ -636,8 +554,7 @@ msgid "Alerts"
 msgstr "アラート"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:382
-msgid ""
-"Alerts are shown in the language the issuing authority uses for your country."
+msgid "Alerts are shown in the language the issuing authority uses for your country."
 msgstr "アラートは、お住まいの国の発令機関が使用する言語で表示されます。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:285
@@ -645,42 +562,16 @@ msgid "Alerts provider:"
 msgstr "アラートプロバイダ:"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:344
-msgid ""
-"Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a"
-"><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather war"
-"nings in CAP format from agencies worldwide and matches them to your exact loc"
-"ation. Alert notifications work the same as with the native provider."
-msgstr ""
-"アラートプロバイダ: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/>"
-"<br/>KDEのFOSS Public Alert Serverは、世界中の機関からCAP形式の公式な悪天候警報を収集し、ユーザの正確な位置にマッチングし"
-"ます。アラート通知はネイティブプロバイダと同様に機能します。"
+msgid "Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr "アラートプロバイダ: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDEのFOSS Public Alert Serverは、世界中の機関からCAP形式の公式な悪天候警報を収集し、ユーザの正確な位置にマッチングします。アラート通知はネイティブプロバイダと同様に機能します。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:334
-msgid ""
-"Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWX"
-"R is a free, open-source weather API that aggregates official CAP alerts world"
-"wide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches"
-" them to your exact location. Alert notifications work the same as with the na"
-"tive provider."
-msgstr ""
-"アラートプロバイダ: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXRは、世界中"
-"の公式CAPアラート（WMO悪天候情報センター、NOAA NWSなど）を集約し、ユーザの正確な位置にマッチングする、無料のオープンソース気象APIです。アラ"
-"ート通知はネイティブプロバイダと同様に機能します。"
+msgid "Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr "アラートプロバイダ: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXRは、世界中の公式CAPアラート（WMO悪天候情報センター、NOAA NWSなど）を集約し、ユーザの正確な位置にマッチングする、無料のオープンソース気象APIです。アラート通知はネイティブプロバイダと同様に機能します。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:324
-msgid ""
-"Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a>"
-" + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations"
-" use the official MeteoAlarm feeds (38 countries), US locations use the NOAA N"
-"ational Weather Service alerts API, with met.no MetAlerts as a fallback. If yo"
-"ur weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weath"
-"er), those are used directly."
-msgstr ""
-"アラートプロバイダ: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a "
-"href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>ヨーロッパの地域では公式MeteoAlarmフィ"
-"ード（38か国）を、米国の地域ではNOAA National Weather ServiceアラートAPIを使用し、フォールバックとしてmet.no Met"
-"Alertsを使用します。気象プロバイダが独自のアラート（例: WeatherAPI.com、Pirate Weather）を提供している場合は、それが直接"
-"使用されます。"
+msgid "Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
+msgstr "アラートプロバイダ: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>ヨーロッパの地域では公式MeteoAlarmフィード（38か国）を、米国の地域ではNOAA National Weather ServiceアラートAPIを使用し、フォールバックとしてmet.no MetAlertsを使用します。気象プロバイダが独自のアラート（例: WeatherAPI.com、Pirate Weather）を提供している場合は、それが直接使用されます。"
 
 #: contents/ui/TooltipContent.qml:505
 msgid "Alerts:"
@@ -690,7 +581,7 @@ msgstr "アラート:"
 msgid "All"
 msgstr "すべて"
 
-#: contents/ui/DetailsView.qml:2852
+#: contents/ui/DetailsView.qml:2859
 msgid "All clear"
 msgstr "異常なし"
 
@@ -711,9 +602,7 @@ msgid "Already-passed hours are removed from today's hourly forecast"
 msgstr "経過した時間帯は本日の時間別予報から削除されます"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2104
-msgid ""
-"Already-passed hours for today stay in place, greyed out, instead of being rem"
-"oved"
+msgid "Already-passed hours for today stay in place, greyed out, instead of being removed"
 msgstr "本日の経過した時間帯は削除されず、グレー表示のまま残ります"
 
 #: contents/ui/config/configNotifications.qml:601
@@ -737,21 +626,15 @@ msgid "Altitude (%1):"
 msgstr "標高（%1）:"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:596
-msgid ""
-"Altitude is optional, but strongly recommended for accurate forecasts. MET Nor"
-"way (met.no) uses it to correct temperature and pressure for elevation; leavin"
-"g it at 0 for a mountain location will return sea-level values."
-msgstr ""
-"標高は省略可能ですが、正確な予報のためには強く推奨されます。MET Norway (met.no) は標高に応じて気温と気圧を補正します。山岳地帯で0のまま"
-"にすると、海抜の値が返されます。"
+msgid "Altitude is optional, but strongly recommended for accurate forecasts. MET Norway (met.no) uses it to correct temperature and pressure for elevation; leaving it at 0 for a mountain location will return sea-level values."
+msgstr "標高は省略可能ですが、正確な予報のためには強く推奨されます。MET Norway (met.no) は標高に応じて気温と気圧を補正します。山岳地帯で0のままにすると、海抜の値が返されます。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:556
 msgid "Altitude:"
 msgstr "標高:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:406
-msgid ""
-"An API key is required for %1. Weather data cannot be retrieved without it."
+msgid "An API key is required for %1. Weather data cannot be retrieved without it."
 msgstr "%1 には APIキーが必要です。APIキーがないと気象データを取得できません。"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1005
@@ -786,13 +669,8 @@ msgid "Appearance"
 msgstr "外観"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:467
-msgid ""
-"Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar an"
-"d History. Where space is tight (forecast and history lists, alerts), \"Region"
-" default (long)\" is shown in its short form."
-msgstr ""
-"パネル、ツールチップ、ウィジェットのヘッダー、詳細、予報、レーダー、履歴のすべてに適用されます。スペースが限られる場所（予報や履歴のリスト、アラート）では、"
-"「地域のデフォルト（長）」は短い形式で表示されます。"
+msgid "Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar and History. Where space is tight (forecast and history lists, alerts), \"Region default (long)\" is shown in its short form."
+msgstr "パネル、ツールチップ、ウィジェットのヘッダー、詳細、予報、レーダー、履歴のすべてに適用されます。スペースが限られる場所（予報や履歴のリスト、アラート）では、「地域のデフォルト（長）」は短い形式で表示されます。"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:54
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:39
@@ -821,23 +699,16 @@ msgid "Arabic"
 msgstr "アラビア語"
 
 #: contents/ui/config/configLocation.qml:1471
-msgid ""
-"Are you sure? This is your last saved location. If you remove it, the widget w"
-"ill no longer show weather information."
+msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "本当によろしいですか? これは最後に保存した位置です。削除すると、ウィジェットは気象情報を表示しなくなります。"
 
-#: contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3566
 msgid "Around midnight - "
 msgstr "真夜中頃 - "
 
 #: contents/ui/components/weathermap/HelpPanel.qml:170
-msgid ""
-"At the bottom left of the map, small: the pictures loaded out of those of the "
-"range, and the pictures per second at most. Under them, the models: the global"
-" one, then the finer regional ones drawn over it in this view."
-msgstr ""
-"マップの左下に小さく表示されます。範囲内の画像のうち読み込み済みの枚数と、最大の毎秒フレーム数です。その下にはモデルが表示され、全球モデルに続いて、このビュ"
-"ーで上に重ねて描画されるより細かい地域モデルが並びます。"
+msgid "At the bottom left of the map, small: the pictures loaded out of those of the range, and the pictures per second at most. Under them, the models: the global one, then the finer regional ones drawn over it in this view."
+msgstr "マップの左下に小さく表示されます。範囲内の画像のうち読み込み済みの枚数と、最大の毎秒フレーム数です。その下にはモデルが表示され、全球モデルに続いて、このビューで上に重ねて描画されるより細かい地域モデルが並びます。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:614
 msgid "Atmosphere rim"
@@ -854,7 +725,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "音声ファイル (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2149
+#: contents/ui/DetailsView.qml:2154
 msgid "Aurora Visibility"
 msgstr "オーロラ可視性"
 
@@ -876,26 +747,12 @@ msgid "Auto (detect on save)"
 msgstr "自動（保存時に検出）"
 
 #: contents/ui/config/configLocation.qml:1616
-msgid ""
-"Auto-detection first asks GeoClue2, the system location service, for your curr"
-"ent position. If system location is unavailable, the widget estimates your loc"
-"ation from your public IP address, which is usually less precise and only upda"
-"tes when detection runs again."
-msgstr ""
-"自動検出では、まずシステム位置サービスであるGeoClue2に現在位置を問い合わせます。システム位置が利用できない場合、ウィジェットは公衆IPアドレスから位"
-"置を推定します。これは通常精度が低く、検出を再実行したときにのみ更新されます。"
+msgid "Auto-detection first asks GeoClue2, the system location service, for your current position. If system location is unavailable, the widget estimates your location from your public IP address, which is usually less precise and only updates when detection runs again."
+msgstr "自動検出では、まずシステム位置サービスであるGeoClue2に現在位置を問い合わせます。システム位置が利用できない場合、ウィジェットは公衆IPアドレスから位置を推定します。これは通常精度が低く、検出を再実行したときにのみ更新されます。"
 
 #: contents/ui/config/configLocation.qml:1576
-msgid ""
-"Auto-detection is limited without QtLocation and QtPositioning. It will fall b"
-"ack to IP-based detection, which may be less accurate and will not update in r"
-"eal time as you move. If you want to improve auto-detection accuracy, please i"
-"nstall the required packages for your distribution. For more details, see the "
-"install guide."
-msgstr ""
-"QtLocationとQtPositioningがないと自動検出は制限されます。IPベースの検出にフォールバックしますが、精度が低く、移動してもリアルタイム"
-"で更新されません。自動検出の精度を向上させるには、ディストリビューション用の必要なパッケージをインストールしてください。詳細はインストールガイドを参照してく"
-"ださい。"
+msgid "Auto-detection is limited without QtLocation and QtPositioning. It will fall back to IP-based detection, which may be less accurate and will not update in real time as you move. If you want to improve auto-detection accuracy, please install the required packages for your distribution. For more details, see the install guide."
+msgstr "QtLocationとQtPositioningがないと自動検出は制限されます。IPベースの検出にフォールバックしますが、精度が低く、移動してもリアルタイムで更新されません。自動検出の精度を向上させるには、ディストリビューション用の必要なパッケージをインストールしてください。詳細はインストールガイドを参照してください。"
 
 #: contents/ui/config/configLocation.qml:864
 msgid "Auto-detection updated coordinates."
@@ -915,9 +772,7 @@ msgid "Automatic (based on location)"
 msgstr "自動（位置に基づく）"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:784
-msgid ""
-"Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI b"
-"ased on your location's country."
+msgid "Automatic uses US AQI worldwide, switching to European CAQI or Canadian AQHI based on your location's country."
 msgstr "自動では世界中で米国 AQI を使用し、位置の国に応じて欧州 CAQI またはカナダ AQHI に切り替わります。"
 
 #: contents/ui/config/configLocation.qml:1600
@@ -989,7 +844,7 @@ msgid "Basque"
 msgstr "バスク語"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
-#: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
+#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1946
 msgid "Birch"
 msgstr "カバ"
 
@@ -1062,7 +917,7 @@ msgstr "中黒  •"
 msgid "Button guide"
 msgstr "ボタンガイド"
 
-#: contents/ui/DetailsView.qml:2161
+#: contents/ui/DetailsView.qml:2166
 msgid "Bz (Magnetic Field)"
 msgstr "Bz（磁場）"
 
@@ -1100,7 +955,7 @@ msgstr "キャンセル"
 msgid "Cancel rename"
 msgstr "名前変更をキャンセル"
 
-#: contents/ui/DetailsView.qml:1720
+#: contents/ui/DetailsView.qml:1723
 msgid "Carbon Monoxide (CO)"
 msgstr "一酸化炭素（CO）"
 
@@ -1137,10 +992,8 @@ msgstr "降水確率"
 msgid "Chance of precipitation"
 msgstr "降水確率"
 
-#: contents/ui/DetailsView.qml:1456
-msgid ""
-"Change over the last 3 hours, worked out from the readings the widget has coll"
-"ected. The open ring on the dial marks the pressure 3 hours ago."
+#: contents/ui/DetailsView.qml:1458
+msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
 msgstr "過去3時間の変化量で、ウィジェットが収集した測定値から算出します。ダイヤル上の白抜きの輪は3時間前の気圧を示します。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
@@ -1215,9 +1068,7 @@ msgid "Choose on map"
 msgstr "地図上で選択"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:382
-msgid ""
-"Choose the alert language for each saved location. If an alert is not publishe"
-"d in that language, its native language is shown instead."
+msgid "Choose the alert language for each saved location. If an alert is not published in that language, its native language is shown instead."
 msgstr "保存した位置ごとにアラートの言語を選択します。その言語でアラートが発表されていない場合は、本来の言語で表示されます。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:410
@@ -1237,7 +1088,7 @@ msgid "Clean style"
 msgstr "クリーンスタイル"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2872
+#: contents/ui/DetailsView.qml:2879
 msgid "Clear"
 msgstr "クリア"
 
@@ -1273,16 +1124,11 @@ msgid "Click"
 msgstr "クリック"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:695
-msgid ""
-"Click \"Test across providers\" to check if the coordinates are serviceable by"
-" each supported weather provider. Providers requiring an API key that is not c"
-"onfigured will be skipped."
-msgstr ""
-"「プロバイダ横断テスト」をクリックして、座標が各対応気象プロバイダで利用可能か確認します。APIキーが必要だが設定されていないプロバイダはスキップされます。"
+msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
+msgstr "「プロバイダ横断テスト」をクリックして、座標が各対応気象プロバイダで利用可能か確認します。APIキーが必要だが設定されていないプロバイダはスキップされます。"
 
 #: contents/ui/ForecastView.qml:1033
-msgid ""
-"Click a day to show its hourly forecast. Double-click the graph to zoom in"
+msgid "Click a day to show its hourly forecast. Double-click the graph to zoom in"
 msgstr "日をクリックすると時間予報を表示します。グラフをダブルクリックすると拡大します"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:136
@@ -1318,6 +1164,11 @@ msgstr "雲量"
 msgid "Clouds"
 msgstr "雲"
 
+#: contents/ui/components/WeatherMapView.qml:1229
+msgctxt "@label cloud cover at the map pointer"
+msgid "Clouds: %1"
+msgstr "雲: %1"
+
 #: contents/ui/config/configNotifications.qml:100 contents/ui/main.qml:2089
 msgid "Coastal event"
 msgstr "沿岸現象"
@@ -1352,9 +1203,7 @@ msgid "Color legend on the map"
 msgstr "マップ上のカラー凡例"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:684
-msgid ""
-"Color the panel temperature with the same cold to hot scale as the forecast cu"
-"rve, instead of a fixed color."
+msgid "Color the panel temperature with the same cold to hot scale as the forecast curve, instead of a fixed color."
 msgstr "固定色の代わりに、予報曲線と同じ寒色〜暖色のスケールでパネルの気温を着色します。"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1027
@@ -1455,9 +1304,7 @@ msgid "Connection successful! %1 key is valid."
 msgstr "接続に成功しました! %1 のキーは有効です。"
 
 #: contents/ui/js/airQuality.js:122
-msgid ""
-"Consider reducing or rescheduling strenuous outdoor activities if you experien"
-"ce symptoms such as coughing or throat irritation."
+msgid "Consider reducing or rescheduling strenuous outdoor activities if you experience symptoms such as coughing or throat irritation."
 msgstr "咳や喉の刺激などの症状がある場合は、激しい屋外活動を減らすか、時間をずらすことを検討してください。"
 
 #: contents/ui/DetailsView.qml:486
@@ -1482,13 +1329,8 @@ msgid "Couldn't play that sound file: %1"
 msgstr "そのサウンドファイルを再生できませんでした: %1"
 
 #: contents/ui/config/configNotifications.qml:563
-msgid ""
-"Critical notifications are still shown even when Do Not Disturb is enabled, or"
-" while you're playing a game or watching a fullscreen video (if those options "
-"are enabled in System Settings → Notifications)."
-msgstr ""
-"重要な通知は、Do Not Disturbが有効な場合や、ゲーム中・全画面動画の視聴中でも表示されます（システム設定 → 通知でそれらのオプションが有効な場"
-"合）。"
+msgid "Critical notifications are still shown even when Do Not Disturb is enabled, or while you're playing a game or watching a fullscreen video (if those options are enabled in System Settings → Notifications)."
+msgstr "重要な通知は、Do Not Disturbが有効な場合や、ゲーム中・全画面動画の視聴中でも表示されます（システム設定 → 通知でそれらのオプションが有効な場合）。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:85
 msgid "Croatian"
@@ -1621,11 +1463,11 @@ msgstr "日付形式:"
 msgid "Date/Time:"
 msgstr "日付/時刻:"
 
-#: contents/ui/DetailsView.qml:3555
+#: contents/ui/DetailsView.qml:3562
 msgid "Dawn approaching - "
 msgstr "夜明けが近づいています - "
 
-#: contents/ui/DetailsView.qml:3535
+#: contents/ui/DetailsView.qml:3542
 msgid "Day"
 msgstr "昼"
 
@@ -1633,7 +1475,7 @@ msgstr "昼"
 msgid "Day and night"
 msgstr "昼と夜"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3570
 msgid "Daylight over"
 msgstr "昼光が終了"
 
@@ -1693,7 +1535,7 @@ msgstr "濃い霧雨"
 msgid "Density"
 msgstr "密度"
 
-#: contents/ui/DetailsView.qml:2493 contents/ui/DetailsView.qml:2495
+#: contents/ui/DetailsView.qml:2499 contents/ui/DetailsView.qml:2501
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "説明"
@@ -1748,7 +1590,7 @@ msgstr "露点"
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LayerPanel.qml:974
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1234
+#: contents/ui/components/WeatherMapView.qml:1235
 msgid "Dew point"
 msgstr "露点"
 
@@ -1761,11 +1603,8 @@ msgid "Dew point:"
 msgstr "露点:"
 
 #: contents/ui/config/configNotifications.qml:628
-msgid ""
-"Disable a type to silence it, or give it its own repeat interval. The interval"
-" is used only when 'Repeat reminder until dismissed' is on."
-msgstr ""
-"種類を無効にすると通知を停止できます。または独自の繰り返し間隔を設定できます。この間隔は「閉じるまでリマインダーを繰り返す」がオンの場合にのみ使用されます。"
+msgid "Disable a type to silence it, or give it its own repeat interval. The interval is used only when 'Repeat reminder until dismissed' is on."
+msgstr "種類を無効にすると通知を停止できます。または独自の繰り返し間隔を設定できます。この間隔は「閉じるまでリマインダーを繰り返す」がオンの場合にのみ使用されます。"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:489
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:484
@@ -1865,7 +1704,7 @@ msgstr "二重温度表示"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
 #: contents/ui/components/WeatherMapView.qml:838
-#: contents/ui/components/WeatherMapView.qml:1235
+#: contents/ui/components/WeatherMapView.qml:1236
 msgid "Dust"
 msgstr "粉じん"
 
@@ -1884,11 +1723,8 @@ msgid "EXTREME"
 msgstr "極端"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:462
-msgid ""
-"Each QWeather project has a unique API host. Find yours at console.qweather.co"
-"m under your project settings."
-msgstr ""
-"各QWeatherプロジェクトには固有のAPIホストがあります。console.qweather.com のプロジェクト設定で確認してください。"
+msgid "Each QWeather project has a unique API host. Find yours at console.qweather.com under your project settings."
+msgstr "各QWeatherプロジェクトには固有のAPIホストがあります。console.qweather.com のプロジェクト設定で確認してください。"
 
 #: contents/ui/config/configNotifications.qml:595
 msgid "Each alert is shown only once, without Dismiss and Postpone buttons."
@@ -1899,18 +1735,11 @@ msgid "Each level must go higher than the one before."
 msgstr "各レベルはその前のレベルより高くしてください。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:185
-msgid ""
-"Each new forecast run is downloaded as it comes out, so the map opens without "
-"waiting. Useful on a slow connection; it downloads even if you never open the "
-"map, so leave it off on a metered one."
-msgstr ""
-"新しい予報が発表されるたびにダウンロードするため、地図を待たずに開けます。低速な接続で便利ですが、地図を開かなくてもダウンロードされるため、従量制接続では無"
-"効にしてください。"
+msgid "Each new forecast run is downloaded as it comes out, so the map opens without waiting. Useful on a slow connection; it downloads even if you never open the map, so leave it off on a metered one."
+msgstr "新しい予報が発表されるたびにダウンロードするため、地図を待たずに開けます。低速な接続で便利ですが、地図を開かなくてもダウンロードされるため、従量制接続では無効にしてください。"
 
 #: contents/ui/config/configNotifications.qml:333
-msgid ""
-"Each notification type can be enabled independently, with its own daily time w"
-"here applicable."
+msgid "Each notification type can be enabled independently, with its own daily time where applicable."
 msgstr "各通知タイプは個別に有効化でき、該当する場合は毎日の時刻も設定できます。"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
@@ -1942,7 +1771,7 @@ msgstr "風パレットを編集"
 msgid "Edit…"
 msgstr "編集…"
 
-#: contents/ui/DetailsView.qml:2498 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "発効"
 
@@ -2002,17 +1831,12 @@ msgid "Enter Manually"
 msgstr "手動で入力"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:657
-msgid ""
-"Enter a location name and valid coordinates, then click the main Apply button."
+msgid "Enter a location name and valid coordinates, then click the main Apply button."
 msgstr "位置名と有効な座標を入力し、メインの適用ボタンをクリックしてください。"
 
 #: contents/ui/config/configLocation.qml:1707
-msgid ""
-"Enter exact latitude, longitude, and optional elevation for a more local forec"
-"ast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
-msgstr ""
-"よりローカルな予報のため、正確な緯度、経度、および任意の標高を入力してください。OpenStreetMap、GeoNames、Google Mapsから座標"
-"をコピーできます。"
+msgid "Enter exact latitude, longitude, and optional elevation for a more local forecast. You can copy coordinates from OpenStreetMap, GeoNames, or Google Maps."
+msgstr "よりローカルな予報のため、正確な緯度、経度、および任意の標高を入力してください。OpenStreetMap、GeoNames、Google Mapsから座標をコピーできます。"
 
 #: contents/ui/config/configLocation.qml:1276
 msgid "Enter manually"
@@ -2067,7 +1891,7 @@ msgstr "Esc"
 msgid "European CAQI (0-100+)"
 msgstr "欧州 CAQI（0-100+）"
 
-#: contents/ui/DetailsView.qml:3557
+#: contents/ui/DetailsView.qml:3564
 msgid "Evening - "
 msgstr "夕方 - "
 
@@ -2077,9 +1901,7 @@ msgid "Every (hPa)"
 msgstr "間隔（hPa）"
 
 #: contents/ui/js/airQuality.js:106
-msgid ""
-"Everyone may begin to experience health effects; sensitive groups may experien"
-"ce more serious effects."
+msgid "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
 msgstr "誰もが健康への影響を受け始める可能性があり、敏感な集団ではより深刻な影響を受ける可能性があります。"
 
 #: contents/ui/DetailsView.qml:462 contents/ui/js/spaceWeather.js:199
@@ -2098,7 +1920,7 @@ msgstr "ウィジェットを展開して利用可能なパネル領域を埋め
 msgid "Expanded cards height:"
 msgstr "展開カードの高さ:"
 
-#: contents/ui/DetailsView.qml:2500 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "有効期限"
 
@@ -2208,7 +2030,7 @@ msgstr "週の最初の日:"
 msgid "First picture"
 msgstr "最初の画像"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2188
 msgid "Flare Warning"
 msgstr "フレア警報"
 
@@ -2366,9 +2188,7 @@ msgid "Full screen (F11)"
 msgstr "全画面表示（F11）"
 
 #: contents/ui/config/configLocation.qml:1632
-msgid ""
-"GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using I"
-"P-based detection."
+msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
 msgstr "GPS / GeoClue2が利用できません（最高精度のため qt6-qtlocation をインストール）。IPベースの検出を使用します。"
 
 #: contents/ui/DetailsView.qml:516
@@ -2394,7 +2214,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2が利用できません。システム位置を試行中…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2119
+#: contents/ui/DetailsView.qml:2124
 msgid "Geomagnetic Storm"
 msgstr "地磁気嵐"
 
@@ -2428,9 +2248,7 @@ msgid "Glow intensity:"
 msgstr "光彩の強度:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:453
-msgid ""
-"Glow of the atmosphere around the globe (globe button on the map). Lower it if"
-" the day side looks washed out."
+msgid "Glow of the atmosphere around the globe (globe button on the map). Lower it if the day side looks washed out."
 msgstr "地球儀の周囲の大気の光彩（地図上の地球儀ボタン）。昼側が白っぽく見える場合は下げてください。"
 
 #: contents/ui/DetailsView.qml:460 contents/ui/js/airQuality.js:91
@@ -2450,7 +2268,7 @@ msgid "Graphs style:"
 msgstr "グラフのスタイル:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
-#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
+#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1949
 msgid "Grass"
 msgstr "イネ科"
 
@@ -2491,7 +2309,7 @@ msgstr "危険"
 msgid "Header:"
 msgstr "ヘッダー:"
 
-#: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2496 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "見出し"
 
@@ -2500,9 +2318,7 @@ msgid "Health alert: everyone may experience more serious health effects."
 msgstr "健康アラート: 誰もがより深刻な健康への影響を受ける可能性があります。"
 
 #: contents/ui/js/airQuality.js:108
-msgid ""
-"Health warning of emergency conditions: everyone is more likely to be affected"
-"."
+msgid "Health warning of emergency conditions: everyone is more likely to be affected."
 msgstr "緊急事態に関する健康警報: 誰もが影響を受ける可能性が高くなります。"
 
 #: contents/ui/components/RadarWebEngineView.qml:190
@@ -2572,7 +2388,7 @@ msgstr "高"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1230
+#: contents/ui/components/WeatherMapView.qml:1231
 msgctxt "@item cloud level"
 msgid "High"
 msgstr "上層"
@@ -2615,9 +2431,7 @@ msgid "Historical and forecast data provider. API key required below."
 msgstr "過去のデータと予報データのプロバイダです。以下にAPIキーの入力が必要です。"
 
 #: contents/ui/HistoryView.qml:1194
-msgid ""
-"Historical values are reanalysis data on a roughly 10 km grid, so they can dif"
-"fer from nearby station readings."
+msgid "Historical values are reanalysis data on a roughly 10 km grid, so they can differ from nearby station readings."
 msgstr "過去の値は約10 km格子の再解析データのため、近隣の観測所の測定値と異なる場合があります。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:737
@@ -2666,9 +2480,7 @@ msgid "Hourly layout:"
 msgstr "時間別レイアウト:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:413
-msgid ""
-"How dark the deep night is on the radar map when day and night are shown (butt"
-"on on the map)."
+msgid "How dark the deep night is on the radar map when day and night are shown (button on the map)."
 msgstr "昼夜を表示したときのレーダーマップの深夜の暗さ（地図上のボタン）。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:1056
@@ -2696,7 +2508,7 @@ msgid "Humid"
 msgstr "多湿"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
-#: contents/ui/components/WeatherMapView.qml:1233
+#: contents/ui/components/WeatherMapView.qml:1234
 #: contents/ui/config/configAppearance.qml:1872
 #: contents/ui/config/configAppearance.qml:1974
 #: contents/ui/config/configAppearance.qml:2118 contents/ui/DetailsView.qml:700
@@ -2770,29 +2582,20 @@ msgid "Ideal air quality for outdoor activities."
 msgstr "屋外活動に最適な空気質です。"
 
 #: contents/ui/config/configLocation.qml:1252
-msgid ""
-"If this looks correct, apply it. Otherwise, choose your location manually."
+msgid "If this looks correct, apply it. Otherwise, choose your location manually."
 msgstr "正しい場合は適用してください。そうでない場合は、位置を手動で選択してください。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:431
-msgid ""
-"If you have just registered a new OpenWeatherMap API key, it might take up to "
-"2 hours for it to become active. Please try again later if it doesn't work imm"
-"ediately."
-msgstr ""
-"新しくOpenWeatherMap APIキーを登録したばかりの場合、有効になるまで最大2時間かかることがあります。すぐに動作しない場合は、後でもう一度お試"
-"しください。"
+msgid "If you have just registered a new OpenWeatherMap API key, it might take up to 2 hours for it to become active. Please try again later if it doesn't work immediately."
+msgstr "新しくOpenWeatherMap APIキーを登録したばかりの場合、有効になるまで最大2時間かかることがあります。すぐに動作しない場合は、後でもう一度お試しください。"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:497
 msgid "Imperial (°F, mph, inHg, in)"
 msgstr "ヤード・ポンド法（°F、mph、inHg、in）"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:180
-msgid ""
-"In a vertical panel, long item labels may be truncated. Consider using \"Simpl"
-"e\" mode, increasing the panel width, or reducing the font size."
-msgstr ""
-"垂直パネルでは、長い項目ラベルが切り捨てられる場合があります。「シンプル」モードの使用、パネル幅の増加、またはフォントサイズの縮小を検討してください。"
+msgid "In a vertical panel, long item labels may be truncated. Consider using \"Simple\" mode, increasing the panel width, or reducing the font size."
+msgstr "垂直パネルでは、長い項目ラベルが切り捨てられる場合があります。「シンプル」モードの使用、パネル幅の増加、またはフォントサイズの縮小を検討してください。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:804
 msgctxt "the cache size in force until Plasma restarts"
@@ -2816,18 +2619,14 @@ msgid ""
 "Install it for your distribution:\n"
 "  • Fedora / RHEL / Arch: qt6-qtlocation\n"
 "  • openSUSE: qt6-location\n"
-"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtposi"
-"tioning\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation and qml6-module-qtpositioning\n"
 "\n"
-"You can still search for a location or enter coordinates manually. Note that a"
-"uto-detection will continue to work using an IP fallback, but it may be less a"
-"ccurate and won’t update in real time as you move around."
+"You can still search for a location or enter coordinates manually. Note that auto-detection will continue to work using an IP fallback, but it may be less accurate and won’t update in real time as you move around."
 msgstr ""
 "ディストリビューション用にインストールしてください:\n"
 "  • Fedora / RHEL / Arch: qt6-qtlocation\n"
 "  • openSUSE: qt6-location\n"
-"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation および qml6-module-qtposi"
-"tioning\n"
+"  • Debian / Kubuntu / KDE Neon: qml6-module-qtlocation および qml6-module-qtpositioning\n"
 "\n"
 "位置の検索や座標の手動入力は引き続き可能です。自動検出はIPフォールバックで引き続き動作しますが、精度が低く、移動時にリアルタイムで更新されません。"
 
@@ -2843,7 +2642,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2508 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "指示"
 
@@ -2926,24 +2725,16 @@ msgid "KDE Icon Theme (Symbolic)"
 msgstr "KDEアイコンテーマ（シンボリック）"
 
 #: contents/ui/RadarView.qml:279
-msgid ""
-"KDE Plasma was started with MangoHud injected into it. The overlay can crash t"
-"he whole desktop shell when the web-based radar starts, so the radar was not l"
-"oaded."
-msgstr ""
-"KDE Plasma は MangoHud が注入された状態で起動されました。このオーバーレイは、Web ベースのレーダーの起動時にデスクトップシェル全体を"
-"クラッシュさせる可能性があるため、レーダーは読み込まれませんでした。"
+msgid "KDE Plasma was started with MangoHud injected into it. The overlay can crash the whole desktop shell when the web-based radar starts, so the radar was not loaded."
+msgstr "KDE Plasma は MangoHud が注入された状態で起動されました。このオーバーレイは、Web ベースのレーダーの起動時にデスクトップシェル全体をクラッシュさせる可能性があるため、レーダーは読み込まれませんでした。"
 
 #: contents/ui/config/configAppearance.qml:910
 msgid "KDE System Icons (automatic, follows weather code)"
 msgstr "KDE システムアイコン（自動、天気コードに追従）"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1552
-msgid ""
-"KDE icon themes don't fully support many item icons. You can set your own icon"
-"s by clicking \"Set your own icons\"."
-msgstr ""
-"KDE アイコンテーマは多くの項目アイコンを完全にはサポートしていません。「独自のアイコンを設定」をクリックして独自のアイコンを設定できます。"
+msgid "KDE icon themes don't fully support many item icons. You can set your own icons by clicking \"Set your own icons\"."
+msgstr "KDE アイコンテーマは多くの項目アイコンを完全にはサポートしていません。「独自のアイコンを設定」をクリックして独自のアイコンを設定できます。"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:65
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:50
@@ -2982,7 +2773,7 @@ msgid "Knots (kn)"
 msgstr "ノット（kn）"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2128
+#: contents/ui/DetailsView.qml:2133
 msgid "Kp Index"
 msgstr "Kp 指数"
 
@@ -3066,11 +2857,8 @@ msgid "Leave full screen (F11 or Esc)"
 msgstr "全画面表示を終了（F11またはEsc）"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:373
-msgid ""
-"Leave this empty to use the public server. Set it to your own address if you r"
-"un a self-hosted LibreWXR instance."
-msgstr ""
-"空欄のままにすると公開サーバーを使用します。セルフホストのLibreWXRインスタンスを実行している場合は、ご自身のアドレスを設定してください。"
+msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
+msgstr "空欄のままにすると公開サーバーを使用します。セルフホストのLibreWXRインスタンスを実行している場合は、ご自身のアドレスを設定してください。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:906
 msgid "Levels shown"
@@ -3208,9 +2996,7 @@ msgstr "位置"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:516
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:97
-msgid ""
-"Location '%1' is already in your saved list. You can apply the selected locati"
-"on, but it will not be saved again."
+msgid "Location '%1' is already in your saved list. You can apply the selected location, but it will not be saved again."
 msgstr "位置 '%1' は既に保存リストにあります。選択した位置を適用できますが、再度保存されません。"
 
 #: contents/ui/config/configAppearance.qml:1886
@@ -3223,8 +3009,7 @@ msgid "Location auto-detected."
 msgstr "位置を自動検出しました。"
 
 #: contents/ui/config/configLocation.qml:1632
-msgid ""
-"Location detection is depending on system configuration and permissions."
+msgid "Location detection is depending on system configuration and permissions."
 msgstr "位置検出はシステム設定と権限に依存します。"
 
 #: contents/ui/config/configGeneral.qml:473
@@ -3236,9 +3021,7 @@ msgstr "位置は %1 で利用可能です。"
 #: contents/ui/config/configGeneral.qml:476
 #: contents/ui/config/configGeneral.qml:485
 #: contents/ui/config/configLocation.qml:548
-msgid ""
-"Location is not available on %1 (HTTP %2). Try a different provider or locatio"
-"n."
+msgid "Location is not available on %1 (HTTP %2). Try a different provider or location."
 msgstr "位置は %1 で利用できません（HTTP %2）。別のプロバイダまたは位置をお試しください。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:338
@@ -3274,15 +3057,11 @@ msgstr "今すぐログアウト…"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:827
 msgid ""
-"Logs every API request (address without keys, HTTP status, time taken, size, w"
-"hat came back), the provider fallback chain, caches, timers and how long the w"
-"idget needs to load everything. Every line starts with [Advanced Weather Widge"
-"t - <component>].\n"
+"Logs every API request (address without keys, HTTP status, time taken, size, what came back), the provider fallback chain, caches, timers and how long the widget needs to load everything. Every line starts with [Advanced Weather Widget - <component>].\n"
 "View it with: journalctl --user -f | grep \"Advanced Weather Widget\". \n"
 "Please enable only when you experience issues with the widget."
 msgstr ""
-"各APIリクエスト（キーを含まないアドレス、HTTPステータス、所要時間、サイズ、応答内容）、プロバイダのフォールバック順序、キャッシュ、タイマー、ウィジェ"
-"ットがすべてを読み込むまでの時間を記録します。各行は [Advanced Weather Widget - <component>] で始まります。\n"
+"各APIリクエスト（キーを含まないアドレス、HTTPステータス、所要時間、サイズ、応答内容）、プロバイダのフォールバック順序、キャッシュ、タイマー、ウィジェットがすべてを読み込むまでの時間を記録します。各行は [Advanced Weather Widget - <component>] で始まります。\n"
 "表示方法: journalctl --user -f | grep \"Advanced Weather Widget\". \n"
 "ウィジェットに問題が発生した場合のみ有効にしてください。"
 
@@ -3327,7 +3106,7 @@ msgstr "低"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1232
+#: contents/ui/components/WeatherMapView.qml:1233
 msgctxt "@item cloud level"
 msgid "Low"
 msgstr "下層"
@@ -3435,9 +3214,7 @@ msgid "Map icon theme:"
 msgstr "地図のアイコンテーマ:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:798
-msgid ""
-"Map tiles already seen stay on disk, so they are not downloaded a second time."
-" A new size applies the next time Plasma starts."
+msgid "Map tiles already seen stay on disk, so they are not downloaded a second time. A new size applies the next time Plasma starts."
 msgstr "表示済みの地図タイルをディスクに保存し、再ダウンロードを防ぎます。新しいサイズは次回のPlasma起動時に適用されます。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:197
@@ -3468,9 +3245,7 @@ msgid "Medium"
 msgstr "中"
 
 #: contents/ui/js/airQuality.js:105
-msgid ""
-"Members of sensitive groups may experience health effects; the general public "
-"is less likely to be affected."
+msgid "Members of sensitive groups may experience health effects; the general public is less likely to be affected."
 msgstr "敏感な集団では健康への影響が現れる可能性があり、一般の人々が影響を受ける可能性は比較的低くなります。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:296
@@ -3493,7 +3268,7 @@ msgstr "メートル法（°C、km/h、hPa、mm）"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1231
+#: contents/ui/components/WeatherMapView.qml:1232
 msgctxt "@item cloud level"
 msgid "Mid"
 msgstr "中層"
@@ -3514,7 +3289,7 @@ msgstr "最小の高さ:"
 msgid "Minimum width:"
 msgstr "最小の幅:"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2188
 msgid "Minor"
 msgstr "軽微"
 
@@ -3620,8 +3395,8 @@ msgstr "月相、月の出 & 月の入り"
 msgid "Moon:"
 msgstr "月:"
 
-#: contents/ui/DetailsView.qml:3772 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4095 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3779 contents/ui/DetailsView.qml:3784
+#: contents/ui/DetailsView.qml:4102 contents/ui/DetailsView.qml:4107
 msgid "Moonrise"
 msgstr "月の出"
 
@@ -3643,7 +3418,7 @@ msgstr "月の出のアイコン:"
 msgid "Moonrise only"
 msgstr "月の出のみ"
 
-#: contents/ui/DetailsView.qml:3770 contents/ui/DetailsView.qml:4093
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:4100
 msgid "Moonrise/Moonset"
 msgstr "月の出 / 月の入り"
 
@@ -3653,8 +3428,8 @@ msgstr "月の出 / 月の入り"
 msgid "Moonrise:"
 msgstr "月の出:"
 
-#: contents/ui/DetailsView.qml:3774 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4097 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3781 contents/ui/DetailsView.qml:3784
+#: contents/ui/DetailsView.qml:4104 contents/ui/DetailsView.qml:4107
 msgid "Moonset"
 msgstr "月の入り"
 
@@ -3689,7 +3464,7 @@ msgid "Mouse wheel"
 msgstr "マウスホイール"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:711
-#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1952
+#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1952
 msgid "Mugwort"
 msgstr "ヨモギ"
 
@@ -3748,17 +3523,11 @@ msgid "Near gale"
 msgstr "強風"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:521
-msgid ""
-"Need the coordinates for a place? You can look them up at <a href=\"https://ww"
-"w.mapcoordinates.net/\">mapcoordinates.net</a>."
-msgstr ""
-"場所の座標が必要ですか?<a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>"
-" で検索できます。"
+msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
+msgstr "場所の座標が必要ですか?<a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a> で検索できます。"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1236
-msgid ""
-"Negative spacing pulls panel items closer together than their natural gap and "
-"can make icons or text overlap."
+msgid "Negative spacing pulls panel items closer together than their natural gap and can make icons or text overlap."
 msgstr "負の間隔を設定すると、パネル項目が本来の間隔よりも詰まって配置され、アイコンやテキストが重なることがあります。"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:372
@@ -3790,7 +3559,7 @@ msgstr "翌日"
 msgid "Next period"
 msgstr "次の期間"
 
-#: contents/ui/DetailsView.qml:3532
+#: contents/ui/DetailsView.qml:3539
 msgid "Night"
 msgstr "夜"
 
@@ -3806,7 +3575,7 @@ msgstr "夜間光"
 msgid "Night lights density"
 msgstr "夜間光の密度"
 
-#: contents/ui/DetailsView.qml:1714
+#: contents/ui/DetailsView.qml:1717
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "二酸化窒素（NO₂）"
 
@@ -3814,7 +3583,7 @@ msgstr "二酸化窒素（NO₂）"
 msgid "No"
 msgstr "いいえ"
 
-#: contents/ui/DetailsView.qml:2850
+#: contents/ui/DetailsView.qml:2857
 msgid "No active alerts"
 msgstr "有効なアラートはありません"
 
@@ -3823,9 +3592,7 @@ msgid "No data"
 msgstr "データなし"
 
 #: contents/ui/HistoryView.qml:784
-msgid ""
-"No data is available for this period yet. The most recent days can take up to "
-"about five days to appear."
+msgid "No data is available for this period yet. The most recent days can take up to about five days to appear."
 msgstr "この期間のデータはまだありません。直近の数日は、表示されるまで最大5日ほどかかることがあります。"
 
 #: contents/ui/HistoryView.qml:1097
@@ -3866,16 +3633,14 @@ msgid "No satellite data"
 msgstr "衛星データなし"
 
 #: contents/ui/config/configLocation.qml:1737
-msgid ""
-"No saved locations. Save the current location to quickly switch between places"
-"."
+msgid "No saved locations. Save the current location to quickly switch between places."
 msgstr "保存された位置がありません。現在の位置を保存すると、場所をすばやく切り替えられます。"
 
 #: contents/ui/DetailsView.qml:464
 msgid "No snow"
 msgstr "積雪なし"
 
-#: contents/ui/DetailsView.qml:2854
+#: contents/ui/DetailsView.qml:2861
 msgid "No warnings in effect"
 msgstr "発効中の警報はありません"
 
@@ -3911,8 +3676,7 @@ msgid "Not available (HTTP %1)"
 msgstr "利用できません（HTTP %1）"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:654
-msgid ""
-"Not available: the selected base map already has a fixed light or dark style."
+msgid "Not available: the selected base map already has a fixed light or dark style."
 msgstr "利用できません: 選択したベースマップには、固定のライトまたはダークスタイルが既に設定されています。"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:746
@@ -3961,9 +3725,7 @@ msgid "Now: %1%2"
 msgstr "現在: %1%2"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:992
-msgid ""
-"Number of item rows visible at once. Resize the panel height in KDE settings t"
-"o match."
+msgid "Number of item rows visible at once. Resize the panel height in KDE settings to match."
 msgstr "一度に表示される項目の行数です。KDE設定でパネルの高さを合わせてください。"
 
 #: contents/ui/config/configAppearance.qml:1033
@@ -3985,51 +3747,27 @@ msgid "Off (warnings and errors are always logged)"
 msgstr "オフ（警告とエラーは常にログに記録されます）"
 
 #: contents/ui/config/configGeneral.qml:207
-msgid ""
-"Off - the workaround script has been removed, so it won't load on your next lo"
-"gin. This session already started with GPU compositing disabled though, and yo"
-"ur system isn't systemd-managed, so there's no way to clear that live - it sta"
-"ys disabled (including anything you open freshly in this session) until you lo"
-"g out and back in."
-msgstr ""
-"オフ - 回避策スクリプトは削除されたため、次回ログイン時には読み込まれません。ただし、このセッションはすでにGPU合成が無効の状態で開始されており、お使い"
-"のシステムはsystemd管理ではないため、実行中にこれを解除する方法はありません - ログアウトして再度ログインするまで、無効のままです（このセッションで"
-"新しく起動したものも含む）。"
+msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, and your system isn't systemd-managed, so there's no way to clear that live - it stays disabled (including anything you open freshly in this session) until you log out and back in."
+msgstr "オフ - 回避策スクリプトは削除されたため、次回ログイン時には読み込まれません。ただし、このセッションはすでにGPU合成が無効の状態で開始されており、お使いのシステムはsystemd管理ではないため、実行中にこれを解除する方法はありません - ログアウトして再度ログインするまで、無効のままです（このセッションで新しく起動したものも含む）。"
 
 #: contents/ui/config/configGeneral.qml:209
-msgid ""
-"Off - the workaround script has been removed, so it won't load on your next lo"
-"gin. This session already started with GPU compositing disabled though, so it "
-"stays that way (and anything already open, like a terminal, keeps showing the "
-"old value) until you log out and back in."
-msgstr ""
-"オフ - 回避策スクリプトは削除されたため、次回ログイン時には読み込まれません。ただし、このセッションはすでにGPU合成が無効の状態で開始されているため、ロ"
-"グアウトして再度ログインするまではそのままです（ターミナルなど、すでに開いているものは古い値を表示し続けます）。"
+msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, so it stays that way (and anything already open, like a terminal, keeps showing the old value) until you log out and back in."
+msgstr "オフ - 回避策スクリプトは削除されたため、次回ログイン時には読み込まれません。ただし、このセッションはすでにGPU合成が無効の状態で開始されているため、ログアウトして再度ログインするまではそのままです（ターミナルなど、すでに開いているものは古い値を表示し続けます）。"
 
 #: contents/ui/config/configGeneral.qml:205
-msgid ""
-"Off - the workaround script has been removed, so it won't load on your next lo"
-"gin. Your system uses systemd, so anything launched fresh from here on may alr"
-"eady reflect the cleared value - but anything already open (like a terminal yo"
-"u still have up) keeps showing the old one regardless, and a full log out and "
-"back in is the only guaranteed way to clear it everywhere."
-msgstr ""
-"オフ - 回避策スクリプトは削除されたため、次回ログイン時には読み込まれません。お使いのシステムはsystemdを使用しているため、ここから新しく起動したも"
-"のには解除後の値がすでに反映されている可能性があります - ただし、すでに開いているもの（起動中のターミナルなど）は関係なく古い値を表示し続けるため、すべて"
-"から確実に解除するには一度ログアウトして再度ログインするしかありません。"
+msgid "Off - the workaround script has been removed, so it won't load on your next login. Your system uses systemd, so anything launched fresh from here on may already reflect the cleared value - but anything already open (like a terminal you still have up) keeps showing the old one regardless, and a full log out and back in is the only guaranteed way to clear it everywhere."
+msgstr "オフ - 回避策スクリプトは削除されたため、次回ログイン時には読み込まれません。お使いのシステムはsystemdを使用しているため、ここから新しく起動したものには解除後の値がすでに反映されている可能性があります - ただし、すでに開いているもの（起動中のターミナルなど）は関係なく古い値を表示し続けるため、すべてから確実に解除するには一度ログアウトして再度ログインするしかありません。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:119
 msgid "Off: no data-point dots are shown."
 msgstr "オフ: データ点のマーカーを表示しません。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:203
-msgid ""
-"Official Spanish meteorological agency - Spain locations only! API key require"
-"d below."
+msgid "Official Spanish meteorological agency - Spain locations only! API key required below."
 msgstr "スペインの公式気象機関 - スペインの位置のみ対応！下にAPIキーが必要です。"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:716
-#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1955
+#: contents/ui/DetailsView.qml:1795 contents/ui/main.qml:1955
 msgid "Olive"
 msgstr "オリーブ"
 
@@ -4084,8 +3822,7 @@ msgid "Open-Meteo (recommended, free)"
 msgstr "Open-Meteo（推奨、無料）"
 
 #: contents/ui/HistoryView.qml:766
-msgid ""
-"Open-Meteo is rate limiting requests. Please try again in a little while."
+msgid "Open-Meteo is rate limiting requests. Please try again in a little while."
 msgstr "Open-Meteoがリクエストを制限しています。しばらくしてからもう一度お試しください。"
 
 #: contents/ui/components/MapBackgroundChoices.qml:51
@@ -4146,7 +3883,7 @@ msgstr "オプション: 右クリック"
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Orange"
 msgstr "オレンジ"
 
@@ -4154,7 +3891,7 @@ msgstr "オレンジ"
 msgid "Orange dot"
 msgstr "オレンジの点"
 
-#: contents/ui/DetailsView.qml:2836
+#: contents/ui/DetailsView.qml:2842
 msgid "Orange warning"
 msgstr "オレンジ警報"
 
@@ -4171,7 +3908,7 @@ msgstr "レイヤーの順序"
 msgid "Overcast"
 msgstr "曇り"
 
-#: contents/ui/DetailsView.qml:1716
+#: contents/ui/DetailsView.qml:1719
 msgid "Ozone (O₃)"
 msgstr "オゾン（O₃）"
 
@@ -4237,11 +3974,11 @@ msgstr "パネル › 複数行レイアウト › メインアイコンスタ�
 msgid "Panel › Simple layout › Weather icon style"
 msgstr "パネル › シンプルレイアウト › 天気アイコンスタイル"
 
-#: contents/ui/DetailsView.qml:1712
+#: contents/ui/DetailsView.qml:1715
 msgid "Particulate Matter (PM10)"
 msgstr "粒子状物質（PM10）"
 
-#: contents/ui/DetailsView.qml:1710
+#: contents/ui/DetailsView.qml:1713
 msgid "Particulate Matter (PM2.5)"
 msgstr "粒子状物質（PM2.5）"
 
@@ -4291,15 +4028,11 @@ msgid "Phase + upcoming rise/set"
 msgstr "月相 + 今後の月の出 / 月の入り"
 
 #: contents/ui/config/configLocation.qml:1693
-msgid ""
-"Pick an exact spot on the map for a more local forecast, such as your neighbor"
-"hood block or a specific landmark."
+msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
 msgstr "近隣の街区や特定のランドマークなど、よりローカルな予報のために地図上の正確な地点を選択してください。"
 
-#: contents/ui/components/WeatherMapView.qml:1851
-msgid ""
-"Pictures loaded / pictures in the range<br>Pictures per second at most, set in"
-" the settings of the column"
+#: contents/ui/components/WeatherMapView.qml:1852
+msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
 msgstr "読み込み済みの画像 / 範囲内の画像<br>1秒あたりの最大画像数（列の設定で指定）"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:557
@@ -4335,18 +4068,11 @@ msgid "Play or pause (Space)"
 msgstr "再生 / 一時停止（スペース）"
 
 #: contents/ui/config/configNotifications.qml:456
-msgid ""
-"Plays a sound alongside the notification for alerts of that severity. A switch"
-" greyed out here means that severity is turned off above, so it never notifies"
-" - with or without sound. By default only Red and Purple play a sound."
-msgstr ""
-"その重要度のアラートの通知と一緒にサウンドを再生します。ここでスイッチがグレー表示になっている場合は、上の重要度がオフになっているため、サウンドの有無にかか"
-"わらず通知されません。デフォルトでは赤と紫のみサウンドを再生します。"
+msgid "Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound."
+msgstr "その重要度のアラートの通知と一緒にサウンドを再生します。ここでスイッチがグレー表示になっている場合は、上の重要度がオフになっているため、サウンドの有無にかかわらず通知されません。デフォルトでは赤と紫のみサウンドを再生します。"
 
 #: contents/ui/SimpleView.qml:832
-msgid ""
-"Point at a day to see its details. Double-click the graph, or hold Ctrl and sc"
-"roll the mouse wheel, to zoom in."
+msgid "Point at a day to see its details. Double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in."
 msgstr "日にカーソルを合わせると詳細が表示されます。グラフをダブルクリックするか、Ctrlを押しながらマウスホイールをスクロールすると拡大できます。"
 
 #: contents/ui/config/configAppearance.qml:1928
@@ -4356,7 +4082,7 @@ msgstr "日にカーソルを合わせると詳細が表示されます。グラ
 msgid "Pollen"
 msgstr "花粉"
 
-#: contents/ui/DetailsView.qml:1967
+#: contents/ui/DetailsView.qml:1972
 msgid "Pollen data not available for this location."
 msgstr "この位置の花粉データは利用できません。"
 
@@ -4467,7 +4193,7 @@ msgstr "ウィジェットを事前に準備:"
 msgid "Pressure"
 msgstr "気圧"
 
-#: contents/ui/DetailsView.qml:1455
+#: contents/ui/DetailsView.qml:1457
 msgid "Pressure tendency"
 msgstr "気圧の傾向"
 
@@ -4496,7 +4222,7 @@ msgstr "前期間"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "主単位を先に表示（例: °C / °F）"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2504
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "プロバイダ"
@@ -4521,7 +4247,7 @@ msgid "Provider website:"
 msgstr "プロバイダのウェブサイト:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2212
+#: contents/ui/DetailsView.qml:2218
 msgid "Provider:"
 msgstr "プロバイダ:"
 
@@ -4532,21 +4258,14 @@ msgstr "プロバイダ: %1"
 #: contents/ui/config/tabs/ConfigProviderTab.qml:122
 msgid ""
 "Providers are tried in order until one succeeds:\n"
-"Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  "
-"→  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  "
-"→  WeatherAPI.com\n"
+"Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 " If you want to choose a specific provider, please turn off Adaptive Mode.\n"
-"Open-Meteo is always tried first - it is free and requires no API key. AEMET i"
-"s intentionally not part of this list, as it only covers Spain and is not suit"
-"able for global use."
+"Open-Meteo is always tried first - it is free and requires no API key. AEMET is intentionally not part of this list, as it only covers Spain and is not suitable for global use."
 msgstr ""
 "プロバイダは成功するまで順番に試行されます:\n"
-"Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  "
-"→  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  "
-"→  WeatherAPI.com\n"
+"Open-Meteo  →  BBC Weather  →  met.no  →  Pirate Weather  →  Visual Crossing  →  Tomorrow.io  →  StormGlass  →  Weatherbit  →  QWeather  →  OpenWeatherMap  →  WeatherAPI.com\n"
 " 特定のプロバイダを選択したい場合は、アダプティブモードをオフにしてください。\n"
-"Open-Meteoは常に最初に試行されます - 無料でAPIキーが不要です。AEMETはスペインのみを対象としており、グローバルな利用には適さないため、こ"
-"のリストには意図的に含まれていません。"
+"Open-Meteoは常に最初に試行されます - 無料でAPIキーが不要です。AEMETはスペインのみを対象としており、グローバルな利用には適さないため、このリストには意図的に含まれていません。"
 
 #: contents/ui/config/configNotifications.qml:381
 #: contents/ui/config/configNotifications.qml:436
@@ -4570,9 +4289,7 @@ msgid "QWeather error (code %1). Check your API key."
 msgstr "QWeatherエラー（コード %1）。APIキーを確認してください。"
 
 #: contents/ui/ForecastView.qml:1704
-msgid ""
-"QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecas"
-"t is still available for this date."
+msgid "QWeather provides hourly forecasts for up to 168 hours (7 days). Daily forecast is still available for this date."
 msgstr "QWeatherは最大168時間（7日間）の時間予報を提供します。この日付の日別予報は引き続き利用可能です。"
 
 #: contents/ui/config/configLocation.qml:1156
@@ -4587,7 +4304,7 @@ msgstr "QtWebEngineがインストールされていません"
 msgid "Quarter"
 msgstr "1/4"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2165 contents/ui/DetailsView.qml:2188
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "静穏"
@@ -4615,43 +4332,19 @@ msgid "Radar provider:"
 msgstr "レーダープロバイダ:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:340
-msgid ""
-"Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR"
-" is a free, open-source weather radar API. It combines real radar composites f"
-"rom NOAA, Canadian, and European sources with a global model fallback, and pro"
-"vides the past 2 hours of radar data plus a short nowcast. It also offers a fr"
-"ee satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and mo"
-"tion arrows are selected directly in the Radar tab. The map follows your Plasm"
-"a light/dark theme automatically."
-msgstr ""
-"レーダープロバイダ: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXRは、無料の"
-"オープンソース気象レーダーAPIです。NOAA、カナダ、ヨーロッパの実際のレーダー合成画像をグローバルモデルのフォールバックと組み合わせ、過去2時間のレーダ"
-"ーデータと短時間のナウキャストを提供します。無料の衛星（赤外線）レイヤーも提供しています。<br/><br/>レイヤーモード、レーダー配色、移動方向矢印はレ"
-"ーダータブで直接選択します。マップはPlasmaのライト/ダークテーマに自動的に追従します。"
+msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
+msgstr "レーダープロバイダ: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXRは、無料のオープンソース気象レーダーAPIです。NOAA、カナダ、ヨーロッパの実際のレーダー合成画像をグローバルモデルのフォールバックと組み合わせ、過去2時間のレーダーデータと短時間のナウキャストを提供します。無料の衛星（赤外線）レイヤーも提供しています。<br/><br/>レイヤーモード、レーダー配色、移動方向矢印はレーダータブで直接選択します。マップはPlasmaのライト/ダークテーマに自動的に追従します。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:330
-msgid ""
-"Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/"
-">The widget uses the free RainViewer API, which provides the past 2 hours of w"
-"eather radar data in 10-minute intervals. Radar forecast is not supported.<br/"
-"><br/>Rain Viewer does not guarantee the availability of radar data. They do n"
-"ot conclude contracts with owners of this data. The reason is that the owners "
-"can ask them to remove their data from Rain Viewer, change the format, or stop"
-" sharing the data. They are trying to keep radar data for as long as possible,"
-" but sometimes the owners just stop providing the images."
-msgstr ""
-"レーダープロバイダ: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>ウィジェ"
-"ットは無料のRainViewer APIを使用しています。このAPIは過去2時間の気象レーダーデータを10分間隔で提供します。レーダー予報には対応していませ"
-"ん。<br/><br/>Rain Viewerはレーダーデータの可用性を保証していません。同社はデータの所有者と契約を結んでいません。その理由は、所有者がR"
-"ain Viewerからのデータ削除を求めたり、形式を変更したり、データの共有を停止する可能性があるためです。同社はレーダーデータを可能な限り長く保持するよ"
-"う努めていますが、所有者が画像の提供を停止してしまうこともあります。"
+msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+msgstr "レーダープロバイダ: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>ウィジェットは無料のRainViewer APIを使用しています。このAPIは過去2時間の気象レーダーデータを10分間隔で提供します。レーダー予報には対応していません。<br/><br/>Rain Viewerはレーダーデータの可用性を保証していません。同社はデータの所有者と契約を結んでいません。その理由は、所有者がRain Viewerからのデータ削除を求めたり、形式を変更したり、データの共有を停止する可能性があるためです。同社はレーダーデータを可能な限り長く保持するよう努めていますが、所有者が画像の提供を停止してしまうこともあります。"
 
 #: contents/ui/FullView.qml:883 contents/ui/FullView.qml:885
 msgid "Radar:"
 msgstr "レーダー:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
-#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1958
+#: contents/ui/DetailsView.qml:1797 contents/ui/main.qml:1958
 msgid "Ragweed"
 msgstr "ブタクサ"
 
@@ -4699,16 +4392,11 @@ msgid "Range limited to %1 days"
 msgstr "範囲は%1日に制限されています"
 
 #: contents/ui/HistoryView.qml:1253
-msgid ""
-"Range limited to %1 days: if the chosen range is longer, the end date is set a"
-"utomatically (for example, start date %2 gives end date %3)."
-msgstr ""
-"範囲は%1日に制限されています: 選択した範囲がそれより長い場合、終了日は自動的に設定されます（たとえば、開始日が%2なら終了日は%3になります）。"
+msgid "Range limited to %1 days: if the chosen range is longer, the end date is set automatically (for example, start date %2 gives end date %3)."
+msgstr "範囲は%1日に制限されています: 選択した範囲がそれより長い場合、終了日は自動的に設定されます（たとえば、開始日が%2なら終了日は%3になります）。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:163
-msgid ""
-"Read-only while Adaptive mode is on - turn it off above to choose a specific p"
-"rovider."
+msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
 msgstr "アダプティブモードが有効な間は読み取り専用です - 上でオフにすると特定のプロバイダを選択できます。"
 
 #: contents/ui/components/RadarWebEngineView.qml:185
@@ -4725,7 +4413,7 @@ msgstr "推奨 - 例: 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Red"
 msgstr "赤"
 
@@ -4734,14 +4422,12 @@ msgctxt "color"
 msgid "Red"
 msgstr "赤"
 
-#: contents/ui/DetailsView.qml:2838
+#: contents/ui/DetailsView.qml:2844
 msgid "Red warning"
 msgstr "赤警報"
 
 #: contents/ui/js/airQuality.js:123
-msgid ""
-"Reduce or reschedule strenuous outdoor activities, especially if you experienc"
-"e symptoms."
+msgid "Reduce or reschedule strenuous outdoor activities, especially if you experience symptoms."
 msgstr "特に症状がある場合は、激しい屋外活動を減らすか、時間をずらしてください。"
 
 #: contents/ui/config/configLocation.qml:1635
@@ -4785,14 +4471,8 @@ msgid "Relative humidity %"
 msgstr "相対湿度 %"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:110
-msgid ""
-"Relative humidity at 2 m: how close the air is to being saturated. Brown: dry "
-"(under 30 %, fire risk). Sand and green: usual. Blue: near 100 % (fog, low clo"
-"uds, rain). It goes up at night and down in the afternoon even when the air ke"
-"eps the same water. For the water itself, see the dew point."
-msgstr ""
-"地上2 mの相対湿度: 空気が飽和にどれだけ近いかを示します。茶色: 乾燥（30 %未満、火災の危険）。砂色と緑: 通常。青: 100 %近く（霧、低い雲、"
-"雨）。空気中の水分量が変わらなくても、夜は上がり、午後は下がります。水分そのものについては露点を参照してください。"
+msgid "Relative humidity at 2 m: how close the air is to being saturated. Brown: dry (under 30 %, fire risk). Sand and green: usual. Blue: near 100 % (fog, low clouds, rain). It goes up at night and down in the afternoon even when the air keeps the same water. For the water itself, see the dew point."
+msgstr "地上2 mの相対湿度: 空気が飽和にどれだけ近いかを示します。茶色: 乾燥（30 %未満、火災の危険）。砂色と緑: 通常。青: 100 %近く（霧、低い雲、雨）。空気中の水分量が変わらなくても、夜は上がり、午後は下がります。水分そのものについては露点を参照してください。"
 
 #: contents/ui/config/configAppearance.qml:1873
 msgid "Relative humidity percentage"
@@ -4890,15 +4570,11 @@ msgid "Round values:"
 msgstr "値の丸め:"
 
 #: contents/ui/config/configNotifications.qml:611
-msgid ""
-"Routine tests (for example \"Required Weekly Test\") are ignored: no notificat"
-"ion and no sound."
+msgid "Routine tests (for example \"Required Weekly Test\") are ignored: no notification and no sound."
 msgstr "定期テスト（例: \"Required Weekly Test\"）は無視されます。通知も音もありません。"
 
 #: contents/ui/config/configNotifications.qml:611
-msgid ""
-"Routine tests (for example \"Required Weekly Test\") will show a notification,"
-" but never play an alert sound."
+msgid "Routine tests (for example \"Required Weekly Test\") will show a notification, but never play an alert sound."
 msgstr "定期テスト（例: \"Required Weekly Test\"）は通知を表示しますが、警報音は鳴らしません。"
 
 #: contents/ui/components/WeatherMapView.qml:1217
@@ -4972,10 +4648,7 @@ msgid "Search a weather station to set your location"
 msgstr "気象観測所を検索して位置を設定"
 
 #: contents/ui/config/configLocation.qml:1685
-msgid ""
-"Search by city or place name. Results show the location name, region, and coun"
-"try, and are suitable for general city-level forecasts rather than exact stree"
-"t-level placement."
+msgid "Search by city or place name. Results show the location name, region, and country, and are suitable for general city-level forecasts rather than exact street-level placement."
 msgstr "都市名や地名で検索します。結果には位置名、地域、国が表示され、正確な番地単位の位置指定ではなく、一般的な都市レベルの予報に適しています。"
 
 #: contents/ui/config/configLocation.qml:1673
@@ -5011,13 +4684,8 @@ msgid "Select start date"
 msgstr "開始日を選択"
 
 #: contents/ui/config/configNotifications.qml:579
-msgid ""
-"Sends a single, low-priority heads-up as soon as a future alert is published ("
-"e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert notification"
-" above still fires separately once it actually becomes active."
-msgstr ""
-"将来のアラートが発表されるとすぐに、優先度の低いお知らせを一度だけ送ります（例:「熱波警報は明日11:00に開始」）。実際に発効した時点で、上記の通常のアラ"
-"ート通知が別途送られます。"
+msgid "Sends a single, low-priority heads-up as soon as a future alert is published (e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert notification above still fires separately once it actually becomes active."
+msgstr "将来のアラートが発表されるとすぐに、優先度の低いお知らせを一度だけ送ります（例:「熱波警報は明日11:00に開始」）。実際に発効した時点で、上記の通常のアラート通知が別途送られます。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:73
 msgid "Separated"
@@ -5067,9 +4735,7 @@ msgid "Settings where this theme is not available keep their current theme."
 msgstr "このテーマが利用できない設定では、現在のテーマが維持されます。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:541
-msgid ""
-"Settings: pictures per second, resolution while playing,<br>coasts and borders"
-", Sun, Moon and night lights, dark map, see-through panels"
+msgid "Settings: pictures per second, resolution while playing,<br>coasts and borders, Sun, Moon and night lights, dark map, see-through panels"
 msgstr "設定: 1秒あたりの画像数、再生中の解像度、<br>海岸線と国境、太陽・月・夜間光、ダークマップ、透過パネル"
 
 #: contents/ui/js/spaceWeather.js:93
@@ -5385,7 +5051,7 @@ msgid "Snowfall"
 msgstr "降雪"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2138
+#: contents/ui/DetailsView.qml:2143
 msgid "Solar Wind"
 msgstr "太陽風"
 
@@ -5497,7 +5163,7 @@ msgstr "最大瞬間風速"
 msgid "Strongest wind"
 msgstr "最大風速"
 
-#: contents/ui/DetailsView.qml:1718
+#: contents/ui/DetailsView.qml:1721
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "二酸化硫黄（SO₂）"
 
@@ -5522,8 +5188,8 @@ msgstr "日の出 / 日の入りのオプション"
 msgid "Sunday"
 msgstr "日曜日"
 
-#: contents/ui/DetailsView.qml:3305 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3649 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3312 contents/ui/DetailsView.qml:3316
+#: contents/ui/DetailsView.qml:3656 contents/ui/DetailsView.qml:3660
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "日の出"
@@ -5565,8 +5231,8 @@ msgstr "日の出 / 日の入りのマーカー:"
 msgid "Sunrise:"
 msgstr "日の出:"
 
-#: contents/ui/DetailsView.qml:3307 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3651 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3314 contents/ui/DetailsView.qml:3316
+#: contents/ui/DetailsView.qml:3658 contents/ui/DetailsView.qml:3660
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "日の入り"
@@ -5603,9 +5269,7 @@ msgid "Swedish"
 msgstr "スウェーデン語"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:654
-msgid ""
-"Switch between the light and dark map style. Until first toggled, the map foll"
-"ows the Plasma theme."
+msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
 msgstr "ライト/ダークのマップスタイルを切り替えます。初めて切り替えるまでは、Plasmaテーマに追従します。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1290
@@ -5741,7 +5405,7 @@ msgstr "気温の影:"
 msgid "Temperature:"
 msgstr "気温:"
 
-#: contents/ui/DetailsView.qml:1453
+#: contents/ui/DetailsView.qml:1455
 msgid "Tendency: collecting data"
 msgstr "傾向: データ収集中"
 
@@ -5771,54 +5435,27 @@ msgid "Text labels (Temperature, Wind…)"
 msgstr "テキストラベル（気温、風…）"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1354
-msgid ""
-"Text will follow the system font and expand to fill the available space."
+msgid "Text will follow the system font and expand to fill the available space."
 msgstr "テキストはシステムフォントに従い、利用可能な領域を埋めるよう拡張されます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:119
-msgid ""
-"The CAMS forecast. The colors follow the European Air Quality Index: cyan good"
-", green fair, yellow moderate, red poor, dark red very poor, purple extremely "
-"poor. The scale is logarithmic: each band covers a wider range than the one be"
-"fore."
-msgstr ""
-"CAMSの予報です。色は欧州大気質指数に従います: 水色は良好、緑はまあまあ、黄は中程度、赤は悪い、濃い赤は非常に悪い、紫は極めて悪い。スケールは対数で、各"
-"バンドは前のバンドより広い範囲をカバーします。"
+msgid "The CAMS forecast. The colors follow the European Air Quality Index: cyan good, green fair, yellow moderate, red poor, dark red very poor, purple extremely poor. The scale is logarithmic: each band covers a wider range than the one before."
+msgstr "CAMSの予報です。色は欧州大気質指数に従います: 水色は良好、緑はまあまあ、黄は中程度、赤は悪い、濃い赤は非常に悪い、紫は極めて悪い。スケールは対数で、各バンドは前のバンドより広い範囲をカバーします。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1012
-msgid ""
-"The Details, Forecast and History tabs are built in the background after start"
-"up and stay built when the widget is closed, so it opens at once. This uses mo"
-"re memory for the whole session, and the History tab loads its data at startup"
-"."
-msgstr ""
-"詳細、予報、履歴の各タブは起動後にバックグラウンドで構築され、ウィジェットを閉じても構築されたままになるため、すぐに開きます。その代わり、セッション中ずっと"
-"メモリを多く使用し、履歴タブは起動時にデータを読み込みます。"
+msgid "The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup."
+msgstr "詳細、予報、履歴の各タブは起動後にバックグラウンドで構築され、ウィジェットを閉じても構築されたままになるため、すぐに開きます。その代わり、セッション中ずっとメモリを多く使用し、履歴タブは起動時にデータを読み込みます。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:500
-msgid ""
-"The Radar tab can animate the wind as moving particles (switch it on there). T"
-"he wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, inde"
-"pendently of the LibreWXR server. This sets the frame rate: lower it on a slow"
-" computer, raise it if strong winds look jerky."
-msgstr ""
-"レーダータブでは、風を動く粒子としてアニメーション表示できます（タブ内でオンにしてください）。風データはLibreWXRサーバーとは独立して、<a href"
-"='https://open-meteo.com/'>Open-Meteo</a>から取得されます。ここではフレームレートを設定します: 低速なコンピュータ"
-"では下げ、強風がぎこちなく見える場合は上げてください。"
+msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
+msgstr "レーダータブでは、風を動く粒子としてアニメーション表示できます（タブ内でオンにしてください）。風データはLibreWXRサーバーとは独立して、<a href='https://open-meteo.com/'>Open-Meteo</a>から取得されます。ここではフレームレートを設定します: 低速なコンピュータでは下げ、強風がぎこちなく見える場合は上げてください。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:168
-msgid ""
-"The Radar tab opens at once on the most recent radar image, and the animation "
-"plays at once. It uses about 200 MB more memory: leave it off on a computer wi"
-"th little memory."
-msgstr ""
-"レーダータブは最新のレーダー画像ですぐに開き、アニメーションもすぐに再生されます。約200 MB多くメモリを使用するため、メモリの少ないコンピュータではオフ"
-"のままにしてください。"
+msgid "The Radar tab opens at once on the most recent radar image, and the animation plays at once. It uses about 200 MB more memory: leave it off on a computer with little memory."
+msgstr "レーダータブは最新のレーダー画像ですぐに開き、アニメーションもすぐに再生されます。約200 MB多くメモリを使用するため、メモリの少ないコンピュータではオフのままにしてください。"
 
 #: contents/ui/RadarView.qml:345
-msgid ""
-"The Radar tab requires the QtWebEngine package, which is not installed on this"
-" system."
+msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
 msgstr "レーダータブにはQtWebEngineパッケージが必要ですが、このシステムにはインストールされていません。"
 
 #: contents/ui/config/configLocation.qml:379
@@ -5826,12 +5463,8 @@ msgid "The auto-detected location is already in your saved list."
 msgstr "自動検出された位置は既に保存リストにあります。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:842
-msgid ""
-"The cache is full: the oldest images make room for the new ones. If the map do"
-"wnloads areas it has already shown again, choose a larger size."
-msgstr ""
-"キャッシュがいっぱいです: 新しい画像を保存するため、古い画像から削除されます。地図がすでに表示した地域を再度ダウンロードする場合は、より大きなサイズを選択"
-"してください。"
+msgid "The cache is full: the oldest images make room for the new ones. If the map downloads areas it has already shown again, choose a larger size."
+msgstr "キャッシュがいっぱいです: 新しい画像を保存するため、古い画像から削除されます。地図がすでに表示した地域を再度ダウンロードする場合は、より大きなサイズを選択してください。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:833
 msgid "The cache will be cleared the next time the map opens."
@@ -5843,43 +5476,28 @@ msgid "The chart needs the Qt Graphs or the KDE Quick Charts QML module."
 msgstr "グラフにはQt GraphsまたはKDE Quick Charts QMLモジュールが必要です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:145
-msgid ""
-"The colored layers share the map, one at a time: temperature, pressure, humidi"
-"ty, dew point, air quality. The column lists the layers as they are stacked on"
-" the map, the top one first; the order is set with the button left of the sett"
-"ings. The wind always goes over the others."
-msgstr ""
-"色付きレイヤーは地図を共有し、一度に1つずつ表示されます: 気温、気圧、湿度、露点、空気質。列には、地図上に積み重ねられた順にレイヤーが並び、一番上が最初で"
-"す。順序は設定の左にあるボタンで指定します。風は常にほかのレイヤーの上に表示されます。"
+msgid "The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. The column lists the layers as they are stacked on the map, the top one first; the order is set with the button left of the settings. The wind always goes over the others."
+msgstr "色付きレイヤーは地図を共有し、一度に1つずつ表示されます: 気温、気圧、湿度、露点、空気質。列には、地図上に積み重ねられた順にレイヤーが並び、一番上が最初です。順序は設定の左にあるボタンで指定します。風は常にほかのレイヤーの上に表示されます。"
 
 #: contents/ui/config/configAppearance.qml:929
-msgid ""
-"The condition icon will automatically reflect the current weather using your K"
-"DE system icon theme. No customisation is needed."
+msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
 msgstr "天気アイコンは、KDEシステムアイコンテーマを使用して現在の天気を自動的に反映します。カスタマイズは不要です。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:238
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr "地磁気（Kp / G）予報は最大3日先まで利用可能です"
 
-#: contents/ui/components/WeatherMapView.qml:1881
-msgid ""
-"The global model, then the finer regional<br>ones drawn over it in this view"
+#: contents/ui/components/WeatherMapView.qml:1882
+msgid "The global model, then the finer regional<br>ones drawn over it in this view"
 msgstr "グローバルモデルと、このビューでその上に描画される<br>より詳細な地域モデル"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:80
-msgid ""
-"The infrared picture of the clouds, from LibreWXR: the colder the top, the hig"
-"her and whiter the cloud."
+msgid "The infrared picture of the clouds, from LibreWXR: the colder the top, the higher and whiter the cloud."
 msgstr "LibreWXRによる雲の赤外画像: 雲頂が冷たいほど、雲は高く白くなります。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:108
-msgid ""
-"The isobars join the points of equal pressure. The wind blows almost along the"
-"m, counterclockwise around a low in the northern hemisphere. The closer they a"
-"re, the stronger the wind."
-msgstr ""
-"等圧線は同じ気圧の点を結びます。風はほぼ等圧線に沿って吹き、北半球では低気圧の周りを反時計回りに吹きます。等圧線の間隔が狭いほど、風は強くなります。"
+msgid "The isobars join the points of equal pressure. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer they are, the stronger the wind."
+msgstr "等圧線は同じ気圧の点を結びます。風はほぼ等圧線に沿って吹き、北半球では低気圧の周りを反時計回りに吹きます。等圧線の間隔が狭いほど、風は強くなります。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:132
 msgid "The layer column"
@@ -5890,87 +5508,59 @@ msgid "The line"
 msgstr "線"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:86
-msgid ""
-"The lines flow with the wind, their color is the speed (the wind palette of th"
-"e settings). By default: white when calm, green and blue for a breeze, yellow "
-"and orange for a strong wind, red and violet for a storm. Where the lines bunc"
-"h up and turn, the weather changes."
-msgstr ""
-"流線は風の流れを示し、色は風速を表します（設定の風パレット）。既定では、無風時は白、そよ風は緑と青、強風は黄とオレンジ、嵐は赤と紫です。流線が密集して曲がる"
-"場所では、天気が変化しています。"
+msgid "The lines flow with the wind, their color is the speed (the wind palette of the settings). By default: white when calm, green and blue for a breeze, yellow and orange for a strong wind, red and violet for a storm. Where the lines bunch up and turn, the weather changes."
+msgstr "流線は風の流れを示し、色は風速を表します（設定の風パレット）。既定では、無風時は白、そよ風は緑と青、強風は黄とオレンジ、嵐は赤と紫です。流線が密集して曲がる場所では、天気が変化しています。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:461
 msgid "The map could not be loaded. Check your internet connection."
 msgstr "地図を読み込めませんでした。インターネット接続を確認してください。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:471
-msgid ""
-"The map needs QtWebEngine, which is not installed. You can still search for a "
-"location above."
+msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
 msgstr "地図の表示にはQtWebEngineが必要ですが、インストールされていません。上の検索欄からは引き続き位置を検索できます。"
 
-#: contents/ui/components/WeatherMapView.qml:1822
+#: contents/ui/components/WeatherMapView.qml:1823
 msgid "The map page needs WebGL, which this graphics setup does not offer."
 msgstr "地図ページにはWebGLが必要ですが、このグラフィック環境では利用できません。"
 
 #: contents/ui/config/configLocation.qml:1186
-msgid ""
-"The map picker requires the QtLocation and QtPositioning packages, which are n"
-"ot installed on this system."
+msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
 msgstr "地図ピッカーにはQtLocationとQtPositioningパッケージが必要ですが、このシステムにはインストールされていません。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:186
-msgid ""
-"The same keys in every language. They work while the Weather Map tab is shown."
+msgid "The same keys in every language. They work while the Weather Map tab is shown."
 msgstr "どの言語でも同じキーを使います。天気図タブの表示中に操作できます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:112
-msgid ""
-"The temperature at which dew forms. It tells how much water the air really hol"
-"ds. Under 10 °C the air feels dry, at 13 to 16 °C you notice it, from 18 °C it"
-" is muggy, from 21 °C oppressive, from 24 °C tropical. When the night cools do"
-"wn to the dew point, dew or fog forms."
-msgstr ""
-"露が発生する温度です。空気中に実際にどれだけ水分が含まれているかを示します。10 °C未満では乾燥して感じられ、13～16 °Cでは湿り気を感じ、18 °C"
-"以上では蒸し暑く、21 °C以上では不快なほど蒸し暑く、24 °C以上では熱帯のような蒸し暑さになります。夜に気温が露点まで下がると、露や霧が発生します。"
+msgid "The temperature at which dew forms. It tells how much water the air really holds. Under 10 °C the air feels dry, at 13 to 16 °C you notice it, from 18 °C it is muggy, from 21 °C oppressive, from 24 °C tropical. When the night cools down to the dew point, dew or fog forms."
+msgstr "露が発生する温度です。空気中に実際にどれだけ水分が含まれているかを示します。10 °C未満では乾燥して感じられ、13～16 °Cでは湿り気を感じ、18 °C以上では蒸し暑く、21 °C以上では不快なほど蒸し暑く、24 °C以上では熱帯のような蒸し暑さになります。夜に気温が露点まで下がると、露や霧が発生します。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:133
-msgid ""
-"The thin button on its left edge opens or folds it. The map stays where it is "
-"when the column opens over it."
+msgid "The thin button on its left edge opens or folds it. The map stays where it is when the column opens over it."
 msgstr "左端の細いボタンで開閉します。列が地図の上に開いても、地図の位置は変わりません。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:147
 msgid "The two clocks: how far back and how far ahead"
 msgstr "2つの時刻表示: 過去と未来の範囲"
 
-#: contents/ui/components/WeatherMapView.qml:1821
+#: contents/ui/components/WeatherMapView.qml:1822
 msgid "The weather maps cannot play here"
 msgstr "この環境では天気図を再生できません"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:99
-msgid ""
-"The whiter, the more of the sky is covered. With the three levels ticked you s"
-"ee the model's total cover, without counting twice the clouds over each other."
+msgid "The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other."
 msgstr "白いほど空が雲に覆われています。3つの高度をすべて選ぶと、重なった雲を二重に数えずに、モデルによる雲量の合計を表示します。"
 
-#: contents/ui/DetailsView.qml:1456
-msgid ""
-"The widget collects pressure readings as it updates; about an hour of readings"
-" is needed to work out the trend."
+#: contents/ui/DetailsView.qml:1458
+msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
 msgstr "ウィジェットは更新時に気圧の測定値を記録します。傾向の算出には約1時間分の測定値が必要です。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:529
-msgid ""
-"The wind is drawn over the map, so over every layer wherever it is in this lis"
-"t: its place here orders the column of the tab only."
-msgstr ""
-"風は地図上に重ねて表示されるため、このリスト内の位置にかかわらず、すべてのレイヤーの上に描画されます。ここでの順序はタブ内の列にのみ適用されます。"
+msgid "The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only."
+msgstr "風は地図上に重ねて表示されるため、このリスト内の位置にかかわらず、すべてのレイヤーの上に描画されます。ここでの順序はタブ内の列にのみ適用されます。"
 
 #: contents/ui/config/configGeneral.qml:227
-msgid ""
-"The workaround script wasn't found on disk. Try toggling the option off and on"
-" again."
+msgid "The workaround script wasn't found on disk. Try toggling the option off and on again."
 msgstr "回避策のスクリプトがディスク上に見つかりません。オプションを一度オフにしてから、再度オンにしてみてください。"
 
 #: contents/ui/components/WeatherMapView.qml:860
@@ -5983,16 +5573,12 @@ msgid "Theme default"
 msgstr "テーマのデフォルト"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:390
-msgid ""
-"There are no saved locations yet. Save a location on the Location page to choo"
-"se its alert language."
+msgid "There are no saved locations yet. Save a location on the Location page to choose its alert language."
 msgstr "保存済みの位置はありません。アラートの言語を選択するには、位置ページで位置を保存してください。"
 
 #: contents/ui/config/configAppearance.qml:2552
 #: contents/ui/config/configAppearance.qml:2593
-msgid ""
-"These settings only apply when the widget is placed in a panel or the system t"
-"ray - they have no effect on the desktop."
+msgid "These settings only apply when the widget is placed in a panel or the system tray - they have no effect on the desktop."
 msgstr "これらの設定は、ウィジェットをパネルまたはシステムトレイに配置した場合にのみ適用されます。デスクトップに配置した場合には効果がありません。"
 
 #: contents/ui/components/WeatherMapView.qml:856
@@ -6090,20 +5676,12 @@ msgstr "タイムゾーン:"
 
 #: contents/ui/ForecastView.qml:1033 contents/ui/ForecastView.qml:1808
 #: contents/ui/HistoryView.qml:945
-msgid ""
-"Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom "
-"in"
+msgid "Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in"
 msgstr "ヒント: グラフをダブルクリックするか、Ctrlキーを押しながらマウスホイールを回すと拡大できます"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1150
-msgid ""
-"To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): d"
-"isable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your we"
-"ather provider, and enter your API key above. When you are ready, you can enab"
-"le Adaptive mode again."
-msgstr ""
-"追加の地図レイヤー（雨、雲、気温、風、気圧）のロックを解除するには:「プロバイダ」タブでアダプティブモードを無効にし、気象プロバイダとしてOpenWeath"
-"erMapを選択して、上にAPIキーを入力してください。準備ができたら、アダプティブモードを再度有効にできます。"
+msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
+msgstr "追加の地図レイヤー（雨、雲、気温、風、気圧）のロックを解除するには:「プロバイダ」タブでアダプティブモードを無効にし、気象プロバイダとしてOpenWeatherMapを選択して、上にAPIキーを入力してください。準備ができたら、アダプティブモードを再度有効にできます。"
 
 #: contents/ui/ForecastView.qml:997 contents/ui/ForecastView.qml:1288
 #: contents/ui/ForecastView.qml:1653 contents/ui/main.qml:2847
@@ -6194,7 +5772,7 @@ msgstr "左上"
 msgid "Top Right"
 msgstr "右上"
 
-#: contents/ui/components/WeatherMapView.qml:1229
+#: contents/ui/components/WeatherMapView.qml:1230
 msgctxt "@label total cloud cover"
 msgid "Total"
 msgstr "合計"
@@ -6222,14 +5800,11 @@ msgid "Turkish"
 msgstr "トルコ語"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:784
-msgid ""
-"Turn off all three switches above to pick a single standard here instead."
+msgid "Turn off all three switches above to pick a single standard here instead."
 msgstr "ここで単一の基準を選択するには、上の3つのスイッチをすべてオフにしてください。"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:736
-msgid ""
-"Turn on any combination to show them side by side instead of a single standard"
-" below."
+msgid "Turn on any combination to show them side by side instead of a single standard below."
 msgstr "組み合わせてオンにすると、下の単一の基準の代わりに並べて表示されます。"
 
 #: contents/ui/main.qml:2495
@@ -6320,7 +5895,7 @@ msgstr "ウィジェットのピン留めを解除"
 msgid "Unsettled"
 msgstr "不安定"
 
-#: contents/ui/DetailsView.qml:2447
+#: contents/ui/DetailsView.qml:2453
 msgid "Until"
 msgstr "終了"
 
@@ -6403,9 +5978,7 @@ msgstr "使用量:"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1517
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:376
-msgid ""
-"Uses KDE system icons by default. Click the button to customise each item's ic"
-"on."
+msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
 msgstr "デフォルトでKDEシステムアイコンを使用します。ボタンをクリックして各項目のアイコンをカスタマイズできます。"
 
 #: contents/ui/js/airQuality.js:124
@@ -6529,7 +6102,7 @@ msgstr "暖かい"
 msgid "Warmest day"
 msgstr "最も暑い日"
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2846
 msgid "Warning"
 msgstr "警報"
 
@@ -6557,7 +6130,7 @@ msgstr "天気アラート"
 msgid "Weather Alerts Provider"
 msgstr "天気アラートプロバイダ"
 
-#: contents/ui/components/WeatherMapView.qml:1533
+#: contents/ui/components/WeatherMapView.qml:1534
 msgid "Weather Map"
 msgstr "天気図"
 
@@ -6575,9 +6148,7 @@ msgid "Weather Maps / Radar"
 msgstr "天気図 / レーダー"
 
 #: contents/ui/config/configGeneral.qml:726
-msgid ""
-"Weather Maps / Radar is turned off, so these settings are read-only. Turn it o"
-"n in Appearance › Widget › General › Visible tabs."
+msgid "Weather Maps / Radar is turned off, so these settings are read-only. Turn it on in Appearance › Widget › General › Visible tabs."
 msgstr "天気図 / レーダーが無効のため、これらの設定は読み取り専用です。外観 › ウィジェット › 一般 › 表示タブで有効にしてください。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:68
@@ -6667,7 +6238,7 @@ msgstr "Weatherbit APIキー:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr "WebPまたはPNG、256または512 px。衛星画像も同じ設定に従います。"
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2512 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "ウェブサイト"
 
@@ -6685,23 +6256,12 @@ msgid "Wettest day"
 msgstr "降水量が最も多い日"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:94
-msgid ""
-"What falls in the three hours around the time shown, in mm/h. Rain goes from b"
-"lue to green, yellow, red and magenta as it gets heavier; snow is lilac and vi"
-"olet; the dangerous kinds (ice) have colors of their own. Under 0.05 mm/h noth"
-"ing is drawn."
-msgstr ""
-"表示時刻を含む計3時間の降水強度を mm/h で示します。雨は強くなるにつれて青、緑、黄、赤、マゼンタに変わります。雪は薄紫と紫、危険な降水（氷）にはそれぞ"
-"れ専用の色が使われます。0.05 mm/h未満は表示されません。"
+msgid "What falls in the three hours around the time shown, in mm/h. Rain goes from blue to green, yellow, red and magenta as it gets heavier; snow is lilac and violet; the dangerous kinds (ice) have colors of their own. Under 0.05 mm/h nothing is drawn."
+msgstr "表示時刻を含む計3時間の降水強度を mm/h で示します。雨は強くなるにつれて青、緑、黄、赤、マゼンタに変わります。雪は薄紫と紫、危険な降水（氷）にはそれぞれ専用の色が使われます。0.05 mm/h未満は表示されません。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:75
-msgid ""
-"What the weather radars see falling, from LibreWXR. After now it is LibreWXR's"
-" nowcast, paler on the time line. In its range the time line slows down to its"
-" 10 minute steps."
-msgstr ""
-"LibreWXRが気象レーダーで観測した降水です。現在以降はLibreWXRのナウキャストとなり、タイムライン上では薄い色で表示されます。その範囲ではタイム"
-"ラインが10分刻みになり、再生速度が遅くなります。"
+msgid "What the weather radars see falling, from LibreWXR. After now it is LibreWXR's nowcast, paler on the time line. In its range the time line slows down to its 10 minute steps."
+msgstr "LibreWXRが気象レーダーで観測した降水です。現在以降はLibreWXRのナウキャストとなり、タイムライン上では薄い色で表示されます。その範囲ではタイムラインが10分刻みになり、再生速度が遅くなります。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:138
 msgid "Wheel"
@@ -6804,13 +6364,13 @@ msgid "Wrap to next line"
 msgstr "次の行に折り返す"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2184
+#: contents/ui/DetailsView.qml:2189
 msgid "X-ray Flare Class"
 msgstr "X線フレアクラス"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Yellow"
 msgstr "黄"
 
@@ -6819,7 +6379,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr "黄"
 
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2840
 msgid "Yellow warning"
 msgstr "黄警報"
 
@@ -6837,17 +6397,11 @@ msgstr "昨日"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:326
 #: contents/ui/config/tabs/ConfigMiscTab.qml:442
-msgid ""
-"You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qm"
-"l-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>"
-msgstr ""
-"日付 / 時刻形式のリファレンスは <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDat"
-"eTime-method\">Qt ドキュメント</a> を参照してください"
+msgid "You can see date/time format reference at: <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt documentation</a>"
+msgstr "日付 / 時刻形式のリファレンスは <a href=\"https://doc.qt.io/qt-6/qml-qtqml-qt.html#formatDateTime-method\">Qt ドキュメント</a> を参照してください"
 
 #: contents/ui/config/configAppearance.qml:442
-msgid ""
-"You selected <b>%1</b>. Apply it to every icon theme setting where it is avail"
-"able?"
+msgid "You selected <b>%1</b>. Apply it to every icon theme setting where it is available?"
 msgstr "<b>%1</b>を選択しました。利用可能なすべてのアイコンテーマ設定に適用しますか？"
 
 #: contents/ui/components/LocationMapPickerView.qml:55
@@ -6859,8 +6413,7 @@ msgstr "拡大"
 
 #: contents/ui/ForecastView.qml:1051 contents/ui/ForecastView.qml:1826
 #: contents/ui/HistoryView.qml:968
-msgid ""
-"Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)"
+msgid "Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)"
 msgstr "拡大（またはグラフをダブルクリック、もしくはCtrlキーを押しながらマウスホイールを回す）"
 
 #: contents/ui/components/LocationMapPickerView.qml:55
@@ -6892,16 +6445,11 @@ msgid "a picture worked out between two files."
 msgstr "2つのファイルから補間した画像です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:83
-msgid ""
-"about 3000 m: the flow that carries the clouds and the rain, stronger and smoo"
-"ther. Only the global model is drawn: the regional models hold the 10 m wind o"
-"nly."
+msgid "about 3000 m: the flow that carries the clouds and the rain, stronger and smoother. Only the global model is drawn: the regional models hold the 10 m wind only."
 msgstr "約3000 m: 雲や雨を運ぶ風の流れで、より強く滑らかです。全球モデルのみを表示します。地域モデルが扱うのは地上10 mの風だけです。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:114
-msgid ""
-"about 7 days back to 5 days ahead. Further on the CAMS forecast stops and the "
-"pictures stay empty."
+msgid "about 7 days back to 5 days ahead. Further on the CAMS forecast stops and the pictures stay empty."
 msgstr "約7日前から5日先までです。それより先はCAMSの予報がなく、画像は表示されません。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:41
@@ -6994,7 +6542,7 @@ msgstr "ft"
 msgid "full screen on or off."
 msgstr "全画面表示を切り替えます。"
 
-#: contents/ui/DetailsView.qml:1841 contents/ui/DetailsView.qml:1928
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1933
 msgid "grains/m³"
 msgstr "grains/m³"
 
@@ -7020,9 +6568,7 @@ msgid "how many degrees each color band covers."
 msgstr "各色の帯が示す温度差です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:71
-msgid ""
-"how the rain moves now. They are the same on every picture: they are not the w"
-"ind of the time shown."
+msgid "how the rain moves now. They are the same on every picture: they are not the wind of the time shown."
 msgstr "現在の雨の動きを示します。どの画像でも同じで、表示時刻の風ではありません。"
 
 #: contents/ui/main.qml:1850 contents/ui/main.qml:1983
@@ -7066,7 +6612,7 @@ msgstr "km"
 msgid "km/h"
 msgstr "km/h"
 
-#: contents/ui/DetailsView.qml:2136
+#: contents/ui/DetailsView.qml:2141
 msgid "km/s"
 msgstr "km/s"
 
@@ -7075,14 +6621,12 @@ msgstr "km/s"
 msgid "kn"
 msgstr "kn"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3570
 msgid "left"
 msgstr "残り"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:169
-msgid ""
-"lists the days of the range. The mouse wheel over the date goes to the next or"
-" previous day."
+msgid "lists the days of the range. The mouse wheel over the date goes to the next or previous day."
 msgstr "対象期間の日付を一覧表示します。日付の上でマウスホイールを回すと、前日または翌日に移動します。"
 
 #: contents/ui/main.qml:3172
@@ -7156,30 +6700,16 @@ msgid "on the radar or the satellite: both at once."
 msgstr "レーダーと衛星画像のどちらのアイコンでも、両方を同時に表示します。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:160
-msgid ""
-"on, the animation plays round again from the start; off, it stops on the last "
-"picture."
+msgid "on, the animation plays round again from the start; off, it stops on the last picture."
 msgstr "有効にするとアニメーションを最初から繰り返し再生し、無効にすると最後の画像で停止します。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:90
-msgid ""
-"on, the finer models (about 2 km) are drawn over the global one where they cov"
-"er the map: the valleys, the heights and the coasts come out. Off, only the gl"
-"obal model (about 25 km) is read: about three times less to download there."
-msgstr ""
-"有効にすると、より高解像度のモデル（約2 km）を対象地域で全球モデルの上に重ねて表示し、谷や高地、海岸の特徴を表します。無効の場合は全球モデル（約25 k"
-"m）のみを読み込み、その地域でのダウンロード量は約3分の1になります。"
+msgid "on, the finer models (about 2 km) are drawn over the global one where they cover the map: the valleys, the heights and the coasts come out. Off, only the global model (about 25 km) is read: about three times less to download there."
+msgstr "有効にすると、より高解像度のモデル（約2 km）を対象地域で全球モデルの上に重ねて表示し、谷や高地、海岸の特徴を表します。無効の場合は全球モデル（約25 km）のみを読み込み、その地域でのダウンロード量は約3分の1になります。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:85
-msgid ""
-"on, the finer models (about 2 km: AROME, ICON-D2, HRRR...) are drawn over the "
-"global one where they cover the map: a truer wind in the mountains and along t"
-"he coasts. Off, only the global model (about 25 km) is read: about three times"
-" less to download there. No effect at 700 hPa."
-msgstr ""
-"有効にすると、より高解像度のモデル（約2 km: AROME、ICON-D2、HRRRなど）を対象地域で全球モデルの上に重ねて表示し、山岳地帯や海岸沿いの風"
-"をより正確に表します。無効の場合は全球モデル（約25 km）のみを読み込み、その地域でのダウンロード量は約3分の1になります。700 hPaでは影響しません"
-"。"
+msgid "on, the finer models (about 2 km: AROME, ICON-D2, HRRR...) are drawn over the global one where they cover the map: a truer wind in the mountains and along the coasts. Off, only the global model (about 25 km) is read: about three times less to download there. No effect at 700 hPa."
+msgstr "有効にすると、より高解像度のモデル（約2 km: AROME、ICON-D2、HRRRなど）を対象地域で全球モデルの上に重ねて表示し、山岳地帯や海岸沿いの風をより正確に表します。無効の場合は全球モデル（約25 km）のみを読み込み、その地域でのダウンロード量は約3分の1になります。700 hPaでは影響しません。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:164
 msgid "one per picture, colored once loaded, red when it failed."
@@ -7190,9 +6720,7 @@ msgid "one step back or ahead, as the buttons of the time bar."
 msgstr "タイムバーのボタンと同様に、1ステップ戻るか進みます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:148
-msgid ""
-"opens the list of choices. It also gives the range of the radar or of the sate"
-"llite, which stays when another layer is switched on."
+msgid "opens the list of choices. It also gives the range of the radar or of the satellite, which stays when another layer is switched on."
 msgstr "選択肢の一覧を開きます。また、レーダーまたは衛星画像の表示範囲を示します。この範囲は別のレイヤーを有効にしても維持されます。"
 
 #: contents/ui/main.qml:2890
@@ -7226,9 +6754,7 @@ msgid "rain"
 msgstr "雨"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:93
-msgid ""
-"rain, snow, wet snow, rain and snow, freezing rain, freezing drizzle, ice pell"
-"ets."
+msgid "rain, snow, wet snow, rain and snow, freezing rain, freezing drizzle, ice pellets."
 msgstr "雨、雪、湿った雪、雨と雪、着氷性の雨、着氷性の霧雨、凍雨です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:144
@@ -7281,9 +6807,7 @@ msgid "strong"
 msgstr "強い"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:182
-msgid ""
-"switch radar, satellite, wind, isobars, precipitation, clouds, temperature, pr"
-"essure, humidity, dew point, air quality on or off."
+msgid "switch radar, satellite, wind, isobars, precipitation, clouds, temperature, pressure, humidity, dew point, air quality on or off."
 msgstr "レーダー、衛星画像、風、等圧線、降水、雲、気温、気圧、湿度、露点、空気質の表示を切り替えます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:56
@@ -7307,11 +6831,8 @@ msgid "the UV index of the day."
 msgstr "その日のUV指数です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:134
-msgid ""
-"the button left of the settings: drag a layer by its handle to stack it, the f"
-"irst one on top; its switch takes it out of the column or puts it back."
-msgstr ""
-"設定の左にあるボタンです。レイヤーのハンドルをドラッグして順序を変更します。先頭のレイヤーが一番上になります。スイッチで列から外したり、戻したりできます。"
+msgid "the button left of the settings: drag a layer by its handle to stack it, the first one on top; its switch takes it out of the column or puts it back."
+msgstr "設定の左にあるボタンです。レイヤーのハンドルをドラッグして順序を変更します。先頭のレイヤーが一番上になります。スイッチで列から外したり、戻したりできます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:175
 msgid "the first or last picture."
@@ -7342,9 +6863,7 @@ msgid "the opacity of the layer, from 0 to 100 %."
 msgstr "レイヤーの不透明度です。0～100 %で設定します。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:143
-msgid ""
-"the opacity, shown in a bubble while it changes and drawn as the bar under the"
-" icon."
+msgid "the opacity, shown in a bubble while it changes and drawn as the bar under the icon."
 msgstr "不透明度です。変更中は吹き出しに表示され、アイコンの下のバーにも示されます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:66
@@ -7353,8 +6872,7 @@ msgstr "レーダーのパレットです。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:84
 #: contents/ui/components/weathermap/HelpPanel.qml:89
-msgid ""
-"the palettes of the widget settings, where they can be made and changed."
+msgid "the palettes of the widget settings, where they can be made and changed."
 msgstr "ウィジェット設定のパレットです。ここで作成や変更ができます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:115
@@ -7362,9 +6880,7 @@ msgid "the pollutants."
 msgstr "大気汚染物質です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:104
-msgid ""
-"the pressure between two lines: 2, 4 or 8 hPa. Zoomed in close, a line comes b"
-"etween two."
+msgid "the pressure between two lines: 2, 4 or 8 hPa. Zoomed in close, a line comes between two."
 msgstr "等圧線の間隔です: 2、4、または8 hPa。拡大すると、2本の線の間にも線が表示されます。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:106
@@ -7376,9 +6892,7 @@ msgid "the previous or next picture from a forecast file."
 msgstr "予報ファイルの前または次の画像です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:74
-msgid ""
-"the radar alone, on its range. A click on the satellite then adds it. The same"
-" double click gives back the layers from before."
+msgid "the radar alone, on its range. A click on the satellite then adds it. The same double click gives back the layers from before."
 msgstr "レーダーのみを、その表示範囲で表示します。衛星画像をクリックすると追加されます。同じ操作をダブルクリックすると、元のレイヤー表示に戻ります。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:162
@@ -7406,9 +6920,7 @@ msgid "the storms tracked."
 msgstr "追跡中の嵐です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:105
-msgid ""
-"the theme's (white on a dark map, black on a light one) or a color of your cho"
-"ice."
+msgid "the theme's (white on a dark map, black on a light one) or a color of your choice."
 msgstr "テーマ色（暗い地図では白、明るい地図では黒）または任意の色です。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:72
@@ -7451,7 +6963,7 @@ msgstr "約2 km未満: 曇りの日、霧、霧雨です。"
 msgid "until %1"
 msgstr "%1 まで"
 
-#: contents/ui/DetailsView.qml:3560
+#: contents/ui/DetailsView.qml:3567
 msgid "until dawn"
 msgstr "夜明けまで"
 

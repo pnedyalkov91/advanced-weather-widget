@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-20 09:59+0100\n"
+"POT-Creation-Date: 2026-11-22 07:49+0200\n"
 "PO-Revision-Date: 2026-11-21 13:05+0100\n"
 "Last-Translator: Aldo Latino <aldolat@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lokalize 26.08.3\n"
 
-#: contents/ui/DetailsView.qml:3557 contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
 msgid " until dawn"
 msgstr " fino all'alba"
 
@@ -145,7 +145,7 @@ msgstr "%1. Fai clic destro per copiarlo o incollarlo, oppure trascinalo su un a
 msgid "%1. Right-click to copy or paste it."
 msgstr "%1. Fai clic destro per copiarlo o incollarlo."
 
-#: contents/ui/components/WeatherMapView.qml:1847
+#: contents/ui/components/WeatherMapView.qml:1848
 msgid "%1/%2 · %3 fps"
 msgstr "%1/%2 · %3 fps"
 
@@ -165,15 +165,15 @@ msgstr "%1: limite di richieste raggiunto (HTTP %2) — nuovo tentativo più tar
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr "%1: la chiave API è stata rifiutata (HTTP %2)"
 
-#: contents/ui/DetailsView.qml:4210
+#: contents/ui/DetailsView.qml:4217
 msgid "%1h"
 msgstr "%1h"
 
-#: contents/ui/DetailsView.qml:4211
+#: contents/ui/DetailsView.qml:4218
 msgid "%1h %2m"
 msgstr "%1h %2m"
 
-#: contents/ui/DetailsView.qml:4204 contents/ui/DetailsView.qml:4208
+#: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
 msgid "%1m"
 msgstr "%1m"
 
@@ -302,27 +302,11 @@ msgstr "<b>Titolo:</b> %1"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:220
 msgid ""
-"<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/>"
-"<br/>"
-"On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/>"
-"<br/>"
-"Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/>"
-"<br/>"
-"<b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
-"        <br/>"
-"<br/>"
-"If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
+"<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
+"        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 msgstr ""
-"<b>Workaround per i crash su sistemi con GPU ibrida / NVIDIA PRIME + Wayland</b><br/>"
-"<br/>"
-"Su alcuni portatili con GPU ibrida che utilizzano Wayland, la vista del browser integrata nella scheda Radar può causare il crash dell'intera shell di Plasma al primo rendering, a causa di un conflitto a livello di driver tra le due GPU. Per evitare ciò, questa opzione disabilita la composizione accelerata via GPU all'interno di quella vista del browser.<br/>"
-"<br/>"
-"Abilita questa opzione solo se si verifica effettivamente questo crash: comporta un calo delle prestazioni di rendering sulla mappa radar.<br/>"
-"<br/>"
-"Poiché deve essere impostato prima dell'avvio di Plasma, <b>richiede di terminare la sessione e di rientrarvi affinché abbia effetto</b>. Si applica inoltre all'intera sessione, quindi qualsiasi altra applicazione che integra una vista browser basata su Chromium adotterà la stessa impostazione. La disattivazione effettuata in un secondo momento richiederà di terminare la sessione e di rientrarvi in modo da rimuoverla.\n"
-"        <br/>"
-"<br/>"
-"Se abiliti questa opzione, verrà creato il seguente file in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
+"<b>Workaround per i crash su sistemi con GPU ibrida / NVIDIA PRIME + Wayland</b><br/><br/>Su alcuni portatili con GPU ibrida che utilizzano Wayland, la vista del browser integrata nella scheda Radar può causare il crash dell'intera shell di Plasma al primo rendering, a causa di un conflitto a livello di driver tra le due GPU. Per evitare ciò, questa opzione disabilita la composizione accelerata via GPU all'interno di quella vista del browser.<br/><br/>Abilita questa opzione solo se si verifica effettivamente questo crash: comporta un calo delle prestazioni di rendering sulla mappa radar.<br/><br/>Poiché deve essere impostato prima dell'avvio di Plasma, <b>richiede di terminare la sessione e di rientrarvi affinché abbia effetto</b>. Si applica inoltre all'intera sessione, quindi qualsiasi altra applicazione che integra una vista browser basata su Chromium adotterà la stessa impostazione. La disattivazione effettuata in un secondo momento richiederà di terminare la sessione e di rientrarvi in modo da rimuoverla.\n"
+"        <br/><br/>Se abiliti questa opzione, verrà creato il seguente file in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 
 #: contents/ui/main.qml:2517
 msgid "<b>Instruction:</b> %1"
@@ -342,18 +326,8 @@ msgid "<b>Starts:</b> %1"
 msgstr "<b>Inizio:</b> %1"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1159
-msgid ""
-"<b>Why OWM layers may not match RainViewer radar</b><br/>"
-"<br/>"
-"OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/>"
-"<br/>"
-"RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
-msgstr ""
-"<b>Perché i livelli OWM potrebbero non corrispondere al radar RainViewer</b><br/>"
-"<br/>"
-"I livelli di precipitazione/nuvole OWM sono <b>riquadri statici di modello</b>: mostrano un output NWP (Numerical Weather Prediction) smussato, non ritorni radar reali. Rappresentano dove il modello <i>pensa</i> stia piovendo in base all'interpolazione tra stazioni meteorologiche ed esecuzioni del modello.<br/>"
-"<br/>"
-"RainViewer utilizza <b>compositi radar meteorologici reali</b> da stazioni radar: riflettività effettivamente misurata aggiornata ogni 2-10 minuti. Questa discrepanza è prevista e nota."
+msgid "<b>Why OWM layers may not match RainViewer radar</b><br/><br/>OWM precipitation/cloud layers are <b>static model tiles</b> - they show a smoothed NWP (Numerical Weather Prediction) output, not actual radar returns. They represent where the model <i>thinks</i> it is raining based on interpolation between weather stations and model runs.<br/><br/>RainViewer uses <b>real weather radar composites</b> from radar stations - actual measured reflectivity updated every 2-10 minutes. This discrepancy is expected and known."
+msgstr "<b>Perché i livelli OWM potrebbero non corrispondere al radar RainViewer</b><br/><br/>I livelli di precipitazione/nuvole OWM sono <b>riquadri statici di modello</b>: mostrano un output NWP (Numerical Weather Prediction) smussato, non ritorni radar reali. Rappresentano dove il modello <i>pensa</i> stia piovendo in base all'interpolazione tra stazioni meteorologiche ed esecuzioni del modello.<br/><br/>RainViewer utilizza <b>compositi radar meteorologici reali</b> da stazioni radar: riflettività effettivamente misurata aggiornata ogni 2-10 minuti. Questa discrepanza è prevista e nota."
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
 msgid "A graph for each detail; point at a day to see its value in all of them"
@@ -371,7 +345,7 @@ msgstr "Un livello si ferma dove finiscono i suoi dati."
 msgid "A palette has 2 to 12 colors."
 msgstr "Una tavolozza ha da 2 a 12 colori."
 
-#: contents/ui/DetailsView.qml:2165
+#: contents/ui/DetailsView.qml:2170
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr "Un campo orientato a sud (Bz negativo) permette al vento solare di accoppiarsi con il campo magnetico terrestre."
 
@@ -397,22 +371,8 @@ msgid "AEMET only covers Spain — choose another weather provider or a location
 msgstr "AEMET copre solo la Spagna: scegli un altro fornitore meteo o una località in Spagna."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:440
-msgid ""
-"AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/>"
-"<br/>"
-"Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/>"
-"<br/>"
-"Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/>"
-"<br/>"
-"Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
-msgstr ""
-"AEMET copre solo le località in Spagna: le altre località mostrano \"Non riuscito\" invece di cambiare fornitore (è stata omessa intenzionalmente anche dalla Modalità adattiva, essendo l'unico fornitore qui con un proprio limite di richieste). C'è un limite al numero di richieste al minuto per l'API di AEMET, quindi non fare clic troppe volte sul pulsante di aggiornamento: potresti raggiungere il limite e dover attendere almeno 1 minuto prima di effettuare un'altra richiesta. Una richiesta non riuscita viene riprovata automaticamente una volta.<br/>"
-"<br/>"
-"I campi che AEMET non pubblica affatto - pressione, visibilità, copertura nevosa e precipitazioni totali giornaliere accumulate - vengono mostrati qui come \"N/D\" e non si tratta di un bug. L'indice UV è solo un dato giornaliero, non orario, e il vento potrebbe mancare per i giorni più lontani, quando la precisione delle previsioni di AEMET diminuisce.<br/>"
-"<br/>"
-"Chiave gratuita: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. Le nuove chiavi scadono 3 mesi dopo la creazione (politica di AEMET, modificata a luglio 2026): dovrai richiederne una nuova quando accadrà.<br/>"
-"<br/>"
-"Non aggiornare troppo spesso, poiché AEMET ha un limite di richieste al minuto. Se lo raggiungi, dovrai attendere almeno 1 minuto prima di effettuare un'altra richiesta."
+msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
+msgstr "AEMET copre solo le località in Spagna: le altre località mostrano \"Non riuscito\" invece di cambiare fornitore (è stata omessa intenzionalmente anche dalla Modalità adattiva, essendo l'unico fornitore qui con un proprio limite di richieste). C'è un limite al numero di richieste al minuto per l'API di AEMET, quindi non fare clic troppe volte sul pulsante di aggiornamento: potresti raggiungere il limite e dover attendere almeno 1 minuto prima di effettuare un'altra richiesta. Una richiesta non riuscita viene riprovata automaticamente una volta.<br/><br/>I campi che AEMET non pubblica affatto - pressione, visibilità, copertura nevosa e precipitazioni totali giornaliere accumulate - vengono mostrati qui come \"N/D\" e non si tratta di un bug. L'indice UV è solo un dato giornaliero, non orario, e il vento potrebbe mancare per i giorni più lontani, quando la precisione delle previsioni di AEMET diminuisce.<br/><br/>Chiave gratuita: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. Le nuove chiavi scadono 3 mesi dopo la creazione (politica di AEMET, modificata a luglio 2026): dovrai richiederne una nuova quando accadrà.<br/><br/>Non aggiornare troppo spesso, poiché AEMET ha un limite di richieste al minuto. Se lo raggiungi, dovrai attendere almeno 1 minuto prima di effettuare un'altra richiesta."
 
 #: contents/ui/ForecastView.qml:1704
 msgid "AEMET provides hourly forecasts for up to 48 hours. Daily forecast is still available for this date."
@@ -455,7 +415,7 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2165 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "Attivo"
 
@@ -576,7 +536,7 @@ msgid "Albanian"
 msgstr "Albanese"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
-#: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
+#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1943
 msgid "Alder"
 msgstr "Ontano"
 
@@ -606,34 +566,16 @@ msgid "Alerts provider:"
 msgstr "Fornitore delle allerte:"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:344
-msgid ""
-"Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/>"
-"<br/>"
-"KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider."
-msgstr ""
-"Fornitore delle allerte: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/>"
-"<br/>"
-"Il server pubblico di allerte FOSS di KDE raccoglie le allerte ufficiali di maltempo in formato CAP dalle agenzie di tutto il mondo e le associa alla tua posizione esatta. Le notifiche delle allerte funzionano allo stesso modo del fornitore nativo."
+msgid "Alerts provider: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>KDE's FOSS Public Alert Server collects official severe-weather warnings in CAP format from agencies worldwide and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr "Fornitore delle allerte: <a href='https://alerts.kde.org/'>FOSS Public Alert Server</a><br/><br/>Il server pubblico di allerte FOSS di KDE raccoglie le allerte ufficiali di maltempo in formato CAP dalle agenzie di tutto il mondo e le associa alla tua posizione esatta. Le notifiche delle allerte funzionano allo stesso modo del fornitore nativo."
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:334
-msgid ""
-"Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/>"
-"<br/>"
-"LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
-msgstr ""
-"Fornitore delle allerte: <a href='https://librewxr.net/'>LibreWXR</a><br/>"
-"<br/>"
-"LibreWXR è un'API meteorologica gratuita e open source che aggrega le allerte CAP ufficiali di tutto il mondo (WMO Severe Weather Information Centre, NOAA NWS e altri) e le associa alla tua posizione esatta. Le notifiche delle allerte funzionano allo stesso modo del fornitore nativo."
+msgid "Alerts provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather API that aggregates official CAP alerts worldwide (WMO Severe Weather Information Centre, NOAA NWS, and others) and matches them to your exact location. Alert notifications work the same as with the native provider."
+msgstr "Fornitore delle allerte: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR è un'API meteorologica gratuita e open source che aggrega le allerte CAP ufficiali di tutto il mondo (WMO Severe Weather Information Centre, NOAA NWS e altri) e le associa alla tua posizione esatta. Le notifiche delle allerte funzionano allo stesso modo del fornitore nativo."
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:324
-msgid ""
-"Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/>"
-"<br/>"
-"European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
-msgstr ""
-"Fornitore delle allerte: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/>"
-"<br/>"
-"Le località europee utilizzano i feed ufficiali di MeteoAlarm (38 paesi), le località statunitensi utilizzano l'API delle allerte del NOAA National Weather Service, con i MetAlerts di met.no come riserva. Se il tuo fornitore meteo fornisce le proprie allerte (ad es. WeatherAPI.com, Pirate Weather), queste vengono utilizzate direttamente."
+msgid "Alerts provider: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>European locations use the official MeteoAlarm feeds (38 countries), US locations use the NOAA National Weather Service alerts API, with met.no MetAlerts as a fallback. If your weather provider delivers its own alerts (e.g. WeatherAPI.com, Pirate Weather), those are used directly."
+msgstr "Fornitore delle allerte: <a href='https://www.meteoalarm.org/'>EUMETNET MeteoAlarm</a> + <a href='https://www.weather.gov/'>NOAA NWS</a><br/><br/>Le località europee utilizzano i feed ufficiali di MeteoAlarm (38 paesi), le località statunitensi utilizzano l'API delle allerte del NOAA National Weather Service, con i MetAlerts di met.no come riserva. Se il tuo fornitore meteo fornisce le proprie allerte (ad es. WeatherAPI.com, Pirate Weather), queste vengono utilizzate direttamente."
 
 #: contents/ui/TooltipContent.qml:505
 msgid "Alerts:"
@@ -643,7 +585,7 @@ msgstr "Allerte:"
 msgid "All"
 msgstr "Tutti"
 
-#: contents/ui/DetailsView.qml:2852
+#: contents/ui/DetailsView.qml:2859
 msgid "All clear"
 msgstr "Nessuna allerta"
 
@@ -764,7 +706,7 @@ msgstr "Arabo"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Sei sicuro? Questa è la tua ultima posizione salvata. Se la rimuovi, il widget non mostrerà più informazioni meteorologiche."
 
-#: contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3566
 msgid "Around midnight - "
 msgstr "Intorno a mezzanotte - "
 
@@ -787,7 +729,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "File audio (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2149
+#: contents/ui/DetailsView.qml:2154
 msgid "Aurora Visibility"
 msgstr "Visibilità dell'aurora"
 
@@ -906,7 +848,7 @@ msgid "Basque"
 msgstr "Basco"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
-#: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
+#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1946
 msgid "Birch"
 msgstr "Betulla"
 
@@ -979,7 +921,7 @@ msgstr "Punto  •"
 msgid "Button guide"
 msgstr "Guida pulsanti"
 
-#: contents/ui/DetailsView.qml:2161
+#: contents/ui/DetailsView.qml:2166
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (campo magnetico)"
 
@@ -1017,7 +959,7 @@ msgstr "Annulla"
 msgid "Cancel rename"
 msgstr "Annulla rinomina"
 
-#: contents/ui/DetailsView.qml:1720
+#: contents/ui/DetailsView.qml:1723
 msgid "Carbon Monoxide (CO)"
 msgstr "Monossido di carbonio (CO)"
 
@@ -1054,7 +996,7 @@ msgstr "Prob. di precip."
 msgid "Chance of precipitation"
 msgstr "Probabilità di precipitazioni"
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
 msgstr "Variazione nelle ultime 3 ore, calcolata dalle letture raccolte dal widget. L'anello vuoto sul quadrante indica la pressione di 3 ore fa."
 
@@ -1150,7 +1092,7 @@ msgid "Clean style"
 msgstr "Stile pulito"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2872
+#: contents/ui/DetailsView.qml:2879
 msgid "Clear"
 msgstr "Cancella"
 
@@ -1225,6 +1167,11 @@ msgstr "Copertura nuvolosa"
 #: contents/ui/components/weathermap/HelpPanel.qml:95
 msgid "Clouds"
 msgstr "Nuvole"
+
+#: contents/ui/components/WeatherMapView.qml:1229
+msgctxt "@label cloud cover at the map pointer"
+msgid "Clouds: %1"
+msgstr "Nuvole %1"
 
 #: contents/ui/config/configNotifications.qml:100 contents/ui/main.qml:2089
 msgid "Coastal event"
@@ -1520,11 +1467,11 @@ msgstr "Formato data:"
 msgid "Date/Time:"
 msgstr "Data e ora:"
 
-#: contents/ui/DetailsView.qml:3555
+#: contents/ui/DetailsView.qml:3562
 msgid "Dawn approaching - "
 msgstr "L'alba si avvicina - "
 
-#: contents/ui/DetailsView.qml:3535
+#: contents/ui/DetailsView.qml:3542
 msgid "Day"
 msgstr "Giorno"
 
@@ -1532,7 +1479,7 @@ msgstr "Giorno"
 msgid "Day and night"
 msgstr "Giorno e notte"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3570
 msgid "Daylight over"
 msgstr "Luce diurna terminata"
 
@@ -1592,7 +1539,7 @@ msgstr "Pioviggine fitta"
 msgid "Density"
 msgstr "Densità"
 
-#: contents/ui/DetailsView.qml:2493 contents/ui/DetailsView.qml:2495
+#: contents/ui/DetailsView.qml:2499 contents/ui/DetailsView.qml:2501
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "Descrizione"
@@ -1647,7 +1594,7 @@ msgstr "Punto di rugiada"
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LayerPanel.qml:974
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1234
+#: contents/ui/components/WeatherMapView.qml:1235
 msgid "Dew point"
 msgstr "Punto di rugiada"
 
@@ -1761,7 +1708,7 @@ msgstr "Temperatura doppia"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
 #: contents/ui/components/WeatherMapView.qml:838
-#: contents/ui/components/WeatherMapView.qml:1235
+#: contents/ui/components/WeatherMapView.qml:1236
 msgid "Dust"
 msgstr "Polvere"
 
@@ -1828,7 +1775,7 @@ msgstr "Modifica la tavolozza del vento"
 msgid "Edit…"
 msgstr "Modifica…"
 
-#: contents/ui/DetailsView.qml:2498 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "In vigore da"
 
@@ -1948,7 +1895,7 @@ msgstr "Esc"
 msgid "European CAQI (0-100+)"
 msgstr "CAQI europeo (0-100+)"
 
-#: contents/ui/DetailsView.qml:3557
+#: contents/ui/DetailsView.qml:3564
 msgid "Evening - "
 msgstr "Sera - "
 
@@ -1977,7 +1924,7 @@ msgstr "Espandi il widget per riempire lo spazio disponibile del pannello"
 msgid "Expanded cards height:"
 msgstr "Altezza schede espanse:"
 
-#: contents/ui/DetailsView.qml:2500 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "Scadenza"
 
@@ -2087,7 +2034,7 @@ msgstr "Primo giorno della settimana:"
 msgid "First picture"
 msgstr "Prima immagine"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2188
 msgid "Flare Warning"
 msgstr "Avviso brillamento"
 
@@ -2271,7 +2218,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 non disponibile, tentativo con la posizione di sistema…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2119
+#: contents/ui/DetailsView.qml:2124
 msgid "Geomagnetic Storm"
 msgstr "Tempesta geomagnetica"
 
@@ -2325,7 +2272,7 @@ msgid "Graphs style:"
 msgstr "Stile dei grafici:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
-#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
+#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1949
 msgid "Grass"
 msgstr "Erba"
 
@@ -2366,7 +2313,7 @@ msgstr "Pericolosa"
 msgid "Header:"
 msgstr "Intestazione:"
 
-#: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2496 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "Titolo"
 
@@ -2445,7 +2392,7 @@ msgstr "Massima"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1230
+#: contents/ui/components/WeatherMapView.qml:1231
 msgctxt "@item cloud level"
 msgid "High"
 msgstr "Alte"
@@ -2565,7 +2512,7 @@ msgid "Humid"
 msgstr "Umido"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
-#: contents/ui/components/WeatherMapView.qml:1233
+#: contents/ui/components/WeatherMapView.qml:1234
 #: contents/ui/config/configAppearance.qml:1872
 #: contents/ui/config/configAppearance.qml:1974
 #: contents/ui/config/configAppearance.qml:2118 contents/ui/DetailsView.qml:700
@@ -2699,7 +2646,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2508 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "Istruzioni"
 
@@ -2830,7 +2777,7 @@ msgid "Knots (kn)"
 msgstr "Nodi (kn)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2128
+#: contents/ui/DetailsView.qml:2133
 msgid "Kp Index"
 msgstr "Indice Kp"
 
@@ -3163,7 +3110,7 @@ msgstr "Minima"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1232
+#: contents/ui/components/WeatherMapView.qml:1233
 msgctxt "@item cloud level"
 msgid "Low"
 msgstr "Basse"
@@ -3325,7 +3272,7 @@ msgstr "Metrico (°C, km/h, hPa, mm)"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1231
+#: contents/ui/components/WeatherMapView.qml:1232
 msgctxt "@item cloud level"
 msgid "Mid"
 msgstr "Medie"
@@ -3346,7 +3293,7 @@ msgstr "Altezza minima:"
 msgid "Minimum width:"
 msgstr "Larghezza minima:"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2188
 msgid "Minor"
 msgstr "Minore"
 
@@ -3452,8 +3399,8 @@ msgstr "Fase lunare, salita e calata della luna"
 msgid "Moon:"
 msgstr "Luna:"
 
-#: contents/ui/DetailsView.qml:3772 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4095 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3779 contents/ui/DetailsView.qml:3784
+#: contents/ui/DetailsView.qml:4102 contents/ui/DetailsView.qml:4107
 msgid "Moonrise"
 msgstr "Salita della luna"
 
@@ -3475,7 +3422,7 @@ msgstr "Icona della salita della luna:"
 msgid "Moonrise only"
 msgstr "Solo salita della luna"
 
-#: contents/ui/DetailsView.qml:3770 contents/ui/DetailsView.qml:4093
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:4100
 msgid "Moonrise/Moonset"
 msgstr "Salita e calata della luna"
 
@@ -3485,8 +3432,8 @@ msgstr "Salita e calata della luna"
 msgid "Moonrise:"
 msgstr "Salita della luna:"
 
-#: contents/ui/DetailsView.qml:3774 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4097 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3781 contents/ui/DetailsView.qml:3784
+#: contents/ui/DetailsView.qml:4104 contents/ui/DetailsView.qml:4107
 msgid "Moonset"
 msgstr "Calata della luna"
 
@@ -3521,7 +3468,7 @@ msgid "Mouse wheel"
 msgstr "Rotella del mouse"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:711
-#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1952
+#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1952
 msgid "Mugwort"
 msgstr "Artemisia"
 
@@ -3616,7 +3563,7 @@ msgstr "Giorno successivo"
 msgid "Next period"
 msgstr "Periodo successivo"
 
-#: contents/ui/DetailsView.qml:3532
+#: contents/ui/DetailsView.qml:3539
 msgid "Night"
 msgstr "Notte"
 
@@ -3632,7 +3579,7 @@ msgstr "Luci notturne"
 msgid "Night lights density"
 msgstr "Densità delle luci notturne"
 
-#: contents/ui/DetailsView.qml:1714
+#: contents/ui/DetailsView.qml:1717
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Diossido di azoto (NO₂)"
 
@@ -3640,7 +3587,7 @@ msgstr "Diossido di azoto (NO₂)"
 msgid "No"
 msgstr "No"
 
-#: contents/ui/DetailsView.qml:2850
+#: contents/ui/DetailsView.qml:2857
 msgid "No active alerts"
 msgstr "Nessuna allerta attiva"
 
@@ -3697,7 +3644,7 @@ msgstr "Nessuna posizione salvata. Salva la posizione corrente per passare rapid
 msgid "No snow"
 msgstr "Niente neve"
 
-#: contents/ui/DetailsView.qml:2854
+#: contents/ui/DetailsView.qml:2861
 msgid "No warnings in effect"
 msgstr "Nessuna allerta in vigore"
 
@@ -3824,7 +3771,7 @@ msgid "Official Spanish meteorological agency - Spain locations only! API key re
 msgstr "Agenzia meteorologica ufficiale spagnola - Solo località in Spagna! Chiave API richiesta di seguito."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:716
-#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1955
+#: contents/ui/DetailsView.qml:1795 contents/ui/main.qml:1955
 msgid "Olive"
 msgstr "Olivo"
 
@@ -3940,7 +3887,7 @@ msgstr "Opzioni: clic destro"
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Orange"
 msgstr "Arancione"
 
@@ -3948,7 +3895,7 @@ msgstr "Arancione"
 msgid "Orange dot"
 msgstr "Punto arancione"
 
-#: contents/ui/DetailsView.qml:2836
+#: contents/ui/DetailsView.qml:2842
 msgid "Orange warning"
 msgstr "Allerta arancione"
 
@@ -3965,7 +3912,7 @@ msgstr "Ordine dei livelli"
 msgid "Overcast"
 msgstr "Coperto"
 
-#: contents/ui/DetailsView.qml:1716
+#: contents/ui/DetailsView.qml:1719
 msgid "Ozone (O₃)"
 msgstr "Ozono (O₃)"
 
@@ -4031,11 +3978,11 @@ msgstr "Pannello › Disposizione su più righe › Stile icona principale"
 msgid "Panel › Simple layout › Weather icon style"
 msgstr "Pannello › Disposizione semplice › Stile icona meteo"
 
-#: contents/ui/DetailsView.qml:1712
+#: contents/ui/DetailsView.qml:1715
 msgid "Particulate Matter (PM10)"
 msgstr "Particolato (PM10)"
 
-#: contents/ui/DetailsView.qml:1710
+#: contents/ui/DetailsView.qml:1713
 msgid "Particulate Matter (PM2.5)"
 msgstr "Particolato (PM2.5)"
 
@@ -4088,13 +4035,9 @@ msgstr "Fase + prossima salita o calata della luna"
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
 msgstr "Scegli un punto esatto sulla mappa per una previsione più locale, come il tuo isolato o un punto di riferimento specifico."
 
-#: contents/ui/components/WeatherMapView.qml:1851
-msgid ""
-"Pictures loaded / pictures in the range<br>"
-"Pictures per second at most, set in the settings of the column"
-msgstr ""
-"Immagini caricate / immagini nell'intervallo<br>"
-"Massimo di immagini al secondo, come impostato nella colonna"
+#: contents/ui/components/WeatherMapView.qml:1852
+msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
+msgstr "Immagini caricate / immagini nell'intervallo<br>Massimo di immagini al secondo, come impostato nella colonna"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:557
 msgid "Pictures per second"
@@ -4143,7 +4086,7 @@ msgstr "Passa il puntatore su un giorno per vederne i dettagli. Fai doppio clic 
 msgid "Pollen"
 msgstr "Polline"
 
-#: contents/ui/DetailsView.qml:1967
+#: contents/ui/DetailsView.qml:1972
 msgid "Pollen data not available for this location."
 msgstr "Dati sul polline non disponibili per questa posizione."
 
@@ -4254,7 +4197,7 @@ msgstr "Prepara il widget in anticipo:"
 msgid "Pressure"
 msgstr "Pressione"
 
-#: contents/ui/DetailsView.qml:1455
+#: contents/ui/DetailsView.qml:1457
 msgid "Pressure tendency"
 msgstr "Tendenza della pressione"
 
@@ -4283,7 +4226,7 @@ msgstr "Periodo precedente"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Unità primaria mostrata per prima (ad es. °C o °F)"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2504
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "Fornitore"
@@ -4308,7 +4251,7 @@ msgid "Provider website:"
 msgstr "Sito web del fornitore:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2212
+#: contents/ui/DetailsView.qml:2218
 msgid "Provider:"
 msgstr "Fornitore:"
 
@@ -4365,7 +4308,7 @@ msgstr "QtWebEngine non è installato"
 msgid "Quarter"
 msgstr "Un quarto"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2165 contents/ui/DetailsView.qml:2188
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "Tranquilla"
@@ -4393,39 +4336,19 @@ msgid "Radar provider:"
 msgstr "Fornitore del radar:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:340
-msgid ""
-"Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/>"
-"<br/>"
-"LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/>"
-"<br/>"
-"Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
-msgstr ""
-"Fornitore del radar: <a href='https://librewxr.net/'>LibreWXR</a><br/>"
-"<br/>"
-"LibreWXR è un'API per radar meteorologici gratuita e open source. Combina compositi radar reali provenienti da fonti NOAA, canadesi ed europee con un modello globale di riserva, e fornisce le ultime 2 ore di dati radar oltre a un breve nowcast. Offre anche un livello satellitare (infrarossi) gratuito.<br/>"
-"<br/>"
-"La modalità del livello, lo schema di colori del radar e le frecce di movimento vengono selezionati direttamente nella scheda Radar. La mappa segue automaticamente il tema chiaro/scuro di Plasma."
+msgid "Radar provider: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR is a free, open-source weather radar API. It combines real radar composites from NOAA, Canadian, and European sources with a global model fallback, and provides the past 2 hours of radar data plus a short nowcast. It also offers a free satellite (infrared) layer.<br/><br/>Layer mode, radar color scheme, and motion arrows are selected directly in the Radar tab. The map follows your Plasma light/dark theme automatically."
+msgstr "Fornitore del radar: <a href='https://librewxr.net/'>LibreWXR</a><br/><br/>LibreWXR è un'API per radar meteorologici gratuita e open source. Combina compositi radar reali provenienti da fonti NOAA, canadesi ed europee con un modello globale di riserva, e fornisce le ultime 2 ore di dati radar oltre a un breve nowcast. Offre anche un livello satellitare (infrarossi) gratuito.<br/><br/>La modalità del livello, lo schema di colori del radar e le frecce di movimento vengono selezionati direttamente nella scheda Radar. La mappa segue automaticamente il tema chiaro/scuro di Plasma."
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:330
-msgid ""
-"Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/>"
-"<br/>"
-"The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/>"
-"<br/>"
-"Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
-msgstr ""
-"Fornitore del radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/>"
-"<br/>"
-"Il widget utilizza l'API gratuita di RainViewer, che fornisce i dati radar meteo delle ultime 2 ore a intervalli di 10 minuti. Le previsioni radar non sono supportate.<br/>"
-"<br/>"
-"Rain Viewer non garantisce la disponibilità dei dati radar. Il servizio non stipula contratti con i proprietari di questi dati. Il motivo è che i proprietari possono chiedere loro di rimuovere i propri dati da Rain Viewer, modificarne il formato o interrompere la condivisione. Cerca di mantenere i dati radar il più a lungo possibile, ma a volte i proprietari smettono semplicemente di fornire le immagini."
+msgid "Radar provider: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>The widget uses the free RainViewer API, which provides the past 2 hours of weather radar data in 10-minute intervals. Radar forecast is not supported.<br/><br/>Rain Viewer does not guarantee the availability of radar data. They do not conclude contracts with owners of this data. The reason is that the owners can ask them to remove their data from Rain Viewer, change the format, or stop sharing the data. They are trying to keep radar data for as long as possible, but sometimes the owners just stop providing the images."
+msgstr "Fornitore del radar: <a href='https://www.rainviewer.com/'>Rain Viewer</a><br/><br/>Il widget utilizza l'API gratuita di RainViewer, che fornisce i dati radar meteo delle ultime 2 ore a intervalli di 10 minuti. Le previsioni radar non sono supportate.<br/><br/>Rain Viewer non garantisce la disponibilità dei dati radar. Il servizio non stipula contratti con i proprietari di questi dati. Il motivo è che i proprietari possono chiedere loro di rimuovere i propri dati da Rain Viewer, modificarne il formato o interrompere la condivisione. Cerca di mantenere i dati radar il più a lungo possibile, ma a volte i proprietari smettono semplicemente di fornire le immagini."
 
 #: contents/ui/FullView.qml:883 contents/ui/FullView.qml:885
 msgid "Radar:"
 msgstr "Radar:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
-#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1958
+#: contents/ui/DetailsView.qml:1797 contents/ui/main.qml:1958
 msgid "Ragweed"
 msgstr "Ambrosia"
 
@@ -4494,7 +4417,7 @@ msgstr "Consigliata - ad es. 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Red"
 msgstr "Rosso"
 
@@ -4503,7 +4426,7 @@ msgctxt "color"
 msgid "Red"
 msgstr "Rosso"
 
-#: contents/ui/DetailsView.qml:2838
+#: contents/ui/DetailsView.qml:2844
 msgid "Red warning"
 msgstr "Allerta rossa"
 
@@ -4816,12 +4739,8 @@ msgid "Settings where this theme is not available keep their current theme."
 msgstr "Le impostazioni in cui questo tema non è disponibile manterranno il tema attuale."
 
 #: contents/ui/components/weathermap/LayerPanel.qml:541
-msgid ""
-"Settings: pictures per second, resolution while playing,<br>"
-"coasts and borders, Sun, Moon and night lights, dark map, see-through panels"
-msgstr ""
-"Impostazioni: immagini al secondo, risoluzione durante la riproduzione,<br>"
-"coste e confini, sole, luna e luci notturne, mappa scura, pannelli trasparenti"
+msgid "Settings: pictures per second, resolution while playing,<br>coasts and borders, Sun, Moon and night lights, dark map, see-through panels"
+msgstr "Impostazioni: immagini al secondo, risoluzione durante la riproduzione,<br>coste e confini, sole, luna e luci notturne, mappa scura, pannelli trasparenti"
 
 #: contents/ui/js/spaceWeather.js:93
 msgid "Severe geomagnetic storm."
@@ -5136,7 +5055,7 @@ msgid "Snowfall"
 msgstr "Nevicata"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2138
+#: contents/ui/DetailsView.qml:2143
 msgid "Solar Wind"
 msgstr "Vento solare"
 
@@ -5248,7 +5167,7 @@ msgstr "Raffica più forte"
 msgid "Strongest wind"
 msgstr "Vento più forte"
 
-#: contents/ui/DetailsView.qml:1718
+#: contents/ui/DetailsView.qml:1721
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "Diossido di zolfo (SO₂)"
 
@@ -5273,8 +5192,8 @@ msgstr "Opzioni di alba e tramonto"
 msgid "Sunday"
 msgstr "Domenica"
 
-#: contents/ui/DetailsView.qml:3305 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3649 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3312 contents/ui/DetailsView.qml:3316
+#: contents/ui/DetailsView.qml:3656 contents/ui/DetailsView.qml:3660
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "Alba"
@@ -5316,8 +5235,8 @@ msgstr "Indicatori di alba e tramonto:"
 msgid "Sunrise:"
 msgstr "Alba:"
 
-#: contents/ui/DetailsView.qml:3307 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3651 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3314 contents/ui/DetailsView.qml:3316
+#: contents/ui/DetailsView.qml:3658 contents/ui/DetailsView.qml:3660
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "Tramonto"
@@ -5490,7 +5409,7 @@ msgstr "Ombra della temperatura:"
 msgid "Temperature:"
 msgstr "Temperatura:"
 
-#: contents/ui/DetailsView.qml:1453
+#: contents/ui/DetailsView.qml:1455
 msgid "Tendency: collecting data"
 msgstr "Tendenza: raccolta dati in corso"
 
@@ -5572,13 +5491,9 @@ msgstr "L'icona della condizione rifletterà automaticamente il meteo attuale ut
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr "La previsione geomagnetica (Kp e G) è disponibile solo per i prossimi 3 giorni"
 
-#: contents/ui/components/WeatherMapView.qml:1881
-msgid ""
-"The global model, then the finer regional<br>"
-"ones drawn over it in this view"
-msgstr ""
-"Il modello globale, poi quelli regionali più dettagliati<br>"
-"disegnati sopra di esso in questa vista"
+#: contents/ui/components/WeatherMapView.qml:1882
+msgid "The global model, then the finer regional<br>ones drawn over it in this view"
+msgstr "Il modello globale, poi quelli regionali più dettagliati<br>disegnati sopra di esso in questa vista"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:80
 msgid "The infrared picture of the clouds, from LibreWXR: the colder the top, the higher and whiter the cloud."
@@ -5608,7 +5523,7 @@ msgstr "Impossibile caricare la mappa. Controlla la connessione a Internet."
 msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
 msgstr "La mappa richiede QtWebEngine, che non è installato. Puoi comunque cercare una posizione qui sopra."
 
-#: contents/ui/components/WeatherMapView.qml:1822
+#: contents/ui/components/WeatherMapView.qml:1823
 msgid "The map page needs WebGL, which this graphics setup does not offer."
 msgstr "La pagina della mappa richiede WebGL, che questa configurazione grafica non offre."
 
@@ -5632,7 +5547,7 @@ msgstr "Il pulsante sottile sul suo bordo sinistro la apre o la chiude. La mappa
 msgid "The two clocks: how far back and how far ahead"
 msgstr "I due orologi: quanto indietro e quanto avanti"
 
-#: contents/ui/components/WeatherMapView.qml:1821
+#: contents/ui/components/WeatherMapView.qml:1822
 msgid "The weather maps cannot play here"
 msgstr "Le mappe meteo non possono essere riprodotte qui"
 
@@ -5640,7 +5555,7 @@ msgstr "Le mappe meteo non possono essere riprodotte qui"
 msgid "The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other."
 msgstr "Più è bianco, più il cielo è coperto. Con i tre livelli selezionati vedi la copertura totale del modello, senza contare due volte le nuvole sovrapposte."
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
 msgstr "Il widget raccoglie le letture della pressione a ogni aggiornamento; serve circa un'ora di letture per calcolare la tendenza."
 
@@ -5861,7 +5776,7 @@ msgstr "In alto a sinistra"
 msgid "Top Right"
 msgstr "In alto a destra"
 
-#: contents/ui/components/WeatherMapView.qml:1229
+#: contents/ui/components/WeatherMapView.qml:1230
 msgctxt "@label total cloud cover"
 msgid "Total"
 msgstr "Totale"
@@ -5984,7 +5899,7 @@ msgstr "Sgancia widget"
 msgid "Unsettled"
 msgstr "Instabile"
 
-#: contents/ui/DetailsView.qml:2447
+#: contents/ui/DetailsView.qml:2453
 msgid "Until"
 msgstr "Fino a"
 
@@ -6194,7 +6109,7 @@ msgstr "Caldo"
 msgid "Warmest day"
 msgstr "Giorno più caldo"
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2846
 msgid "Warning"
 msgstr "Allerta"
 
@@ -6222,7 +6137,7 @@ msgstr "Allerte meteo"
 msgid "Weather Alerts Provider"
 msgstr "Fornitore delle allerte meteo"
 
-#: contents/ui/components/WeatherMapView.qml:1533
+#: contents/ui/components/WeatherMapView.qml:1534
 msgid "Weather Map"
 msgstr "Mappa meteo"
 
@@ -6330,7 +6245,7 @@ msgstr "Chiave API Weatherbit:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr "WebP o PNG, 256 o 512 px. Anche il satellite li segue."
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2512 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "Sito web"
 
@@ -6456,13 +6371,13 @@ msgid "Wrap to next line"
 msgstr "A capo alla riga successiva"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2184
+#: contents/ui/DetailsView.qml:2189
 msgid "X-ray Flare Class"
 msgstr "Classe brillamento raggi X"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Yellow"
 msgstr "Giallo"
 
@@ -6471,7 +6386,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr "Giallo"
 
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2840
 msgid "Yellow warning"
 msgstr "Allerta gialla"
 
@@ -6635,7 +6550,7 @@ msgstr "ft"
 msgid "full screen on or off."
 msgstr "attiva o disattiva lo schermo intero."
 
-#: contents/ui/DetailsView.qml:1841 contents/ui/DetailsView.qml:1928
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1933
 msgid "grains/m³"
 msgstr "granuli/m³"
 
@@ -6705,7 +6620,7 @@ msgstr "km"
 msgid "km/h"
 msgstr "km/h"
 
-#: contents/ui/DetailsView.qml:2136
+#: contents/ui/DetailsView.qml:2141
 msgid "km/s"
 msgstr "km/s"
 
@@ -6714,7 +6629,7 @@ msgstr "km/s"
 msgid "kn"
 msgstr "kn"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3570
 msgid "left"
 msgstr "rimanenti"
 
@@ -7056,7 +6971,7 @@ msgstr "sotto i 2 km circa: giornate grigie, nebbia, pioviggine."
 msgid "until %1"
 msgstr "fino al %1"
 
-#: contents/ui/DetailsView.qml:3560
+#: contents/ui/DetailsView.qml:3567
 msgid "until dawn"
 msgstr "fino all'alba"
 
