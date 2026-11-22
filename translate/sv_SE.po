@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-20 09:59+0100\n"
+"POT-Creation-Date: 2026-11-22 07:49+0200\n"
 "PO-Revision-Date: 2026-11-22 00:00+0000\n"
 "Last-Translator: Toni Karppi\n"
 "Language-Team: Swedish\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: contents/ui/DetailsView.qml:3557 contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
 msgid " until dawn"
 msgstr " fram till gryningen"
 
@@ -144,7 +144,7 @@ msgstr "%1. Högerklicka för att kopiera eller klistra in, dra till en annan ni
 msgid "%1. Right-click to copy or paste it."
 msgstr "%1. Högerklicka för att kopiera eller klistra in."
 
-#: contents/ui/components/WeatherMapView.qml:1847
+#: contents/ui/components/WeatherMapView.qml:1848
 msgid "%1/%2 · %3 fps"
 msgstr "%1/%2 · %3 bilder/s"
 
@@ -164,15 +164,15 @@ msgstr "%1: gränsen för antalet anrop har nåtts (HTTP %2) – försöker igen
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr "%1: API-nyckeln avvisades (HTTP %2)"
 
-#: contents/ui/DetailsView.qml:4210
+#: contents/ui/DetailsView.qml:4217
 msgid "%1h"
 msgstr "%1h"
 
-#: contents/ui/DetailsView.qml:4211
+#: contents/ui/DetailsView.qml:4218
 msgid "%1h %2m"
 msgstr "%1h %2m"
 
-#: contents/ui/DetailsView.qml:4204 contents/ui/DetailsView.qml:4208
+#: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
 msgid "%1m"
 msgstr "%1m"
 
@@ -344,7 +344,7 @@ msgstr "Ett lager slutar där dess data tar slut."
 msgid "A palette has 2 to 12 colors."
 msgstr "En färgpalett har 2 till 12 färger."
 
-#: contents/ui/DetailsView.qml:2165
+#: contents/ui/DetailsView.qml:2170
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr "Ett sydriktat fält (negativt Bz) gör att solvinden kan kopplas samman med jordens magnetfält."
 
@@ -414,7 +414,7 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2165 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "Aktiv"
 
@@ -535,7 +535,7 @@ msgid "Albanian"
 msgstr "Albanska"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
-#: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
+#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1943
 msgid "Alder"
 msgstr "Al"
 
@@ -584,7 +584,7 @@ msgstr "Varningar:"
 msgid "All"
 msgstr "Alla"
 
-#: contents/ui/DetailsView.qml:2852
+#: contents/ui/DetailsView.qml:2859
 msgid "All clear"
 msgstr "Inga varningar"
 
@@ -705,7 +705,7 @@ msgstr "Arabiska"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Är du säker? Det här är din sista sparade plats. Om du tar bort den kommer widgeten inte längre att visa väderinformation."
 
-#: contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3566
 msgid "Around midnight - "
 msgstr "Kring midnatt – "
 
@@ -728,7 +728,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "Ljudfiler (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2149
+#: contents/ui/DetailsView.qml:2154
 msgid "Aurora Visibility"
 msgstr "Norrskenets synlighet"
 
@@ -847,7 +847,7 @@ msgid "Basque"
 msgstr "Baskiska"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
-#: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
+#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1946
 msgid "Birch"
 msgstr "Björk"
 
@@ -920,7 +920,7 @@ msgstr "Punkt  •"
 msgid "Button guide"
 msgstr "Knappguide"
 
-#: contents/ui/DetailsView.qml:2161
+#: contents/ui/DetailsView.qml:2166
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (magnetfält)"
 
@@ -958,7 +958,7 @@ msgstr "Avbryt"
 msgid "Cancel rename"
 msgstr "Avbryt namnbyte"
 
-#: contents/ui/DetailsView.qml:1720
+#: contents/ui/DetailsView.qml:1723
 msgid "Carbon Monoxide (CO)"
 msgstr "Kolmonoxid (CO)"
 
@@ -995,7 +995,7 @@ msgstr "Nederbördssannol."
 msgid "Chance of precipitation"
 msgstr "Sannolikhet för nederbörd"
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
 msgstr "Förändring under de senaste 3 timmarna, beräknad från de mätvärden som widgeten har samlat in. Den öppna ringen på mätartavlan markerar lufttrycket för 3 timmar sedan."
 
@@ -1091,7 +1091,7 @@ msgid "Clean style"
 msgstr "Stilren"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2872
+#: contents/ui/DetailsView.qml:2879
 msgid "Clear"
 msgstr "Rensa"
 
@@ -1166,6 +1166,11 @@ msgstr "Molntäcke"
 #: contents/ui/components/weathermap/HelpPanel.qml:95
 msgid "Clouds"
 msgstr "Moln"
+
+#: contents/ui/components/WeatherMapView.qml:1229
+msgctxt "@label cloud cover at the map pointer"
+msgid "Clouds: %1"
+msgstr "Moln: %1"
 
 #: contents/ui/config/configNotifications.qml:100 contents/ui/main.qml:2089
 msgid "Coastal event"
@@ -1461,11 +1466,11 @@ msgstr "Datumformat:"
 msgid "Date/Time:"
 msgstr "Datum/tid:"
 
-#: contents/ui/DetailsView.qml:3555
+#: contents/ui/DetailsView.qml:3562
 msgid "Dawn approaching - "
 msgstr "Gryningen närmar sig – "
 
-#: contents/ui/DetailsView.qml:3535
+#: contents/ui/DetailsView.qml:3542
 msgid "Day"
 msgstr "Dag"
 
@@ -1473,7 +1478,7 @@ msgstr "Dag"
 msgid "Day and night"
 msgstr "Dag och natt"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3570
 msgid "Daylight over"
 msgstr "Dagsljuset är slut"
 
@@ -1533,7 +1538,7 @@ msgstr "Kraftigt duggregn"
 msgid "Density"
 msgstr "Täthet"
 
-#: contents/ui/DetailsView.qml:2493 contents/ui/DetailsView.qml:2495
+#: contents/ui/DetailsView.qml:2499 contents/ui/DetailsView.qml:2501
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "Beskrivning"
@@ -1588,7 +1593,7 @@ msgstr "Daggpunkt"
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LayerPanel.qml:974
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1234
+#: contents/ui/components/WeatherMapView.qml:1235
 msgid "Dew point"
 msgstr "Daggpunkt"
 
@@ -1702,7 +1707,7 @@ msgstr "Dubbla temperaturenheter"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
 #: contents/ui/components/WeatherMapView.qml:838
-#: contents/ui/components/WeatherMapView.qml:1235
+#: contents/ui/components/WeatherMapView.qml:1236
 msgid "Dust"
 msgstr "Stoft"
 
@@ -1769,7 +1774,7 @@ msgstr "Redigera vindpalett"
 msgid "Edit…"
 msgstr "Redigera…"
 
-#: contents/ui/DetailsView.qml:2498 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "Gäller från"
 
@@ -1889,7 +1894,7 @@ msgstr "Esc"
 msgid "European CAQI (0-100+)"
 msgstr "Europeiskt CAQI (0–100+)"
 
-#: contents/ui/DetailsView.qml:3557
+#: contents/ui/DetailsView.qml:3564
 msgid "Evening - "
 msgstr "Kväll – "
 
@@ -1918,7 +1923,7 @@ msgstr "Utöka widgeten så att den fyller det tillgängliga panelutrymmet"
 msgid "Expanded cards height:"
 msgstr "Utökade korts höjd:"
 
-#: contents/ui/DetailsView.qml:2500 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "Upphör"
 
@@ -2028,7 +2033,7 @@ msgstr "Veckans första dag:"
 msgid "First picture"
 msgstr "Första bilden"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2188
 msgid "Flare Warning"
 msgstr "Varning för solutbrott"
 
@@ -2212,7 +2217,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 är inte tillgängligt, försöker med systemets platsinformation…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2119
+#: contents/ui/DetailsView.qml:2124
 msgid "Geomagnetic Storm"
 msgstr "Geomagnetisk storm"
 
@@ -2266,7 +2271,7 @@ msgid "Graphs style:"
 msgstr "Grafernas stil:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
-#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
+#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1949
 msgid "Grass"
 msgstr "Gräs"
 
@@ -2307,7 +2312,7 @@ msgstr "Farlig"
 msgid "Header:"
 msgstr "Rubrik:"
 
-#: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2496 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "Rubrik"
 
@@ -2386,7 +2391,7 @@ msgstr "Hög"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1230
+#: contents/ui/components/WeatherMapView.qml:1231
 msgctxt "@item cloud level"
 msgid "High"
 msgstr "Höga"
@@ -2506,7 +2511,7 @@ msgid "Humid"
 msgstr "Fuktigt"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
-#: contents/ui/components/WeatherMapView.qml:1233
+#: contents/ui/components/WeatherMapView.qml:1234
 #: contents/ui/config/configAppearance.qml:1872
 #: contents/ui/config/configAppearance.qml:1974
 #: contents/ui/config/configAppearance.qml:2118 contents/ui/DetailsView.qml:700
@@ -2640,7 +2645,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2508 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "Instruktion"
 
@@ -2771,7 +2776,7 @@ msgid "Knots (kn)"
 msgstr "Knop (kn)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2128
+#: contents/ui/DetailsView.qml:2133
 msgid "Kp Index"
 msgstr "Kp-index"
 
@@ -3104,7 +3109,7 @@ msgstr "Låg"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1232
+#: contents/ui/components/WeatherMapView.qml:1233
 msgctxt "@item cloud level"
 msgid "Low"
 msgstr "Låga"
@@ -3266,7 +3271,7 @@ msgstr "Metriska enheter (°C, km/h, hPa, mm)"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1231
+#: contents/ui/components/WeatherMapView.qml:1232
 msgctxt "@item cloud level"
 msgid "Mid"
 msgstr "Medelhöga"
@@ -3287,7 +3292,7 @@ msgstr "Minsta höjd:"
 msgid "Minimum width:"
 msgstr "Minsta bredd:"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2188
 msgid "Minor"
 msgstr "Mindre"
 
@@ -3393,8 +3398,8 @@ msgstr "Månfas, månuppgång och månnedgång"
 msgid "Moon:"
 msgstr "Måne:"
 
-#: contents/ui/DetailsView.qml:3772 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4095 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3779 contents/ui/DetailsView.qml:3784
+#: contents/ui/DetailsView.qml:4102 contents/ui/DetailsView.qml:4107
 msgid "Moonrise"
 msgstr "Månuppgång"
 
@@ -3416,7 +3421,7 @@ msgstr "Ikon för månuppgång:"
 msgid "Moonrise only"
 msgstr "Endast månuppgång"
 
-#: contents/ui/DetailsView.qml:3770 contents/ui/DetailsView.qml:4093
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:4100
 msgid "Moonrise/Moonset"
 msgstr "Månuppgång/månnedgång"
 
@@ -3426,8 +3431,8 @@ msgstr "Månuppgång/månnedgång"
 msgid "Moonrise:"
 msgstr "Månuppgång:"
 
-#: contents/ui/DetailsView.qml:3774 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4097 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3781 contents/ui/DetailsView.qml:3784
+#: contents/ui/DetailsView.qml:4104 contents/ui/DetailsView.qml:4107
 msgid "Moonset"
 msgstr "Månnedgång"
 
@@ -3462,7 +3467,7 @@ msgid "Mouse wheel"
 msgstr "Mushjul"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:711
-#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1952
+#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1952
 msgid "Mugwort"
 msgstr "Gråbo"
 
@@ -3557,7 +3562,7 @@ msgstr "Nästa dag"
 msgid "Next period"
 msgstr "Nästa period"
 
-#: contents/ui/DetailsView.qml:3532
+#: contents/ui/DetailsView.qml:3539
 msgid "Night"
 msgstr "Natt"
 
@@ -3573,7 +3578,7 @@ msgstr "Nattljus"
 msgid "Night lights density"
 msgstr "Nattljusens täthet"
 
-#: contents/ui/DetailsView.qml:1714
+#: contents/ui/DetailsView.qml:1717
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "Kvävedioxid (NO₂)"
 
@@ -3581,7 +3586,7 @@ msgstr "Kvävedioxid (NO₂)"
 msgid "No"
 msgstr "Nej"
 
-#: contents/ui/DetailsView.qml:2850
+#: contents/ui/DetailsView.qml:2857
 msgid "No active alerts"
 msgstr "Inga aktiva varningar"
 
@@ -3638,7 +3643,7 @@ msgstr "Inga sparade platser. Spara den aktuella platsen för att snabbt växla 
 msgid "No snow"
 msgstr "Ingen snö"
 
-#: contents/ui/DetailsView.qml:2854
+#: contents/ui/DetailsView.qml:2861
 msgid "No warnings in effect"
 msgstr "Inga gällande varningar"
 
@@ -3765,7 +3770,7 @@ msgid "Official Spanish meteorological agency - Spain locations only! API key re
 msgstr "Spaniens officiella meteorologiska myndighet – endast platser i Spanien! API-nyckel krävs nedan."
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:716
-#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1955
+#: contents/ui/DetailsView.qml:1795 contents/ui/main.qml:1955
 msgid "Olive"
 msgstr "Oliv"
 
@@ -3881,7 +3886,7 @@ msgstr "Alternativ: högerklick"
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Orange"
 msgstr "Orange"
 
@@ -3889,7 +3894,7 @@ msgstr "Orange"
 msgid "Orange dot"
 msgstr "Orange punkt"
 
-#: contents/ui/DetailsView.qml:2836
+#: contents/ui/DetailsView.qml:2842
 msgid "Orange warning"
 msgstr "Orange varning"
 
@@ -3906,7 +3911,7 @@ msgstr "Lagrens ordning"
 msgid "Overcast"
 msgstr "Mulet"
 
-#: contents/ui/DetailsView.qml:1716
+#: contents/ui/DetailsView.qml:1719
 msgid "Ozone (O₃)"
 msgstr "Ozon (O₃)"
 
@@ -3972,11 +3977,11 @@ msgstr "Panel › Flerradig layout › Huvudikonens stil"
 msgid "Panel › Simple layout › Weather icon style"
 msgstr "Panel › Enkel layout › Väderikonens stil"
 
-#: contents/ui/DetailsView.qml:1712
+#: contents/ui/DetailsView.qml:1715
 msgid "Particulate Matter (PM10)"
 msgstr "Partiklar (PM10)"
 
-#: contents/ui/DetailsView.qml:1710
+#: contents/ui/DetailsView.qml:1713
 msgid "Particulate Matter (PM2.5)"
 msgstr "Partiklar (PM2.5)"
 
@@ -4029,7 +4034,7 @@ msgstr "Fas + nästa uppgång/nedgång"
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
 msgstr "Välj en exakt punkt på kartan för en mer lokal prognos, till exempel ditt kvarter eller ett visst landmärke."
 
-#: contents/ui/components/WeatherMapView.qml:1851
+#: contents/ui/components/WeatherMapView.qml:1852
 msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
 msgstr "Inlästa bilder / bilder i tidsintervallet<br>Högsta antal bilder per sekund, anges i kolumnens inställningar"
 
@@ -4080,7 +4085,7 @@ msgstr "Peka på en dag för att se dess detaljer. Dubbelklicka på grafen, elle
 msgid "Pollen"
 msgstr "Pollen"
 
-#: contents/ui/DetailsView.qml:1967
+#: contents/ui/DetailsView.qml:1972
 msgid "Pollen data not available for this location."
 msgstr "Pollendata är inte tillgängliga för den här platsen."
 
@@ -4191,7 +4196,7 @@ msgstr "Förbered widgeten i förväg:"
 msgid "Pressure"
 msgstr "Lufttryck"
 
-#: contents/ui/DetailsView.qml:1455
+#: contents/ui/DetailsView.qml:1457
 msgid "Pressure tendency"
 msgstr "Lufttryckstendens"
 
@@ -4220,7 +4225,7 @@ msgstr "Föregående period"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Primär enhet visas först (t.ex. °C / °F)"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2504
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "Leverantör"
@@ -4245,7 +4250,7 @@ msgid "Provider website:"
 msgstr "Leverantörens webbplats:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2212
+#: contents/ui/DetailsView.qml:2218
 msgid "Provider:"
 msgstr "Leverantör:"
 
@@ -4302,7 +4307,7 @@ msgstr "QtWebEngine är inte installerat"
 msgid "Quarter"
 msgstr "Fjärdedel"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2165 contents/ui/DetailsView.qml:2188
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "Lugn"
@@ -4342,7 +4347,7 @@ msgid "Radar:"
 msgstr "Radar:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
-#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1958
+#: contents/ui/DetailsView.qml:1797 contents/ui/main.qml:1958
 msgid "Ragweed"
 msgstr "Malörtsambrosia"
 
@@ -4411,7 +4416,7 @@ msgstr "Rekommenderas – t.ex. 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Red"
 msgstr "Röd"
 
@@ -4420,7 +4425,7 @@ msgctxt "color"
 msgid "Red"
 msgstr "Röd"
 
-#: contents/ui/DetailsView.qml:2838
+#: contents/ui/DetailsView.qml:2844
 msgid "Red warning"
 msgstr "Röd varning"
 
@@ -5049,7 +5054,7 @@ msgid "Snowfall"
 msgstr "Snöfall"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2138
+#: contents/ui/DetailsView.qml:2143
 msgid "Solar Wind"
 msgstr "Solvind"
 
@@ -5161,7 +5166,7 @@ msgstr "Kraftigaste vindbyn"
 msgid "Strongest wind"
 msgstr "Starkaste vinden"
 
-#: contents/ui/DetailsView.qml:1718
+#: contents/ui/DetailsView.qml:1721
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "Svaveldioxid (SO₂)"
 
@@ -5186,8 +5191,8 @@ msgstr "Alternativ för soltider"
 msgid "Sunday"
 msgstr "Söndag"
 
-#: contents/ui/DetailsView.qml:3305 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3649 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3312 contents/ui/DetailsView.qml:3316
+#: contents/ui/DetailsView.qml:3656 contents/ui/DetailsView.qml:3660
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "Soluppgång"
@@ -5229,8 +5234,8 @@ msgstr "Markörer för soluppgång/solnedgång:"
 msgid "Sunrise:"
 msgstr "Soluppgång:"
 
-#: contents/ui/DetailsView.qml:3307 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3651 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3314 contents/ui/DetailsView.qml:3316
+#: contents/ui/DetailsView.qml:3658 contents/ui/DetailsView.qml:3660
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "Solnedgång"
@@ -5403,7 +5408,7 @@ msgstr "Temperaturskugga:"
 msgid "Temperature:"
 msgstr "Temperatur:"
 
-#: contents/ui/DetailsView.qml:1453
+#: contents/ui/DetailsView.qml:1455
 msgid "Tendency: collecting data"
 msgstr "Tendens: samlar in data"
 
@@ -5485,7 +5490,7 @@ msgstr "Väderikonen visar automatiskt det aktuella vädret med hjälp av ditt K
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr "Prognosen för geomagnetisk aktivitet (Kp/G) är endast tillgänglig upp till 3 dagar framåt"
 
-#: contents/ui/components/WeatherMapView.qml:1881
+#: contents/ui/components/WeatherMapView.qml:1882
 msgid "The global model, then the finer regional<br>ones drawn over it in this view"
 msgstr "Den globala modellen, sedan de mer detaljerade regionala<br>modeller som ritas ovanpå den i den här vyn"
 
@@ -5517,7 +5522,7 @@ msgstr "Kartan kunde inte läsas in. Kontrollera din internetanslutning."
 msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
 msgstr "Kartan kräver QtWebEngine, som inte är installerat. Du kan fortfarande söka efter en plats ovan."
 
-#: contents/ui/components/WeatherMapView.qml:1822
+#: contents/ui/components/WeatherMapView.qml:1823
 msgid "The map page needs WebGL, which this graphics setup does not offer."
 msgstr "Kartsidan kräver WebGL, som den här grafikkonfigurationen inte stöder."
 
@@ -5541,7 +5546,7 @@ msgstr "Den smala knappen på vänsterkanten fäller ut eller in kolumnen. Karta
 msgid "The two clocks: how far back and how far ahead"
 msgstr "De två klockorna: hur långt bakåt och hur långt framåt"
 
-#: contents/ui/components/WeatherMapView.qml:1821
+#: contents/ui/components/WeatherMapView.qml:1822
 msgid "The weather maps cannot play here"
 msgstr "Väderkartorna kan inte spelas upp här"
 
@@ -5549,7 +5554,7 @@ msgstr "Väderkartorna kan inte spelas upp här"
 msgid "The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other."
 msgstr "Ju vitare, desto större del av himlen är täckt. När alla tre nivåerna är markerade visas modellens totala molntäcke, utan att moln ovanpå varandra räknas dubbelt."
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
 msgstr "Widgeten samlar in lufttrycksvärden vid uppdatering. Det behövs ungefär en timmes mätvärden för att beräkna tendensen."
 
@@ -5770,7 +5775,7 @@ msgstr "Överst till vänster"
 msgid "Top Right"
 msgstr "Överst till höger"
 
-#: contents/ui/components/WeatherMapView.qml:1229
+#: contents/ui/components/WeatherMapView.qml:1230
 msgctxt "@label total cloud cover"
 msgid "Total"
 msgstr "Totalt"
@@ -5893,7 +5898,7 @@ msgstr "Lossa widgeten"
 msgid "Unsettled"
 msgstr "Orolig"
 
-#: contents/ui/DetailsView.qml:2447
+#: contents/ui/DetailsView.qml:2453
 msgid "Until"
 msgstr "Till"
 
@@ -6103,7 +6108,7 @@ msgstr "Varmt"
 msgid "Warmest day"
 msgstr "Varmaste dagen"
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2846
 msgid "Warning"
 msgstr "Varning"
 
@@ -6131,7 +6136,7 @@ msgstr "Vädervarningar"
 msgid "Weather Alerts Provider"
 msgstr "Leverantör av vädervarningar"
 
-#: contents/ui/components/WeatherMapView.qml:1533
+#: contents/ui/components/WeatherMapView.qml:1534
 msgid "Weather Map"
 msgstr "Väderkarta"
 
@@ -6239,7 +6244,7 @@ msgstr "API-nyckel för Weatherbit:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr "WebP eller PNG, 256 eller 512 px. Inställningarna gäller även satelliten."
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2512 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "Webbplats"
 
@@ -6365,13 +6370,13 @@ msgid "Wrap to next line"
 msgstr "Radbryt till nästa rad"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2184
+#: contents/ui/DetailsView.qml:2189
 msgid "X-ray Flare Class"
 msgstr "Röntgenklass för solutbrott"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2834
 msgid "Yellow"
 msgstr "Gul"
 
@@ -6380,7 +6385,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr "Gul"
 
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2840
 msgid "Yellow warning"
 msgstr "Gul varning"
 
@@ -6544,7 +6549,7 @@ msgstr "ft"
 msgid "full screen on or off."
 msgstr "aktiverar eller inaktiverar helskärmsläge."
 
-#: contents/ui/DetailsView.qml:1841 contents/ui/DetailsView.qml:1928
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1933
 msgid "grains/m³"
 msgstr "korn/m³"
 
@@ -6614,7 +6619,7 @@ msgstr "km"
 msgid "km/h"
 msgstr "km/h"
 
-#: contents/ui/DetailsView.qml:2136
+#: contents/ui/DetailsView.qml:2141
 msgid "km/s"
 msgstr "km/s"
 
@@ -6623,7 +6628,7 @@ msgstr "km/s"
 msgid "kn"
 msgstr "kn"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3570
 msgid "left"
 msgstr "kvar"
 
@@ -6965,7 +6970,7 @@ msgstr "under cirka 2 km: grå dagar, dimma, duggregn."
 msgid "until %1"
 msgstr "fram till %1"
 
-#: contents/ui/DetailsView.qml:3560
+#: contents/ui/DetailsView.qml:3567
 msgid "until dawn"
 msgstr "fram till gryningen"
 
