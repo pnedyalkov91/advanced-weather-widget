@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-22 07:49+0200\n"
+"POT-Creation-Date: 2026-11-22 08:45+0200\n"
 "PO-Revision-Date: 2026-11-21 09:10+0200\n"
 "Last-Translator: Petar Nedyalkov <petar.nedyalkov91@gmail.com>\n"
 "Language-Team: English <kde-i18n-doc@kde.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Lokalize 26.08.3\n"
 
-#: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
+#: contents/ui/DetailsView.qml:3560 contents/ui/DetailsView.qml:3562
 msgid " until dawn"
 msgstr " до світанку"
 
@@ -169,15 +169,15 @@ msgstr "%1: досягнуто ліміту запитів (HTTP %2) — пов�
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr "%1: ключ API відхилено (HTTP %2)"
 
-#: contents/ui/DetailsView.qml:4217
+#: contents/ui/DetailsView.qml:4213
 msgid "%1h"
 msgstr "%1 год"
 
-#: contents/ui/DetailsView.qml:4218
+#: contents/ui/DetailsView.qml:4214
 msgid "%1h %2m"
 msgstr "%1 год %2 хв"
 
-#: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
+#: contents/ui/DetailsView.qml:4207 contents/ui/DetailsView.qml:4211
 msgid "%1m"
 msgstr "%1 хв"
 
@@ -347,7 +347,7 @@ msgstr "Шар закінчується там, де закінчуються й
 msgid "A palette has 2 to 12 colors."
 msgstr "Палітра має містити від 2 до 12 кольорів."
 
-#: contents/ui/DetailsView.qml:2170
+#: contents/ui/DetailsView.qml:2168
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr "Південний напрямок поля (від'ємне значення Bz) дозволяє сонячному вітру взаємодіяти з магнітним полем Землі."
 
@@ -417,7 +417,7 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2165 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2163 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "Активно"
 
@@ -587,7 +587,7 @@ msgstr "Попередження:"
 msgid "All"
 msgstr "Усі"
 
-#: contents/ui/DetailsView.qml:2859
+#: contents/ui/DetailsView.qml:2855
 msgid "All clear"
 msgstr "Усе спокійно"
 
@@ -708,7 +708,7 @@ msgstr "Арабська"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Ви впевнені? Це ваше останнє збережене розташування. Якщо ви видалите його, віджет більше не показуватиме інформацію про погоду."
 
-#: contents/ui/DetailsView.qml:3566
+#: contents/ui/DetailsView.qml:3562
 msgid "Around midnight - "
 msgstr "Близько півночі - "
 
@@ -731,7 +731,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "Аудіофайли (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2154
+#: contents/ui/DetailsView.qml:2152
 msgid "Aurora Visibility"
 msgstr "Видимість полярного сяйва"
 
@@ -923,7 +923,7 @@ msgstr "Маркер  •"
 msgid "Button guide"
 msgstr "Підказки кнопок"
 
-#: contents/ui/DetailsView.qml:2166
+#: contents/ui/DetailsView.qml:2164
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (Магнітне поле)"
 
@@ -1094,7 +1094,7 @@ msgid "Clean style"
 msgstr "Чистий стиль"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2879
+#: contents/ui/DetailsView.qml:2875
 msgid "Clear"
 msgstr "Ясно"
 
@@ -1469,11 +1469,11 @@ msgstr "Формат дати:"
 msgid "Date/Time:"
 msgstr "Дата/Час:"
 
-#: contents/ui/DetailsView.qml:3562
+#: contents/ui/DetailsView.qml:3558
 msgid "Dawn approaching - "
 msgstr "Наближається світанок - "
 
-#: contents/ui/DetailsView.qml:3542
+#: contents/ui/DetailsView.qml:3538
 msgid "Day"
 msgstr "День"
 
@@ -1481,7 +1481,7 @@ msgstr "День"
 msgid "Day and night"
 msgstr "День і ніч"
 
-#: contents/ui/DetailsView.qml:3570
+#: contents/ui/DetailsView.qml:3566
 msgid "Daylight over"
 msgstr "Світловий день завершився"
 
@@ -1541,7 +1541,7 @@ msgstr "Густа мряка"
 msgid "Density"
 msgstr "Щільність"
 
-#: contents/ui/DetailsView.qml:2499 contents/ui/DetailsView.qml:2501
+#: contents/ui/DetailsView.qml:2497 contents/ui/DetailsView.qml:2499
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "Опис"
@@ -1777,7 +1777,7 @@ msgstr "Редагувати палітру вітру"
 msgid "Edit…"
 msgstr "Редагувати…"
 
-#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "Набирає чинності"
 
@@ -1897,7 +1897,7 @@ msgstr "Esc"
 msgid "European CAQI (0-100+)"
 msgstr "Європейський CAQI (0–100+)"
 
-#: contents/ui/DetailsView.qml:3564
+#: contents/ui/DetailsView.qml:3560
 msgid "Evening - "
 msgstr "Вечір - "
 
@@ -1926,7 +1926,7 @@ msgstr "Розширити віджет, щоб заповнити доступ�
 msgid "Expanded cards height:"
 msgstr "Висота розгорнутих карток:"
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "Закінчується"
 
@@ -2036,7 +2036,7 @@ msgstr "Перший день тижня:"
 msgid "First picture"
 msgstr "Перше зображення"
 
-#: contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2186
 msgid "Flare Warning"
 msgstr "Попередження про спалахи"
 
@@ -2220,7 +2220,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 недоступна, спроба отримати системне розташування…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2124
+#: contents/ui/DetailsView.qml:2122
 msgid "Geomagnetic Storm"
 msgstr "Геомагнітна буря"
 
@@ -2315,7 +2315,7 @@ msgstr "Небезпечно"
 msgid "Header:"
 msgstr "Заголовок:"
 
-#: contents/ui/DetailsView.qml:2496 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2494 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "Заголовок"
 
@@ -2648,7 +2648,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2508 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "Інструкція"
 
@@ -2779,7 +2779,7 @@ msgid "Knots (kn)"
 msgstr "Вузли (вуз)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2133
+#: contents/ui/DetailsView.qml:2131
 msgid "Kp Index"
 msgstr "Kp індекс"
 
@@ -3295,7 +3295,7 @@ msgstr "Мінімальна висота:"
 msgid "Minimum width:"
 msgstr "Мінімальна ширина:"
 
-#: contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2186
 msgid "Minor"
 msgstr "Незначна"
 
@@ -3401,8 +3401,8 @@ msgstr "Фаза місяця, схід і захід місяця"
 msgid "Moon:"
 msgstr "Місяць:"
 
-#: contents/ui/DetailsView.qml:3779 contents/ui/DetailsView.qml:3784
-#: contents/ui/DetailsView.qml:4102 contents/ui/DetailsView.qml:4107
+#: contents/ui/DetailsView.qml:3775 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4098 contents/ui/DetailsView.qml:4103
 msgid "Moonrise"
 msgstr "Схід місяця"
 
@@ -3424,7 +3424,7 @@ msgstr "Значок сходу місяця:"
 msgid "Moonrise only"
 msgstr "Лише схід місяця"
 
-#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3773 contents/ui/DetailsView.qml:4096
 msgid "Moonrise/Moonset"
 msgstr "Схід/Захід місяця"
 
@@ -3434,8 +3434,8 @@ msgstr "Схід/Захід місяця"
 msgid "Moonrise:"
 msgstr "Схід місяця:"
 
-#: contents/ui/DetailsView.qml:3781 contents/ui/DetailsView.qml:3784
-#: contents/ui/DetailsView.qml:4104 contents/ui/DetailsView.qml:4107
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4100 contents/ui/DetailsView.qml:4103
 msgid "Moonset"
 msgstr "Захід місяця"
 
@@ -3565,7 +3565,7 @@ msgstr "Наступний день"
 msgid "Next period"
 msgstr "Наступний період"
 
-#: contents/ui/DetailsView.qml:3539
+#: contents/ui/DetailsView.qml:3535
 msgid "Night"
 msgstr "Ніч"
 
@@ -3589,7 +3589,7 @@ msgstr "Діоксид азоту (NO₂)"
 msgid "No"
 msgstr "Ні"
 
-#: contents/ui/DetailsView.qml:2857
+#: contents/ui/DetailsView.qml:2853
 msgid "No active alerts"
 msgstr "Немає активних попереджень"
 
@@ -3646,7 +3646,7 @@ msgstr "Немає збережених розташувань. Збережіт
 msgid "No snow"
 msgstr "Без снігу"
 
-#: contents/ui/DetailsView.qml:2861
+#: contents/ui/DetailsView.qml:2857
 msgid "No warnings in effect"
 msgstr "Чинних попереджень немає"
 
@@ -3889,7 +3889,7 @@ msgstr "Параметри: права кнопка миші"
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Orange"
 msgstr "Оранжевий"
 
@@ -3897,7 +3897,7 @@ msgstr "Оранжевий"
 msgid "Orange dot"
 msgstr "Помаранчева точка"
 
-#: contents/ui/DetailsView.qml:2842
+#: contents/ui/DetailsView.qml:2838
 msgid "Orange warning"
 msgstr "Помаранчеве попередження"
 
@@ -4088,7 +4088,7 @@ msgstr "Наведіть на день, щоб побачити деталі. Д
 msgid "Pollen"
 msgstr "Пилок"
 
-#: contents/ui/DetailsView.qml:1972
+#: contents/ui/DetailsView.qml:1970
 msgid "Pollen data not available for this location."
 msgstr "Дані про пилок недоступні для цього розташування."
 
@@ -4228,7 +4228,7 @@ msgstr "Попередній період"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Спочатку основна одиниця (напр. °C / °F)"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2508
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "Провайдер"
@@ -4253,7 +4253,7 @@ msgid "Provider website:"
 msgstr "Сайт провайдера:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2218
+#: contents/ui/DetailsView.qml:2216
 msgid "Provider:"
 msgstr "Провайдер:"
 
@@ -4310,7 +4310,7 @@ msgstr "QtWebEngine не встановлено"
 msgid "Quarter"
 msgstr "Чверть"
 
-#: contents/ui/DetailsView.qml:2165 contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2163 contents/ui/DetailsView.qml:2186
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "Спокійно"
@@ -4419,7 +4419,7 @@ msgstr "Рекомендовано - напр. 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Red"
 msgstr "Червоний"
 
@@ -4428,7 +4428,7 @@ msgctxt "color"
 msgid "Red"
 msgstr "Червоний"
 
-#: contents/ui/DetailsView.qml:2844
+#: contents/ui/DetailsView.qml:2840
 msgid "Red warning"
 msgstr "Червоне попередження"
 
@@ -5057,7 +5057,7 @@ msgid "Snowfall"
 msgstr "Снігопад"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2143
+#: contents/ui/DetailsView.qml:2141
 msgid "Solar Wind"
 msgstr "Сонячний вітер"
 
@@ -5194,8 +5194,8 @@ msgstr "Налаштування часу сонця"
 msgid "Sunday"
 msgstr "Неділя"
 
-#: contents/ui/DetailsView.qml:3312 contents/ui/DetailsView.qml:3316
-#: contents/ui/DetailsView.qml:3656 contents/ui/DetailsView.qml:3660
+#: contents/ui/DetailsView.qml:3308 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3652 contents/ui/DetailsView.qml:3656
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "Схід"
@@ -5237,8 +5237,8 @@ msgstr "Маркери сходу/заходу:"
 msgid "Sunrise:"
 msgstr "Схід сонця:"
 
-#: contents/ui/DetailsView.qml:3314 contents/ui/DetailsView.qml:3316
-#: contents/ui/DetailsView.qml:3658 contents/ui/DetailsView.qml:3660
+#: contents/ui/DetailsView.qml:3310 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3654 contents/ui/DetailsView.qml:3656
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "Захід"
@@ -5901,7 +5901,7 @@ msgstr "Відкріпити віджет"
 msgid "Unsettled"
 msgstr "Нестійка"
 
-#: contents/ui/DetailsView.qml:2453
+#: contents/ui/DetailsView.qml:2451
 msgid "Until"
 msgstr "До"
 
@@ -6114,7 +6114,7 @@ msgstr "Тепло"
 msgid "Warmest day"
 msgstr "Найтепліший день"
 
-#: contents/ui/DetailsView.qml:2846
+#: contents/ui/DetailsView.qml:2842
 msgid "Warning"
 msgstr "Попередження"
 
@@ -6250,7 +6250,7 @@ msgstr "Ключ API Weatherbit:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr "WebP або PNG, 256 або 512 px. Супутник також використовує цей формат."
 
-#: contents/ui/DetailsView.qml:2512 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2510 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "Сайт"
 
@@ -6376,13 +6376,13 @@ msgid "Wrap to next line"
 msgstr "Перенести на наступний рядок"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2189
+#: contents/ui/DetailsView.qml:2187
 msgid "X-ray Flare Class"
 msgstr "Клас рентгенівського спалаху"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Yellow"
 msgstr "Жовтий"
 
@@ -6391,7 +6391,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr "Жовтий"
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2836
 msgid "Yellow warning"
 msgstr "Жовте попередження"
 
@@ -6556,7 +6556,7 @@ msgstr "фут"
 msgid "full screen on or off."
 msgstr "увімкнути або вимкнути повноекранний режим."
 
-#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1933
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1931
 msgid "grains/m³"
 msgstr "пилку/м³"
 
@@ -6626,7 +6626,7 @@ msgstr "км"
 msgid "km/h"
 msgstr "км/год"
 
-#: contents/ui/DetailsView.qml:2141
+#: contents/ui/DetailsView.qml:2139
 msgid "km/s"
 msgstr "км/с"
 
@@ -6635,7 +6635,7 @@ msgstr "км/с"
 msgid "kn"
 msgstr "вуз"
 
-#: contents/ui/DetailsView.qml:3570
+#: contents/ui/DetailsView.qml:3566
 msgid "left"
 msgstr "залишилось"
 
@@ -6977,7 +6977,7 @@ msgstr "нижче приблизно 2 км: похмурі дні, туман,
 msgid "until %1"
 msgstr "до %1"
 
-#: contents/ui/DetailsView.qml:3567
+#: contents/ui/DetailsView.qml:3563
 msgid "until dawn"
 msgstr "до світанку"
 

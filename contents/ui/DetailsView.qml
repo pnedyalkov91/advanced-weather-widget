@@ -1850,8 +1850,6 @@ Item {
                                             })
                                             elide: Text.ElideRight
                                             Layout.alignment: Qt.AlignVCenter
-                                            Layout.fillWidth: true
-                                            horizontalAlignment: Text.AlignRight
                                         }
 
                                         // Expand chevron
@@ -2607,8 +2605,6 @@ Item {
                                             })
                                             elide: Text.ElideRight
                                             Layout.alignment: Qt.AlignVCenter
-                                            Layout.fillWidth: true
-                                            horizontalAlignment: Text.AlignRight
                                         }
                                         PlasmaCore.ToolTipArea {
                                             Layout.preferredWidth: 26
