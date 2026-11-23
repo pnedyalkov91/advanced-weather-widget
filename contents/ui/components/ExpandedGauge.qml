@@ -313,16 +313,21 @@ Item {
                 id: titleLabel
                 visible: gauge.title.length > 0
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.min(titleMetrics.width + 1, overlay.width - titleIcon.width - titleRow.spacing)
-                wrapMode: Text.Wrap
+                // Sized from an invisible single-line twin (same font and render type, so the
+                // measurement is exact) and wrapped only at spaces: a title is never cut in
+                // the middle of a word, whatever font, scaling or language is in use.
+                width: Math.min(Math.ceil(titleProbe.implicitWidth) + 3, overlay.width - titleIcon.width - titleRow.spacing)
+                wrapMode: Text.WordWrap
                 text: gauge.title
                 color: Kirigami.Theme.textColor
                 opacity: 0.65
                 font: gauge.weatherRoot ? gauge.weatherRoot.wf(11, false) : Qt.font({})
-                TextMetrics {
-                    id: titleMetrics
+                Label {
+                    id: titleProbe
+                    visible: false
                     text: gauge.title
                     font: titleLabel.font
+                    wrapMode: Text.NoWrap
                 }
             }
         }
@@ -334,18 +339,20 @@ Item {
             spacing: 4
             Label {
                 id: valueLabel
-                width: Math.min(valueMetrics.width + 1, overlay.width - (gauge.infoNextToValue && gauge.infoText.length > 0 ? 22 : 0))
+                width: Math.min(Math.ceil(valueProbe.implicitWidth) + 3, overlay.width - (gauge.infoNextToValue && gauge.infoText.length > 0 ? 22 : 0))
                 horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.Wrap
+                wrapMode: Text.WordWrap
                 text: gauge.valueText
                 color: gauge.valueColor
                 font: gauge.weatherRoot ? gauge.weatherRoot.wf(15, true) : Qt.font({
                     bold: true
                 })
-                TextMetrics {
-                    id: valueMetrics
+                Label {
+                    id: valueProbe
+                    visible: false
                     text: gauge.valueText
                     font: valueLabel.font
+                    wrapMode: Text.NoWrap
                 }
             }
             Item {
@@ -360,7 +367,7 @@ Item {
             visible: gauge.bandText.length > 0
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
+            wrapMode: Text.WordWrap
             text: gauge.bandText
             color: gauge.bandColor
             font: gauge.weatherRoot ? gauge.weatherRoot.wf(10, true) : Qt.font({
@@ -372,7 +379,7 @@ Item {
             visible: gauge.subText.length > 0
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
+            wrapMode: Text.WordWrap
             text: gauge.subText
             color: gauge.subColor
             opacity: 0.6
