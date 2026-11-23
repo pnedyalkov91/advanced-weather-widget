@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-11-22 07:49+0200\n"
-"PO-Revision-Date: 2026-11-21 09:08+0200\n"
-"Last-Translator: Petar Nedyalkov <petar.nedyalkov91@gmail.com>\n"
-"Language-Team: Hungarian <kde-i18n-doc@kde.org>\n"
+"PO-Revision-Date: 2026-11-22 10:44+0100\n"
+"Last-Translator: summoner <summoner@disroot.org>\n"
+"Language-Team: Hungarian <>\n"
 "Language: hu_HU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 26.08.3\n"
+"X-Generator: Poedit 3.10\n"
 
 #: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
 msgid " until dawn"
@@ -147,11 +147,11 @@ msgstr "%1. Kattintson jobb gombbal a másolásához vagy beillesztéséhez."
 
 #: contents/ui/components/WeatherMapView.qml:1848
 msgid "%1/%2 · %3 fps"
-msgstr "%1/%2 · %3 fps"
+msgstr "%1 / %2 · %3 fps"
 
 #: contents/ui/components/weathermap/LoadBox.qml:168
 msgid "%1: %2/%3"
-msgstr "%1: %2/%3"
+msgstr "%1: %2 / %3"
 
 #: contents/ui/components/weathermap/LayerRow.qml:277
 msgid "%1: options"
@@ -167,20 +167,20 @@ msgstr "%1: az API-kulcs el lett utasítva (HTTP %2)"
 
 #: contents/ui/DetailsView.qml:4217
 msgid "%1h"
-msgstr "%1h"
+msgstr "%1 ó"
 
 #: contents/ui/DetailsView.qml:4218
 msgid "%1h %2m"
-msgstr "%1h %2m"
+msgstr "%1 ó %2 p"
 
 #: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
 msgid "%1m"
-msgstr "%1m"
+msgstr "%1 p"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1390
 msgctxt "@info %1 size %2 family"
 msgid "%1pt %2"
-msgstr "%1pt %2"
+msgstr "%1 pt %2"
 
 #: contents/ui/js/spaceWeather.js:172 contents/ui/js/spaceWeather.js:186
 #: contents/ui/js/spaceWeather.js:198
@@ -305,7 +305,7 @@ msgid ""
 "<b>Hybrid-GPU / NVIDIA PRIME + Wayland crash workaround</b><br/><br/>On some hybrid-GPU laptops running Wayland, the Radar tab's embedded browser view can crash the whole Plasma shell the moment it first paints, due to a driver-level conflict between the two GPUs. This option disables GPU-accelerated compositing inside that browser view to avoid it.<br/><br/>Only enable this if you're actually experiencing that crash - it costs some rendering performance on the radar map.<br/><br/><b>This needs a log out and back in to take effect</b>, since it has to be set before Plasma starts. It also applies to the whole session, so any other app that embeds a Chromium-based browser view will pick up the same setting. Turning it back off later needs the same log out/in to fully clear it too.\n"
 "        <br/><br/>If you enable this option, the following file will be created in: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 msgstr ""
-"<b>Hibrid GPU / NVIDIA PRIME + Wayland összeomlás elhárítása</b><br/><br/>Néhány Wayland rendszert futtató, hibrid GPU-s laptopon a radarlap beágyazott böngészőnézete a két GPU közötti illesztőprogram-szintű ütközés miatt az első kirajzolás pillanatában összeomlaszthatja az egész Plasma munkakörnyezetet. Ez a lehetőség letiltja a GPU-gyorsítású kompozitálást abban a böngészőnézetben a hiba elkerülése érdekében.<br/><br/>Csak akkor engedélyezze ezt, ha valóban tapasztalja ezt az összeomlást – ez ugyanis némi megjelenítési teljesítményvesztéssel jár a radartérképen.<br/><br/><b>Az érvénybe lépéshez ki- és be kell jelentkezni</b>, mivel a beállítást a Plasma indulása előtt kell érvényesíteni. A teljes munkamenetre érvényes, így minden más Chromium-alapú böngészőnézetet beágyazó alkalmazás is ezt a beállítást veszi majd át. A későbbi kikapcsolásához szintén ki- és bejelentkezés szükséges a teljes törléshez.\n"
+"<b>Hibrid GPU / NVIDIA PRIME és Wayland összeomlás kiküszöbölése</b><br/><br/>Néhány Wayland rendszert futtató, hibrid GPU-s laptopon a radarlap beágyazott böngészőnézete a két GPU közötti illesztőprogram-szintű ütközés miatt az első kirajzolás pillanatában összeomlaszthatja az egész Plasma munkakörnyezetet. Ez a lehetőség letiltja a GPU-gyorsítású kompozitálást abban a böngészőnézetben a hiba elkerülése érdekében.<br/><br/>Csak akkor engedélyezze ezt, ha valóban tapasztalja ezt az összeomlást – ez ugyanis némi megjelenítési teljesítményvesztéssel jár a radartérképen.<br/><br/><b>Az érvénybe lépéshez ki- és be kell jelentkezni</b>, mivel a beállítást a Plasma indulása előtt kell érvényesíteni. A teljes munkamenetre érvényes, így minden más Chromium-alapú böngészőnézetet beágyazó alkalmazás is ezt a beállítást veszi majd át. A későbbi kikapcsolásához szintén ki- és bejelentkezés szükséges a teljes törléshez.\n"
 "        <br/><br/>Ha engedélyezi ezt a beállítást, a következő fájl jön létre itt: ~/.config/plasma-workspace/env/advanced-weather-widget-radar-gpu-workaround.sh"
 
 #: contents/ui/main.qml:2517
@@ -546,7 +546,7 @@ msgstr "Riasztás nyelve"
 
 #: contents/ui/config/configNotifications.qml:472
 msgid "Alert sound:"
-msgstr "Riasztási hang:"
+msgstr "Riasztás hangja:"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:72
 #: contents/ui/components/weathermap/RadarMenu.qml:198
@@ -603,15 +603,15 @@ msgstr "Minden fájl (*)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2104
 msgid "Already-passed hours are removed from today's hourly forecast"
-msgstr "A már eltelt órák el lettek távolítva a mai óránkénti előrejelzésből"
+msgstr "Ne jelenjenek meg a mai óránkénti előrejelzésben a már eltelt órák"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2104
 msgid "Already-passed hours for today stay in place, greyed out, instead of being removed"
-msgstr "A mai nap már eltelt órái a helyükön maradnak, de szürkítve, ahelyett hogy eltűnnének"
+msgstr "Elrejtés helyett szürkítve maradjanak a helyükön a mai, de már elmúlt órák"
 
 #: contents/ui/config/configNotifications.qml:601
 msgid "Also notify about routine test alerts"
-msgstr "Értesítés a rutinszerű teszt riasztásokról is"
+msgstr "Értesítés a rutinszerű tesztriasztásokról is"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:365
 msgid "Alt: %1 %2"
@@ -944,7 +944,7 @@ msgstr "Szélcsend"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:725
 #: contents/ui/config/tabs/ConfigMiscTab.qml:769
 msgid "Canadian AQHI (1-10+)"
-msgstr "Kanadai AQHI (1-10+)"
+msgstr "Kanadai AQHI (1 - 10+)"
 
 #: contents/ui/config/configAppearance.qml:513
 #: contents/ui/config/configAppearance.qml:1041
@@ -1006,7 +1006,7 @@ msgstr "Szín módosítása"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the color (replaces the colors of the G scale)"
-msgstr "Szín módosítása (lecseréli a G-skála színeit)"
+msgstr "Szín módosítása (G-skála színeinek lecserélése)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the colors"
@@ -1041,7 +1041,7 @@ msgstr "Kínai időjárás-szolgáltató globális lefedettséggel. API-kulcs sz
 
 #: contents/ui/config/configNotifications.qml:524
 msgid "Choose Alert Sound"
-msgstr "Riasztási hang kiválasztása"
+msgstr "Riasztás hangjának kiválasztása"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1262
 msgid "Choose Simple Mode Font"
@@ -1430,7 +1430,7 @@ msgstr "Adatok frissítése"
 
 #: contents/ui/HistoryView.qml:1243
 msgid "Data is available from %1 until yesterday."
-msgstr "Az adatok %1 napjától tegnapig érhetők el."
+msgstr "Az adatok tegnapig érhetők el ekkortól: %1."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:165
 msgid "Date"
@@ -1571,11 +1571,11 @@ msgstr "Elrendezés részletei:"
 
 #: contents/ui/main.qml:990
 msgid "Detect / change location"
-msgstr "Hely észlelése / módosítása"
+msgstr "Hely észlelése és módosítása"
 
 #: contents/ui/FullView.qml:501
 msgid "Detect / change location…"
-msgstr "Hely észlelése / módosítása…"
+msgstr "Hely észlelése és módosítása…"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1300
 msgid "Detect location"
@@ -1893,7 +1893,7 @@ msgstr "Esc"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:713
 #: contents/ui/config/tabs/ConfigMiscTab.qml:765
 msgid "European CAQI (0-100+)"
-msgstr "Európai CAQI (0-100+)"
+msgstr "Európai CAQI (0 - 100+)"
 
 #: contents/ui/DetailsView.qml:3564
 msgid "Evening - "
@@ -2193,7 +2193,7 @@ msgstr "Teljes képernyő (F11)"
 
 #: contents/ui/config/configLocation.qml:1632
 msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
-msgstr "A GPS / GeoClue2 nem érhető el (a legjobb pontosságért telepítse a qt6-qtlocation csomagot). IP-alapú észlelés használata."
+msgstr "A GPS és GeoClue2 nem érhető el (a legjobb pontosságért telepítse a qt6-qtlocation csomagot). IP-alapú észlelés használata."
 
 #: contents/ui/DetailsView.qml:516
 msgid "Gale"
@@ -2611,8 +2611,8 @@ msgid ""
 "Individual dropdowns are editable only in Custom mode.\n"
 "Other presets set units automatically."
 msgstr ""
-"Az egyéni lenyíló listák csak Egyéni módban szerkeszthetők.\n"
-"A többi előbeállítás automatikusan beállítja a mértékegységeket."
+"Az egyes legördülő menük csak „Egyéni módban” szerkeszthetők.\n"
+"Más előbeállítások automatikusan állítják be a mértékegységeket."
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:556
 msgid "Individual units"
@@ -2910,11 +2910,11 @@ msgstr "Gyenge eső"
 
 #: contents/ui/config/configAppearance.qml:718
 msgid "Light rain / Drizzle (day)"
-msgstr "Gyenge eső / Szitálás (nappal)"
+msgstr "Gyenge eső vagy szitálás (nappal)"
 
 #: contents/ui/config/configAppearance.qml:723
 msgid "Light rain / Drizzle (night)"
-msgstr "Gyenge eső / Szitálás (éjszaka)"
+msgstr "Gyenge eső vagy szitálás (éjszaka)"
 
 #: contents/ui/main.qml:3403
 msgid "Light showers"
@@ -3268,7 +3268,7 @@ msgstr "Meteocons (beépített)"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:493
 msgid "Metric (°C, km/h, hPa, mm)"
-msgstr "Metrikus (°C, km/h, hPa, mm)"
+msgstr "Metrikus (°C, km/ó, hPa, mm)"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 #: contents/ui/components/WeatherMapView.qml:837
@@ -3701,7 +3701,7 @@ msgstr "Értesítés a közelgő riasztásokról azok kezdete előtt"
 
 #: contents/ui/config/configNotifications.qml:719
 msgid "Notify about upcoming rain/storms"
-msgstr "Értesítés közelgő esőről/viharról"
+msgstr "Értesítés közelgő esőről és viharról"
 
 #: contents/ui/config/configNotifications.qml:735
 msgid "Notify about upcoming snow"
@@ -3793,7 +3793,7 @@ msgstr "Egy lépés vissza (←)"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2082
 msgid "Only the clicked day expands"
-msgstr "Csak a rákattintott nap bomlik ki"
+msgstr "Csak a rákattintott nap kibontása"
 
 #: contents/ui/components/weathermap/LayerRow.qml:161
 #: contents/ui/components/weathermap/LayerRow.qml:236
@@ -3867,7 +3867,7 @@ msgstr "OpenWeatherMap API-kulcs:"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2060
 msgid "Opens today's hourly forecast automatically (or the next available day)"
-msgstr "A mai (vagy a következő elérhető) nap óránkénti előrejelzésének automatikusan megnyitása"
+msgstr "Mai (vagy a következő elérhető) nap óránkénti előrejelzésének automatikus megnyitása"
 
 #: contents/ui/DetailsView.qml:452
 msgid "Oppressive"
@@ -4037,7 +4037,7 @@ msgstr "Válasszon ki egy pontot a térképen a helyi előrejelzéshez, példáu
 
 #: contents/ui/components/WeatherMapView.qml:1852
 msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
-msgstr "Betöltött képek / képek a tartományban<br>Legfeljebb másodpercenkénti képkockák, az oszlop beállításaiban megadva"
+msgstr "Betöltött képek és képek a tartományban<br>Legfeljebb másodpercenkénti képkockák, az oszlop beállításaiban megadva"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:557
 msgid "Pictures per second"
@@ -4159,7 +4159,7 @@ msgstr "Csapadékos órák"
 #: contents/ui/config/configAppearance.qml:2024
 #: contents/ui/config/configAppearance.qml:2147
 msgid "Precipitation rate (mm/h)"
-msgstr "Csapadék intenzitása (mm/h)"
+msgstr "Csapadék intenzitása (mm/ó)"
 
 #: contents/ui/ForecastView.qml:725
 msgid "Precipitation sum"
@@ -4224,7 +4224,7 @@ msgstr "Előző időszak"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:171
 msgid "Primary unit shown first (e.g. °C / °F)"
-msgstr "Az elsődleges mértékegység jelenik meg először (például: °C / °F)"
+msgstr "Először az elsődleges mértékegység jelenjen meg (például: °C / °F)"
 
 #: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
 #: contents/ui/SimpleView.qml:178
@@ -4385,7 +4385,7 @@ msgstr "Esőzáporok"
 
 #: contents/ui/config/configNotifications.qml:715
 msgid "Rain/Storm"
-msgstr "Eső/Vihar"
+msgstr "Eső és vihar"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:47
 msgid "Range"
@@ -4773,11 +4773,11 @@ msgstr "Gyorsbillentyűk"
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:947
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:669
 msgid "Show / hide the prefix icon"
-msgstr "Előtagikon megjelenítése / elrejtése"
+msgstr "Előtagikon megjelenítése és elrejtése"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:685
 msgid "Show / hide the prefix icon on the panel"
-msgstr "Előtag ikon megjelenítése / elrejtése a panelen"
+msgstr "Előtag ikon megjelenítése és elrejtése a panelen"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1960
 msgid "Show Today:"
@@ -4859,7 +4859,7 @@ msgstr "Frissítési idő és szolgáltató megjelenítése"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:360
 msgid "Show/hide key"
-msgstr "Kulcs megjelenítése/elrejtése"
+msgstr "Kulcs megjelenítése és elrejtése"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:249
 msgid "Show:"
@@ -5048,7 +5048,7 @@ msgstr "Hózáporok"
 
 #: contents/ui/config/configNotifications.qml:80 contents/ui/main.qml:2069
 msgid "Snow/Ice"
-msgstr "Hó/Jég"
+msgstr "Hó és jég"
 
 #: contents/ui/HistoryView.qml:275 contents/ui/HistoryView.qml:333
 msgid "Snowfall"
@@ -5456,7 +5456,7 @@ msgstr "A radarlap mozgó részecskékként tudja animálni a szelet (ott kapcso
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:168
 msgid "The Radar tab opens at once on the most recent radar image, and the animation plays at once. It uses about 200 MB more memory: leave it off on a computer with little memory."
-msgstr "A Radar lap azonnal a legfrissebb radarképen nyílik meg, és az animáció azonnal elindul. Körülbelül 200 MB-tal több memóriát használ: kevés memóriával rendelkező számítógépen hagyja kikapcsolva."
+msgstr "A Radarlap azonnal a legfrissebb radarképen nyílik meg, és az animáció azonnal elindul. Körülbelül 200 MB-tal több memóriát használ: kevés memóriával rendelkező számítógépen hagyja kikapcsolva."
 
 #: contents/ui/RadarView.qml:345
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
@@ -5541,7 +5541,7 @@ msgstr "Az a hőmérséklet, amelyen a harmat kialakul. Megmutatja, mennyi vizet
 
 #: contents/ui/components/weathermap/HelpPanel.qml:133
 msgid "The thin button on its left edge opens or folds it. The map stays where it is when the column opens over it."
-msgstr "A bal szélén lévő vékony gomb nyitja ki vagy csukja össze. A térkép a helyén marad, amikor az oszlop rányílik."
+msgstr "A bal szélén lévő vékony gomb bontja ki vagy csukja össze. A térkép a helyén marad, amikor az oszlop rányílik."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:147
 msgid "The two clocks: how far back and how far ahead"
@@ -5709,7 +5709,7 @@ msgstr "Holnap"
 
 #: contents/ui/config/configNotifications.qml:691
 msgid "Tomorrow forecast"
-msgstr "Holnapi előrejelzés"
+msgstr "Holnapra vonatkozó előrejelzések"
 
 #: contents/ui/config/configGeneral.qml:648
 msgid "Tomorrow.io (Key Required)"
@@ -5819,7 +5819,7 @@ msgstr "ISMERETLEN"
 #: contents/ui/config/tabs/ConfigMiscTab.qml:701
 #: contents/ui/config/tabs/ConfigMiscTab.qml:761
 msgid "US AQI (0-500)"
-msgstr "US AQI (0-500)"
+msgstr "US AQI (0 - 500)"
 
 #: contents/ui/js/airQuality.js:105
 msgid "USG"
@@ -5918,7 +5918,7 @@ msgstr "Következő (Napkelte vagy -nyugta)"
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:593
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:587
 msgid "Upcoming rise/set only"
-msgstr "Csak a következő kelte/nyugta"
+msgstr "Csak a következő kelte vagy nyugta"
 
 #: contents/ui/main.qml:2615
 msgid "Upcoming: %1"
@@ -5986,11 +5986,11 @@ msgstr "Felhasznált:"
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1517
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:376
 msgid "Uses KDE system icons by default. Click the button to customise each item's icon."
-msgstr "Alapértelmezés szerint KDE-rendszerikonok használata. Kattintson a gombra az egyes elemek ikonjának testreszabásához."
+msgstr "KDE-rendszerikonok használata alapértelmezés szerint. Kattintson a gombra az egyes elemek ikonjának testreszabásához."
 
 #: contents/ui/js/airQuality.js:124
 msgid "V.High"
-msgstr "N. magas"
+msgstr "Nagyon magas"
 
 #: contents/ui/js/airQuality.js:95
 msgid "V.Poor"
@@ -5998,7 +5998,7 @@ msgstr "Nagyon rossz"
 
 #: contents/ui/js/airQuality.js:107
 msgid "V.Unhealthy"
-msgstr "N. egészségtelen"
+msgstr "Nagyon egészségtelen"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:106
 msgid "Values are rounded to whole numbers"
@@ -6123,11 +6123,11 @@ msgstr "Növekvő Hold"
 
 #: contents/ui/config/configLocation.qml:1245
 msgid "We detected your coordinates: <b>%1°, %2°</b>."
-msgstr "A koordinátái észlelve lettek: <b>%1°, %2°</b>."
+msgstr "Koordinátái észlelve lettek: <b>%1°, %2°</b>."
 
 #: contents/ui/config/configLocation.qml:1245
 msgid "We detected your location as: <b>%1</b>."
-msgstr "A tartózkodási helye észlelve lett: <b>%1</b>."
+msgstr "Tartózkodási helye észlelve lett: <b>%1</b>."
 
 #: contents/ui/config/configGeneral.qml:693
 msgid "Weather Alerts"
@@ -6152,11 +6152,11 @@ msgstr "Időjárási térképek"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1086
 msgid "Weather Maps / Radar"
-msgstr "Időjárási térképek / Radar"
+msgstr "Időjárási térképek és radar"
 
 #: contents/ui/config/configGeneral.qml:726
 msgid "Weather Maps / Radar is turned off, so these settings are read-only. Turn it on in Appearance › Widget › General › Visible tabs."
-msgstr "Az Időjárási térképek / Radar ki van kapcsolva, ezért ezek a beállítások írásvédettek. Kapcsolja be a Megjelenés › Felületi elem › Általános › Látható lapok menüpontban."
+msgstr "Ki van kapcsolva az időjárási térkép vagy a radar vagy mindkettő, ezért ezek a beállítások írásvédettek. Kapcsolja be a Megjelenés › Felületi elem › Általános › Látható lapok menüpontban."
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:68
 msgid "Weather Provider"
@@ -6183,7 +6183,7 @@ msgstr "Időjárási körülmények szövege"
 
 #: contents/ui/HistoryView.qml:769
 msgid "Weather history is unavailable (HTTP %1)."
-msgstr "Az időjárási előzmények nem érhetők el (HTTP %1)."
+msgstr "Nem érhetők el az időjárási előzmények (HTTP %1)."
 
 #: contents/ui/config/configAppearance.qml:1837
 msgid "Weather icon + condition text"
@@ -6264,11 +6264,11 @@ msgstr "Legcsapadékosabb nap"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:94
 msgid "What falls in the three hours around the time shown, in mm/h. Rain goes from blue to green, yellow, red and magenta as it gets heavier; snow is lilac and violet; the dangerous kinds (ice) have colors of their own. Under 0.05 mm/h nothing is drawn."
-msgstr "A megjelenített időpont körüli három órában hulló csapadék mennyisége, mm/ó-ban. Az eső erősödésével kékről zöldre, sárgára, pirosra és bíborra vált; a hó halványlila és ibolya; a veszélyes típusok (jég) saját színt kapnak. 0,05 mm/ó alatt semmi sem rajzolódik ki."
+msgstr "A megjelenített időpont körüli három órában hulló csapadék mennyisége, mm/ó-ban kifejezve. Az eső intenzitásának növekedésével a kék színből zöldbe, sárgába, vörösbe, majd magentába vált; a hó lila és ibolya színű; a veszélyes csapadékfajtáknak (jég) megvannak a saját színeik. 0,05 mm/ó alatt nem jelenik meg semmi."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:75
 msgid "What the weather radars see falling, from LibreWXR. After now it is LibreWXR's nowcast, paler on the time line. In its range the time line slows down to its 10 minute steps."
-msgstr "Amit az időjárási radarok hullani látnak, a LibreWXR-től. A jelen után a LibreWXR most-előrejelzése (nowcast), az idővonalon halványabb színnel. A tartományában az idővonal 10 perces lépésekre lassul."
+msgstr "Amit az időjárási radarok észlelnek, a LibreWXR adatai alapján. Ezt követően a LibreWXR jelenlegi előrejelzése következik, amely az idővonalon halványabb színnel jelenik meg. Ennek hatókörében az idővonal 10 perces lépésekre lassul."
 
 #: contents/ui/components/weathermap/HelpPanel.qml:138
 msgid "Wheel"
@@ -6364,7 +6364,7 @@ msgstr "Szél:"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:201
 msgid "Workaround radar map crashes on hybrid-GPU systems (EXPERIMENTAL)"
-msgstr "A hibrid GPU-rendszereken előforduló radartérkép-összeomlások ideiglenes megoldása (KÍSÉRLETI)"
+msgstr "Hibrid GPU-rendszereken előforduló radartérkép-összeomlások ideiglenes megoldása (KÍSÉRLETI)"
 
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:124
 msgid "Wrap to next line"
@@ -6618,11 +6618,11 @@ msgstr "km"
 #: contents/ui/components/WeatherMapView.qml:133
 #: contents/ui/config/tabs/ConfigMiscTab.qml:607 contents/ui/js/weather.js:588
 msgid "km/h"
-msgstr "km/h"
+msgstr "km/ó"
 
 #: contents/ui/DetailsView.qml:2141
 msgid "km/s"
-msgstr "km/s"
+msgstr "km/mp"
 
 #: contents/ui/components/RadarWebEngineView.qml:896
 #: contents/ui/components/WeatherMapView.qml:131 contents/ui/js/weather.js:587
@@ -6649,7 +6649,7 @@ msgstr "m"
 #: contents/ui/components/WeatherMapView.qml:130
 #: contents/ui/config/tabs/ConfigMiscTab.qml:615 contents/ui/js/weather.js:586
 msgid "m/s"
-msgstr "m/s"
+msgstr "m/mp"
 
 #: contents/ui/config/configGeneral.qml:624
 msgid "met.no (free)"
@@ -6682,7 +6682,7 @@ msgstr "mm"
 
 #: contents/ui/components/RadarWebEngineView.qml:890 contents/ui/main.qml:1841
 msgid "mm/h"
-msgstr "mm/h"
+msgstr "mm/ó"
 
 #: contents/ui/components/RadarWebEngineView.qml:901
 #: contents/ui/config/tabs/ConfigMiscTab.qml:652 contents/ui/js/weather.js:593
