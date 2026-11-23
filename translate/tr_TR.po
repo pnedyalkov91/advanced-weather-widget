@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-22 07:49+0200\n"
+"POT-Creation-Date: 2026-11-22 08:45+0200\n"
 "PO-Revision-Date: 2026-11-08 16:53+0300\n"
 "Last-Translator: herzane <info@herzane.tr>\n"
 "Language-Team: Turkish\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
+#: contents/ui/DetailsView.qml:3560 contents/ui/DetailsView.qml:3562
 msgid " until dawn"
 msgstr " şafağa kadar"
 
@@ -166,15 +166,15 @@ msgstr ""
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4217
+#: contents/ui/DetailsView.qml:4213
 msgid "%1h"
 msgstr "%1 sa"
 
-#: contents/ui/DetailsView.qml:4218
+#: contents/ui/DetailsView.qml:4214
 msgid "%1h %2m"
 msgstr "%1 sa %2 dk"
 
-#: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
+#: contents/ui/DetailsView.qml:4207 contents/ui/DetailsView.qml:4211
 msgid "%1m"
 msgstr "%1 dk"
 
@@ -346,7 +346,7 @@ msgstr ""
 msgid "A palette has 2 to 12 colors."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2170
+#: contents/ui/DetailsView.qml:2168
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr ""
 
@@ -416,7 +416,7 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2165 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2163 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "Aktif"
 
@@ -586,7 +586,7 @@ msgstr "Uyarılar:"
 msgid "All"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2859
+#: contents/ui/DetailsView.qml:2855
 msgid "All clear"
 msgstr ""
 
@@ -707,7 +707,7 @@ msgstr ""
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "Emin misiniz? Bu kaydettiğiniz son konum. Eğer kaldırırsanız, araç takımı artık hava durumu bilgilerini göstermeyecek."
 
-#: contents/ui/DetailsView.qml:3566
+#: contents/ui/DetailsView.qml:3562
 msgid "Around midnight - "
 msgstr "Gece yarısına doğru - "
 
@@ -730,7 +730,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "Ses dosyaları (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2154
+#: contents/ui/DetailsView.qml:2152
 msgid "Aurora Visibility"
 msgstr "Kuzey Işıkları Görünürlüğü"
 
@@ -922,7 +922,7 @@ msgstr "Madde İmi  •"
 msgid "Button guide"
 msgstr "Düğme rehberi"
 
-#: contents/ui/DetailsView.qml:2166
+#: contents/ui/DetailsView.qml:2164
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (Manyetik Alan)"
 
@@ -1093,7 +1093,7 @@ msgid "Clean style"
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2879
+#: contents/ui/DetailsView.qml:2875
 msgid "Clear"
 msgstr "Temizle"
 
@@ -1468,11 +1468,11 @@ msgstr "Tarih formatı:"
 msgid "Date/Time:"
 msgstr "Tarih/Saat:"
 
-#: contents/ui/DetailsView.qml:3562
+#: contents/ui/DetailsView.qml:3558
 msgid "Dawn approaching - "
 msgstr "Şafak yaklaşıyor - "
 
-#: contents/ui/DetailsView.qml:3542
+#: contents/ui/DetailsView.qml:3538
 msgid "Day"
 msgstr "Gündüz"
 
@@ -1480,7 +1480,7 @@ msgstr "Gündüz"
 msgid "Day and night"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3570
+#: contents/ui/DetailsView.qml:3566
 msgid "Daylight over"
 msgstr "Gün ışığı bitti"
 
@@ -1540,7 +1540,7 @@ msgstr "Yoğun çisenti"
 msgid "Density"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2499 contents/ui/DetailsView.qml:2501
+#: contents/ui/DetailsView.qml:2497 contents/ui/DetailsView.qml:2499
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "Açıklama"
@@ -1776,7 +1776,7 @@ msgstr ""
 msgid "Edit…"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "Yürürlükte"
 
@@ -1896,7 +1896,7 @@ msgstr ""
 msgid "European CAQI (0-100+)"
 msgstr "Avrupa CAQI (0-100+)"
 
-#: contents/ui/DetailsView.qml:3564
+#: contents/ui/DetailsView.qml:3560
 msgid "Evening - "
 msgstr "Akşam - "
 
@@ -1925,7 +1925,7 @@ msgstr "Widget'ı kullanılabilir panel alanını dolduracak şekilde genişlet"
 msgid "Expanded cards height:"
 msgstr "Genişletilmiş kartların yüksekliği:"
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "Bitiş süresi"
 
@@ -2035,7 +2035,7 @@ msgstr "Haftanın ilk günü:"
 msgid "First picture"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2186
 msgid "Flare Warning"
 msgstr "Parlama Uyarısı"
 
@@ -2219,7 +2219,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 kullanılamıyor, sistem konumu deneniyor…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2124
+#: contents/ui/DetailsView.qml:2122
 msgid "Geomagnetic Storm"
 msgstr "Jeomanyetik Fırtına"
 
@@ -2314,7 +2314,7 @@ msgstr "Tehlikeli"
 msgid "Header:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2496 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2494 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "Başlık"
 
@@ -2647,7 +2647,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2508 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "Talimat"
 
@@ -2778,7 +2778,7 @@ msgid "Knots (kn)"
 msgstr "Knots (kn)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2133
+#: contents/ui/DetailsView.qml:2131
 msgid "Kp Index"
 msgstr "Kp İndeksi"
 
@@ -3291,7 +3291,7 @@ msgstr "Minimum yükseklik:"
 msgid "Minimum width:"
 msgstr "Minimum genişlik:"
 
-#: contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2186
 msgid "Minor"
 msgstr ""
 
@@ -3397,8 +3397,8 @@ msgstr "Ay evresi, doğuşu ve batışı"
 msgid "Moon:"
 msgstr "Ay:"
 
-#: contents/ui/DetailsView.qml:3779 contents/ui/DetailsView.qml:3784
-#: contents/ui/DetailsView.qml:4102 contents/ui/DetailsView.qml:4107
+#: contents/ui/DetailsView.qml:3775 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4098 contents/ui/DetailsView.qml:4103
 msgid "Moonrise"
 msgstr "Ayın doğuşu"
 
@@ -3420,7 +3420,7 @@ msgstr "Ayın doğuş simgesi:"
 msgid "Moonrise only"
 msgstr "Sadece ayın doğuşu"
 
-#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3773 contents/ui/DetailsView.qml:4096
 msgid "Moonrise/Moonset"
 msgstr "Ayın Doğuşu/Batışı"
 
@@ -3430,8 +3430,8 @@ msgstr "Ayın Doğuşu/Batışı"
 msgid "Moonrise:"
 msgstr "Ayın doğuşu:"
 
-#: contents/ui/DetailsView.qml:3781 contents/ui/DetailsView.qml:3784
-#: contents/ui/DetailsView.qml:4104 contents/ui/DetailsView.qml:4107
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4100 contents/ui/DetailsView.qml:4103
 msgid "Moonset"
 msgstr "Ayın batışı"
 
@@ -3561,7 +3561,7 @@ msgstr ""
 msgid "Next period"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3539
+#: contents/ui/DetailsView.qml:3535
 msgid "Night"
 msgstr "Gece"
 
@@ -3585,7 +3585,7 @@ msgstr "Azot Dioksit (NO₂)"
 msgid "No"
 msgstr "Hayır"
 
-#: contents/ui/DetailsView.qml:2857
+#: contents/ui/DetailsView.qml:2853
 msgid "No active alerts"
 msgstr ""
 
@@ -3642,7 +3642,7 @@ msgstr "Kayıtlı konum yok. Yerler arasında hızlıca geçiş yapmak için mev
 msgid "No snow"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2861
+#: contents/ui/DetailsView.qml:2857
 msgid "No warnings in effect"
 msgstr ""
 
@@ -3885,7 +3885,7 @@ msgstr ""
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Orange"
 msgstr "Turuncu"
 
@@ -3893,7 +3893,7 @@ msgstr "Turuncu"
 msgid "Orange dot"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2842
+#: contents/ui/DetailsView.qml:2838
 msgid "Orange warning"
 msgstr ""
 
@@ -4084,7 +4084,7 @@ msgstr ""
 msgid "Pollen"
 msgstr "Polen"
 
-#: contents/ui/DetailsView.qml:1972
+#: contents/ui/DetailsView.qml:1970
 msgid "Pollen data not available for this location."
 msgstr "Bu konum için polen verisi mevcut değil."
 
@@ -4224,7 +4224,7 @@ msgstr ""
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "Birincil birim önce gösterilir (örn. °C / °F)"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2508
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "Sağlayıcı"
@@ -4249,7 +4249,7 @@ msgid "Provider website:"
 msgstr "Sağlayıcı web sitesi:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2218
+#: contents/ui/DetailsView.qml:2216
 msgid "Provider:"
 msgstr "Sağlayıcı:"
 
@@ -4306,7 +4306,7 @@ msgstr "QtWebEngine yüklü değil"
 msgid "Quarter"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2165 contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2163 contents/ui/DetailsView.qml:2186
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "Sakin"
@@ -4415,7 +4415,7 @@ msgstr "Önerilen - örn. 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Red"
 msgstr "Kırmızı"
 
@@ -4424,7 +4424,7 @@ msgctxt "color"
 msgid "Red"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2844
+#: contents/ui/DetailsView.qml:2840
 msgid "Red warning"
 msgstr ""
 
@@ -5053,7 +5053,7 @@ msgid "Snowfall"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2143
+#: contents/ui/DetailsView.qml:2141
 msgid "Solar Wind"
 msgstr "Güneş Rüzgarı"
 
@@ -5190,8 +5190,8 @@ msgstr "Güneş saatleri seçenekleri"
 msgid "Sunday"
 msgstr "Pazar"
 
-#: contents/ui/DetailsView.qml:3312 contents/ui/DetailsView.qml:3316
-#: contents/ui/DetailsView.qml:3656 contents/ui/DetailsView.qml:3660
+#: contents/ui/DetailsView.qml:3308 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3652 contents/ui/DetailsView.qml:3656
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "Gündoğumu"
@@ -5233,8 +5233,8 @@ msgstr "Gündoğumu/günbatımı işaretleri:"
 msgid "Sunrise:"
 msgstr "Gündoğumu:"
 
-#: contents/ui/DetailsView.qml:3314 contents/ui/DetailsView.qml:3316
-#: contents/ui/DetailsView.qml:3658 contents/ui/DetailsView.qml:3660
+#: contents/ui/DetailsView.qml:3310 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3654 contents/ui/DetailsView.qml:3656
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "Günbatımı"
@@ -5897,7 +5897,7 @@ msgstr "Araç takımını sabitlemekten kaldır"
 msgid "Unsettled"
 msgstr "Kararsız"
 
-#: contents/ui/DetailsView.qml:2453
+#: contents/ui/DetailsView.qml:2451
 msgid "Until"
 msgstr ""
 
@@ -6107,7 +6107,7 @@ msgstr ""
 msgid "Warmest day"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2846
+#: contents/ui/DetailsView.qml:2842
 msgid "Warning"
 msgstr ""
 
@@ -6243,7 +6243,7 @@ msgstr "Weatherbit API Anahtarı:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2512 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2510 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "Web Sitesi"
 
@@ -6369,13 +6369,13 @@ msgid "Wrap to next line"
 msgstr "Sonraki satıra sar"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2189
+#: contents/ui/DetailsView.qml:2187
 msgid "X-ray Flare Class"
 msgstr "X-ışını Parlama Sınıfı"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Yellow"
 msgstr "Sarı"
 
@@ -6384,7 +6384,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2836
 msgid "Yellow warning"
 msgstr ""
 
@@ -6548,7 +6548,7 @@ msgstr "ft"
 msgid "full screen on or off."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1933
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1931
 msgid "grains/m³"
 msgstr "tane/m³"
 
@@ -6618,7 +6618,7 @@ msgstr "km"
 msgid "km/h"
 msgstr "km/sa"
 
-#: contents/ui/DetailsView.qml:2141
+#: contents/ui/DetailsView.qml:2139
 msgid "km/s"
 msgstr "km/sn"
 
@@ -6627,7 +6627,7 @@ msgstr "km/sn"
 msgid "kn"
 msgstr "kn"
 
-#: contents/ui/DetailsView.qml:3570
+#: contents/ui/DetailsView.qml:3566
 msgid "left"
 msgstr "sol"
 
@@ -6969,7 +6969,7 @@ msgstr ""
 msgid "until %1"
 msgstr "bitiş: %1"
 
-#: contents/ui/DetailsView.qml:3567
+#: contents/ui/DetailsView.qml:3563
 msgid "until dawn"
 msgstr "şafağa kadar"
 

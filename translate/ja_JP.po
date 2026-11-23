@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-22 07:49+0200\n"
+"POT-Creation-Date: 2026-11-22 08:45+0200\n"
 "PO-Revision-Date: 2026-11-21 09:07+0200\n"
 "Language-Team: English <kde-i18n-doc@kde.org>\n"
 "Language: ja_JP\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Lokalize 26.08.3\n"
 
-#: contents/ui/DetailsView.qml:3564 contents/ui/DetailsView.qml:3566
+#: contents/ui/DetailsView.qml:3560 contents/ui/DetailsView.qml:3562
 msgid " until dawn"
 msgstr " 夜明けまで"
 
@@ -161,15 +161,15 @@ msgstr "%1: リクエスト上限に達しました（HTTP %2）— 後でもう
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr "%1: APIキーが拒否されました（HTTP %2）"
 
-#: contents/ui/DetailsView.qml:4217
+#: contents/ui/DetailsView.qml:4213
 msgid "%1h"
 msgstr "%1h"
 
-#: contents/ui/DetailsView.qml:4218
+#: contents/ui/DetailsView.qml:4214
 msgid "%1h %2m"
 msgstr "%1h %2m"
 
-#: contents/ui/DetailsView.qml:4211 contents/ui/DetailsView.qml:4215
+#: contents/ui/DetailsView.qml:4207 contents/ui/DetailsView.qml:4211
 msgid "%1m"
 msgstr "%1m"
 
@@ -341,7 +341,7 @@ msgstr "レイヤーはデータがある範囲までしか表示されません
 msgid "A palette has 2 to 12 colors."
 msgstr "パレットの色数は2〜12色です。"
 
-#: contents/ui/DetailsView.qml:2170
+#: contents/ui/DetailsView.qml:2168
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr "磁場が南向き（Bzが負）になると、太陽風が地球の磁場と結合しやすくなります。"
 
@@ -411,7 +411,7 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2165 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2163 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "活動中"
 
@@ -581,7 +581,7 @@ msgstr "アラート:"
 msgid "All"
 msgstr "すべて"
 
-#: contents/ui/DetailsView.qml:2859
+#: contents/ui/DetailsView.qml:2855
 msgid "All clear"
 msgstr "異常なし"
 
@@ -702,7 +702,7 @@ msgstr "アラビア語"
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "本当によろしいですか? これは最後に保存した位置です。削除すると、ウィジェットは気象情報を表示しなくなります。"
 
-#: contents/ui/DetailsView.qml:3566
+#: contents/ui/DetailsView.qml:3562
 msgid "Around midnight - "
 msgstr "真夜中頃 - "
 
@@ -725,7 +725,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "音声ファイル (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2154
+#: contents/ui/DetailsView.qml:2152
 msgid "Aurora Visibility"
 msgstr "オーロラ可視性"
 
@@ -917,7 +917,7 @@ msgstr "中黒  •"
 msgid "Button guide"
 msgstr "ボタンガイド"
 
-#: contents/ui/DetailsView.qml:2166
+#: contents/ui/DetailsView.qml:2164
 msgid "Bz (Magnetic Field)"
 msgstr "Bz（磁場）"
 
@@ -1088,7 +1088,7 @@ msgid "Clean style"
 msgstr "クリーンスタイル"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2879
+#: contents/ui/DetailsView.qml:2875
 msgid "Clear"
 msgstr "クリア"
 
@@ -1463,11 +1463,11 @@ msgstr "日付形式:"
 msgid "Date/Time:"
 msgstr "日付/時刻:"
 
-#: contents/ui/DetailsView.qml:3562
+#: contents/ui/DetailsView.qml:3558
 msgid "Dawn approaching - "
 msgstr "夜明けが近づいています - "
 
-#: contents/ui/DetailsView.qml:3542
+#: contents/ui/DetailsView.qml:3538
 msgid "Day"
 msgstr "昼"
 
@@ -1475,7 +1475,7 @@ msgstr "昼"
 msgid "Day and night"
 msgstr "昼と夜"
 
-#: contents/ui/DetailsView.qml:3570
+#: contents/ui/DetailsView.qml:3566
 msgid "Daylight over"
 msgstr "昼光が終了"
 
@@ -1535,7 +1535,7 @@ msgstr "濃い霧雨"
 msgid "Density"
 msgstr "密度"
 
-#: contents/ui/DetailsView.qml:2499 contents/ui/DetailsView.qml:2501
+#: contents/ui/DetailsView.qml:2497 contents/ui/DetailsView.qml:2499
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "説明"
@@ -1771,7 +1771,7 @@ msgstr "風パレットを編集"
 msgid "Edit…"
 msgstr "編集…"
 
-#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "発効"
 
@@ -1891,7 +1891,7 @@ msgstr "Esc"
 msgid "European CAQI (0-100+)"
 msgstr "欧州 CAQI（0-100+）"
 
-#: contents/ui/DetailsView.qml:3564
+#: contents/ui/DetailsView.qml:3560
 msgid "Evening - "
 msgstr "夕方 - "
 
@@ -1920,7 +1920,7 @@ msgstr "ウィジェットを展開して利用可能なパネル領域を埋め
 msgid "Expanded cards height:"
 msgstr "展開カードの高さ:"
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "有効期限"
 
@@ -2030,7 +2030,7 @@ msgstr "週の最初の日:"
 msgid "First picture"
 msgstr "最初の画像"
 
-#: contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2186
 msgid "Flare Warning"
 msgstr "フレア警報"
 
@@ -2214,7 +2214,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2が利用できません。システム位置を試行中…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2124
+#: contents/ui/DetailsView.qml:2122
 msgid "Geomagnetic Storm"
 msgstr "地磁気嵐"
 
@@ -2309,7 +2309,7 @@ msgstr "危険"
 msgid "Header:"
 msgstr "ヘッダー:"
 
-#: contents/ui/DetailsView.qml:2496 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2494 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "見出し"
 
@@ -2642,7 +2642,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2508 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "指示"
 
@@ -2773,7 +2773,7 @@ msgid "Knots (kn)"
 msgstr "ノット（kn）"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2133
+#: contents/ui/DetailsView.qml:2131
 msgid "Kp Index"
 msgstr "Kp 指数"
 
@@ -3289,7 +3289,7 @@ msgstr "最小の高さ:"
 msgid "Minimum width:"
 msgstr "最小の幅:"
 
-#: contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2186
 msgid "Minor"
 msgstr "軽微"
 
@@ -3395,8 +3395,8 @@ msgstr "月相、月の出 & 月の入り"
 msgid "Moon:"
 msgstr "月:"
 
-#: contents/ui/DetailsView.qml:3779 contents/ui/DetailsView.qml:3784
-#: contents/ui/DetailsView.qml:4102 contents/ui/DetailsView.qml:4107
+#: contents/ui/DetailsView.qml:3775 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4098 contents/ui/DetailsView.qml:4103
 msgid "Moonrise"
 msgstr "月の出"
 
@@ -3418,7 +3418,7 @@ msgstr "月の出のアイコン:"
 msgid "Moonrise only"
 msgstr "月の出のみ"
 
-#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3773 contents/ui/DetailsView.qml:4096
 msgid "Moonrise/Moonset"
 msgstr "月の出 / 月の入り"
 
@@ -3428,8 +3428,8 @@ msgstr "月の出 / 月の入り"
 msgid "Moonrise:"
 msgstr "月の出:"
 
-#: contents/ui/DetailsView.qml:3781 contents/ui/DetailsView.qml:3784
-#: contents/ui/DetailsView.qml:4104 contents/ui/DetailsView.qml:4107
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4100 contents/ui/DetailsView.qml:4103
 msgid "Moonset"
 msgstr "月の入り"
 
@@ -3559,7 +3559,7 @@ msgstr "翌日"
 msgid "Next period"
 msgstr "次の期間"
 
-#: contents/ui/DetailsView.qml:3539
+#: contents/ui/DetailsView.qml:3535
 msgid "Night"
 msgstr "夜"
 
@@ -3583,7 +3583,7 @@ msgstr "二酸化窒素（NO₂）"
 msgid "No"
 msgstr "いいえ"
 
-#: contents/ui/DetailsView.qml:2857
+#: contents/ui/DetailsView.qml:2853
 msgid "No active alerts"
 msgstr "有効なアラートはありません"
 
@@ -3640,7 +3640,7 @@ msgstr "保存された位置がありません。現在の位置を保存する
 msgid "No snow"
 msgstr "積雪なし"
 
-#: contents/ui/DetailsView.qml:2861
+#: contents/ui/DetailsView.qml:2857
 msgid "No warnings in effect"
 msgstr "発効中の警報はありません"
 
@@ -3883,7 +3883,7 @@ msgstr "オプション: 右クリック"
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Orange"
 msgstr "オレンジ"
 
@@ -3891,7 +3891,7 @@ msgstr "オレンジ"
 msgid "Orange dot"
 msgstr "オレンジの点"
 
-#: contents/ui/DetailsView.qml:2842
+#: contents/ui/DetailsView.qml:2838
 msgid "Orange warning"
 msgstr "オレンジ警報"
 
@@ -4082,7 +4082,7 @@ msgstr "日にカーソルを合わせると詳細が表示されます。グラ
 msgid "Pollen"
 msgstr "花粉"
 
-#: contents/ui/DetailsView.qml:1972
+#: contents/ui/DetailsView.qml:1970
 msgid "Pollen data not available for this location."
 msgstr "この位置の花粉データは利用できません。"
 
@@ -4222,7 +4222,7 @@ msgstr "前期間"
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "主単位を先に表示（例: °C / °F）"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2510
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2508
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "プロバイダ"
@@ -4247,7 +4247,7 @@ msgid "Provider website:"
 msgstr "プロバイダのウェブサイト:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2218
+#: contents/ui/DetailsView.qml:2216
 msgid "Provider:"
 msgstr "プロバイダ:"
 
@@ -4304,7 +4304,7 @@ msgstr "QtWebEngineがインストールされていません"
 msgid "Quarter"
 msgstr "1/4"
 
-#: contents/ui/DetailsView.qml:2165 contents/ui/DetailsView.qml:2188
+#: contents/ui/DetailsView.qml:2163 contents/ui/DetailsView.qml:2186
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "静穏"
@@ -4413,7 +4413,7 @@ msgstr "推奨 - 例: 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Red"
 msgstr "赤"
 
@@ -4422,7 +4422,7 @@ msgctxt "color"
 msgid "Red"
 msgstr "赤"
 
-#: contents/ui/DetailsView.qml:2844
+#: contents/ui/DetailsView.qml:2840
 msgid "Red warning"
 msgstr "赤警報"
 
@@ -5051,7 +5051,7 @@ msgid "Snowfall"
 msgstr "降雪"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2143
+#: contents/ui/DetailsView.qml:2141
 msgid "Solar Wind"
 msgstr "太陽風"
 
@@ -5188,8 +5188,8 @@ msgstr "日の出 / 日の入りのオプション"
 msgid "Sunday"
 msgstr "日曜日"
 
-#: contents/ui/DetailsView.qml:3312 contents/ui/DetailsView.qml:3316
-#: contents/ui/DetailsView.qml:3656 contents/ui/DetailsView.qml:3660
+#: contents/ui/DetailsView.qml:3308 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3652 contents/ui/DetailsView.qml:3656
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "日の出"
@@ -5231,8 +5231,8 @@ msgstr "日の出 / 日の入りのマーカー:"
 msgid "Sunrise:"
 msgstr "日の出:"
 
-#: contents/ui/DetailsView.qml:3314 contents/ui/DetailsView.qml:3316
-#: contents/ui/DetailsView.qml:3658 contents/ui/DetailsView.qml:3660
+#: contents/ui/DetailsView.qml:3310 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3654 contents/ui/DetailsView.qml:3656
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "日の入り"
@@ -5895,7 +5895,7 @@ msgstr "ウィジェットのピン留めを解除"
 msgid "Unsettled"
 msgstr "不安定"
 
-#: contents/ui/DetailsView.qml:2453
+#: contents/ui/DetailsView.qml:2451
 msgid "Until"
 msgstr "終了"
 
@@ -6102,7 +6102,7 @@ msgstr "暖かい"
 msgid "Warmest day"
 msgstr "最も暑い日"
 
-#: contents/ui/DetailsView.qml:2846
+#: contents/ui/DetailsView.qml:2842
 msgid "Warning"
 msgstr "警報"
 
@@ -6238,7 +6238,7 @@ msgstr "Weatherbit APIキー:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr "WebPまたはPNG、256または512 px。衛星画像も同じ設定に従います。"
 
-#: contents/ui/DetailsView.qml:2512 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2510 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "ウェブサイト"
 
@@ -6364,13 +6364,13 @@ msgid "Wrap to next line"
 msgstr "次の行に折り返す"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2189
+#: contents/ui/DetailsView.qml:2187
 msgid "X-ray Flare Class"
 msgstr "X線フレアクラス"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2830
 msgid "Yellow"
 msgstr "黄"
 
@@ -6379,7 +6379,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr "黄"
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2836
 msgid "Yellow warning"
 msgstr "黄警報"
 
@@ -6542,7 +6542,7 @@ msgstr "ft"
 msgid "full screen on or off."
 msgstr "全画面表示を切り替えます。"
 
-#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1933
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1931
 msgid "grains/m³"
 msgstr "grains/m³"
 
@@ -6612,7 +6612,7 @@ msgstr "km"
 msgid "km/h"
 msgstr "km/h"
 
-#: contents/ui/DetailsView.qml:2141
+#: contents/ui/DetailsView.qml:2139
 msgid "km/s"
 msgstr "km/s"
 
@@ -6621,7 +6621,7 @@ msgstr "km/s"
 msgid "kn"
 msgstr "kn"
 
-#: contents/ui/DetailsView.qml:3570
+#: contents/ui/DetailsView.qml:3566
 msgid "left"
 msgstr "残り"
 
@@ -6963,7 +6963,7 @@ msgstr "約2 km未満: 曇りの日、霧、霧雨です。"
 msgid "until %1"
 msgstr "%1 まで"
 
-#: contents/ui/DetailsView.qml:3567
+#: contents/ui/DetailsView.qml:3563
 msgid "until dawn"
 msgstr "夜明けまで"
 
