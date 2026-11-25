@@ -90,7 +90,7 @@ Rectangle {
     readonly property string _fvFeelsLike: weatherRoot ? i18n("Feels like: %1", weatherRoot.tempValue(weatherRoot.apparentC)) : ""
     readonly property string _fvHigh: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].maxC) : "--"
     readonly property string _fvLow: (weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0) ? weatherRoot.tempValue(weatherRoot.dailyData[0].minC) : "--"
-    readonly property var _fvCondIcon: weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 32) : null
+    readonly property var _fvCondIcon: weatherRoot ? fullView.resolveConditionIcon(weatherRoot.weatherCode, weatherRoot.isNightTime(), 128) : null
 
     // Per-tab visibility flags (all visible by default).
     // widgetVisibleTabs is a semicolon-separated list ("details;forecast;radar;history").
