@@ -56,8 +56,9 @@ ColumnLayout {
     readonly property bool isDark: Kirigami.Theme.textColor.r > 0.5
 
     // ── Horizontal scrolling (forecast cards and stat chips) ─────────────────
-    // Fixed width of one forecast card (Standard layout); when the cards do not fit the popup
-    // (e.g. 16 days) the row scrolls sideways instead of squeezing / overlapping them.
+    // Width of one forecast card (Standard layout): at least this wide. When the cards do not fit
+    // the popup (e.g. 16 days) the row scrolls sideways instead of squeezing / overlapping them;
+    // with only a few cards they grow to fill the popup width.
     readonly property int _cardWidth: Kirigami.Units.gridUnit * 6
 
     // Scrolls a horizontal Flickable from a wheel event of a MouseArea laid over it (the same way
@@ -546,8 +547,12 @@ ColumnLayout {
                 policy: ScrollBar.AsNeeded
             }
 
-            Row {
+            // A RowLayout, so that a few chips share the free width (each grows from its content
+            // width, equally) and fill the row; when they do not fit, they keep their content
+            // width (Layout.minimumWidth) and the row, as wide as they need, scrolls.
+            RowLayout {
                 id: chipsRow
+                width: Math.max(chipsFlick.width, implicitWidth)
                 spacing: 4
 
                 Repeater {
@@ -566,20 +571,19 @@ ColumnLayout {
                         return 32;
                     }
                     readonly property var _iconInfo: IconResolver.resolve(chipRect.chipId, chipRect._iconSz, simpleView._iconsBase, simpleView._iconTheme)
-                    // Each chip sizes to its content; the Row lines them up (and scrolls when too wide)
-                    width: chipRow.implicitWidth + 20
-                    height: Math.max(36, chipRect._iconSz + 16)
+                    // The content width is the minimum; free width is shared by the chips
+                    Layout.minimumWidth: chipRow.implicitWidth + 20
+                    Layout.preferredWidth: chipRow.implicitWidth + 20
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(36, chipRect._iconSz + 16)
                     radius: 6
                     color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.06)
 
                     // Single line: [icon]  Label  Value
                     RowLayout {
                         id: chipRow
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 10
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
+                        // centered: stays in the middle when the chip is wider than its content
+                        anchors.centerIn: parent
                         spacing: 5
 
                         // Icon - wi-font glyph or WeatherIcon, directly in RowLayout like DetailsView
@@ -944,7 +948,11 @@ ColumnLayout {
             var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
             return simpleView.showToday ? total : Math.max(0, total - 1);
         }
-        readonly property real rowWidth: cardCount > 0 ? cardCount * simpleView._cardWidth + (cardCount - 1) * cardSpacing : 0
+        // Width of one card: _cardWidth at the least; with only a few cards they grow to fill the row
+        readonly property real cardW: cardCount > 0
+            ? Math.max(simpleView._cardWidth, (squaresFlick.width - (cardCount - 1) * cardSpacing) / cardCount)
+            : simpleView._cardWidth
+        readonly property real rowWidth: cardCount > 0 ? cardCount * cardW + (cardCount - 1) * cardSpacing : 0
         // room for the scrollbar is reserved only while the cards overflow
         readonly property bool overflow: rowWidth > squaresFlick.width + 1
 
@@ -982,7 +990,7 @@ ColumnLayout {
                 delegate: Rectangle {
                     required property int index
                     readonly property int dataIndex: simpleView.showToday ? index : index + 1
-                    width: simpleView._cardWidth
+                    width: squaresArea.cardW
                     height: squaresRow.height
                     radius: 8
                     color: dataIndex === 0
