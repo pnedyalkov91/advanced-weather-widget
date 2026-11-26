@@ -492,8 +492,21 @@ ColumnLayout {
             pollen:       i18n("Pollen"),
             spaceweather: i18n("Space Weather"),
             alerts:       i18n("Alerts"),
-            snowcover:    i18n("Snow Cover")
+            snowcover:    i18n("Snow Cover"),
+            condition:    i18n("Condition"),
+            datetime:     i18n("Date / Time")
         })[id] || id;
+    }
+
+    // The clock of the "datetime" chip (as in the Details tab): the chip's text reads this tick, so
+    // it is evaluated again every second while that chip is shown. Date.now() on its own is not a
+    // binding dependency.
+    property int _dateTimeTick: 0
+    Timer {
+        interval: 1000
+        running: simpleView._chipIds.indexOf("datetime") >= 0 && Plasmoid.configuration.simpleShowStatsChips !== false
+        repeat: true
+        onTriggered: simpleView._dateTimeTick++
     }
 
     function _chipValue(id) {
@@ -512,6 +525,11 @@ ColumnLayout {
         case "spaceweather": return weatherRoot.spaceWeatherText();
         case "alerts":       return weatherRoot.alertsText();
         case "snowcover":    return weatherRoot.snowDepthText(weatherRoot.snowDepthCm);
+        case "condition":    return weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime());
+        case "datetime": {
+            var tick = simpleView._dateTimeTick;   // re-evaluated by the timer above
+            return weatherRoot.formatDateTimeNow(false);
+        }
         default:             return "--";
         }
     }
@@ -571,6 +589,9 @@ ColumnLayout {
                         return 32;
                     }
                     readonly property var _iconInfo: IconResolver.resolve(chipRect.chipId, chipRect._iconSz, simpleView._iconsBase, simpleView._iconTheme)
+                    // wi-font glyph of the chip; a chip without one (e.g. datetime) uses its icon instead
+                    readonly property string _glyph: simpleView._wiChars[chipId] || ""
+                    readonly property bool _glyphMode: simpleView._useWiFont && _glyph !== ""
                     // The content width is the minimum; free width is shared by the chips
                     Layout.minimumWidth: chipRow.implicitWidth + 20
                     Layout.preferredWidth: chipRow.implicitWidth + 20
@@ -588,11 +609,11 @@ ColumnLayout {
 
                         // Icon - wi-font glyph or WeatherIcon, directly in RowLayout like DetailsView
                         Text {
-                            visible: chipRect.showIcon && simpleView._useWiFont
+                            visible: chipRect.showIcon && chipRect._glyphMode
                             Layout.alignment: Qt.AlignVCenter
                             Layout.preferredWidth: chipRect._iconSz
                             Layout.preferredHeight: chipRect._iconSz
-                            text: simpleView._wiChars[chipRect.chipId] || ""
+                            text: chipRect._glyph
                             font.family: simpleView.wiFontFamily
                             font.pixelSize: chipRect._iconSz - 2
                             color: Kirigami.Theme.textColor
@@ -601,7 +622,7 @@ ColumnLayout {
                             verticalAlignment: Text.AlignVCenter
                         }
                         WeatherIcon {
-                            visible: chipRect.showIcon && !simpleView._useWiFont
+                            visible: chipRect.showIcon && !chipRect._glyphMode
                             Layout.alignment: Qt.AlignVCenter
                             iconInfo: chipRect._iconInfo
                             iconSize: chipRect._iconSz
