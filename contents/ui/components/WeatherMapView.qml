@@ -559,6 +559,39 @@ Item {
         if (save)
             Plasmoid.configuration.librewxrRimGlow = v;
     }
+    // The Moon around the globe: its distance in Earth radii and its size
+    // as a multiple of the real Moon's (the same bounds as glue-earth.js),
+    // used while moonCustom is on. Off, the page draws it as it always was
+    // and the user's two values are kept for next time.
+    readonly property real moonDrawnDistance: 1.45
+    readonly property real moonRealDistance: 60.34
+    readonly property real moonDrawnSize: 0.3667
+    readonly property real moonMaxSize: 10
+    // The size drawn: close in, the Moon is kept off the globe (moonDiameter).
+    readonly property real moonShownSize: Math.min(moonSize, 1.8 * (moonDistance - 1) / 0.5454)
+    property bool moonCustom: Plasmoid.configuration.librewxrMoonCustom
+    function setMoonCustom(on) {
+        moonCustom = on;
+        call("setMoonOrbit", on ? moonDistance : moonDrawnDistance);
+        call("setMoonSize", on ? moonSize : moonDrawnSize);
+        Plasmoid.configuration.librewxrMoonCustom = on;
+    }
+    property real moonDistance: Plasmoid.configuration.librewxrMoonDistance
+    function setMoonDistance(v, save) {
+        moonDistance = v;
+        if (moonCustom)
+            call("setMoonOrbit", v);
+        if (save)
+            Plasmoid.configuration.librewxrMoonDistance = v;
+    }
+    property real moonSize: Plasmoid.configuration.librewxrMoonSize
+    function setMoonSize(v, save) {
+        moonSize = v;
+        if (moonCustom)
+            call("setMoonSize", v);
+        if (save)
+            Plasmoid.configuration.librewxrMoonSize = v;
+    }
     property int nightLights: Plasmoid.configuration.librewxrNightLights
     function setNightLights(v, save) {
         nightLights = v;
@@ -1242,7 +1275,7 @@ Item {
             ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
             ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
             ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
-            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["lineswidth", mapLinesWidth], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["lineswidth", mapLinesWidth], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow], ["moondist", moonCustom ? moonDistance : moonDrawnDistance], ["moonsize", moonCustom ? moonSize : moonDrawnSize],
             ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
             ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
             ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],
