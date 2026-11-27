@@ -412,9 +412,9 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // color layer to another they stay as they are, tiles and all.
   var homeMarker = null;      // the widget's place
   var LINES_LAYER = 'lv-lines', LINES_SOURCE = 'lv-lines-src', LINES_URL = 'vendor/coast-borders.bin';
-  // Under the dark lines, a thin light halo: they still show where the map
-  // is dark, the night side above all. Its margin, 0.5 px each side, stays
-  // the same when the user widens the lines.
+  // Under the lines, a thin halo of the other tone: they still show where
+  // the map is of the same tone as they are, the night side above all. Its
+  // margin, 0.5 px each side, stays the same when the user widens the lines.
   var LINES_HALO = 'lv-lines-halo';
   var LINES_WIDTH = [0, 1.7, 2, 1.3, 4, 1.0, 6, 1.2, 10, 1.8];
   var LINES_HALO_MARGIN = 1;
@@ -436,6 +436,28 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     if (!linesShown) return false;
     for (var k in linesOwners) return true;
     return false;
+  }
+  /** Whether the base map is a dark one: the entry of the list says so
+      (`dark`); failing that, by its name, and "auto" follows the theme. */
+  function baseIsDark() {
+    var id = typeof BG_CURRENT === 'undefined' ? 'auto' : BG_CURRENT;
+    var entry = typeof resolveBg === 'function' ? resolveBg(id, skyTheme) : null;
+    if (entry && typeof entry.dark === 'boolean') return entry.dark;
+    if (id === 'auto') return skyTheme === 'dark';
+    return /dark|fiord/i.test(String(id));
+  }
+  /** The colors of the lines and of their halo over a base map: dark lines
+      in a light halo on a light map, the reverse on a dark one, where dark
+      lines are lost. */
+  function linesColors(dark) {
+    return dark ? { line: 'rgba(245, 245, 245, 0.75)', halo: 'rgba(0, 0, 0, 0.5)' }
+                : { line: 'rgba(20, 20, 20, 0.6)', halo: 'rgba(235, 235, 235, 0.3)' };
+  }
+  /** The lines already drawn take the colors of the base map now chosen. */
+  function restyleLines() {
+    var col = linesColors(baseIsDark());
+    if (map.getLayer(LINES_HALO)) map.setPaintProperty(LINES_HALO, 'line-color', col.halo);
+    if (map.getLayer(LINES_LAYER)) map.setPaintProperty(LINES_LAYER, 'line-color', col.line);
   }
   // Called by restoreRuntimeStyle() while the swap ends, so not held by it.
   function applyLines() {
@@ -463,7 +485,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       addLayer({
         id: LINES_HALO, type: 'line', source: LINES_SOURCE,
         layout: { 'line-join': 'round', visibility: 'visible' },
-        paint: { 'line-color': 'rgba(235, 235, 235, 0.3)', 'line-width': linesWidth(LINES_HALO_MARGIN), 'line-blur': 1 }
+        paint: { 'line-color': linesColors(baseIsDark()).halo, 'line-width': linesWidth(LINES_HALO_MARGIN), 'line-blur': 1 }
       });
     } else map.setLayoutProperty(LINES_HALO, 'visibility', 'visible');
     if (map.getLayer(LINES_LAYER)) {
@@ -474,7 +496,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       id: LINES_LAYER, type: 'line', source: LINES_SOURCE,
       layout: { 'line-join': 'round', visibility: 'visible' },
       paint: {
-        'line-color': 'rgba(20, 20, 20, 0.6)',
+        'line-color': linesColors(baseIsDark()).line,
         // Thicker far out: on the whole globe (zoom ~1) a hairline is lost
         // in the colors. Thinnest around zoom 4, then wider again close in.
         'line-width': linesWidth(0)
@@ -484,6 +506,134 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   function setLines(owner, on) {
     if (on) linesOwners[owner] = true; else delete linesOwners[owner];
     if (!swapInProgress) applyLines();
+    drawCitiesSoon();
+  }
+
+  // The names of the big cities over the color layers, which hide those of
+  // the base map: drawn by the page on a canvas over the map, from its own
+  // file (vendor/places.json.gz, Natural Earth), so they read the same on
+  // every base map (raster ones carry theirs in the picture), light or dark,
+  // and offline, in the widget's language where the file has it. A halo of
+  // the other tone keeps them readable over clouds and colors. Shown with
+  // the color layers, as the lines are, and by the widget's own setting.
+  var CITIES_URL = 'vendor/places.json.gz', CITY_MAX = 300;
+  var citiesShown = typeof CITIES_INIT === 'undefined' || CITIES_INIT !== false;
+  var cityData = null, cityLoading = false, cityFailed = false, cityCanvas = null, cityFrame = 0;
+  var cityWidths = {}, cityLast = null;
+  function colorLayersOn() {
+    for (var k in linesOwners) return true;
+    return false;
+  }
+  function citiesWanted() { return citiesShown && colorLayersOn(); }
+  function drawCitiesSoon() {
+    // (No animation frames in the unit tests' stand-in page.)
+    if (!map || cityFrame || typeof requestAnimationFrame !== 'function') return;
+    cityFrame = requestAnimationFrame(function () { cityFrame = 0; drawCities(); });
+  }
+  function loadCities() {
+    if (cityData || cityLoading || cityFailed || typeof fetch !== 'function') return;
+    cityLoading = true;
+    fetch(CITIES_URL).then(function (r) { return r.arrayBuffer(); }).then(gunzip).then(function (buf) {
+      var d = JSON.parse(new TextDecoder('utf-8').decode(buf));
+      var lang = WidgetEarth.cityLanguage(typeof SYS_LOCALE === 'undefined' ? '' : SYS_LOCALE, d.langs);
+      cityData = d.c.map(function (c) {
+        return { lon: c[0] / 100, lat: c[1] / 100, z: c[2], name: (lang >= 0 && c[4][lang]) || c[3],
+          pv: WidgetEarth.placeVector(c[1] / 100, c[0] / 100) };
+      });
+      cityLoading = false;
+      drawCitiesSoon();
+    }).catch(function (e) {
+      cityLoading = false;
+      cityFailed = true;   // not asked again until the setting is switched
+      console.warn('city names: ' + e);
+    });
+  }
+  function makeCityCanvas() {
+    var cv = document.createElement('canvas');
+    cv.id = 'lv-cities';
+    cv.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;display:none';
+    // Over the map, under its buttons and its attribution.
+    var box = map.getContainer(), controls = box.querySelector && box.querySelector('.maplibregl-control-container');
+    box.insertBefore(cv, controls || null);
+    cityCanvas = cv;
+  }
+  function drawCities() {
+    if (!map) return;
+    if (!citiesWanted()) {
+      if (cityCanvas) cityCanvas.style.display = 'none';
+      cityLast = null;
+      return;
+    }
+    if (!cityData) { loadCities(); return; }
+    if (!cityCanvas) makeCityCanvas();
+    var box = map.getContainer(), w = box.clientWidth, h = box.clientHeight, dpr = window.devicePixelRatio || 1;
+    if (!(w > 0 && h > 0)) return;
+    if (cityCanvas.width !== Math.round(w * dpr) || cityCanvas.height !== Math.round(h * dpr)) {
+      cityCanvas.width = Math.round(w * dpr); cityCanvas.height = Math.round(h * dpr);
+    }
+    cityCanvas.style.display = '';
+    var ctx = cityCanvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    var zoom = map.getZoom(), globe = projection === 'globe', dark = baseIsDark(), c = map.getCenter();
+    // On the globe, the places on its near side only: those within the
+    // angle from the camera's point where the Earth's edge is, and a little
+    // less, where their names would be crushed against it.
+    var pu = null, cosMin = -2;
+    if (globe) {
+      var mid = map.project(c), f = WidgetEarth.CAMERA * h, edge = globeEdge(c, mid);
+      var earthR = WidgetEarth.earthRadiusPx(edge, f);
+      var cam = WidgetEarth.camera(c.lat, c.lng, map.getBearing(), map.getPitch());
+      var pos = WidgetEarth.cameraPosition(cam, WidgetEarth.placeVector(c.lat, c.lng), earthR, f);
+      var dist = Math.hypot(pos[0], pos[1], pos[2]), limb = earthR / dist;
+      pu = [pos[0] / dist, pos[1] / dist, pos[2] / dist];
+      cosMin = limb + 0.12 * (1 - limb);
+    }
+    var items = [], i, k, ct;
+    for (i = 0; i < cityData.length && items.length < CITY_MAX; i++) {
+      ct = cityData[i];
+      if (ct.z > zoom) continue;
+      if (globe && ct.pv[0] * pu[0] + ct.pv[1] * pu[1] + ct.pv[2] * pu[2] < cosMin) continue;
+      // Flat, the world repeats: the copies on screen.
+      for (k = globe ? 0 : -1; k <= (globe ? 0 : 1); k++) {
+        var p = map.project([ct.lon + 360 * k, ct.lat]);
+        if (!(p.x > 4 && p.y > 4 && p.x < w - 4 && p.y < h - 4)) continue;
+        items.push({ x: p.x, y: p.y, ct: ct, size: ct.z <= 1 ? 14 : ct.z <= 3 ? 13 : 12,
+          fade: Math.max(0.65, Math.min(1, 0.65 + (zoom - ct.z) * 1.5)) });
+        if (items.length >= CITY_MAX) break;
+      }
+    }
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    var wide = 0;
+    items.forEach(function (it) {
+      it.font = '600 ' + it.size + 'px "Noto Sans", "Segoe UI", system-ui, sans-serif';
+      var key = it.size + '|' + it.ct.name;
+      if (cityWidths[key] === undefined) {
+        if (++wide > 2000) cityWidths = {};
+        ctx.font = it.font;
+        cityWidths[key] = ctx.measureText(it.ct.name).width;
+      }
+      it.tw = cityWidths[key]; it.th = it.size + 2;
+    });
+    var ink = dark ? '#f5f5f5' : '#161616', halo = dark ? 'rgba(0,0,0,0.78)' : 'rgba(255,255,255,0.88)';
+    var placed = WidgetEarth.layoutLabels(items, w, h, 2);
+    placed.forEach(function (pl) {
+      var it = items[pl.i];
+      ctx.globalAlpha = it.fade;
+      ctx.beginPath();
+      ctx.arc(it.x, it.y, 2.2, 0, 2 * Math.PI);
+      ctx.lineWidth = 3; ctx.strokeStyle = halo; ctx.stroke();
+      ctx.fillStyle = ink; ctx.fill();
+      ctx.font = it.font;
+      ctx.lineWidth = 3.5; ctx.strokeStyle = halo;
+      ctx.strokeText(it.ct.name, pl.x, pl.y + it.th / 2);
+      ctx.fillStyle = ink;
+      ctx.fillText(it.ct.name, pl.x, pl.y + it.th / 2);
+    });
+    ctx.globalAlpha = 1;
+    cityLast = { names: placed.map(function (pl) { return items[pl.i].ct.name; }), dark: dark, candidates: items.length };   // for the test bench
   }
 
   var OPEN_METEO = 'Weather data: <a href="https://open-meteo.com/">Open-Meteo</a>';
@@ -755,6 +905,7 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     sky['atmosphere-blend'] = ['interpolate', ['linear'], ['zoom'], 0, 0.5 * g, 4, 0.35 * g, 7, 0];
     map.setSky(sky);
     drawSpaceSoon();
+    drawCitiesSoon();
   }
 
   // Around the globe, a small model of the sky seen by MapLibre's camera,
@@ -1182,6 +1333,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       map.on('resize', fitMinZoom);
       map.on('move', drawSpaceSoon);
       map.on('resize', drawSpaceSoon);
+      map.on('move', drawCitiesSoon);
+      map.on('resize', drawCitiesSoon);
       map.on('render', checkPrepared);
       map.on('render', function () { renderSeq++; });
       map.on('styledata', restack);
@@ -1195,6 +1348,8 @@ var WidgetMapLibreAdapter = function (maplibregl) {
 
     setBasemap: function (theme) {
       skyTheme = theme;
+      if (map && styleReady) restyleLines();
+      drawCitiesSoon();
       desired = baseFor(theme);
       if (!styleReady) { map.once('load', function () { adapter.setBasemap(theme); }); return; }
       if (swapInProgress) return;
@@ -1465,6 +1620,17 @@ var WidgetMapLibreAdapter = function (maplibregl) {
       if (map && styleReady && !swapInProgress) moveSun();
       else drawSpaceSoon();
     },
+
+    /** The names of the big cities over the color layers, on or off. */
+    setCitiesShown: function (on) {
+      citiesShown = !!on;
+      cityFailed = false;
+      drawCitiesSoon();
+    },
+    getCitiesShown: function () { return citiesShown; },
+    /** What the city canvas last drew, and a draw at once (test bench). */
+    citiesState: function () { return cityLast; },
+    redrawCities: function () { drawCities(); },
 
     /** Where the space canvas last put the Sun and the Moon (test bench). */
     spaceState: function () { return space && space.last; },

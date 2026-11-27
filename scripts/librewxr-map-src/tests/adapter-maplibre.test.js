@@ -66,7 +66,11 @@ class FakeMap {
   setSky(sky) { this.sky = sky; }
   setLight(l) { this.light = l; }
   triggerRepaint() { this.repaints = (this.repaints || 0) + 1; }
-  getContainer() { return { clientWidth: 800, clientHeight: 330 }; }
+  getContainer() { return { clientWidth: 800, clientHeight: 330, querySelector: () => null, insertBefore() {} }; }
+  // 20 px a degree, (6, 48) in the middle.
+  project(ll) { return { x: 400 + (ll[0] - 6) * 20, y: 165 - (ll[1] - 48) * 20 }; }
+  getBearing() { return 0; }
+  getPitch() { return 0; }
   getMinZoom() { return 0; }
   getMaxZoom() { return 12; }
   setMinZoom() {}
@@ -751,7 +755,7 @@ test('the lines width: a factor on the whole curve, halo too, drawn lines and ne
 });
 
 test('a thin light halo under the dark lines, so they still show over the night', async () => {
-  const { adapter, map } = loadAdapter(linesGlobals([]));
+  const { adapter, map } = loadAdapter(Object.assign(linesGlobals([]), { BG_CURRENT: 'osm-standard' }));
   adapter.setLines('pressure', true);
   await tick(); await tick();
   const order = ids(map), halo = map.getLayer('lv-lines-halo'), line = map.getLayer('lv-lines');
@@ -769,6 +773,174 @@ test('a thin light halo under the dark lines, so they still show over the night'
   adapter.setLines('pressure', true);
   assert.equal(map.getLayer('lv-lines-halo').layout.visibility, 'visible');
   assert.equal(ids(map).filter((id) => id === 'lv-lines-halo').length, 1, 'made once');
+});
+
+// === The lines follow the base map's tone ===
+const toneOf = (map) => ({ line: map.getLayer('lv-lines').paint['line-color'], halo: map.getLayer('lv-lines-halo').paint['line-color'] });
+const isLightInk = (c) => /^rgba\(24\d, 24\d, 24\d, /.test(c);
+const isDarkInk = (c) => /^rgba\(\d, \d, \d, /.test(c) || /^rgba\(20, 20, 20, /.test(c);
+
+test('on a dark base map the lines are light, in a dark halo', async () => {
+  const { adapter, map } = loadAdapter(Object.assign(linesGlobals([]), { BG_CURRENT: 'osm-dark' }));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const c = toneOf(map);
+  assert.ok(isLightInk(c.line), 'light line: ' + c.line);
+  assert.ok(isDarkInk(c.halo), 'dark halo: ' + c.halo);
+});
+
+test('on a light base map the lines stay dark, in a light halo', async () => {
+  const { adapter, map } = loadAdapter(Object.assign(linesGlobals([]), { BG_CURRENT: 'openfreemap-positron' }));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  const c = toneOf(map);
+  assert.ok(isDarkInk(c.line), 'dark line: ' + c.line);
+  assert.match(c.halo, /^rgba\(2\d\d, 2\d\d, 2\d\d, /);
+});
+
+test('the base map entry says if it is dark; "auto" follows the theme', async () => {
+  // The entry wins over the name...
+  const a = loadAdapter(Object.assign(linesGlobals([]), { BG_CURRENT: 'osm-standard', resolveBg: () => ({ url: 'https://x/{z}/{x}/{y}.png', dark: true }) }));
+  a.adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.ok(isLightInk(toneOf(a.map).line));
+  // ...and "auto" is dark in the dark theme, light in the light one.
+  for (const [theme, light] of [['dark', true], ['light', false]]) {
+    const b = loadAdapter(Object.assign(linesGlobals([]), { BG_CURRENT: 'auto', PARAMS: new URLSearchParams('theme=' + theme) }));
+    b.adapter.setLines('pressure', true);
+    await tick(); await tick();
+    assert.equal(isLightInk(toneOf(b.map).line), light, theme);
+  }
+});
+
+test('choosing another base map, or theme, repaints the lines already drawn', async () => {
+  const { adapter, map, ctx } = loadAdapter(Object.assign(linesGlobals([]), { BG_CURRENT: 'osm-standard' }));
+  adapter.setLines('pressure', true);
+  await tick(); await tick();
+  assert.ok(isDarkInk(toneOf(map).line));
+  ctx.BG_CURRENT = 'openfreemap-dark';
+  adapter.setBasemap('dark');
+  assert.ok(isLightInk(toneOf(map).line), 'light on the dark map');
+  assert.ok(isDarkInk(toneOf(map).halo));
+  ctx.BG_CURRENT = 'osm-standard';
+  adapter.setBasemap('light');
+  assert.ok(isDarkInk(toneOf(map).line), 'and back');
+});
+
+// === City names over the color layers ===
+const PLACES = JSON.stringify({ v: 1, langs: ['de', 'fr'], c: [
+  [600, 4800, 0, 'Strasbourg', ['Straßburg', '']],
+  [1000, 5000, 0, 'Far', ['', '']],
+  [650, 4850, 4, 'Small', ['', '']]
+] });
+function citiesHarness(opts) {
+  opts = opts || {};
+  const drawn = [], canvases = [], fetched = [];
+  const ctx2d = {
+    setTransform() {}, clearRect() {}, beginPath() {}, arc() {}, stroke() {}, fill() {}, strokeText() {},
+    fillText(t) { drawn.push(t); }, measureText: (t) => ({ width: 8 * t.length })
+  };
+  const globals = Object.assign({}, linesGlobals([]), {
+    window: { devicePixelRatio: 1 }, TextDecoder,
+    // The places as plain JSON (the page's gunzip lets what is not gzipped through).
+    fetch: (url) => {
+      fetched.push(url);
+      if (!/places/.test(url)) return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve('bin') });
+      if (opts.failPlaces) return Promise.reject(new Error('404'));
+      return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new TextEncoder().encode(PLACES).buffer) });
+    },
+    document: { hidden: false, addEventListener() {}, createElement: () => { const c = { style: {}, width: 0, height: 0, getContext: () => ctx2d }; canvases.push(c); return c; } }
+  }, opts.globals || {});
+  const h = loadAdapter(globals);
+  return Object.assign(h, { drawn, canvases, places: () => fetched.filter((u) => /places/.test(u)) });
+}
+
+test('city names: nothing is read or drawn until a color layer is on', async () => {
+  const h = citiesHarness();
+  h.adapter.redrawCities();
+  await tick(); await tick();
+  assert.deepEqual(h.places(), []);
+  assert.equal(h.adapter.citiesState(), null);
+  assert.equal(h.canvases.length, 0);
+});
+
+test('city names: with a color layer, the big cities that fit, most important first', async () => {
+  const h = citiesHarness();
+  h.adapter.setLines('pressure', true);
+  h.adapter.redrawCities();
+  await tick(); await tick(); await tick();
+  assert.deepEqual(h.places(), ['vendor/places.json.gz']);
+  h.adapter.redrawCities();
+  const st = h.adapter.citiesState();
+  // "Small" (zoom 4) is a candidate but its dot lands on Strasbourg's name.
+  assert.deepEqual(st.names, ['Strasbourg', 'Far']);
+  assert.equal(st.candidates, 3);
+  assert.deepEqual(h.drawn, ['Strasbourg', 'Far']);
+  assert.equal(h.canvases.length, 1);
+  assert.equal(h.canvases[0].style.display, '');
+  h.adapter.redrawCities();
+  assert.equal(h.places().length, 1, 'read once');
+  assert.equal(h.canvases.length, 1, 'one canvas');
+});
+
+test('city names: smaller places wait for their zoom', async () => {
+  const h = citiesHarness();
+  h.adapter.setLines('pressure', true);
+  h.adapter.redrawCities();
+  await tick(); await tick(); await tick();
+  h.map.getZoom = () => 3;
+  h.adapter.redrawCities();
+  assert.equal(h.adapter.citiesState().candidates, 2);
+});
+
+test('city names: in the widget\'s language where the file has the name, else the default', async () => {
+  for (const [locale, name] of [['de-DE', 'Straßburg'], ['fr-FR', 'Strasbourg'], ['bg-BG', 'Strasbourg'], ['', 'Strasbourg']]) {
+    const h = citiesHarness({ globals: { SYS_LOCALE: locale } });
+    h.adapter.setLines('pressure', true);
+    h.adapter.redrawCities();
+    await tick(); await tick(); await tick();
+    h.adapter.redrawCities();
+    assert.ok(h.adapter.citiesState().names.includes(name), locale + ': ' + h.adapter.citiesState().names);
+  }
+});
+
+test('city names: their own setting, apart from the lines\'', async () => {
+  const h = citiesHarness();
+  h.adapter.setLines('pressure', true);
+  h.adapter.redrawCities();
+  await tick(); await tick(); await tick();
+  h.adapter.redrawCities();
+  assert.equal(h.adapter.getCitiesShown(), true);
+  h.adapter.setCitiesShown(false);
+  h.adapter.redrawCities();
+  assert.equal(h.adapter.citiesState(), null);
+  assert.equal(h.canvases[0].style.display, 'none');
+  // The lines go on, with the names off.
+  h.adapter.setLinesShown(true);
+  assert.ok(linesVisible(h.map));
+  h.adapter.setCitiesShown(true);
+  h.adapter.redrawCities();
+  assert.ok(h.adapter.citiesState().names.length > 0);
+  // And the names go on with the lines off.
+  h.adapter.setLinesShown(false);
+  h.adapter.redrawCities();
+  assert.ok(h.adapter.citiesState().names.length > 0);
+});
+
+test('city names: gone with the last color layer; the page asks for the file once even if it fails', async () => {
+  const h = citiesHarness();
+  h.adapter.setLines('pressure', true);
+  h.adapter.redrawCities();
+  await tick(); await tick(); await tick();
+  h.adapter.redrawCities();
+  h.adapter.setLines('pressure', false);
+  h.adapter.redrawCities();
+  assert.equal(h.adapter.citiesState(), null);
+  const bad = citiesHarness({ failPlaces: true });
+  bad.adapter.setLines('pressure', true);
+  for (let i = 0; i < 4; i++) { bad.adapter.redrawCities(); await tick(); await tick(); }
+  assert.equal(bad.places().length, 1, 'not hammered');
+  assert.equal(bad.adapter.citiesState(), null);
 });
 
 test('a layer that asks for the lines before the style loads gets them once it has', async () => {

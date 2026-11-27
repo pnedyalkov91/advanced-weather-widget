@@ -32,6 +32,9 @@
  * L.maplibreGL layer instead - MapLibre renders them on a WebGL canvas that
  * Leaflet keeps in sync, so the radar overlays above them are untouched.
  *
+ * `dark: true` marks the dark base maps: the radar page draws its coast and
+ * border lines and its city names light on them, dark on the others.
+ *
  * All providers are free and require no API key. Attribution strings are HTML
  * because both consumers render rich text.
  *
@@ -80,6 +83,7 @@ var MAP_BACKGROUNDS = {
         singleHost: "https://tile.openstreetmap.org/",
         maxZoom: 19,
         invert: true,
+        dark: true,
         attribution: _OSM_LINK
     },
     "openfreemap-positron": {
@@ -97,12 +101,14 @@ var MAP_BACKGROUNDS = {
     "openfreemap-fiord": {
         styleUrl: "https://tiles.openfreemap.org/styles/fiord",
         vector: true,
+        dark: true,
         maxZoom: 20,
         attribution: _OSM_LINK + " | Tiles by <a href='https://openfreemap.org/'>OpenFreeMap</a>"
     },
     "openfreemap-dark": {
         styleUrl: "https://tiles.openfreemap.org/styles/dark",
         vector: true,
+        dark: true,
         maxZoom: 20,
         attribution: _OSM_LINK + " | Tiles by <a href='https://openfreemap.org/'>OpenFreeMap</a>"
     }
