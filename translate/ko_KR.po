@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-19 19:24+0200\n"
+"POT-Creation-Date: 2026-11-22 08:45+0200\n"
 "PO-Revision-Date: 2026-08-09 00:00+0900\n"
 "Last-Translator: Vitneum\n"
 "Language-Team: Korean\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: contents/ui/DetailsView.qml:3557 contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3560 contents/ui/DetailsView.qml:3562
 msgid " until dawn"
 msgstr " (새벽까지)"
 
@@ -142,7 +142,7 @@ msgstr ""
 msgid "%1. Right-click to copy or paste it."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1847
+#: contents/ui/components/WeatherMapView.qml:1848
 msgid "%1/%2 · %3 fps"
 msgstr ""
 
@@ -162,15 +162,15 @@ msgstr ""
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4210
+#: contents/ui/DetailsView.qml:4213
 msgid "%1h"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4211
+#: contents/ui/DetailsView.qml:4214
 msgid "%1h %2m"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4204 contents/ui/DetailsView.qml:4208
+#: contents/ui/DetailsView.qml:4207 contents/ui/DetailsView.qml:4211
 msgid "%1m"
 msgstr ""
 
@@ -340,7 +340,7 @@ msgstr ""
 msgid "A palette has 2 to 12 colors."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2165
+#: contents/ui/DetailsView.qml:2168
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr ""
 
@@ -410,7 +410,7 @@ msgstr "AQHI (대기질 건강 지수)"
 msgid "AQI"
 msgstr "AQI (대기질 지수)"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2163 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "활성"
 
@@ -531,7 +531,7 @@ msgid "Albanian"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
-#: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
+#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1943
 msgid "Alder"
 msgstr "오리나무"
 
@@ -580,7 +580,7 @@ msgstr "경보:"
 msgid "All"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2852
+#: contents/ui/DetailsView.qml:2855
 msgid "All clear"
 msgstr ""
 
@@ -701,7 +701,7 @@ msgstr ""
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "정말 삭제하시겠습니까? 마지막으로 저장된 위치입니다. 제거하면 위젯에 더 이상 날씨 정보가 표시되지 않습니다."
 
-#: contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3562
 msgid "Around midnight - "
 msgstr "자정 무렵 - "
 
@@ -724,7 +724,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2149
+#: contents/ui/DetailsView.qml:2152
 msgid "Aurora Visibility"
 msgstr "오로라 관측 가능성"
 
@@ -843,7 +843,7 @@ msgid "Basque"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
-#: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
+#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1946
 msgid "Birch"
 msgstr "자작나무"
 
@@ -916,7 +916,7 @@ msgstr "글머리 기호  •"
 msgid "Button guide"
 msgstr "버튼 가이드"
 
-#: contents/ui/DetailsView.qml:2161
+#: contents/ui/DetailsView.qml:2164
 msgid "Bz (Magnetic Field)"
 msgstr "Bz (자기장 남북 성분)"
 
@@ -954,7 +954,7 @@ msgstr "취소"
 msgid "Cancel rename"
 msgstr "이름 변경 취소"
 
-#: contents/ui/DetailsView.qml:1720
+#: contents/ui/DetailsView.qml:1723
 msgid "Carbon Monoxide (CO)"
 msgstr "일산화탄소 (CO)"
 
@@ -991,7 +991,7 @@ msgstr ""
 msgid "Chance of precipitation"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
 msgstr ""
 
@@ -1087,7 +1087,7 @@ msgid "Clean style"
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2872
+#: contents/ui/DetailsView.qml:2875
 msgid "Clear"
 msgstr "지우기"
 
@@ -1162,6 +1162,11 @@ msgstr ""
 #: contents/ui/components/weathermap/HelpPanel.qml:95
 msgid "Clouds"
 msgstr "구름"
+
+#: contents/ui/components/WeatherMapView.qml:1229
+msgctxt "@label cloud cover at the map pointer"
+msgid "Clouds: %1"
+msgstr ""
 
 #: contents/ui/config/configNotifications.qml:100 contents/ui/main.qml:2089
 msgid "Coastal event"
@@ -1457,11 +1462,11 @@ msgstr "날짜 형식:"
 msgid "Date/Time:"
 msgstr "날짜/시각:"
 
-#: contents/ui/DetailsView.qml:3555
+#: contents/ui/DetailsView.qml:3558
 msgid "Dawn approaching - "
 msgstr "동트는 중 - "
 
-#: contents/ui/DetailsView.qml:3535
+#: contents/ui/DetailsView.qml:3538
 msgid "Day"
 msgstr "낮"
 
@@ -1469,7 +1474,7 @@ msgstr "낮"
 msgid "Day and night"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3566
 msgid "Daylight over"
 msgstr "일몰 완료"
 
@@ -1529,7 +1534,7 @@ msgstr "짙은 이슬비"
 msgid "Density"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2493 contents/ui/DetailsView.qml:2495
+#: contents/ui/DetailsView.qml:2497 contents/ui/DetailsView.qml:2499
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "설명"
@@ -1584,7 +1589,7 @@ msgstr "이슬점"
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LayerPanel.qml:974
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1234
+#: contents/ui/components/WeatherMapView.qml:1235
 msgid "Dew point"
 msgstr ""
 
@@ -1698,7 +1703,7 @@ msgstr "이중 기온 단위"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
 #: contents/ui/components/WeatherMapView.qml:838
-#: contents/ui/components/WeatherMapView.qml:1235
+#: contents/ui/components/WeatherMapView.qml:1236
 msgid "Dust"
 msgstr ""
 
@@ -1765,7 +1770,7 @@ msgstr ""
 msgid "Edit…"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2498 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "발효 시각"
 
@@ -1885,7 +1890,7 @@ msgstr ""
 msgid "European CAQI (0-100+)"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3557
+#: contents/ui/DetailsView.qml:3560
 msgid "Evening - "
 msgstr "저녁 - "
 
@@ -1914,7 +1919,7 @@ msgstr "사용 가능한 패널 공간을 채우도록 위젯 확장"
 msgid "Expanded cards height:"
 msgstr "펼친 카드 높이:"
 
-#: contents/ui/DetailsView.qml:2500 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "만료 시각"
 
@@ -2024,7 +2029,7 @@ msgstr "한 주의 시작 요일:"
 msgid "First picture"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2186
 msgid "Flare Warning"
 msgstr "태양 플레어 경보"
 
@@ -2208,7 +2213,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2를 사용할 수 없어 시스템 위치 서비스를 시도하는 중…"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2119
+#: contents/ui/DetailsView.qml:2122
 msgid "Geomagnetic Storm"
 msgstr "지자기 폭풍"
 
@@ -2262,7 +2267,7 @@ msgid "Graphs style:"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
-#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
+#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1949
 msgid "Grass"
 msgstr "잔디/잔디꽃가루"
 
@@ -2303,7 +2308,7 @@ msgstr ""
 msgid "Header:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2494 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "요약"
 
@@ -2374,24 +2379,28 @@ msgid "Hide prefix icon"
 msgstr "접두사 아이콘 숨기기"
 
 #: contents/ui/DetailsView.qml:474 contents/ui/DetailsView.qml:599
-#: contents/ui/FullView.qml:618 contents/ui/js/airQuality.js:123
-#: contents/ui/js/pollen.js:45 contents/ui/js/spaceWeather.js:188
-#: contents/ui/js/spaceWeather.js:200 contents/ui/main.qml:1896
-#: contents/ui/main.qml:1937 contents/ui/SimpleView.qml:787
+#: contents/ui/js/airQuality.js:123 contents/ui/js/pollen.js:45
+#: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
+#: contents/ui/main.qml:1896 contents/ui/main.qml:1937
 msgid "High"
 msgstr "높음"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1230
+#: contents/ui/components/WeatherMapView.qml:1231
 msgctxt "@item cloud level"
 msgid "High"
 msgstr ""
 
 #: contents/ui/components/HistoryChartGraphs.qml:104
 #: contents/ui/components/HistoryChartKQC.qml:77
-#: contents/ui/ForecastView.qml:1097
+#: contents/ui/ForecastView.qml:1097 contents/ui/SimpleView.qml:787
 msgctxt "@label chart legend"
+msgid "High"
+msgstr ""
+
+#: contents/ui/FullView.qml:618
+msgctxt "@label daily maximum temperature"
 msgid "High"
 msgstr ""
 
@@ -2498,7 +2507,7 @@ msgid "Humid"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
-#: contents/ui/components/WeatherMapView.qml:1233
+#: contents/ui/components/WeatherMapView.qml:1234
 #: contents/ui/config/configAppearance.qml:1872
 #: contents/ui/config/configAppearance.qml:1974
 #: contents/ui/config/configAppearance.qml:2118 contents/ui/DetailsView.qml:700
@@ -2632,7 +2641,7 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "지침"
 
@@ -2763,7 +2772,7 @@ msgid "Knots (kn)"
 msgstr "노트 (kn)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2128
+#: contents/ui/DetailsView.qml:2131
 msgid "Kp Index"
 msgstr "Kp 지수 (지자기 활동도)"
 
@@ -3085,24 +3094,28 @@ msgid "Loop: on"
 msgstr ""
 
 #: contents/ui/DetailsView.qml:472 contents/ui/DetailsView.qml:597
-#: contents/ui/FullView.qml:638 contents/ui/js/airQuality.js:121
-#: contents/ui/js/pollen.js:43 contents/ui/js/spaceWeather.js:190
-#: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1892
-#: contents/ui/main.qml:1933 contents/ui/SimpleView.qml:792
+#: contents/ui/js/airQuality.js:121 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:190 contents/ui/js/spaceWeather.js:202
+#: contents/ui/main.qml:1892 contents/ui/main.qml:1933
 msgid "Low"
 msgstr "낮음"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1232
+#: contents/ui/components/WeatherMapView.qml:1233
 msgctxt "@item cloud level"
 msgid "Low"
 msgstr ""
 
 #: contents/ui/components/HistoryChartGraphs.qml:114
 #: contents/ui/components/HistoryChartKQC.qml:87
-#: contents/ui/ForecastView.qml:1102
+#: contents/ui/ForecastView.qml:1102 contents/ui/SimpleView.qml:792
 msgctxt "@label chart legend"
+msgid "Low"
+msgstr ""
+
+#: contents/ui/FullView.qml:638
+msgctxt "@label daily minimum temperature"
 msgid "Low"
 msgstr ""
 
@@ -3251,7 +3264,7 @@ msgstr "미터법 (°C, km/h, hPa, mm)"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1231
+#: contents/ui/components/WeatherMapView.qml:1232
 msgctxt "@item cloud level"
 msgid "Mid"
 msgstr ""
@@ -3272,7 +3285,7 @@ msgstr "최소 높이:"
 msgid "Minimum width:"
 msgstr "최소 너비:"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2186
 msgid "Minor"
 msgstr ""
 
@@ -3378,8 +3391,8 @@ msgstr "달의 위상, 월출 및 월몰"
 msgid "Moon:"
 msgstr "달:"
 
-#: contents/ui/DetailsView.qml:3772 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4095 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3775 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4098 contents/ui/DetailsView.qml:4103
 msgid "Moonrise"
 msgstr "월출"
 
@@ -3401,7 +3414,7 @@ msgstr "월출 아이콘:"
 msgid "Moonrise only"
 msgstr "월출만"
 
-#: contents/ui/DetailsView.qml:3770 contents/ui/DetailsView.qml:4093
+#: contents/ui/DetailsView.qml:3773 contents/ui/DetailsView.qml:4096
 msgid "Moonrise/Moonset"
 msgstr "월출/월몰"
 
@@ -3411,8 +3424,8 @@ msgstr "월출/월몰"
 msgid "Moonrise:"
 msgstr "월출:"
 
-#: contents/ui/DetailsView.qml:3774 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4097 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4100 contents/ui/DetailsView.qml:4103
 msgid "Moonset"
 msgstr "월몰"
 
@@ -3447,7 +3460,7 @@ msgid "Mouse wheel"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:711
-#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1952
+#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1952
 msgid "Mugwort"
 msgstr "쑥"
 
@@ -3542,7 +3555,7 @@ msgstr ""
 msgid "Next period"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3532
+#: contents/ui/DetailsView.qml:3535
 msgid "Night"
 msgstr "밤"
 
@@ -3558,7 +3571,7 @@ msgstr ""
 msgid "Night lights density"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1714
+#: contents/ui/DetailsView.qml:1717
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "이산화질소 (NO₂)"
 
@@ -3566,7 +3579,7 @@ msgstr "이산화질소 (NO₂)"
 msgid "No"
 msgstr "아니요"
 
-#: contents/ui/DetailsView.qml:2850
+#: contents/ui/DetailsView.qml:2853
 msgid "No active alerts"
 msgstr ""
 
@@ -3623,7 +3636,7 @@ msgstr "저장된 위치가 없습니다. 위치를 빠르게 전환하려면 �
 msgid "No snow"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2854
+#: contents/ui/DetailsView.qml:2857
 msgid "No warnings in effect"
 msgstr ""
 
@@ -3750,7 +3763,7 @@ msgid "Official Spanish meteorological agency - Spain locations only! API key re
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:716
-#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1955
+#: contents/ui/DetailsView.qml:1795 contents/ui/main.qml:1955
 msgid "Olive"
 msgstr "올리브나무"
 
@@ -3866,7 +3879,7 @@ msgstr ""
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Orange"
 msgstr "주황색 경보"
 
@@ -3874,7 +3887,7 @@ msgstr "주황색 경보"
 msgid "Orange dot"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2836
+#: contents/ui/DetailsView.qml:2838
 msgid "Orange warning"
 msgstr ""
 
@@ -3891,7 +3904,7 @@ msgstr ""
 msgid "Overcast"
 msgstr "흐림"
 
-#: contents/ui/DetailsView.qml:1716
+#: contents/ui/DetailsView.qml:1719
 msgid "Ozone (O₃)"
 msgstr "오존 (O₃)"
 
@@ -3957,11 +3970,11 @@ msgstr ""
 msgid "Panel › Simple layout › Weather icon style"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1712
+#: contents/ui/DetailsView.qml:1715
 msgid "Particulate Matter (PM10)"
 msgstr "미세먼지 (PM10)"
 
-#: contents/ui/DetailsView.qml:1710
+#: contents/ui/DetailsView.qml:1713
 msgid "Particulate Matter (PM2.5)"
 msgstr "초미세먼지 (PM2.5)"
 
@@ -4014,7 +4027,7 @@ msgstr "위상 + 다음 월출/월몰"
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
 msgstr "동네 단위나 특정 랜드마크 등 더 국소적인 예보를 위해 지도에서 정확한 지점을 선택하세요."
 
-#: contents/ui/components/WeatherMapView.qml:1851
+#: contents/ui/components/WeatherMapView.qml:1852
 msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
 msgstr ""
 
@@ -4065,7 +4078,7 @@ msgstr ""
 msgid "Pollen"
 msgstr "꽃가루"
 
-#: contents/ui/DetailsView.qml:1967
+#: contents/ui/DetailsView.qml:1970
 msgid "Pollen data not available for this location."
 msgstr "이 위치에서는 꽃가루 데이터를 사용할 수 없습니다."
 
@@ -4176,7 +4189,7 @@ msgstr ""
 msgid "Pressure"
 msgstr "기압"
 
-#: contents/ui/DetailsView.qml:1455
+#: contents/ui/DetailsView.qml:1457
 msgid "Pressure tendency"
 msgstr ""
 
@@ -4205,7 +4218,7 @@ msgstr ""
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "기본 단위를 먼저 표시 (예: °C / °F)"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2504
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2508
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "제공자"
@@ -4230,7 +4243,7 @@ msgid "Provider website:"
 msgstr "제공자 웹사이트:"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2212
+#: contents/ui/DetailsView.qml:2216
 msgid "Provider:"
 msgstr "제공자:"
 
@@ -4283,7 +4296,7 @@ msgstr "QtWebEngine 패키지가 설치되지 않음"
 msgid "Quarter"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2163 contents/ui/DetailsView.qml:2186
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "조용함/평온"
@@ -4323,7 +4336,7 @@ msgid "Radar:"
 msgstr "레이더:"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
-#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1958
+#: contents/ui/DetailsView.qml:1797 contents/ui/main.qml:1958
 msgid "Ragweed"
 msgstr "돼지풀"
 
@@ -4392,7 +4405,7 @@ msgstr "권장 - 예: 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Red"
 msgstr "빨간색 경보"
 
@@ -4401,7 +4414,7 @@ msgctxt "color"
 msgid "Red"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2838
+#: contents/ui/DetailsView.qml:2840
 msgid "Red warning"
 msgstr ""
 
@@ -5030,7 +5043,7 @@ msgid "Snowfall"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2138
+#: contents/ui/DetailsView.qml:2141
 msgid "Solar Wind"
 msgstr "태양풍"
 
@@ -5142,7 +5155,7 @@ msgstr ""
 msgid "Strongest wind"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1718
+#: contents/ui/DetailsView.qml:1721
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "이산화황 (SO₂)"
 
@@ -5167,8 +5180,8 @@ msgstr "일출/일몰 시간 옵션"
 msgid "Sunday"
 msgstr "일요일"
 
-#: contents/ui/DetailsView.qml:3305 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3649 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3308 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3652 contents/ui/DetailsView.qml:3656
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "일출"
@@ -5210,8 +5223,8 @@ msgstr "일출/일몰 표시기:"
 msgid "Sunrise:"
 msgstr "일출:"
 
-#: contents/ui/DetailsView.qml:3307 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3651 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3310 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3654 contents/ui/DetailsView.qml:3656
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "일몰"
@@ -5384,7 +5397,7 @@ msgstr "기온 그림자:"
 msgid "Temperature:"
 msgstr "기온:"
 
-#: contents/ui/DetailsView.qml:1453
+#: contents/ui/DetailsView.qml:1455
 msgid "Tendency: collecting data"
 msgstr ""
 
@@ -5466,7 +5479,7 @@ msgstr "상태 아이콘은 KDE 시스템 아이콘 테마를 사용하여 현�
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr "지자기(Kp/G) 예보는 최대 3일 앞까지만 제공됩니다"
 
-#: contents/ui/components/WeatherMapView.qml:1881
+#: contents/ui/components/WeatherMapView.qml:1882
 msgid "The global model, then the finer regional<br>ones drawn over it in this view"
 msgstr ""
 
@@ -5498,7 +5511,7 @@ msgstr ""
 msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1822
+#: contents/ui/components/WeatherMapView.qml:1823
 msgid "The map page needs WebGL, which this graphics setup does not offer."
 msgstr ""
 
@@ -5522,7 +5535,7 @@ msgstr ""
 msgid "The two clocks: how far back and how far ahead"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1821
+#: contents/ui/components/WeatherMapView.qml:1822
 msgid "The weather maps cannot play here"
 msgstr ""
 
@@ -5530,7 +5543,7 @@ msgstr ""
 msgid "The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
 msgstr ""
 
@@ -5751,7 +5764,7 @@ msgstr "상단 좌측"
 msgid "Top Right"
 msgstr "상단 우측"
 
-#: contents/ui/components/WeatherMapView.qml:1229
+#: contents/ui/components/WeatherMapView.qml:1230
 msgctxt "@label total cloud cover"
 msgid "Total"
 msgstr ""
@@ -5874,7 +5887,7 @@ msgstr "위젯 고정 해제"
 msgid "Unsettled"
 msgstr "불안정"
 
-#: contents/ui/DetailsView.qml:2447
+#: contents/ui/DetailsView.qml:2451
 msgid "Until"
 msgstr ""
 
@@ -6084,7 +6097,7 @@ msgstr ""
 msgid "Warmest day"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2842
 msgid "Warning"
 msgstr ""
 
@@ -6112,7 +6125,7 @@ msgstr "날씨 경보"
 msgid "Weather Alerts Provider"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1533
+#: contents/ui/components/WeatherMapView.qml:1534
 msgid "Weather Map"
 msgstr ""
 
@@ -6220,7 +6233,7 @@ msgstr "Weatherbit API 키:"
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2510 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "웹사이트"
 
@@ -6346,13 +6359,13 @@ msgid "Wrap to next line"
 msgstr "다음 줄로 줄바꿈"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2184
+#: contents/ui/DetailsView.qml:2187
 msgid "X-ray Flare Class"
 msgstr "X선 플레어 등급"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Yellow"
 msgstr "노랑"
 
@@ -6361,7 +6374,7 @@ msgctxt "color"
 msgid "Yellow"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2836
 msgid "Yellow warning"
 msgstr ""
 
@@ -6524,7 +6537,7 @@ msgstr "ft"
 msgid "full screen on or off."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1841 contents/ui/DetailsView.qml:1928
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1931
 msgid "grains/m³"
 msgstr "개/m³"
 
@@ -6594,7 +6607,7 @@ msgstr "km"
 msgid "km/h"
 msgstr "km/h"
 
-#: contents/ui/DetailsView.qml:2136
+#: contents/ui/DetailsView.qml:2139
 msgid "km/s"
 msgstr "km/s"
 
@@ -6603,7 +6616,7 @@ msgstr "km/s"
 msgid "kn"
 msgstr "kn"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3566
 msgid "left"
 msgstr "남음"
 
@@ -6945,7 +6958,7 @@ msgstr ""
 msgid "until %1"
 msgstr "%1까지"
 
-#: contents/ui/DetailsView.qml:3560
+#: contents/ui/DetailsView.qml:3563
 msgid "until dawn"
 msgstr "새벽까지"
 

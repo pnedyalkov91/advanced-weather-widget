@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-19 19:24+0200\n"
-"PO-Revision-Date: 2026-10-01 16:36+0800\n"
+"POT-Creation-Date: 2026-11-22 08:45+0200\n"
+"PO-Revision-Date: 2026-11-23 09:54+0800\n"
 "Last-Translator: Yo\n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: contents/ui/DetailsView.qml:3557 contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3560 contents/ui/DetailsView.qml:3562
 msgid " until dawn"
 msgstr " 後日出"
 
@@ -29,7 +29,7 @@ msgstr " 後日出"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:445
 #: contents/ui/config/tabs/ConfigRadarTab.qml:650
 msgid "%1 %"
-msgstr ""
+msgstr "%1 %"
 
 #: contents/ui/main.qml:2945
 msgid "%1 %2"
@@ -37,12 +37,12 @@ msgstr "%1 %2"
 
 #: contents/ui/DetailsView.qml:567
 msgid "%1 %2 / 3 h"
-msgstr ""
+msgstr "%1 %2 / 3 小時"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:209
 msgctxt "@item:inlistbox %1 is a language name written in that language"
 msgid "%1 (Default)"
-msgstr ""
+msgstr "%1（預設）"
 
 #: contents/ui/main.qml:2848
 msgid "%1 - Today"
@@ -55,35 +55,35 @@ msgstr "%1 - 明天"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:742
 msgctxt "size on disk"
 msgid "%1 GB"
-msgstr ""
+msgstr "%1 GB"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:743
 msgctxt "size on disk"
 msgid "%1 MB"
-msgstr ""
+msgstr "%1 MB"
 
 #: contents/ui/components/weathermap/TimeBar.qml:199
 msgid "%1 ahead"
-msgstr ""
+msgstr "前進 %1"
 
 #: contents/ui/components/weathermap/TimeBar.qml:142
 msgid "%1 back"
-msgstr ""
+msgstr "後退 %1"
 
 #: contents/ui/HistoryView.qml:729
 msgid "%1 day has no data yet"
 msgid_plural "%1 days have no data yet"
-msgstr[0] ""
+msgstr[0] "%1 天尚無資料"
 
 #: contents/ui/components/weathermap/DateBox.qml:46
 #: contents/ui/components/WeatherMapView.qml:821
 #: contents/ui/components/WeatherMapView.qml:832
 msgid "%1 h"
-msgstr ""
+msgstr "%1 小時"
 
 #: contents/ui/components/WeatherMapView.qml:821
 msgid "%1 h %2"
-msgstr ""
+msgstr "%1 小時 %2 分"
 
 #: contents/ui/main.qml:3115
 msgid "%1 is ending"
@@ -104,16 +104,16 @@ msgstr "%2可能有%1。"
 #: contents/ui/components/WeatherMapView.qml:821
 #: contents/ui/components/WeatherMapView.qml:832
 msgid "%1 min"
-msgstr ""
+msgstr "%1 分鐘"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:820
 msgctxt "cache space used, of its maximum size"
 msgid "%1 of %2"
-msgstr ""
+msgstr "%1 / %2"
 
 #: contents/ui/HistoryView.qml:298
 msgid "%1 per day"
-msgstr ""
+msgstr "每天 %1"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:677
 #: contents/ui/components/weathermap/LayerPanel.qml:841
@@ -123,7 +123,7 @@ msgstr "%1 px"
 #: contents/ui/HistoryView.qml:277
 msgid "%1 snowy day"
 msgid_plural "%1 snowy days"
-msgstr[0] ""
+msgstr[0] "%1 個降雪日"
 
 #: contents/ui/main.qml:2834
 msgid "%1 there will be %2 with a low of %3 and a high of %4."
@@ -132,47 +132,47 @@ msgstr "%1天氣將為%2，低溫：%3，高溫：%4。"
 #: contents/ui/HistoryView.qml:263
 msgid "%1 wet day"
 msgid_plural "%1 wet days"
-msgstr[0] ""
+msgstr[0] "%1 個降水日"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1033
 msgid "%1. Right-click to copy or paste it, drag it onto another level."
-msgstr ""
+msgstr "%1。點擊右鍵可複製或貼上此顏色，或將它拖曳到其他級距。"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:170
 msgid "%1. Right-click to copy or paste it."
-msgstr ""
+msgstr "%1。點擊右鍵可複製或貼上。"
 
-#: contents/ui/components/WeatherMapView.qml:1847
+#: contents/ui/components/WeatherMapView.qml:1848
 msgid "%1/%2 · %3 fps"
-msgstr ""
+msgstr "%1/%2 · %3 fps"
 
 #: contents/ui/components/weathermap/LoadBox.qml:168
 msgid "%1: %2/%3"
-msgstr ""
+msgstr "%1：%2/%3"
 
 #: contents/ui/components/weathermap/LayerRow.qml:277
 msgid "%1: options"
-msgstr ""
+msgstr "%1：選項"
 
 #: contents/ui/WeatherService.qml:1248
 msgid "%1: request limit reached (HTTP %2) — trying again later"
-msgstr ""
+msgstr "%1：已達請求上限（HTTP %2），稍後重試"
 
 #: contents/ui/WeatherService.qml:1248
 msgid "%1: the API key was rejected (HTTP %2)"
-msgstr ""
+msgstr "%1：API 金鑰遭拒（HTTP %2）"
 
-#: contents/ui/DetailsView.qml:4210
+#: contents/ui/DetailsView.qml:4213
 msgid "%1h"
-msgstr "%1h"
+msgstr "%1 小時"
 
-#: contents/ui/DetailsView.qml:4211
+#: contents/ui/DetailsView.qml:4214
 msgid "%1h %2m"
-msgstr "%1h %2m"
+msgstr "%1 小時 %2 分"
 
-#: contents/ui/DetailsView.qml:4204 contents/ui/DetailsView.qml:4208
+#: contents/ui/DetailsView.qml:4207 contents/ui/DetailsView.qml:4211
 msgid "%1m"
-msgstr "%1m"
+msgstr "%1 分"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1390
 msgctxt "@info %1 size %2 family"
@@ -202,7 +202,7 @@ msgstr "0 = 自動，若項目被截斷請增加。"
 
 #: contents/ui/components/WeatherMapView.qml:966
 msgid "0 h"
-msgstr ""
+msgstr "0 小時"
 
 #: contents/ui/main.qml:2025
 msgid "1 Alert"
@@ -211,43 +211,43 @@ msgstr "1 則警報"
 #: contents/ui/components/WeatherMapView.qml:966
 #: contents/ui/components/WeatherMapView.qml:967
 msgid "1 d"
-msgstr ""
+msgstr "1 天"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:82
 #: contents/ui/components/WeatherMapView.qml:612
 msgid "10 m"
-msgstr ""
+msgstr "10 公尺"
 
 #: contents/ui/components/WeatherMapView.qml:966
 #: contents/ui/components/WeatherMapView.qml:967
 msgid "12 h"
-msgstr ""
+msgstr "12 小時"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:77
 msgid "12 hours back to now, every hour."
-msgstr ""
+msgstr "過去 12 小時至現在，每小時一張。"
 
 #: contents/ui/components/WeatherMapView.qml:966
 #: contents/ui/components/WeatherMapView.qml:967
 msgid "2 d"
-msgstr ""
+msgstr "2 天"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:65
 msgid "2 hours back to 1 hour ahead, every 10 minutes. It stays so when a longer range is set."
-msgstr ""
+msgstr "過去 2 小時至未來 1 小時，每 10 分鐘一張。設定較長的時間範圍時仍維持如此。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 msgid "2 to 6 km: they often come before rain."
-msgstr ""
+msgstr "2 至 6 公里：常出現在降雨之前。"
 
 #: contents/ui/components/WeatherMapView.qml:966
 #: contents/ui/components/WeatherMapView.qml:967
 msgid "3 d"
-msgstr ""
+msgstr "3 天"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:156
 msgid "3 hours. In the range of the satellite one hour, in that of the radar 10 minutes, while they are on: the button shows it. It stops on their first and last image."
-msgstr ""
+msgstr "預設每步 3 小時。開啟衛星或雷達時，在其涵蓋時段內分別為每步 1 小時與 10 分鐘，按鈕上會顯示步長。逐步切換會停在該圖層的第一張與最後一張影像。"
 
 #: contents/ui/config/configAppearance.qml:272
 #: contents/ui/config/tabs/ConfigPanelTab.qml:419
@@ -261,15 +261,15 @@ msgstr "3D Oxygen（內建）"
 
 #: contents/ui/components/WeatherMapView.qml:967
 msgid "4 d"
-msgstr ""
+msgstr "4 天"
 
 #: contents/ui/components/WeatherMapView.qml:966
 msgid "5 d"
-msgstr ""
+msgstr "5 天"
 
 #: contents/ui/components/WeatherMapView.qml:967
 msgid "6 d"
-msgstr ""
+msgstr "6 天"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:194
 msgid "68°F"
@@ -278,16 +278,16 @@ msgstr "68°F"
 #: contents/ui/components/weathermap/HelpPanel.qml:83
 #: contents/ui/components/WeatherMapView.qml:612
 msgid "700 hPa"
-msgstr ""
+msgstr "700 hPa"
 
 #: contents/ui/components/WeatherMapView.qml:966
 msgid "8 d"
-msgstr ""
+msgstr "8 天"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:272
 msgctxt "@info label: text"
 msgid ": "
-msgstr ""
+msgstr "："
 
 #: contents/ui/main.qml:2514
 msgid "<b>Effective:</b> %1"
@@ -328,23 +328,23 @@ msgstr "<b>為何 OWM 圖層可能與 RainViewer 雷達不符</b><br/><br/>OWM �
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
 msgid "A graph for each detail; point at a day to see its value in all of them"
-msgstr ""
+msgstr "每項資料各一張圖表；指向某一天即可在所有圖表中查看其數值"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:103
 msgid "A graph for each detail; point at an hour to see its value in all of them"
-msgstr ""
+msgstr "每項資料各一張圖表；指向某個小時即可在所有圖表中查看其數值"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:153
 msgid "A layer stops where its data stops."
-msgstr ""
+msgstr "圖層會在其資料結束處停止。"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
 msgid "A palette has 2 to 12 colors."
-msgstr ""
+msgstr "調色盤需有 2 至 12 種顏色。"
 
-#: contents/ui/DetailsView.qml:2165
+#: contents/ui/DetailsView.qml:2168
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
-msgstr ""
+msgstr "磁場朝南（Bz 為負）時，太陽風能與地球磁場耦合。"
 
 #: contents/ui/config/configGeneral.qml:664
 msgid "AEMET - Spain only (Key Required)"
@@ -365,7 +365,7 @@ msgstr "AEMET 僅涵蓋西班牙，此地點不在服務範圍內。"
 
 #: contents/ui/WeatherService.qml:1203
 msgid "AEMET only covers Spain — choose another weather provider or a location in Spain."
-msgstr ""
+msgstr "AEMET 僅涵蓋西班牙 — 請選擇其他天氣資料來源，或西班牙境內的地點。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:440
 msgid "AEMET only covers locations in Spain - other locations show \"Failed\" rather than switching provider (it's intentionally left out of Adaptive Mode too, since it's the one provider here with its own request limit). There is a limit on the number of requests to the AEMET API per minute, so don't click the refresh button too many times, as you may hit the limit and have to wait at least 1 minute before making another request.A failed request retries automatically once.<br/><br/>Fields AEMET doesn't publish at all - pressure, visibility, snow cover, and a daily accumulated precipitation total - show as \"N/A\" here rather than a bug. UV is a daily figure only, not hour-by-hour, and wind can be missing for days further out where AEMET's own forecast confidence drops off.<br/><br/>Free key: <a href='https://opendata.aemet.es/centrodedescargas/altaUsuario'>opendata.aemet.es</a>. New keys expire 3 months after creation (AEMET's policy, changed July 2026) - you'll need to request a new one when that happens.<br/><br/>Please don't refresh too often, as AEMET has a request limit per minute. If you hit it, you'll have to wait at least 1 minute before making another request."
@@ -394,7 +394,7 @@ msgstr "AI 驅動的天氣智慧服務，請在下方填入 API 金鑰。"
 #: contents/ui/components/weathermap/HelpPanel.qml:117
 #: contents/ui/components/WeatherMapView.qml:838
 msgid "AOD"
-msgstr ""
+msgstr "AOD"
 
 #: contents/ui/components/WeatherMapView.qml:1205
 msgid "API error"
@@ -412,7 +412,7 @@ msgstr "AQHI"
 msgid "AQI"
 msgstr "AQI"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2163 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr "活躍"
 
@@ -434,7 +434,7 @@ msgstr "手動新增地點"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:234
 msgid "Add a color"
-msgstr ""
+msgstr "新增顏色"
 
 #: contents/ui/CompactView.qml:879 contents/ui/CompactView.qml:1206
 msgid "Add a location"
@@ -450,7 +450,7 @@ msgstr "下午"
 
 #: contents/ui/DetailsView.qml:611
 msgid "Air %1"
-msgstr ""
+msgstr "氣溫 %1"
 
 #: contents/ui/config/configAppearance.qml:1921
 #: contents/ui/config/configAppearance.qml:2044
@@ -470,17 +470,17 @@ msgstr "空氣品質："
 
 #: contents/ui/components/weathermap/HelpPanel.qml:101
 msgid "Air pressure brought to sea level, in hPa. Blue and purple: lows (clouds, rain, wind). Orange and red: highs (settled weather, fog in winter)."
-msgstr ""
+msgstr "換算至海平面的氣壓，單位為 hPa。藍色與紫色：低壓（雲、雨、風）。橙色與紅色：高壓（天氣穩定，冬季易起霧）。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:113
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LoadBox.qml:37
 msgid "Air quality"
-msgstr ""
+msgstr "空氣品質"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:981
 msgid "Air quality (CAMS)"
-msgstr ""
+msgstr "空氣品質（CAMS）"
 
 #: contents/ui/config/configAppearance.qml:1922
 #: contents/ui/config/configAppearance.qml:2045
@@ -526,20 +526,20 @@ msgstr "空氣品質選項"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:91
 msgid "Air temperature at 2 m. Play a whole day: the land warms up in the afternoon and cools down at night, the sea hardly changes. A sharp edge that moves is a front."
-msgstr ""
+msgstr "離地 2 公尺的氣溫。播放一整天：陸地午後增溫、夜間降溫，海面則幾乎不變。移動中的明顯交界就是鋒面。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:91
 msgid "Albanian"
-msgstr ""
+msgstr "阿爾巴尼亞語"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
-#: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
+#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1943
 msgid "Alder"
 msgstr "榿木"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:356
 msgid "Alert Language"
-msgstr ""
+msgstr "警報語言"
 
 #: contents/ui/config/configNotifications.qml:472
 msgid "Alert sound:"
@@ -556,7 +556,7 @@ msgstr "警報"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:382
 msgid "Alerts are shown in the language the issuing authority uses for your country."
-msgstr ""
+msgstr "警報會以您所在國家發布機關所使用的語言顯示。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:285
 msgid "Alerts provider:"
@@ -580,11 +580,11 @@ msgstr "警報："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:327
 msgid "All"
-msgstr ""
+msgstr "全部"
 
-#: contents/ui/DetailsView.qml:2852
+#: contents/ui/DetailsView.qml:2855
 msgid "All clear"
-msgstr ""
+msgstr "無警報"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2082
 msgid "All days show hourly forecast when opening the tab"
@@ -608,7 +608,7 @@ msgstr "今日已過去的時段保留並以灰色顯示，而不移除"
 
 #: contents/ui/config/configNotifications.qml:601
 msgid "Also notify about routine test alerts"
-msgstr "同時通知例行測試警報"
+msgstr "也通知例行測試警報"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:365
 msgid "Alt: %1 %2"
@@ -644,16 +644,16 @@ msgstr "啟用列捲動動畫"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1645
 msgid "Animate the scenes of the expanded cards"
-msgstr ""
+msgstr "展開的卡片會播放場景動畫"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1628
 msgid "Animations:"
-msgstr ""
+msgstr "動畫："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:943
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
 msgid "Another palette has this name."
-msgstr ""
+msgstr "已有其他調色盤使用此名稱。"
 
 #: contents/ui/config/configAppearance.qml:1866
 msgid "Apparent (feels-like) temperature"
@@ -671,7 +671,7 @@ msgstr "外觀"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:467
 msgid "Applies everywhere: panel, tooltip, widget header, Details, Forecast, Radar and History. Where space is tight (forecast and history lists, alerts), \"Region default (long)\" is shown in its short form."
-msgstr ""
+msgstr "套用於所有位置：面板、提示、小工具標題、詳細資訊、預報、雷達與歷史。空間有限處（預報與歷史清單、警報）會以簡短形式顯示「地區預設（長格式）」。"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:54
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:39
@@ -697,23 +697,23 @@ msgstr "僅套用於此處"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:93
 msgid "Arabic"
-msgstr ""
+msgstr "阿拉伯語"
 
 #: contents/ui/config/configLocation.qml:1471
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr "確定要刪除？這是您最後一個儲存的地點，刪除後小工具將不再顯示天氣資訊。"
 
-#: contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3562
 msgid "Around midnight - "
 msgstr "接近午夜 — "
 
 #: contents/ui/components/weathermap/HelpPanel.qml:170
 msgid "At the bottom left of the map, small: the pictures loaded out of those of the range, and the pictures per second at most. Under them, the models: the global one, then the finer regional ones drawn over it in this view."
-msgstr ""
+msgstr "地圖左下角的小字：已載入影像數 / 範圍內影像總數，以及每秒最多影像數。其下方為模型：先是全球模型，再於此視野中疊加其上的較精細區域模型。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:614
 msgid "Atmosphere rim"
-msgstr ""
+msgstr "大氣邊緣光"
 
 #: contents/ui/config/configAppearance.qml:1880
 #: contents/ui/config/configAppearance.qml:1982
@@ -726,7 +726,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr "音訊檔案 (*.wav *.ogg *.oga *.mp3 *.flac)"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2149
+#: contents/ui/DetailsView.qml:2152
 msgid "Aurora Visibility"
 msgstr "極光可見度"
 
@@ -792,7 +792,7 @@ msgstr "雪崩"
 
 #: contents/ui/HistoryView.qml:240
 msgid "Average"
-msgstr ""
+msgstr "平均"
 
 #: contents/ui/js/airQuality.js:124
 msgid "Avoid strenuous outdoor activities."
@@ -814,7 +814,7 @@ msgstr "返回"
 #: contents/ui/components/weathermap/DateBox.qml:150
 #: contents/ui/components/weathermap/HelpPanel.qml:168
 msgid "Back to now"
-msgstr ""
+msgstr "回到現在"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:952
 msgid "Badge Background Color"
@@ -842,35 +842,35 @@ msgstr "平衡（10 至 20 fps）"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:76
 msgid "Basque"
-msgstr ""
+msgstr "巴斯克語"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
-#: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
+#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1946
 msgid "Birch"
 msgstr "白樺"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "Black"
-msgstr ""
+msgstr "黑色"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "Blue"
-msgstr ""
+msgstr "藍色"
 
 #: contents/ui/components/WeatherMapView.qml:589
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Blue-red"
-msgstr ""
+msgstr "藍紅"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:676
 msgid "Blur under the panels"
-msgstr ""
+msgstr "面板下方模糊"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:86
 msgid "Bosnian"
-msgstr ""
+msgstr "波士尼亞語"
 
 #: contents/ui/config/configAppearance.qml:1196
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:537
@@ -884,7 +884,7 @@ msgstr "兩者（日出與日落）"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1117
 msgid "Bottom"
-msgstr ""
+msgstr "底部"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:829
 msgid "Bottom Center"
@@ -918,7 +918,7 @@ msgstr "實心圓點  •"
 msgid "Button guide"
 msgstr "按鈕說明"
 
-#: contents/ui/DetailsView.qml:2161
+#: contents/ui/DetailsView.qml:2164
 msgid "Bz (Magnetic Field)"
 msgstr "Bz（磁場）"
 
@@ -932,11 +932,11 @@ msgstr "CO"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:833
 msgid "Cache cleared."
-msgstr ""
+msgstr "快取已清除。"
 
 #: contents/ui/DetailsView.qml:500
 msgid "Calm"
-msgstr ""
+msgstr "無風"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:725
 #: contents/ui/config/tabs/ConfigMiscTab.qml:769
@@ -956,7 +956,7 @@ msgstr "取消"
 msgid "Cancel rename"
 msgstr "取消重新命名"
 
-#: contents/ui/DetailsView.qml:1720
+#: contents/ui/DetailsView.qml:1723
 msgid "Carbon Monoxide (CO)"
 msgstr "一氧化碳（CO）"
 
@@ -974,11 +974,11 @@ msgstr "卡片高度："
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:75
 msgid "Catalan"
-msgstr ""
+msgstr "加泰隆尼亞語"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:604
 msgid "Celestial bodies"
-msgstr ""
+msgstr "天體"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:574
 msgid "Celsius (°C)"
@@ -987,27 +987,27 @@ msgstr "攝氏（°C）"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2420
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2429
 msgid "Chance of precip."
-msgstr ""
+msgstr "降水機率"
 
 #: contents/ui/ForecastView.qml:1892
 msgid "Chance of precipitation"
-msgstr ""
+msgstr "降水機率"
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
-msgstr ""
+msgstr "過去 3 小時的變化，根據小工具收集的讀數計算。錶盤上的空心圓環標示 3 小時前的氣壓。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the color"
-msgstr ""
+msgstr "變更顏色"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the color (replaces the colors of the G scale)"
-msgstr ""
+msgstr "變更顏色（取代 G 等級的顏色）"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:580
 msgid "Change the colors"
-msgstr ""
+msgstr "變更顏色"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:657
 msgid "Changes staged. Click the main Apply button to save."
@@ -1015,7 +1015,7 @@ msgstr "變更已暫存，點擊主套用按鈕以儲存。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:468
 msgid "Change…"
-msgstr ""
+msgstr "變更⋯"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:242
 msgid "Check Status"
@@ -1070,15 +1070,15 @@ msgstr "在地圖上選擇"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:382
 msgid "Choose the alert language for each saved location. If an alert is not published in that language, its native language is shown instead."
-msgstr ""
+msgstr "為每個已儲存的地點選擇警報語言。若警報未以該語言發布，則改為顯示其原始語言。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:410
 msgid "Choose the color of the graph"
-msgstr ""
+msgstr "選擇圖表顏色"
 
 #: contents/ui/HistoryView.qml:649
 msgid "Choose the day"
-msgstr ""
+msgstr "選擇日期"
 
 #: contents/ui/config/configAppearance.qml:1887
 msgid "City / location name"
@@ -1086,10 +1086,10 @@ msgstr "城市/地點名稱"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:686
 msgid "Clean style"
-msgstr ""
+msgstr "簡潔樣式"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2872
+#: contents/ui/DetailsView.qml:2875
 msgid "Clear"
 msgstr "晴"
 
@@ -1103,7 +1103,7 @@ msgstr "晴（夜晚）"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:824
 msgid "Clear Cache"
-msgstr ""
+msgstr "清除快取"
 
 #: contents/ui/main.qml:3363
 msgid "Clear night"
@@ -1117,12 +1117,12 @@ msgstr "晴空"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:833
 msgid "Clearing…"
-msgstr ""
+msgstr "正在清除⋯"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:148
 #: contents/ui/components/weathermap/HelpPanel.qml:151
 msgid "Click"
-msgstr ""
+msgstr "點擊"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:695
 msgid "Click \"Test across providers\" to check if the coordinates are serviceable by each supported weather provider. Providers requiring an API key that is not configured will be skipped."
@@ -1130,12 +1130,12 @@ msgstr "點擊「測試所有供應商」以檢查該座標是否受各支援天
 
 #: contents/ui/ForecastView.qml:1033
 msgid "Click a day to show its hourly forecast. Double-click the graph to zoom in"
-msgstr ""
+msgstr "點擊某天可顯示其逐時預報。連點兩下圖表可放大"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:136
 #: contents/ui/components/weathermap/HelpPanel.qml:141
 msgid "Click on the icon"
-msgstr ""
+msgstr "點擊圖示"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:581
 msgid "Click on the map to select a location"
@@ -1147,23 +1147,28 @@ msgstr "點擊以設定位置"
 
 #: contents/ui/ForecastView.qml:1604
 msgid "Click to hide the hourly forecast"
-msgstr ""
+msgstr "點擊以隱藏逐時預報"
 
 #: contents/ui/ForecastView.qml:1604
 msgid "Click to show the hourly forecast"
-msgstr ""
+msgstr "點擊以顯示逐時預報"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:512
 #: contents/ui/components/weathermap/LayerPanel.qml:902
 #: contents/ui/components/weathermap/LoadBox.qml:36
 #: contents/ui/HistoryView.qml:317 contents/ui/HistoryView.qml:343
 msgid "Cloud cover"
-msgstr ""
+msgstr "雲量"
 
 #: contents/ui/components/RadarWebEngineView.qml:157
 #: contents/ui/components/weathermap/HelpPanel.qml:95
 msgid "Clouds"
 msgstr "雲層"
+
+#: contents/ui/components/WeatherMapView.qml:1229
+msgctxt "@label cloud cover at the map pointer"
+msgid "Clouds: %1"
+msgstr "雲量：%1"
 
 #: contents/ui/config/configNotifications.qml:100 contents/ui/main.qml:2089
 msgid "Coastal event"
@@ -1171,24 +1176,24 @@ msgstr "沿海事件"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:582
 msgid "Coasts and borders"
-msgstr ""
+msgstr "海岸線與邊界"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:591
 msgid "Coasts and borders width"
-msgstr ""
+msgstr "海岸線與邊界寬度"
 
 #: contents/ui/DetailsView.qml:484
 msgid "Cold"
-msgstr ""
+msgstr "寒冷"
 
 #: contents/ui/HistoryView.qml:254
 msgid "Coldest night"
-msgstr ""
+msgstr "最冷的一夜"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:105
 #: contents/ui/components/weathermap/LayerPanel.qml:938
 msgid "Color"
-msgstr ""
+msgstr "顏色"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:669
 msgid "Color by temperature:"
@@ -1196,7 +1201,7 @@ msgstr "依溫度上色："
 
 #: contents/ui/components/weathermap/LayerRow.qml:309
 msgid "Color legend on the map"
-msgstr ""
+msgstr "在地圖上顯示色彩圖例"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:684
 msgid "Color the panel temperature with the same cold to hot scale as the forecast curve, instead of a fixed color."
@@ -1213,19 +1218,19 @@ msgstr "彩色（KDE 彩色圖示）"
 #: contents/ui/components/weathermap/LayerPanel.qml:872
 #: contents/ui/components/weathermap/RadarMenu.qml:179
 msgid "Colors"
-msgstr ""
+msgstr "顏色"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:422
 msgid "Colors - %1"
-msgstr ""
+msgstr "顏色 - %1"
 
 #: contents/ui/DetailsView.qml:446
 msgid "Comfortable"
-msgstr ""
+msgstr "舒適"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:77
 msgid "Compact"
-msgstr ""
+msgstr "精簡"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2535
 msgid "Compass in forecast:"
@@ -1305,7 +1310,7 @@ msgstr "若出現咳嗽或喉嚨不適等症狀，請考慮減少或改期進行
 
 #: contents/ui/DetailsView.qml:486
 msgid "Cool"
-msgstr ""
+msgstr "涼爽"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:338
 msgid "Coordinates"
@@ -1314,11 +1319,11 @@ msgstr "座標"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1089
 #: contents/ui/config/tabs/TempPaletteDialog.qml:191
 msgid "Copy color"
-msgstr ""
+msgstr "複製顏色"
 
 #: contents/ui/HistoryView.qml:764
 msgid "Could not reach Open-Meteo. Check your connection and try again."
-msgstr ""
+msgstr "無法連線至 Open-Meteo。請檢查網路連線後再試一次。"
 
 #: contents/ui/config/configNotifications.qml:519
 msgid "Couldn't play that sound file: %1"
@@ -1330,19 +1335,19 @@ msgstr "即使啟用「勿擾」模式，或您正在遊玩遊戲或觀看全螢
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:85
 msgid "Croatian"
-msgstr ""
+msgstr "克羅埃西亞語"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:178
 msgid "Ctrl + / Ctrl −"
-msgstr ""
+msgstr "Ctrl + / Ctrl −"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:79
 msgid "Ctrl + double click"
-msgstr ""
+msgstr "Ctrl + 連點兩下"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:183
 msgid "Ctrl held over the map"
-msgstr ""
+msgstr "在地圖上按住 Ctrl"
 
 #: contents/ui/config/configAppearance.qml:1957
 #: contents/ui/config/configAppearance.qml:2080
@@ -1373,7 +1378,7 @@ msgstr "依天氣狀況自訂圖示"
 
 #: contents/ui/HistoryView.qml:390
 msgid "Custom range…"
-msgstr ""
+msgstr "自訂範圍⋯"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:281
 #: contents/ui/config/tabs/ConfigMiscTab.qml:365
@@ -1394,15 +1399,15 @@ msgstr "每日預報設定"
 
 #: contents/ui/HistoryView.qml:1032
 msgid "Daily details"
-msgstr ""
+msgstr "每日詳細資料"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2262
 msgid "Daily graph order:"
-msgstr ""
+msgstr "每日圖表順序："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2135
 msgid "Daily layout:"
-msgstr ""
+msgstr "每日版面配置："
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:191
 msgid "Dark Sky-compatible API with US alerts. API key required below."
@@ -1422,11 +1427,11 @@ msgstr "資料更新"
 
 #: contents/ui/HistoryView.qml:1243
 msgid "Data is available from %1 until yesterday."
-msgstr ""
+msgstr "可查詢 %1 至昨天的資料。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:165
 msgid "Date"
-msgstr ""
+msgstr "日期"
 
 #: contents/ui/config/configAppearance.qml:1956
 #: contents/ui/config/configAppearance.qml:2079
@@ -1440,16 +1445,16 @@ msgstr "日期/時間選項"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:234
 msgid "Date and Time"
-msgstr ""
+msgstr "日期與時間"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1280
 msgid "Date and time"
-msgstr ""
+msgstr "日期與時間"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:852
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1324
 msgid "Date and time formats are set in Misc → Date and Time."
-msgstr ""
+msgstr "日期與時間格式可在「其他 → 日期與時間」中設定。"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:239
 msgid "Date format:"
@@ -1459,37 +1464,37 @@ msgstr "日期格式："
 msgid "Date/Time:"
 msgstr "日期/時間："
 
-#: contents/ui/DetailsView.qml:3555
+#: contents/ui/DetailsView.qml:3558
 msgid "Dawn approaching - "
 msgstr "黎明將至 — "
 
-#: contents/ui/DetailsView.qml:3535
+#: contents/ui/DetailsView.qml:3538
 msgid "Day"
 msgstr "白天"
 
 #: contents/ui/components/WeatherMapView.qml:1208
 msgid "Day and night"
-msgstr ""
+msgstr "晝夜"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3566
 msgid "Daylight over"
 msgstr "日照結束"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:169
 msgid "Days"
-msgstr ""
+msgstr "日期清單"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:794
 msgid "Debug"
-msgstr ""
+msgstr "除錯"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:798
 msgid "Debug mode:"
-msgstr ""
+msgstr "除錯模式："
 
 #: contents/ui/DetailsView.qml:478
 msgid "Deep"
-msgstr ""
+msgstr "深"
 
 #: contents/ui/components/WeatherMapView.qml:586
 #: contents/ui/config/tabs/ConfigPanelTab.qml:650
@@ -1504,7 +1509,7 @@ msgstr "預設（內建警報聲）"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1123
 msgid "Default colors and limits"
-msgstr ""
+msgstr "預設顏色與級距"
 
 #: contents/ui/config/configLocation.qml:1936
 msgid "Default location (click to unset)"
@@ -1512,7 +1517,7 @@ msgstr "預設地點（點擊取消設定）"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:519
 msgid "Default order"
-msgstr ""
+msgstr "預設順序"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1017
 msgid "Default tab:"
@@ -1521,7 +1526,7 @@ msgstr "預設頁籤："
 #: contents/ui/config/tabs/ConfigRadarTab.qml:547
 #: contents/ui/config/tabs/ConfigRadarTab.qml:618
 msgid "Delete"
-msgstr ""
+msgstr "刪除"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:630
 msgid "Dense drizzle"
@@ -1529,16 +1534,16 @@ msgstr "濃毛雨"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:825
 msgid "Density"
-msgstr ""
+msgstr "密度"
 
-#: contents/ui/DetailsView.qml:2493 contents/ui/DetailsView.qml:2495
+#: contents/ui/DetailsView.qml:2497 contents/ui/DetailsView.qml:2499
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr "說明"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:812
 msgid "Detailed log output is on"
-msgstr ""
+msgstr "已開啟詳細記錄輸出"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:730
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:762
@@ -1571,7 +1576,7 @@ msgstr "偵測/變更位置⋯"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1300
 msgid "Detect location"
-msgstr ""
+msgstr "偵測位置"
 
 #: contents/ui/config/configLocation.qml:1632
 msgid "Detecting…"
@@ -1586,9 +1591,9 @@ msgstr "露點"
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LayerPanel.qml:974
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1234
+#: contents/ui/components/WeatherMapView.qml:1235
 msgid "Dew point"
-msgstr ""
+msgstr "露點"
 
 #: contents/ui/config/configAppearance.qml:2003
 msgid "Dew point temperature"
@@ -1649,23 +1654,23 @@ msgstr "主要花粉類型及指數"
 #: contents/ui/components/weathermap/HelpPanel.qml:74
 #: contents/ui/components/weathermap/HelpPanel.qml:78
 msgid "Double click on the icon"
-msgstr ""
+msgstr "連點兩下圖示"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:769
 msgid "Double-click: radar range"
-msgstr ""
+msgstr "連點兩下：雷達時間範圍"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:800
 msgid "Double-click: satellite range"
-msgstr ""
+msgstr "連點兩下：衛星時間範圍"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:175
 msgid "Download the forecast layers in the background"
-msgstr ""
+msgstr "在背景下載預報圖層"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1178
 msgid "Drag to change the order of the tabs"
-msgstr ""
+msgstr "拖曳以變更分頁順序"
 
 #: contents/ui/config/subpages/ConfigPanelSubPage.qml:654
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:642
@@ -1678,7 +1683,7 @@ msgstr "拖曳以重新排列顯示的項目"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:478
 msgid "Drag to reorder the graphs, or use the edit button to change a color"
-msgstr ""
+msgstr "拖曳以重新排列圖表，或使用編輯按鈕變更顏色"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:60
 #: contents/ui/main.qml:3377
@@ -1687,12 +1692,12 @@ msgstr "毛雨"
 
 #: contents/ui/DetailsView.qml:444
 msgid "Dry"
-msgstr ""
+msgstr "乾燥"
 
 #: contents/ui/components/WeatherMapView.qml:1228
 msgctxt "@label no precipitation at that place"
 msgid "Dry"
-msgstr ""
+msgstr "無降水"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:131
 msgid "Dual temperature"
@@ -1700,18 +1705,18 @@ msgstr "雙溫度"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
 #: contents/ui/components/WeatherMapView.qml:838
-#: contents/ui/components/WeatherMapView.qml:1235
+#: contents/ui/components/WeatherMapView.qml:1236
 msgid "Dust"
-msgstr ""
+msgstr "沙塵"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:70
 msgid "Dutch"
-msgstr ""
+msgstr "荷蘭語"
 
 #: contents/ui/components/WeatherMapView.qml:1215
 #: contents/ui/HistoryView.qml:191
 msgid "E"
-msgstr ""
+msgstr "東"
 
 #: contents/ui/main.qml:2484
 msgctxt "Alert severity"
@@ -1728,11 +1733,11 @@ msgstr "每則警報僅顯示一次，且不含「關閉」與「延後」按鈕
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:947
 msgid "Each level must go higher than the one before."
-msgstr ""
+msgstr "每個級距都必須高於前一個。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:185
 msgid "Each new forecast run is downloaded as it comes out, so the map opens without waiting. Useful on a slow connection; it downloads even if you never open the map, so leave it off on a metered one."
-msgstr ""
+msgstr "每次有新的預報模型結果發布就會立即下載，讓地圖開啟時不必等待。適合網路較慢時使用；即使您從未開啟地圖也會下載，因此使用計量付費網路時請保持關閉。"
 
 #: contents/ui/config/configNotifications.qml:333
 msgid "Each notification type can be enabled independently, with its own daily time where applicable."
@@ -1740,7 +1745,7 @@ msgstr "每種通知類型可獨立啟用，並可個別設定每日觸發時間
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
 msgid "Each temperature must be higher than the one before."
-msgstr ""
+msgstr "每個溫度都必須高於前一個。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:479
 msgid "Economy (8 to 10 fps)"
@@ -1756,18 +1761,18 @@ msgstr "編輯地點詳細資訊"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:95
 msgid "Edit temperature palette"
-msgstr ""
+msgstr "編輯溫度調色盤"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:958
 msgid "Edit wind palette"
-msgstr ""
+msgstr "編輯風速調色盤"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:541
 #: contents/ui/config/tabs/ConfigRadarTab.qml:604
 msgid "Edit…"
-msgstr ""
+msgstr "編輯⋯"
 
-#: contents/ui/DetailsView.qml:2498 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr "生效時間"
 
@@ -1812,11 +1817,11 @@ msgstr "已啟用"
 #: contents/ui/components/weathermap/TimeBar.qml:206
 msgctxt "@info keyboard key"
 msgid "End"
-msgstr ""
+msgstr "End"
 
 #: contents/ui/HistoryView.qml:668
 msgid "End date"
-msgstr ""
+msgstr "結束日期"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:406
 msgid "Enter Location"
@@ -1880,21 +1885,21 @@ msgstr "錯誤（代碼 %1）"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:185
 msgid "Esc"
-msgstr ""
+msgstr "Esc"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:713
 #: contents/ui/config/tabs/ConfigMiscTab.qml:765
 msgid "European CAQI (0-100+)"
 msgstr "歐洲 CAQI（0-100+）"
 
-#: contents/ui/DetailsView.qml:3557
+#: contents/ui/DetailsView.qml:3560
 msgid "Evening - "
 msgstr "傍晚 — "
 
 #: contents/ui/components/weathermap/HelpPanel.qml:104
 #: contents/ui/components/weathermap/LayerPanel.qml:932
 msgid "Every (hPa)"
-msgstr ""
+msgstr "間距（hPa）"
 
 #: contents/ui/js/airQuality.js:106
 msgid "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
@@ -1916,7 +1921,7 @@ msgstr "擴展小工具以填滿面板空間"
 msgid "Expanded cards height:"
 msgstr "展開卡片高度："
 
-#: contents/ui/DetailsView.qml:2500 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr "到期"
 
@@ -1932,7 +1937,7 @@ msgstr "極端地磁風暴。"
 
 #: contents/ui/DetailsView.qml:492
 msgid "Extreme heat"
-msgstr ""
+msgstr "酷熱"
 
 #: contents/ui/js/airQuality.js:96
 msgid "Extremely Poor"
@@ -1956,7 +1961,7 @@ msgstr "失敗：%1"
 
 #: contents/ui/WeatherService.qml:1254
 msgid "Failed: %1 — retrying…"
-msgstr "失敗：%1 — 正在重試…"
+msgstr "失敗：%1 — 正在重試⋯"
 
 #: contents/ui/js/airQuality.js:92
 msgid "Fair"
@@ -1964,19 +1969,19 @@ msgstr "普通"
 
 #: contents/ui/DetailsView.qml:585
 msgid "Falling"
-msgstr ""
+msgstr "下降"
 
 #: contents/ui/DetailsView.qml:587
 msgid "Falling quickly"
-msgstr ""
+msgstr "快速下降"
 
 #: contents/ui/DetailsView.qml:583
 msgid "Falling slowly"
-msgstr ""
+msgstr "緩慢下降"
 
 #: contents/ui/DetailsView.qml:589
 msgid "Falling very rapidly"
-msgstr ""
+msgstr "急遽下降"
 
 #: contents/ui/config/configAppearance.qml:1865
 #: contents/ui/config/configAppearance.qml:1967
@@ -1987,7 +1992,7 @@ msgstr "體感"
 
 #: contents/ui/HistoryView.qml:329
 msgid "Feels like"
-msgstr ""
+msgstr "體感溫度"
 
 #: contents/ui/TooltipContent.qml:428
 msgid "Feels like:"
@@ -2011,7 +2016,7 @@ msgstr "尋找"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:72
 msgid "Finnish"
-msgstr ""
+msgstr "芬蘭語"
 
 #: contents/ui/main.qml:3630
 msgid "First Quarter"
@@ -2024,9 +2029,9 @@ msgstr "每週第一天："
 #: contents/ui/components/weathermap/HelpPanel.qml:155
 #: contents/ui/components/weathermap/TimeBar.qml:135
 msgid "First picture"
-msgstr ""
+msgstr "第一張影像"
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2186
 msgid "Flare Warning"
 msgstr "閃焰警告"
 
@@ -2055,11 +2060,11 @@ msgstr "霧"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:1153
 msgid "Fold the layer column"
-msgstr ""
+msgstr "收合圖層欄"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:140
 msgid "Folded"
-msgstr ""
+msgstr "收合時"
 
 #: contents/ui/config/configAppearance.qml:266
 msgid "Font icons"
@@ -2093,7 +2098,7 @@ msgstr "預報天數："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1976
 msgid "Forecast layout:"
-msgstr ""
+msgstr "預報版面配置："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2519
 msgid "Forecast:"
@@ -2105,11 +2110,11 @@ msgstr "森林火災"
 
 #: contents/ui/components/weathermap/RadarMenu.qml:200
 msgid "Format"
-msgstr ""
+msgstr "格式"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:73
 msgid "Format and Tiles"
-msgstr ""
+msgstr "格式與圖磚"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:207
 msgid "Free BBC Weather service (data from the Met Office). No API key needed."
@@ -2125,7 +2130,7 @@ msgstr "免費且開放原始碼，無需 API 金鑰，推薦使用。"
 
 #: contents/ui/DetailsView.qml:482
 msgid "Freezing"
-msgstr ""
+msgstr "嚴寒"
 
 #: contents/ui/components/WeatherMapView.qml:836
 #: contents/ui/components/WeatherMapView.qml:1226
@@ -2161,11 +2166,11 @@ msgstr "凍雨（夜晚）"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:67
 msgid "French"
-msgstr ""
+msgstr "法語"
 
 #: contents/ui/DetailsView.qml:510
 msgid "Fresh breeze"
-msgstr ""
+msgstr "清風"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:882
 msgid "Friday"
@@ -2173,7 +2178,7 @@ msgstr "星期五"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:566
 msgid "Full"
-msgstr ""
+msgstr "完整"
 
 #: contents/ui/main.qml:3634
 msgid "Full Moon"
@@ -2181,7 +2186,7 @@ msgstr "滿月"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:476
 msgid "Full screen (F11)"
-msgstr ""
+msgstr "全螢幕（F11）"
 
 #: contents/ui/config/configLocation.qml:1632
 msgid "GPS / GeoClue2 unavailable (install qt6-qtlocation for best accuracy). Using IP-based detection."
@@ -2189,11 +2194,11 @@ msgstr "GPS / GeoClue2 不可用（安裝 qt6-qtlocation 以獲得最佳精確�
 
 #: contents/ui/DetailsView.qml:516
 msgid "Gale"
-msgstr ""
+msgstr "大風"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:77
 msgid "Galician"
-msgstr ""
+msgstr "加利西亞語"
 
 #: contents/config/config.qml:52
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:758
@@ -2203,14 +2208,14 @@ msgstr "一般"
 
 #: contents/ui/DetailsView.qml:506
 msgid "Gentle breeze"
-msgstr ""
+msgstr "微風"
 
 #: contents/ui/config/configLocation.qml:938
 msgid "GeoClue2 unavailable, trying system location…"
 msgstr "GeoClue2 無法使用，嘗試系統位置⋯"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2119
+#: contents/ui/DetailsView.qml:2122
 msgid "Geomagnetic Storm"
 msgstr "地磁風暴"
 
@@ -2224,20 +2229,20 @@ msgstr "地磁活動預計為 %1（Kp %2）"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:66
 msgid "German"
-msgstr ""
+msgstr "德語"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:940
 #: contents/ui/config/tabs/TempPaletteDialog.qml:86
 msgid "Give the palette a name."
-msgstr ""
+msgstr "請為調色盤命名。"
 
 #: contents/ui/components/WeatherMapView.qml:1207
 msgid "Globe"
-msgstr ""
+msgstr "地球儀"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:420
 msgid "Globe glow:"
-msgstr ""
+msgstr "地球光暈："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:921
 msgid "Glow intensity:"
@@ -2245,7 +2250,7 @@ msgstr "光暈強度："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:453
 msgid "Glow of the atmosphere around the globe (globe button on the map). Lower it if the day side looks washed out."
-msgstr ""
+msgstr "地球周圍的大氣光暈（地圖上的地球按鈕）。若日間側看起來過白，請調低此值。"
 
 #: contents/ui/DetailsView.qml:460 contents/ui/js/airQuality.js:91
 #: contents/ui/js/airQuality.js:103
@@ -2256,46 +2261,46 @@ msgstr "良好"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2150
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2317
 msgid "Graphs"
-msgstr ""
+msgstr "圖表"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2167
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2333
 msgid "Graphs style:"
-msgstr ""
+msgstr "圖表樣式："
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
-#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
+#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1949
 msgid "Grass"
 msgstr "禾草"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:82
 msgid "Greek"
-msgstr ""
+msgstr "希臘語"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "Green"
-msgstr ""
+msgstr "綠色"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:166
 msgid "Green dot"
-msgstr ""
+msgstr "綠點"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:163
 msgid "Grey-blue band"
-msgstr ""
+msgstr "灰藍色帶"
 
 #: contents/ui/HistoryView.qml:339
 msgid "Gusts"
-msgstr ""
+msgstr "陣風"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:107
 msgid "H and L at the centers, followed from one picture to the next."
-msgstr ""
+msgstr "高壓 H 與低壓 L 標示於中心位置，並逐張影像追蹤其移動。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:566
 msgid "Half"
-msgstr ""
+msgstr "一半"
 
 #: contents/ui/js/airQuality.js:108
 msgid "Hazardous"
@@ -2303,9 +2308,9 @@ msgstr "危害"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1269
 msgid "Header:"
-msgstr ""
+msgstr "標頭："
 
-#: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2494 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr "標題"
 
@@ -2354,11 +2359,11 @@ msgstr "夾雹大雷雨"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:92
 msgid "Hebrew"
-msgstr ""
+msgstr "希伯來語"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:810
 msgid "Height"
-msgstr ""
+msgstr "高度"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:148
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1237
@@ -2376,30 +2381,34 @@ msgid "Hide prefix icon"
 msgstr "隱藏前綴圖示"
 
 #: contents/ui/DetailsView.qml:474 contents/ui/DetailsView.qml:599
-#: contents/ui/FullView.qml:618 contents/ui/js/airQuality.js:123
-#: contents/ui/js/pollen.js:45 contents/ui/js/spaceWeather.js:188
-#: contents/ui/js/spaceWeather.js:200 contents/ui/main.qml:1896
-#: contents/ui/main.qml:1937 contents/ui/SimpleView.qml:787
+#: contents/ui/js/airQuality.js:123 contents/ui/js/pollen.js:45
+#: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
+#: contents/ui/main.qml:1896 contents/ui/main.qml:1937
 msgid "High"
 msgstr "高"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1230
+#: contents/ui/components/WeatherMapView.qml:1231
 msgctxt "@item cloud level"
 msgid "High"
-msgstr ""
+msgstr "高"
 
 #: contents/ui/components/HistoryChartGraphs.qml:104
 #: contents/ui/components/HistoryChartKQC.qml:77
-#: contents/ui/ForecastView.qml:1097
+#: contents/ui/ForecastView.qml:1097 contents/ui/SimpleView.qml:787
 msgctxt "@label chart legend"
 msgid "High"
-msgstr ""
+msgstr "高"
+
+#: contents/ui/FullView.qml:618
+msgctxt "@label daily maximum temperature"
+msgid "High"
+msgstr "最高溫"
 
 #: contents/ui/HistoryView.qml:242
 msgid "High %1 · Low %2"
-msgstr ""
+msgstr "最高 %1 · 最低 %2"
 
 #: contents/ui/js/airQuality.js:123
 msgid "High Risk"
@@ -2416,7 +2425,7 @@ msgstr "高溫"
 #: contents/ui/components/weathermap/HelpPanel.qml:107
 #: contents/ui/components/weathermap/LayerPanel.qml:959
 msgid "Highs and lows"
-msgstr ""
+msgstr "高低氣壓中心"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:193
 msgid "Historical and forecast data provider. API key required below."
@@ -2424,28 +2433,28 @@ msgstr "歷史與預報資料供應商，請在下方填入 API 金鑰。"
 
 #: contents/ui/HistoryView.qml:1194
 msgid "Historical values are reanalysis data on a roughly 10 km grid, so they can differ from nearby station readings."
-msgstr ""
+msgstr "歷史數值為約 10 公里網格的再分析資料，因此可能與鄰近測站的觀測值不同。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:737
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1045
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1091
 #: contents/ui/FullView.qml:148
 msgid "History"
-msgstr ""
+msgstr "歷史"
 
 #: contents/ui/FullView.qml:888
 msgid "History:"
-msgstr ""
+msgstr "歷史："
 
 #: contents/ui/components/weathermap/HelpPanel.qml:155
 #: contents/ui/components/weathermap/TimeBar.qml:135
 msgctxt "@info keyboard key"
 msgid "Home"
-msgstr ""
+msgstr "Home"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:175
 msgid "Home / End"
-msgstr ""
+msgstr "Home / End"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:210
 msgid "Horizontal"
@@ -2453,7 +2462,7 @@ msgstr "水平"
 
 #: contents/ui/DetailsView.qml:490
 msgid "Hot"
-msgstr ""
+msgstr "炎熱"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2279
 msgid "Hourly Forecast Settings"
@@ -2461,11 +2470,11 @@ msgstr "逐時預報設定"
 
 #: contents/ui/ForecastView.qml:1659
 msgid "Hourly forecast for %1"
-msgstr ""
+msgstr "%1 的逐時預報"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2473
 msgid "Hourly graph order:"
-msgstr ""
+msgstr "逐時圖表順序："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2297
 msgid "Hourly layout:"
@@ -2473,15 +2482,15 @@ msgstr "逐時版面："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:413
 msgid "How dark the deep night is on the radar map when day and night are shown (button on the map)."
-msgstr ""
+msgstr "顯示晝夜時（地圖上的按鈕），雷達地圖上深夜區域的暗度。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:1056
 msgid "How far ahead"
-msgstr ""
+msgstr "向未來多遠"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:1041
 msgid "How far back"
-msgstr ""
+msgstr "向過去多遠"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:975
 msgid "How often the rows scroll to reveal the next item"
@@ -2489,7 +2498,7 @@ msgstr "列捲動以顯示下一個項目的頻率"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:482
 msgid "How to read the weather maps"
-msgstr ""
+msgstr "如何判讀天氣地圖"
 
 #: contents/ui/components/MapBackgroundChoices.qml:45
 msgid "Humanitarian (HOT)"
@@ -2497,10 +2506,10 @@ msgstr "Humanitarian (HOT)"
 
 #: contents/ui/DetailsView.qml:448
 msgid "Humid"
-msgstr ""
+msgstr "潮濕"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
-#: contents/ui/components/WeatherMapView.qml:1233
+#: contents/ui/components/WeatherMapView.qml:1234
 #: contents/ui/config/configAppearance.qml:1872
 #: contents/ui/config/configAppearance.qml:1974
 #: contents/ui/config/configAppearance.qml:2118 contents/ui/DetailsView.qml:700
@@ -2515,11 +2524,11 @@ msgstr "濕度："
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:88
 msgid "Hungarian"
-msgstr ""
+msgstr "匈牙利語"
 
 #: contents/ui/DetailsView.qml:524
 msgid "Hurricane"
-msgstr ""
+msgstr "颶風"
 
 #: contents/ui/config/configLocation.qml:1057
 msgid "IP geolocation"
@@ -2528,7 +2537,7 @@ msgstr "IP 地理定位"
 #: contents/ui/components/WeatherMapView.qml:836
 #: contents/ui/components/WeatherMapView.qml:1227
 msgid "Ice pellets"
-msgstr ""
+msgstr "冰珠"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:265
 msgid "Icon and temperature"
@@ -2592,7 +2601,7 @@ msgstr "在垂直面板中，較長的項目標籤可能被截斷。建議改用
 #: contents/ui/config/tabs/ConfigRadarTab.qml:804
 msgctxt "the cache size in force until Plasma restarts"
 msgid "In force until then: %1."
-msgstr ""
+msgstr "Plasma 重新啟動前仍使用：%1。"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:678
 msgid ""
@@ -2634,13 +2643,13 @@ msgstr ""
 "- openSUSE / Arch: qt6-webengine\n"
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 
-#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr "說明"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:573
 msgid "Interpolated pictures"
-msgstr ""
+msgstr "插補影像"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:492
 msgid "Interval:"
@@ -2669,7 +2678,7 @@ msgstr "QWeather 回應無效。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:78
 msgid "Irish"
-msgstr ""
+msgstr "愛爾蘭語"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:102
 #: contents/ui/components/weathermap/LayerPanel.qml:513
@@ -2677,11 +2686,11 @@ msgstr ""
 #: contents/ui/components/weathermap/LoadBox.qml:37
 #: contents/ui/components/WeatherMapView.qml:1209
 msgid "Isobars"
-msgstr ""
+msgstr "等壓線"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:68
 msgid "Italian"
-msgstr ""
+msgstr "義大利語"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1209
 msgid "Item spacing:"
@@ -2718,7 +2727,7 @@ msgstr "KDE 圖示主題（符號）"
 
 #: contents/ui/RadarView.qml:279
 msgid "KDE Plasma was started with MangoHud injected into it. The overlay can crash the whole desktop shell when the web-based radar starts, so the radar was not loaded."
-msgstr "KDE Plasma 啟動時被注入了 MangoHud。網頁式雷達啟動時，該疊加層可能導致整個桌面 Shell 當機，因此未載入雷達。"
+msgstr "KDE Plasma 啟動時被注入了 MangoHud。網頁式雷達啟動時，此疊加層可能導致整個桌面 shell 當掉，因此未載入雷達。"
 
 #: contents/ui/config/configAppearance.qml:910
 msgid "KDE System Icons (automatic, follows weather code)"
@@ -2753,31 +2762,31 @@ msgstr "保持小工具開啟"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:171
 msgid "Keys"
-msgstr ""
+msgstr "按鍵"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:93
 #: contents/ui/components/weathermap/LayerPanel.qml:893
 msgid "Kinds shown"
-msgstr ""
+msgstr "顯示的類型"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:619
 msgid "Knots (kn)"
 msgstr "節（kn）"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2128
+#: contents/ui/DetailsView.qml:2131
 msgid "Kp Index"
 msgstr "Kp 指數"
 
 #: contents/ui/ForecastView.qml:694 contents/ui/SimpleView.qml:670
 msgid "Kp index (G scale)"
-msgstr ""
+msgstr "Kp 指數（G 等級）"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2029
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2236
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2447
 msgid "Kp index/G"
-msgstr ""
+msgstr "Kp 指數/G"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:486
 #: contents/ui/config/tabs/ConfigPanelTab.qml:579
@@ -2787,19 +2796,19 @@ msgstr "較大"
 #: contents/ui/components/WeatherMapView.qml:858
 msgctxt "text size"
 msgid "Large"
-msgstr ""
+msgstr "大"
 
 #: contents/ui/HistoryView.qml:366
 msgid "Last 30 days"
-msgstr ""
+msgstr "過去 30 天"
 
 #: contents/ui/HistoryView.qml:362
 msgid "Last 7 days"
-msgstr ""
+msgstr "過去 7 天"
 
 #: contents/ui/HistoryView.qml:370
 msgid "Last 90 days"
-msgstr ""
+msgstr "過去 90 天"
 
 #: contents/ui/main.qml:3638
 msgid "Last Quarter"
@@ -2807,12 +2816,12 @@ msgstr "下弦月"
 
 #: contents/ui/HistoryView.qml:378
 msgid "Last month"
-msgstr ""
+msgstr "上個月"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:159
 #: contents/ui/components/weathermap/TimeBar.qml:206
 msgid "Last picture"
-msgstr ""
+msgstr "最後一張影像"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:541
 msgid "Lat:"
@@ -2832,7 +2841,7 @@ msgstr "緯度："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:758
 msgid "Layers"
-msgstr ""
+msgstr "圖層"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:800
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1581
@@ -2846,7 +2855,7 @@ msgstr "版面類型："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:476
 msgid "Leave full screen (F11 or Esc)"
-msgstr ""
+msgstr "離開全螢幕（F11 或 Esc）"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:373
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
@@ -2854,7 +2863,7 @@ msgstr "留空以使用公用伺服器。若您自行架設 LibreWXR 執行個�
 
 #: contents/ui/components/weathermap/LayerPanel.qml:906
 msgid "Levels shown"
-msgstr ""
+msgstr "顯示的雲層"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:300
 #: contents/ui/config/tabs/ConfigRadarTab.qml:315
@@ -2873,11 +2882,11 @@ msgstr "微量"
 
 #: contents/ui/DetailsView.qml:502
 msgid "Light air"
-msgstr ""
+msgstr "軟風"
 
 #: contents/ui/DetailsView.qml:504
 msgid "Light breeze"
-msgstr ""
+msgstr "輕風"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:626
 #: contents/ui/main.qml:3375
@@ -2927,12 +2936,12 @@ msgstr "小陣雪"
 #: contents/ui/components/weathermap/HelpPanel.qml:69
 #: contents/ui/components/weathermap/RadarMenu.qml:195
 msgid "Lightning"
-msgstr ""
+msgstr "閃電"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:103
 #: contents/ui/components/weathermap/LayerPanel.qml:926
 msgid "Lines"
-msgstr ""
+msgstr "線條"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:979
 msgid "Lines:"
@@ -2944,7 +2953,7 @@ msgstr "清單"
 
 #: contents/ui/RadarView.qml:301
 msgid "Load embedded radar anyway"
-msgstr "仍然載入內嵌雷達"
+msgstr "仍要載入內嵌雷達"
 
 #: contents/ui/DetailsView.qml:966
 msgid "Loading details…"
@@ -2972,7 +2981,7 @@ msgstr "載入位置中⋯"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:662
 msgid "Loading of the layers"
-msgstr ""
+msgstr "圖層載入狀態"
 
 #: contents/ui/RadarView.qml:235
 msgid "Loading radar…"
@@ -3032,7 +3041,7 @@ msgstr "位置套件通知"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:574
 msgid "Location search by %1 · Map data © %2"
-msgstr "位置搜尋由 %1 提供 · 地圖資料 © %2"
+msgstr "地點搜尋由 %1 提供 · 地圖資料 © %2"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:657
 msgid "Location staged. Click the main Apply button to save."
@@ -3053,6 +3062,9 @@ msgid ""
 "View it with: journalctl --user -f | grep \"Advanced Weather Widget\". \n"
 "Please enable only when you experience issues with the widget."
 msgstr ""
+"記錄每個 API 請求（不含金鑰的位址、HTTP 狀態、耗時、大小、回傳內容）、天氣來源備援鏈、快取、計時器，以及小工具載入所有資料所需的時間。每行皆以 [Advanced Weather Widget - <component>] 開頭。\n"
+"檢視方式：journalctl --user -f | grep \"Advanced Weather Widget\"。\n"
+"請僅在小工具發生問題時啟用。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:548
 msgid "Lon:"
@@ -3076,37 +3088,41 @@ msgstr "查詢位置中⋯"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:160
 msgid "Loop (L)"
-msgstr ""
+msgstr "循環（L）"
 
 #: contents/ui/components/weathermap/TimeBar.qml:236
 msgid "Loop: off, stops at the end"
-msgstr ""
+msgstr "循環：關閉，播放到結尾即停止"
 
 #: contents/ui/components/weathermap/TimeBar.qml:236
 msgid "Loop: on"
-msgstr ""
+msgstr "循環：開啟"
 
 #: contents/ui/DetailsView.qml:472 contents/ui/DetailsView.qml:597
-#: contents/ui/FullView.qml:638 contents/ui/js/airQuality.js:121
-#: contents/ui/js/pollen.js:43 contents/ui/js/spaceWeather.js:190
-#: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1892
-#: contents/ui/main.qml:1933 contents/ui/SimpleView.qml:792
+#: contents/ui/js/airQuality.js:121 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:190 contents/ui/js/spaceWeather.js:202
+#: contents/ui/main.qml:1892 contents/ui/main.qml:1933
 msgid "Low"
 msgstr "低"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1232
+#: contents/ui/components/WeatherMapView.qml:1233
 msgctxt "@item cloud level"
 msgid "Low"
-msgstr ""
+msgstr "低"
 
 #: contents/ui/components/HistoryChartGraphs.qml:114
 #: contents/ui/components/HistoryChartKQC.qml:87
-#: contents/ui/ForecastView.qml:1102
+#: contents/ui/ForecastView.qml:1102 contents/ui/SimpleView.qml:792
 msgctxt "@label chart legend"
 msgid "Low"
-msgstr ""
+msgstr "低"
+
+#: contents/ui/FullView.qml:638
+msgctxt "@label daily minimum temperature"
+msgid "Low"
+msgstr "最低溫"
 
 #: contents/ui/js/airQuality.js:121
 msgid "Low Risk"
@@ -3118,7 +3134,7 @@ msgstr "低溫"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:71
 msgid "Luxembourgish"
-msgstr ""
+msgstr "盧森堡語"
 
 #: contents/ui/main.qml:2497
 msgctxt "Alert severity"
@@ -3137,11 +3153,11 @@ msgstr "中度"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:90
 msgid "Macedonian"
-msgstr ""
+msgstr "馬其頓語"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:162
 msgid "Magenta band"
-msgstr ""
+msgstr "洋紅色帶"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:810
 msgid "Magnetic Field (Bz)"
@@ -3167,7 +3183,7 @@ msgstr "大致晴朗（夜晚）"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:81
 msgid "Maltese"
-msgstr ""
+msgstr "馬爾他語"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:349
 #: contents/ui/config/tabs/ConfigPanelTab.qml:490
@@ -3184,7 +3200,7 @@ msgstr "手動"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:771
 msgid "Map Cache"
-msgstr ""
+msgstr "地圖快取"
 
 #: contents/ui/components/RadarWebEngineView.qml:180
 msgid "Map background"
@@ -3192,15 +3208,15 @@ msgstr "地圖底圖"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:676
 msgid "Map controls:"
-msgstr ""
+msgstr "地圖控制項："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:693
 msgid "Map icon theme:"
-msgstr ""
+msgstr "地圖圖示主題："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:798
 msgid "Map tiles already seen stay on disk, so they are not downloaded a second time. A new size applies the next time Plasma starts."
-msgstr ""
+msgstr "已看過的地圖圖磚會保留在磁碟上，不會重複下載。新的大小會在下次啟動 Plasma 時生效。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:197
 msgid "Marine and weather data provider. API key required below."
@@ -3208,26 +3224,26 @@ msgstr "海洋與天氣資料供應商，請在下方填入 API 金鑰。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:164
 msgid "Marks under the line"
-msgstr ""
+msgstr "時間軸下方的標記"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:775
 msgid "Maximum size:"
-msgstr ""
+msgstr "大小上限："
 
 #: contents/ui/components/HistoryChartGraphs.qml:109
 #: contents/ui/components/HistoryChartKQC.qml:82
 msgctxt "@label chart legend"
 msgid "Mean"
-msgstr ""
+msgstr "平均"
 
 #: contents/ui/HistoryView.qml:327
 msgid "Mean temperature"
-msgstr ""
+msgstr "平均氣溫"
 
 #: contents/ui/components/WeatherMapView.qml:858
 msgctxt "text size"
 msgid "Medium"
-msgstr ""
+msgstr "中"
 
 #: contents/ui/js/airQuality.js:105
 msgid "Members of sensitive groups may experience health effects; the general public is less likely to be affected."
@@ -3253,10 +3269,10 @@ msgstr "公制（°C、km/h、hPa、mm）"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
 #: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1231
+#: contents/ui/components/WeatherMapView.qml:1232
 msgctxt "@item cloud level"
 msgid "Mid"
-msgstr ""
+msgstr "中層"
 
 #: contents/ui/js/pollen.js:44
 msgid "Mild symptoms in highly sensitive individuals."
@@ -3274,9 +3290,9 @@ msgstr "最小高度："
 msgid "Minimum width:"
 msgstr "最小寬度："
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2186
 msgid "Minor"
-msgstr ""
+msgstr "輕微"
 
 #: contents/ui/js/spaceWeather.js:96
 msgid "Minor geomagnetic storm."
@@ -3309,7 +3325,7 @@ msgstr "中度風險"
 
 #: contents/ui/DetailsView.qml:508
 msgid "Moderate breeze"
-msgstr ""
+msgstr "和風"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:628
 msgid "Moderate drizzle"
@@ -3380,8 +3396,8 @@ msgstr "月相、月出及月落"
 msgid "Moon:"
 msgstr "月亮："
 
-#: contents/ui/DetailsView.qml:3772 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4095 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3775 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4098 contents/ui/DetailsView.qml:4103
 msgid "Moonrise"
 msgstr "月出"
 
@@ -3403,7 +3419,7 @@ msgstr "月出圖示："
 msgid "Moonrise only"
 msgstr "僅顯示月出"
 
-#: contents/ui/DetailsView.qml:3770 contents/ui/DetailsView.qml:4093
+#: contents/ui/DetailsView.qml:3773 contents/ui/DetailsView.qml:4096
 msgid "Moonrise/Moonset"
 msgstr "月出/月落"
 
@@ -3413,8 +3429,8 @@ msgstr "月出/月落"
 msgid "Moonrise:"
 msgstr "月出："
 
-#: contents/ui/DetailsView.qml:3774 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4097 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4100 contents/ui/DetailsView.qml:4103
 msgid "Moonset"
 msgstr "月落"
 
@@ -3446,10 +3462,10 @@ msgstr "多數過敏患者將感到不適。"
 #: contents/ui/components/weathermap/HelpPanel.qml:144
 #: contents/ui/components/weathermap/HelpPanel.qml:149
 msgid "Mouse wheel"
-msgstr ""
+msgstr "滑鼠滾輪"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:711
-#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1952
+#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1952
 msgid "Mugwort"
 msgstr "艾草"
 
@@ -3460,12 +3476,12 @@ msgstr "多行（高面板）"
 #: contents/ui/components/WeatherMapView.qml:589
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Muted"
-msgstr ""
+msgstr "柔和"
 
 #: contents/ui/components/WeatherMapView.qml:1213
 #: contents/ui/HistoryView.qml:191
 msgid "N"
-msgstr ""
+msgstr "北"
 
 #: contents/ui/ForecastView.qml:2606 contents/ui/ForecastView.qml:3294
 #: contents/ui/main.qml:1788 contents/ui/main.qml:1821
@@ -3478,7 +3494,7 @@ msgstr "N/A"
 #: contents/ui/components/WeatherMapView.qml:1214
 #: contents/ui/HistoryView.qml:191
 msgid "NE"
-msgstr ""
+msgstr "東北"
 
 #: contents/ui/config/configAppearance.qml:1936
 #: contents/ui/config/configAppearance.qml:2059
@@ -3493,19 +3509,19 @@ msgstr "NO₂"
 #: contents/ui/components/WeatherMapView.qml:1220
 #: contents/ui/HistoryView.qml:191
 msgid "NW"
-msgstr ""
+msgstr "西北"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:209
 msgid "Native language of the alert (Default)"
-msgstr ""
+msgstr "警報原始語言（預設）"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:362
 msgid "Native language:"
-msgstr ""
+msgstr "原始語言："
 
 #: contents/ui/DetailsView.qml:514
 msgid "Near gale"
-msgstr ""
+msgstr "疾風"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:521
 msgid "Need the coordinates for a place? You can look them up at <a href=\"https://www.mapcoordinates.net/\">mapcoordinates.net</a>."
@@ -3525,42 +3541,42 @@ msgstr "新月"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:95
 msgid "New temperature palette"
-msgstr ""
+msgstr "新增溫度調色盤"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:958
 msgid "New wind palette"
-msgstr ""
+msgstr "新增風速調色盤"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:536
 #: contents/ui/config/tabs/ConfigRadarTab.qml:594
 msgid "New…"
-msgstr ""
+msgstr "新增⋯"
 
 #: contents/ui/HistoryView.qml:469
 msgid "Next day"
-msgstr ""
+msgstr "下一天"
 
 #: contents/ui/HistoryView.qml:469
 msgid "Next period"
-msgstr ""
+msgstr "下一段期間"
 
-#: contents/ui/DetailsView.qml:3532
+#: contents/ui/DetailsView.qml:3535
 msgid "Night"
 msgstr "夜晚"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:380
 msgid "Night darkness:"
-msgstr ""
+msgstr "夜間暗度："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:624
 msgid "Night lights"
-msgstr ""
+msgstr "夜間燈光"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:634
 msgid "Night lights density"
-msgstr ""
+msgstr "夜間燈光密度"
 
-#: contents/ui/DetailsView.qml:1714
+#: contents/ui/DetailsView.qml:1717
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr "二氧化氮（NO₂）"
 
@@ -3568,9 +3584,9 @@ msgstr "二氧化氮（NO₂）"
 msgid "No"
 msgstr "否"
 
-#: contents/ui/DetailsView.qml:2850
+#: contents/ui/DetailsView.qml:2853
 msgid "No active alerts"
-msgstr ""
+msgstr "目前無有效警報"
 
 #: contents/ui/components/WeatherMapView.qml:1202
 msgid "No data"
@@ -3578,11 +3594,11 @@ msgstr "無資料"
 
 #: contents/ui/HistoryView.qml:784
 msgid "No data is available for this period yet. The most recent days can take up to about five days to appear."
-msgstr ""
+msgstr "此期間尚無資料。最近幾天的資料最多可能需要約五天才會出現。"
 
 #: contents/ui/HistoryView.qml:1097
 msgid "No data yet"
-msgstr ""
+msgstr "尚無資料"
 
 #: contents/ui/DetailsView.qml:966
 msgid "No details data"
@@ -3623,11 +3639,11 @@ msgstr "尚無儲存的地點，儲存目前位置以便快速切換地點。"
 
 #: contents/ui/DetailsView.qml:464
 msgid "No snow"
-msgstr ""
+msgstr "無積雪"
 
-#: contents/ui/DetailsView.qml:2854
+#: contents/ui/DetailsView.qml:2857
 msgid "No warnings in effect"
-msgstr ""
+msgstr "目前無生效中的警報"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:541
 msgid "No weather stations found for '%1'"
@@ -3654,7 +3670,7 @@ msgstr "正常"
 #: contents/ui/components/WeatherMapView.qml:856
 msgctxt "isobar lines"
 msgid "Normal"
-msgstr ""
+msgstr "一般"
 
 #: contents/ui/config/subpages/ConfigLocationManualSubPage.qml:374
 msgid "Not available (HTTP %1)"
@@ -3720,16 +3736,16 @@ msgstr "確定"
 #: contents/ui/components/weathermap/LayerPanel.qml:615
 msgctxt "atmosphere rim at 0"
 msgid "Off"
-msgstr ""
+msgstr "關閉"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:625
 msgctxt "night lights at 0"
 msgid "Off"
-msgstr ""
+msgstr "關閉"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:812
 msgid "Off (warnings and errors are always logged)"
-msgstr ""
+msgstr "關閉（警告與錯誤一律會記錄）"
 
 #: contents/ui/config/configGeneral.qml:207
 msgid "Off - the workaround script has been removed, so it won't load on your next login. This session already started with GPU compositing disabled though, and your system isn't systemd-managed, so there's no way to clear that live - it stays disabled (including anything you open freshly in this session) until you log out and back in."
@@ -3745,32 +3761,32 @@ msgstr "已關閉──解決方案指令碼已移除，下次登入時不會再
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:119
 msgid "Off: no data-point dots are shown."
-msgstr ""
+msgstr "關閉：不顯示資料點。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:203
 msgid "Official Spanish meteorological agency - Spain locations only! API key required below."
 msgstr "西班牙官方氣象機構，僅限西班牙地點！請在下方填入 API 金鑰。"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:716
-#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1955
+#: contents/ui/DetailsView.qml:1795 contents/ui/main.qml:1955
 msgid "Olive"
 msgstr "橄欖"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 msgid "One compact graph; point at a day to see all the other details"
-msgstr ""
+msgstr "單一精簡圖表；指向某一天即可查看其他所有細節"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:102
 msgid "One compact graph; point at an hour to see all the other details"
-msgstr ""
+msgstr "單一精簡圖表；指向某一小時即可查看其他所有細節"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:158
 msgid "One step ahead (→)"
-msgstr ""
+msgstr "前進一步（→）"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:156
 msgid "One step back (←)"
-msgstr ""
+msgstr "後退一步（←）"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2082
 msgid "Only the clicked day expands"
@@ -3779,15 +3795,15 @@ msgstr "僅點擊的日期展開"
 #: contents/ui/components/weathermap/LayerRow.qml:161
 #: contents/ui/components/weathermap/LayerRow.qml:236
 msgid "Opacity: %1 %"
-msgstr ""
+msgstr "不透明度：%1 %"
 
 #: contents/ui/components/weathermap/LayerRow.qml:165
 msgid "Opacity: %1 % (Shift + wheel)"
-msgstr ""
+msgstr "不透明度：%1 %（Shift + 滾輪）"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:135
 msgid "Open"
-msgstr ""
+msgstr "展開時"
 
 #: contents/ui/config/configLocation.qml:1203
 #: contents/ui/config/configLocation.qml:1580 contents/ui/RadarView.qml:375
@@ -3800,7 +3816,7 @@ msgstr "在瀏覽器中開啟雷達"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:1153
 msgid "Open the layer column"
-msgstr ""
+msgstr "展開圖層欄"
 
 #: contents/ui/config/configGeneral.qml:620
 msgid "Open-Meteo (recommended, free)"
@@ -3808,7 +3824,7 @@ msgstr "Open-Meteo（推薦，免費）"
 
 #: contents/ui/HistoryView.qml:766
 msgid "Open-Meteo is rate limiting requests. Please try again in a little while."
-msgstr ""
+msgstr "Open-Meteo 正在限制請求頻率。請稍後再試。"
 
 #: contents/ui/components/MapBackgroundChoices.qml:51
 msgid "OpenFreeMap Dark"
@@ -3852,7 +3868,7 @@ msgstr "自動展開今日逐時預報（或下一個可用日期）"
 
 #: contents/ui/DetailsView.qml:452
 msgid "Oppressive"
-msgstr ""
+msgstr "悶熱"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:49
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:365
@@ -3864,27 +3880,27 @@ msgstr "選項"
 #: contents/ui/components/weathermap/LayerRow.qml:166
 #: contents/ui/components/weathermap/LayerRow.qml:168
 msgid "Options: right click"
-msgstr ""
+msgstr "選項：點擊右鍵"
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Orange"
 msgstr "橙色"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:167
 msgid "Orange dot"
-msgstr ""
+msgstr "橘色圓點"
 
-#: contents/ui/DetailsView.qml:2836
+#: contents/ui/DetailsView.qml:2838
 msgid "Orange warning"
-msgstr ""
+msgstr "橙色警報"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:134
 #: contents/ui/components/weathermap/LayerPanel.qml:490
 #: contents/ui/components/weathermap/LayerPanel.qml:504
 msgid "Order of the layers"
-msgstr ""
+msgstr "圖層順序"
 
 #: contents/ui/config/configAppearance.qml:706
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:56
@@ -3893,7 +3909,7 @@ msgstr ""
 msgid "Overcast"
 msgstr "陰"
 
-#: contents/ui/DetailsView.qml:1716
+#: contents/ui/DetailsView.qml:1719
 msgid "Ozone (O₃)"
 msgstr "臭氧（O₃）"
 
@@ -3911,12 +3927,12 @@ msgstr "PM2.5"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:174
 msgid "Page Up / Page Down (or Ctrl + arrow)"
-msgstr ""
+msgstr "Page Up / Page Down（或 Ctrl + 方向鍵）"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:984
 #: contents/ui/config/tabs/TempPaletteDialog.qml:114
 msgid "Palette name"
-msgstr ""
+msgstr "調色盤名稱"
 
 #: contents/ui/config/configAppearance.qml:2504
 #: contents/ui/config/tabs/ConfigMiscTab.qml:218
@@ -3945,7 +3961,7 @@ msgstr "面板項目："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:670
 msgid "Panel opacity"
-msgstr ""
+msgstr "面板不透明度"
 
 #: contents/ui/config/configAppearance.qml:126
 msgid "Panel › Icon theme"
@@ -3959,11 +3975,11 @@ msgstr "面板 › 多行版面 › 主圖示樣式"
 msgid "Panel › Simple layout › Weather icon style"
 msgstr "面板 › 簡易版面 › 天氣圖示樣式"
 
-#: contents/ui/DetailsView.qml:1712
+#: contents/ui/DetailsView.qml:1715
 msgid "Particulate Matter (PM10)"
 msgstr "懸浮微粒（PM10）"
 
-#: contents/ui/DetailsView.qml:1710
+#: contents/ui/DetailsView.qml:1713
 msgid "Particulate Matter (PM2.5)"
 msgstr "細懸浮微粒（PM2.5）"
 
@@ -3984,7 +4000,7 @@ msgstr "多雲（夜晚）"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1094
 #: contents/ui/config/tabs/TempPaletteDialog.qml:196
 msgid "Paste color"
-msgstr ""
+msgstr "貼上顏色"
 
 #: contents/ui/components/RadarWebEngineView.qml:184
 msgid "Pause"
@@ -3992,7 +4008,7 @@ msgstr "暫停"
 
 #: contents/ui/DetailsView.qml:614
 msgid "Peak %1"
-msgstr ""
+msgstr "峰值 %1"
 
 #: contents/ui/config/configNotifications.qml:619
 msgid "Per alert type:"
@@ -4016,13 +4032,13 @@ msgstr "月相＋即將月出/月落"
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
 msgstr "在地圖上選取精確位置以獲得更在地的預報，例如您所在的街區或特定地標。"
 
-#: contents/ui/components/WeatherMapView.qml:1851
+#: contents/ui/components/WeatherMapView.qml:1852
 msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
-msgstr ""
+msgstr "已載入影像數 / 範圍內影像數<br>每秒最多影像數，可於圖層欄設定中調整"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:557
 msgid "Pictures per second"
-msgstr ""
+msgstr "每秒影像數"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1162
 msgid "Pipe  |"
@@ -4038,7 +4054,7 @@ msgstr "Pirate Weather API 金鑰："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:686
 msgid "Plasma theme"
-msgstr ""
+msgstr "Plasma 主題"
 
 #: contents/ui/components/RadarWebEngineView.qml:183
 msgid "Play"
@@ -4046,11 +4062,11 @@ msgstr "播放"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:157
 msgid "Play or pause"
-msgstr ""
+msgstr "播放或暫停"
 
 #: contents/ui/components/weathermap/TimeBar.qml:191
 msgid "Play or pause (Space)"
-msgstr ""
+msgstr "播放或暫停（空白鍵）"
 
 #: contents/ui/config/configNotifications.qml:456
 msgid "Plays a sound alongside the notification for alerts of that severity. A switch greyed out here means that severity is turned off above, so it never notifies - with or without sound. By default only Red and Purple play a sound."
@@ -4058,7 +4074,7 @@ msgstr "針對該嚴重程度的警報，在通知時一併播放音效。此處
 
 #: contents/ui/SimpleView.qml:832
 msgid "Point at a day to see its details. Double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in."
-msgstr ""
+msgstr "指向某一天即可查看詳細資料。連點兩下圖表，或按住 Ctrl 並捲動滑鼠滾輪，即可放大。"
 
 #: contents/ui/config/configAppearance.qml:1928
 #: contents/ui/config/configAppearance.qml:2051
@@ -4067,7 +4083,7 @@ msgstr ""
 msgid "Pollen"
 msgstr "花粉"
 
-#: contents/ui/DetailsView.qml:1967
+#: contents/ui/DetailsView.qml:1970
 msgid "Pollen data not available for this location."
 msgstr "此地點無花粉資料。"
 
@@ -4081,7 +4097,7 @@ msgstr "花粉："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:986
 msgid "Pollutant"
-msgstr ""
+msgstr "污染物"
 
 #: contents/ui/DetailsView.qml:456 contents/ui/js/airQuality.js:94
 msgid "Poor"
@@ -4098,7 +4114,7 @@ msgstr "降水總量"
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2248
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2459
 msgid "Precip sum"
-msgstr ""
+msgstr "降水總量"
 
 #: contents/ui/TooltipContent.qml:480
 msgid "Precip. Sum:"
@@ -4120,11 +4136,11 @@ msgstr "降水量"
 #: contents/ui/ForecastView.qml:1892
 msgctxt "@label chart legend"
 msgid "Precipitation"
-msgstr ""
+msgstr "降水量"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:889
 msgid "Precipitation (rain, snow)"
-msgstr ""
+msgstr "降水（雨、雪）"
 
 #: contents/ui/config/configAppearance.qml:1907
 #: contents/ui/config/configAppearance.qml:2030
@@ -4134,7 +4150,7 @@ msgstr "降水總量"
 
 #: contents/ui/HistoryView.qml:335
 msgid "Precipitation hours"
-msgstr ""
+msgstr "降水時數"
 
 #: contents/ui/config/configAppearance.qml:1901
 #: contents/ui/config/configAppearance.qml:2024
@@ -4144,7 +4160,7 @@ msgstr "降水率（mm/h）"
 
 #: contents/ui/ForecastView.qml:725
 msgid "Precipitation sum"
-msgstr ""
+msgstr "降水總量"
 
 #: contents/ui/TooltipContent.qml:475
 msgid "Precipitation:"
@@ -4156,11 +4172,11 @@ msgstr "前綴樣式："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:159
 msgid "Prepare the radar in advance"
-msgstr ""
+msgstr "預先準備雷達"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:990
 msgid "Prepare widget in advance:"
-msgstr ""
+msgstr "預先準備小工具："
 
 #: contents/ui/components/RadarWebEngineView.qml:160
 #: contents/ui/components/weathermap/HelpPanel.qml:100
@@ -4178,9 +4194,9 @@ msgstr ""
 msgid "Pressure"
 msgstr "氣壓"
 
-#: contents/ui/DetailsView.qml:1455
+#: contents/ui/DetailsView.qml:1457
 msgid "Pressure tendency"
-msgstr ""
+msgstr "氣壓趨勢"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:635
 #: contents/ui/TooltipContent.qml:463
@@ -4189,7 +4205,7 @@ msgstr "氣壓："
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:447
 msgid "Preview:"
-msgstr ""
+msgstr "預覽："
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:194
 msgid "Preview: 20°C"
@@ -4197,17 +4213,17 @@ msgstr "預覽：20°C"
 
 #: contents/ui/HistoryView.qml:468
 msgid "Previous day"
-msgstr ""
+msgstr "上一天"
 
 #: contents/ui/HistoryView.qml:468
 msgid "Previous period"
-msgstr ""
+msgstr "上一段期間"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:171
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr "主要單位顯示在前（例如 °C / °F）"
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2504
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2508
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr "供應商"
@@ -4232,7 +4248,7 @@ msgid "Provider website:"
 msgstr "供應商網站："
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2212
+#: contents/ui/DetailsView.qml:2216
 msgid "Provider:"
 msgstr "供應商："
 
@@ -4287,9 +4303,9 @@ msgstr "未安裝 QtWebEngine"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:566
 msgid "Quarter"
-msgstr ""
+msgstr "四分之一"
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2163 contents/ui/DetailsView.qml:2186
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr "平靜"
@@ -4329,7 +4345,7 @@ msgid "Radar:"
 msgstr "雷達："
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
-#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1958
+#: contents/ui/DetailsView.qml:1797 contents/ui/main.qml:1958
 msgid "Ragweed"
 msgstr "豚草"
 
@@ -4358,7 +4374,7 @@ msgstr "Rain Viewer"
 #: contents/ui/components/WeatherMapView.qml:836
 #: contents/ui/components/WeatherMapView.qml:1224
 msgid "Rain and snow"
-msgstr ""
+msgstr "雨夾雪"
 
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:72
 msgid "Rain showers"
@@ -4370,15 +4386,15 @@ msgstr "降雨/雷雨"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:47
 msgid "Range"
-msgstr ""
+msgstr "時間範圍"
 
 #: contents/ui/HistoryView.qml:727
 msgid "Range limited to %1 days"
-msgstr ""
+msgstr "範圍上限為 %1 天"
 
 #: contents/ui/HistoryView.qml:1253
 msgid "Range limited to %1 days: if the chosen range is longer, the end date is set automatically (for example, start date %2 gives end date %3)."
-msgstr ""
+msgstr "範圍限制為 %1 天：若所選範圍較長，結束日期會自動設定（例如開始日期為 %2 時，結束日期為 %3）。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:163
 msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
@@ -4398,18 +4414,18 @@ msgstr "建議值 — 例如 560"
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Red"
 msgstr "紅色"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "Red"
-msgstr ""
+msgstr "紅色"
 
-#: contents/ui/DetailsView.qml:2838
+#: contents/ui/DetailsView.qml:2840
 msgid "Red warning"
-msgstr ""
+msgstr "紅色警報"
 
 #: contents/ui/js/airQuality.js:123
 msgid "Reduce or reschedule strenuous outdoor activities, especially if you experience symptoms."
@@ -4442,13 +4458,13 @@ msgstr "地區預設（短格式）"
 #: contents/ui/components/weathermap/LayerPanel.qml:851
 #: contents/ui/components/weathermap/LayerPanel.qml:878
 msgid "Regional models"
-msgstr ""
+msgstr "區域模型"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:513
 #: contents/ui/components/weathermap/LayerPanel.qml:967
 #: contents/ui/components/weathermap/LoadBox.qml:37
 msgid "Relative humidity"
-msgstr ""
+msgstr "相對濕度"
 
 #: contents/ui/config/configAppearance.qml:1975
 #: contents/ui/config/configAppearance.qml:2119
@@ -4457,7 +4473,7 @@ msgstr "相對濕度 %"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:110
 msgid "Relative humidity at 2 m: how close the air is to being saturated. Brown: dry (under 30 %, fire risk). Sand and green: usual. Blue: near 100 % (fog, low clouds, rain). It goes up at night and down in the afternoon even when the air keeps the same water. For the water itself, see the dew point."
-msgstr ""
+msgstr "2 公尺高度的相對濕度：空氣接近飽和的程度。棕色：乾燥（低於 30 %，有火災風險）。沙色與綠色：一般。藍色：接近 100 %（霧、低雲、降雨）。即使空氣中的水氣含量不變，濕度也會在夜間升高、午後降低。若要看水氣本身，請參考露點。"
 
 #: contents/ui/config/configAppearance.qml:1873
 msgid "Relative humidity percentage"
@@ -4465,7 +4481,7 @@ msgstr "相對濕度百分比"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:220
 msgid "Remove"
-msgstr ""
+msgstr "移除"
 
 #: contents/ui/config/configLocation.qml:1446
 msgid "Remove last location?"
@@ -4513,18 +4529,18 @@ msgstr "重設為預設值"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:564
 msgid "Resolution while playing"
-msgstr ""
+msgstr "播放時的解析度"
 
 #: contents/ui/ForecastView.qml:1060 contents/ui/ForecastView.qml:1061
 #: contents/ui/ForecastView.qml:1835 contents/ui/ForecastView.qml:1836
 #: contents/ui/HistoryView.qml:977 contents/ui/HistoryView.qml:978
 msgid "Restore"
-msgstr ""
+msgstr "還原縮放"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:139
 #: contents/ui/components/weathermap/HelpPanel.qml:142
 msgid "Right click on the icon"
-msgstr ""
+msgstr "在圖示上點擊右鍵"
 
 #: contents/ui/main.qml:3373
 msgid "Rime fog"
@@ -4532,23 +4548,23 @@ msgstr "霧淞"
 
 #: contents/ui/DetailsView.qml:577
 msgid "Rising"
-msgstr ""
+msgstr "上升"
 
 #: contents/ui/DetailsView.qml:579
 msgid "Rising quickly"
-msgstr ""
+msgstr "快速上升"
 
 #: contents/ui/DetailsView.qml:575
 msgid "Rising slowly"
-msgstr ""
+msgstr "緩慢上升"
 
 #: contents/ui/DetailsView.qml:581
 msgid "Rising very rapidly"
-msgstr ""
+msgstr "急遽上升"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:69
 msgid "Romansh"
-msgstr ""
+msgstr "羅曼什語"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:92
 msgid "Round values:"
@@ -4556,21 +4572,21 @@ msgstr "數值四捨五入："
 
 #: contents/ui/config/configNotifications.qml:611
 msgid "Routine tests (for example \"Required Weekly Test\") are ignored: no notification and no sound."
-msgstr "例行測試（例如\"Required Weekly Test\"）將被忽略：不通知也不發出聲音。"
+msgstr "例行測試（例如「Required Weekly Test」）會被忽略：不顯示通知，也不播放音效。"
 
 #: contents/ui/config/configNotifications.qml:611
 msgid "Routine tests (for example \"Required Weekly Test\") will show a notification, but never play an alert sound."
-msgstr "例行測試（例如\"Required Weekly Test\"）將顯示通知，但不會播放警報聲。"
+msgstr "例行測試（例如「Required Weekly Test」）會顯示通知，但絕不播放警報音效。"
 
 #: contents/ui/components/WeatherMapView.qml:1217
 #: contents/ui/HistoryView.qml:191
 msgid "S"
-msgstr ""
+msgstr "南"
 
 #: contents/ui/components/WeatherMapView.qml:1216
 #: contents/ui/HistoryView.qml:191
 msgid "SE"
-msgstr ""
+msgstr "東南"
 
 #: contents/ui/main.qml:2487
 msgctxt "Alert severity"
@@ -4584,7 +4600,7 @@ msgstr "SO₂"
 #: contents/ui/components/WeatherMapView.qml:1218
 #: contents/ui/HistoryView.qml:191
 msgid "SW"
-msgstr ""
+msgstr "西南"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:76
 #: contents/ui/components/weathermap/LayerPanel.qml:511
@@ -4609,7 +4625,7 @@ msgstr "已儲存但尚未生效──登出再登入即可套用。"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:80
 msgid "Scottish Gaelic"
-msgstr ""
+msgstr "蘇格蘭蓋爾語"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:996
 msgid "Scroll animation:"
@@ -4621,7 +4637,7 @@ msgstr "捲動間隔（秒）："
 
 #: contents/ui/components/weathermap/LayerPanel.qml:915
 msgid "Sea level pressure"
-msgstr ""
+msgstr "海平面氣壓"
 
 #: contents/ui/config/configLocation.qml:1681
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:290
@@ -4654,19 +4670,19 @@ msgstr "次要單位顯示在前（例如 °F / °C）"
 
 #: contents/ui/HistoryView.qml:745
 msgid "Select a location to see its weather history"
-msgstr ""
+msgstr "選擇地點以查看其歷史天氣"
 
 #: contents/ui/HistoryView.qml:1227
 msgid "Select day"
-msgstr ""
+msgstr "選擇日期"
 
 #: contents/ui/HistoryView.qml:1227
 msgid "Select end date"
-msgstr ""
+msgstr "選擇結束日期"
 
 #: contents/ui/HistoryView.qml:1227
 msgid "Select start date"
-msgstr ""
+msgstr "選擇開始日期"
 
 #: contents/ui/config/configNotifications.qml:579
 msgid "Sends a single, low-priority heads-up as soon as a future alert is published (e.g. \"Heat warning starts tomorrow at 11:00\"). The normal alert notification above still fires separately once it actually becomes active."
@@ -4674,7 +4690,7 @@ msgstr "只要有尚未生效的警報發布，就會立即傳送一則低優先
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:73
 msgid "Separated"
-msgstr ""
+msgstr "分開"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:176
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1143
@@ -4683,7 +4699,7 @@ msgstr "分隔符號："
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:87
 msgid "Serbian"
-msgstr ""
+msgstr "塞爾維亞語"
 
 #: contents/ui/js/pollen.js:46
 msgid "Serious risk; avoid outdoor activities."
@@ -4713,7 +4729,7 @@ msgstr "設定自訂圖示⋯"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:555
 msgid "Settings"
-msgstr ""
+msgstr "設定"
 
 #: contents/ui/config/configAppearance.qml:487
 msgid "Settings where this theme is not available keep their current theme."
@@ -4721,7 +4737,7 @@ msgstr "不支援此主題的設定將保留目前的主題。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:541
 msgid "Settings: pictures per second, resolution while playing,<br>coasts and borders, Sun, Moon and night lights, dark map, see-through panels"
-msgstr ""
+msgstr "設定：每秒影像數、播放時的解析度、<br>海岸線與邊界、太陽、月亮與夜間燈光、深色地圖、半透明面板"
 
 #: contents/ui/js/spaceWeather.js:93
 msgid "Severe geomagnetic storm."
@@ -4745,11 +4761,11 @@ msgstr "陰影強度："
 
 #: contents/ui/components/weathermap/HelpPanel.qml:143
 msgid "Shift + mouse wheel on the icon"
-msgstr ""
+msgstr "在圖示上按 Shift + 滑鼠滾輪"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:52
 msgid "Shortcuts"
-msgstr ""
+msgstr "快捷鍵"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:947
 #: contents/ui/config/subpages/ConfigTooltipSubPage.qml:669
@@ -4774,15 +4790,15 @@ msgstr "顯示兩種單位："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:109
 msgid "Show dots for every day"
-msgstr ""
+msgstr "顯示每天的資料點"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:109
 msgid "Show dots for every hour"
-msgstr ""
+msgstr "顯示每小時的資料點"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2183
 msgid "Show in daily forecast:"
-msgstr ""
+msgstr "在每日預報中顯示："
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:429
 msgid "Show in details"
@@ -4790,11 +4806,11 @@ msgstr "在詳細資訊中顯示"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2005
 msgid "Show in forecast:"
-msgstr ""
+msgstr "在預報中顯示："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2387
 msgid "Show in hourly forecast:"
-msgstr ""
+msgstr "在逐時預報中顯示："
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:200
 msgid "Show in:"
@@ -4894,7 +4910,7 @@ msgstr "簡易顯示模式設定"
 
 #: contents/ui/HistoryView.qml:386
 msgid "Single day…"
-msgstr ""
+msgstr "單日⋯"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:137
 msgid "Single line (all items at once)"
@@ -4902,7 +4918,7 @@ msgstr "單行（同時顯示所有項目）"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:950
 msgid "Size"
-msgstr ""
+msgstr "大小"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1462
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:321
@@ -4916,7 +4932,7 @@ msgstr "已略過 — 未設定 API 金鑰"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:137
 msgid "Slider"
-msgstr ""
+msgstr "滑桿"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:634
 msgid "Slight rain"
@@ -4936,16 +4952,16 @@ msgstr "微量降雪"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:89
 msgid "Slovak"
-msgstr ""
+msgstr "斯洛伐克語"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:84
 msgid "Slovenian"
-msgstr ""
+msgstr "斯洛維尼亞語"
 
 #: contents/ui/components/WeatherMapView.qml:858
 msgctxt "text size"
 msgid "Small"
-msgstr ""
+msgstr "小"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1174
 msgid "Small circle  ⚬"
@@ -4954,11 +4970,11 @@ msgstr "小圓圈  ⚬"
 #: contents/ui/components/WeatherMapView.qml:595
 #: contents/ui/config/tabs/ConfigRadarTab.qml:668
 msgid "Smooth"
-msgstr ""
+msgstr "連續漸層"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:487
 msgid "Smooth (20 to 30 fps)"
-msgstr "流暢（20 到 30 fps）"
+msgstr "流暢（20 至 30 fps）"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:68
 #: contents/ui/components/weathermap/RadarMenu.qml:194
@@ -5033,10 +5049,10 @@ msgstr "降雪/結冰"
 
 #: contents/ui/HistoryView.qml:275 contents/ui/HistoryView.qml:333
 msgid "Snowfall"
-msgstr ""
+msgstr "降雪量"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2138
+#: contents/ui/DetailsView.qml:2141
 msgid "Solar Wind"
 msgstr "太陽風"
 
@@ -5066,20 +5082,20 @@ msgstr "太空天氣選項"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:74
 msgid "Spanish"
-msgstr ""
+msgstr "西班牙語"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:150
 msgid "Speed"
-msgstr ""
+msgstr "速度"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:1113
 msgid "Speed x%1"
-msgstr ""
+msgstr "速度 x%1"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1988
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2146
 msgid "Standard"
-msgstr ""
+msgstr "標準"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:187
 msgid "Standard provider. API key required below."
@@ -5087,11 +5103,11 @@ msgstr "標準天氣供應商，請在下方填入 API 金鑰。"
 
 #: contents/ui/HistoryView.qml:649
 msgid "Start date"
-msgstr ""
+msgstr "開始日期"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1645
 msgid "Static scenes"
-msgstr ""
+msgstr "靜態場景"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1883
 msgid "Stats items:"
@@ -5099,7 +5115,7 @@ msgstr "統計標籤："
 
 #: contents/ui/DetailsView.qml:573
 msgid "Steady"
-msgstr ""
+msgstr "穩定"
 
 #: contents/ui/components/RadarWebEngineView.qml:191
 #: contents/ui/components/RadarWebEngineView.qml:889
@@ -5130,11 +5146,11 @@ msgstr "強烈"
 
 #: contents/ui/DetailsView.qml:512
 msgid "Strong breeze"
-msgstr ""
+msgstr "強風"
 
 #: contents/ui/DetailsView.qml:518
 msgid "Strong gale"
-msgstr ""
+msgstr "烈風"
 
 #: contents/ui/js/spaceWeather.js:94
 msgid "Strong geomagnetic storm."
@@ -5142,13 +5158,13 @@ msgstr "強烈地磁風暴。"
 
 #: contents/ui/HistoryView.qml:289
 msgid "Strongest gust"
-msgstr ""
+msgstr "最強陣風"
 
 #: contents/ui/HistoryView.qml:282
 msgid "Strongest wind"
-msgstr ""
+msgstr "最強風速"
 
-#: contents/ui/DetailsView.qml:1718
+#: contents/ui/DetailsView.qml:1721
 msgid "Sulfur Dioxide (SO₂)"
 msgstr "二氧化硫（SO₂）"
 
@@ -5173,8 +5189,8 @@ msgstr "日出日落選項"
 msgid "Sunday"
 msgstr "星期日"
 
-#: contents/ui/DetailsView.qml:3305 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3649 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3308 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3652 contents/ui/DetailsView.qml:3656
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr "日出"
@@ -5216,8 +5232,8 @@ msgstr "日出/日落標記："
 msgid "Sunrise:"
 msgstr "日出："
 
-#: contents/ui/DetailsView.qml:3307 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3651 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3310 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3654 contents/ui/DetailsView.qml:3656
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr "日落"
@@ -5243,7 +5259,7 @@ msgstr "日落："
 
 #: contents/ui/HistoryView.qml:296 contents/ui/HistoryView.qml:341
 msgid "Sunshine"
-msgstr ""
+msgstr "日照"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:155
 msgid "Swap order:"
@@ -5251,7 +5267,7 @@ msgstr "交換順序："
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:73
 msgid "Swedish"
-msgstr ""
+msgstr "瑞典語"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:654
 msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
@@ -5306,15 +5322,15 @@ msgstr "系統匣 › 簡易版面 › 天氣圖示樣式"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:974
 msgid "Tabs & Header Behavior"
-msgstr ""
+msgstr "分頁與標頭行為"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1127
 msgid "Tabs order:"
-msgstr ""
+msgstr "分頁順序："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1097
 msgid "Tabs position:"
-msgstr ""
+msgstr "分頁位置："
 
 #: contents/ui/components/RadarWebEngineView.qml:158
 #: contents/ui/components/weathermap/HelpPanel.qml:87
@@ -5334,7 +5350,7 @@ msgstr "溫度顏色"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2408
 msgid "Temperature and chance of precip."
-msgstr ""
+msgstr "溫度與降水機率"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:790
 msgid "Temperature badge"
@@ -5342,12 +5358,12 @@ msgstr "溫度徽章"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:656
 msgid "Temperature bands:"
-msgstr ""
+msgstr "溫度色帶："
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:151
 #: contents/ui/config/tabs/TempPaletteDialog.qml:160
 msgid "Temperature color"
-msgstr ""
+msgstr "溫度顏色"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:616
 msgid "Temperature color:"
@@ -5359,15 +5375,15 @@ msgstr "溫度優先"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2212
 msgid "Temperature high"
-msgstr ""
+msgstr "最高溫度"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2217
 msgid "Temperature low"
-msgstr ""
+msgstr "最低溫度"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2205
 msgid "Temperature low/high"
-msgstr ""
+msgstr "最低/最高溫度"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:269
 msgid "Temperature only"
@@ -5375,11 +5391,11 @@ msgstr "僅顯示溫度"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:630
 msgid "Temperature opacity:"
-msgstr ""
+msgstr "溫度不透明度："
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:560
 msgid "Temperature palette:"
-msgstr ""
+msgstr "溫度調色盤："
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:694
 msgid "Temperature shadow:"
@@ -5390,9 +5406,9 @@ msgstr "溫度陰影："
 msgid "Temperature:"
 msgstr "溫度："
 
-#: contents/ui/DetailsView.qml:1453
+#: contents/ui/DetailsView.qml:1455
 msgid "Tendency: collecting data"
-msgstr ""
+msgstr "趨勢：正在收集資料"
 
 #: contents/ui/config/configNotifications.qml:498
 msgid "Test"
@@ -5425,11 +5441,11 @@ msgstr "文字將跟隨系統字型並展開以填滿可用空間。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:119
 msgid "The CAMS forecast. The colors follow the European Air Quality Index: cyan good, green fair, yellow moderate, red poor, dark red very poor, purple extremely poor. The scale is logarithmic: each band covers a wider range than the one before."
-msgstr ""
+msgstr "CAMS 預報。顏色依據歐洲空氣品質指數：青色為良好、綠色為尚可、黃色為中等、紅色為差、暗紅色為很差、紫色為極差。刻度為對數尺度：每個色階涵蓋的範圍都比前一個更寬。"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1012
 msgid "The Details, Forecast and History tabs are built in the background after startup and stay built when the widget is closed, so it opens at once. This uses more memory for the whole session, and the History tab loads its data at startup."
-msgstr ""
+msgstr "「詳細資訊」、「預報」與「歷史」分頁會在啟動後於背景建構，並在小工具關閉後保持建構狀態，因此開啟時能立即顯示。這會讓整個工作階段多使用一些記憶體，且「歷史」分頁會在啟動時載入資料。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:500
 msgid "The Radar tab can animate the wind as moving particles (switch it on there). The wind data comes from <a href='https://open-meteo.com/'>Open-Meteo</a>, independently of the LibreWXR server. This sets the frame rate: lower it on a slow computer, raise it if strong winds look jerky."
@@ -5437,7 +5453,7 @@ msgstr "雷達分頁可將風場以移動粒子的動畫呈現（請在該處開
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:168
 msgid "The Radar tab opens at once on the most recent radar image, and the animation plays at once. It uses about 200 MB more memory: leave it off on a computer with little memory."
-msgstr ""
+msgstr "「雷達」分頁會立即開啟並顯示最新的雷達影像，動畫也會立即播放。這會多使用約 200 MB 記憶體：記憶體不多的電腦請保持關閉。"
 
 #: contents/ui/RadarView.qml:345
 msgid "The Radar tab requires the QtWebEngine package, which is not installed on this system."
@@ -5449,20 +5465,20 @@ msgstr "自動偵測到的位置已在您的儲存清單中。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:842
 msgid "The cache is full: the oldest images make room for the new ones. If the map downloads areas it has already shown again, choose a larger size."
-msgstr ""
+msgstr "快取已滿：最舊的影像會被新影像取代。若地圖重複下載已顯示過的區域，請選擇較大的大小。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:833
 msgid "The cache will be cleared the next time the map opens."
-msgstr ""
+msgstr "快取將在下次開啟地圖時清除。"
 
 #: contents/ui/ForecastView.qml:1128 contents/ui/ForecastView.qml:1916
 #: contents/ui/HistoryView.qml:1026
 msgid "The chart needs the Qt Graphs or the KDE Quick Charts QML module."
-msgstr ""
+msgstr "圖表需要 Qt Graphs 或 KDE Quick Charts QML 模組。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:145
 msgid "The colored layers share the map, one at a time: temperature, pressure, humidity, dew point, air quality. The column lists the layers as they are stacked on the map, the top one first; the order is set with the button left of the settings. The wind always goes over the others."
-msgstr ""
+msgstr "彩色圖層共用同一張地圖，一次只顯示一個：溫度、氣壓、濕度、露點、空氣品質。欄中依圖層在地圖上的堆疊順序由上而下列出；順序可用設定左側的按鈕調整。風永遠疊在其他圖層之上。"
 
 #: contents/ui/config/configAppearance.qml:929
 msgid "The condition icon will automatically reflect the current weather using your KDE system icon theme. No customisation is needed."
@@ -5472,41 +5488,41 @@ msgstr "天氣狀況圖示將自動使用您的 KDE 系統圖示主題反映目�
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr "地磁（Kp/G）預報最多提供未來 3 天的資料"
 
-#: contents/ui/components/WeatherMapView.qml:1881
+#: contents/ui/components/WeatherMapView.qml:1882
 msgid "The global model, then the finer regional<br>ones drawn over it in this view"
-msgstr ""
+msgstr "全球模型，再於此視野中<br>疊上更精細的區域模型"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:80
 msgid "The infrared picture of the clouds, from LibreWXR: the colder the top, the higher and whiter the cloud."
-msgstr ""
+msgstr "來自 LibreWXR 的雲層紅外線影像：雲頂越冷，雲越高、越白。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:108
 msgid "The isobars join the points of equal pressure. The wind blows almost along them, counterclockwise around a low in the northern hemisphere. The closer they are, the stronger the wind."
-msgstr ""
+msgstr "等壓線連接氣壓相同的各點。風幾乎沿著等壓線吹，在北半球繞低壓逆時針旋轉。等壓線越密，風越強。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:132
 msgid "The layer column"
-msgstr ""
+msgstr "圖層欄"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:161
 msgid "The line"
-msgstr ""
+msgstr "時間軸"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:86
 msgid "The lines flow with the wind, their color is the speed (the wind palette of the settings). By default: white when calm, green and blue for a breeze, yellow and orange for a strong wind, red and violet for a storm. Where the lines bunch up and turn, the weather changes."
-msgstr ""
+msgstr "線條隨風流動，顏色代表風速（設定中的風速調色盤）。預設：無風為白色，微風為綠色與藍色，強風為黃色與橙色，風暴為紅色與紫色。線條聚集並轉向之處，天氣會有變化。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:461
 msgid "The map could not be loaded. Check your internet connection."
-msgstr "無法載入地圖。請檢查您的網路連線。"
+msgstr "無法載入地圖。請檢查網路連線。"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:471
 msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
-msgstr "地圖功能需要 QtWebEngine，但目前尚未安裝。您仍可在上方搜尋位置。"
+msgstr "地圖需要 QtWebEngine，但尚未安裝。您仍可在上方搜尋地點。"
 
-#: contents/ui/components/WeatherMapView.qml:1822
+#: contents/ui/components/WeatherMapView.qml:1823
 msgid "The map page needs WebGL, which this graphics setup does not offer."
-msgstr ""
+msgstr "地圖頁面需要 WebGL，但目前的圖形環境不支援。"
 
 #: contents/ui/config/configLocation.qml:1186
 msgid "The map picker requires the QtLocation and QtPositioning packages, which are not installed on this system."
@@ -5514,35 +5530,35 @@ msgstr "地圖選取器需要 QtLocation 和 QtPositioning 套件，但此系統
 
 #: contents/ui/components/weathermap/HelpPanel.qml:186
 msgid "The same keys in every language. They work while the Weather Map tab is shown."
-msgstr ""
+msgstr "所有語言皆使用相同的按鍵。顯示天氣地圖分頁時有效。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:112
 msgid "The temperature at which dew forms. It tells how much water the air really holds. Under 10 °C the air feels dry, at 13 to 16 °C you notice it, from 18 °C it is muggy, from 21 °C oppressive, from 24 °C tropical. When the night cools down to the dew point, dew or fog forms."
-msgstr ""
+msgstr "水氣凝結成露的溫度，可看出空氣實際含有多少水氣。低於 10 °C 時空氣感覺乾燥，13 至 16 °C 時開始有感覺，18 °C 起悶濕，21 °C 起悶熱，24 °C 起如熱帶般濕熱。夜間降溫至露點時，就會形成露水或霧。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:133
 msgid "The thin button on its left edge opens or folds it. The map stays where it is when the column opens over it."
-msgstr ""
+msgstr "其左緣的細長按鈕可開啟或收合此欄。欄在地圖上方展開時，地圖位置不會移動。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:147
 msgid "The two clocks: how far back and how far ahead"
-msgstr ""
+msgstr "兩個時鐘：向過去多遠、向未來多遠"
 
-#: contents/ui/components/WeatherMapView.qml:1821
+#: contents/ui/components/WeatherMapView.qml:1822
 msgid "The weather maps cannot play here"
-msgstr ""
+msgstr "此處無法播放天氣地圖"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:99
 msgid "The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other."
-msgstr ""
+msgstr "越白代表天空被雲覆蓋得越多。勾選三個層次時，會顯示模型的總雲量，不會重複計算上下重疊的雲。"
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
-msgstr ""
+msgstr "小工具會在更新時蒐集氣壓讀數；約需一小時的讀數才能算出趨勢。"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:529
 msgid "The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only."
-msgstr ""
+msgstr "風繪製於地圖之上，因此無論它在此清單中的位置為何，都會覆蓋所有圖層：它在此處的位置只決定分頁中欄的排列順序。"
 
 #: contents/ui/config/configGeneral.qml:227
 msgid "The workaround script wasn't found on disk. Try toggling the option off and on again."
@@ -5551,7 +5567,7 @@ msgstr "找不到解決方案的指令碼檔案，請嘗試將選項關閉後再
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "Theme"
-msgstr ""
+msgstr "跟隨主題"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:908
 msgid "Theme default"
@@ -5559,7 +5575,7 @@ msgstr "主題預設"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:390
 msgid "There are no saved locations yet. Save a location on the Location page to choose its alert language."
-msgstr ""
+msgstr "尚無已儲存的地點。請在「位置」頁面儲存地點後，再選擇其警報語言。"
 
 #: contents/ui/config/configAppearance.qml:2552
 #: contents/ui/config/configAppearance.qml:2593
@@ -5569,12 +5585,12 @@ msgstr "這些設定僅在小工具放置於面板或系統匣時套用，對桌
 #: contents/ui/components/WeatherMapView.qml:856
 msgctxt "isobar lines"
 msgid "Thick"
-msgstr ""
+msgstr "粗"
 
 #: contents/ui/components/WeatherMapView.qml:856
 msgctxt "isobar lines"
 msgid "Thin"
-msgstr ""
+msgstr "細"
 
 #: contents/ui/config/configLocation.qml:190
 msgid "This location is already in your saved list."
@@ -5582,11 +5598,11 @@ msgstr "此位置已在您的儲存清單中。"
 
 #: contents/ui/HistoryView.qml:374
 msgid "This month"
-msgstr ""
+msgstr "本月"
 
 #: contents/ui/HistoryView.qml:382
 msgid "This year"
-msgstr ""
+msgstr "今年"
 
 #: contents/ui/config/configNotifications.qml:84
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:76
@@ -5631,12 +5647,12 @@ msgstr "雷雨"
 
 #: contents/ui/components/weathermap/RadarMenu.qml:202
 msgid "Tiles"
-msgstr ""
+msgstr "圖磚"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:146
 #: contents/ui/components/weathermap/LayerPanel.qml:1014
 msgid "Time"
-msgstr ""
+msgstr "時間"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:331
 msgid "Time format:"
@@ -5644,7 +5660,7 @@ msgstr "時間格式："
 
 #: contents/ui/components/weathermap/HelpPanel.qml:154
 msgid "Time line"
-msgstr ""
+msgstr "時間軸"
 
 #: contents/ui/config/configNotifications.qml:264
 msgid "Time:"
@@ -5662,7 +5678,7 @@ msgstr "時區："
 #: contents/ui/ForecastView.qml:1033 contents/ui/ForecastView.qml:1808
 #: contents/ui/HistoryView.qml:945
 msgid "Tip: double-click the graph, or hold Ctrl and scroll the mouse wheel, to zoom in"
-msgstr ""
+msgstr "提示：連點兩下圖表，或按住 Ctrl 並捲動滑鼠滾輪，即可放大"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1150
 msgid "To unlock additional map layers (Rain, Clouds, Temperature, Wind, Pressure): disable Adaptive mode from the 'Provider' tab, select OpenWeatherMap as your weather provider, and enter your API key above. When you are ready, you can enable Adaptive mode again."
@@ -5743,7 +5759,7 @@ msgstr "提示："
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1113
 msgid "Top"
-msgstr ""
+msgstr "頂部"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:833
 msgid "Top Center"
@@ -5757,16 +5773,16 @@ msgstr "左上"
 msgid "Top Right"
 msgstr "右上"
 
-#: contents/ui/components/WeatherMapView.qml:1229
+#: contents/ui/components/WeatherMapView.qml:1230
 msgctxt "@label total cloud cover"
 msgid "Total"
-msgstr ""
+msgstr "總雲量"
 
 #: contents/ui/components/HistoryChartGraphs.qml:1387
 #: contents/ui/components/HistoryChartKQC.qml:1451
 msgctxt "@label rain total shown in the chart"
 msgid "Total: %1"
-msgstr ""
+msgstr "總計：%1"
 
 #: contents/ui/config/configNotifications.qml:553
 msgid "Treat alert notifications as critical"
@@ -5778,11 +5794,11 @@ msgstr "截斷（單行）"
 
 #: contents/ui/HistoryView.qml:773
 msgid "Try again"
-msgstr ""
+msgstr "重試"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:83
 msgid "Turkish"
-msgstr ""
+msgstr "土耳其語"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:784
 msgid "Turn off all three switches above to pick a single standard here instead."
@@ -5809,7 +5825,7 @@ msgstr "敏感族群不健康"
 #: contents/ui/components/weathermap/HelpPanel.qml:118
 #: contents/ui/components/WeatherMapView.qml:838
 msgid "UV"
-msgstr ""
+msgstr "UV"
 
 #: contents/ui/config/configAppearance.qml:1914
 #: contents/ui/config/configAppearance.qml:2037
@@ -5880,9 +5896,9 @@ msgstr "取消釘選小工具"
 msgid "Unsettled"
 msgstr "不穩定"
 
-#: contents/ui/DetailsView.qml:2447
+#: contents/ui/DetailsView.qml:2451
 msgid "Until"
-msgstr ""
+msgstr "直到"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:486
 msgid "Upcoming (auto)"
@@ -5946,20 +5962,20 @@ msgstr "使用地區預設"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:371
 msgid "Use the alert's native language"
-msgstr ""
+msgstr "使用警報的原始語言"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:463
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:570
 msgid "Use the built-in color"
-msgstr ""
+msgstr "使用內建顏色"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:570
 msgid "Use the built-in colors"
-msgstr ""
+msgstr "使用內建顏色"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:809
 msgid "Used:"
-msgstr ""
+msgstr "已使用："
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1517
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:376
@@ -5985,7 +6001,7 @@ msgstr "數值四捨五入為整數"
 #: contents/ui/components/weathermap/HelpPanel.qml:106
 #: contents/ui/components/weathermap/LayerPanel.qml:945
 msgid "Values on the lines"
-msgstr ""
+msgstr "線上數值"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:106
 msgid "Values show decimal places"
@@ -6014,15 +6030,15 @@ msgstr "非常不健康"
 
 #: contents/ui/DetailsView.qml:480
 msgid "Very deep"
-msgstr ""
+msgstr "非常深"
 
 #: contents/ui/DetailsView.qml:476
 msgid "Very high"
-msgstr ""
+msgstr "非常高"
 
 #: contents/ui/DetailsView.qml:450
 msgid "Very humid"
-msgstr ""
+msgstr "非常潮濕"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:654
 msgid "Violent rain showers"
@@ -6030,7 +6046,7 @@ msgstr "劇烈陣雨"
 
 #: contents/ui/DetailsView.qml:522
 msgid "Violent storm"
-msgstr ""
+msgstr "暴風"
 
 #: contents/ui/config/configAppearance.qml:2009
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2039
@@ -6064,12 +6080,12 @@ msgstr "Visual Crossing API 金鑰："
 #: contents/ui/components/WeatherMapView.qml:589
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Vivid"
-msgstr ""
+msgstr "鮮豔"
 
 #: contents/ui/components/WeatherMapView.qml:1219
 #: contents/ui/HistoryView.qml:191
 msgid "W"
-msgstr ""
+msgstr "西"
 
 #: contents/ui/main.qml:3640
 msgid "Waning Crescent"
@@ -6081,15 +6097,15 @@ msgstr "虧凸月"
 
 #: contents/ui/DetailsView.qml:488
 msgid "Warm"
-msgstr ""
+msgstr "溫暖"
 
 #: contents/ui/HistoryView.qml:247
 msgid "Warmest day"
-msgstr ""
+msgstr "最熱的一天"
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2842
 msgid "Warning"
-msgstr ""
+msgstr "警報"
 
 #: contents/ui/main.qml:3628
 msgid "Waxing Crescent"
@@ -6115,26 +6131,26 @@ msgstr "天氣警報"
 msgid "Weather Alerts Provider"
 msgstr "天氣警報供應商"
 
-#: contents/ui/components/WeatherMapView.qml:1533
+#: contents/ui/components/WeatherMapView.qml:1534
 msgid "Weather Map"
-msgstr ""
+msgstr "天氣地圖"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:703
 msgid "Weather Map (Bundled)"
-msgstr ""
+msgstr "天氣地圖（內建）"
 
 #: contents/ui/config/configGeneral.qml:689
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:735 contents/ui/FullView.qml:147
 msgid "Weather Maps"
-msgstr ""
+msgstr "天氣地圖"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1086
 msgid "Weather Maps / Radar"
-msgstr ""
+msgstr "天氣地圖 / 雷達"
 
 #: contents/ui/config/configGeneral.qml:726
 msgid "Weather Maps / Radar is turned off, so these settings are read-only. Turn it on in Appearance › Widget › General › Visible tabs."
-msgstr ""
+msgstr "天氣地圖 / 雷達已關閉，因此這些設定為唯讀。請於「外觀 › 小工具 › 一般 › 可見頁籤」中開啟。"
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:68
 msgid "Weather Provider"
@@ -6161,7 +6177,7 @@ msgstr "天氣狀況文字"
 
 #: contents/ui/HistoryView.qml:769
 msgid "Weather history is unavailable (HTTP %1)."
-msgstr ""
+msgstr "無法取得歷史天氣資料（HTTP %1）。"
 
 #: contents/ui/config/configAppearance.qml:1837
 msgid "Weather icon + condition text"
@@ -6177,7 +6193,7 @@ msgstr "天氣圖示主題："
 
 #: contents/ui/components/weathermap/HelpPanel.qml:295
 msgid "Weather maps"
-msgstr ""
+msgstr "天氣地圖"
 
 #: contents/ui/WeatherService.qml:1143
 msgid "Weather provider:"
@@ -6221,41 +6237,41 @@ msgstr "Weatherbit API 金鑰："
 
 #: contents/ui/components/weathermap/HelpPanel.qml:73
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
-msgstr ""
+msgstr "WebP 或 PNG，256 或 512 px。衛星圖層也會套用相同設定。"
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2510 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr "網站"
 
 #: contents/ui/config/tabs/ConfigAlertsTab.qml:79
 msgid "Welsh"
-msgstr ""
+msgstr "威爾斯語"
 
 #: contents/ui/components/WeatherMapView.qml:836
 #: contents/ui/components/WeatherMapView.qml:1223
 msgid "Wet snow"
-msgstr ""
+msgstr "濕雪"
 
 #: contents/ui/HistoryView.qml:268
 msgid "Wettest day"
-msgstr ""
+msgstr "降水量最多的一天"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:94
 msgid "What falls in the three hours around the time shown, in mm/h. Rain goes from blue to green, yellow, red and magenta as it gets heavier; snow is lilac and violet; the dangerous kinds (ice) have colors of their own. Under 0.05 mm/h nothing is drawn."
-msgstr ""
+msgstr "所示時間前後三小時內的降水強度，單位為 mm/h。降雨隨雨勢增強，由藍色依序變為綠色、黃色、紅色與洋紅色；降雪為淡紫色與紫羅蘭色；危險類型（冰）有各自的顏色。低於 0.05 mm/h 時不繪製。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:75
 msgid "What the weather radars see falling, from LibreWXR. After now it is LibreWXR's nowcast, paler on the time line. In its range the time line slows down to its 10 minute steps."
-msgstr ""
+msgstr "來自 LibreWXR 的天氣雷達所見降水。現在之後為 LibreWXR 的臨近預報，在時間軸上顏色較淡。在其時間範圍內，時間軸會放慢為 10 分鐘間隔。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:138
 msgid "Wheel"
-msgstr ""
+msgstr "齒輪"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "White"
-msgstr ""
+msgstr "白色"
 
 #: contents/ui/config/configAppearance.qml:2508
 #: contents/ui/config/tabs/ConfigMiscTab.qml:213
@@ -6280,12 +6296,12 @@ msgstr "小工具 › 一般 › 天氣圖示主題"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:840
 msgid "Width"
-msgstr ""
+msgstr "寬度"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:88
 #: contents/ui/components/weathermap/LayerPanel.qml:866
 msgid "Width of the bands"
-msgstr ""
+msgstr "色帶寬度"
 
 #: contents/ui/components/RadarWebEngineView.qml:159
 #: contents/ui/components/weathermap/HelpPanel.qml:81
@@ -6317,11 +6333,11 @@ msgstr "風向箭頭"
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1011
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1020
 msgid "Wind color"
-msgstr ""
+msgstr "風速顏色"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:507
 msgid "Wind palette:"
-msgstr ""
+msgstr "風速調色盤："
 
 #: contents/ui/config/configAppearance.qml:1989
 #: contents/ui/config/configAppearance.qml:2112
@@ -6349,24 +6365,24 @@ msgid "Wrap to next line"
 msgstr "折行"
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2184
+#: contents/ui/DetailsView.qml:2187
 msgid "X-ray Flare Class"
 msgstr "X 射線閃焰等級"
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Yellow"
 msgstr "黃色"
 
 #: contents/ui/components/WeatherMapView.qml:860
 msgctxt "color"
 msgid "Yellow"
-msgstr ""
+msgstr "黃色"
 
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2836
 msgid "Yellow warning"
-msgstr ""
+msgstr "黃色警報"
 
 #: contents/ui/config/configLocation.qml:1352
 msgid "Yes"
@@ -6378,7 +6394,7 @@ msgstr "是，移除"
 
 #: contents/ui/HistoryView.qml:358
 msgid "Yesterday"
-msgstr ""
+msgstr "昨天"
 
 #: contents/ui/config/tabs/ConfigMiscTab.qml:326
 #: contents/ui/config/tabs/ConfigMiscTab.qml:442
@@ -6399,7 +6415,7 @@ msgstr "放大"
 #: contents/ui/ForecastView.qml:1051 contents/ui/ForecastView.qml:1826
 #: contents/ui/HistoryView.qml:968
 msgid "Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse wheel)"
-msgstr ""
+msgstr "放大（或連點兩下圖表，或按住 Ctrl 並捲動滑鼠滾輪）"
 
 #: contents/ui/components/LocationMapPickerView.qml:55
 #: contents/ui/components/WeatherMapView.qml:1211
@@ -6411,7 +6427,7 @@ msgstr "縮小"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:161
 msgid "a click or a drag shows the picture under the pointer, and pauses."
-msgstr ""
+msgstr "點擊或拖曳即可顯示指標下方的影像，並暫停播放。"
 
 #: contents/ui/main.qml:3166
 msgid "a decrease from yesterday"
@@ -6423,31 +6439,31 @@ msgstr "少雲"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:166
 msgid "a picture straight from a forecast file."
-msgstr ""
+msgstr "直接來自預報檔案的影像。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:167
 msgid "a picture worked out between two files."
-msgstr ""
+msgstr "由兩個檔案之間推算而得的影像。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:83
 msgid "about 3000 m: the flow that carries the clouds and the rain, stronger and smoother. Only the global model is drawn: the regional models hold the 10 m wind only."
-msgstr ""
+msgstr "約 3000 公尺：帶動雲與雨的氣流，更強也更平穩。僅繪製全球模型：區域模型僅提供 10 公尺風。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:114
 msgid "about 7 days back to 5 days ahead. Further on the CAMS forecast stops and the pictures stay empty."
-msgstr ""
+msgstr "約回溯 7 天至未來 5 天。再往後 CAMS 預報即停止，影像會是空白。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:41
 msgid "about 7 days back to 6 days ahead."
-msgstr ""
+msgstr "過去約 7 天至未來 6 天。"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1101
 msgid "above %1 %2"
-msgstr ""
+msgstr "高於 %1 %2"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
 msgid "above 6 km: thin veils of ice, the sun still gets through."
-msgstr ""
+msgstr "6 公里以上：薄薄的冰晶雲幕，陽光仍可穿透。"
 
 #: contents/ui/config/configAppearance.qml:466
 msgid "already set"
@@ -6460,20 +6476,20 @@ msgstr "較昨日增加"
 #: contents/ui/SimpleView.qml:205
 msgid "and %1 more alert"
 msgid_plural "and %1 more alerts"
-msgstr[0] ""
+msgstr[0] "還有 %1 則警報"
 
 #: contents/ui/config/tabs/TempPaletteDialog.qml:203
 msgid "at"
-msgstr ""
+msgstr "於"
 
 #: contents/ui/HistoryView.qml:305 contents/ui/HistoryView.qml:312
 #: contents/ui/HistoryView.qml:319
 msgid "average"
-msgstr ""
+msgstr "平均"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:176
 msgid "back to now."
-msgstr ""
+msgstr "回到現在。"
 
 #: contents/ui/main.qml:2895
 msgid "clear skies"
@@ -6481,7 +6497,7 @@ msgstr "晴空"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:185
 msgid "closes this panel, then leaves full screen."
-msgstr ""
+msgstr "關閉此面板；再按一次則離開全螢幕。"
 
 #: contents/ui/main.qml:2892
 msgid "cloudy skies"
@@ -6525,15 +6541,15 @@ msgstr "英尺"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:184
 msgid "full screen on or off."
-msgstr ""
+msgstr "開啟或關閉全螢幕。"
 
-#: contents/ui/DetailsView.qml:1841 contents/ui/DetailsView.qml:1928
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1931
 msgid "grains/m³"
 msgstr "粒/立方公尺"
 
 #: contents/ui/HistoryView.qml:125 contents/ui/HistoryView.qml:335
 msgid "h"
-msgstr ""
+msgstr "小時"
 
 #: contents/ui/components/RadarWebEngineView.qml:902
 #: contents/ui/config/tabs/ConfigMiscTab.qml:648 contents/ui/js/weather.js:595
@@ -6546,15 +6562,15 @@ msgstr "高"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:117
 msgid "how hazy the air is (smoke, dust)."
-msgstr ""
+msgstr "空氣的混濁程度（煙霧、沙塵）。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:88
 msgid "how many degrees each color band covers."
-msgstr ""
+msgstr "每個色帶涵蓋的度數。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:71
 msgid "how the rain moves now. They are the same on every picture: they are not the wind of the time shown."
-msgstr ""
+msgstr "雨目前的移動方式。每張影像都相同：並非所示時間的風。"
 
 #: contents/ui/main.qml:1850 contents/ui/main.qml:1983
 msgid "in"
@@ -6575,15 +6591,15 @@ msgstr "英寸汞柱"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:138
 msgid "its options and its color legend, which can be hidden."
-msgstr ""
+msgstr "其選項與可隱藏的色彩圖例。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:139
 msgid "its options too."
-msgstr ""
+msgstr "同樣開啟其選項。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:142
 msgid "its options, at the left of the icon."
-msgstr ""
+msgstr "其選項，位於圖示左側。"
 
 #: contents/ui/main.qml:1861 contents/ui/SimpleView.qml:458
 #: contents/ui/TooltipContent.qml:469
@@ -6597,7 +6613,7 @@ msgstr "公里"
 msgid "km/h"
 msgstr "公里/小時"
 
-#: contents/ui/DetailsView.qml:2136
+#: contents/ui/DetailsView.qml:2139
 msgid "km/s"
 msgstr "公里/秒"
 
@@ -6606,13 +6622,13 @@ msgstr "公里/秒"
 msgid "kn"
 msgstr "節"
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3566
 msgid "left"
 msgstr "後日落"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:169
 msgid "lists the days of the range. The mouse wheel over the date goes to the next or previous day."
-msgstr ""
+msgstr "列出範圍內的每一天。在日期上滾動滑鼠滾輪可切換至下一天或上一天。"
 
 #: contents/ui/main.qml:3172
 msgid "low"
@@ -6682,31 +6698,31 @@ msgstr "不支援，維持不變"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:79
 msgid "on the radar or the satellite: both at once."
-msgstr ""
+msgstr "在雷達或衛星上：同時顯示兩者。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:160
 msgid "on, the animation plays round again from the start; off, it stops on the last picture."
-msgstr ""
+msgstr "開啟時，動畫會從頭重新播放；關閉時，停在最後一張影像。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:90
 msgid "on, the finer models (about 2 km) are drawn over the global one where they cover the map: the valleys, the heights and the coasts come out. Off, only the global model (about 25 km) is read: about three times less to download there."
-msgstr ""
+msgstr "開啟時，在較精細的模型（約 2 公里）涵蓋地圖之處，會疊繪在全球模型之上：山谷、高地與海岸的細節都能呈現。關閉時僅讀取全球模型（約 25 公里）：這些地區的下載量約減少為三分之一。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:85
 msgid "on, the finer models (about 2 km: AROME, ICON-D2, HRRR...) are drawn over the global one where they cover the map: a truer wind in the mountains and along the coasts. Off, only the global model (about 25 km) is read: about three times less to download there. No effect at 700 hPa."
-msgstr ""
+msgstr "開啟時，在較精細的模型（約 2 公里：AROME、ICON-D2、HRRR⋯）涵蓋地圖之處，會疊繪在全球模型之上：山區與海岸的風更為貼近實際。關閉時僅讀取全球模型（約 25 公里）：這些地區的下載量約減少為三分之一。對 700 hPa 無效。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:164
 msgid "one per picture, colored once loaded, red when it failed."
-msgstr ""
+msgstr "每張影像一個，載入後上色，失敗時為紅色。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:173
 msgid "one step back or ahead, as the buttons of the time bar."
-msgstr ""
+msgstr "如同時間列上的按鈕，後退或前進一步。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:148
 msgid "opens the list of choices. It also gives the range of the radar or of the satellite, which stays when another layer is switched on."
-msgstr ""
+msgstr "開啟選項清單。清單中也提供雷達或衛星的時間範圍，開啟其他圖層時此範圍會保留。"
 
 #: contents/ui/main.qml:2890
 msgid "overcast skies"
@@ -6714,7 +6730,7 @@ msgstr "陰天"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:172
 msgid "play or pause."
-msgstr ""
+msgstr "播放或暫停。"
 
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1128
 #: contents/ui/config/tabs/ConfigTooltipTab.qml:186
@@ -6740,11 +6756,11 @@ msgstr "雨"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:93
 msgid "rain, snow, wet snow, rain and snow, freezing rain, freezing drizzle, ice pellets."
-msgstr ""
+msgstr "雨、雪、濕雪、雨夾雪、凍雨、凍毛毛雨、冰珠。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:144
 msgid "scrolls the column."
-msgstr ""
+msgstr "捲動圖層欄。"
 
 #: contents/ui/config/configAppearance.qml:466
 msgid "selected here"
@@ -6765,7 +6781,7 @@ msgstr "雷陣雨"
 #: contents/ui/components/weathermap/HelpPanel.qml:233
 msgctxt "@info a layer of the map is shown now"
 msgid "shown"
-msgstr ""
+msgstr "顯示中"
 
 #: contents/ui/main.qml:3167
 msgid "similar to yesterday"
@@ -6777,7 +6793,7 @@ msgstr "雪"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:67
 msgid "snow in colors of its own."
-msgstr ""
+msgstr "降雪以專屬顏色呈現。"
 
 #: contents/ui/main.qml:2876
 msgid "snow showers"
@@ -6785,7 +6801,7 @@ msgstr "陣雪"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:68
 msgid "softens the edges of the rain."
-msgstr ""
+msgstr "柔化降雨的邊緣。"
 
 #: contents/ui/main.qml:3225
 msgid "strong"
@@ -6793,15 +6809,15 @@ msgstr "強烈"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:182
 msgid "switch radar, satellite, wind, isobars, precipitation, clouds, temperature, pressure, humidity, dew point, air quality on or off."
-msgstr ""
+msgstr "開啟或關閉雷達、衛星、風、等壓線、降水、雲、溫度、氣壓、濕度、露點、空氣品質。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:56
 msgid "switches the isobars on or off."
-msgstr ""
+msgstr "開啟或關閉等壓線。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:42
 msgid "switches the layer on or off."
-msgstr ""
+msgstr "開啟或關閉圖層。"
 
 #: contents/ui/config/configLocation.qml:1025
 msgid "system location"
@@ -6809,120 +6825,120 @@ msgstr "系統位置"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
 msgid "the Saharan dust."
-msgstr ""
+msgstr "撒哈拉沙塵。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:118
 msgid "the UV index of the day."
-msgstr ""
+msgstr "當日的 UV 指數。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:134
 msgid "the button left of the settings: drag a layer by its handle to stack it, the first one on top; its switch takes it out of the column or puts it back."
-msgstr ""
+msgstr "設定左側的按鈕：拖曳圖層把手即可堆疊，第一個位於最上層；其開關可將圖層移出此欄或放回。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:175
 msgid "the first or last picture."
-msgstr ""
+msgstr "第一張或最後一張影像。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:179
 msgid "the loop on or off."
-msgstr ""
+msgstr "開啟或關閉循環播放。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:149
 msgid "the next or previous choice, shown in a bubble while it changes."
-msgstr ""
+msgstr "下一個或上一個選項，變更時會顯示於氣泡中。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:152
 msgid "the next or previous speed, from the keyboard or the keypad."
-msgstr ""
+msgstr "下一個或上一個速度，可用鍵盤或數字鍵盤。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:177
 msgid "the next or previous speed."
-msgstr ""
+msgstr "下一個或上一個速度。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:151
 msgid "the next speed: x1, x2, x3, then x1 again."
-msgstr ""
+msgstr "下一個速度：x1、x2、x3，再回到 x1。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:137
 msgid "the opacity of the layer, from 0 to 100 %."
-msgstr ""
+msgstr "圖層的不透明度，從 0 到 100%。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:143
 msgid "the opacity, shown in a bubble while it changes and drawn as the bar under the icon."
-msgstr ""
+msgstr "不透明度，變更時顯示於氣泡中，並繪製為圖示下方的長條。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:66
 msgid "the palette of the radar."
-msgstr ""
+msgstr "雷達的調色盤。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:84
 #: contents/ui/components/weathermap/HelpPanel.qml:89
 msgid "the palettes of the widget settings, where they can be made and changed."
-msgstr ""
+msgstr "小工具設定中的調色盤，可在該處建立與修改。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:115
 msgid "the pollutants."
-msgstr ""
+msgstr "污染物。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:104
 msgid "the pressure between two lines: 2, 4 or 8 hPa. Zoomed in close, a line comes between two."
-msgstr ""
+msgstr "兩條線之間的氣壓差：2、4 或 8 hPa。放大檢視時，兩條線之間會再多一條。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:106
 msgid "the pressure written on the lines, in three sizes."
-msgstr ""
+msgstr "標示在線上的氣壓值，有三種大小。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:174
 msgid "the previous or next picture from a forecast file."
-msgstr ""
+msgstr "預報檔案中的上一張或下一張影像。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:74
 msgid "the radar alone, on its range. A click on the satellite then adds it. The same double click gives back the layers from before."
-msgstr ""
+msgstr "僅顯示雷達，並改用雷達的時間範圍。此時點擊衛星即可加入衛星。再連點兩下即可還原先前的圖層。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:162
 msgid "the range of the radar, paler for its nowcast."
-msgstr ""
+msgstr "雷達的時間範圍，臨近預報部分顏色較淡。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:163
 msgid "the range of the satellite."
-msgstr ""
+msgstr "衛星的時間範圍。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:69
 msgid "the recent strikes."
-msgstr ""
+msgstr "近期的雷擊。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:158
 msgid "the same steps."
-msgstr ""
+msgstr "相同的步進。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:78
 msgid "the satellite alone, on its range. A click on the radar then adds it."
-msgstr ""
+msgstr "僅顯示衛星，並改用衛星的時間範圍。此時點擊雷達即可加入雷達。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:70
 msgid "the storms tracked."
-msgstr ""
+msgstr "追蹤中的雷暴。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:105
 msgid "the theme's (white on a dark map, black on a light one) or a color of your choice."
-msgstr ""
+msgstr "主題顏色（深色地圖為白色，淺色地圖為黑色）或您自選的顏色。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:72
 msgid "the warnings in force."
-msgstr ""
+msgstr "生效中的警報。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:183
 msgid "the wind and the temperature under the pointer."
-msgstr ""
+msgstr "指標所在位置的風與溫度。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:82
 msgid "the wind you feel, shaped by the relief."
-msgstr ""
+msgstr "您實際感受到的風，受地形影響。"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:103
 msgid "thin, normal or thick."
-msgstr ""
+msgstr "細、一般或粗。"
 
 #: contents/ui/main.qml:3063
 msgid "this afternoon"
@@ -6942,19 +6958,19 @@ msgstr "今晚"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
 msgid "under about 2 km: grey days, fog, drizzle."
-msgstr ""
+msgstr "約 2 公里以下：陰天、霧、毛毛雨。"
 
 #: contents/ui/main.qml:2439
 msgid "until %1"
 msgstr "至 %1"
 
-#: contents/ui/DetailsView.qml:3560
+#: contents/ui/DetailsView.qml:3563
 msgid "until dawn"
 msgstr "後日出"
 
 #: contents/ui/config/tabs/ConfigRadarTab.qml:1101
 msgid "up to"
-msgstr ""
+msgstr "至"
 
 #: contents/ui/main.qml:3178
 msgid "very high"
@@ -6971,7 +6987,7 @@ msgstr "您的位置"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:178
 msgid "zoom in or out."
-msgstr ""
+msgstr "放大或縮小。"
 
 #: contents/ui/js/airQuality.js:284
 msgid "µg/m³"
@@ -6979,17 +6995,17 @@ msgstr "微克/立方公尺"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:826
 msgid "×%1"
-msgstr ""
+msgstr "×%1"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:592
 msgctxt "coasts and borders width, as a multiple"
 msgid "×%1"
-msgstr ""
+msgstr "×%1"
 
 #: contents/ui/components/weathermap/LayerPanel.qml:635
 msgctxt "night lights density, as a multiple"
 msgid "×%1"
-msgstr ""
+msgstr "×%1"
 
 #~ msgid "12-hour format"
 #~ msgstr "12 小時制"

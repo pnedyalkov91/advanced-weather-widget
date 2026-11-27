@@ -337,6 +337,128 @@ Item {
         _saveExpanded(id, on);
     }
 
+    // ── Expand / collapse all (header button in FullView.qml) ────────────
+    // Cards that can be expanded right now: cards mode only, the ones shown in
+    // widgetDetailsOrder, and not the AQI / pollen / space weather cards whose
+    // sub-items are all switched off (their chevron is hidden, so expanding
+    // them would only show an empty gauge).
+    function _isExpandableCard(id) {
+        if (isList)
+            return false;
+        switch (id) {
+        case "suntimes":
+        case "moonphase":
+        case "wind":
+        case "pressure":
+        case "alerts":
+        case "datetime":
+            return true;
+        case "airquality":
+            return _anyAqiVisible();
+        case "pollen":
+            return _anyPollenVisible();
+        case "spaceweather":
+            return _anySwVisible();
+        }
+        return _isGaugeId(id);
+    }
+    function _cardExpanded(id) {
+        switch (id) {
+        case "suntimes":
+            return _sunExpanded;
+        case "moonphase":
+            return _moonExpanded;
+        case "wind":
+            return _windExpanded;
+        case "pressure":
+            return _pressureExpanded;
+        case "alerts":
+            return _alertsExpanded;
+        case "airquality":
+            return _aqiExpanded;
+        case "pollen":
+            return _pollenExpanded;
+        case "spaceweather":
+            return _swExpanded;
+        case "datetime":
+            return _dtExpanded;
+        }
+        return _gaugeExpanded[id] === true;
+    }
+    // Sets the property behind a card. The gauge cards have none: they are
+    // read straight from the persisted map (see _gaugeExpanded).
+    function _setCardProperty(id, on) {
+        switch (id) {
+        case "suntimes":
+            _sunExpanded = on;
+            break;
+        case "moonphase":
+            _moonExpanded = on;
+            break;
+        case "wind":
+            _windExpanded = on;
+            break;
+        case "pressure":
+            _pressureExpanded = on;
+            break;
+        case "alerts":
+            _alertsExpanded = on;
+            break;
+        case "airquality":
+            _aqiExpanded = on;
+            break;
+        case "pollen":
+            _pollenExpanded = on;
+            break;
+        case "spaceweather":
+            _swExpanded = on;
+            break;
+        case "datetime":
+            _dtExpanded = on;
+            break;
+        }
+    }
+
+    readonly property var _expandableIds: detailIds.filter(function (id) {
+        return root._isExpandableCard(id);
+    })
+    /** The header button is only offered when there is something to toggle. */
+    readonly property bool canToggleAll: hasData && _expandableIds.length > 0
+    /** True when every expandable card is open (the button then collapses). */
+    readonly property bool allExpanded: {
+        var ids = _expandableIds;
+        if (ids.length === 0)
+            return false;
+        for (var i = 0; i < ids.length; i++) {
+            if (!_cardExpanded(ids[i]))
+                return false;
+        }
+        return true;
+    }
+
+    function setAllExpanded(on) {
+        var ids = _expandableIds;
+        if (ids.length === 0)
+            return;
+        // One write to the persisted map instead of one per card. The property
+        // handlers (on_XExpandedChanged -> _saveExpanded) then find the value
+        // already stored and skip their own write.
+        var m = {};
+        try {
+            m = JSON.parse(Plasmoid.configuration.detailsExpandedCards || "{}") || {};
+        } catch (e) {
+            m = {};
+        }
+        for (var i = 0; i < ids.length; i++)
+            m[ids[i]] = on;
+        Plasmoid.configuration.detailsExpandedCards = JSON.stringify(m);
+        for (var j = 0; j < ids.length; j++)
+            _setCardProperty(ids[j], on);
+    }
+    function toggleAllExpanded() {
+        setAllExpanded(!allExpanded);
+    }
+
     /** Metric the gauge shows (metric units; the JS converts for display). */
     function _gaugeValue(id) {
         var w = weatherRoot;
@@ -1331,6 +1453,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("wind")
                                         layoutMode: "side"
                                         iconInfo: root.showIconFor("wind") ? root.resolveWindIcon() : null
                                         iconSize: root.iconSize
@@ -1443,6 +1566,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("pressure")
                                         iconInfo: root.showIconFor("pressure") ? root.resolveIcon("pressure") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(pressureCard.pinfo.color)
@@ -1552,6 +1676,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor(gaugeCard.gid)
                                         iconInfo: root.showIconFor(gaugeCard.gid) ? root.resolveIcon(gaugeCard.gid) : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(gaugeCard.ginfo.color)
@@ -1727,6 +1852,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("airquality")
                                         iconInfo: root.showIconFor("airquality") ? root.resolveIcon("airquality") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(aqiCard.curBand ? root.bandTextColor(aqiCard.curBand) : root.accentFor("airquality"))
@@ -1846,8 +1972,6 @@ Item {
                                             })
                                             elide: Text.ElideRight
                                             Layout.alignment: Qt.AlignVCenter
-                                            Layout.fillWidth: true
-                                            horizontalAlignment: Text.AlignRight
                                         }
 
                                         // Expand chevron
@@ -1922,6 +2046,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("pollen")
                                         iconInfo: root.showIconFor("pollen") ? root.resolveIcon("pollen") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(pollenCard.curBand ? root.bandTextColor(pollenCard.curBand) : root.accentFor("pollen"))
@@ -2193,6 +2318,7 @@ Item {
                                         visible: card._isArcExpanded
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("spaceweather")
                                         iconInfo: root.showIconFor("spaceweather") ? root.resolveIcon("spaceweather") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(root.accentFor("spaceweather"))
@@ -2601,8 +2727,6 @@ Item {
                                             })
                                             elide: Text.ElideRight
                                             Layout.alignment: Qt.AlignVCenter
-                                            Layout.fillWidth: true
-                                            horizontalAlignment: Text.AlignRight
                                         }
                                         PlasmaCore.ToolTipArea {
                                             Layout.preferredWidth: 26
@@ -2844,6 +2968,7 @@ Item {
                                         visible: alertsCard.open
                                         anchors.fill: parent
                                         weatherRoot: root.weatherRoot
+                                        title: root.labelFor("alerts")
                                         iconInfo: root.showIconFor("alerts") ? root.resolveIcon("alerts") : null
                                         iconSize: root.iconSize
                                         iconColor: root.iconColorFor(alertsCard.clear ? alertsCard.clearColor : alertsCard.curInfo.color)

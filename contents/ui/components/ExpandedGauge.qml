@@ -61,6 +61,9 @@ Item {
     property color iconColor: Kirigami.Theme.textColor
     property int iconSize: 16
 
+    /** Card title (Feels Like, Precipitation Sum, ...), shown right after the icon. */
+    property string title: ""
+
     property string valueText: "--"
     property color valueColor: Kirigami.Theme.textColor
     property string bandText: ""
@@ -294,13 +297,41 @@ Item {
         x: gauge._side ? Math.round(canvas.width * 0.58) : Math.round((canvas.width - width) / 2)
         y: gauge._side ? Math.round(canvas.y + (canvas.height - height) / 2) : Math.round(canvas.y + canvas.height - height - canvas.height * 0.18)
 
-        WeatherIcon {
+        // icon + card title, so gauges that look alike can be told apart
+        Row {
+            id: titleRow
             anchors.horizontalCenter: parent.horizontalCenter
-            iconInfo: gauge.iconInfo
-            iconSize: gauge.iconSize
-            iconColor: gauge.iconColor
+            spacing: 5
+            WeatherIcon {
+                id: titleIcon
+                anchors.verticalCenter: parent.verticalCenter
+                iconInfo: gauge.iconInfo
+                iconSize: gauge.iconSize
+                iconColor: gauge.iconColor
+            }
+            Label {
+                id: titleLabel
+                visible: gauge.title.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                // Sized from an invisible single-line twin (same font and render type, so the
+                // measurement is exact) and wrapped only at spaces: a title is never cut in
+                // the middle of a word, whatever font, scaling or language is in use.
+                width: Math.min(Math.ceil(titleProbe.implicitWidth) + 3, overlay.width - titleIcon.width - titleRow.spacing)
+                wrapMode: Text.WordWrap
+                text: gauge.title
+                color: Kirigami.Theme.textColor
+                opacity: 0.65
+                font: gauge.weatherRoot ? gauge.weatherRoot.wf(11, false) : Qt.font({})
+                Label {
+                    id: titleProbe
+                    visible: false
+                    text: gauge.title
+                    font: titleLabel.font
+                    wrapMode: Text.NoWrap
+                }
+            }
         }
-        // value (the title): wraps onto more lines instead of being elided; with
+        // value: wraps onto more lines instead of being elided; with
         // infoNextToValue an empty slot after it carries the info icon
         Row {
             id: valueRow
@@ -308,18 +339,20 @@ Item {
             spacing: 4
             Label {
                 id: valueLabel
-                width: Math.min(valueMetrics.width + 1, overlay.width - (gauge.infoNextToValue && gauge.infoText.length > 0 ? 22 : 0))
+                width: Math.min(Math.ceil(valueProbe.implicitWidth) + 3, overlay.width - (gauge.infoNextToValue && gauge.infoText.length > 0 ? 22 : 0))
                 horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.Wrap
+                wrapMode: Text.WordWrap
                 text: gauge.valueText
                 color: gauge.valueColor
                 font: gauge.weatherRoot ? gauge.weatherRoot.wf(15, true) : Qt.font({
                     bold: true
                 })
-                TextMetrics {
-                    id: valueMetrics
+                Label {
+                    id: valueProbe
+                    visible: false
                     text: gauge.valueText
                     font: valueLabel.font
+                    wrapMode: Text.NoWrap
                 }
             }
             Item {
@@ -334,7 +367,7 @@ Item {
             visible: gauge.bandText.length > 0
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
+            wrapMode: Text.WordWrap
             text: gauge.bandText
             color: gauge.bandColor
             font: gauge.weatherRoot ? gauge.weatherRoot.wf(10, true) : Qt.font({
@@ -346,7 +379,7 @@ Item {
             visible: gauge.subText.length > 0
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
+            wrapMode: Text.WordWrap
             text: gauge.subText
             color: gauge.subColor
             opacity: 0.6

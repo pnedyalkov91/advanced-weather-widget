@@ -500,6 +500,31 @@ var WidgetEarth = (function () {
     return { fwd: fwd, right: right, up: square(cam.up, right) };
   }
 
+  /** The Moon around the globe, in Earth radii. By default it is drawn
+      close (MOON_DRAWN_ORBIT from the centre, 0.2 across) so that it stays
+      in the camera's view; the user can take it out to its real mean
+      distance and size it from as drawn up to ten times the real Moon. */
+  var MOON_DRAWN_ORBIT = 1.45, MOON_REAL_ORBIT = 384400 / 6371;
+  var MOON_REAL_SIZE = 3474.8 / 6371, MOON_DRAWN_SIZE = 0.2 / MOON_REAL_SIZE, MOON_MAX_SIZE = 10;
+
+  /** A setting (a number or a string) read between lo and hi; lo, as
+      drawn, when it is missing or unreadable. */
+  function moonSetting(v, lo, hi) {
+    var x = v === null || v === undefined || v === '' ? NaN : Number(v);
+    return isFinite(x) ? Math.max(lo, Math.min(hi, x)) : lo;
+  }
+  /** The Moon's distance from the Earth's centre, in Earth radii. */
+  function moonOrbit(v) { return moonSetting(v, MOON_DRAWN_ORBIT, MOON_REAL_ORBIT); }
+  /** The Moon's size, as a multiple of the real Moon's. */
+  function moonSize(v) { return moonSetting(v, MOON_DRAWN_SIZE, MOON_MAX_SIZE); }
+
+  /** The Moon's diameter in Earth radii for a size (moonSize) on an orbit
+      (moonOrbit): its near side keeps a tenth of the gap to the surface,
+      so a big Moon on a small orbit never reaches into the globe. */
+  function moonDiameter(size, orbit) {
+    return Math.min(size * MOON_REAL_SIZE, 1.8 * (orbit - 1));
+  }
+
   /** The Moon as RGBA pixels into `out` (`size` px square, the disc
       `radPx` px across from the middle): its texture `tex` ({ width,
       height, data }, equirectangular, longitude 0 in the middle) on a ball
@@ -557,7 +582,9 @@ var WidgetEarth = (function () {
   return {
     gmst: gmst, sublunarPoint: sublunarPoint, placeVector: placeVector, moonPhase: moonPhase,
     camera: camera, projectDir: projectDir, earthRadiusPx: earthRadiusPx,
-    cameraPosition: cameraPosition, projectPoint: projectPoint, moonView: moonView, renderMoon: renderMoon, dot: dot, starField: starField, CAMERA: CAMERA,
+    cameraPosition: cameraPosition, projectPoint: projectPoint, moonView: moonView, renderMoon: renderMoon,
+    moonOrbit: moonOrbit, moonSize: moonSize, moonDiameter: moonDiameter,
+    MOON_DRAWN_ORBIT: MOON_DRAWN_ORBIT, MOON_REAL_ORBIT: MOON_REAL_ORBIT, MOON_REAL_SIZE: MOON_REAL_SIZE, dot: dot, starField: starField, CAMERA: CAMERA,
     decodeLines: decodeLines,
     GLOBE_FILL: GLOBE_FILL, subsolarPoint: subsolarPoint, sunAltitude: sunAltitude,
     shadeTile: shadeTile, shadeUniforms: shadeUniforms, shadeFrom: shadeFrom, NIGHT_FS: NIGHT_FS, sunLightPosition: sunLightPosition,

@@ -760,11 +760,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
   // Around the globe, a small model of the sky seen by MapLibre's camera,
   // at the time of the picture shown (setSkyTime) or now: black space and
   // the stars where they are (they turn with the globe), the Sun in its
-  // true direction, far away, and the Moon on its true orbit, brought in
-  // to MOON_ORBIT Earth radii, MOON_SIZE across. The Moon passes behind the
+  // true direction, far away, and the Moon in its true direction, by
+  // default brought in close (WidgetEarth.moonOrbit), or as far and as big
+  // as the widget's Moon sliders set it. The Moon passes behind the
   // globe (on the canvas under the map's) and in front of it (on a canvas
   // over it), lit by the Sun: its phase is the one seen from the camera.
-  var STARS = 9000, SPACE = '#02040a', MOON_ORBIT = 1.45, MOON_SIZE = 0.2;
+  var STARS = 9000, SPACE = '#02040a';
+  var moonOrbit = WidgetEarth.moonOrbit(typeof MOON_DIST_INIT === 'undefined' ? null : MOON_DIST_INIT);
+  var moonSize = WidgetEarth.moonSize(typeof MOON_SIZE_INIT === 'undefined' ? null : MOON_SIZE_INIT);
   // The colors round the Sun, from 1.5 to 3.6 of its radius: [place, color].
   var SUN_RINGS = [[0, 'rgba(255,120,90,0)'], [0.18, 'rgba(255,120,90,0.10)'], [0.36, 'rgba(255,214,96,0.09)'],
     [0.54, 'rgba(120,230,150,0.07)'], [0.72, 'rgba(110,170,255,0.08)'], [0.88, 'rgba(180,130,255,0.05)'], [1, 'rgba(180,130,255,0)']];
@@ -949,10 +952,14 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     // Earth's centre (the globe hides it), over it when nearer. Only with
     // the whole Earth in view: it fades out over the first zoom step.
     var moonAlpha = skyShown ? Math.max(0, Math.min(1, 1 - (map.getZoom() - map.getMinZoom() - 0.1) / 0.5)) : 0;
-    var X = [mv[0] * MOON_ORBIT * earthR, mv[1] * MOON_ORBIT * earthR, mv[2] * MOON_ORBIT * earthR];
+    var moonD = WidgetEarth.moonDiameter(moonSize, moonOrbit) * earthR;
+    var X = [mv[0] * moonOrbit * earthR, mv[1] * moonOrbit * earthR, mv[2] * moonOrbit * earthR];
     var mp = moonAlpha > 0 ? WidgetEarth.projectPoint(cam, pos, X, f) : null;
+    // Far out, the Moon's orbit runs past the camera: none while it would
+    // fill the view or have the camera inside it.
+    if (mp && mp.dist < 2 * moonD) mp = null;
     if (mp) {
-      var mx = mid.x + mp.x, my = mid.y + mp.y, mrad = f * MOON_SIZE / 2 * earthR / mp.z;
+      var mx = mid.x + mp.x, my = mid.y + mp.y, mrad = f * moonD / 2 / mp.z;
       var inFront = mp.dist < earthDist;
       if (mx > -mrad && my > -mrad && mx < w + mrad && my < h + mrad) drawMoon(inFront ? fctx : ctx, mx, my, mrad);
       mp = { x: mx, y: my, r: mrad, front: inFront, alpha: moonAlpha, textured: !!space.moonTex };
@@ -1516,6 +1523,18 @@ var WidgetMapLibreAdapter = function (maplibregl) {
     },
 
     getNightDepth: function () { return nightDepth; },
+
+    /** The Moon's distance from the Earth's centre, in Earth radii. */
+    setMoonOrbit: function (value) {
+      moonOrbit = WidgetEarth.moonOrbit(value);
+      drawSpaceSoon();
+    },
+
+    /** The Moon's size, as a multiple of the real Moon's. */
+    setMoonSize: function (value) {
+      moonSize = WidgetEarth.moonSize(value);
+      drawSpaceSoon();
+    },
 
     /** How bright the Sun's light at the globe's edge, percent; 0 for none. */
     setRimGlow: function (value) {

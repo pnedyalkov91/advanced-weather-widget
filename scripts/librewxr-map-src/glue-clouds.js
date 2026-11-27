@@ -170,7 +170,7 @@ var WidgetClouds = (function () {
       if (m) v += (sampleCh(g, g.valuesB, l.ch, ll.lat, ll.lng) - v) * m;
       return l.label.toLowerCase() + ' ' + Math.round(v) + ' %';
     });
-    return parts.length ? readoutRow(CLOUD, opts.color, 'Clouds: ' + parts.join(', ')) : '';
+    return parts.length ? readoutRow(CLOUD, opts.color, tr('cloudReadout', 'Clouds: %1').replace('%1', parts.join(', '))) : '';
   });
 
   return { LEVELS: LEVELS, readFile: readFile, opts: opts };

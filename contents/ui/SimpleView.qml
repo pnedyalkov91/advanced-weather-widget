@@ -55,6 +55,54 @@ ColumnLayout {
     readonly property string wiFontFamily: wiFontReady ? svWiFont.font.family : ""
     readonly property bool isDark: Kirigami.Theme.textColor.r > 0.5
 
+    // ── Horizontal scrolling (forecast cards and stat chips) ─────────────────
+    // Width of one forecast card (Standard layout): at least this wide. When the cards do not fit
+    // the popup (e.g. 16 days) the row scrolls sideways instead of squeezing / overlapping them;
+    // with only a few cards they grow to fill the popup width.
+    readonly property int _cardWidth: Kirigami.Units.gridUnit * 6
+
+    // Scrolls a horizontal Flickable from a wheel event of a MouseArea laid over it (the same way
+    // ForecastView drives its hourly strip). Works for both kinds of devices:
+    //  - touchpad (and high-resolution wheels) report pixelDelta: the content follows the fingers
+    //    exactly, without animation;
+    //  - a classic mouse wheel reports only angleDelta (120 per notch) and only vertically: a turn
+    //    scrolls the row sideways by `step` pixels per notch, animated by `anim` (a NumberAnimation
+    //    on the Flickable's contentX).
+    // Shift+wheel and a horizontal two-finger swipe scroll sideways as well. What the row cannot
+    // use (nothing to scroll, or a touchpad moving vertically) is not accepted, so it goes on to
+    // the page behind, which can scroll vertically.
+    function _wheelScroll(flick, anim, wheel, step) {
+        var maxX = Math.max(0, flick.contentWidth - flick.width);
+        if (maxX <= 0) {
+            wheel.accepted = false;
+            return;
+        }
+        var classic = wheel.pixelDelta.x === 0 && wheel.pixelDelta.y === 0;
+        var dx = classic ? wheel.angleDelta.x : wheel.pixelDelta.x;
+        var dy = classic ? wheel.angleDelta.y : wheel.pixelDelta.y;
+        var sideways = (wheel.modifiers & Qt.ShiftModifier) || (Math.abs(dx) > 0 && Math.abs(dx) >= Math.abs(dy));
+        if (!sideways && !classic) {
+            wheel.accepted = false;   // a touchpad moving vertically: leave it to the page
+            return;
+        }
+        var delta = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+        if (delta === 0) {
+            wheel.accepted = false;
+            return;
+        }
+        if (classic) {
+            // successive notches add up while the animation is still running
+            var base = anim.running ? anim.to : flick.contentX;
+            anim.stop();
+            anim.to = Math.max(0, Math.min(maxX, base - (delta / 120) * step));
+            anim.restart();
+        } else {
+            anim.stop();
+            flick.contentX = Math.max(0, Math.min(maxX, flick.contentX - delta));
+        }
+        wheel.accepted = true;
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
     readonly property string _svTemp:      weatherRoot ? weatherRoot.tempValue(weatherRoot.temperatureC) : "--"
     readonly property string _svCond:      weatherRoot ? weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime()) : ""
@@ -444,8 +492,21 @@ ColumnLayout {
             pollen:       i18n("Pollen"),
             spaceweather: i18n("Space Weather"),
             alerts:       i18n("Alerts"),
-            snowcover:    i18n("Snow Cover")
+            snowcover:    i18n("Snow Cover"),
+            condition:    i18n("Condition"),
+            datetime:     i18n("Date / Time")
         })[id] || id;
+    }
+
+    // The clock of the "datetime" chip (as in the Details tab): the chip's text reads this tick, so
+    // it is evaluated again every second while that chip is shown. Date.now() on its own is not a
+    // binding dependency.
+    property int _dateTimeTick: 0
+    Timer {
+        interval: 1000
+        running: simpleView._chipIds.indexOf("datetime") >= 0 && Plasmoid.configuration.simpleShowStatsChips !== false
+        repeat: true
+        onTriggered: simpleView._dateTimeTick++
     }
 
     function _chipValue(id) {
@@ -464,24 +525,56 @@ ColumnLayout {
         case "spaceweather": return weatherRoot.spaceWeatherText();
         case "alerts":       return weatherRoot.alertsText();
         case "snowcover":    return weatherRoot.snowDepthText(weatherRoot.snowDepthCm);
+        case "condition":    return weatherRoot.weatherCodeToText(weatherRoot.weatherCode, weatherRoot.isNightTime());
+        case "datetime": {
+            var tick = simpleView._dateTimeTick;   // re-evaluated by the timer above
+            return weatherRoot.formatDateTimeNow(false);
+        }
         default:             return "--";
         }
     }
 
-    // Flow wraps chips to widget width - each chip is <icon> Label  Value on one line
+    // One row of chips - each chip is <icon> Label  Value on one line. When the chips do not fit
+    // the popup width the row scrolls sideways (mouse wheel, touchpad, drag, scrollbar).
     Item {
+        id: chipsArea
         Layout.fillWidth: true
-        implicitHeight: chipsFlow.implicitHeight
+        // room for the scrollbar is reserved only while the chips overflow
+        readonly property bool overflow: chipsFlick.contentWidth > chipsFlick.width + 1
+        implicitHeight: chipsRow.implicitHeight + (overflow ? chipsBar.implicitHeight + 2 : 0)
         visible: Plasmoid.configuration.simpleShowStatsChips !== false
 
-        Flow {
-            id: chipsFlow
+        Flickable {
+            id: chipsFlick
             anchors.left: parent.left
             anchors.right: parent.right
-            spacing: 4
+            anchors.top: parent.top
+            height: chipsRow.implicitHeight
+            contentWidth: chipsRow.width
+            contentHeight: chipsRow.implicitHeight
+            flickableDirection: Flickable.HorizontalFlick
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
 
-            Repeater {
-                model: simpleView._chipIds
+            ScrollBar.horizontal: ScrollBar {
+                id: chipsBar
+                parent: chipsFlick.parent
+                anchors.left: chipsFlick.left
+                anchors.right: chipsFlick.right
+                anchors.top: chipsFlick.bottom
+                policy: ScrollBar.AsNeeded
+            }
+
+            // A RowLayout, so that a few chips share the free width (each grows from its content
+            // width, equally) and fill the row; when they do not fit, they keep their content
+            // width (Layout.minimumWidth) and the row, as wide as they need, scrolls.
+            RowLayout {
+                id: chipsRow
+                width: Math.max(chipsFlick.width, implicitWidth)
+                spacing: 4
+
+                Repeater {
+                    model: simpleView._chipIds
 
                 delegate: Rectangle {
                     id: chipRect
@@ -496,29 +589,31 @@ ColumnLayout {
                         return 32;
                     }
                     readonly property var _iconInfo: IconResolver.resolve(chipRect.chipId, chipRect._iconSz, simpleView._iconsBase, simpleView._iconTheme)
-                    // Each chip sizes to its content; Flow distributes them
-                    width: chipRow.implicitWidth + 20
-                    height: Math.max(36, chipRect._iconSz + 16)
+                    // wi-font glyph of the chip; a chip without one (e.g. datetime) uses its icon instead
+                    readonly property string _glyph: simpleView._wiChars[chipId] || ""
+                    readonly property bool _glyphMode: simpleView._useWiFont && _glyph !== ""
+                    // The content width is the minimum; free width is shared by the chips
+                    Layout.minimumWidth: chipRow.implicitWidth + 20
+                    Layout.preferredWidth: chipRow.implicitWidth + 20
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.max(36, chipRect._iconSz + 16)
                     radius: 6
                     color: Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.06)
 
                     // Single line: [icon]  Label  Value
                     RowLayout {
                         id: chipRow
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 10
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
+                        // centered: stays in the middle when the chip is wider than its content
+                        anchors.centerIn: parent
                         spacing: 5
 
                         // Icon - wi-font glyph or WeatherIcon, directly in RowLayout like DetailsView
                         Text {
-                            visible: chipRect.showIcon && simpleView._useWiFont
+                            visible: chipRect.showIcon && chipRect._glyphMode
                             Layout.alignment: Qt.AlignVCenter
                             Layout.preferredWidth: chipRect._iconSz
                             Layout.preferredHeight: chipRect._iconSz
-                            text: simpleView._wiChars[chipRect.chipId] || ""
+                            text: chipRect._glyph
                             font.family: simpleView.wiFontFamily
                             font.pixelSize: chipRect._iconSz - 2
                             color: Kirigami.Theme.textColor
@@ -527,7 +622,7 @@ ColumnLayout {
                             verticalAlignment: Text.AlignVCenter
                         }
                         WeatherIcon {
-                            visible: chipRect.showIcon && !simpleView._useWiFont
+                            visible: chipRect.showIcon && !chipRect._glyphMode
                             Layout.alignment: Qt.AlignVCenter
                             iconInfo: chipRect._iconInfo
                             iconSize: chipRect._iconSz
@@ -549,6 +644,25 @@ ColumnLayout {
                         }
                     }
                 }
+                }
+            }
+        }
+
+        NumberAnimation {
+            id: chipsWheelAnim
+            target: chipsFlick
+            property: "contentX"
+            duration: 160
+            easing.type: Easing.OutCubic
+        }
+
+        // Mouse wheel / touchpad over the chips. A MouseArea laid over the Flickable, taking no
+        // buttons: clicks and drags go through to the chips and the Flickable, only the wheel is used.
+        MouseArea {
+            anchors.fill: chipsFlick
+            acceptedButtons: Qt.NoButton
+            onWheel: function (wheel) {
+                simpleView._wheelScroll(chipsFlick, chipsWheelAnim, wheel, simpleView._cardWidth * 1.5);
             }
         }
     }
@@ -784,12 +898,12 @@ ColumnLayout {
                         {
                             key: "maxC",
                             color: "#ff6e40",
-                            label: i18n("High")
+                            label: i18nc("@label chart legend", "High")
                         },
                         {
                             key: "minC",
                             color: "#42a5f5",
-                            label: i18n("Low")
+                            label: i18nc("@label chart legend", "Low")
                         }
                     ];
                 });
@@ -840,27 +954,65 @@ ColumnLayout {
     }
 
     // ── SECTION 3b: Forecast squares (Forecast layout = Standard) ─────────────
+    // The cards have a fixed width (_cardWidth) and sit in one row. When they do not fit the popup
+    // (e.g. 16 days) the row scrolls sideways: mouse wheel, touchpad, drag or the scrollbar.
+    // When they fit, the row is centered.
     Item {
+        id: squaresArea
         Layout.fillWidth: true
         Layout.fillHeight: true
         visible: Plasmoid.configuration.simpleShowForecast !== false && !simpleView._graphsLayout && weatherRoot && weatherRoot.dailyData && weatherRoot.dailyData.length > 0
 
-        RowLayout {
-            anchors.fill: parent
-            spacing: 4
+        readonly property int cardSpacing: 4
+        readonly property int cardCount: {
+            if (!weatherRoot || !weatherRoot.dailyData) return 0;
+            var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
+            return simpleView.showToday ? total : Math.max(0, total - 1);
+        }
+        // Width of one card: _cardWidth at the least; with only a few cards they grow to fill the row
+        readonly property real cardW: cardCount > 0
+            ? Math.max(simpleView._cardWidth, (squaresFlick.width - (cardCount - 1) * cardSpacing) / cardCount)
+            : simpleView._cardWidth
+        readonly property real rowWidth: cardCount > 0 ? cardCount * cardW + (cardCount - 1) * cardSpacing : 0
+        // room for the scrollbar is reserved only while the cards overflow
+        readonly property bool overflow: rowWidth > squaresFlick.width + 1
 
-            Repeater {
-                model: {
-                    if (!weatherRoot || !weatherRoot.dailyData) return 0;
-                    var total = Math.min(simpleView.forecastDays, weatherRoot.dailyData.length);
-                    return simpleView.showToday ? total : Math.max(0, total - 1);
-                }
+        Flickable {
+            id: squaresFlick
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: squaresArea.overflow ? squaresBar.implicitHeight + 2 : 0
+            contentWidth: Math.max(width, squaresArea.rowWidth)
+            contentHeight: height
+            flickableDirection: Flickable.HorizontalFlick
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+
+            ScrollBar.horizontal: ScrollBar {
+                id: squaresBar
+                parent: squaresFlick.parent
+                anchors.left: squaresFlick.left
+                anchors.right: squaresFlick.right
+                anchors.top: squaresFlick.bottom
+                policy: ScrollBar.AsNeeded
+            }
+
+            Row {
+                id: squaresRow
+                x: Math.max(0, (squaresFlick.width - width) / 2)
+                height: squaresFlick.height
+                spacing: squaresArea.cardSpacing
+
+                Repeater {
+                    model: squaresArea.cardCount
 
                 delegate: Rectangle {
                     required property int index
                     readonly property int dataIndex: simpleView.showToday ? index : index + 1
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    width: squaresArea.cardW
+                    height: squaresRow.height
                     radius: 8
                     color: dataIndex === 0
                         ? Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.12)
@@ -1012,6 +1164,24 @@ ColumnLayout {
 
                     }
                 }
+                }
+            }
+        }
+
+        NumberAnimation {
+            id: squaresWheelAnim
+            target: squaresFlick
+            property: "contentX"
+            duration: 160
+            easing.type: Easing.OutCubic
+        }
+
+        // Mouse wheel / touchpad over the cards (see the chips row above)
+        MouseArea {
+            anchors.fill: squaresFlick
+            acceptedButtons: Qt.NoButton
+            onWheel: function (wheel) {
+                simpleView._wheelScroll(squaresFlick, squaresWheelAnim, wheel, simpleView._cardWidth + squaresArea.cardSpacing);
             }
         }
     }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Advanced Weather Widget\n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
-"POT-Creation-Date: 2026-11-19 19:24+0200\n"
+"POT-Creation-Date: 2026-11-27 13:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,13 +18,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: contents/ui/DetailsView.qml:3557 contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3560 contents/ui/DetailsView.qml:3562
 msgid " until dawn"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:615
-#: contents/ui/components/weathermap/LayerPanel.qml:625
-#: contents/ui/components/weathermap/LayerPanel.qml:671
+#: contents/ui/components/weathermap/LayerPanel.qml:630
+#: contents/ui/components/weathermap/LayerPanel.qml:678
+#: contents/ui/components/weathermap/LayerPanel.qml:724
 #: contents/ui/config/tabs/ConfigRadarTab.qml:405
 #: contents/ui/config/tabs/ConfigRadarTab.qml:445
 #: contents/ui/config/tabs/ConfigRadarTab.qml:650
@@ -77,12 +77,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: contents/ui/components/weathermap/DateBox.qml:46
-#: contents/ui/components/WeatherMapView.qml:821
-#: contents/ui/components/WeatherMapView.qml:832
+#: contents/ui/components/WeatherMapView.qml:854
+#: contents/ui/components/WeatherMapView.qml:865
 msgid "%1 h"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:821
+#: contents/ui/components/WeatherMapView.qml:854
 msgid "%1 h %2"
 msgstr ""
 
@@ -102,8 +102,13 @@ msgstr ""
 msgid "%1 is possible %2."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:821
-#: contents/ui/components/WeatherMapView.qml:832
+#: contents/ui/components/weathermap/LayerPanel.qml:654
+msgctxt "distance of the Moon from the Earth's centre"
+msgid "%1 km"
+msgstr ""
+
+#: contents/ui/components/WeatherMapView.qml:854
+#: contents/ui/components/WeatherMapView.qml:865
 msgid "%1 min"
 msgstr ""
 
@@ -116,8 +121,8 @@ msgstr ""
 msgid "%1 per day"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:677
-#: contents/ui/components/weathermap/LayerPanel.qml:841
+#: contents/ui/components/weathermap/LayerPanel.qml:730
+#: contents/ui/components/weathermap/LayerPanel.qml:894
 msgid "%1 px"
 msgstr ""
 
@@ -145,7 +150,7 @@ msgstr ""
 msgid "%1. Right-click to copy or paste it."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1847
+#: contents/ui/components/WeatherMapView.qml:1881
 msgid "%1/%2 · %3 fps"
 msgstr ""
 
@@ -165,15 +170,15 @@ msgstr ""
 msgid "%1: the API key was rejected (HTTP %2)"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4210
+#: contents/ui/DetailsView.qml:4213
 msgid "%1h"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4211
+#: contents/ui/DetailsView.qml:4214
 msgid "%1h %2m"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:4204 contents/ui/DetailsView.qml:4208
+#: contents/ui/DetailsView.qml:4207 contents/ui/DetailsView.qml:4211
 msgid "%1m"
 msgstr ""
 
@@ -203,7 +208,7 @@ msgstr ""
 msgid "0 = auto. Increase if items are cut off."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
+#: contents/ui/components/WeatherMapView.qml:999
 msgid "0 h"
 msgstr ""
 
@@ -211,18 +216,18 @@ msgstr ""
 msgid "1 Alert"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
-#: contents/ui/components/WeatherMapView.qml:967
+#: contents/ui/components/WeatherMapView.qml:999
+#: contents/ui/components/WeatherMapView.qml:1000
 msgid "1 d"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:82
-#: contents/ui/components/WeatherMapView.qml:612
+#: contents/ui/components/WeatherMapView.qml:645
 msgid "10 m"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
-#: contents/ui/components/WeatherMapView.qml:967
+#: contents/ui/components/WeatherMapView.qml:999
+#: contents/ui/components/WeatherMapView.qml:1000
 msgid "12 h"
 msgstr ""
 
@@ -230,8 +235,8 @@ msgstr ""
 msgid "12 hours back to now, every hour."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
-#: contents/ui/components/WeatherMapView.qml:967
+#: contents/ui/components/WeatherMapView.qml:999
+#: contents/ui/components/WeatherMapView.qml:1000
 msgid "2 d"
 msgstr ""
 
@@ -243,8 +248,8 @@ msgstr ""
 msgid "2 to 6 km: they often come before rain."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
-#: contents/ui/components/WeatherMapView.qml:967
+#: contents/ui/components/WeatherMapView.qml:999
+#: contents/ui/components/WeatherMapView.qml:1000
 msgid "3 d"
 msgstr ""
 
@@ -262,15 +267,15 @@ msgstr ""
 msgid "3D Oxygen (Bundled)"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:967
+#: contents/ui/components/WeatherMapView.qml:1000
 msgid "4 d"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
+#: contents/ui/components/WeatherMapView.qml:999
 msgid "5 d"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:967
+#: contents/ui/components/WeatherMapView.qml:1000
 msgid "6 d"
 msgstr ""
 
@@ -279,11 +284,11 @@ msgid "68°F"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:83
-#: contents/ui/components/WeatherMapView.qml:612
+#: contents/ui/components/WeatherMapView.qml:645
 msgid "700 hPa"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:966
+#: contents/ui/components/WeatherMapView.qml:999
 msgid "8 d"
 msgstr ""
 
@@ -343,7 +348,7 @@ msgstr ""
 msgid "A palette has 2 to 12 colors."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2165
+#: contents/ui/DetailsView.qml:2168
 msgid "A southward field (negative Bz) lets the solar wind couple with Earth's magnetic field."
 msgstr ""
 
@@ -393,11 +398,11 @@ msgid "AI-powered weather intelligence. API key required below."
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:117
-#: contents/ui/components/WeatherMapView.qml:838
+#: contents/ui/components/WeatherMapView.qml:871
 msgid "AOD"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1205
+#: contents/ui/components/WeatherMapView.qml:1238
 msgid "API error"
 msgstr ""
 
@@ -413,7 +418,7 @@ msgstr ""
 msgid "AQI"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/js/spaceWeather.js:176
+#: contents/ui/DetailsView.qml:2163 contents/ui/js/spaceWeather.js:176
 msgid "Active"
 msgstr ""
 
@@ -474,12 +479,12 @@ msgid "Air pressure brought to sea level, in hPa. Blue and purple: lows (clouds,
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:113
-#: contents/ui/components/weathermap/LayerPanel.qml:513
+#: contents/ui/components/weathermap/LayerPanel.qml:528
 #: contents/ui/components/weathermap/LoadBox.qml:37
 msgid "Air quality"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:981
+#: contents/ui/components/weathermap/LayerPanel.qml:1034
 msgid "Air quality (CAMS)"
 msgstr ""
 
@@ -534,7 +539,7 @@ msgid "Albanian"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:696
-#: contents/ui/DetailsView.qml:1783 contents/ui/main.qml:1943
+#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1943
 msgid "Alder"
 msgstr ""
 
@@ -579,11 +584,11 @@ msgstr ""
 msgid "Alerts:"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:327
+#: contents/ui/components/weathermap/LayerPanel.qml:342
 msgid "All"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2852
+#: contents/ui/DetailsView.qml:2855
 msgid "All clear"
 msgstr ""
 
@@ -704,7 +709,7 @@ msgstr ""
 msgid "Are you sure? This is your last saved location. If you remove it, the widget will no longer show weather information."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3559
+#: contents/ui/DetailsView.qml:3562
 msgid "Around midnight - "
 msgstr ""
 
@@ -712,7 +717,7 @@ msgstr ""
 msgid "At the bottom left of the map, small: the pictures loaded out of those of the range, and the pictures per second at most. Under them, the models: the global one, then the finer regional ones drawn over it in this view."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:614
+#: contents/ui/components/weathermap/LayerPanel.qml:629
 msgid "Atmosphere rim"
 msgstr ""
 
@@ -727,7 +732,7 @@ msgid "Audio files (*.wav *.ogg *.oga *.mp3 *.flac)"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:805
-#: contents/ui/DetailsView.qml:2149
+#: contents/ui/DetailsView.qml:2152
 msgid "Aurora Visibility"
 msgstr ""
 
@@ -846,26 +851,26 @@ msgid "Basque"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:701
-#: contents/ui/DetailsView.qml:1785 contents/ui/main.qml:1946
+#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1946
 msgid "Birch"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "Black"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "Blue"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:589
+#: contents/ui/components/WeatherMapView.qml:622
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Blue-red"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:676
+#: contents/ui/components/weathermap/LayerPanel.qml:729
 msgid "Blur under the panels"
 msgstr ""
 
@@ -919,7 +924,7 @@ msgstr ""
 msgid "Button guide"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2161
+#: contents/ui/DetailsView.qml:2164
 msgid "Bz (Magnetic Field)"
 msgstr ""
 
@@ -957,7 +962,7 @@ msgstr ""
 msgid "Cancel rename"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1720
+#: contents/ui/DetailsView.qml:1723
 msgid "Carbon Monoxide (CO)"
 msgstr ""
 
@@ -977,7 +982,7 @@ msgstr ""
 msgid "Catalan"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:604
+#: contents/ui/components/weathermap/LayerPanel.qml:619
 msgid "Celestial bodies"
 msgstr ""
 
@@ -994,7 +999,7 @@ msgstr ""
 msgid "Chance of precipitation"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "Change over the last 3 hours, worked out from the readings the widget has collected. The open ring on the dial marks the pressure 3 hours ago."
 msgstr ""
 
@@ -1090,7 +1095,7 @@ msgid "Clean style"
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:365
-#: contents/ui/DetailsView.qml:2872
+#: contents/ui/DetailsView.qml:2875
 msgid "Clear"
 msgstr ""
 
@@ -1154,8 +1159,8 @@ msgstr ""
 msgid "Click to show the hourly forecast"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:512
-#: contents/ui/components/weathermap/LayerPanel.qml:902
+#: contents/ui/components/weathermap/LayerPanel.qml:527
+#: contents/ui/components/weathermap/LayerPanel.qml:955
 #: contents/ui/components/weathermap/LoadBox.qml:36
 #: contents/ui/HistoryView.qml:317 contents/ui/HistoryView.qml:343
 msgid "Cloud cover"
@@ -1166,15 +1171,20 @@ msgstr ""
 msgid "Clouds"
 msgstr ""
 
+#: contents/ui/components/WeatherMapView.qml:1262
+msgctxt "@label cloud cover at the map pointer"
+msgid "Clouds: %1"
+msgstr ""
+
 #: contents/ui/config/configNotifications.qml:100 contents/ui/main.qml:2089
 msgid "Coastal event"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:582
+#: contents/ui/components/weathermap/LayerPanel.qml:597
 msgid "Coasts and borders"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:591
+#: contents/ui/components/weathermap/LayerPanel.qml:606
 msgid "Coasts and borders width"
 msgstr ""
 
@@ -1187,7 +1197,7 @@ msgid "Coldest night"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:105
-#: contents/ui/components/weathermap/LayerPanel.qml:938
+#: contents/ui/components/weathermap/LayerPanel.qml:991
 msgid "Color"
 msgstr ""
 
@@ -1210,8 +1220,8 @@ msgstr ""
 #: contents/ui/components/weathermap/HelpPanel.qml:66
 #: contents/ui/components/weathermap/HelpPanel.qml:84
 #: contents/ui/components/weathermap/HelpPanel.qml:89
-#: contents/ui/components/weathermap/LayerPanel.qml:816
-#: contents/ui/components/weathermap/LayerPanel.qml:872
+#: contents/ui/components/weathermap/LayerPanel.qml:869
+#: contents/ui/components/weathermap/LayerPanel.qml:925
 #: contents/ui/components/weathermap/RadarMenu.qml:179
 msgid "Colors"
 msgstr ""
@@ -1288,7 +1298,7 @@ msgstr ""
 msgid "Confirm your location"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1206
+#: contents/ui/components/WeatherMapView.qml:1239
 msgid "Connection failed"
 msgstr ""
 
@@ -1368,6 +1378,10 @@ msgstr ""
 msgid "Custom (set each unit manually)"
 msgstr ""
 
+#: contents/ui/components/weathermap/LayerPanel.qml:640
+msgid "Custom Moon"
+msgstr ""
+
 #: contents/ui/config/configAppearance.qml:915
 msgid "Custom per-condition icons"
 msgstr ""
@@ -1409,7 +1423,7 @@ msgstr ""
 msgid "Dark Sky-compatible API with US alerts. API key required below."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:646
+#: contents/ui/components/weathermap/LayerPanel.qml:699
 msgid "Dark map"
 msgstr ""
 
@@ -1460,19 +1474,19 @@ msgstr ""
 msgid "Date/Time:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3555
+#: contents/ui/DetailsView.qml:3558
 msgid "Dawn approaching - "
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3535
+#: contents/ui/DetailsView.qml:3538
 msgid "Day"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1208
+#: contents/ui/components/WeatherMapView.qml:1241
 msgid "Day and night"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3566
 msgid "Daylight over"
 msgstr ""
 
@@ -1492,7 +1506,7 @@ msgstr ""
 msgid "Deep"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:586
+#: contents/ui/components/WeatherMapView.qml:619
 #: contents/ui/config/tabs/ConfigPanelTab.qml:650
 #: contents/ui/config/tabs/ConfigPanelTab.qml:773
 #: contents/ui/config/tabs/ConfigRadarTab.qml:521
@@ -1511,7 +1525,7 @@ msgstr ""
 msgid "Default location (click to unset)"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:519
+#: contents/ui/components/weathermap/LayerPanel.qml:534
 msgid "Default order"
 msgstr ""
 
@@ -1528,11 +1542,11 @@ msgstr ""
 msgid "Dense drizzle"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:825
+#: contents/ui/components/weathermap/LayerPanel.qml:878
 msgid "Density"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2493 contents/ui/DetailsView.qml:2495
+#: contents/ui/DetailsView.qml:2497 contents/ui/DetailsView.qml:2499
 #: contents/ui/SimpleView.qml:167 contents/ui/SimpleView.qml:169
 msgid "Description"
 msgstr ""
@@ -1584,10 +1598,10 @@ msgid "Dew Point"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:111
-#: contents/ui/components/weathermap/LayerPanel.qml:513
-#: contents/ui/components/weathermap/LayerPanel.qml:974
+#: contents/ui/components/weathermap/LayerPanel.qml:528
+#: contents/ui/components/weathermap/LayerPanel.qml:1027
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1234
+#: contents/ui/components/WeatherMapView.qml:1268
 msgid "Dew point"
 msgstr ""
 
@@ -1652,11 +1666,11 @@ msgstr ""
 msgid "Double click on the icon"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:769
+#: contents/ui/components/weathermap/LayerPanel.qml:822
 msgid "Double-click: radar range"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:800
+#: contents/ui/components/weathermap/LayerPanel.qml:853
 msgid "Double-click: satellite range"
 msgstr ""
 
@@ -1690,7 +1704,7 @@ msgstr ""
 msgid "Dry"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1228
+#: contents/ui/components/WeatherMapView.qml:1261
 msgctxt "@label no precipitation at that place"
 msgid "Dry"
 msgstr ""
@@ -1700,8 +1714,8 @@ msgid "Dual temperature"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:116
-#: contents/ui/components/WeatherMapView.qml:838
-#: contents/ui/components/WeatherMapView.qml:1235
+#: contents/ui/components/WeatherMapView.qml:871
+#: contents/ui/components/WeatherMapView.qml:1269
 msgid "Dust"
 msgstr ""
 
@@ -1709,7 +1723,7 @@ msgstr ""
 msgid "Dutch"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1215
+#: contents/ui/components/WeatherMapView.qml:1248
 #: contents/ui/HistoryView.qml:191
 msgid "E"
 msgstr ""
@@ -1768,7 +1782,7 @@ msgstr ""
 msgid "Edit…"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2498 contents/ui/SimpleView.qml:172
+#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:172
 msgid "Effective"
 msgstr ""
 
@@ -1888,12 +1902,12 @@ msgstr ""
 msgid "European CAQI (0-100+)"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3557
+#: contents/ui/DetailsView.qml:3560
 msgid "Evening - "
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:104
-#: contents/ui/components/weathermap/LayerPanel.qml:932
+#: contents/ui/components/weathermap/LayerPanel.qml:985
 msgid "Every (hPa)"
 msgstr ""
 
@@ -1917,7 +1931,7 @@ msgstr ""
 msgid "Expanded cards height:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2500 contents/ui/SimpleView.qml:174
+#: contents/ui/DetailsView.qml:2504 contents/ui/SimpleView.qml:174
 msgid "Expires"
 msgstr ""
 
@@ -2027,7 +2041,7 @@ msgstr ""
 msgid "First picture"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2186
 msgid "Flare Warning"
 msgstr ""
 
@@ -2054,7 +2068,7 @@ msgstr ""
 msgid "Fog"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:1153
+#: contents/ui/components/weathermap/LayerPanel.qml:1206
 msgid "Fold the layer column"
 msgstr ""
 
@@ -2079,7 +2093,7 @@ msgstr ""
 msgid "Footer:"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1198
+#: contents/ui/components/WeatherMapView.qml:1231
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:732
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:766
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1037
@@ -2128,8 +2142,8 @@ msgstr ""
 msgid "Freezing"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1226
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1259
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:62
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:632
 #: contents/ui/main.qml:3383
@@ -2144,8 +2158,8 @@ msgstr ""
 msgid "Freezing drizzle (night)"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1225
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1258
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:66
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:640
 #: contents/ui/main.qml:3393
@@ -2172,7 +2186,7 @@ msgstr ""
 msgid "Friday"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:566
+#: contents/ui/components/weathermap/LayerPanel.qml:581
 msgid "Full"
 msgstr ""
 
@@ -2180,7 +2194,7 @@ msgstr ""
 msgid "Full Moon"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:476
+#: contents/ui/components/weathermap/LayerPanel.qml:491
 msgid "Full screen (F11)"
 msgstr ""
 
@@ -2211,7 +2225,7 @@ msgid "GeoClue2 unavailable, trying system location…"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:790
-#: contents/ui/DetailsView.qml:2119
+#: contents/ui/DetailsView.qml:2122
 msgid "Geomagnetic Storm"
 msgstr ""
 
@@ -2232,7 +2246,7 @@ msgstr ""
 msgid "Give the palette a name."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1207
+#: contents/ui/components/WeatherMapView.qml:1240
 msgid "Globe"
 msgstr ""
 
@@ -2265,7 +2279,7 @@ msgid "Graphs style:"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:706
-#: contents/ui/DetailsView.qml:1787 contents/ui/main.qml:1949
+#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1949
 msgid "Grass"
 msgstr ""
 
@@ -2273,7 +2287,7 @@ msgstr ""
 msgid "Greek"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "Green"
 msgstr ""
@@ -2294,7 +2308,7 @@ msgstr ""
 msgid "H and L at the centers, followed from one picture to the next."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:566
+#: contents/ui/components/weathermap/LayerPanel.qml:581
 msgid "Half"
 msgstr ""
 
@@ -2306,7 +2320,7 @@ msgstr ""
 msgid "Header:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2490 contents/ui/SimpleView.qml:164
+#: contents/ui/DetailsView.qml:2494 contents/ui/SimpleView.qml:164
 msgid "Headline"
 msgstr ""
 
@@ -2357,7 +2371,7 @@ msgstr ""
 msgid "Hebrew"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:810
+#: contents/ui/components/weathermap/LayerPanel.qml:863
 msgid "Height"
 msgstr ""
 
@@ -2377,24 +2391,28 @@ msgid "Hide prefix icon"
 msgstr ""
 
 #: contents/ui/DetailsView.qml:474 contents/ui/DetailsView.qml:599
-#: contents/ui/FullView.qml:618 contents/ui/js/airQuality.js:123
-#: contents/ui/js/pollen.js:45 contents/ui/js/spaceWeather.js:188
-#: contents/ui/js/spaceWeather.js:200 contents/ui/main.qml:1896
-#: contents/ui/main.qml:1937 contents/ui/SimpleView.qml:787
+#: contents/ui/js/airQuality.js:123 contents/ui/js/pollen.js:45
+#: contents/ui/js/spaceWeather.js:188 contents/ui/js/spaceWeather.js:200
+#: contents/ui/main.qml:1896 contents/ui/main.qml:1937
 msgid "High"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:98
-#: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1230
+#: contents/ui/components/WeatherMapView.qml:870
+#: contents/ui/components/WeatherMapView.qml:1264
 msgctxt "@item cloud level"
 msgid "High"
 msgstr ""
 
 #: contents/ui/components/HistoryChartGraphs.qml:104
 #: contents/ui/components/HistoryChartKQC.qml:77
-#: contents/ui/ForecastView.qml:1097
+#: contents/ui/ForecastView.qml:1097 contents/ui/SimpleView.qml:787
 msgctxt "@label chart legend"
+msgid "High"
+msgstr ""
+
+#: contents/ui/FullView.qml:618
+msgctxt "@label daily maximum temperature"
 msgid "High"
 msgstr ""
 
@@ -2415,7 +2433,7 @@ msgid "High temperature"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:107
-#: contents/ui/components/weathermap/LayerPanel.qml:959
+#: contents/ui/components/weathermap/LayerPanel.qml:1012
 msgid "Highs and lows"
 msgstr ""
 
@@ -2476,11 +2494,11 @@ msgstr ""
 msgid "How dark the deep night is on the radar map when day and night are shown (button on the map)."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:1056
+#: contents/ui/components/weathermap/LayerPanel.qml:1109
 msgid "How far ahead"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:1041
+#: contents/ui/components/weathermap/LayerPanel.qml:1094
 msgid "How far back"
 msgstr ""
 
@@ -2488,7 +2506,7 @@ msgstr ""
 msgid "How often the rows scroll to reveal the next item"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:482
+#: contents/ui/components/weathermap/LayerPanel.qml:497
 msgid "How to read the weather maps"
 msgstr ""
 
@@ -2501,7 +2519,7 @@ msgid "Humid"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
-#: contents/ui/components/WeatherMapView.qml:1233
+#: contents/ui/components/WeatherMapView.qml:1267
 #: contents/ui/config/configAppearance.qml:1872
 #: contents/ui/config/configAppearance.qml:1974
 #: contents/ui/config/configAppearance.qml:2118 contents/ui/DetailsView.qml:700
@@ -2526,8 +2544,8 @@ msgstr ""
 msgid "IP geolocation"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1227
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1260
 msgid "Ice pellets"
 msgstr ""
 
@@ -2623,11 +2641,11 @@ msgid ""
 "- Debian / Kubuntu / KDE Neon: qml6-module-qtwebengine"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2502 contents/ui/SimpleView.qml:176
+#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:176
 msgid "Instruction"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:573
+#: contents/ui/components/weathermap/LayerPanel.qml:588
 msgid "Interpolated pictures"
 msgstr ""
 
@@ -2661,10 +2679,10 @@ msgid "Irish"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:102
-#: contents/ui/components/weathermap/LayerPanel.qml:513
-#: contents/ui/components/weathermap/LayerPanel.qml:923
+#: contents/ui/components/weathermap/LayerPanel.qml:528
+#: contents/ui/components/weathermap/LayerPanel.qml:976
 #: contents/ui/components/weathermap/LoadBox.qml:37
-#: contents/ui/components/WeatherMapView.qml:1209
+#: contents/ui/components/WeatherMapView.qml:1242
 msgid "Isobars"
 msgstr ""
 
@@ -2745,7 +2763,7 @@ msgid "Keys"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:93
-#: contents/ui/components/weathermap/LayerPanel.qml:893
+#: contents/ui/components/weathermap/LayerPanel.qml:946
 msgid "Kinds shown"
 msgstr ""
 
@@ -2754,7 +2772,7 @@ msgid "Knots (kn)"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:795
-#: contents/ui/DetailsView.qml:2128
+#: contents/ui/DetailsView.qml:2131
 msgid "Kp Index"
 msgstr ""
 
@@ -2773,7 +2791,7 @@ msgstr ""
 msgid "Large"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:858
+#: contents/ui/components/WeatherMapView.qml:891
 msgctxt "text size"
 msgid "Large"
 msgstr ""
@@ -2819,7 +2837,7 @@ msgstr ""
 msgid "Latitude:"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:758
+#: contents/ui/components/weathermap/LayerPanel.qml:811
 msgid "Layers"
 msgstr ""
 
@@ -2833,7 +2851,7 @@ msgstr ""
 msgid "Layout type:"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:476
+#: contents/ui/components/weathermap/LayerPanel.qml:491
 msgid "Leave full screen (F11 or Esc)"
 msgstr ""
 
@@ -2841,7 +2859,7 @@ msgstr ""
 msgid "Leave this empty to use the public server. Set it to your own address if you run a self-hosted LibreWXR instance."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:906
+#: contents/ui/components/weathermap/LayerPanel.qml:959
 msgid "Levels shown"
 msgstr ""
 
@@ -2919,7 +2937,7 @@ msgid "Lightning"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:103
-#: contents/ui/components/weathermap/LayerPanel.qml:926
+#: contents/ui/components/weathermap/LayerPanel.qml:979
 msgid "Lines"
 msgstr ""
 
@@ -2943,11 +2961,11 @@ msgstr ""
 msgid "Loading forecast…"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1201
+#: contents/ui/components/WeatherMapView.qml:1234
 msgid "Loading frames"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1200
+#: contents/ui/components/WeatherMapView.qml:1233
 msgid "Loading frame…"
 msgstr ""
 
@@ -2959,7 +2977,7 @@ msgstr ""
 msgid "Loading locations…"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:662
+#: contents/ui/components/weathermap/LayerPanel.qml:715
 msgid "Loading of the layers"
 msgstr ""
 
@@ -2967,7 +2985,7 @@ msgstr ""
 msgid "Loading radar…"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1199
+#: contents/ui/components/WeatherMapView.qml:1232
 msgid "Loading…"
 msgstr ""
 
@@ -3076,24 +3094,28 @@ msgid "Loop: on"
 msgstr ""
 
 #: contents/ui/DetailsView.qml:472 contents/ui/DetailsView.qml:597
-#: contents/ui/FullView.qml:638 contents/ui/js/airQuality.js:121
-#: contents/ui/js/pollen.js:43 contents/ui/js/spaceWeather.js:190
-#: contents/ui/js/spaceWeather.js:202 contents/ui/main.qml:1892
-#: contents/ui/main.qml:1933 contents/ui/SimpleView.qml:792
+#: contents/ui/js/airQuality.js:121 contents/ui/js/pollen.js:43
+#: contents/ui/js/spaceWeather.js:190 contents/ui/js/spaceWeather.js:202
+#: contents/ui/main.qml:1892 contents/ui/main.qml:1933
 msgid "Low"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:96
-#: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1232
+#: contents/ui/components/WeatherMapView.qml:870
+#: contents/ui/components/WeatherMapView.qml:1266
 msgctxt "@item cloud level"
 msgid "Low"
 msgstr ""
 
 #: contents/ui/components/HistoryChartGraphs.qml:114
 #: contents/ui/components/HistoryChartKQC.qml:87
-#: contents/ui/ForecastView.qml:1102
+#: contents/ui/ForecastView.qml:1102 contents/ui/SimpleView.qml:792
 msgctxt "@label chart legend"
+msgid "Low"
+msgstr ""
+
+#: contents/ui/FullView.qml:638
+msgctxt "@label daily minimum temperature"
 msgid "Low"
 msgstr ""
 
@@ -3213,7 +3235,7 @@ msgstr ""
 msgid "Mean temperature"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:858
+#: contents/ui/components/WeatherMapView.qml:891
 msgctxt "text size"
 msgid "Medium"
 msgstr ""
@@ -3241,8 +3263,8 @@ msgid "Metric (°C, km/h, hPa, mm)"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:97
-#: contents/ui/components/WeatherMapView.qml:837
-#: contents/ui/components/WeatherMapView.qml:1231
+#: contents/ui/components/WeatherMapView.qml:870
+#: contents/ui/components/WeatherMapView.qml:1265
 msgctxt "@item cloud level"
 msgid "Mid"
 msgstr ""
@@ -3263,7 +3285,7 @@ msgstr ""
 msgid "Minimum width:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2186
 msgid "Minor"
 msgstr ""
 
@@ -3332,6 +3354,10 @@ msgstr ""
 msgid "Moon Phase"
 msgstr ""
 
+#: contents/ui/components/weathermap/LayerPanel.qml:653
+msgid "Moon distance"
+msgstr ""
+
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:510
 msgid "Moon mode:"
 msgstr ""
@@ -3364,13 +3390,17 @@ msgstr ""
 msgid "Moon phase, moonrise & moonset"
 msgstr ""
 
+#: contents/ui/components/weathermap/LayerPanel.qml:665
+msgid "Moon size"
+msgstr ""
+
 #: contents/ui/TooltipContent.qml:521 contents/ui/TooltipContent.qml:568
 #: contents/ui/TooltipContent.qml:596
 msgid "Moon:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3772 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4095 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3775 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4098 contents/ui/DetailsView.qml:4103
 msgid "Moonrise"
 msgstr ""
 
@@ -3392,7 +3422,7 @@ msgstr ""
 msgid "Moonrise only"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3770 contents/ui/DetailsView.qml:4093
+#: contents/ui/DetailsView.qml:3773 contents/ui/DetailsView.qml:4096
 msgid "Moonrise/Moonset"
 msgstr ""
 
@@ -3402,8 +3432,8 @@ msgstr ""
 msgid "Moonrise:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3774 contents/ui/DetailsView.qml:3777
-#: contents/ui/DetailsView.qml:4097 contents/ui/DetailsView.qml:4100
+#: contents/ui/DetailsView.qml:3777 contents/ui/DetailsView.qml:3780
+#: contents/ui/DetailsView.qml:4100 contents/ui/DetailsView.qml:4103
 msgid "Moonset"
 msgstr ""
 
@@ -3438,7 +3468,7 @@ msgid "Mouse wheel"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:711
-#: contents/ui/DetailsView.qml:1789 contents/ui/main.qml:1952
+#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1952
 msgid "Mugwort"
 msgstr ""
 
@@ -3446,12 +3476,12 @@ msgstr ""
 msgid "Multiple lines (tall panel)"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:589
+#: contents/ui/components/WeatherMapView.qml:622
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Muted"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1213
+#: contents/ui/components/WeatherMapView.qml:1246
 #: contents/ui/HistoryView.qml:191
 msgid "N"
 msgstr ""
@@ -3464,7 +3494,7 @@ msgstr ""
 msgid "N/A"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1214
+#: contents/ui/components/WeatherMapView.qml:1247
 #: contents/ui/HistoryView.qml:191
 msgid "NE"
 msgstr ""
@@ -3479,7 +3509,7 @@ msgstr ""
 msgid "NO₂"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1220
+#: contents/ui/components/WeatherMapView.qml:1253
 #: contents/ui/HistoryView.qml:191
 msgid "NW"
 msgstr ""
@@ -3533,7 +3563,7 @@ msgstr ""
 msgid "Next period"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3532
+#: contents/ui/DetailsView.qml:3535
 msgid "Night"
 msgstr ""
 
@@ -3541,15 +3571,15 @@ msgstr ""
 msgid "Night darkness:"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:624
+#: contents/ui/components/weathermap/LayerPanel.qml:677
 msgid "Night lights"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:634
+#: contents/ui/components/weathermap/LayerPanel.qml:687
 msgid "Night lights density"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1714
+#: contents/ui/DetailsView.qml:1717
 msgid "Nitrogen Dioxide (NO₂)"
 msgstr ""
 
@@ -3557,11 +3587,11 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2850
+#: contents/ui/DetailsView.qml:2853
 msgid "No active alerts"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1202
+#: contents/ui/components/WeatherMapView.qml:1235
 msgid "No data"
 msgstr ""
 
@@ -3598,11 +3628,11 @@ msgstr ""
 msgid "No location set"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1203
+#: contents/ui/components/WeatherMapView.qml:1236
 msgid "No radar data"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1204
+#: contents/ui/components/WeatherMapView.qml:1237
 msgid "No satellite data"
 msgstr ""
 
@@ -3614,7 +3644,7 @@ msgstr ""
 msgid "No snow"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2854
+#: contents/ui/DetailsView.qml:2857
 msgid "No warnings in effect"
 msgstr ""
 
@@ -3624,7 +3654,7 @@ msgstr ""
 
 #: contents/ui/components/RadarWebEngineView.qml:187
 #: contents/ui/components/RadarWebEngineView.qml:889
-#: contents/ui/components/weathermap/LayerPanel.qml:677
+#: contents/ui/components/weathermap/LayerPanel.qml:730
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:342
 #: contents/ui/config/tabs/ConfigPanelTab.qml:1170
 #: contents/ui/DetailsView.qml:464 contents/ui/js/spaceWeather.js:203
@@ -3640,7 +3670,7 @@ msgstr ""
 msgid "Normal"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:856
+#: contents/ui/components/WeatherMapView.qml:889
 msgctxt "isobar lines"
 msgid "Normal"
 msgstr ""
@@ -3649,7 +3679,7 @@ msgstr ""
 msgid "Not available (HTTP %1)"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:654
+#: contents/ui/components/weathermap/LayerPanel.qml:707
 msgid "Not available: the selected base map already has a fixed light or dark style."
 msgstr ""
 
@@ -3706,12 +3736,12 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:615
+#: contents/ui/components/weathermap/LayerPanel.qml:630
 msgctxt "atmosphere rim at 0"
 msgid "Off"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:625
+#: contents/ui/components/weathermap/LayerPanel.qml:678
 msgctxt "night lights at 0"
 msgid "Off"
 msgstr ""
@@ -3741,7 +3771,7 @@ msgid "Official Spanish meteorological agency - Spain locations only! API key re
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:716
-#: contents/ui/DetailsView.qml:1791 contents/ui/main.qml:1955
+#: contents/ui/DetailsView.qml:1795 contents/ui/main.qml:1955
 msgid "Olive"
 msgstr ""
 
@@ -3787,7 +3817,7 @@ msgstr ""
 msgid "Open radar in browser"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:1153
+#: contents/ui/components/weathermap/LayerPanel.qml:1206
 msgid "Open the layer column"
 msgstr ""
 
@@ -3857,7 +3887,7 @@ msgstr ""
 
 #: contents/ui/config/configNotifications.qml:371
 #: contents/ui/config/configNotifications.qml:422
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Orange"
 msgstr ""
 
@@ -3865,13 +3895,13 @@ msgstr ""
 msgid "Orange dot"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2836
+#: contents/ui/DetailsView.qml:2838
 msgid "Orange warning"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:134
-#: contents/ui/components/weathermap/LayerPanel.qml:490
-#: contents/ui/components/weathermap/LayerPanel.qml:504
+#: contents/ui/components/weathermap/LayerPanel.qml:505
+#: contents/ui/components/weathermap/LayerPanel.qml:519
 msgid "Order of the layers"
 msgstr ""
 
@@ -3882,7 +3912,7 @@ msgstr ""
 msgid "Overcast"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1716
+#: contents/ui/DetailsView.qml:1719
 msgid "Ozone (O₃)"
 msgstr ""
 
@@ -3932,7 +3962,7 @@ msgstr ""
 msgid "Panel items:"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:670
+#: contents/ui/components/weathermap/LayerPanel.qml:723
 msgid "Panel opacity"
 msgstr ""
 
@@ -3948,11 +3978,11 @@ msgstr ""
 msgid "Panel › Simple layout › Weather icon style"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1712
+#: contents/ui/DetailsView.qml:1715
 msgid "Particulate Matter (PM10)"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1710
+#: contents/ui/DetailsView.qml:1713
 msgid "Particulate Matter (PM2.5)"
 msgstr ""
 
@@ -4005,11 +4035,11 @@ msgstr ""
 msgid "Pick an exact spot on the map for a more local forecast, such as your neighborhood block or a specific landmark."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1851
+#: contents/ui/components/WeatherMapView.qml:1885
 msgid "Pictures loaded / pictures in the range<br>Pictures per second at most, set in the settings of the column"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:557
+#: contents/ui/components/weathermap/LayerPanel.qml:572
 msgid "Pictures per second"
 msgstr ""
 
@@ -4056,7 +4086,7 @@ msgstr ""
 msgid "Pollen"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1967
+#: contents/ui/DetailsView.qml:1970
 msgid "Pollen data not available for this location."
 msgstr ""
 
@@ -4068,7 +4098,7 @@ msgstr ""
 msgid "Pollen:"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:986
+#: contents/ui/components/weathermap/LayerPanel.qml:1039
 msgid "Pollutant"
 msgstr ""
 
@@ -4094,7 +4124,7 @@ msgid "Precip. Sum:"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:92
-#: contents/ui/components/weathermap/LayerPanel.qml:512
+#: contents/ui/components/weathermap/LayerPanel.qml:527
 #: contents/ui/components/weathermap/LoadBox.qml:36
 #: contents/ui/config/configAppearance.qml:1900
 #: contents/ui/config/configAppearance.qml:2023
@@ -4111,7 +4141,7 @@ msgctxt "@label chart legend"
 msgid "Precipitation"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:889
+#: contents/ui/components/weathermap/LayerPanel.qml:942
 msgid "Precipitation (rain, snow)"
 msgstr ""
 
@@ -4153,7 +4183,7 @@ msgstr ""
 
 #: contents/ui/components/RadarWebEngineView.qml:160
 #: contents/ui/components/weathermap/HelpPanel.qml:100
-#: contents/ui/components/weathermap/LayerPanel.qml:513
+#: contents/ui/components/weathermap/LayerPanel.qml:528
 #: contents/ui/components/weathermap/LoadBox.qml:37
 #: contents/ui/config/configAppearance.qml:1879
 #: contents/ui/config/configAppearance.qml:1981
@@ -4167,7 +4197,7 @@ msgstr ""
 msgid "Pressure"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1455
+#: contents/ui/DetailsView.qml:1457
 msgid "Pressure tendency"
 msgstr ""
 
@@ -4196,7 +4226,7 @@ msgstr ""
 msgid "Primary unit shown first (e.g. °C / °F)"
 msgstr ""
 
-#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2504
+#: contents/ui/config/configGeneral.qml:684 contents/ui/DetailsView.qml:2508
 #: contents/ui/SimpleView.qml:178
 msgid "Provider"
 msgstr ""
@@ -4221,7 +4251,7 @@ msgid "Provider website:"
 msgstr ""
 
 #: contents/ui/config/tabs/ConfigProviderTab.qml:128
-#: contents/ui/DetailsView.qml:2212
+#: contents/ui/DetailsView.qml:2216
 msgid "Provider:"
 msgstr ""
 
@@ -4270,22 +4300,22 @@ msgstr ""
 msgid "QtWebEngine is not installed"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:566
+#: contents/ui/components/weathermap/LayerPanel.qml:581
 msgid "Quarter"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2160 contents/ui/DetailsView.qml:2183
+#: contents/ui/DetailsView.qml:2163 contents/ui/DetailsView.qml:2186
 #: contents/ui/js/spaceWeather.js:178
 msgid "Quiet"
 msgstr ""
 
 #: contents/ui/components/RadarWebEngineView.qml:155
 #: contents/ui/components/weathermap/HelpPanel.qml:64
-#: contents/ui/components/weathermap/LayerPanel.qml:511
-#: contents/ui/components/weathermap/LayerPanel.qml:764
+#: contents/ui/components/weathermap/LayerPanel.qml:526
+#: contents/ui/components/weathermap/LayerPanel.qml:817
 #: contents/ui/components/weathermap/LoadBox.qml:35
 #: contents/ui/components/weathermap/TimeLine.qml:185
-#: contents/ui/components/WeatherMapView.qml:965
+#: contents/ui/components/WeatherMapView.qml:998
 #: contents/ui/config/configGeneral.qml:689
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:735
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:1041
@@ -4314,13 +4344,13 @@ msgid "Radar:"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:721
-#: contents/ui/DetailsView.qml:1793 contents/ui/main.qml:1958
+#: contents/ui/DetailsView.qml:1797 contents/ui/main.qml:1958
 msgid "Ragweed"
 msgstr ""
 
 #: contents/ui/components/RadarWebEngineView.qml:156
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1221
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1254
 #: contents/ui/config/configNotifications.qml:112
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:64
 #: contents/ui/HistoryView.qml:331 contents/ui/main.qml:2101
@@ -4340,8 +4370,8 @@ msgstr ""
 msgid "Rain Viewer"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1224
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1257
 msgid "Rain and snow"
 msgstr ""
 
@@ -4369,6 +4399,11 @@ msgstr ""
 msgid "Read-only while Adaptive mode is on - turn it off above to choose a specific provider."
 msgstr ""
 
+#: contents/ui/components/weathermap/LayerPanel.qml:666
+msgctxt "Moon drawn at its real size"
+msgid "Real"
+msgstr ""
+
 #: contents/ui/components/RadarWebEngineView.qml:185
 msgid "Real-time"
 msgstr ""
@@ -4383,16 +4418,16 @@ msgstr ""
 
 #: contents/ui/config/configNotifications.qml:376
 #: contents/ui/config/configNotifications.qml:429
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Red"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "Red"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2838
+#: contents/ui/DetailsView.qml:2840
 msgid "Red warning"
 msgstr ""
 
@@ -4424,13 +4459,13 @@ msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:85
 #: contents/ui/components/weathermap/HelpPanel.qml:90
-#: contents/ui/components/weathermap/LayerPanel.qml:851
-#: contents/ui/components/weathermap/LayerPanel.qml:878
+#: contents/ui/components/weathermap/LayerPanel.qml:904
+#: contents/ui/components/weathermap/LayerPanel.qml:931
 msgid "Regional models"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:513
-#: contents/ui/components/weathermap/LayerPanel.qml:967
+#: contents/ui/components/weathermap/LayerPanel.qml:528
+#: contents/ui/components/weathermap/LayerPanel.qml:1020
 #: contents/ui/components/weathermap/LoadBox.qml:37
 msgid "Relative humidity"
 msgstr ""
@@ -4496,7 +4531,7 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:564
+#: contents/ui/components/weathermap/LayerPanel.qml:579
 msgid "Resolution while playing"
 msgstr ""
 
@@ -4547,12 +4582,12 @@ msgstr ""
 msgid "Routine tests (for example \"Required Weekly Test\") will show a notification, but never play an alert sound."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1217
+#: contents/ui/components/WeatherMapView.qml:1250
 #: contents/ui/HistoryView.qml:191
 msgid "S"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1216
+#: contents/ui/components/WeatherMapView.qml:1249
 #: contents/ui/HistoryView.qml:191
 msgid "SE"
 msgstr ""
@@ -4566,17 +4601,17 @@ msgstr ""
 msgid "SO₂"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1218
+#: contents/ui/components/WeatherMapView.qml:1251
 #: contents/ui/HistoryView.qml:191
 msgid "SW"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:76
-#: contents/ui/components/weathermap/LayerPanel.qml:511
-#: contents/ui/components/weathermap/LayerPanel.qml:795
+#: contents/ui/components/weathermap/LayerPanel.qml:526
+#: contents/ui/components/weathermap/LayerPanel.qml:848
 #: contents/ui/components/weathermap/LoadBox.qml:35
 #: contents/ui/components/weathermap/TimeLine.qml:184
-#: contents/ui/components/WeatherMapView.qml:965
+#: contents/ui/components/WeatherMapView.qml:998
 msgid "Satellite"
 msgstr ""
 
@@ -4604,7 +4639,7 @@ msgstr ""
 msgid "Scroll interval (sec):"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:915
+#: contents/ui/components/weathermap/LayerPanel.qml:968
 msgid "Sea level pressure"
 msgstr ""
 
@@ -4696,7 +4731,7 @@ msgstr ""
 msgid "Set your own icons…"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:555
+#: contents/ui/components/weathermap/LayerPanel.qml:570
 msgid "Settings"
 msgstr ""
 
@@ -4704,7 +4739,7 @@ msgstr ""
 msgid "Settings where this theme is not available keep their current theme."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:541
+#: contents/ui/components/weathermap/LayerPanel.qml:556
 msgid "Settings: pictures per second, resolution while playing,<br>coasts and borders, Sun, Moon and night lights, dark map, see-through panels"
 msgstr ""
 
@@ -4885,7 +4920,7 @@ msgstr ""
 msgid "Single line (all items at once)"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:950
+#: contents/ui/components/weathermap/LayerPanel.qml:1003
 msgid "Size"
 msgstr ""
 
@@ -4927,7 +4962,7 @@ msgstr ""
 msgid "Slovenian"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:858
+#: contents/ui/components/WeatherMapView.qml:891
 msgctxt "text size"
 msgid "Small"
 msgstr ""
@@ -4936,7 +4971,7 @@ msgstr ""
 msgid "Small circle  ⚬"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:595
+#: contents/ui/components/WeatherMapView.qml:628
 #: contents/ui/config/tabs/ConfigRadarTab.qml:668
 msgid "Smooth"
 msgstr ""
@@ -4952,8 +4987,8 @@ msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:67
 #: contents/ui/components/weathermap/RadarMenu.qml:193
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1222
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1255
 #: contents/ui/config/configNotifications.qml:731
 #: contents/ui/config/subpages/ConfigLocationSubPage.qml:68
 #: contents/ui/main.qml:3397
@@ -5021,7 +5056,7 @@ msgid "Snowfall"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:800
-#: contents/ui/DetailsView.qml:2138
+#: contents/ui/DetailsView.qml:2141
 msgid "Solar Wind"
 msgstr ""
 
@@ -5057,7 +5092,7 @@ msgstr ""
 msgid "Speed"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:1113
+#: contents/ui/components/weathermap/LayerPanel.qml:1166
 msgid "Speed x%1"
 msgstr ""
 
@@ -5133,7 +5168,7 @@ msgstr ""
 msgid "Strongest wind"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1718
+#: contents/ui/DetailsView.qml:1721
 msgid "Sulfur Dioxide (SO₂)"
 msgstr ""
 
@@ -5158,8 +5193,8 @@ msgstr ""
 msgid "Sunday"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3305 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3649 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3308 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3652 contents/ui/DetailsView.qml:3656
 #: contents/ui/ForecastView.qml:2381 contents/ui/HistoryView.qml:349
 msgid "Sunrise"
 msgstr ""
@@ -5201,8 +5236,8 @@ msgstr ""
 msgid "Sunrise:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3307 contents/ui/DetailsView.qml:3309
-#: contents/ui/DetailsView.qml:3651 contents/ui/DetailsView.qml:3653
+#: contents/ui/DetailsView.qml:3310 contents/ui/DetailsView.qml:3312
+#: contents/ui/DetailsView.qml:3654 contents/ui/DetailsView.qml:3656
 #: contents/ui/HistoryView.qml:351
 msgid "Sunset"
 msgstr ""
@@ -5238,7 +5273,7 @@ msgstr ""
 msgid "Swedish"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:654
+#: contents/ui/components/weathermap/LayerPanel.qml:707
 msgid "Switch between the light and dark map style. Until first toggled, the map follows the Plasma theme."
 msgstr ""
 
@@ -5303,8 +5338,8 @@ msgstr ""
 
 #: contents/ui/components/RadarWebEngineView.qml:158
 #: contents/ui/components/weathermap/HelpPanel.qml:87
-#: contents/ui/components/weathermap/LayerPanel.qml:512
-#: contents/ui/components/weathermap/LayerPanel.qml:862
+#: contents/ui/components/weathermap/LayerPanel.qml:527
+#: contents/ui/components/weathermap/LayerPanel.qml:915
 #: contents/ui/components/weathermap/LoadBox.qml:36
 #: contents/ui/config/configAppearance.qml:1843
 #: contents/ui/config/configAppearance.qml:2090
@@ -5375,7 +5410,7 @@ msgstr ""
 msgid "Temperature:"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1453
+#: contents/ui/DetailsView.qml:1455
 msgid "Tendency: collecting data"
 msgstr ""
 
@@ -5457,7 +5492,7 @@ msgstr ""
 msgid "The geomagnetic (Kp/G) forecast is only available up to 3 days ahead"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1881
+#: contents/ui/components/WeatherMapView.qml:1915
 msgid "The global model, then the finer regional<br>ones drawn over it in this view"
 msgstr ""
 
@@ -5489,7 +5524,7 @@ msgstr ""
 msgid "The map needs QtWebEngine, which is not installed. You can still search for a location above."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1822
+#: contents/ui/components/WeatherMapView.qml:1856
 msgid "The map page needs WebGL, which this graphics setup does not offer."
 msgstr ""
 
@@ -5513,7 +5548,7 @@ msgstr ""
 msgid "The two clocks: how far back and how far ahead"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1821
+#: contents/ui/components/WeatherMapView.qml:1855
 msgid "The weather maps cannot play here"
 msgstr ""
 
@@ -5521,11 +5556,11 @@ msgstr ""
 msgid "The whiter, the more of the sky is covered. With the three levels ticked you see the model's total cover, without counting twice the clouds over each other."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1456
+#: contents/ui/DetailsView.qml:1458
 msgid "The widget collects pressure readings as it updates; about an hour of readings is needed to work out the trend."
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:529
+#: contents/ui/components/weathermap/LayerPanel.qml:544
 msgid "The wind is drawn over the map, so over every layer wherever it is in this list: its place here orders the column of the tab only."
 msgstr ""
 
@@ -5533,7 +5568,7 @@ msgstr ""
 msgid "The workaround script wasn't found on disk. Try toggling the option off and on again."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "Theme"
 msgstr ""
@@ -5551,12 +5586,12 @@ msgstr ""
 msgid "These settings only apply when the widget is placed in a panel or the system tray - they have no effect on the desktop."
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:856
+#: contents/ui/components/WeatherMapView.qml:889
 msgctxt "isobar lines"
 msgid "Thick"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:856
+#: contents/ui/components/WeatherMapView.qml:889
 msgctxt "isobar lines"
 msgid "Thin"
 msgstr ""
@@ -5619,7 +5654,7 @@ msgid "Tiles"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:146
-#: contents/ui/components/weathermap/LayerPanel.qml:1014
+#: contents/ui/components/weathermap/LayerPanel.qml:1067
 msgid "Time"
 msgstr ""
 
@@ -5742,7 +5777,7 @@ msgstr ""
 msgid "Top Right"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1229
+#: contents/ui/components/WeatherMapView.qml:1263
 msgctxt "@label total cloud cover"
 msgid "Total"
 msgstr ""
@@ -5792,7 +5827,7 @@ msgid "USG"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:118
-#: contents/ui/components/WeatherMapView.qml:838
+#: contents/ui/components/WeatherMapView.qml:871
 msgid "UV"
 msgstr ""
 
@@ -5865,7 +5900,7 @@ msgstr ""
 msgid "Unsettled"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2447
+#: contents/ui/DetailsView.qml:2451
 msgid "Until"
 msgstr ""
 
@@ -5971,7 +6006,7 @@ msgid "Values are rounded to whole numbers"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:106
-#: contents/ui/components/weathermap/LayerPanel.qml:945
+#: contents/ui/components/weathermap/LayerPanel.qml:998
 msgid "Values on the lines"
 msgstr ""
 
@@ -6049,12 +6084,12 @@ msgstr ""
 msgid "Visual Crossing API Key:"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:589
+#: contents/ui/components/WeatherMapView.qml:622
 #: contents/ui/config/tabs/ConfigRadarTab.qml:86
 msgid "Vivid"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1219
+#: contents/ui/components/WeatherMapView.qml:1252
 #: contents/ui/HistoryView.qml:191
 msgid "W"
 msgstr ""
@@ -6075,7 +6110,7 @@ msgstr ""
 msgid "Warmest day"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2840
+#: contents/ui/DetailsView.qml:2842
 msgid "Warning"
 msgstr ""
 
@@ -6103,7 +6138,7 @@ msgstr ""
 msgid "Weather Alerts Provider"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:1533
+#: contents/ui/components/WeatherMapView.qml:1567
 msgid "Weather Map"
 msgstr ""
 
@@ -6203,7 +6238,7 @@ msgstr ""
 msgid "WebP or PNG, 256 or 512 px. The satellite follows them too."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2506 contents/ui/SimpleView.qml:180
+#: contents/ui/DetailsView.qml:2510 contents/ui/SimpleView.qml:180
 msgid "Website"
 msgstr ""
 
@@ -6211,8 +6246,8 @@ msgstr ""
 msgid "Welsh"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:836
-#: contents/ui/components/WeatherMapView.qml:1223
+#: contents/ui/components/WeatherMapView.qml:869
+#: contents/ui/components/WeatherMapView.qml:1256
 msgid "Wet snow"
 msgstr ""
 
@@ -6232,7 +6267,7 @@ msgstr ""
 msgid "Wheel"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "White"
 msgstr ""
@@ -6258,19 +6293,19 @@ msgstr ""
 msgid "Widget › General › Weather icon theme"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:840
+#: contents/ui/components/weathermap/LayerPanel.qml:893
 msgid "Width"
 msgstr ""
 
 #: contents/ui/components/weathermap/HelpPanel.qml:88
-#: contents/ui/components/weathermap/LayerPanel.qml:866
+#: contents/ui/components/weathermap/LayerPanel.qml:919
 msgid "Width of the bands"
 msgstr ""
 
 #: contents/ui/components/RadarWebEngineView.qml:159
 #: contents/ui/components/weathermap/HelpPanel.qml:81
-#: contents/ui/components/weathermap/LayerPanel.qml:511
-#: contents/ui/components/weathermap/LayerPanel.qml:807
+#: contents/ui/components/weathermap/LayerPanel.qml:526
+#: contents/ui/components/weathermap/LayerPanel.qml:860
 #: contents/ui/components/weathermap/LoadBox.qml:35
 #: contents/ui/config/configAppearance.qml:1857
 #: contents/ui/config/configAppearance.qml:1988
@@ -6329,22 +6364,22 @@ msgid "Wrap to next line"
 msgstr ""
 
 #: contents/ui/config/subpages/ConfigDetailsSubPage.qml:815
-#: contents/ui/DetailsView.qml:2184
+#: contents/ui/DetailsView.qml:2187
 msgid "X-ray Flare Class"
 msgstr ""
 
 #: contents/ui/config/configNotifications.qml:366
 #: contents/ui/config/configNotifications.qml:415
-#: contents/ui/DetailsView.qml:2828
+#: contents/ui/DetailsView.qml:2830
 msgid "Yellow"
 msgstr ""
 
-#: contents/ui/components/WeatherMapView.qml:860
+#: contents/ui/components/WeatherMapView.qml:893
 msgctxt "color"
 msgid "Yellow"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2834
+#: contents/ui/DetailsView.qml:2836
 msgid "Yellow warning"
 msgstr ""
 
@@ -6370,7 +6405,7 @@ msgid "You selected <b>%1</b>. Apply it to every icon theme setting where it is 
 msgstr ""
 
 #: contents/ui/components/LocationMapPickerView.qml:55
-#: contents/ui/components/WeatherMapView.qml:1210
+#: contents/ui/components/WeatherMapView.qml:1243
 #: contents/ui/ForecastView.qml:1052 contents/ui/ForecastView.qml:1827
 #: contents/ui/HistoryView.qml:969
 msgid "Zoom in"
@@ -6382,7 +6417,7 @@ msgid "Zoom in (or double-click the graph, or hold Ctrl and scroll the mouse whe
 msgstr ""
 
 #: contents/ui/components/LocationMapPickerView.qml:55
-#: contents/ui/components/WeatherMapView.qml:1211
+#: contents/ui/components/WeatherMapView.qml:1244
 #: contents/ui/ForecastView.qml:1042 contents/ui/ForecastView.qml:1043
 #: contents/ui/ForecastView.qml:1817 contents/ui/ForecastView.qml:1818
 #: contents/ui/HistoryView.qml:959 contents/ui/HistoryView.qml:960
@@ -6508,7 +6543,7 @@ msgstr ""
 msgid "full screen on or off."
 msgstr ""
 
-#: contents/ui/DetailsView.qml:1841 contents/ui/DetailsView.qml:1928
+#: contents/ui/DetailsView.qml:1845 contents/ui/DetailsView.qml:1931
 msgid "grains/m³"
 msgstr ""
 
@@ -6578,7 +6613,7 @@ msgstr ""
 msgid "km/h"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:2136
+#: contents/ui/DetailsView.qml:2139
 msgid "km/s"
 msgstr ""
 
@@ -6587,7 +6622,7 @@ msgstr ""
 msgid "kn"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3563
+#: contents/ui/DetailsView.qml:3566
 msgid "left"
 msgstr ""
 
@@ -6929,7 +6964,7 @@ msgstr ""
 msgid "until %1"
 msgstr ""
 
-#: contents/ui/DetailsView.qml:3560
+#: contents/ui/DetailsView.qml:3563
 msgid "until dawn"
 msgstr ""
 
@@ -6958,16 +6993,21 @@ msgstr ""
 msgid "µg/m³"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:826
+#: contents/ui/components/weathermap/LayerPanel.qml:879
 msgid "×%1"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:592
+#: contents/ui/components/weathermap/LayerPanel.qml:667
+msgctxt "Moon size, as a multiple of the real Moon's"
+msgid "×%1"
+msgstr ""
+
+#: contents/ui/components/weathermap/LayerPanel.qml:607
 msgctxt "coasts and borders width, as a multiple"
 msgid "×%1"
 msgstr ""
 
-#: contents/ui/components/weathermap/LayerPanel.qml:635
+#: contents/ui/components/weathermap/LayerPanel.qml:688
 msgctxt "night lights density, as a multiple"
 msgid "×%1"
 msgstr ""

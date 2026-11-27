@@ -141,24 +141,58 @@ python3 scripts/build_librewxr_map.py --librewxr /path/to/LibreWXR
 ### Widget layouts
 | Advanced mode (cards) | Advanced mode (list) |
 |:---:|:---:|
-| <img src="screenshots/widget/advanced/advanced mode (cards).png" width="400" alt="Advanced mode (cards)"> | <img src="screenshots/widget/advanced/advanced mode (list).png" width="400" alt="Advanced mode (list)"> |
-| Modern cards. | A clean list view. |
+| <video src="https://github.com/user-attachments/assets/ebad95fc-fb09-4e83-9db7-9eaf9e04df71" width="400" controls loop muted playsinline></video> | <img src="screenshots/widget/advanced/advanced mode (list).png" width="400" alt="Advanced mode (list)"> |
+| Animated cards (collapsed/expanded) | A clean list view |
 
-| Simple mode (default) | Super simple |
-|:---:|:---:|
-| <img src="screenshots/widget/simple/simple mode (default).png" width="400" alt="Simple mode"> | <img src="screenshots/widget/simple/super simple.png" width="400" alt="Super simple mode"> |
-| Focused view for weather without the tabs. | The most minimal view. |
-
-### Tabs
-| Forecast (strip) | Forecast (cards) | Weather maps |
+| Simple mode (default) | Simple mode (graphs) | Super simple |
 |:---:|:---:|:---:|
-| <img src="screenshots/widget/tabs/forecast-strip.png" width="300" alt="Forecast tab (strip)"> | <img src="screenshots/widget/tabs/forecast.png" width="300" alt="Forecast tab (cards)"> | <img src="screenshots/widget/tabs/radar.png" width="300" alt="Weather maps tab"> |
+| <img src="screenshots/widget/simple/simple mode (default).png" width="400" alt="Simple mode (default)"> | <img src="screenshots/widget/simple/simple mode (graphs).png" width="400" alt="Simple mode (graphs)"> | <img src="screenshots/widget/simple/super simple.png" width="400" alt="Super simple mode"> |
+| Focused view for weather without the tabs | Forecast data shown with interactive graphs | The most minimal view |
+
+### Forecast
+| Standard daily / hourly cards | Standard daily / hourly graphs | Standard daily / hourly strip |
+|:---:|:---:|:---:|
+| <img src="screenshots/widget/forecast/daily (standard)-hourly (cards).png" width="400" alt="Standard daily and hourly cards"> | <img src="screenshots/widget/forecast/daily (standard)-hourly (graphs).png" width="400" alt="Standard daily and hourly graphs"> | <img src="screenshots/widget/forecast/daily (standard)-hourly (strip).png" width="400" alt="Standard daily and hourly strip"> |
+
+| Graph daily / hourly cards | Graph daily / hourly strip |
+|:---:|:---:|
+| <img src="screenshots/widget/forecast/daily (graphs)-hourly (cards).png" width="400" alt="Graph daily and hourly cards"> | <img src="screenshots/widget/forecast/daily (graphs)-hourly (strip).png" width="400" alt="Graph daily and hourly strip"> |
+
+| Expanded graphs | Compact graphs |
+|:---:|:---:|
+| <video src="https://github.com/user-attachments/assets/ea31e407-8ad3-4e4d-93f9-be4018ffee4d" width="400" controls loop muted playsinline></video> | <video src="https://github.com/user-attachments/assets/e914e796-e6f0-461d-8e86-c1ba1cab921b" width="400" controls loop muted playsinline></video> |
+| Expanded graphs for daily and hourly forecasts | Compact daily and forecast graphs |
+
+### Weather Map
+| Overview |
+|:---:|
+| <video src="https://github.com/user-attachments/assets/78316480-1346-43d8-83fb-fe6132170b40" width="800" controls loop muted playsinline></video> |
+
+| Plain map | 3D globe with day and night | Radar and satellite |
+|:---:|:---:|:---:|
+| <img src="screenshots/widget/map/plain map.png" width="400" alt="Plain map"> | <img src="screenshots/widget/map/3d globe with day and night.png" width="400" alt="3D globe with day and night"> | <img src="screenshots/widget/map/radar and satellite.png" width="400" alt="Radar and satellite map"> |
+
+| Isobars, rain and clouds | Temperature layer | Humidity |
+|:---:|:---:|:---:|
+| <img src="screenshots/widget/map/isobar-rain-clouds.png" width="400" alt="Isobars, rain and clouds map"> | <img src="screenshots/widget/map/temperature layer.png" width="400" alt="Temperature layer map"> | <img src="screenshots/widget/map/humidity.png" width="400" alt="Humidity map"> |
+
+| Dew point | Sea level pressure | Air quality |
+|:---:|:---:|:---:|
+| <img src="screenshots/widget/map/dew point.png" width="400" alt="Dew point map"> | <img src="screenshots/widget/map/sea level pressure.png" width="400" alt="Sea level pressure map"> | <img src="screenshots/widget/map/air quality.png" width="400" alt="Air quality map"> |
+
+## Weather History
+| Overview |
+|:---:|
+| <video src="https://github.com/user-attachments/assets/103a2914-c315-4914-b3f4-e4b07c6dc299" width="800" controls loop muted playsinline></video> |
+
+| Previous day | This year | Custom range |
+|:---:|:---:|:---:|
+| <img src="screenshots/widget/history/previous day.png" width="400" alt="Previous day history"> | <img src="screenshots/widget/history/this year.png" width="400" alt="This year history"> | <img src="screenshots/widget/history/custom range.png" width="400" alt="Custom range history"> |
 
 ### Notifications
-| Regular notifications | Alert notifications |
+| Regular and alert notifications | Tomorrow forecast |
 |:---:|:---:|
-| <img src="screenshots/notifications/regular-notifications.png" width="300" alt="Regular notifications"> | <img src="screenshots/notifications/alerts-notifications.png" width="300" alt="Alert notifications with native language support"> |
-| Forecast, UV index and Kp index. | Alerts with native language support. |
+| <img src="screenshots/notifications/regular + alert notifications.png" width="400" alt="Regular and alert notifications"> | <img src="screenshots/notifications/tomorrow forecast notification.png" width="400" alt="Tomorrow forecast notification"> |
 
 # ✨ Detailed Features
 
@@ -219,12 +253,15 @@ For providers that require an API key, you can enter it in the widget's settings
 
 Thank you to everyone who has contributed code to this project ❤️
 
-- **[Mizu Ikki](https://github.com/mizuikki)** - QWeather provider fixes and perfomance improvements (refresh handling, forecast display, precipitation fallback)
-- **[rcspam](https://github.com/rcspam)** - [PR-151](https://github.com/pnedyalkov91/advanced-weather-widget/pull/151), [PR-146](https://github.com/pnedyalkov91/advanced-weather-widget/pull/146), [PR-157](https://github.com/pnedyalkov91/advanced-weather-widget/pull/157), [PR-179](https://github.com/pnedyalkov91/advanced-weather-widget/pull/179), [PR-180](https://github.com/pnedyalkov91/advanced-weather-widget/pull/180), [PR-198](https://github.com/pnedyalkov91/advanced-weather-widget/pull/198)
-- **[ydimitrof](https://github.com/ydimitrof)** - [PR-168](https://github.com/pnedyalkov91/advanced-weather-widget/pull/168)
-- **[Katze-942](https://github.com/Katze-942)** - [PR-185](https://github.com/pnedyalkov91/advanced-weather-widget/pull/185)
-- **[KassLavender](https://github.com/KassLavender)** - [PR-174](https://github.com/pnedyalkov91/advanced-weather-widget/pull/174)
-- **[JoshuaKimsey](https://github.com/JoshuaKimsey)** - [PR-192](https://github.com/pnedyalkov91/advanced-weather-widget/pull/192)
+- **[rcspam](https://github.com/rcspam)**
+- **[Mizu Ikki](https://github.com/mizuikki)**
+- **[ydimitrof](https://github.com/ydimitrof)**
+- **[Katze-942](https://github.com/Katze-942)**
+- **[KassLavender](https://github.com/KassLavender)**
+- **[JoshuaKimsey](https://github.com/JoshuaKimsey)**
+- **[Zhuocheng-Lang](https://github.com/Zhuocheng-Lang)**
+
+Everyone and everything this project builds on is gathered on one page: [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
 
 ## 🌐 Translation
 

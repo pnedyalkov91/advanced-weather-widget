@@ -239,6 +239,13 @@
     <entry name="librewxrGlobeSky"      type="Bool"><default>true</default></entry>
     <!-- Brightness of the lights of the towns on the night side (MapLibre page), percent; 0 for none -->
     <entry name="librewxrRimGlow"       type="Int"><default>60</default><min>0</min><max>100</max></entry>
+    <!-- The Moon around the globe (MapLibre page): its distance from the Earth's centre in
+         Earth radii (1.45 as drawn, 60.34 the real one) and its size as a multiple of the
+         real Moon's (0.3667 as drawn, 0.2 Earth radii across); used only while librewxrMoonCustom
+         is on, the Moon stays as drawn otherwise -->
+    <entry name="librewxrMoonCustom"    type="Bool"><default>false</default></entry>
+    <entry name="librewxrMoonDistance"  type="Double"><default>1.45</default><min>1.45</min><max>60.34</max></entry>
+    <entry name="librewxrMoonSize"      type="Double"><default>0.3667</default><min>0.3667</min><max>10</max></entry>
     <entry name="librewxrNightLights"   type="Int"><default>70</default><min>0</min><max>100</max></entry>
     <entry name="librewxrNightLightsDensity" type="Double"><default>3</default><min>1</min><max>6</max></entry>
     <!-- Temperature palette in use: empty for the vivid one, "builtin:muted",
@@ -413,6 +420,8 @@
     <entry name="headerShowPinButton"      type="Bool"><default>true</default></entry>
     <entry name="headerShowDetectButton"   type="Bool"><default>true</default></entry>
     <entry name="headerShowRefreshButton"  type="Bool"><default>true</default></entry>
+    <!-- Expand / collapse all button, shown on the Details tab (Advanced layout, cards mode) -->
+    <entry name="headerShowExpandAllButton" type="Bool"><default>true</default></entry>
     <entry name="headerShowDateTime" type="Bool"><default>false</default></entry>
     <entry name="headerDateFormat"   type="String"><default>locale-long</default></entry>
     <entry name="headerTimeFormat"   type="String"><default>locale</default></entry>
