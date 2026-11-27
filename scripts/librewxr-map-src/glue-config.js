@@ -92,6 +92,10 @@ var LIGHTS_INIT = PARAMS.get('lights');
 // Points of the lights of the towns: those a cell of full light gets.
 var LIGHTS_DENSITY_INIT = PARAMS.get('lightsdensity');
 var RIM_INIT = PARAMS.get('rim');
+// The Moon around the globe: its distance in Earth radii, its size as a
+// multiple of the real Moon's; the adapter reads and bounds them.
+var MOON_DIST_INIT = PARAMS.get('moondist');
+var MOON_SIZE_INIT = PARAMS.get('moonsize');
 // What the map prepares while hidden: 'none', 'first' (the latest image) or
 // 'all' (the whole animation).
 var PREPARE_MODE = /^(first|all)$/.test(PARAMS.get('prepare')) ? PARAMS.get('prepare') : 'none';
