@@ -592,3 +592,59 @@ test('moonDiameter: the size asked, never touching the Earth', () => {
   const d = E.moonDiameter(10, E.MOON_DRAWN_ORBIT);
   assert.ok(E.MOON_DRAWN_ORBIT - d / 2 > 1, 'its near side stays off the surface: ' + d);
 });
+
+// === City names (vendor/places.json.gz) ===
+test('cityLanguage: the file\'s language for the system locale, -1 where it has none', () => {
+  const langs = ['de', 'es', 'pt', 'ru', 'uk', 'ja', 'zh', 'zh-TW'];
+  const at = (loc) => E.cityLanguage(loc, langs);
+  assert.equal(at('de'), 0);
+  assert.equal(at('de-AT'), 0);
+  assert.equal(at('pt-BR'), 2);
+  assert.equal(at('pt_BR'), 2);
+  assert.equal(at('uk'), 4);
+  assert.equal(at('zh-CN'), 6);
+  assert.equal(at('zh_CN'), 6);
+  assert.equal(at('zh-Hans-CN'), 6);
+  assert.equal(at('zh-TW'), 7);
+  assert.equal(at('zh_TW'), 7);
+  assert.equal(at('zh-HK'), 7);
+  assert.equal(at('zh-Hant'), 7);
+  // No Bulgarian or Czech in the file, nor English (the default names).
+  assert.equal(at('bg-BG'), -1);
+  assert.equal(at('cs_CZ'), -1);
+  assert.equal(at('en-US'), -1);
+  assert.equal(at(''), -1);
+  assert.equal(at(undefined), -1);
+});
+
+test('layoutLabels: names beside their dots, the first ones first, none over another', () => {
+  const item = (x, y, tw) => ({ x, y, tw: tw || 40, th: 14 });
+  // Two far apart: both right of the dot.
+  let out = E.layoutLabels([item(100, 100), item(300, 100)], 500, 300, 2);
+  assert.equal(out.length, 2);
+  assert.ok(out[0].x > 100 && out[1].x > 300);
+  // The same place twice: the second has no room anywhere (its dot is under the first's).
+  out = E.layoutLabels([item(100, 100), item(101, 101)], 500, 300, 2);
+  assert.deepEqual(out.map((o) => o.i), [0]);
+  // A dot under a name placed before it: left out.
+  out = E.layoutLabels([item(100, 100, 60), item(130, 100, 60)], 500, 300, 2);
+  assert.deepEqual(out.map((o) => o.i), [0]);
+  // Right of the dot taken by the first name, the second goes to the left.
+  out = E.layoutLabels([item(100, 100, 60), item(100, 112, 60)], 500, 300, 2);
+  assert.equal(out.length, 2);
+  assert.ok(out[0].x > 100 && out[1].x + 60 < 100, 'right, then left');
+  const overlap = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+  assert.ok(!overlap([out[0].x, out[0].y, out[0].x + 60, out[0].y + 14], [out[1].x, out[1].y, out[1].x + 60, out[1].y + 14]));
+  // At the right edge the name goes to the left of its dot.
+  out = E.layoutLabels([item(480, 100, 60)], 500, 300, 2);
+  assert.equal(out.length, 1);
+  assert.ok(out[0].x + 60 <= 500 && out[0].x < 480);
+  // No room at all: left out.
+  assert.deepEqual(E.layoutLabels([item(20, 5, 600)], 500, 300, 2), []);
+  // Never off the screen.
+  const many = [];
+  for (let i = 0; i < 200; i++) many.push(item((i * 37) % 500, (i * 53) % 300, 50));
+  for (const o of E.layoutLabels(many, 500, 300, 2)) {
+    assert.ok(o.x >= 0 && o.y >= 0 && o.x + 50 <= 500 && o.y + 14 <= 300);
+  }
+});
