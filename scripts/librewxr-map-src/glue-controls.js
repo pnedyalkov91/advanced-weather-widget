@@ -314,6 +314,14 @@ window.setGlobeSky = function (on) {
 window.setRimGlow = function (percent) {
   if (_widgetAdapter.setRimGlow) _widgetAdapter.setRimGlow(percent);
 };
+// The Moon's distance from the Earth's centre, in Earth radii.
+window.setMoonOrbit = function (r) {
+  if (_widgetAdapter.setMoonOrbit) _widgetAdapter.setMoonOrbit(r);
+};
+// The Moon's size, as a multiple of the real Moon's.
+window.setMoonSize = function (k) {
+  if (_widgetAdapter.setMoonSize) _widgetAdapter.setMoonSize(k);
+};
 // The lights of the towns at night, in percent (0 for none).
 window.setNightLights = function (percent) {
   if (_widgetAdapter.setNightLights) _widgetAdapter.setNightLights(percent);

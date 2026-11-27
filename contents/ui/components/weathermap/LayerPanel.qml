@@ -249,6 +249,21 @@ Rectangle {
             }
         }
     }
+    // A SliderSetting on a log scale, from low to high: picked(v, done)
+    // with the amount itself, for ranges that span a factor of ten or more.
+    component LogSliderSetting: SliderSetting {
+        id: ls
+        property real low: 1
+        property real high: 10
+        property real amount: 1
+        signal picked(real v, bool done)
+        opacity: enabled ? 1 : 0.5
+        from: 0
+        to: 1
+        stepSize: 0.01
+        value: Math.log(amount / low) / Math.log(high / low)
+        onMoved: function (v, done) { ls.picked(ls.low * Math.pow(ls.high / ls.low, v), done); }
+    }
     // A color among a few: a dot for each, the one taken ringed. The value
     // "" is the theme's color, drawn half white, half dark.
     component ColorDots: ColumnLayout {
@@ -617,6 +632,44 @@ Rectangle {
                             opacity: enabled ? 1 : 0.5
                             value: panel.map.rimGlow
                             onMoved: function (v, done) { panel.map.setRimGlow(Math.round(v), done); }
+                        }
+                        // The Moon at the distance and size of the two sliders below;
+                        // off, as it always was (close and small, so it stays in view).
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("Custom Moon")
+                            enabled: panel.map.globeSkyOn
+                            opacity: enabled ? 1 : 0.5
+                            checked: panel.map.moonCustom
+                            onToggled: {
+                                panel.map.setMoonCustom(checked);
+                                checked = Qt.binding(function () { return panel.map.moonCustom; });
+                            }
+                        }
+                        // The Moon's distance, from as drawn (close, so it stays in
+                        // view) out to the real one, shown in km from the Earth's centre.
+                        LogSliderSetting {
+                            readonly property real km: panel.map.moonDistance * 6371
+                            title: i18n("Moon distance")
+                            valueText: i18nc("distance of the Moon from the Earth's centre", "%1 km", Number(km < 1e5 ? Math.round(km / 100) * 100 : Math.round(km / 1000) * 1000).toLocaleString(Qt.locale(), "f", 0))
+                            enabled: panel.map.globeSkyOn && panel.map.moonCustom
+                            low: panel.map.moonDrawnDistance
+                            high: panel.map.moonRealDistance
+                            amount: panel.map.moonDistance
+                            onPicked: function (v, done) { panel.map.setMoonDistance(v, done); }
+                        }
+                        // The Moon's size, from as drawn up to ten times the real Moon,
+                        // snapped to the real size when the handle passes by it.
+                        LogSliderSetting {
+                            readonly property real shown: panel.map.moonShownSize
+                            title: i18n("Moon size")
+                            valueText: Math.abs(shown - 1) < 0.005 ? i18nc("Moon drawn at its real size", "Real")
+                                : i18nc("Moon size, as a multiple of the real Moon's", "×%1", Number(shown).toLocaleString(Qt.locale(), "f", shown < 1 ? 2 : 1))
+                            enabled: panel.map.globeSkyOn && panel.map.moonCustom
+                            low: panel.map.moonDrawnSize
+                            high: panel.map.moonMaxSize
+                            amount: panel.map.moonSize
+                            onPicked: function (v, done) { panel.map.setMoonSize(Math.abs(v - 1) < 0.04 ? 1 : v, done); }
                         }
                         // The lights of the towns on the night side: 0 turns them off.
                         // They light the night of the day and night setting only.

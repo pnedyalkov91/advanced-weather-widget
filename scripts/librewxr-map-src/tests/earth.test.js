@@ -566,3 +566,29 @@ test('NIGHT_FS: the night reads the latitude of the caps', () => {
   assert.match(E.NIGHT_FS, /in float v_pole;/);
   assert.match(E.NIGHT_FS, /abs\(v_pole\)/);
 });
+
+test('moonOrbit: drawn orbit by default, bounded between it and the real one', () => {
+  assert.equal(E.moonOrbit(null), E.MOON_DRAWN_ORBIT);
+  assert.equal(E.moonOrbit('abc'), E.MOON_DRAWN_ORBIT);
+  assert.equal(E.moonOrbit('12.5'), 12.5);
+  assert.equal(E.moonOrbit(0), E.MOON_DRAWN_ORBIT);
+  assert.equal(E.moonOrbit(500), E.MOON_REAL_ORBIT);
+  near(E.MOON_REAL_ORBIT * 6371, 384400, 500, 'real distance in km');
+});
+
+test('moonSize: drawn size by default, bounded between it and ten times the real one', () => {
+  near(E.moonSize(null) * E.MOON_REAL_SIZE, 0.2, 1e-9, 'drawn diameter');
+  assert.equal(E.moonSize('2'), 2);
+  assert.equal(E.moonSize(0.01), E.moonSize(null));
+  assert.equal(E.moonSize(99), 10);
+  near(E.MOON_REAL_SIZE * 6371, 3474.8, 1, 'real diameter in km');
+});
+
+test('moonDiameter: the size asked, never touching the Earth', () => {
+  near(E.moonDiameter(E.moonSize(null), E.MOON_DRAWN_ORBIT), 0.2, 1e-9, 'as drawn');
+  near(E.moonDiameter(1, E.MOON_REAL_ORBIT), E.MOON_REAL_SIZE, 1e-9, 'real');
+  near(E.moonDiameter(10, E.MOON_REAL_ORBIT), 10 * E.MOON_REAL_SIZE, 1e-9, 'big but far');
+  // On the drawn orbit, ten times the real Moon would reach into the globe.
+  const d = E.moonDiameter(10, E.MOON_DRAWN_ORBIT);
+  assert.ok(E.MOON_DRAWN_ORBIT - d / 2 > 1, 'its near side stays off the surface: ' + d);
+});
