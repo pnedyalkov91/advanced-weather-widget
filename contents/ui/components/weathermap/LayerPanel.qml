@@ -203,9 +203,14 @@ Rectangle {
         property string valueText
         property real from: 0
         property real to: 100
+        // The value's step: the handle itself moves freely (no tick marks
+        // under the slider), the value it gives is rounded to the step.
         property real stepSize: 1
         property real value
         signal moved(real v, bool done)
+        function snapped(v) {
+            return stepSize > 0 ? from + Math.round((v - from) / stepSize) * stepSize : v;
+        }
         Layout.fillWidth: true
         spacing: 0
         RowLayout {
@@ -219,10 +224,13 @@ Rectangle {
             Layout.fillWidth: true
             from: ss.from
             to: ss.to
-            stepSize: ss.stepSize
             value: ss.value
-            onMoved: ss.moved(value, false)
-            onPressedChanged: if (!pressed) ss.moved(value, true)
+            onMoved: ss.moved(ss.snapped(value), false)
+            // Let go, the handle goes back on the value kept, at its step.
+            onPressedChanged: if (!pressed) {
+                ss.moved(ss.snapped(value), true);
+                value = Qt.binding(function () { return ss.value; });
+            }
             Layout.preferredHeight: own ? 20 : implicitHeight
             background.opacity: own ? 0 : 1
             handle.opacity: own ? 0 : 1
