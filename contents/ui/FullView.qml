@@ -200,7 +200,12 @@ Rectangle {
     readonly property bool _hdrShowDetect: Plasmoid.configuration.headerShowDetectButton !== false && !inSystemTray
     readonly property bool _hdrShowRefresh: Plasmoid.configuration.headerShowRefreshButton !== false && !inSystemTray
     readonly property bool _hdrShowUpdating: !inSystemTray && !!weatherRoot && weatherRoot.loading === true
-    readonly property bool _headerHasContent: _hdrShowLocation || _hdrShowDateTime || _hdrShowSwitcher || _hdrShowPin || _hdrShowDetect || _hdrShowRefresh || _hdrShowUpdating
+    // Expand / collapse all cards: only on the Details tab of the Advanced layout,
+    // and only while the (lazily-built) Details view has expandable cards.
+    readonly property var _detailsView: detailsLoader.item
+    readonly property bool _hdrShowToggleAll: Plasmoid.configuration.headerShowExpandAllButton !== false && !isSimpleMode && showDetailsTab && activeTab === 0 && !!_detailsView && _detailsView.canToggleAll === true
+    readonly property bool _detailsAllExpanded: !!_detailsView && _detailsView.allExpanded === true
+    readonly property bool _headerHasContent: _hdrShowLocation || _hdrShowDateTime || _hdrShowSwitcher || _hdrShowToggleAll || _hdrShowPin || _hdrShowDetect || _hdrShowRefresh || _hdrShowUpdating
 
     // Whether not-currently-shown tabs stay instantiated. True while the
     // popup is open and always on the desktop (Planar), which has no popup.
@@ -423,6 +428,23 @@ Rectangle {
             Item {
                 Layout.fillWidth: true
                 visible: !headerLocationLabel.visible && !headerDateTimeLabel.visible
+            }
+
+            // ── Expand / collapse all Details cards ───────────────────────
+            // Leftmost of the buttons, so it appearing / disappearing on tab
+            // change does not move the ones that are always there.
+            ToolButton {
+                id: toggleAllCardsBtn
+                icon.name: fullView._detailsAllExpanded ? "arrow-up-double" : "arrow-down-double"
+                flat: true
+                display: AbstractButton.IconOnly
+                width: 22
+                height: 22
+                visible: fullView._hdrShowToggleAll
+                ToolTip.visible: hovered
+                ToolTip.text: fullView._detailsAllExpanded ? i18n("Collapse all cards") : i18n("Expand all cards")
+                onClicked: if (fullView._detailsView)
+                    fullView._detailsView.toggleAllExpanded()
             }
 
             // ── Location switcher dropdown ────────────────────────────────
