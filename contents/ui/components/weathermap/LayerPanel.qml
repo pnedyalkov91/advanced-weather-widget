@@ -621,6 +621,16 @@ Rectangle {
                             value: panel.map.mapLinesWidth
                             onMoved: function (v, done) { panel.map.setMapLinesWidth(v, done); }
                         }
+                        // The names of the big cities over the color layers.
+                        MapSwitch {
+                            own: panel.map.ownControls
+                            text: i18n("City names")
+                            checked: panel.map.mapCitiesOn
+                            onToggled: {
+                                panel.map.setMapCities(checked);
+                                checked = Qt.binding(function () { return panel.map.mapCitiesOn; });
+                            }
+                        }
                         // The stars, the Sun and the Moon around the globe, together.
                         MapSwitch {
                             own: panel.map.ownControls

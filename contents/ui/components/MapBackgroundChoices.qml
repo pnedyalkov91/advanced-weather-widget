@@ -65,6 +65,7 @@ QtObject {
                 styleUrl: p.styleUrl || "",
                 vector: MapProvidersJS.isVectorBackground(p),
                 invert: !!p.invert,
+                dark: !!p.dark,
                 attribution: p.attribution + choices.attributionSuffix,
                 maxZoom: p.maxZoom
             });

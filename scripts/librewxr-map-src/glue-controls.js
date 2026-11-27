@@ -306,6 +306,11 @@ window.setMapLinesWidth = function (f) {
   if (_widgetAdapter.setLinesWidth) _widgetAdapter.setLinesWidth(f);
 };
 
+// The names of the big cities over the color layers, from the widget's setting.
+window.setMapCities = function (on) {
+  if (_widgetAdapter.setCitiesShown) _widgetAdapter.setCitiesShown(!!on);
+};
+
 // The stars, the Sun and the Moon around the globe, from the widget's setting.
 window.setGlobeSky = function (on) {
   if (_widgetAdapter.setSkyShown) _widgetAdapter.setSkyShown(!!on);

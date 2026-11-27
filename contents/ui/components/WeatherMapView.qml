@@ -115,6 +115,8 @@ Item {
     readonly property string tempPalette: ConfigUtils.formatTempPalette(ConfigUtils.tempPaletteStops(Plasmoid.configuration.librewxrTempPalette || "", Plasmoid.configuration.librewxrTempPalettes || "[]"))
     // Coasts and borders drawn over the color layers (the settings of the column).
     readonly property bool mapLinesOn: Plasmoid.configuration.librewxrMapLines !== false
+    // The names of the big cities over the color layers.
+    readonly property bool mapCitiesOn: Plasmoid.configuration.librewxrMapCities !== false
     // The stars, the Sun and the Moon around the globe (one setting of the column).
     readonly property bool globeSkyOn: Plasmoid.configuration.librewxrGlobeSky !== false
     // The box of the layers still loading (LoadBox), at the bottom left.
@@ -535,6 +537,10 @@ Item {
     function setMapLines(on) {
         Plasmoid.configuration.librewxrMapLines = on;
         call("setMapLines", on);
+    }
+    function setMapCities(on) {
+        Plasmoid.configuration.librewxrMapCities = on;
+        call("setMapCities", on);
     }
     // Their width, a factor on the one drawn by default (0.5 to 3).
     property real mapLinesWidth: Plasmoid.configuration.librewxrMapLinesWidth > 0 ? Plasmoid.configuration.librewxrMapLinesWidth : 1
@@ -1275,7 +1281,7 @@ Item {
             ["wind", 0], ["windlevel", windLevel], ["windfps", windRate[0]], ["windmaxfps", windRate[1]], ["windwidth", windLineWidth],
             ["proj", projection], ["night", dayNight ? 1 : 0], ["glow", glow], ["nightdepth", nightDepth], ["prepare", prepareMode],
             ["windpalette", windPalette], ["winddensity", windDensity], ["temp", 0], ["temppalette", tempPalette],
-            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["lineswidth", mapLinesWidth], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow], ["moondist", moonCustom ? moonDistance : moonDrawnDistance], ["moonsize", moonCustom ? moonSize : moonDrawnSize],
+            ["tempopacity", tempOpacity], ["tempstep", tempStep], ["tempunit", tempUnit], ["lines", mapLinesOn ? 1 : 0], ["lineswidth", mapLinesWidth], ["cities", mapCitiesOn ? 1 : 0], ["sky", globeSkyOn ? 1 : 0], ["lights", nightLights], ["lightsdensity", nightLightsDensity], ["rim", rimGlow], ["moondist", moonCustom ? moonDistance : moonDrawnDistance], ["moonsize", moonCustom ? moonSize : moonDrawnSize],
             ["windunit", windUnit], ["cells", activeCells], ["alerts", alertsOn ? 1 : 0], ["smooth", smoothOn ? 1 : 0],
             ["snow", snowOn ? 1 : 0], ["format", tileFormat], ["tilesize", tileSizeChoice], ["theme", mapTheme], ["server", serverUrl],
             ["hour12", is24h ? 0 : 1], ["dtfmt", weatherRoot ? weatherRoot.dateTimeSpec : ""], ["locale", Qt.locale().name.replace("_", "-")],

@@ -579,7 +579,61 @@ var WidgetEarth = (function () {
     return out;
   }
 
+  // ---- City names over the color layers (vendor/places.json.gz) ----
+
+  /** Which of the place file's languages (`langs`: its codes, "de", "zh-TW"...)
+      the system locale ("bg-BG", "pt_BR", "zh-Hant-TW") names its cities in:
+      the index, or -1 where it has none (the file's default names then). */
+  function cityLanguage(locale, langs) {
+    var parts = String(locale || '').toLowerCase().replace(/_/g, '-').split('-');
+    var want = parts[0];
+    if (!want) return -1;
+    if (want === 'zh') {
+      for (var i = 1; i < parts.length; i++) {
+        if (parts[i] === 'hant' || parts[i] === 'tw' || parts[i] === 'hk' || parts[i] === 'mo') want = 'zh-tw';
+      }
+    }
+    for (var j = 0; j < langs.length; j++) if (String(langs[j]).toLowerCase() === want) return j;
+    return -1;
+  }
+
+  /** Where the names of places go on a w x h px screen, most important first.
+      items[i] = { x, y, tw, th }: a place's dot, and the size of its name.
+      The name goes right of the dot, else left of it, above or below, where
+      it keeps `gap` px of air from the screen's edges, from the names placed
+      before it and from their dots. A place with no room is left out, its dot
+      too. Returns [{ i, x, y }]: the item, and the top left of its name. */
+  function layoutLabels(items, w, h, gap) {
+    var boxes = [], out = [], DOT = 3;
+    function free(x0, y0, x1, y1) {
+      if (x0 < 0 || y0 < 0 || x1 > w || y1 > h) return false;
+      for (var k = 0; k < boxes.length; k++) {
+        var b = boxes[k];
+        if (x0 < b[2] + gap && x1 > b[0] - gap && y0 < b[3] + gap && y1 > b[1] - gap) return false;
+      }
+      return true;
+    }
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i], dot = [it.x - DOT, it.y - DOT, it.x + DOT, it.y + DOT];
+      if (!free(dot[0], dot[1], dot[2], dot[3])) continue;
+      var d = DOT + 2, cands = [
+        [it.x + d, it.y - it.th / 2], [it.x - d - it.tw, it.y - it.th / 2],
+        [it.x - it.tw / 2, it.y - d - it.th], [it.x - it.tw / 2, it.y + d]
+      ];
+      for (var j = 0; j < cands.length; j++) {
+        var c = cands[j];
+        if (free(c[0], c[1], c[0] + it.tw, c[1] + it.th)) {
+          boxes.push(dot, [c[0], c[1], c[0] + it.tw, c[1] + it.th]);
+          out.push({ i: i, x: c[0], y: c[1] });
+          break;
+        }
+      }
+    }
+    return out;
+  }
+
   return {
+    cityLanguage: cityLanguage, layoutLabels: layoutLabels,
     gmst: gmst, sublunarPoint: sublunarPoint, placeVector: placeVector, moonPhase: moonPhase,
     camera: camera, projectDir: projectDir, earthRadiusPx: earthRadiusPx,
     cameraPosition: cameraPosition, projectPoint: projectPoint, moonView: moonView, renderMoon: renderMoon,

@@ -19,6 +19,15 @@ its color layers (temperature...). Natural Earth 1:10m, public domain
 (https://www.naturalearthdata.com/), simplified to about 500 m and packed by
 `scripts/make_coast_lines.py`.
 
+# City names
+
+`places.json.gz`: the names of the big cities the radar map draws over its
+color layers (every national capital and every place of 100 000 or more
+people, about 3 100), with their names in the widget's languages that
+Natural Earth has (not Bulgarian or Czech: those show the default name).
+Natural Earth 1:10m populated places, public domain
+(https://www.naturalearthdata.com/), packed by `scripts/make_places.py`.
+
 # Moon
 
 `moon.jpg`: the Moon's colors, equirectangular, 0 degrees of longitude in

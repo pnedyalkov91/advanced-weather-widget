@@ -235,6 +235,8 @@
     <entry name="librewxrMapLines"      type="Bool"><default>true</default></entry>
     <!-- Their width, a factor on the one drawn by default (0.5 to 3) -->
     <entry name="librewxrMapLinesWidth" type="Double"><default>1</default><min>0.5</min><max>3</max></entry>
+    <!-- The names of the big cities over the color layers (MapLibre page) -->
+    <entry name="librewxrMapCities"     type="Bool"><default>true</default></entry>
     <!-- The Sun and the Moon drawn around the globe (MapLibre page), switched in the map's settings -->
     <entry name="librewxrGlobeSky"      type="Bool"><default>true</default></entry>
     <!-- Brightness of the lights of the towns on the night side (MapLibre page), percent; 0 for none -->
