@@ -1,14 +1,16 @@
 # German translation for Advanced Weather Widget
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Thomas Bernard <tom-at-github@quantentunnel.de>, 2026
+# SPDX-FileCopyrightText: 2026 AUTHOR :
+#
+# SPDX-FileCopyrightText: 2026 Thomas Bernard <tom-at-github@quantentunnel.de>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: https://github.com/pnedyalkov91/advanced-weather-widget/issues\n"
 "POT-Creation-Date: 2026-11-22 08:45+0200\n"
-"PO-Revision-Date: 2026-11-22 06:45+0100\n"
+"PO-Revision-Date: 2026-11-28 07:14+0100\n"
 "Last-Translator: Thomas Bernard <tom-at-github@quantentunnel.de>\n"
 "Language-Team: German <kde-i18n-de@kde.org>\n"
 "Language: de\n"
@@ -588,7 +590,7 @@ msgstr "Alles"
 
 #: contents/ui/DetailsView.qml:2855
 msgid "All clear"
-msgstr "Alles klar"
+msgstr "🙂️"
 
 #: contents/ui/config/tabs/ConfigWidgetTab.qml:2082
 msgid "All days show hourly forecast when opening the tab"
@@ -2510,7 +2512,7 @@ msgstr "Humanitarian (HOT)"
 
 #: contents/ui/DetailsView.qml:448
 msgid "Humid"
-msgstr "Feuscht"
+msgstr "Hoch"
 
 #: contents/ui/components/weathermap/HelpPanel.qml:109
 #: contents/ui/components/WeatherMapView.qml:1234
@@ -2882,7 +2884,7 @@ msgstr "LibreWXR Server:"
 #: contents/ui/components/RadarWebEngineView.qml:889
 #: contents/ui/DetailsView.qml:466
 msgid "Light"
-msgstr "Leicht"
+msgstr "Gering"
 
 #: contents/ui/DetailsView.qml:502
 msgid "Light air"
@@ -4109,7 +4111,7 @@ msgstr "Schlecht"
 
 #: contents/ui/main.qml:1147
 msgid "Postpone"
-msgstr "Verschieben"
+msgstr "Später erinnern"
 
 #: contents/ui/SimpleView.qml:441
 msgid "Precip Sum"
@@ -6045,7 +6047,7 @@ msgstr "Sehr hoch"
 
 #: contents/ui/DetailsView.qml:450
 msgid "Very humid"
-msgstr "Sehr feucht"
+msgstr "Sehr hoch"
 
 #: contents/ui/config/subpages/ConfigMapSubPage.qml:654
 msgid "Violent rain showers"
